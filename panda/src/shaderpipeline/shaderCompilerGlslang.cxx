@@ -231,22 +231,22 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
   EShMessages messages = (EShMessages)(EShMsgDefault | EShMsgSpvRules);
   EShLanguage language;
   switch (stage) {
-  case ShaderModule::Stage::vertex:
+  case ShaderModule::Stage::VERTEX:
     language = EShLangVertex;
     break;
-  case ShaderModule::Stage::tess_control:
+  case ShaderModule::Stage::TESS_CONTROL:
     language = EShLangTessControl;
     break;
-  case ShaderModule::Stage::tess_evaluation:
+  case ShaderModule::Stage::TESS_EVALUATION:
     language = EShLangTessEvaluation;
     break;
-  case ShaderModule::Stage::geometry:
+  case ShaderModule::Stage::GEOMETRY:
     language = EShLangGeometry;
     break;
-  case ShaderModule::Stage::fragment:
+  case ShaderModule::Stage::FRAGMENT:
     language = EShLangFragment;
     break;
-  case ShaderModule::Stage::compute:
+  case ShaderModule::Stage::COMPUTE:
     language = EShLangCompute;
     break;
   default:
@@ -269,13 +269,13 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
 
     const char *source_entry_point;
     switch (stage) {
-    case ShaderModule::Stage::vertex:
+    case ShaderModule::Stage::VERTEX:
       source_entry_point = "vshader";
       break;
-    case ShaderModule::Stage::geometry:
+    case ShaderModule::Stage::GEOMETRY:
       source_entry_point = "gshader";
       break;
-    case ShaderModule::Stage::fragment:
+    case ShaderModule::Stage::FRAGMENT:
       source_entry_point = "fshader";
       break;
     default:

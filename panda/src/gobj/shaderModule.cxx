@@ -21,16 +21,16 @@ TypeHandle ShaderModule::_type_handle;
 ShaderModule::
 ShaderModule(Stage stage) : _stage(stage), _used_caps(C_basic_shader) {
   switch (stage) {
-  case Stage::tess_control:
-  case Stage::tess_evaluation:
+  case Stage::TESS_CONTROL:
+  case Stage::TESS_EVALUATION:
     _used_caps |= C_tessellation_shader;
     break;
 
-  case Stage::geometry:
+  case Stage::GEOMETRY:
     _used_caps |= C_geometry_shader;
     break;
 
-  case Stage::compute:
+  case Stage::COMPUTE:
     _used_caps |= C_compute_shader;
     break;
 

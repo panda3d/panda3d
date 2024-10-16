@@ -95,7 +95,7 @@ public:
   };
 
 private:
-  VkShaderModule _modules[(size_t)Shader::Stage::compute + 1];
+  VkShaderModule _modules[(size_t)Shader::Stage::COMPUTE + 1];
   VkDescriptorSetLayout _tattr_descriptor_set_layout = VK_NULL_HANDLE;
   VkDescriptorSetLayout _sattr_descriptor_set_layout = VK_NULL_HANDLE;
   VkDescriptorSetLayout _dynamic_uniform_descriptor_set_layout = VK_NULL_HANDLE;
@@ -133,7 +133,7 @@ private:
     PT(ShaderInputBinding) _binding;
     small_vector<ResourceId, 1> _resource_ids;
     int _stage_mask = 0;
-    ShaderType::Access _access = ShaderType::Access::read_write;
+    ShaderType::Access _access = ShaderType::Access::READ_WRITE;
   };
   pvector<Descriptor> _tex_stage_descriptors;
   size_t _num_tex_stage_descriptor_elements = 0;

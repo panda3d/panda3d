@@ -26,12 +26,12 @@
 class EXPCL_PANDA_GOBJ ShaderEnums {
 PUBLISHED:
   enum class Stage {
-    vertex,
-    tess_control,
-    tess_evaluation,
-    geometry,
-    fragment,
-    compute,
+    VERTEX,
+    TESS_CONTROL,
+    TESS_EVALUATION,
+    GEOMETRY,
+    FRAGMENT,
+    COMPUTE,
   };
 
   enum ShaderLanguage {

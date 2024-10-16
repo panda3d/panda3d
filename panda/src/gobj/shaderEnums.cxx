@@ -19,18 +19,18 @@
 std::string ShaderEnums::
 format_stage(Stage stage) {
   switch (stage) {
-  case Stage::vertex:
-    return "vertex";
-  case Stage::tess_control:
-    return "tess_control";
-  case Stage::tess_evaluation:
-    return "tess_evaluation";
-  case Stage::geometry:
-    return "geometry";
-  case Stage::fragment:
-    return "fragment";
-  case Stage::compute:
-    return "compute";
+  case Stage::VERTEX:
+    return "VERTEX";
+  case Stage::TESS_CONTROL:
+    return "TESS_CONTROL";
+  case Stage::TESS_EVALUATION:
+    return "TESS_EVALUATION";
+  case Stage::GEOMETRY:
+    return "GEOMETRY";
+  case Stage::FRAGMENT:
+    return "FRAGMENT";
+  case Stage::COMPUTE:
+    return "COMPUTE";
   }
 
   return "**invalid**";

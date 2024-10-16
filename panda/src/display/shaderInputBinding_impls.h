@@ -31,7 +31,7 @@ public:
   virtual int get_state_dep() const override;
   virtual void setup(Shader *shader) override;
 
-  virtual void fetch_data(const State &state, void *into, bool pad_rows) const override;
+  virtual void fetch_data(const State &state, void *into, bool packed) const override;
 
 protected:
   size_t _cache_index = 0;
@@ -57,7 +57,7 @@ public:
   virtual int get_state_dep() const override;
   virtual void setup(Shader *shader) override;
 
-  virtual void fetch_data(const State &state, void *into, bool pad_rows) const override;
+  virtual void fetch_data(const State &state, void *into, bool packed) const override;
 
   virtual bool is_model_to_apiclip_matrix() const override;
 
@@ -82,7 +82,7 @@ public:
   virtual int get_state_dep() const override;
   virtual void setup(Shader *shader) override;
 
-  virtual void fetch_data(const State &state, void *into, bool pad_rows) const override;
+  virtual void fetch_data(const State &state, void *into, bool packed) const override;
 
 protected:
   size_t _cache_index = 0;
@@ -98,7 +98,7 @@ public:
   virtual int get_state_dep() const override;
   virtual void setup(Shader *shader) override;
 
-  virtual void fetch_data(const State &state, void *into, bool pad_rows) const override;
+  virtual void fetch_data(const State &state, void *into, bool packed) const override;
 
 protected:
   size_t _index;
@@ -131,7 +131,7 @@ class EXPCL_PANDA_DISPLAY ShaderLegacyDirectionalLightBinding : public ShaderLeg
 public:
   using ShaderLegacyLightBinding::ShaderLegacyLightBinding;
 
-  virtual void fetch_data(const State &state, void *into, bool pad_rows) const override;
+  virtual void fetch_data(const State &state, void *into, bool packed) const override;
 };
 
 /**
@@ -141,7 +141,7 @@ class EXPCL_PANDA_DISPLAY ShaderLegacyPointLightBinding : public ShaderLegacyLig
 public:
   using ShaderLegacyLightBinding::ShaderLegacyLightBinding;
 
-  virtual void fetch_data(const State &state, void *into, bool pad_rows) const override;
+  virtual void fetch_data(const State &state, void *into, bool packed) const override;
 };
 
 /**
@@ -151,7 +151,7 @@ class EXPCL_PANDA_DISPLAY ShaderLegacySpotlightBinding : public ShaderLegacyLigh
 public:
   using ShaderLegacyLightBinding::ShaderLegacyLightBinding;
 
-  virtual void fetch_data(const State &state, void *into, bool pad_rows) const override;
+  virtual void fetch_data(const State &state, void *into, bool packed) const override;
 };
 
 /**
@@ -165,7 +165,7 @@ public:
   virtual int get_state_dep() const override;
   virtual void setup(Shader *shader) override;
 
-  virtual void fetch_data(const State &state, void *into, bool pad_rows) const override;
+  virtual void fetch_data(const State &state, void *into, bool packed) const override;
 
   virtual ResourceId get_resource_id(int index, const ShaderType *type) const;
   virtual PT(Texture) fetch_texture(const State &state,
@@ -251,6 +251,25 @@ protected:
 };
 
 /**
+ * Binds a parameter to a generic storage buffer shader input.
+ */
+class EXPCL_PANDA_DISPLAY ShaderBufferBinding : public ShaderInputBinding {
+public:
+  INLINE ShaderBufferBinding(CPT(InternalName) input, size_t min_size = 0);
+
+  virtual int get_state_dep() const override;
+
+  virtual ResourceId get_resource_id(int index, const ShaderType *type) const;
+  virtual PT(ShaderBuffer) fetch_shader_buffer(const State &state,
+                                               ResourceId resource_id) const;
+
+protected:
+  CPT(InternalName) const _input;
+  size_t const _min_size = 0;
+  mutable bool _shown_error = false;
+};
+
+/**
  * This binds a parameter to a generic numeric data shader input.
  */
 class EXPCL_PANDA_DISPLAY ShaderDataBinding : public ShaderInputBinding {
@@ -260,7 +279,7 @@ public:
 
   virtual int get_state_dep() const override;
 
-  virtual void fetch_data(const State &state, void *into, bool pad_rows) const override=0;
+  virtual void fetch_data(const State &state, void *into, bool packed) const override=0;
 
 protected:
   CPT_InternalName _input;
@@ -276,7 +295,7 @@ class EXPCL_PANDA_DISPLAY ShaderFloatBinding : public ShaderDataBinding {
 public:
   using ShaderDataBinding::ShaderDataBinding;
 
-  virtual void fetch_data(const State &state, void *into, bool pad_rows) const override;
+  virtual void fetch_data(const State &state, void *into, bool packed) const override;
 };
 
 /**
@@ -286,7 +305,7 @@ class EXPCL_PANDA_DISPLAY ShaderDoubleBinding : public ShaderDataBinding {
 public:
   using ShaderDataBinding::ShaderDataBinding;
 
-  virtual void fetch_data(const State &state, void *into, bool pad_rows) const override;
+  virtual void fetch_data(const State &state, void *into, bool packed) const override;
 };
 
 /**
@@ -296,7 +315,7 @@ class EXPCL_PANDA_DISPLAY ShaderIntBinding : public ShaderDataBinding {
 public:
   using ShaderDataBinding::ShaderDataBinding;
 
-  virtual void fetch_data(const State &state, void *into, bool pad_rows) const override;
+  virtual void fetch_data(const State &state, void *into, bool packed) const override;
 };
 
 /**
@@ -306,7 +325,7 @@ class EXPCL_PANDA_DISPLAY ShaderBoolBinding : public ShaderDataBinding {
 public:
   using ShaderDataBinding::ShaderDataBinding;
 
-  virtual void fetch_data(const State &state, void *into, bool pad_rows) const override;
+  virtual void fetch_data(const State &state, void *into, bool packed) const override;
 };
 
 /**
@@ -317,7 +336,9 @@ class EXPCL_PANDA_DISPLAY ShaderAggregateBinding : public ShaderInputBinding {
 public:
   INLINE ShaderAggregateBinding(CPT_InternalName input, const ShaderType *type);
 
-  virtual void fetch_data(const State &state, void *into, bool pad_rows) const override;
+  virtual int get_state_dep() const override;
+
+  virtual void fetch_data(const State &state, void *into, bool packed) const override;
 
   virtual ResourceId get_resource_id(int index, const ShaderType *type) const;
   virtual PT(Texture) fetch_texture(const State &state,
@@ -327,6 +348,9 @@ public:
                                           ResourceId index,
                                           ShaderType::Access &access,
                                           int &z, int &n) const;
+  virtual PT(ShaderBuffer) fetch_shader_buffer(const State &state,
+                                               ResourceId resource_id) const;
+
 private:
   void r_collect_members(const InternalName *name, const ShaderType *type, size_t offset = 0);
 

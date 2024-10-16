@@ -730,7 +730,7 @@ write_datagram(Datagram &dg) const {
  */
 INLINE void Shader::ShaderPtrData::
 read_datagram(DatagramIterator &scan) {
-  _type = (::ShaderType::ScalarType) scan.get_uint8();
+  _type = (ShaderType::ScalarType) scan.get_uint8();
   _size = scan.get_uint32();
 
   if (_type == ScalarType::ST_double) {

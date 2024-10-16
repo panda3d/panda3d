@@ -31,6 +31,7 @@ class CLP(GraphicsStateGuardian);
 class EXPCL_GL CLP(ShaderContext) final : public ShaderContext {
 private:
   struct UniformBlock;
+  typedef pmap<const InternalName *, GLint> LocationMap;
 
 public:
   friend class CLP(GraphicsStateGuardian);
@@ -39,13 +40,18 @@ public:
   ~CLP(ShaderContext)();
   ALLOC_DELETED_CHAIN(CLP(ShaderContext));
 
+  static void r_count_locations_bindings(const ShaderType *type,
+                                         GLint &num_locations,
+                                         GLint &num_ssbo_bindings);
+
   void r_collect_uniforms(const Shader::Parameter &param, UniformBlock &block,
                           const ShaderType *type, const char *name,
-                          const char *sym, int location,
+                          const char *sym, int &location,
                           const SparseArray &active_locations,
-                          int &resource_index, size_t offset = 0);
+                          int &resource_index, int &ssbo_binding,
+                          size_t offset = 0);
 
-  void reflect_program();
+  void reflect_program(SparseArray &active_locations, LocationMap &locations, LocationMap &ssbo_bindings);
   void reflect_attribute(int i, char *name_buf, GLsizei name_buflen);
   void reflect_uniform_block(int i, const char *block_name,
                              char *name_buffer, GLsizei name_buflen);
@@ -135,7 +141,7 @@ private:
   TextureUnits _texture_units;
 
   struct ImageUnit {
-    ShaderInputBinding *_binding;
+    PT(ShaderInputBinding) _binding;
     ShaderInputBinding::ResourceId _resource_id;
     CLP(TextureContext) *_gtc = nullptr;
     ShaderType::Access _access;
@@ -147,28 +153,25 @@ private:
   BitMask32 _enabled_attribs;
   GLint _color_attrib_index;
 
-#ifndef OPENGLES
   struct StorageBlock {
-    CPT(InternalName) _name;
-    GLuint _binding_index;
-    GLuint _min_size;
+    PT(ShaderInputBinding) _binding;
+    ShaderInputBinding::ResourceId _resource_id;
+    GLint _binding_index;
   };
   typedef pvector<StorageBlock> StorageBlocks;
   StorageBlocks _storage_blocks;
-  BitArray _used_storage_bindings;
-#endif
 
   CLP(GraphicsStateGuardian) *_glgsg;
 
   bool _uses_standard_vertex_arrays;
 
-  typedef pmap<const InternalName *, GLint> LocationMap;
-
   void report_shader_errors(const Module &module, bool fatal);
   void report_program_errors(GLuint program, bool fatal);
   bool attach_shader(const ShaderModule *module, Shader::ModuleSpecConstants &spec_consts,
-                     const LocationMap &locations, bool &needs_query_locations);
-  bool compile_and_link(const LocationMap &locations, bool &needs_query_locations);
+                     const LocationMap &locations, bool &remap_locations,
+                     const LocationMap &ssbo_bindings);
+  bool compile_and_link(const LocationMap &locations, bool &remap_locations,
+                        const LocationMap &ssbo_bindings);
   void release_resources();
 
 public:

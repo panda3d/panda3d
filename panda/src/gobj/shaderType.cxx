@@ -52,6 +52,15 @@ unwrap_array(const ShaderType *&element_type, uint32_t &num_elements) const {
 }
 
 /**
+ * Returns a new type with all occurrences of the given type recursively
+ * replaced with the second type.
+ */
+const ShaderType *ShaderType::
+replace_type(const ShaderType *a, const ShaderType *b) const {
+  return (this == a) ? b : this;
+}
+
+/**
  *
  */
 void ShaderType::
@@ -152,29 +161,6 @@ std::ostream &operator << (std::ostream &out, ShaderType::ScalarType scalar_type
 
 #ifndef CPPPARSER
 /**
- * Returns the size in bytes of this type in memory, if applicable.  Opaque
- * types will return 0.
- */
-int ShaderType::
-get_size_bytes(bool pad_rows) const {
-  ScalarType type;
-  uint32_t dim[3];
-  if (as_scalar_type(type, dim[0], dim[1], dim[2])) {
-    if (pad_rows) {
-      // std140 array element padding rules, also used in DX9.
-      dim[2] = (dim[2] + 3) & ~3;
-    }
-    if (type == ST_double) {
-      return 8 * dim[0] * dim[1] * dim[2];
-    } else {
-      return 4 * dim[0] * dim[1] * dim[2];
-    }
-  } else {
-    return 0;
-  }
-}
-
-/**
  *
  */
 void ShaderType::Void::
@@ -257,9 +243,18 @@ compare_to_impl(const ShaderType &other) const {
 /**
  * Returns the alignment in bytes of this type in memory, if applicable.
  */
-int ShaderType::Scalar::
+uint32_t ShaderType::Scalar::
 get_align_bytes() const {
-  return (_scalar_type == ST_double) ? 8 : 4;
+  return get_scalar_size_bytes(_scalar_type);
+}
+
+/**
+ * Returns the size in bytes of this type in memory, if applicable.  Opaque
+ * types will return 0.
+ */
+uint32_t ShaderType::Scalar::
+get_size_bytes() const {
+  return get_scalar_size_bytes(_scalar_type);
 }
 
 /**
@@ -327,11 +322,7 @@ replace_scalar_type(ScalarType a, ScalarType b) const {
  */
 int ShaderType::Vector::
 get_num_interface_locations() const {
-  if (_scalar_type == ST_double && _num_components > 2) {
-    return 2;
-  } else {
-    return 1;
-  }
+  return (get_scalar_size_bytes(_scalar_type) * _num_components + 15) / 16;
 }
 
 /**
@@ -359,10 +350,20 @@ compare_to_impl(const ShaderType &other) const {
 /**
  * Returns the alignment in bytes of this type in memory, if applicable.
  */
-int ShaderType::Vector::
+uint32_t ShaderType::Vector::
 get_align_bytes() const {
-  int component_align = (_scalar_type == ST_double) ? 8 : 4;
-  return component_align * ((_num_components == 3) ? 4 : _num_components);
+  return get_scalar_size_bytes(_scalar_type) * ((_num_components == 3) ? 4 : _num_components);
+}
+
+/**
+ * Returns the size in bytes of this type in memory, if applicable.  Opaque
+ * types will return 0.
+ */
+uint32_t ShaderType::Vector::
+get_size_bytes() const {
+  // Notably, a vec3 is vec4-aligned but not padded!  It is permissible for a
+  // scalar to directly follow a vec3 in a struct.
+  return get_scalar_size_bytes(_scalar_type) * _num_components;
 }
 
 /**
@@ -454,11 +455,21 @@ compare_to_impl(const ShaderType &other) const {
 /**
  * Returns the alignment in bytes of this type in memory, if applicable.
  */
-int ShaderType::Matrix::
+uint32_t ShaderType::Matrix::
 get_align_bytes() const {
-  //TODO: needs to be checked
-  int row_align = (_scalar_type == ST_double) ? 32 : 16;
-  return row_align * _num_rows;
+  return get_scalar_size_bytes(_scalar_type) * 4;
+}
+
+/**
+ * Returns the size in bytes of this type in memory, if applicable.  Opaque
+ * types will return 0.
+ */
+uint32_t ShaderType::Matrix::
+get_size_bytes() const {
+  // Pad rows to 16 bytes (std140 rules, but DX9 also expects that)
+  uint32_t row_size = _num_columns * get_scalar_size_bytes(_scalar_type);
+  row_size = (row_size + 15) & ~15;
+  return _num_rows * row_size;
 }
 
 /**
@@ -508,7 +519,7 @@ add_member(const ShaderType *type, std::string name) {
   member.type = type;
   member.name = std::move(name);
   member.offset = _members.empty() ? 0 : _members.back().offset + _members.back().type->get_size_bytes();
-  int alignment = type->get_align_bytes();
+  uint32_t alignment = type->get_align_bytes();
   if (alignment > 0) {
     member.offset += alignment - ((member.offset + (alignment - 1)) % alignment) - 1;
   }
@@ -563,16 +574,47 @@ contains_scalar_type(ScalarType type) const {
 const ShaderType *ShaderType::Struct::
 replace_scalar_type(ScalarType a, ScalarType b) const {
   if (contains_scalar_type(a)) {
+    bool recompute_offsets = get_scalar_size_bytes(a) != get_scalar_size_bytes(b);
+
     ShaderType::Struct copy;
     for (const Member &member : _members) {
       const ShaderType *type = member.type->replace_scalar_type(a, b);
-      if ((a == ST_double) != (b == ST_double)) {
-        // Recompute offsets.
+      if (recompute_offsets) {
         copy.add_member(type, member.name);
       } else {
         copy.add_member(type, member.name, member.offset);
       }
     }
+    return ShaderType::register_type(std::move(copy));
+  } else {
+    return this;
+  }
+}
+
+/**
+ * Returns a new type with all occurrences of the given type recursively
+ * replaced with the second type.
+ */
+const ShaderType *ShaderType::Struct::
+replace_type(const ShaderType *a, const ShaderType *b) const {
+  if (this == a) {
+    return b;
+  }
+  bool any_changed = false;
+  bool recompute_offsets = a->get_size_bytes() != b->get_size_bytes();
+  ShaderType::Struct copy;
+  for (const Member &member : _members) {
+    const ShaderType *type = member.type->replace_type(a, b);
+    if (type != member.type) {
+      any_changed = true;
+    }
+    if (recompute_offsets) {
+      copy.add_member(type, member.name);
+    } else {
+      copy.add_member(type, member.name, member.offset);
+    }
+  }
+  if (any_changed) {
     return ShaderType::register_type(std::move(copy));
   } else {
     return this;
@@ -627,22 +669,24 @@ compare_to_impl(const ShaderType &other) const {
 /**
  * Returns the alignment in bytes of this type in memory, if applicable.
  */
-int ShaderType::Struct::
+uint32_t ShaderType::Struct::
 get_align_bytes() const {
-  int align = 16;
+  uint32_t align = 16;
   for (const Member &member : _members) {
     align = std::max(align, member.type->get_align_bytes());
   }
-  return align;
+  return (align + 15) & ~15;
 }
 
 /**
  * Returns the size in bytes of this type in memory, if applicable.  Opaque
  * types will return 0.
  */
-int ShaderType::Struct::
-get_size_bytes(bool pad_rows) const {
-  return _members.empty() ? 0 : _members.back().offset + _members.back().type->get_size_bytes();
+uint32_t ShaderType::Struct::
+get_size_bytes() const {
+  // Structs are padded to the base alignment of a vec4.
+  uint32_t size = _members.empty() ? 0 : _members.back().offset + _members.back().type->get_size_bytes();
+  return (size + 15) & ~15;
 }
 
 /**
@@ -802,6 +846,23 @@ replace_scalar_type(ScalarType a, ScalarType b) const {
 }
 
 /**
+ * Returns a new type with all occurrences of the given type recursively
+ * replaced with the second type.
+ */
+const ShaderType *ShaderType::Array::
+replace_type(const ShaderType *a, const ShaderType *b) const {
+  if (this == a) {
+    return b;
+  }
+  const ShaderType *element_type = _element_type->replace_type(a, b);
+  if (_element_type != element_type) {
+    return ShaderType::register_type(ShaderType::Array(element_type, _num_elements));
+  } else {
+    return this;
+  }
+}
+
+/**
  *
  */
 void ShaderType::Array::
@@ -830,26 +891,32 @@ compare_to_impl(const ShaderType &other) const {
 /**
  * Returns the array stride in bytes.
  */
-int ShaderType::Array::
+uint32_t ShaderType::Array::
 get_stride_bytes() const {
-  int element_size = _element_type->get_size_bytes(true);
-  return (element_size + 15) & ~15;
+  // Array stride is always (at least) 16 bytes in std140 / DX9, even though
+  // this is (indeed) incredibly wasteful for arrays of scalars.
+  uint32_t size = _element_type->get_size_bytes();
+  return (size + 15) & ~15;
 }
 
 /**
  * Returns the alignment in bytes of this type in memory, if applicable.
  */
-int ShaderType::Array::
+uint32_t ShaderType::Array::
 get_align_bytes() const {
-  return get_stride_bytes();
+  uint32_t align = _element_type->get_align_bytes();
+  return (align + 15) & ~15;
 }
 
 /**
  * Returns the size in bytes of this type in memory, if applicable.  Opaque
  * types will return 0.
  */
-int ShaderType::Array::
-get_size_bytes(bool pad_rows) const {
+uint32_t ShaderType::Array::
+get_size_bytes() const {
+  // Arrays have padding at the end so that the next member is aligned to a
+  // 16-byte boundary.  This implies that a float may directly follow a vec3,
+  // but not a vec3[1]!  I didn't make up these rules.
   return get_stride_bytes() * _num_elements;
 }
 
@@ -926,10 +993,10 @@ make_from_bam(const FactoryParams &params) {
  */
 void ShaderType::Image::
 output(std::ostream &out) const {
-  if ((_access & Access::write_only) == Access::none) {
+  if ((_access & Access::WRITE_ONLY) == Access::NONE) {
     out << "readonly ";
   }
-  if ((_access & Access::read_only) == Access::none) {
+  if ((_access & Access::READ_ONLY) == Access::NONE) {
     out << "writeonly ";
   }
   if (_sampled_type == ST_int) {
@@ -1102,10 +1169,10 @@ make_from_bam(const FactoryParams &params) {
  */
 void ShaderType::StorageBuffer::
 output(std::ostream &out) const {
-  if ((_access & Access::write_only) == Access::none) {
+  if ((_access & Access::WRITE_ONLY) == Access::NONE) {
     out << "readonly ";
   }
-  if ((_access & Access::read_only) == Access::none) {
+  if ((_access & Access::READ_ONLY) == Access::NONE) {
     out << "writeonly ";
   }
   out << "buffer";

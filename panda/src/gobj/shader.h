@@ -135,7 +135,7 @@ public:
 
   struct Parameter {
     CPT_InternalName _name;
-    const ::ShaderType *_type = nullptr;
+    const ShaderType *_type = nullptr;
     PT(ShaderInputBinding) _binding = nullptr;
     int _location = -1;
     int _stage_mask = 0;
@@ -259,7 +259,7 @@ public:
   };
 
 protected:
-  bool report_parameter_error(const InternalName *name, const ::ShaderType *type, const char *msg);
+  bool report_parameter_error(const InternalName *name, const ShaderType *type, const char *msg);
 
 public:
   size_t add_matrix_cache_item(StateMatrix input, const InternalName *arg, int dep);
@@ -334,8 +334,8 @@ private:
 
 public:
   bool link();
-  void add_parameter(const InternalName *name, const ::ShaderType *type, int location = -1);
-  bool bind_vertex_input(const InternalName *name, const ::ShaderType *type, int location);
+  void add_parameter(const InternalName *name, const ShaderType *type, int location = -1);
+  bool bind_vertex_input(const InternalName *name, const ShaderType *type, int location);
 
   bool check_modified() const;
   ShaderCompiler *get_compiler(ShaderLanguage lang) const;

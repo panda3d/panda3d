@@ -1965,7 +1965,7 @@ release_shader(ShaderContext *context) {
 
   // According to the Vulkan spec, it is safe to delete a shader module even
   // if pipelines using it are still in use, so let's do it now.
-  for (size_t i = 0; i <= (size_t)Shader::Stage::compute; ++i) {
+  for (size_t i = 0; i <= (size_t)Shader::Stage::COMPUTE; ++i) {
     if (sc->_modules[i] != VK_NULL_HANDLE) {
       vkDestroyShaderModule(_device, sc->_modules[i], nullptr);
       sc->_modules[i] = VK_NULL_HANDLE;
@@ -2347,7 +2347,7 @@ set_state_and_transform(const RenderState *state,
   // Note that this set may be recreated by update_dynamic_uniforms, above.
   descriptor_sets[DS_dynamic_uniforms] = sc->_uniform_descriptor_set;
 
-  bool is_compute = (sc->_modules[(size_t)Shader::Stage::compute] != VK_NULL_HANDLE);
+  bool is_compute = (sc->_modules[(size_t)Shader::Stage::COMPUTE] != VK_NULL_HANDLE);
   vkCmdBindDescriptorSets(_frame_data->_cmd, is_compute ? VK_PIPELINE_BIND_POINT_COMPUTE : VK_PIPELINE_BIND_POINT_GRAPHICS,
                           sc->_pipeline_layout, 0, DS_SET_COUNT, descriptor_sets,
                           num_offsets, &offset);
@@ -3557,8 +3557,8 @@ make_pipeline(VulkanShaderContext *sc,
 
   PStatTimer timer(_make_pipeline_pcollector);
 
-  VkPipelineShaderStageCreateInfo stages[(size_t)Shader::Stage::compute + 1];
-  const VkShaderStageFlagBits stage_flags[(size_t)Shader::Stage::compute + 1] = {
+  VkPipelineShaderStageCreateInfo stages[(size_t)Shader::Stage::COMPUTE + 1];
+  const VkShaderStageFlagBits stage_flags[(size_t)Shader::Stage::COMPUTE + 1] = {
     VK_SHADER_STAGE_VERTEX_BIT,
     VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT,
     VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT,
@@ -3568,7 +3568,7 @@ make_pipeline(VulkanShaderContext *sc,
   };
   uint32_t num_stages = 0;
 
-  for (size_t i = 0; i <= (size_t)Shader::Stage::compute; ++i) {
+  for (size_t i = 0; i <= (size_t)Shader::Stage::COMPUTE; ++i) {
     if (sc->_modules[i] != VK_NULL_HANDLE) {
       VkPipelineShaderStageCreateInfo &stage = stages[num_stages++];
       stage.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -4055,7 +4055,7 @@ make_compute_pipeline(VulkanShaderContext *sc) {
   pipeline_info.stage.pNext = nullptr;
   pipeline_info.stage.flags = 0;
   pipeline_info.stage.stage = VK_SHADER_STAGE_COMPUTE_BIT;
-  pipeline_info.stage.module = sc->_modules[(size_t)Shader::Stage::compute];
+  pipeline_info.stage.module = sc->_modules[(size_t)Shader::Stage::COMPUTE];
   pipeline_info.stage.pName = "main";
   pipeline_info.stage.pSpecializationInfo = nullptr;
   pipeline_info.layout = sc->_pipeline_layout;

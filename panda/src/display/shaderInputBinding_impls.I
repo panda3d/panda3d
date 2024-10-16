@@ -85,6 +85,15 @@ ShaderTextureBinding(CPT(InternalName) input, Texture::TextureType desired_type)
 /**
  *
  */
+INLINE ShaderBufferBinding::
+ShaderBufferBinding(CPT(InternalName) input, size_t min_size) :
+  _input(std::move(input)),
+  _min_size(min_size) {
+}
+
+/**
+ *
+ */
 INLINE ShaderDataBinding::
 ShaderDataBinding(CPT_InternalName input,
                   size_t num_elements, size_t num_rows, size_t num_cols) :

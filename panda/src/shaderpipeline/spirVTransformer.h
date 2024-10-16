@@ -44,7 +44,9 @@ public:
 
   void assign_locations(ShaderModule::Stage stage);
   void assign_locations(pmap<uint32_t, int> locations);
+  void assign_procedural_names(const char *prefix, const pmap<uint32_t, int> &suffixes);
   void strip_uniform_locations();
+  void strip_bindings();
   void bind_descriptor_set(uint32_t set, const pvector<uint32_t> &ids);
 
 private:

@@ -190,10 +190,10 @@ assign_locations(ShaderModule::Stage stage) {
           continue;
         }
 
-        if (stage == ShaderModule::Stage::vertex && !input_locations.get_bit(0) &&
+        if (stage == ShaderModule::Stage::VERTEX && !input_locations.get_bit(0) &&
             def._name != "vertex" && def._name != "p3d_Vertex" &&
             def._name != "vtx_position") {
-          // Leave location 0 open for the vertex attribute.
+          // Leave location 0 open for the vertex position attribute.
           location = input_locations.find_off_range(num_locations, 1);
         } else {
           location = input_locations.find_off_range(num_locations);
@@ -280,6 +280,39 @@ assign_locations(pmap<uint32_t, int> remap) {
 }
 
 /**
+ * Assigns procedural names consisting of a prefix followed by an index.
+ */
+void SpirVTransformer::
+assign_procedural_names(const char *prefix, const pmap<uint32_t, int> &suffixes) {
+  // Remove existing names matching theses ids.
+  auto it = _preamble.begin() + 5;
+  while (it != _preamble.end()) {
+    spv::Op opcode = (spv::Op)(*it & spv::OpCodeMask);
+    uint32_t wcount = *it >> spv::WordCountShift;
+    nassertd(wcount > 0) break;
+
+    if (opcode == spv::OpName && wcount >= 2) {
+      if (suffixes.count(*(it + 1))) {
+        it = _preamble.erase(it, it + wcount);
+        continue;
+      }
+    }
+
+    std::advance(it, wcount);
+  }
+
+  // Insert names before the annotations block.
+  uint32_t *words = (uint32_t *)alloca(sizeof(uint32_t) + strlen(prefix) + 32);
+  for (auto it = suffixes.begin(); it != suffixes.end(); ++it) {
+    words[1] = it->first;
+    int len = sprintf((char *)(words + 2), "%s%d", prefix, it->second);
+    uint32_t num_words = len / 4 + 3;
+    words[0] = spv::OpName | (num_words << spv::WordCountShift);
+    _preamble.insert(_preamble.end(), words, words + num_words);
+  }
+}
+
+/**
  * Removes location decorations from uniforms.
  */
 void SpirVTransformer::
@@ -295,6 +328,30 @@ strip_uniform_locations() {
       if (def._storage_class == spv::StorageClassUniformConstant) {
         it = _annotations.erase(it, it + wcount);
         def._location = -1;
+        continue;
+      }
+    }
+
+    std::advance(it, wcount);
+  }
+}
+
+/**
+ * Removes all binding and descriptor set decorations.
+ */
+void SpirVTransformer::
+strip_bindings() {
+  auto it = _annotations.begin();
+  while (it != _annotations.end()) {
+    spv::Op opcode = (spv::Op)(*it & spv::OpCodeMask);
+    uint32_t wcount = *it >> spv::WordCountShift;
+    nassertd(wcount > 0) break;
+
+    if (opcode == spv::OpDecorate && wcount >= 3) {
+      spv::Decoration decoration = (spv::Decoration)*(it + 2);
+      if (decoration == spv::DecorationBinding ||
+          decoration == spv::DecorationDescriptorSet) {
+        it = _annotations.erase(it, it + wcount);
         continue;
       }
     }

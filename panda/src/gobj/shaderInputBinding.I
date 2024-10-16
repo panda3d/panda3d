@@ -29,8 +29,8 @@ make_data(int dep, Callable callable) {
       return _dep;
     }
 
-    virtual void fetch_data(const State &state, void *scratch, bool pad_rows) const override final {
-      _callable(state, scratch, pad_rows);
+    virtual void fetch_data(const State &state, void *into, bool packed) const override final {
+      _callable(state, into, packed);
     }
 
   private:

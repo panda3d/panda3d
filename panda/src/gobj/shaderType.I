@@ -53,6 +53,14 @@ compare_to(const ShaderType &other) const {
 }
 
 /**
+ * Returns the size of the given scalar type, in bytes.
+ */
+INLINE constexpr uint32_t ShaderType::
+get_scalar_size_bytes(ScalarType scalar_type) {
+  return (scalar_type == ST_double) ? 8 : 4;
+}
+
+/**
  * Constructs a scalar type.
  */
 INLINE ShaderType::Scalar::
@@ -210,7 +218,7 @@ get_access() const {
  */
 INLINE bool ShaderType::Image::
 is_writable() const {
-  return ((int)_access & (int)Access::write_only) != 0;
+  return ((int)_access & (int)Access::WRITE_ONLY) != 0;
 }
 
 /**

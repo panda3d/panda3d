@@ -125,6 +125,8 @@ protected:
   uint32_t op_load(uint32_t var_id, spv::MemoryAccessMask access = spv::MemoryAccessMaskNone);
   uint32_t op_select(uint32_t cond, uint32_t obj1, uint32_t obj2);
   uint32_t op_access_chain(uint32_t var_id, std::initializer_list<uint32_t>);
+  uint32_t op_vector_shuffle(uint32_t vec1, uint32_t vec2, const pvector<uint32_t> &components);
+  uint32_t op_composite_construct(const ShaderType *type, const pvector<uint32_t> &constituents);
   uint32_t op_composite_extract(uint32_t obj_id, std::initializer_list<uint32_t>);
 
   // The module is split into sections to make it easier to add instructions

@@ -301,7 +301,7 @@ create_modules(VkDevice device, const ShaderType::Struct *push_constant_block_ty
   }
 
   if (!success) {
-    for (size_t i = 0; i <= (size_t)Shader::Stage::compute; ++i) {
+    for (size_t i = 0; i <= (size_t)Shader::Stage::COMPUTE; ++i) {
       if (_modules[i] != VK_NULL_HANDLE) {
         vkDestroyShaderModule(device, _modules[i], nullptr);
         _modules[i] = VK_NULL_HANDLE;
@@ -371,7 +371,7 @@ r_extract_resources(const Shader::Parameter &param, const AccessChain &chain,
         (sampler->get_texture_type() == Texture::TT_buffer_texture)
           ? VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER
           : VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-      desc._access = ShaderType::Access::read_only;
+      desc._access = ShaderType::Access::READ_ONLY;
     }
     else if (const ShaderType::Image *image = type->as_image()) {
       desc._type =
@@ -591,17 +591,17 @@ fetch_descriptor(VulkanGraphicsStateGuardian *gsg, const Descriptor &desc,
     write.pImageInfo = image_infos;
 
     for (ResourceId id : desc._resource_ids) {
-      ShaderType::Access access = ShaderType::Access::read_write;
+      ShaderType::Access access = ShaderType::Access::READ_WRITE;
       int z = -1;
       int n = 0;
       PT(Texture) texture = desc._binding->fetch_texture_image(state, id, access, z, n);
       access = access & desc._access;
 
       VkAccessFlags access_mask = 0;
-      if ((access & ShaderType::Access::read_only) != ShaderType::Access::none) {
+      if ((access & ShaderType::Access::READ_ONLY) != ShaderType::Access::NONE) {
         access_mask |= VK_ACCESS_SHADER_READ_BIT;
       }
-      if ((access & ShaderType::Access::write_only) != ShaderType::Access::none) {
+      if ((access & ShaderType::Access::WRITE_ONLY) != ShaderType::Access::NONE) {
         access_mask |= VK_ACCESS_SHADER_WRITE_BIT;
       }
 
@@ -837,7 +837,7 @@ get_compute_pipeline(VulkanGraphicsStateGuardian *gsg) {
     return _compute_pipeline;
   }
 
-  nassertr(_modules[(size_t)Shader::Stage::compute] != VK_NULL_HANDLE, VK_NULL_HANDLE);
+  nassertr(_modules[(size_t)Shader::Stage::COMPUTE] != VK_NULL_HANDLE, VK_NULL_HANDLE);
 
   VkPipeline pipeline = gsg->make_compute_pipeline(this);
   _compute_pipeline = pipeline;

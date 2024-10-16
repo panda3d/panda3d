@@ -32,12 +32,6 @@ ShaderBuffer(const std::string &name, vector_uchar initial_data, UsageHint usage
   _data_size_bytes(initial_data.size()),
   _usage_hint(usage_hint),
   _initial_data(std::move(initial_data)) {
-
-  // Make sure it is padded to 16 bytes.  Some drivers like that.
-  if ((_initial_data.size() & 15u) != 0) {
-    _initial_data.resize((_initial_data.size() + 15u) & ~15u, 0);
-    _data_size_bytes = _initial_data.size();
-  }
 }
 
 /**

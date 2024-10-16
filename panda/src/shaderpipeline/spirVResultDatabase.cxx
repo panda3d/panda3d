@@ -201,11 +201,13 @@ parse_instruction(spv::Op opcode, const uint32_t *args, uint32_t nargs, uint32_t
 
   case spv::OpTypeMatrix:
     {
-      const ShaderType::Vector *column_type;
-      DCAST_INTO_V(column_type, _defs[args[1]]._type);
+      // SPIR-V uses GLSL parlance, in which a column is a row and a row is a
+      // column, compared to Panda conventions.  We flip it around here.
+      const ShaderType::Vector *row_type;
+      DCAST_INTO_V(row_type, _defs[args[1]]._type);
       uint32_t num_rows = args[2];
       record_type(args[0], ShaderType::register_type(
-        ShaderType::Matrix(column_type->get_scalar_type(), num_rows, column_type->get_num_components())));
+        ShaderType::Matrix(row_type->get_scalar_type(), num_rows, row_type->get_num_components())));
       _defs[args[0]]._type_id = args[1];
     }
     break;
@@ -285,17 +287,17 @@ parse_instruction(spv::Op opcode, const uint32_t *args, uint32_t nargs, uint32_t
         return;
       }
 
-      ShaderType::Access access = ShaderType::Access::read_write;
+      ShaderType::Access access = ShaderType::Access::READ_WRITE;
       if (nargs > 8) {
         switch ((spv::AccessQualifier)args[8]) {
         case spv::AccessQualifierReadOnly:
-          access = ShaderType::Access::read_only;
+          access = ShaderType::Access::READ_ONLY;
           break;
         case spv::AccessQualifierWriteOnly:
-          access = ShaderType::Access::write_only;
+          access = ShaderType::Access::WRITE_ONLY;
           break;
         case spv::AccessQualifierReadWrite:
-          access = ShaderType::Access::read_write;
+          access = ShaderType::Access::READ_WRITE;
           break;
         default:
           shader_cat.error()
@@ -304,10 +306,10 @@ parse_instruction(spv::Op opcode, const uint32_t *args, uint32_t nargs, uint32_t
         }
       }
       if (_defs[args[0]]._flags & DF_non_writable) {
-        access = (access & ShaderType::Access::read_only);
+        access = (access & ShaderType::Access::READ_ONLY);
       }
       if (_defs[args[0]]._flags & DF_non_readable) {
-        access = (access & ShaderType::Access::write_only);
+        access = (access & ShaderType::Access::WRITE_ONLY);
       }
 
       record_type(args[0], ShaderType::register_type(
@@ -382,10 +384,10 @@ parse_instruction(spv::Op opcode, const uint32_t *args, uint32_t nargs, uint32_t
           if (const ShaderType::Image *image = member_type->as_image()) {
             ShaderType::Access access = image->get_access();
             if (member_def._flags & DF_non_writable) {
-              access = (access & ShaderType::Access::read_only);
+              access = (access & ShaderType::Access::READ_ONLY);
             }
             if (member_def._flags & DF_non_readable) {
-              access = (access & ShaderType::Access::write_only);
+              access = (access & ShaderType::Access::WRITE_ONLY);
             }
             if (access != image->get_access()) {
               member_type = ShaderType::register_type(ShaderType::Image(
@@ -600,6 +602,10 @@ parse_instruction(spv::Op opcode, const uint32_t *args, uint32_t nargs, uint32_t
     switch ((spv::Decoration)args[1]) {
     case spv::DecorationBufferBlock:
       _defs[args[0]]._flags |= DF_buffer_block;
+      break;
+
+    case spv::DecorationBlock:
+      _defs[args[0]]._flags |= DF_block;
       break;
 
     case spv::DecorationBuiltIn:
@@ -943,9 +949,43 @@ record_pointer_type(uint32_t id, spv::StorageClass storage_class, uint32_t type_
 
   const Definition &type_def = get_definition(type_id);
   nassertv(type_def._dtype == DT_type || type_def._dtype == DT_pointer_type);
+  const ShaderType *type = type_def._type;
+
+  // Now that we know the access type, we can determine whether a struct is
+  // actually a uniform block or storage block.
+  if (storage_class == spv::StorageClassUniform ||
+      storage_class == spv::StorageClassStorageBuffer) {
+    // Unwrap arrays to get to the underlying block type.
+    uint32_t block_type_id = type_id;
+    while (_defs[block_type_id]._type->as_array() != nullptr) {
+      block_type_id = _defs[block_type_id]._type_id;
+    }
+
+    const Definition &block_type_def = get_definition(block_type_id);
+    if (block_type_def._type->as_struct() != nullptr) {
+      // Check if this was pointing to an SSBO.
+      if (block_type_def._flags & (DF_buffer_block | DF_block)) {
+        if (block_type_def._flags & DF_buffer_block) {
+          // Map old SPIR-V way of declaring SSBO to new way.
+          storage_class = spv::StorageClassStorageBuffer;
+        }
+        if (storage_class == spv::StorageClassStorageBuffer) {
+          ShaderType::Access access = ShaderType::Access::READ_WRITE;
+          if (block_type_def._flags & DF_non_writable) {
+            access = (access & ShaderType::Access::READ_ONLY);
+          }
+          if (block_type_def._flags & DF_non_readable) {
+            access = (access & ShaderType::Access::WRITE_ONLY);
+          }
+          const ShaderType *new_type = ShaderType::register_type(ShaderType::StorageBuffer(block_type_def._type, access));
+          type = type->replace_type(block_type_def._type, new_type);
+        }
+      }
+    }
+  }
 
   def._dtype = DT_pointer_type;
-  def._type = type_def._type;
+  def._type = type;
   def._storage_class = storage_class;
   def._type_id = type_id;
 }
@@ -973,64 +1013,67 @@ record_variable(uint32_t id, uint32_t pointer_type_id, spv::StorageClass storage
     return;
   }
 
-  // In older versions of SPIR-V, an SSBO was defined using BufferBlock.
+  // If we've determined that the pointer was supposed to be StorageBuffer
+  // instead of Uniform, change that here as well.
   if (storage_class == spv::StorageClassUniform &&
-      (type_def._flags & DF_buffer_block) != 0) {
+      pointer_type_def._storage_class == spv::StorageClassStorageBuffer) {
     storage_class = spv::StorageClassStorageBuffer;
   }
 
   def._dtype = DT_variable;
-  def._type = type_def._type;
+  def._type = pointer_type_def._type;
   def._type_id = pointer_type_id;
   def._storage_class = storage_class;
   def._origin_id = id;
   def._function_id = function_id;
 
-  if (storage_class == spv::StorageClassStorageBuffer) {
-    // Inherit readonly/writeonly from the variable but also from the struct.
-    int flags = def._flags | type_def._flags;
-    ShaderType::Access access = ShaderType::Access::read_write;
-    if (flags & DF_non_writable) {
-      access = (access & ShaderType::Access::read_only);
+  if (def._flags & (DF_non_writable | DF_non_readable)) {
+    // If an image variable, SSBO or array thereof has the readonly/writeonly
+    // qualifiers, then we'll inject those back into the type.
+    const ShaderType *unwrapped_type = def._type;
+    while (const ShaderType::Array *array_type = unwrapped_type->as_array()) {
+      unwrapped_type = array_type->get_element_type();
     }
-    if (flags & DF_non_readable) {
-      access = (access & ShaderType::Access::write_only);
-    }
-    def._type = ShaderType::register_type(ShaderType::StorageBuffer(def._type, access));
 
-    if (shader_cat.is_debug()) {
-      std::ostream &out = shader_cat.debug()
-        << "Defined buffer " << id;
-      if (!def._name.empty()) {
-        out << ": " << def._name;
-      }
-      out << " with type " << *def._type << "\n";
-    }
-  }
-  else if (def._flags & (DF_non_writable | DF_non_readable)) {
-    // If an image variable has the readonly/writeonly qualifiers, then we'll
-    // inject those back into the type.
-    if (const ShaderType::Image *image = def._type->as_image()) {
+    const ShaderType *new_type = unwrapped_type;
+    if (const ShaderType::Image *image = unwrapped_type->as_image()) {
       ShaderType::Access access = image->get_access();
       if (def._flags & DF_non_writable) {
-        access = (access & ShaderType::Access::read_only);
+        access = (access & ShaderType::Access::READ_ONLY);
       }
       if (def._flags & DF_non_readable) {
-        access = (access & ShaderType::Access::write_only);
+        access = (access & ShaderType::Access::WRITE_ONLY);
       }
       if (access != image->get_access()) {
-        def._type = ShaderType::register_type(ShaderType::Image(
+        new_type = ShaderType::register_type(ShaderType::Image(
           image->get_texture_type(),
           image->get_sampled_type(),
           access));
       }
     }
+    else if (const ShaderType::StorageBuffer *buffer = unwrapped_type->as_storage_buffer()) {
+      ShaderType::Access access = buffer->get_access();
+      if (def._flags & DF_non_writable) {
+        access = (access & ShaderType::Access::READ_ONLY);
+      }
+      if (def._flags & DF_non_readable) {
+        access = (access & ShaderType::Access::WRITE_ONLY);
+      }
+      if (access != buffer->get_access()) {
+        new_type = ShaderType::register_type(ShaderType::StorageBuffer(
+          buffer->get_contained_type(), access));
+      }
+    }
+
+    if (new_type != unwrapped_type) {
+      def._type = def._type->replace_type(unwrapped_type, new_type);
+    }
   }
 
 #ifndef NDEBUG
-  if (storage_class == spv::StorageClassUniformConstant && shader_cat.is_debug()) {
+  if (shader_cat.is_debug()) {
     std::ostream &out = shader_cat.debug()
-      << "Defined uniform " << id;
+      << "Defined variable " << id;
 
     if (!def._name.empty()) {
       out << ": " << def._name;

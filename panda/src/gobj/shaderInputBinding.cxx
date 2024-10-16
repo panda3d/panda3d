@@ -54,9 +54,11 @@ setup(Shader *shader) {
 
 /**
  * Fetches the part of the shader input that is plain numeric data.
+ * If packed is true, the data is tightly packed, even if the type originally
+ * contained padding.
  */
 void ShaderInputBinding::
-fetch_data(const State &state, void *into, bool pad_rows) const {
+fetch_data(const State &state, void *into, bool packed) const {
 }
 
 /**
@@ -81,6 +83,15 @@ fetch_texture(const State &state, ResourceId resource_id, SamplerState &sampler,
  */
 PT(Texture) ShaderInputBinding::
 fetch_texture_image(const State &state, ResourceId resource_id, ShaderType::Access &access, int &z, int &n) const {
+  return nullptr;
+}
+
+/**
+ * Fetches the shader buffer associated with the given resource identifier,
+ * which was previously returned by get_resource_id.
+ */
+PT(ShaderBuffer) ShaderInputBinding::
+fetch_shader_buffer(const State &state, ResourceId resource_id) const {
   return nullptr;
 }
 

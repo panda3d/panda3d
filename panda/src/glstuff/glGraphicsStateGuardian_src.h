@@ -407,7 +407,7 @@ public:
                        const GeomPrimitivePipelineReader *reader,
                        bool force);
 
-#ifndef OPENGLES
+#ifndef OPENGLES_1
   virtual BufferContext *prepare_shader_buffer(ShaderBuffer *data);
   void apply_shader_buffer(GLuint base, ShaderBuffer *buffer);
   virtual void release_shader_buffer(BufferContext *bc);
@@ -1137,6 +1137,7 @@ public:
 
 #ifndef OPENGLES_1
   PFNGLGETPROGRAMINTERFACEIVPROC _glGetProgramInterfaceiv;
+  PFNGLGETPROGRAMRESOURCEINDEXPROC _glGetProgramResourceIndex;
   PFNGLGETPROGRAMRESOURCENAMEPROC _glGetProgramResourceName;
   PFNGLGETPROGRAMRESOURCEIVPROC _glGetProgramResourceiv;
 

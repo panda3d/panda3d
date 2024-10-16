@@ -1810,6 +1810,7 @@ reset() {
       Shader::C_atomic_counters |
       Shader::C_image_load_store |
       Shader::C_image_query_size |
+      Shader::C_storage_buffer |
       Shader::C_compute_shader;
 
     if (has_extension("GL_OES_geometry_shader")) {
@@ -2070,12 +2071,15 @@ reset() {
 
     _glGetProgramInterfaceiv = (PFNGLGETPROGRAMINTERFACEIVPROC)
        get_extension_func("glGetProgramInterfaceiv");
+    _glGetProgramResourceIndex = (PFNGLGETPROGRAMRESOURCEINDEXPROC)
+       get_extension_func("glGetProgramResourceIndex");
     _glGetProgramResourceName = (PFNGLGETPROGRAMRESOURCENAMEPROC)
        get_extension_func("glGetProgramResourceName");
     _glGetProgramResourceiv = (PFNGLGETPROGRAMRESOURCEIVPROC)
        get_extension_func("glGetProgramResourceiv");
 
     if (_glGetProgramInterfaceiv != nullptr &&
+        _glGetProgramResourceIndex != nullptr &&
         _glGetProgramResourceName != nullptr &&
         _glGetProgramResourceiv != nullptr) {
       _supports_program_interface_query = true;
@@ -2430,6 +2434,10 @@ reset() {
 
     _glShaderStorageBlockBinding = (PFNGLSHADERSTORAGEBLOCKBINDINGPROC)
        get_extension_func("glShaderStorageBlockBinding");
+  } else
+#else
+  if (is_at_least_gles_version(3, 1)) {
+    _supports_shader_buffers = _supports_program_interface_query;
   } else
 #endif
   {
@@ -7500,7 +7508,7 @@ setup_primitive(const unsigned char *&client_pointer,
   return true;
 }
 
-#ifndef OPENGLES
+#ifndef OPENGLES_1
 /**
  * Creates a new retained-mode representation of the given data, and returns a
  * newly-allocated BufferContext pointer to reference it.  It is the
@@ -7531,7 +7539,9 @@ prepare_shader_buffer(ShaderBuffer *data) {
     }
 
     // Some drivers require the buffer to be padded to 16 byte boundary.
-    uint64_t num_bytes = (data->get_data_size_bytes() + 15u) & ~15u;
+    //XXX rdb: actually, this breaks runtime-sized arrays.
+    //uint64_t num_bytes = (data->get_data_size_bytes() + 15u) & ~15u;
+    uint64_t num_bytes = data->get_data_size_bytes();
     if (_supports_buffer_storage) {
       _glBufferStorage(GL_SHADER_STORAGE_BUFFER, num_bytes, data->get_initial_data(), 0);
     } else {

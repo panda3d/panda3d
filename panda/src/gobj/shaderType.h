@@ -35,8 +35,8 @@ public:
 
   virtual void output(std::ostream &out) const=0;
 
-  virtual int get_align_bytes() const { return 1; }
-  virtual int get_size_bytes(bool pad_rows = false) const;
+  virtual uint32_t get_align_bytes() const { return 1; }
+  virtual uint32_t get_size_bytes() const { return 0; }
   virtual int get_num_interface_locations() const { return 1; }
   virtual int get_num_parameter_locations() const { return 1; }
   virtual int get_num_resources() const { return 0; }
@@ -57,10 +57,10 @@ public:
   };
 
   enum class Access {
-    none = 0,
-    read_only = 1,
-    write_only = 2,
-    read_write = 3,
+    NONE = 0,
+    READ_ONLY = 1,
+    WRITE_ONLY = 2,
+    READ_WRITE = 3,
   };
 
 private:
@@ -99,6 +99,9 @@ public:
                               uint32_t &num_rows,
                               uint32_t &num_columns) const { return false; }
   virtual const ShaderType *replace_scalar_type(ScalarType a, ScalarType b) const { return this; }
+  virtual const ShaderType *replace_type(const ShaderType *a, const ShaderType *b) const;
+
+  INLINE static constexpr uint32_t get_scalar_size_bytes(ScalarType scalar_type);
 
   virtual const Scalar *as_scalar() const { return nullptr; }
   virtual const Vector *as_vector() const { return nullptr; }
@@ -194,7 +197,8 @@ public:
 private:
   virtual int compare_to_impl(const ShaderType &other) const override;
 
-  virtual int get_align_bytes() const override;
+  virtual uint32_t get_align_bytes() const override;
+  virtual uint32_t get_size_bytes() const override;
 
   const ScalarType _scalar_type;
 
@@ -241,7 +245,8 @@ public:
 private:
   virtual int compare_to_impl(const ShaderType &other) const override;
 
-  virtual int get_align_bytes() const override;
+  virtual uint32_t get_align_bytes() const override;
+  virtual uint32_t get_size_bytes() const override;
 
   const ScalarType _scalar_type;
   const uint32_t _num_components;
@@ -289,7 +294,8 @@ public:
 private:
   virtual int compare_to_impl(const ShaderType &other) const override;
 
-  virtual int get_align_bytes() const override;
+  virtual uint32_t get_align_bytes() const override;
+  virtual uint32_t get_size_bytes() const override;
 
   const ScalarType _scalar_type;
   const uint32_t _num_rows;
@@ -328,8 +334,8 @@ public:
   virtual void output(std::ostream &out) const override;
   virtual int compare_to_impl(const ShaderType &other) const override;
 
-  virtual int get_align_bytes() const override;
-  virtual int get_size_bytes(bool pad_rows = false) const override;
+  virtual uint32_t get_align_bytes() const override;
+  virtual uint32_t get_size_bytes() const override;
   virtual int get_num_interface_locations() const override;
   virtual int get_num_parameter_locations() const override;
   virtual int get_num_resources() const override;
@@ -338,6 +344,7 @@ public:
   virtual bool contains_opaque_type() const override;
   virtual bool contains_scalar_type(ScalarType type) const override;
   virtual const ShaderType *replace_scalar_type(ScalarType a, ScalarType b) const override;
+  virtual const ShaderType *replace_type(const ShaderType *a, const ShaderType *b) const override;
   const Struct *as_struct() const override { return this; }
 
 PUBLISHED:
@@ -388,13 +395,14 @@ public:
   virtual bool as_scalar_type(ScalarType &type, uint32_t &num_elements,
                               uint32_t &num_rows, uint32_t &num_columns) const override;
   virtual const ShaderType *replace_scalar_type(ScalarType a, ScalarType b) const override;
+  virtual const ShaderType *replace_type(const ShaderType *a, const ShaderType *b) const override;
 
   virtual void output(std::ostream &out) const override;
   virtual int compare_to_impl(const ShaderType &other) const override;
 
-  int get_stride_bytes() const;
-  virtual int get_align_bytes() const override;
-  virtual int get_size_bytes(bool pad_rows = false) const override;
+  uint32_t get_stride_bytes() const;
+  virtual uint32_t get_align_bytes() const override;
+  virtual uint32_t get_size_bytes() const override;
   virtual int get_num_interface_locations() const override;
   virtual int get_num_parameter_locations() const override;
   virtual int get_num_resources() const override;
