@@ -190,10 +190,10 @@ assign_locations(ShaderModule::Stage stage) {
           continue;
         }
 
-        if (stage == ShaderModule::Stage::vertex && !input_locations.get_bit(0) &&
+        if (stage == ShaderModule::Stage::VERTEX && !input_locations.get_bit(0) &&
             def._name != "vertex" && def._name != "p3d_Vertex" &&
             def._name != "vtx_position") {
-          // Leave location 0 open for the vertex attribute.
+          // Leave location 0 open for the vertex position attribute.
           location = input_locations.find_off_range(num_locations, 1);
         } else {
           location = input_locations.find_off_range(num_locations);

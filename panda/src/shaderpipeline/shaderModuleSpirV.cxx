@@ -187,7 +187,7 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, BamCacheRecord *reco
       if (def._storage_class == spv::StorageClassInput) {
         _inputs.push_back(std::move(var));
 
-        if (stage == Stage::fragment) {
+        if (stage == Stage::FRAGMENT) {
           // Integer varyings require shader model 4.
           if (def._type->contains_scalar_type(ShaderType::ST_uint) ||
               def._type->contains_scalar_type(ShaderType::ST_int) ||
@@ -435,13 +435,13 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, BamCacheRecord *reco
 
     case spv::OpImageSampleExplicitLod:
     case spv::OpImageSampleProjExplicitLod:
-      if (stage != Stage::vertex) {
+      if (stage != Stage::VERTEX) {
         _used_caps |= C_texture_lod;
       }
       // fall through
     case spv::OpImageSampleImplicitLod:
     case spv::OpImageSampleProjImplicitLod:
-      if (stage == Stage::vertex) {
+      if (stage == Stage::VERTEX) {
         _used_caps |= C_vertex_texture;
       }
       if (op.nargs >= 5 && (op.args[4] & spv::ImageOperandsGradMask) != 0) {
@@ -451,7 +451,7 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, BamCacheRecord *reco
 
     case spv::OpImageSampleDrefExplicitLod:
     case spv::OpImageSampleProjDrefExplicitLod:
-      if (stage != Stage::vertex) {
+      if (stage != Stage::VERTEX) {
         _used_caps |= C_texture_lod;
       }
       // fall through
@@ -469,7 +469,7 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, BamCacheRecord *reco
           }
         }
       }
-      if (stage == Stage::vertex) {
+      if (stage == Stage::VERTEX) {
         _used_caps |= C_vertex_texture;
       }
       if (op.nargs >= 5 && (op.args[4] & spv::ImageOperandsGradMask) != 0) {

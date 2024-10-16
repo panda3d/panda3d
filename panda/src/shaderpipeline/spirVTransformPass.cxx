@@ -785,16 +785,16 @@ define_type(const ShaderType *type) {
 
     uint32_t nargs = 8;
     switch (image_type->get_access()) {
-    case ShaderType::Access::none:
-    case ShaderType::Access::read_only:
+    case ShaderType::Access::NONE:
+    case ShaderType::Access::READ_ONLY:
       args[8] = spv::AccessQualifierReadOnly;
       ++nargs;
       break;
-    case ShaderType::Access::write_only:
+    case ShaderType::Access::WRITE_ONLY:
       args[8] = spv::AccessQualifierWriteOnly;
       ++nargs;
       break;
-    case ShaderType::Access::read_write:
+    case ShaderType::Access::READ_WRITE:
       args[8] = spv::AccessQualifierReadWrite;
       ++nargs;
       break;

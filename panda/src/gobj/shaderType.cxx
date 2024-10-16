@@ -993,10 +993,10 @@ make_from_bam(const FactoryParams &params) {
  */
 void ShaderType::Image::
 output(std::ostream &out) const {
-  if ((_access & Access::write_only) == Access::none) {
+  if ((_access & Access::WRITE_ONLY) == Access::NONE) {
     out << "readonly ";
   }
-  if ((_access & Access::read_only) == Access::none) {
+  if ((_access & Access::READ_ONLY) == Access::NONE) {
     out << "writeonly ";
   }
   if (_sampled_type == ST_int) {
@@ -1169,10 +1169,10 @@ make_from_bam(const FactoryParams &params) {
  */
 void ShaderType::StorageBuffer::
 output(std::ostream &out) const {
-  if ((_access & Access::write_only) == Access::none) {
+  if ((_access & Access::WRITE_ONLY) == Access::NONE) {
     out << "readonly ";
   }
-  if ((_access & Access::read_only) == Access::none) {
+  if ((_access & Access::READ_ONLY) == Access::NONE) {
     out << "writeonly ";
   }
   out << "buffer";

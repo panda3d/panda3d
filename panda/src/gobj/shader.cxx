@@ -178,27 +178,27 @@ read(const ShaderFile &sfile, BamCacheRecord *record) {
 
     // Read the various stages in order.
     if (!sfile._vertex.empty() &&
-        !do_read_source(Stage::vertex, sfile._vertex, record)) {
+        !do_read_source(Stage::VERTEX, sfile._vertex, record)) {
       return false;
     }
     if (!sfile._tess_control.empty() &&
-        !do_read_source(Stage::tess_control, sfile._tess_control, record)) {
+        !do_read_source(Stage::TESS_CONTROL, sfile._tess_control, record)) {
       return false;
     }
     if (!sfile._tess_evaluation.empty() &&
-        !do_read_source(Stage::tess_evaluation, sfile._tess_evaluation, record)) {
+        !do_read_source(Stage::TESS_EVALUATION, sfile._tess_evaluation, record)) {
       return false;
     }
     if (!sfile._geometry.empty() &&
-        !do_read_source(Stage::geometry, sfile._geometry, record)) {
+        !do_read_source(Stage::GEOMETRY, sfile._geometry, record)) {
       return false;
     }
     if (!sfile._fragment.empty() &&
-        !do_read_source(Stage::fragment, sfile._fragment, record)) {
+        !do_read_source(Stage::FRAGMENT, sfile._fragment, record)) {
       return false;
     }
     if (!sfile._compute.empty() &&
-        !do_read_source(Stage::compute, sfile._compute, record)) {
+        !do_read_source(Stage::COMPUTE, sfile._compute, record)) {
       return false;
     }
     _filename = sfile;
@@ -258,21 +258,21 @@ read(const ShaderFile &sfile, BamCacheRecord *record) {
 
     std::istringstream in(source);
 
-    PT(ShaderModule) vertex = compiler->compile_now(Stage::vertex, in, fullpath, record);
+    PT(ShaderModule) vertex = compiler->compile_now(Stage::VERTEX, in, fullpath, record);
     if (vertex == nullptr || !add_module(std::move(vertex))) {
       return false;
     }
     if (source.find("gshader") != string::npos) {
       in.clear();
       in.seekg(0);
-      PT(ShaderModule) geometry = compiler->compile_now(Stage::geometry, in, fullpath, record);
+      PT(ShaderModule) geometry = compiler->compile_now(Stage::GEOMETRY, in, fullpath, record);
       if (geometry == nullptr || !add_module(std::move(geometry))) {
         return false;
       }
     }
     in.clear();
     in.seekg(0);
-    PT(ShaderModule) fragment = compiler->compile_now(Stage::fragment, in, fullpath, record);
+    PT(ShaderModule) fragment = compiler->compile_now(Stage::FRAGMENT, in, fullpath, record);
     if (fragment == nullptr || !add_module(std::move(fragment))) {
       return false;
     }
@@ -320,27 +320,27 @@ load(const ShaderFile &sbody, BamCacheRecord *record) {
     }
 
     if (!sbody._vertex.empty() &&
-        !do_load_source(Stage::vertex, sbody._vertex, record)) {
+        !do_load_source(Stage::VERTEX, sbody._vertex, record)) {
       return false;
     }
     if (!sbody._tess_control.empty() &&
-        !do_load_source(Stage::tess_control, sbody._tess_control, record)) {
+        !do_load_source(Stage::TESS_CONTROL, sbody._tess_control, record)) {
       return false;
     }
     if (!sbody._tess_evaluation.empty() &&
-        !do_load_source(Stage::tess_evaluation, sbody._tess_evaluation, record)) {
+        !do_load_source(Stage::TESS_EVALUATION, sbody._tess_evaluation, record)) {
       return false;
     }
     if (!sbody._geometry.empty() &&
-        !do_load_source(Stage::geometry, sbody._geometry, record)) {
+        !do_load_source(Stage::GEOMETRY, sbody._geometry, record)) {
       return false;
     }
     if (!sbody._fragment.empty() &&
-        !do_load_source(Stage::fragment, sbody._fragment, record)) {
+        !do_load_source(Stage::FRAGMENT, sbody._fragment, record)) {
       return false;
     }
     if (!sbody._compute.empty() &&
-        !do_load_source(Stage::compute, sbody._compute, record)) {
+        !do_load_source(Stage::COMPUTE, sbody._compute, record)) {
       return false;
     }
 
@@ -352,14 +352,14 @@ load(const ShaderFile &sbody, BamCacheRecord *record) {
     }
     _language = SL_Cg;
 
-    if (!do_load_source(Stage::vertex, sbody._shared, record)) {
+    if (!do_load_source(Stage::VERTEX, sbody._shared, record)) {
       return false;
     }
-    if (!do_load_source(Stage::fragment, sbody._shared, record)) {
+    if (!do_load_source(Stage::FRAGMENT, sbody._shared, record)) {
       return false;
     }
     if (sbody._shared.find("gshader") != string::npos &&
-        !do_load_source(Stage::geometry, sbody._shared, record)) {
+        !do_load_source(Stage::GEOMETRY, sbody._shared, record)) {
       return false;
     }
 
@@ -801,7 +801,7 @@ load_compute(ShaderLanguage lang, const Filename &fn) {
   if (record != nullptr) {
     if (record->has_data()) {
       PT(Shader) shader = DCAST(Shader, record->get_data());
-      if (shader->_module_mask == (1 << (int)Stage::compute)) {
+      if (shader->_module_mask == (1 << (int)Stage::COMPUTE)) {
         shader_cat.info()
           << "Compute shader " << fn << " was found in disk cache.\n";
         return shader;
@@ -1028,7 +1028,7 @@ add_module(PT(ShaderModule) module) {
       module->remap_input_locations(location_remap);
     }
   }
-  else if (stage == Stage::vertex) {
+  else if (stage == Stage::VERTEX) {
     // Bind vertex inputs right away.
     CPT(ShaderModule) module = cow_module.get_read_pointer();
     bool success = true;

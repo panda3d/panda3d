@@ -57,10 +57,10 @@ public:
   };
 
   enum class Access {
-    none = 0,
-    read_only = 1,
-    write_only = 2,
-    read_write = 3,
+    NONE = 0,
+    READ_ONLY = 1,
+    WRITE_ONLY = 2,
+    READ_WRITE = 3,
   };
 
 private:

@@ -287,17 +287,17 @@ parse_instruction(spv::Op opcode, const uint32_t *args, uint32_t nargs, uint32_t
         return;
       }
 
-      ShaderType::Access access = ShaderType::Access::read_write;
+      ShaderType::Access access = ShaderType::Access::READ_WRITE;
       if (nargs > 8) {
         switch ((spv::AccessQualifier)args[8]) {
         case spv::AccessQualifierReadOnly:
-          access = ShaderType::Access::read_only;
+          access = ShaderType::Access::READ_ONLY;
           break;
         case spv::AccessQualifierWriteOnly:
-          access = ShaderType::Access::write_only;
+          access = ShaderType::Access::WRITE_ONLY;
           break;
         case spv::AccessQualifierReadWrite:
-          access = ShaderType::Access::read_write;
+          access = ShaderType::Access::READ_WRITE;
           break;
         default:
           shader_cat.error()
@@ -306,10 +306,10 @@ parse_instruction(spv::Op opcode, const uint32_t *args, uint32_t nargs, uint32_t
         }
       }
       if (_defs[args[0]]._flags & DF_non_writable) {
-        access = (access & ShaderType::Access::read_only);
+        access = (access & ShaderType::Access::READ_ONLY);
       }
       if (_defs[args[0]]._flags & DF_non_readable) {
-        access = (access & ShaderType::Access::write_only);
+        access = (access & ShaderType::Access::WRITE_ONLY);
       }
 
       record_type(args[0], ShaderType::register_type(
@@ -384,10 +384,10 @@ parse_instruction(spv::Op opcode, const uint32_t *args, uint32_t nargs, uint32_t
           if (const ShaderType::Image *image = member_type->as_image()) {
             ShaderType::Access access = image->get_access();
             if (member_def._flags & DF_non_writable) {
-              access = (access & ShaderType::Access::read_only);
+              access = (access & ShaderType::Access::READ_ONLY);
             }
             if (member_def._flags & DF_non_readable) {
-              access = (access & ShaderType::Access::write_only);
+              access = (access & ShaderType::Access::WRITE_ONLY);
             }
             if (access != image->get_access()) {
               member_type = ShaderType::register_type(ShaderType::Image(
@@ -970,12 +970,12 @@ record_pointer_type(uint32_t id, spv::StorageClass storage_class, uint32_t type_
           storage_class = spv::StorageClassStorageBuffer;
         }
         if (storage_class == spv::StorageClassStorageBuffer) {
-          ShaderType::Access access = ShaderType::Access::read_write;
+          ShaderType::Access access = ShaderType::Access::READ_WRITE;
           if (block_type_def._flags & DF_non_writable) {
-            access = (access & ShaderType::Access::read_only);
+            access = (access & ShaderType::Access::READ_ONLY);
           }
           if (block_type_def._flags & DF_non_readable) {
-            access = (access & ShaderType::Access::write_only);
+            access = (access & ShaderType::Access::WRITE_ONLY);
           }
           const ShaderType *new_type = ShaderType::register_type(ShaderType::StorageBuffer(block_type_def._type, access));
           type = type->replace_type(block_type_def._type, new_type);
@@ -1039,10 +1039,10 @@ record_variable(uint32_t id, uint32_t pointer_type_id, spv::StorageClass storage
     if (const ShaderType::Image *image = unwrapped_type->as_image()) {
       ShaderType::Access access = image->get_access();
       if (def._flags & DF_non_writable) {
-        access = (access & ShaderType::Access::read_only);
+        access = (access & ShaderType::Access::READ_ONLY);
       }
       if (def._flags & DF_non_readable) {
-        access = (access & ShaderType::Access::write_only);
+        access = (access & ShaderType::Access::WRITE_ONLY);
       }
       if (access != image->get_access()) {
         new_type = ShaderType::register_type(ShaderType::Image(
@@ -1054,10 +1054,10 @@ record_variable(uint32_t id, uint32_t pointer_type_id, spv::StorageClass storage
     else if (const ShaderType::StorageBuffer *buffer = unwrapped_type->as_storage_buffer()) {
       ShaderType::Access access = buffer->get_access();
       if (def._flags & DF_non_writable) {
-        access = (access & ShaderType::Access::read_only);
+        access = (access & ShaderType::Access::READ_ONLY);
       }
       if (def._flags & DF_non_readable) {
-        access = (access & ShaderType::Access::write_only);
+        access = (access & ShaderType::Access::WRITE_ONLY);
       }
       if (access != buffer->get_access()) {
         new_type = ShaderType::register_type(ShaderType::StorageBuffer(

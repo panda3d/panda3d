@@ -628,7 +628,7 @@ reflect_program(SparseArray &active_locations, LocationMap &locations, LocationM
 
       //TODO: write code to actually query the block variables.
       const ShaderType *struct_type = ShaderType::register_type(ShaderType::Struct());
-      const ShaderType *type = ShaderType::register_type(ShaderType::StorageBuffer(struct_type, ShaderType::Access::read_write));
+      const ShaderType *type = ShaderType::register_type(ShaderType::StorageBuffer(struct_type, ShaderType::Access::READ_WRITE));
 
       std::reverse(ssbo._array_sizes.begin(), ssbo._array_sizes.end());
       for (uint32_t count : ssbo._array_sizes) {
@@ -1219,77 +1219,77 @@ get_param_type(GLenum param_type) {
 
 #ifndef OPENGLES
   case GL_IMAGE_1D:
-    return ShaderType::register_type(ShaderType::Image(Texture::TT_1d_texture, ShaderType::ST_float, ShaderType::Access::read_write));
+    return ShaderType::register_type(ShaderType::Image(Texture::TT_1d_texture, ShaderType::ST_float, ShaderType::Access::READ_WRITE));
 
   case GL_INT_IMAGE_1D:
-    return ShaderType::register_type(ShaderType::Image(Texture::TT_1d_texture, ShaderType::ST_int, ShaderType::Access::read_write));
+    return ShaderType::register_type(ShaderType::Image(Texture::TT_1d_texture, ShaderType::ST_int, ShaderType::Access::READ_WRITE));
 
   case GL_UNSIGNED_INT_IMAGE_1D:
-    return ShaderType::register_type(ShaderType::Image(Texture::TT_1d_texture, ShaderType::ST_uint, ShaderType::Access::read_write));
+    return ShaderType::register_type(ShaderType::Image(Texture::TT_1d_texture, ShaderType::ST_uint, ShaderType::Access::READ_WRITE));
 
   case GL_IMAGE_1D_ARRAY:
-    return ShaderType::register_type(ShaderType::Image(Texture::TT_1d_texture_array, ShaderType::ST_float, ShaderType::Access::read_write));
+    return ShaderType::register_type(ShaderType::Image(Texture::TT_1d_texture_array, ShaderType::ST_float, ShaderType::Access::READ_WRITE));
 
   case GL_INT_IMAGE_1D_ARRAY:
-    return ShaderType::register_type(ShaderType::Image(Texture::TT_1d_texture_array, ShaderType::ST_int, ShaderType::Access::read_write));
+    return ShaderType::register_type(ShaderType::Image(Texture::TT_1d_texture_array, ShaderType::ST_int, ShaderType::Access::READ_WRITE));
 
   case GL_UNSIGNED_INT_IMAGE_1D_ARRAY:
-    return ShaderType::register_type(ShaderType::Image(Texture::TT_1d_texture_array, ShaderType::ST_uint, ShaderType::Access::read_write));
+    return ShaderType::register_type(ShaderType::Image(Texture::TT_1d_texture_array, ShaderType::ST_uint, ShaderType::Access::READ_WRITE));
 #endif
 
   case GL_IMAGE_2D:
-    return ShaderType::register_type(ShaderType::Image(Texture::TT_2d_texture, ShaderType::ST_float, ShaderType::Access::read_write));
+    return ShaderType::register_type(ShaderType::Image(Texture::TT_2d_texture, ShaderType::ST_float, ShaderType::Access::READ_WRITE));
 
   case GL_INT_IMAGE_2D:
-    return ShaderType::register_type(ShaderType::Image(Texture::TT_2d_texture, ShaderType::ST_int, ShaderType::Access::read_write));
+    return ShaderType::register_type(ShaderType::Image(Texture::TT_2d_texture, ShaderType::ST_int, ShaderType::Access::READ_WRITE));
 
   case GL_UNSIGNED_INT_IMAGE_2D:
-    return ShaderType::register_type(ShaderType::Image(Texture::TT_2d_texture, ShaderType::ST_uint, ShaderType::Access::read_write));
+    return ShaderType::register_type(ShaderType::Image(Texture::TT_2d_texture, ShaderType::ST_uint, ShaderType::Access::READ_WRITE));
 
   case GL_IMAGE_2D_ARRAY:
-    return ShaderType::register_type(ShaderType::Image(Texture::TT_2d_texture_array, ShaderType::ST_float, ShaderType::Access::read_write));
+    return ShaderType::register_type(ShaderType::Image(Texture::TT_2d_texture_array, ShaderType::ST_float, ShaderType::Access::READ_WRITE));
 
   case GL_INT_IMAGE_2D_ARRAY:
-    return ShaderType::register_type(ShaderType::Image(Texture::TT_2d_texture_array, ShaderType::ST_int, ShaderType::Access::read_write));
+    return ShaderType::register_type(ShaderType::Image(Texture::TT_2d_texture_array, ShaderType::ST_int, ShaderType::Access::READ_WRITE));
 
   case GL_UNSIGNED_INT_IMAGE_2D_ARRAY:
-    return ShaderType::register_type(ShaderType::Image(Texture::TT_2d_texture_array, ShaderType::ST_uint, ShaderType::Access::read_write));
+    return ShaderType::register_type(ShaderType::Image(Texture::TT_2d_texture_array, ShaderType::ST_uint, ShaderType::Access::READ_WRITE));
 
   case GL_IMAGE_3D:
-    return ShaderType::register_type(ShaderType::Image(Texture::TT_3d_texture, ShaderType::ST_float, ShaderType::Access::read_write));
+    return ShaderType::register_type(ShaderType::Image(Texture::TT_3d_texture, ShaderType::ST_float, ShaderType::Access::READ_WRITE));
 
   case GL_INT_IMAGE_3D:
-    return ShaderType::register_type(ShaderType::Image(Texture::TT_3d_texture, ShaderType::ST_int, ShaderType::Access::read_write));
+    return ShaderType::register_type(ShaderType::Image(Texture::TT_3d_texture, ShaderType::ST_int, ShaderType::Access::READ_WRITE));
 
   case GL_UNSIGNED_INT_IMAGE_3D:
-    return ShaderType::register_type(ShaderType::Image(Texture::TT_3d_texture, ShaderType::ST_uint, ShaderType::Access::read_write));
+    return ShaderType::register_type(ShaderType::Image(Texture::TT_3d_texture, ShaderType::ST_uint, ShaderType::Access::READ_WRITE));
 
   case GL_IMAGE_CUBE:
-    return ShaderType::register_type(ShaderType::Image(Texture::TT_cube_map, ShaderType::ST_float, ShaderType::Access::read_write));
+    return ShaderType::register_type(ShaderType::Image(Texture::TT_cube_map, ShaderType::ST_float, ShaderType::Access::READ_WRITE));
 
   case GL_INT_IMAGE_CUBE:
-    return ShaderType::register_type(ShaderType::Image(Texture::TT_cube_map, ShaderType::ST_int, ShaderType::Access::read_write));
+    return ShaderType::register_type(ShaderType::Image(Texture::TT_cube_map, ShaderType::ST_int, ShaderType::Access::READ_WRITE));
 
   case GL_UNSIGNED_INT_IMAGE_CUBE:
-    return ShaderType::register_type(ShaderType::Image(Texture::TT_cube_map, ShaderType::ST_uint, ShaderType::Access::read_write));
+    return ShaderType::register_type(ShaderType::Image(Texture::TT_cube_map, ShaderType::ST_uint, ShaderType::Access::READ_WRITE));
 
   case GL_IMAGE_CUBE_MAP_ARRAY:
-    return ShaderType::register_type(ShaderType::Image(Texture::TT_cube_map_array, ShaderType::ST_float, ShaderType::Access::read_write));
+    return ShaderType::register_type(ShaderType::Image(Texture::TT_cube_map_array, ShaderType::ST_float, ShaderType::Access::READ_WRITE));
 
   case GL_INT_IMAGE_CUBE_MAP_ARRAY:
-    return ShaderType::register_type(ShaderType::Image(Texture::TT_cube_map_array, ShaderType::ST_int, ShaderType::Access::read_write));
+    return ShaderType::register_type(ShaderType::Image(Texture::TT_cube_map_array, ShaderType::ST_int, ShaderType::Access::READ_WRITE));
 
   case GL_UNSIGNED_INT_IMAGE_CUBE_MAP_ARRAY:
-    return ShaderType::register_type(ShaderType::Image(Texture::TT_cube_map_array, ShaderType::ST_uint, ShaderType::Access::read_write));
+    return ShaderType::register_type(ShaderType::Image(Texture::TT_cube_map_array, ShaderType::ST_uint, ShaderType::Access::READ_WRITE));
 
   case GL_IMAGE_BUFFER:
-    return ShaderType::register_type(ShaderType::Image(Texture::TT_buffer_texture, ShaderType::ST_float, ShaderType::Access::read_write));
+    return ShaderType::register_type(ShaderType::Image(Texture::TT_buffer_texture, ShaderType::ST_float, ShaderType::Access::READ_WRITE));
 
   case GL_INT_IMAGE_BUFFER:
-    return ShaderType::register_type(ShaderType::Image(Texture::TT_buffer_texture, ShaderType::ST_int, ShaderType::Access::read_write));
+    return ShaderType::register_type(ShaderType::Image(Texture::TT_buffer_texture, ShaderType::ST_int, ShaderType::Access::READ_WRITE));
 
   case GL_UNSIGNED_INT_IMAGE_BUFFER:
-    return ShaderType::register_type(ShaderType::Image(Texture::TT_buffer_texture, ShaderType::ST_uint, ShaderType::Access::read_write));
+    return ShaderType::register_type(ShaderType::Image(Texture::TT_buffer_texture, ShaderType::ST_uint, ShaderType::Access::READ_WRITE));
   }
 
   GLCAT.error()
@@ -1971,7 +1971,7 @@ update_shader_texture_bindings(ShaderContext *prev) {
     for (int i = 0; i < num_image_units; ++i) {
       ImageUnit &unit = _image_units[i];
 
-      ShaderType::Access access = ShaderType::Access::read_write;
+      ShaderType::Access access = ShaderType::Access::READ_WRITE;
       int z = -1;
       int n = 0;
       PT(Texture) tex = unit._binding->fetch_texture_image(state, unit._resource_id, access, z, n);
@@ -2025,7 +2025,7 @@ update_shader_texture_bindings(ShaderContext *prev) {
         }
 
         if (gl_force_image_bindings_writeonly) {
-          access = access & ShaderType::Access::write_only;
+          access = access & ShaderType::Access::WRITE_ONLY;
         }
 
         GLenum gl_access = GL_READ_WRITE;
@@ -2034,18 +2034,18 @@ update_shader_texture_bindings(ShaderContext *prev) {
         GLboolean layered = z < 0;
 
         switch (access) {
-        case ShaderType::Access::none:
+        case ShaderType::Access::NONE:
           gl_tex = 0;
-        case ShaderType::Access::read_only:
+        case ShaderType::Access::READ_ONLY:
           gl_access = GL_READ_ONLY;
           break;
 
-        case ShaderType::Access::write_only:
+        case ShaderType::Access::WRITE_ONLY:
           gl_access = GL_WRITE_ONLY;
           unit._written = true;
           break;
 
-        case ShaderType::Access::read_write:
+        case ShaderType::Access::READ_WRITE:
           gl_access = GL_READ_WRITE;
           unit._written = true;
           break;
@@ -2326,30 +2326,30 @@ attach_shader(const ShaderModule *module, Shader::ModuleSpecConstants &consts,
 
   GLuint handle = 0;
   switch (stage) {
-  case ShaderModule::Stage::vertex:
+  case ShaderModule::Stage::VERTEX:
     handle = _glgsg->_glCreateShader(GL_VERTEX_SHADER);
     break;
-  case ShaderModule::Stage::fragment:
+  case ShaderModule::Stage::FRAGMENT:
     handle = _glgsg->_glCreateShader(GL_FRAGMENT_SHADER);
     break;
 #ifndef OPENGLES
-  case ShaderModule::Stage::geometry:
+  case ShaderModule::Stage::GEOMETRY:
     if (_glgsg->get_supports_geometry_shaders()) {
       handle = _glgsg->_glCreateShader(GL_GEOMETRY_SHADER);
     }
     break;
-  case ShaderModule::Stage::tess_control:
+  case ShaderModule::Stage::TESS_CONTROL:
     if (_glgsg->get_supports_tessellation_shaders()) {
       handle = _glgsg->_glCreateShader(GL_TESS_CONTROL_SHADER);
     }
     break;
-  case ShaderModule::Stage::tess_evaluation:
+  case ShaderModule::Stage::TESS_EVALUATION:
     if (_glgsg->get_supports_tessellation_shaders()) {
       handle = _glgsg->_glCreateShader(GL_TESS_EVALUATION_SHADER);
     }
     break;
 #endif
-  case ShaderModule::Stage::compute:
+  case ShaderModule::Stage::COMPUTE:
     if (_glgsg->get_supports_compute_shaders()) {
       handle = _glgsg->_glCreateShader(GL_COMPUTE_SHADER);
     }
@@ -2550,7 +2550,7 @@ attach_shader(const ShaderModule *module, Shader::ModuleSpecConstants &consts,
           }
         }
         else if (sc == spv::StorageClassInput) {
-          if (stage == ShaderModule::Stage::vertex) {
+          if (stage == ShaderModule::Stage::VERTEX) {
             // Explicit attrib locations were added in GLSL 3.30, but we can
             // override the binding in older versions using the API.
             sprintf(buf, "a%u", loc);
@@ -2566,7 +2566,7 @@ attach_shader(const ShaderModule *module, Shader::ModuleSpecConstants &consts,
           compiler.set_name(id, buf);
         }
         else if (sc == spv::StorageClassOutput) {
-          if (stage == ShaderModule::Stage::fragment) {
+          if (stage == ShaderModule::Stage::FRAGMENT) {
             // Output of the last stage, same story as above.
             sprintf(buf, "o%u", loc);
             if (options.version < 330) {

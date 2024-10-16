@@ -550,7 +550,7 @@ get_shader_input_texture_image(const InternalName *id, ShaderType::Access &acces
       // People find it convenient to be able to pass a texture without
       // further ado.
       tex = p.get_texture();
-      access = ShaderType::Access::read_write;
+      access = ShaderType::Access::READ_WRITE;
       z = -1;
       n = 0;
       break;

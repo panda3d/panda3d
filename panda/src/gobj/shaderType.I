@@ -218,7 +218,7 @@ get_access() const {
  */
 INLINE bool ShaderType::Image::
 is_writable() const {
-  return ((int)_access & (int)Access::write_only) != 0;
+  return ((int)_access & (int)Access::WRITE_ONLY) != 0;
 }
 
 /**
