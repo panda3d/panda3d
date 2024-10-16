@@ -315,6 +315,13 @@ make_shader_input(const ShaderType *type, CPT_InternalName name) {
     Texture::TextureType desired_type = image->get_texture_type();
     return new ShaderTextureBinding(std::move(name), desired_type);
   }
+  else if (const ShaderType::StorageBuffer *buffer = type->as_storage_buffer()) {
+    size_t min_size = 0;
+    if (const ShaderType *contained_type = buffer->get_contained_type()) {
+      min_size = contained_type->get_size_bytes();
+    }
+    return new ShaderBufferBinding(std::move(name), min_size);
+  }
   else if (const ShaderType::Matrix *matrix = type->as_matrix()) {
     // For historical reasons, we handle non-arrayed matrices differently,
     // which has the additional feature that they can be passed in as a
@@ -1791,6 +1798,45 @@ fetch_texture_image(const State &state, ResourceId resource_id, ShaderType::Acce
  * Returns a mask indicating which state changes should cause the parameter to
  * be respecified.
  */
+int ShaderBufferBinding::
+get_state_dep() const {
+  // We don't specify D_frame, because we don't (yet) support updating shader
+  // buffers from the CPU.
+  return Shader::D_frame | Shader::D_shader_inputs;
+}
+
+/**
+ * Returns an opaque resource identifier that can later be used to fetch the
+ * nth resource, which is of the given type.
+ */
+ShaderInputBinding::ResourceId ShaderBufferBinding::
+get_resource_id(int index, const ShaderType *type) const {
+  return (ResourceId)_input.p();
+}
+
+/**
+ * Fetches the shader buffer associated with the given resource identifier,
+ * which was previously returned by get_resource_id.
+ */
+PT(ShaderBuffer) ShaderBufferBinding::
+fetch_shader_buffer(const State &state, ResourceId resource_id) const {
+  const InternalName *name = (const InternalName *)resource_id;
+  PT(ShaderBuffer) buffer = state.gsg->get_target_shader_attrib()->get_shader_input_buffer(name);
+#ifndef NDEBUG
+  if (!_shown_error && buffer->get_data_size_bytes() < _min_size) {
+    _shown_error = true;
+    shader_cat.error()
+      << *buffer << " is too small for shader input " << *name
+      << " (expected at least " << _min_size << " bytes)\n";
+  }
+#endif
+  return buffer;
+}
+
+/**
+ * Returns a mask indicating which state changes should cause the parameter to
+ * be respecified.
+ */
 int ShaderDataBinding::
 get_state_dep() const {
   // We specify SD_frame because a PTA may be modified by the app from
@@ -2150,6 +2196,18 @@ PT(Texture) ShaderAggregateBinding::
 fetch_texture_image(const State &state, ResourceId resource_id, ShaderType::Access &access, int &z, int &n) const {
   const InternalName *name = (const InternalName *)resource_id;
   return state.gsg->get_target_shader_attrib()->get_shader_input_texture_image(name, access, z, n);
+}
+
+/**
+ * Fetches the shader buffer associated with the given resource identifier,
+ * which was previously returned by get_resource_id.
+ */
+PT(ShaderBuffer) ShaderAggregateBinding::
+fetch_shader_buffer(const State &state, ResourceId resource_id) const {
+  // GLSL does not support SSBOs in structs, but they can be in arrays, and we
+  // might add support for another shader language that does support this.
+  const InternalName *name = (const InternalName *)resource_id;
+  return state.gsg->get_target_shader_attrib()->get_shader_input_buffer(name);
 }
 
 /**

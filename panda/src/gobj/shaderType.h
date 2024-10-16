@@ -99,6 +99,7 @@ public:
                               uint32_t &num_rows,
                               uint32_t &num_columns) const { return false; }
   virtual const ShaderType *replace_scalar_type(ScalarType a, ScalarType b) const { return this; }
+  virtual const ShaderType *replace_type(const ShaderType *a, const ShaderType *b) const;
 
   INLINE static constexpr uint32_t get_scalar_size_bytes(ScalarType scalar_type);
 
@@ -343,6 +344,7 @@ public:
   virtual bool contains_opaque_type() const override;
   virtual bool contains_scalar_type(ScalarType type) const override;
   virtual const ShaderType *replace_scalar_type(ScalarType a, ScalarType b) const override;
+  virtual const ShaderType *replace_type(const ShaderType *a, const ShaderType *b) const override;
   const Struct *as_struct() const override { return this; }
 
 PUBLISHED:
@@ -393,6 +395,7 @@ public:
   virtual bool as_scalar_type(ScalarType &type, uint32_t &num_elements,
                               uint32_t &num_rows, uint32_t &num_columns) const override;
   virtual const ShaderType *replace_scalar_type(ScalarType a, ScalarType b) const override;
+  virtual const ShaderType *replace_type(const ShaderType *a, const ShaderType *b) const override;
 
   virtual void output(std::ostream &out) const override;
   virtual int compare_to_impl(const ShaderType &other) const override;

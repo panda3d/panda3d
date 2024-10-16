@@ -52,6 +52,15 @@ unwrap_array(const ShaderType *&element_type, uint32_t &num_elements) const {
 }
 
 /**
+ * Returns a new type with all occurrences of the given type recursively
+ * replaced with the second type.
+ */
+const ShaderType *ShaderType::
+replace_type(const ShaderType *a, const ShaderType *b) const {
+  return (this == a) ? b : this;
+}
+
+/**
  *
  */
 void ShaderType::
@@ -583,6 +592,36 @@ replace_scalar_type(ScalarType a, ScalarType b) const {
 }
 
 /**
+ * Returns a new type with all occurrences of the given type recursively
+ * replaced with the second type.
+ */
+const ShaderType *ShaderType::Struct::
+replace_type(const ShaderType *a, const ShaderType *b) const {
+  if (this == a) {
+    return b;
+  }
+  bool any_changed = false;
+  bool recompute_offsets = a->get_size_bytes() != b->get_size_bytes();
+  ShaderType::Struct copy;
+  for (const Member &member : _members) {
+    const ShaderType *type = member.type->replace_type(a, b);
+    if (type != member.type) {
+      any_changed = true;
+    }
+    if (recompute_offsets) {
+      copy.add_member(type, member.name);
+    } else {
+      copy.add_member(type, member.name, member.offset);
+    }
+  }
+  if (any_changed) {
+    return ShaderType::register_type(std::move(copy));
+  } else {
+    return this;
+  }
+}
+
+/**
  *
  */
 void ShaderType::Struct::
@@ -799,6 +838,23 @@ as_scalar_type(ScalarType &type, uint32_t &num_elements,
 const ShaderType *ShaderType::Array::
 replace_scalar_type(ScalarType a, ScalarType b) const {
   const ShaderType *element_type = _element_type->replace_scalar_type(a, b);
+  if (_element_type != element_type) {
+    return ShaderType::register_type(ShaderType::Array(element_type, _num_elements));
+  } else {
+    return this;
+  }
+}
+
+/**
+ * Returns a new type with all occurrences of the given type recursively
+ * replaced with the second type.
+ */
+const ShaderType *ShaderType::Array::
+replace_type(const ShaderType *a, const ShaderType *b) const {
+  if (this == a) {
+    return b;
+  }
+  const ShaderType *element_type = _element_type->replace_type(a, b);
   if (_element_type != element_type) {
     return ShaderType::register_type(ShaderType::Array(element_type, _num_elements));
   } else {

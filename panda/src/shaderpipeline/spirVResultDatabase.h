@@ -38,16 +38,18 @@ private:
     // Set for arrays that are indexed with a non-const index.
     DF_dynamically_indexed = 32,
 
-    // Has the "buffer block" decoration (older versions of SPIR-V).
+    // Has the "buffer block" decoration (older versions of SPIR-V),
+    // or the "block" decoration on newer versions.
     DF_buffer_block = 64,
+    DF_block = 128,
 
     // If both of these are set, no access is permitted (size queries only)
-    DF_non_writable = 128, // readonly
-    DF_non_readable = 256, // writeonly
+    DF_non_writable = 256, // readonly
+    DF_non_readable = 512, // writeonly
 
-    DF_relaxed_precision = 512,
+    DF_relaxed_precision = 1024,
 
-    DF_null_constant = 1024,
+    DF_null_constant = 2048,
   };
 
 public:

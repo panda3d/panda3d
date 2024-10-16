@@ -87,6 +87,15 @@ fetch_texture_image(const State &state, ResourceId resource_id, ShaderType::Acce
 }
 
 /**
+ * Fetches the shader buffer associated with the given resource identifier,
+ * which was previously returned by get_resource_id.
+ */
+PT(ShaderBuffer) ShaderInputBinding::
+fetch_shader_buffer(const State &state, ResourceId resource_id) const {
+  return nullptr;
+}
+
+/**
  * Registers a factory function to create a binding.
  */
 void ShaderInputBinding::

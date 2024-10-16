@@ -435,7 +435,6 @@ def test_glsl_uimage(gsg):
 
 
 def test_glsl_ssbo(gsg):
-    return
     from struct import pack
     num1 = pack('<i', 1234567)
     num2 = pack('<i', -1234567)
@@ -466,8 +465,33 @@ def test_glsl_ssbo(gsg):
                   version=430)
 
 
+def test_glsl_ssbo_array(gsg):
+    from struct import pack
+    dummy = pack('<i', 999999)
+    num1 = pack('<i', 1234567)
+    num2 = pack('<i', -1234567)
+    unused = core.ShaderBuffer("unused", dummy, core.GeomEnums.UH_static)
+    buffer1 = core.ShaderBuffer("buffer1", num1, core.GeomEnums.UH_static)
+    buffer2 = core.ShaderBuffer("buffer2", num2, core.GeomEnums.UH_static)
+
+    preamble = """
+    struct InsideStruct {
+        int value;
+    };
+    layout(std430, binding=0) buffer test {
+        readonly InsideStruct inside[1];
+    } test_ns[3][1];
+    """
+    code = """
+    assert(test_ns[1][0].inside[0].value == 1234567);
+    assert(test_ns[2][0].inside[0].value == -1234567);
+    """
+    run_glsl_test(gsg, code, preamble,
+                  {'test[0][0]': unused, 'test[1][0]': buffer1, 'test[2][0]': buffer2},
+                  version=430)
+
+
 def test_glsl_ssbo_runtime_length(gsg):
-    return
     from struct import pack
     nums = pack('<ii', 1234, 5678)
     ssbo = core.ShaderBuffer("ssbo", nums, core.GeomEnums.UH_static)

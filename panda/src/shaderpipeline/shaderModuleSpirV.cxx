@@ -148,6 +148,11 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, BamCacheRecord *reco
   // Add in location decorations for any inputs that are missing it.
   transformer.assign_locations(stage);
 
+  // Get rid of uniform locations and bindings.  The numbering rules are
+  // different for each back-end, so we regenerate these later.
+  transformer.strip_uniform_locations();
+  transformer.strip_bindings();
+
   // Identify the inputs, outputs and uniform parameters.
   for (uint32_t id = 0; id < transformer.get_id_bound(); ++id) {
     const Definition &def = db.get_definition(id);
@@ -246,11 +251,16 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, BamCacheRecord *reco
         // name of the struct type.
         const Definition &type_pointer_def = db.get_definition(def._type_id);
         nassertd(type_pointer_def.is_pointer_type()) continue;
-        const Definition &type_def = db.get_definition(type_pointer_def._type_id);
-        nassertd(type_def.is_type()) continue;
-        nassertd(!type_def._name.empty()) continue;
 
-        var.name = InternalName::make(type_def._name);
+        // This may be an array of structs.  Unwrap any array layers.
+        const Definition *type_def = &db.get_definition(type_pointer_def._type_id);
+        while (type_def->_type->as_array() != nullptr) {
+          type_def = &db.get_definition(type_def->_type_id);
+        }
+        nassertd(type_def->is_type()) continue;
+        nassertd(!type_def->_name.empty()) continue;
+
+        var.name = InternalName::make(type_def->_name);
         _parameters.push_back(std::move(var));
 
         _used_caps |= C_storage_buffer;

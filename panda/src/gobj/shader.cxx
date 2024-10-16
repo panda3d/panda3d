@@ -78,7 +78,7 @@ Shader::
  * parameter.  Always returns false.
  */
 bool Shader::
-report_parameter_error(const InternalName *name, const ::ShaderType *type, const char *msg) {
+report_parameter_error(const InternalName *name, const ShaderType *type, const char *msg) {
   Filename fn = get_filename();
   shader_cat.error()
     << fn << ": " << *type << ' ' << *name << ": " << msg << "\n";
@@ -530,13 +530,17 @@ link() {
 }
 
 void Shader::
-add_parameter(const InternalName *name, const ::ShaderType *type, int location) {
-  Shader::Parameter param;
-  param._name = name;
-  param._type = type;
-  param._binding = ShaderInputBinding::make(_language, name, type);
-  param._location = location;
-  _parameters.push_back(std::move(param));
+add_parameter(const InternalName *name, const ShaderType *type, int location) {
+  {
+    Shader::Parameter param;
+    param._name = name;
+    param._type = type;
+    param._binding = ShaderInputBinding::make(_language, name, type);
+    param._location = location;
+    _parameters.push_back(std::move(param));
+  }
+
+  Shader::Parameter &param = _parameters.back();
   if (param._binding != nullptr) {
     param._binding->setup(this);
   } else {

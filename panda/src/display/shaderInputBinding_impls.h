@@ -249,6 +249,25 @@ protected:
 };
 
 /**
+ * Binds a parameter to a generic storage buffer shader input.
+ */
+class EXPCL_PANDA_DISPLAY ShaderBufferBinding : public ShaderInputBinding {
+public:
+  INLINE ShaderBufferBinding(CPT(InternalName) input, size_t min_size = 0);
+
+  virtual int get_state_dep() const override;
+
+  virtual ResourceId get_resource_id(int index, const ShaderType *type) const;
+  virtual PT(ShaderBuffer) fetch_shader_buffer(const State &state,
+                                               ResourceId resource_id) const;
+
+protected:
+  CPT(InternalName) const _input;
+  size_t const _min_size = 0;
+  mutable bool _shown_error = false;
+};
+
+/**
  * This binds a parameter to a generic numeric data shader input.
  */
 class EXPCL_PANDA_DISPLAY ShaderDataBinding : public ShaderInputBinding {
@@ -327,6 +346,9 @@ public:
                                           ResourceId index,
                                           ShaderType::Access &access,
                                           int &z, int &n) const;
+  virtual PT(ShaderBuffer) fetch_shader_buffer(const State &state,
+                                               ResourceId resource_id) const;
+
 private:
   void r_collect_members(const InternalName *name, const ShaderType *type, size_t offset = 0);
 

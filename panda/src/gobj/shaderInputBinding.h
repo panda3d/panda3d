@@ -19,6 +19,8 @@
 #include "internalName.h"
 #include "shaderEnums.h"
 #include "small_vector.h"
+#include "texture.h"
+#include "shaderBuffer.h"
 
 class GraphicsStateGuardian;
 class LMatrix4f;
@@ -63,6 +65,8 @@ public:
                                           ResourceId resource_id,
                                           ShaderType::Access &access,
                                           int &z, int &n) const;
+  virtual PT(ShaderBuffer) fetch_shader_buffer(const State &state,
+                                               ResourceId resource_id) const;
 
   // All the binders are defined in display, we provide this mechanism so that
   // we don't get a dependency on display here.
