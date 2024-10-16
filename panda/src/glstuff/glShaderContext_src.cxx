@@ -131,8 +131,22 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
       _uniform_data_deps |= block._dep;
       _uniform_blocks.push_back(std::move(block));
 
-      // Pad space to 16-byte boundary
-      uint32_t size = param._type->get_size_bytes();
+      // We ideally want the tightly packed size, since we are not using UBOs
+      // and the regular glUniform calls use tight packing.
+      uint32_t size;
+      ShaderType::ScalarType scalar_type;
+      uint32_t num_elements;
+      uint32_t num_rows;
+      uint32_t num_cols;
+      if (param._type->as_scalar_type(scalar_type, num_elements, num_rows, num_cols)) {
+        size = num_elements * num_rows * num_cols * ShaderType::get_scalar_size_bytes(scalar_type);
+      } else {
+        // If it's a struct, we just use the regular size.  It's too much, but
+        // since we're using the original offsets from the struct, I can't be
+        // bothered right now to write code to repack the entire struct.
+        size = param._type->get_size_bytes();
+      }
+
       size = (size + 15) & ~15;
       _scratch_space_size = std::max(_scratch_space_size, (size_t)size);
     }
@@ -1457,7 +1471,7 @@ issue_parameters(int altered) {
       }
 
       for (const UniformBlock::Binding &binding : block._bindings) {
-        binding._binding->fetch_data(state, scratch + binding._offset, false);
+        binding._binding->fetch_data(state, scratch + binding._offset, true);
       }
 
       for (const UniformBlock::Call &call : block._matrices) {

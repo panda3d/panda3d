@@ -1001,7 +1001,7 @@ r_annotate_struct_layout(uint32_t type_id) {
 
     if (const ShaderType::Matrix *matrix_type = base_type->as_matrix()) {
       // Matrix types need to be explicitly laid out.
-      uint32_t stride = (matrix_type->get_scalar_type() == ShaderType::ST_double) ? 32u : 16u;
+      uint32_t stride = ShaderType::get_scalar_size_bytes(matrix_type->get_scalar_type()) * 4;
       add_annotation(spv::OpMemberDecorate,
         {type_id, i, spv::DecorationMatrixStride, stride});
       add_annotation(spv::OpMemberDecorate,

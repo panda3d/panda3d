@@ -31,7 +31,7 @@ public:
   virtual int get_state_dep() const override;
   virtual void setup(Shader *shader) override;
 
-  virtual void fetch_data(const State &state, void *into, bool pad_rows) const override;
+  virtual void fetch_data(const State &state, void *into, bool packed) const override;
 
 protected:
   size_t _cache_index = 0;
@@ -57,7 +57,7 @@ public:
   virtual int get_state_dep() const override;
   virtual void setup(Shader *shader) override;
 
-  virtual void fetch_data(const State &state, void *into, bool pad_rows) const override;
+  virtual void fetch_data(const State &state, void *into, bool packed) const override;
 
 private:
   size_t _cache_index0 = 0;
@@ -80,7 +80,7 @@ public:
   virtual int get_state_dep() const override;
   virtual void setup(Shader *shader) override;
 
-  virtual void fetch_data(const State &state, void *into, bool pad_rows) const override;
+  virtual void fetch_data(const State &state, void *into, bool packed) const override;
 
 protected:
   size_t _cache_index = 0;
@@ -96,7 +96,7 @@ public:
   virtual int get_state_dep() const override;
   virtual void setup(Shader *shader) override;
 
-  virtual void fetch_data(const State &state, void *into, bool pad_rows) const override;
+  virtual void fetch_data(const State &state, void *into, bool packed) const override;
 
 protected:
   size_t _index;
@@ -129,7 +129,7 @@ class EXPCL_PANDA_DISPLAY ShaderLegacyDirectionalLightBinding : public ShaderLeg
 public:
   using ShaderLegacyLightBinding::ShaderLegacyLightBinding;
 
-  virtual void fetch_data(const State &state, void *into, bool pad_rows) const override;
+  virtual void fetch_data(const State &state, void *into, bool packed) const override;
 };
 
 /**
@@ -139,7 +139,7 @@ class EXPCL_PANDA_DISPLAY ShaderLegacyPointLightBinding : public ShaderLegacyLig
 public:
   using ShaderLegacyLightBinding::ShaderLegacyLightBinding;
 
-  virtual void fetch_data(const State &state, void *into, bool pad_rows) const override;
+  virtual void fetch_data(const State &state, void *into, bool packed) const override;
 };
 
 /**
@@ -149,7 +149,7 @@ class EXPCL_PANDA_DISPLAY ShaderLegacySpotlightBinding : public ShaderLegacyLigh
 public:
   using ShaderLegacyLightBinding::ShaderLegacyLightBinding;
 
-  virtual void fetch_data(const State &state, void *into, bool pad_rows) const override;
+  virtual void fetch_data(const State &state, void *into, bool packed) const override;
 };
 
 /**
@@ -163,7 +163,7 @@ public:
   virtual int get_state_dep() const override;
   virtual void setup(Shader *shader) override;
 
-  virtual void fetch_data(const State &state, void *into, bool pad_rows) const override;
+  virtual void fetch_data(const State &state, void *into, bool packed) const override;
 
   virtual ResourceId get_resource_id(int index, const ShaderType *type) const;
   virtual PT(Texture) fetch_texture(const State &state,
@@ -258,7 +258,7 @@ public:
 
   virtual int get_state_dep() const override;
 
-  virtual void fetch_data(const State &state, void *into, bool pad_rows) const override=0;
+  virtual void fetch_data(const State &state, void *into, bool packed) const override=0;
 
 protected:
   CPT_InternalName _input;
@@ -274,7 +274,7 @@ class EXPCL_PANDA_DISPLAY ShaderFloatBinding : public ShaderDataBinding {
 public:
   using ShaderDataBinding::ShaderDataBinding;
 
-  virtual void fetch_data(const State &state, void *into, bool pad_rows) const override;
+  virtual void fetch_data(const State &state, void *into, bool packed) const override;
 };
 
 /**
@@ -284,7 +284,7 @@ class EXPCL_PANDA_DISPLAY ShaderDoubleBinding : public ShaderDataBinding {
 public:
   using ShaderDataBinding::ShaderDataBinding;
 
-  virtual void fetch_data(const State &state, void *into, bool pad_rows) const override;
+  virtual void fetch_data(const State &state, void *into, bool packed) const override;
 };
 
 /**
@@ -294,7 +294,7 @@ class EXPCL_PANDA_DISPLAY ShaderIntBinding : public ShaderDataBinding {
 public:
   using ShaderDataBinding::ShaderDataBinding;
 
-  virtual void fetch_data(const State &state, void *into, bool pad_rows) const override;
+  virtual void fetch_data(const State &state, void *into, bool packed) const override;
 };
 
 /**
@@ -304,7 +304,7 @@ class EXPCL_PANDA_DISPLAY ShaderBoolBinding : public ShaderDataBinding {
 public:
   using ShaderDataBinding::ShaderDataBinding;
 
-  virtual void fetch_data(const State &state, void *into, bool pad_rows) const override;
+  virtual void fetch_data(const State &state, void *into, bool packed) const override;
 };
 
 /**
@@ -317,7 +317,7 @@ public:
 
   virtual int get_state_dep() const override;
 
-  virtual void fetch_data(const State &state, void *into, bool pad_rows) const override;
+  virtual void fetch_data(const State &state, void *into, bool packed) const override;
 
   virtual ResourceId get_resource_id(int index, const ShaderType *type) const;
   virtual PT(Texture) fetch_texture(const State &state,

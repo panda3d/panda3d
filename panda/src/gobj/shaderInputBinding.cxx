@@ -54,9 +54,11 @@ setup(Shader *shader) {
 
 /**
  * Fetches the part of the shader input that is plain numeric data.
+ * If packed is true, the data is tightly packed, even if the type originally
+ * contained padding.
  */
 void ShaderInputBinding::
-fetch_data(const State &state, void *into, bool pad_rows) const {
+fetch_data(const State &state, void *into, bool packed) const {
 }
 
 /**

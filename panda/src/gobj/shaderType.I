@@ -53,6 +53,14 @@ compare_to(const ShaderType &other) const {
 }
 
 /**
+ * Returns the size of the given scalar type, in bytes.
+ */
+INLINE constexpr uint32_t ShaderType::
+get_scalar_size_bytes(ScalarType scalar_type) {
+  return (scalar_type == ST_double) ? 8 : 4;
+}
+
+/**
  * Constructs a scalar type.
  */
 INLINE ShaderType::Scalar::

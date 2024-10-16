@@ -52,7 +52,7 @@ public:
   };
 
   virtual void fetch_data(const State &state, void *into,
-                          bool pad_rows = false) const;
+                          bool packed = false) const;
 
   typedef uintptr_t ResourceId;
   virtual ResourceId get_resource_id(int index, const ShaderType *type) const;

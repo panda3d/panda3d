@@ -364,8 +364,10 @@ query_constants(const ShaderModule *module, DWORD *data) {
           _constant_deps |= binding._dep;
           _data_bindings.push_back(std::move(binding));
 
-          // Pad space to 16-byte boundary
-          uint32_t size = param._type->get_size_bytes(true);
+          // Pad space to 16-byte boundary, since DX9 wants everything as a
+          // vec4, and otherwise we may end up copying out-of-bounds data if
+          // the last field is smaller than a vec4.
+          uint32_t size = param._type->get_size_bytes();
           size = (size + 15) & ~15;
           _scratch_space_size += size;
         }
@@ -620,7 +622,7 @@ issue_parameters(GSG *gsg, int altered) {
 
     for (const Binding &binding : _data_bindings) {
       if (altered & binding._dep) {
-        binding._binding->fetch_data(state, scratch + binding._offset, true);
+        binding._binding->fetch_data(state, scratch + binding._offset, false);
       }
     }
 

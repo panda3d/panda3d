@@ -201,11 +201,13 @@ parse_instruction(spv::Op opcode, const uint32_t *args, uint32_t nargs, uint32_t
 
   case spv::OpTypeMatrix:
     {
-      const ShaderType::Vector *column_type;
-      DCAST_INTO_V(column_type, _defs[args[1]]._type);
+      // SPIR-V uses GLSL parlance, in which a column is a row and a row is a
+      // column, compared to Panda conventions.  We flip it around here.
+      const ShaderType::Vector *row_type;
+      DCAST_INTO_V(row_type, _defs[args[1]]._type);
       uint32_t num_rows = args[2];
       record_type(args[0], ShaderType::register_type(
-        ShaderType::Matrix(column_type->get_scalar_type(), num_rows, column_type->get_num_components())));
+        ShaderType::Matrix(row_type->get_scalar_type(), num_rows, row_type->get_num_components())));
       _defs[args[0]]._type_id = args[1];
     }
     break;

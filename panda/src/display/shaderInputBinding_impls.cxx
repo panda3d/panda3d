@@ -324,23 +324,23 @@ make_shader_input(const ShaderType *type, CPT_InternalName name) {
       uint32_t num_rows = matrix->get_num_rows();
       if (num_rows == 4) {
         if (matrix->get_scalar_type() == ShaderType::ST_double) {
-          return ShaderInputBinding::make_data(dep, [=](const State &state, void *into, bool pad_rows) {
+          return ShaderInputBinding::make_data(dep, [=](const State &state, void *into, bool packed) {
             state.gsg->get_target_shader_attrib()->get_shader_input_matrix(name, *(LMatrix4d *)into);
           });
         } else {
-          return ShaderInputBinding::make_data(dep, [=](const State &state, void *into, bool pad_rows) {
+          return ShaderInputBinding::make_data(dep, [=](const State &state, void *into, bool packed) {
             state.gsg->get_target_shader_attrib()->get_shader_input_matrix(name, *(LMatrix4f *)into);
           });
         }
       } else {
         if (matrix->get_scalar_type() == ShaderType::ST_double) {
-          return ShaderInputBinding::make_data(dep, [=](const State &state, void *into, bool pad_rows) {
+          return ShaderInputBinding::make_data(dep, [=](const State &state, void *into, bool packed) {
             LMatrix4d tmp;
             state.gsg->get_target_shader_attrib()->get_shader_input_matrix(name, tmp);
             memcpy(into, tmp.get_data(), num_rows * sizeof(double) * 4);
           });
         } else {
-          return ShaderInputBinding::make_data(dep, [=](const State &state, void *into, bool pad_rows) {
+          return ShaderInputBinding::make_data(dep, [=](const State &state, void *into, bool packed) {
             LMatrix4f tmp;
             state.gsg->get_target_shader_attrib()->get_shader_input_matrix(name, tmp);
             memcpy(into, tmp.get_data(), num_rows * sizeof(float) * 4);
@@ -353,20 +353,20 @@ make_shader_input(const ShaderType *type, CPT_InternalName name) {
       if (num_rows == 3) {
         // Short-cut for most common case
         if (matrix->get_scalar_type() == ShaderType::ST_double) {
-          return ShaderInputBinding::make_data(dep, [=](const State &state, void *into, bool pad_rows) {
+          return ShaderInputBinding::make_data(dep, [=](const State &state, void *into, bool packed) {
             LMatrix4d tmp;
             state.gsg->get_target_shader_attrib()->get_shader_input_matrix(name, tmp);
-            if (pad_rows) {
+            if (!packed) {
               memcpy(into, tmp.get_data(), sizeof(double) * 4 * 3);
             } else {
               *((LMatrix3d *)into) = tmp.get_upper_3();
             }
           });
         } else {
-          return ShaderInputBinding::make_data(dep, [=](const State &state, void *into, bool pad_rows) {
+          return ShaderInputBinding::make_data(dep, [=](const State &state, void *into, bool packed) {
             LMatrix4f tmp;
             state.gsg->get_target_shader_attrib()->get_shader_input_matrix(name, tmp);
-            if (pad_rows) {
+            if (!packed) {
               memcpy(into, tmp.get_data(), sizeof(float) * 4 * 3);
             } else {
               *((LMatrix3f *)into) = tmp.get_upper_3();
@@ -375,10 +375,10 @@ make_shader_input(const ShaderType *type, CPT_InternalName name) {
         }
       } else {
         if (matrix->get_scalar_type() == ShaderType::ST_double) {
-          return ShaderInputBinding::make_data(dep, [=](const State &state, void *into, bool pad_rows) {
+          return ShaderInputBinding::make_data(dep, [=](const State &state, void *into, bool packed) {
             LMatrix4d tmp;
             state.gsg->get_target_shader_attrib()->get_shader_input_matrix(name, tmp);
-            if (pad_rows) {
+            if (!packed) {
               memcpy(into, tmp.get_data(), num_rows * sizeof(double) * 4);
             } else {
               for (uint32_t i = 0; i < num_rows; ++i) {
@@ -387,10 +387,10 @@ make_shader_input(const ShaderType *type, CPT_InternalName name) {
             }
           });
         } else {
-          return ShaderInputBinding::make_data(dep, [=](const State &state, void *into, bool pad_rows) {
+          return ShaderInputBinding::make_data(dep, [=](const State &state, void *into, bool packed) {
             LMatrix4f tmp;
             state.gsg->get_target_shader_attrib()->get_shader_input_matrix(name, tmp);
-            if (pad_rows) {
+            if (!packed) {
               memcpy(into, tmp.get_data(), num_rows * sizeof(float) * 4);
             } else {
               for (uint32_t i = 0; i < num_rows; ++i) {
@@ -537,7 +537,7 @@ make_transform_table(const ShaderType *type, bool transpose) {
 
   if (num_rows == 4) {
     return ShaderInputBinding::make_data(Shader::D_vertex_data,
-                                         [=](const State &state, void *into, bool pad_rows) {
+                                         [=](const State &state, void *into, bool packed) {
 
       const TransformTable *table = state.gsg->get_data_reader()->get_transform_table();
       LMatrix4f *matrices = (LMatrix4f *)into;
@@ -564,7 +564,7 @@ make_transform_table(const ShaderType *type, bool transpose) {
     nassertr(transpose, nullptr);
 
     return ShaderInputBinding::make_data(Shader::D_vertex_data,
-                                         [=](const State &state, void *into, bool pad_rows) {
+                                         [=](const State &state, void *into, bool packed) {
 
       const TransformTable *table = state.gsg->get_data_reader()->get_transform_table();
       LVecBase4f *vectors = (LVecBase4f *)into;
@@ -608,7 +608,7 @@ make_slider_table(const ShaderType *type) {
   nassertr(element_type == ShaderType::float_type, nullptr);
 
   return ShaderInputBinding::make_data(Shader::D_vertex_data,
-                                       [=](const State &state, void *into, bool pad_rows) {
+                                       [=](const State &state, void *into, bool packed) {
 
     const SliderTable *table = state.gsg->get_data_reader()->get_slider_table();
     float *sliders = (float *)into;
@@ -630,13 +630,13 @@ static ShaderInputBinding *
 make_frame_time(const ShaderType *type) {
   if (type == ShaderType::float_type) {
     return ShaderInputBinding::make_data(Shader::D_frame,
-                                         [](const State &state, void *into, bool pad_rows) {
+                                         [](const State &state, void *into, bool packed) {
       *(float *)into = ClockObject::get_global_clock()->get_frame_time();
     });
   }
   if (type == ShaderType::double_type) {
     return ShaderInputBinding::make_data(Shader::D_frame,
-                                         [](const State &state, void *into, bool pad_rows) {
+                                         [](const State &state, void *into, bool packed) {
       *(double *)into = ClockObject::get_global_clock()->get_frame_time();
     });
   }
@@ -649,7 +649,7 @@ make_frame_time(const ShaderType *type) {
 static ShaderInputBinding *
 make_color(const ShaderType *type) {
   return ShaderInputBinding::make_data(Shader::D_color,
-                                       [](const State &state, void *into, bool pad_rows) {
+                                       [](const State &state, void *into, bool packed) {
 
     const ColorAttrib *target_color = (const ColorAttrib *)
       state.gsg->get_target_state()->get_attrib_def(ColorAttrib::get_class_slot());
@@ -667,7 +667,7 @@ make_color(const ShaderType *type) {
 static ShaderInputBinding *
 make_color_scale(const ShaderType *type) {
   return ShaderInputBinding::make_data(Shader::D_colorscale,
-                                       [](const State &state, void *into, bool pad_rows) {
+                                       [](const State &state, void *into, bool packed) {
 
     const ColorScaleAttrib *target_color_scale = (const ColorScaleAttrib *)
       state.gsg->get_target_state()->get_attrib_def(ColorScaleAttrib::get_class_slot());
@@ -733,7 +733,7 @@ make_texture_matrix(const ShaderType *type, size_t index, bool inverse, bool tra
   }
 
   return ShaderInputBinding::make_data(Shader::D_tex_matrix,
-                                       [=](const State &state, void *into, bool pad_rows) {
+                                       [=](const State &state, void *into, bool packed) {
 
     const TexMatrixAttrib *tma;
     const TextureAttrib *ta;
@@ -812,7 +812,7 @@ make_fog(const ShaderType *type) {
   }
 
   return ShaderInputBinding::make_data(Shader::D_fog | Shader::D_frame,
-                                       [=](const State &state, void *into, bool pad_rows) {
+                                       [=](const State &state, void *into, bool packed) {
 
     LVecBase4f color(1, 1, 1, 1);
     PN_stdfloat density = 0, start = 1, end = 1, scale = 1;
@@ -912,7 +912,7 @@ make_material(const ShaderType *type) {
   }
 
   return ShaderInputBinding::make_data(Shader::D_material | Shader::D_frame,
-                                       [=](const State &state, void *into, bool pad_rows) {
+                                       [=](const State &state, void *into, bool packed) {
 
     LVecBase4f base_color(0, 0, 0, 0);
     LVecBase4f ambient(1, 1, 1, 1);
@@ -957,7 +957,7 @@ make_material(const ShaderType *type) {
 static ShaderInputBinding *
 make_light_ambient(const ShaderType *type) {
   return ShaderInputBinding::make_data(Shader::D_frame | Shader::D_light,
-                                       [](const State &state, void *into, bool pad_rows) {
+                                       [](const State &state, void *into, bool packed) {
     const LightAttrib *target_light;
     if (state.gsg->get_target_state()->get_attrib(target_light) && target_light->has_any_on_light()) {
       *(LVecBase4f *)into = LCAST(float, target_light->get_ambient_contribution());
@@ -991,17 +991,17 @@ setup(Shader *shader) {
  * Fetches the part of the shader input that is plain numeric data.
  */
 void ShaderMatrixBinding::
-fetch_data(const State &state, void *into, bool pad_rows) const {
+fetch_data(const State &state, void *into, bool packed) const {
   LMatrix4f m = LCAST(float, state.matrix_cache[_cache_index]);
   if (_transpose) {
     m.transpose_in_place();
   }
-  if (pad_rows || _num_cols == 4) {
-    memcpy(into, m.get_data(), _num_cols * 4 * sizeof(float));
-  } else {
+  if (packed && _num_cols != 4) {
     for (size_t i = 0; i < _num_rows; ++i) {
       memcpy((float *)into + i * _num_cols, m.get_data() + i * 4, _num_cols * sizeof(float));
     }
+  } else {
+    memcpy(into, m.get_data(), _num_cols * 4 * sizeof(float));
   }
 }
 
@@ -1029,19 +1029,19 @@ setup(Shader *shader) {
  * Fetches the part of the shader input that is plain numeric data.
  */
 void ShaderMatrixComposeBinding::
-fetch_data(const State &state, void *into, bool pad_rows) const {
+fetch_data(const State &state, void *into, bool packed) const {
   LMatrix4f m;
   m.multiply(LCAST(float, state.matrix_cache[_cache_index0]),
              LCAST(float, state.matrix_cache[_cache_index1]));
   if (_transpose) {
     m.transpose_in_place();
   }
-  if (pad_rows || _num_cols == 4) {
-    memcpy(into, m.get_data(), _num_rows * 4 * sizeof(float));
-  } else {
+  if (packed && _num_cols != 4) {
     for (size_t i = 0; i < _num_rows; ++i) {
       memcpy((float *)into + i * _num_cols, m.get_data() + i * 4, _num_cols * sizeof(float));
     }
+  } else {
+    memcpy(into, m.get_data(), _num_rows * 4 * sizeof(float));
   }
 }
 
@@ -1071,7 +1071,7 @@ setup(Shader *shader) {
  * Fetches the part of the shader input that is plain numeric data.
  */
 void ShaderPointParamsBinding::
-fetch_data(const State &state, void *into, bool pad_rows) const {
+fetch_data(const State &state, void *into, bool packed) const {
   const RenderModeAttrib *target_render_mode;
   state.gsg->get_target_state()->get_attrib_def(target_render_mode);
 
@@ -1112,7 +1112,7 @@ setup(Shader *shader) {
  * Fetches the part of the shader input that is plain numeric data.
  */
 void ShaderPackedLightBinding::
-fetch_data(const State &state, void *into, bool pad_rows) const {
+fetch_data(const State &state, void *into, bool packed) const {
   // The light matrix contains COLOR, ATTENUATION, VIEWVECTOR, POSITION
   LVecBase4f *data = (LVecBase4f *)into;
 
@@ -1200,7 +1200,7 @@ setup(Shader *shader) {
  * Fetches the part of the shader input that is plain numeric data.
  */
 void ShaderLegacyDirectionalLightBinding::
-fetch_data(const State &state, void *into, bool pad_rows) const {
+fetch_data(const State &state, void *into, bool packed) const {
   // The dlight matrix contains COLOR, SPECULAR, DIRECTION, PSEUDOHALFANGLE
   const NodePath &np = state.gsg->get_target_shader_attrib()->get_shader_input_nodepath(_input);
   nassertv(!np.is_empty());
@@ -1230,7 +1230,7 @@ fetch_data(const State &state, void *into, bool pad_rows) const {
  * Fetches the part of the shader input that is plain numeric data.
  */
 void ShaderLegacyPointLightBinding::
-fetch_data(const State &state, void *into, bool pad_rows) const {
+fetch_data(const State &state, void *into, bool packed) const {
   // The plight matrix contains COLOR, SPECULAR, POINT, ATTENUATION
   const NodePath &np = state.gsg->get_target_shader_attrib()->get_shader_input_nodepath(_input);
   nassertv(!np.is_empty());
@@ -1257,7 +1257,7 @@ fetch_data(const State &state, void *into, bool pad_rows) const {
  * Fetches the part of the shader input that is plain numeric data.
  */
 void ShaderLegacySpotlightBinding::
-fetch_data(const State &state, void *into, bool pad_rows) const {
+fetch_data(const State &state, void *into, bool packed) const {
   // The slight matrix contains COLOR, SPECULAR, POINT, DIRECTION
   const NodePath &np = state.gsg->get_target_shader_attrib()->get_shader_input_nodepath(_input);
   nassertv(!np.is_empty());
@@ -1398,7 +1398,7 @@ setup(Shader *shader) {
  * Fetches the part of the shader input that is plain numeric data.
  */
 void ShaderLightStructBinding::
-fetch_data(const State &state, void *into, bool pad_rows) const {
+fetch_data(const State &state, void *into, bool packed) const {
   if (_input != nullptr) {
     // Fetch shader input.
     if (state.gsg->get_target_shader_attrib()->has_shader_input(_input)) {
@@ -1803,15 +1803,15 @@ get_state_dep() const {
  * Fetches the part of the shader input that is plain numeric data.
  */
 void ShaderFloatBinding::
-fetch_data(const State &state, void *into, bool pad_rows) const {
+fetch_data(const State &state, void *into, bool packed) const {
   Shader::ShaderPtrData ptr_data;
   if (!state.gsg->get_target_shader_attrib()->get_shader_input_ptr(_input, ptr_data)) {
     return;
   }
 
   int total_rows = std::min(_num_elements * _num_rows, (int)ptr_data._size / _num_cols);
-  if (total_rows == 1) {
-    pad_rows = false;
+  if (total_rows == 1 || _num_cols == 4) {
+    packed = true;
   }
 
   float *data = (float *)into;
@@ -1819,7 +1819,7 @@ fetch_data(const State &state, void *into, bool pad_rows) const {
   switch (ptr_data._type) {
   case ShaderType::ST_int:
     // Convert int data to float data.
-    if (!pad_rows || _num_cols == 4) {
+    if (packed) {
       for (int i = 0; i < total_rows * _num_cols; ++i) {
         data[i] = (float)(((int *)ptr_data._ptr)[i]);
       }
@@ -1835,7 +1835,7 @@ fetch_data(const State &state, void *into, bool pad_rows) const {
 
   case ShaderType::ST_uint:
     // Convert unsigned int data to float data.
-    if (!pad_rows || _num_cols == 4) {
+    if (packed) {
       for (int i = 0; i < total_rows * _num_cols; ++i) {
         data[i] = (float)(((unsigned int *)ptr_data._ptr)[i]);
       }
@@ -1851,7 +1851,7 @@ fetch_data(const State &state, void *into, bool pad_rows) const {
 
   case ShaderType::ST_double:
     // Downgrade double data to float data.
-    if (!pad_rows || _num_cols == 4) {
+    if (packed) {
       for (int i = 0; i < total_rows * _num_cols; ++i) {
         data[i] = (float)(((double *)ptr_data._ptr)[i]);
       }
@@ -1866,7 +1866,7 @@ fetch_data(const State &state, void *into, bool pad_rows) const {
     return;
 
   case ShaderType::ST_float:
-    if (!pad_rows || _num_cols == 4) {
+    if (packed) {
       // No conversion needed.
       memcpy(data, ptr_data._ptr, total_rows * _num_cols * sizeof(float));
       return;
@@ -1899,15 +1899,15 @@ fetch_data(const State &state, void *into, bool pad_rows) const {
  * Fetches the part of the shader input that is plain numeric data.
  */
 void ShaderDoubleBinding::
-fetch_data(const State &state, void *into, bool pad_rows) const {
+fetch_data(const State &state, void *into, bool packed) const {
   Shader::ShaderPtrData ptr_data;
   if (!state.gsg->get_target_shader_attrib()->get_shader_input_ptr(_input, ptr_data)) {
     return;
   }
 
   int total_rows = std::min(_num_elements * _num_rows, (int)ptr_data._size / _num_cols);
-  if (total_rows == 1) {
-    pad_rows = false;
+  if (total_rows == 1 || _num_cols == 4) {
+    packed = true;
   }
 
   double *data = (double *)into;
@@ -1915,7 +1915,7 @@ fetch_data(const State &state, void *into, bool pad_rows) const {
   switch (ptr_data._type) {
   case ShaderType::ST_int:
     // Convert int data to double data.
-    if (!pad_rows || _num_cols == 4) {
+    if (packed) {
       for (int i = 0; i < total_rows * _num_cols; ++i) {
         data[i] = (double)(((int *)ptr_data._ptr)[i]);
       }
@@ -1931,7 +1931,7 @@ fetch_data(const State &state, void *into, bool pad_rows) const {
 
   case ShaderType::ST_uint:
     // Convert int data to double data.
-    if (!pad_rows || _num_cols == 4) {
+    if (packed) {
       for (int i = 0; i < total_rows * _num_cols; ++i) {
         data[i] = (double)(((unsigned int *)ptr_data._ptr)[i]);
       }
@@ -1946,7 +1946,7 @@ fetch_data(const State &state, void *into, bool pad_rows) const {
     return;
 
   case ShaderType::ST_double:
-    if (!pad_rows || _num_cols == 4) {
+    if (packed) {
       // No conversion needed.
       //if (always_copy) {
         memcpy(data, ptr_data._ptr, total_rows * _num_cols * sizeof(double));
@@ -1966,7 +1966,7 @@ fetch_data(const State &state, void *into, bool pad_rows) const {
 
   case ShaderType::ST_float:
     // Upgrade float data to double data.
-    if (!pad_rows || _num_cols == 4) {
+    if (packed) {
       for (int i = 0; i < total_rows * _num_cols; ++i) {
         data[i] = (double)(((float *)ptr_data._ptr)[i]);
       }
@@ -1993,7 +1993,7 @@ fetch_data(const State &state, void *into, bool pad_rows) const {
  * Fetches the part of the shader input that is plain numeric data.
  */
 void ShaderIntBinding::
-fetch_data(const State &state, void *into, bool pad_rows) const {
+fetch_data(const State &state, void *into, bool packed) const {
   Shader::ShaderPtrData ptr_data;
   if (!state.gsg->get_target_shader_attrib()->get_shader_input_ptr(_input, ptr_data)) {
     return;
@@ -2008,11 +2008,11 @@ fetch_data(const State &state, void *into, bool pad_rows) const {
   }
 
   int total_rows = std::min(_num_elements * _num_rows, (int)ptr_data._size / _num_cols);
-  if (total_rows == 1) {
-    pad_rows = false;
+  if (total_rows == 1 || _num_cols == 4) {
+    packed = true;
   }
 
-  if (!pad_rows || _num_cols == 4) {
+  if (packed) {
     memcpy(into, ptr_data._ptr, total_rows * _num_cols * sizeof(int));
   } else {
     int *data = (int *)into;
@@ -2029,15 +2029,15 @@ fetch_data(const State &state, void *into, bool pad_rows) const {
  * Fetches the part of the shader input that is plain numeric data.
  */
 void ShaderBoolBinding::
-fetch_data(const State &state, void *into, bool pad_rows) const {
+fetch_data(const State &state, void *into, bool packed) const {
   Shader::ShaderPtrData ptr_data;
   if (!state.gsg->get_target_shader_attrib()->get_shader_input_ptr(_input, ptr_data)) {
     return;
   }
 
   int total_rows = std::min(_num_elements * _num_rows, (int)ptr_data._size / _num_cols);
-  if (total_rows == 1) {
-    pad_rows = false;
+  if (total_rows == 1 || _num_cols == 4) {
+    packed = true;
   }
 
   uint32_t *data = (uint32_t *)into;
@@ -2047,7 +2047,7 @@ fetch_data(const State &state, void *into, bool pad_rows) const {
   case ShaderType::ST_uint:
   case ShaderType::ST_bool:
     // Convert int data to bool data.
-    if (!pad_rows || _num_cols == 4) {
+    if (packed) {
       for (int i = 0; i < total_rows * _num_cols; ++i) {
         data[i] = (uint32_t)(((unsigned int *)ptr_data._ptr)[i] != 0);
       }
@@ -2063,7 +2063,7 @@ fetch_data(const State &state, void *into, bool pad_rows) const {
 
   case ShaderType::ST_double:
     // Convert double data to bool data.
-    if (!pad_rows || _num_cols == 4) {
+    if (packed) {
       for (int i = 0; i < total_rows * _num_cols; ++i) {
         data[i] = (uint32_t)(((double *)ptr_data._ptr)[i] != 0.0);
       }
@@ -2079,7 +2079,7 @@ fetch_data(const State &state, void *into, bool pad_rows) const {
 
   case ShaderType::ST_float:
     // Convert float data to bool data.
-    if (!pad_rows || _num_cols == 4) {
+    if (packed) {
       for (int i = 0; i < total_rows * _num_cols; ++i) {
         data[i] = (uint32_t)(((float *)ptr_data._ptr)[i] != 0.0f);
       }
@@ -2115,9 +2115,12 @@ get_state_dep() const {
  * Fetches the part of the shader input that is plain numeric data.
  */
 void ShaderAggregateBinding::
-fetch_data(const State &state, void *into, bool pad_rows) const {
+fetch_data(const State &state, void *into, bool packed) const {
+  // Note that the offsets are calculated for a non-packed layout.  That means
+  // we have too much padding if we want packed data.  It's probably not worth
+  // engineering a solution for that.
   for (const DataMember &member : _data_members) {
-    member._binding->fetch_data(state, (unsigned char *)into + member._offset, pad_rows);
+    member._binding->fetch_data(state, (unsigned char *)into + member._offset, packed);
   }
 }
 
@@ -2430,7 +2433,7 @@ make_binding_glsl(const InternalName *name, const ShaderType *type) {
       }
 
       return ShaderInputBinding::make_data(Shader::D_clip_planes | Shader::D_view_transform,
-                                           [=](const State &state, void *into, bool pad_rows) {
+                                           [=](const State &state, void *into, bool packed) {
 
         LPlanef *planes = (LPlanef *)into;
 
@@ -2468,7 +2471,7 @@ make_binding_glsl(const InternalName *name, const ShaderType *type) {
       type->unwrap_array(element_type, num_elements);
 
       return ShaderInputBinding::make_data(Shader::D_texture | Shader::D_frame,
-                                           [=](const State &state, void *into, bool pad_rows) {
+                                           [=](const State &state, void *into, bool packed) {
 
         const TextureAttrib *ta;
 
@@ -2593,13 +2596,13 @@ make_binding_glsl(const InternalName *name, const ShaderType *type) {
     else if (pieces[1] == "DeltaFrameTime") {
       if (type == ShaderType::float_type) {
         return ShaderInputBinding::make_data(Shader::D_frame,
-                                             [](const State &state, void *into, bool pad_rows) {
+                                             [](const State &state, void *into, bool packed) {
           *(float *)into = ClockObject::get_global_clock()->get_dt();
         });
       }
       else if (type == ShaderType::double_type) {
         return ShaderInputBinding::make_data(Shader::D_frame,
-                                             [](const State &state, void *into, bool pad_rows) {
+                                             [](const State &state, void *into, bool packed) {
           *(double *)into = ClockObject::get_global_clock()->get_dt();
         });
       }
@@ -2610,7 +2613,7 @@ make_binding_glsl(const InternalName *name, const ShaderType *type) {
     else if (pieces[1] == "FrameNumber") {
       if (type == ShaderType::int_type) {
         return ShaderInputBinding::make_data(Shader::D_frame,
-                                             [](const State &state, void *into, bool pad_rows) {
+                                             [](const State &state, void *into, bool packed) {
           *(int *)into = ClockObject::get_global_clock()->get_frame_count();
         });
       } else {
@@ -2915,7 +2918,7 @@ make_binding_cg(const InternalName *name, const ShaderType *type) {
         return nullptr;
       }
       return ShaderInputBinding::make_data(Shader::D_material | Shader::D_frame,
-                                           [=](const State &state, void *into, bool pad_rows) {
+                                           [=](const State &state, void *into, bool packed) {
 
         LVecBase4f &ambient = ((LVecBase4f *)into)[0];
         LVecBase4f &diffuse = ((LVecBase4f *)into)[1];
@@ -2955,7 +2958,7 @@ make_binding_cg(const InternalName *name, const ShaderType *type) {
         return nullptr;
       }
       return ShaderInputBinding::make_data(Shader::D_fog | Shader::D_frame,
-                                           [](const State &state, void *into, bool pad_rows) {
+                                           [](const State &state, void *into, bool packed) {
 
         LVecBase4f &params = *(LVecBase4f *)into;
 
@@ -2975,7 +2978,7 @@ make_binding_cg(const InternalName *name, const ShaderType *type) {
         return nullptr;
       }
       return ShaderInputBinding::make_data(Shader::D_fog | Shader::D_frame,
-                                           [](const State &state, void *into, bool pad_rows) {
+                                           [](const State &state, void *into, bool packed) {
 
         LVecBase4f &color = *(LVecBase4f *)into;
 
@@ -3007,7 +3010,7 @@ make_binding_cg(const InternalName *name, const ShaderType *type) {
         return nullptr;
       }
       return ShaderInputBinding::make_data(Shader::D_light | Shader::D_frame,
-                                           [=](const State &state, void *into, bool pad_rows) {
+                                           [=](const State &state, void *into, bool packed) {
 
         // We don't count ambient lights, which would be pretty silly to handle
         // via this mechanism.
@@ -3046,7 +3049,7 @@ make_binding_cg(const InternalName *name, const ShaderType *type) {
 
     CPT(InternalName) input = InternalName::make(pieces[1]);
     return ShaderInputBinding::make_data(Shader::D_shader_inputs | Shader::D_frame,
-                                         [=](const State &state, void *into, bool pad_rows) {
+                                         [=](const State &state, void *into, bool packed) {
       const NodePath &np = state.gsg->get_target_shader_attrib()->get_shader_input_nodepath(input);
       nassertv(!np.is_empty());
       Light *light = np.node()->as_light();
@@ -3063,7 +3066,7 @@ make_binding_cg(const InternalName *name, const ShaderType *type) {
 
     CPT(InternalName) input = InternalName::make(pieces[1]);
     return ShaderInputBinding::make_data(Shader::D_shader_inputs | Shader::D_frame,
-                                         [=](const State &state, void *into, bool pad_rows) {
+                                         [=](const State &state, void *into, bool packed) {
       const NodePath &np = state.gsg->get_target_shader_attrib()->get_shader_input_nodepath(input);
       nassertv(!np.is_empty());
       Light *light = np.node()->as_light();
@@ -3125,7 +3128,7 @@ make_binding_cg(const InternalName *name, const ShaderType *type) {
 
     int stage = atoi(pieces[1].c_str());
     return ShaderInputBinding::make_data(Shader::D_texture | Shader::D_tex_matrix,
-                                         [=](const State &state, void *into, bool pad_rows) {
+                                         [=](const State &state, void *into, bool packed) {
 
       const TextureAttrib *ta;
       const TexMatrixAttrib *tma;
@@ -3148,7 +3151,7 @@ make_binding_cg(const InternalName *name, const ShaderType *type) {
     // state change
     int stage = atoi(pieces[1].c_str());
     return ShaderInputBinding::make_data(Shader::D_texture | Shader::D_frame,
-                                         [=](const State &state, void *into, bool pad_rows) {
+                                         [=](const State &state, void *into, bool packed) {
 
       const TextureAttrib *ta;
       if (state.gsg->get_target_state()->get_attrib(ta) && stage < ta->get_num_on_stages()) {
@@ -3170,7 +3173,7 @@ make_binding_cg(const InternalName *name, const ShaderType *type) {
     // a state change
     int stage = atoi(pieces[1].c_str());
     return ShaderInputBinding::make_data(Shader::D_texture | Shader::D_tex_gen | Shader::D_frame,
-                                         [=](const State &state, void *into, bool pad_rows) {
+                                         [=](const State &state, void *into, bool packed) {
 
       const TextureAttrib *ta;
       const TexGenAttrib *tga;
@@ -3193,7 +3196,7 @@ make_binding_cg(const InternalName *name, const ShaderType *type) {
     // state change
     CPT(InternalName) input = InternalName::make(pieces[1]);
     return ShaderInputBinding::make_data(Shader::D_frame | Shader::D_shader_inputs,
-                                         [=](const State &state, void *into, bool pad_rows) {
+                                         [=](const State &state, void *into, bool packed) {
       const NodePath &np = state.gsg->get_target_shader_attrib()->get_shader_input_nodepath(name);
       nassertv(!np.is_empty());
       const PlaneNode *plane_node;
@@ -3212,7 +3215,7 @@ make_binding_cg(const InternalName *name, const ShaderType *type) {
     // state change
     int index = atoi(pieces[1].c_str());
     return ShaderInputBinding::make_data(Shader::D_clip_planes | Shader::D_frame,
-                                         [=](const State &state, void *into, bool pad_rows) {
+                                         [=](const State &state, void *into, bool packed) {
       const ClipPlaneAttrib *cpa;
       state.gsg->get_target_state()->get_attrib_def(cpa);
       if (index >= cpa->get_num_on_planes()) {
@@ -3244,7 +3247,7 @@ make_binding_cg(const InternalName *name, const ShaderType *type) {
         return nullptr;
       }
       return ShaderInputBinding::make_data(Shader::D_scene,
-                                           [=](const State &state, void *into, bool pad_rows) {
+                                           [=](const State &state, void *into, bool packed) {
         const DisplayRegion *region = state.gsg->get_current_display_region();
         *(LVecBase2f *)into = LCAST(float, region->get_pixel_size());
       });
@@ -3313,7 +3316,7 @@ make_binding_cg(const InternalName *name, const ShaderType *type) {
     }
     CPT(InternalName) input = InternalName::make(pieces[1]);
     return ShaderInputBinding::make_data(Shader::D_frame | Shader::D_shader_inputs,
-                                         [=](const State &state, void *into, bool pad_rows) {
+                                         [=](const State &state, void *into, bool packed) {
       Texture *tex = state.gsg->get_target_shader_attrib()->get_shader_input_texture(input);
       nassertv(tex != nullptr);
       int sx = tex->get_x_size() - tex->get_pad_x_size();
@@ -3333,7 +3336,7 @@ make_binding_cg(const InternalName *name, const ShaderType *type) {
     }
     CPT(InternalName) input = InternalName::make(pieces[1]);
     return ShaderInputBinding::make_data(Shader::D_frame | Shader::D_shader_inputs,
-                                         [=](const State &state, void *into, bool pad_rows) {
+                                         [=](const State &state, void *into, bool packed) {
       Texture *tex = state.gsg->get_target_shader_attrib()->get_shader_input_texture(input);
       nassertv(tex != nullptr);
       double px = 1.0 / tex->get_x_size();
