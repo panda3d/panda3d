@@ -7531,7 +7531,9 @@ prepare_shader_buffer(ShaderBuffer *data) {
     }
 
     // Some drivers require the buffer to be padded to 16 byte boundary.
-    uint64_t num_bytes = (data->get_data_size_bytes() + 15u) & ~15u;
+    //XXX rdb: actually, this breaks runtime-sized arrays.
+    //uint64_t num_bytes = (data->get_data_size_bytes() + 15u) & ~15u;
+    uint64_t num_bytes = data->get_data_size_bytes();
     if (_supports_buffer_storage) {
       _glBufferStorage(GL_SHADER_STORAGE_BUFFER, num_bytes, data->get_initial_data(), 0);
     } else {
