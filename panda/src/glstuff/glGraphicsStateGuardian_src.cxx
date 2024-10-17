@@ -5707,7 +5707,7 @@ draw_patches(const GeomPrimitivePipelineReader *reader, bool force) {
   }
 
 #ifndef OPENGLES
-  _glPatchParameteri(GL_PATCH_VERTICES, reader->get_object()->get_num_vertices_per_primitive());
+  _glPatchParameteri(GL_PATCH_VERTICES, ((const GeomPatches *)reader->get_object())->get_num_vertices_per_primitive());
 
 #ifdef SUPPORT_IMMEDIATE_MODE
   if (_use_sender) {

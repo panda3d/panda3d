@@ -72,21 +72,6 @@ get_primitive_type() const {
 }
 
 /**
- * If the primitive type is a simple type in which all primitives have the
- * same number of vertices, like patches, returns the number of vertices per
- * primitive.  If the primitive type is a more complex type in which different
- * primitives might have different numbers of vertices, for instance a
- * triangle strip, returns 0.
- *
- * In the case of GeomPatches, this returns the fixed number that was
- * specified to the constructor.
- */
-int GeomPatches::
-get_num_vertices_per_primitive() const {
-  return _num_vertices_per_patch;
-}
-
-/**
  * Calls the appropriate method on the GSG to draw the primitive.
  */
 bool GeomPatches::
