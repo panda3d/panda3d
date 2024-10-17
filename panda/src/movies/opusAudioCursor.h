@@ -37,6 +37,7 @@ PUBLISHED:
   explicit OpusAudioCursor(OpusAudio *src, std::istream *stream);
   virtual ~OpusAudioCursor();
   virtual void seek(double offset);
+  std::vector<std::string> get_raw_comment() const;
 
 public:
   virtual int read_samples(int n, int16_t *data);
@@ -47,6 +48,7 @@ protected:
   OggOpusFile *_op;
   std::istream *_stream;
   int _link;
+  std::vector<std::string> _comment;
 
 public:
   static TypeHandle get_class_type() {
