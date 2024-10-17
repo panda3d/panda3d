@@ -156,7 +156,7 @@ def usage(problem):
     print("  --everything      (enable every third-party lib)")
     print("  --directx-sdk=X   (specify version of DirectX SDK to use: jun2010, aug2009)")
     print("  --windows-sdk=X   (specify Windows SDK version, eg. 7.1, 8.1, 10 or 11.  Default is 8.1)")
-    print("  --msvc-version=X  (specify Visual C++ version, 14.1, 14.2, 14.3.  Default is 14.1)")
+    print("  --msvc-version=X  (specify Visual C++ version, 14.1, 14.2, 14.3.  Default is 14.2)")
     print("  --use-icl         (experimental setting to use an intel compiler instead of MSVC on Windows)")
     print("")
     print("The simplest way to compile panda is to just type:")
@@ -309,8 +309,8 @@ def parseopts(args):
 
     if GetTarget() == 'windows':
         if not MSVC_VERSION:
-            print("No MSVC version specified. Defaulting to 14.1 (Visual Studio 2017).")
-            MSVC_VERSION = (14, 1)
+            print("No MSVC version specified. Defaulting to 14.2 (Visual Studio 2019).")
+            MSVC_VERSION = (14, 2)
         else:
             try:
                 MSVC_VERSION = tuple(int(d) for d in MSVC_VERSION.split('.'))[:2]
