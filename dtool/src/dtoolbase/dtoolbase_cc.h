@@ -110,9 +110,9 @@ typedef std::ios::seekdir ios_seekdir;
 #define INLINE inline
 #endif
 
-// Determine the availability of C++11 features.
-#if defined(_MSC_VER) && _MSC_VER < 1900 // Visual Studio 2015
-#error Microsoft Visual C++ 2015 or later is required to compile Panda3D.
+// Determine the availability of C++14 features.
+#if defined(_MSC_VER) && _MSC_VER < 1910 // Visual Studio 2017
+#error Microsoft Visual C++ 2017 or later is required to compile Panda3D.
 #endif
 
 // This is just to support code generated with older versions of interrogate.
