@@ -24,6 +24,7 @@
 #include "geomTrifans.h"
 #include "geomLines.h"
 #include "geomLinestrips.h"
+#include "geomPatches.h"
 #include "geomPoints.h"
 #include "geomVertexReader.h"
 #include "graphicsWindow.h"
