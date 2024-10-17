@@ -38,6 +38,7 @@ add_subdirectory(src/linmath)
 add_subdirectory(src/mathutil)
 add_subdirectory(src/movies)
 add_subdirectory(src/nativenet)
+add_subdirectory(src/navigation)
 add_subdirectory(src/net)
 add_subdirectory(src/pandabase)
 add_subdirectory(src/parametrics)
@@ -211,6 +212,12 @@ build_apps = direct.dist.commands:finalize_distribution_options
     set_target_properties(panda3d.vrpn PROPERTIES CXX_EXCEPTIONS ON)
 
     export_targets(VRPNPython NAMESPACE "Panda3D::Python::" COMPONENT VRPNDevel)
+  endif()
+
+  if(HAVE_RECAST AND HAVE_DETOUR)
+    add_python_module(panda3d.navigation p3navigation IMPORT panda3d.core COMPONENT NavigationPython)
+
+    export_targets(NavigationPython NAMESPACE "Panda3D::Python::" COMPONENT NavigationDevel)
   endif()
 
   export_targets(Python NAMESPACE "Panda3D::Python::" COMPONENT CoreDevel)

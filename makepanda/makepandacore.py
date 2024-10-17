@@ -3394,6 +3394,7 @@ def CalcLocation(fn, ipath):
     if (fn == "AndroidManifest.xml"): return OUTPUTDIR+"/"+fn
     if (fn == "classes.dex"): return OUTPUTDIR+"/"+fn
     if (fn.endswith(".cxx")): return CxxFindSource(fn, ipath)
+    if (fn.endswith(".cpp")): return CxxFindSource(fn, ipath)
     if (fn.endswith(".I")):   return CxxFindSource(fn, ipath)
     if (fn.endswith(".h")):   return CxxFindSource(fn, ipath)
     if (fn.endswith(".c")):   return CxxFindSource(fn, ipath)
