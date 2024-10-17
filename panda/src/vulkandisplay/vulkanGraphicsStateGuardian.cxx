@@ -136,7 +136,8 @@ reset() {
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUSTOM_BORDER_COLOR_FEATURES_EXT,
     enabled_features.pNext,
   };
-  if (pipe->_gpu_supports_custom_border_colors) {
+  if (pipe->_gpu_supports_custom_border_colors &&
+      vulkan_support_custom_border_color) {
     cbc_features.customBorderColors = VK_TRUE;
     cbc_features.customBorderColorWithoutFormat = VK_TRUE;
     enabled_features.pNext = &cbc_features;
@@ -160,9 +161,9 @@ reset() {
     supports_null_descriptor = true;
   }
 
-  // VK_EXT_vertex_attribute_divisor
-  VkPhysicalDeviceVertexAttributeDivisorFeaturesEXT div_features = {
-    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_ATTRIBUTE_DIVISOR_FEATURES_EXT,
+  // VK_KHR_vertex_attribute_divisor / VK_EXT_vertex_attribute_divisor
+  VkPhysicalDeviceVertexAttributeDivisorFeaturesKHR div_features = {
+    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_ATTRIBUTE_DIVISOR_FEATURES_KHR,
     enabled_features.pNext,
   };
   if (pipe->_gpu_supports_vertex_attrib_divisor) {
@@ -170,7 +171,11 @@ reset() {
     div_features.vertexAttributeInstanceRateZeroDivisor = pipe->_gpu_supports_vertex_attrib_zero_divisor;
     enabled_features.pNext = &div_features;
 
-    extensions.push_back(VK_EXT_VERTEX_ATTRIBUTE_DIVISOR_EXTENSION_NAME);
+    if (pipe->has_device_extension(VK_KHR_VERTEX_ATTRIBUTE_DIVISOR_EXTENSION_NAME)) {
+      extensions.push_back(VK_KHR_VERTEX_ATTRIBUTE_DIVISOR_EXTENSION_NAME);
+    } else {
+      extensions.push_back(VK_EXT_VERTEX_ATTRIBUTE_DIVISOR_EXTENSION_NAME);
+    }
     _supports_vertex_attrib_divisor = true;
     _supports_vertex_attrib_zero_divisor = pipe->_gpu_supports_vertex_attrib_zero_divisor;
   } else {
@@ -387,6 +392,9 @@ reset() {
       return;
     }
     _needs_write_null_vertex_data = true;
+  } else {
+    _null_vertex_buffer = VK_NULL_HANDLE;
+    _needs_write_null_vertex_data = false;
   }
 
   // Create a push constant layout based on the available space.
@@ -1465,7 +1473,7 @@ upload_texture(VulkanTextureContext *tc) {
 
   VkBuffer buffer;
   uint32_t buffer_offset;
-  void *data = alloc_staging_buffer(buffer_size, buffer, buffer_offset);
+  void *data = alloc_staging_buffer(buffer_size + optimal_align - 1, buffer, buffer_offset);
   if (!data) {
     vulkandisplay_cat.error()
       << "Failed to allocate staging buffer for texture "
@@ -2098,6 +2106,21 @@ update_vertex_buffer(VulkanVertexBufferContext *vbc,
       region.dstOffset = 0;
       region.size = num_bytes;
       vkCmdCopyBuffer(_frame_data->_transfer_cmd, buffer, vbc->_buffer, 1, &region);
+
+      VkBufferMemoryBarrier barrier;
+      barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+      barrier.pNext = nullptr;
+      barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+      barrier.dstAccessMask = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
+      barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+      barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+      barrier.buffer = vbc->_buffer;
+      barrier.offset = 0;
+      barrier.size = VK_WHOLE_SIZE;
+      vkCmdPipelineBarrier(_frame_data->_transfer_cmd,
+                           VK_PIPELINE_STAGE_TRANSFER_BIT,
+                           VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
+                           0, 0, nullptr, 1, &barrier, 0, nullptr);
     }
 
     vbc->mark_loaded(reader);
@@ -2230,6 +2253,21 @@ update_index_buffer(VulkanIndexBufferContext *ibc,
       region.dstOffset = 0;
       region.size = num_bytes;
       vkCmdCopyBuffer(_frame_data->_transfer_cmd, buffer, ibc->_buffer, 1, &region);
+
+      VkBufferMemoryBarrier barrier;
+      barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+      barrier.pNext = nullptr;
+      barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+      barrier.dstAccessMask = VK_ACCESS_INDEX_READ_BIT;
+      barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+      barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+      barrier.buffer = ibc->_buffer;
+      barrier.offset = 0;
+      barrier.size = VK_WHOLE_SIZE;
+      vkCmdPipelineBarrier(_frame_data->_transfer_cmd,
+                           VK_PIPELINE_STAGE_TRANSFER_BIT,
+                           VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
+                           0, 0, nullptr, 1, &barrier, 0, nullptr);
     }
 
     ibc->mark_loaded(reader);
@@ -2303,6 +2341,26 @@ prepare_shader_buffer(ShaderBuffer *data) {
     region.dstOffset = 0;
     region.size = data_size;
     vkCmdCopyBuffer(_frame_data->_transfer_cmd, buffer, bc->_buffer, 1, &region);
+
+    VkBufferMemoryBarrier barrier;
+    barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+    barrier.pNext = nullptr;
+    barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+    barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+    barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    barrier.buffer = bc->_buffer;
+    barrier.offset = 0;
+    barrier.size = VK_WHOLE_SIZE;
+    vkCmdPipelineBarrier(_frame_data->_transfer_cmd,
+                         VK_PIPELINE_STAGE_TRANSFER_BIT,
+                         VK_PIPELINE_STAGE_VERTEX_SHADER_BIT |
+                         VK_PIPELINE_STAGE_TESSELLATION_CONTROL_SHADER_BIT |
+                         VK_PIPELINE_STAGE_TESSELLATION_EVALUATION_SHADER_BIT |
+                         VK_PIPELINE_STAGE_GEOMETRY_SHADER_BIT |
+                         VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT |
+                         VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+                         0, 0, nullptr, 1, &barrier, 0, nullptr);
   }
 
   //bc->enqueue_lru(&_prepared_objects->_graphics_memory_lru);
@@ -3420,6 +3478,12 @@ do_extract_image(VulkanTextureContext *tc, Texture *tex, int view, int z, Screen
   // We tack this onto the existing command buffer, for now.
   VkCommandBuffer cmd = _frame_data->_cmd;
 
+  // Issue a command to transition the image into a layout optimal for
+  // transferring from.
+  tc->transition(cmd, _graphics_queue_family_index,
+    VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+    VK_PIPELINE_STAGE_TRANSFER_BIT, VK_ACCESS_TRANSFER_READ_BIT);
+
   if (tc->_image != VK_NULL_HANDLE) {
     VkBufferImageCopy region;
     region.bufferOffset = 0;
@@ -3439,22 +3503,14 @@ do_extract_image(VulkanTextureContext *tc, Texture *tex, int view, int z, Screen
     region.imageOffset.y = 0;
     region.imageOffset.z = 0;
     region.imageExtent = tc->_extent;
-
-    // Issue a command to transition the image into a layout optimal for
-    // transferring from.
-    tc->transition(cmd, _graphics_queue_family_index,
-      VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-      VK_PIPELINE_STAGE_TRANSFER_BIT, VK_ACCESS_TRANSFER_READ_BIT);
-
-    vkCmdCopyImageToBuffer(cmd, tc->_image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                           down._buffer, 1, &region);
+    vkCmdCopyImageToBuffer(cmd, tc->_image, tc->_layout, down._buffer, 1, &region);
   }
   else {
     VkBufferCopy region;
     region.srcOffset = 0;
     region.dstOffset = 0;
     region.size = buffer_size;
-    vkCmdCopyBuffer(_frame_data->_transfer_cmd, tc->_buffer, down._buffer, 1, &region);
+    vkCmdCopyBuffer(cmd, tc->_buffer, down._buffer, 1, &region);
   }
 
   down._texture = tex;

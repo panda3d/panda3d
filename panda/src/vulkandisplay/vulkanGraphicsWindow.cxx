@@ -199,14 +199,16 @@ begin_frame(FrameMode mode, Thread *current_thread) {
     }
 
     color_tc->transition(cmd, vkgsg->_graphics_queue_family_index,
-                           VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-                           VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-                           VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
+                         VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                         VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                         VK_ACCESS_COLOR_ATTACHMENT_READ_BIT |
+                         VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
   } else {
     // This transition will be made when the first subpass is started.
     color_tc->_layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-    color_tc->_access_mask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-    color_tc->_stage_mask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    color_tc->_read_stage_mask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    color_tc->_write_stage_mask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    color_tc->_write_access_mask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
     LColor clear_color = get_clear_color();
     clears[0].color.float32[0] = clear_color[0];
@@ -224,13 +226,15 @@ begin_frame(FrameMode mode, Thread *current_thread) {
       _depth_stencil_tc->transition(cmd, vkgsg->_graphics_queue_family_index,
         VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
         VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
-        VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT);
+        VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT);
     } else {
       // This transition will be made when the first subpass is started.
       _depth_stencil_tc->_layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-      _depth_stencil_tc->_access_mask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-      _depth_stencil_tc->_stage_mask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT |
-                                       VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+      _depth_stencil_tc->_write_access_mask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+      _depth_stencil_tc->_write_stage_mask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT |
+                                             VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+      _depth_stencil_tc->_read_stage_mask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT |
+                                            VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
     }
 
     if (get_clear_depth_active() || get_clear_stencil_active()) {
@@ -271,7 +275,8 @@ end_frame(FrameMode mode, Thread *current_thread) {
 
     // The driver implicitly transitioned this to the final layout.
     buffer._tc->_layout = _final_layout;
-    buffer._tc->_access_mask = VK_ACCESS_MEMORY_READ_BIT;
+    buffer._tc->mark_written(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                             VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
 
     // Now we can do copy-to-texture, now that the render pass has ended.
     copy_to_textures();
@@ -283,7 +288,7 @@ end_frame(FrameMode mode, Thread *current_thread) {
   buffer._tc->transition(cmd, vkgsg->_graphics_queue_family_index,
                          VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
                          VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-                         VK_ACCESS_MEMORY_READ_BIT);
+                         VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
 
   // Note: this will close the command buffer, and unsignal the previous
   // frame's semaphore.
@@ -1154,6 +1159,9 @@ create_swapchain() {
       vulkan_error(err, "Failed to create framebuffer");
       return false;
     }
+
+    // Don't start rendering until the image has been acquired.
+    buffer._tc->mark_written(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0);
   }
 
   // Create a semaphore for signalling the availability of an image.

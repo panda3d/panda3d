@@ -17,15 +17,13 @@
  */
 INLINE VulkanTextureContext::
 VulkanTextureContext(PreparedGraphicsObjects *pgo, Texture *texture) :
-  TextureContext(pgo, texture),
-  //TODO: it is not clear to me what we should set srcStageMask to here.
-  _stage_mask(VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT) {
+  TextureContext(pgo, texture) {
 }
 
 /**
  * Returns the VkImageView handle for the given view of the texture.
  */
-INLINE const VkImageView &VulkanTextureContext::
+INLINE VkImageView VulkanTextureContext::
 get_image_view(int view) const {
   if (!_image_views.empty()) {
     return _image_views[std::min(std::max(view, 0), (int)_image_views.size() - 1)];
@@ -37,7 +35,7 @@ get_image_view(int view) const {
 /**
  * Returns the VkBufferView handle for the given view of the texture.
  */
-INLINE const VkBufferView &VulkanTextureContext::
+INLINE VkBufferView VulkanTextureContext::
 get_buffer_view(int view) const {
   if (!_buffer_views.empty()) {
     return _buffer_views[std::min(std::max(view, 0), (int)_buffer_views.size() - 1)];
@@ -47,12 +45,22 @@ get_buffer_view(int view) const {
 }
 
 /**
- * Records a way that the image has been accessed.
+ * Indicates that the texture is being read from by the given stage.  Any
+ * subsequent writes must wait until the given stage has passed the pipeline.
  */
 INLINE void VulkanTextureContext::
-access(VkPipelineStageFlags stage, VkAccessFlags access_mask) {
-  _stage_mask |= stage;
-  _access_mask |= access_mask;
+mark_read(VkPipelineStageFlags stage) {
+  _read_stage_mask |= stage;
+}
+
+/**
+ * Indicates that the texture is being written by the given stage.  Any
+ * subsequent writes must wait until the given stage has passed the pipeline.
+ */
+INLINE void VulkanTextureContext::
+mark_written(VkPipelineStageFlags stage, VkAccessFlags access_mask) {
+  _write_stage_mask |= stage;
+  _write_access_mask |= access_mask;
 }
 
 /**
@@ -61,6 +69,8 @@ access(VkPipelineStageFlags stage, VkAccessFlags access_mask) {
  */
 INLINE void VulkanTextureContext::
 discard() {
-  _access_mask = 0;
+  // We don't clear _write_stage_mask, because we still want the execution
+  // dependency.
   _layout = VK_IMAGE_LAYOUT_UNDEFINED;
+  _write_access_mask = 0;
 }

@@ -83,7 +83,21 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 
   VulkanGraphicsStateGuardian *vkgsg;
   DCAST_INTO_R(vkgsg, _gsg, false);
-  //vkgsg->reset_if_new();
+
+  if (vkgsg->needs_reset()) {
+    vkQueueWaitIdle(vkgsg->_queue);
+    destroy_framebuffer();
+    if (_render_pass != VK_NULL_HANDLE) {
+      vkDestroyRenderPass(vkgsg->_device, _render_pass, nullptr);
+      _render_pass = VK_NULL_HANDLE;
+    }
+    vkgsg->reset_if_new();
+  }
+
+
+  if (!vkgsg->is_valid()) {
+    return false;
+  }
 
   vkgsg->_fb_color_tc = nullptr;
   vkgsg->_fb_depth_tc = nullptr;
@@ -148,7 +162,8 @@ begin_frame(FrameMode mode, Thread *current_thread) {
     attach._tc->set_active(true);
 
     VkImageLayout layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-    VkAccessFlags access_mask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    VkAccessFlags write_access_mask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    VkAccessFlags read_access_mask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
     VkPipelineStageFlags stage_mask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 
     if (attach._plane == RTP_stencil || attach._plane == RTP_depth ||
@@ -157,9 +172,10 @@ begin_frame(FrameMode mode, Thread *current_thread) {
       layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
       stage_mask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT
                  | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
-      access_mask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-
-    } else if (attach._plane == RTP_color) {
+      write_access_mask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+      read_access_mask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+    }
+    else if (attach._plane == RTP_color) {
       vkgsg->_fb_color_tc = attach._tc;
     }
 
@@ -172,11 +188,12 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 
       // This transition will be made when the first subpass is started.
       attach._tc->_layout = layout;
-      attach._tc->_access_mask = access_mask;
-      attach._tc->_stage_mask = stage_mask;
+      attach._tc->_read_stage_mask = stage_mask;
+      attach._tc->_write_stage_mask = stage_mask;
+      attach._tc->_write_access_mask = write_access_mask;
     } else {
       attach._tc->transition(cmd, vkgsg->_graphics_queue_family_index,
-                             layout, stage_mask, access_mask);
+                             layout, stage_mask, read_access_mask | write_access_mask);
     }
   }
 
@@ -208,7 +225,9 @@ end_frame(FrameMode mode, Thread *current_thread) {
     // The driver implicitly transitioned this to the final layout.
     for (Attachment &attach : _attachments) {
       attach._tc->_layout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-      attach._tc->_access_mask = VK_ACCESS_MEMORY_READ_BIT;
+
+      // This seems to squelch a validation warning, not sure about this yet
+      attach._tc->_write_stage_mask |= VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
     }
 
     // Now we can do copy-to-texture, now that the render pass has ended.
@@ -271,6 +290,14 @@ open_buffer() {
     _gsg = vkgsg;
   } else {
     DCAST_INTO_R(vkgsg, _gsg.p(), false);
+  }
+
+  vkgsg->reset_if_new();
+  if (!vkgsg->is_valid()) {
+    _gsg.clear();
+    vulkandisplay_cat.error()
+      << "VulkanGraphicsStateGuardian is not valid.\n";
+    return false;
   }
 
   // Choose a suitable color format.  Sorted in order of preferability,

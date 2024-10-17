@@ -31,10 +31,12 @@ public:
   void release(VulkanFrameData &frame_data);
   void destroy_now(VkDevice device);
 
-  INLINE const VkImageView &get_image_view(int view) const;
-  INLINE const VkBufferView &get_buffer_view(int view) const;
+  INLINE VkImageView get_image_view(int view) const;
+  INLINE VkBufferView get_buffer_view(int view) const;
 
-  INLINE void access(VkPipelineStageFlags stage_mask, VkAccessFlags access_mask);
+  INLINE void mark_read(VkPipelineStageFlags stage_mask);
+  INLINE void mark_written(VkPipelineStageFlags stage_mask,
+                           VkAccessFlags access_mask);
   INLINE void discard();
 
   void clear_color_image(VkCommandBuffer cmd, const VkClearColorValue &value);
@@ -64,8 +66,9 @@ public:
   VulkanMemoryBlock _block;
 
   VkImageLayout _layout = VK_IMAGE_LAYOUT_UNDEFINED;
-  VkAccessFlags _access_mask = 0;
-  VkPipelineStageFlags _stage_mask;
+  VkAccessFlags _write_access_mask = 0;
+  VkPipelineStageFlags _write_stage_mask = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+  VkPipelineStageFlags _read_stage_mask = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
 
 public:
   static TypeHandle get_class_type() {

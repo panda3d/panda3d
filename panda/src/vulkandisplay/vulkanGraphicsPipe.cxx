@@ -326,11 +326,12 @@ VulkanGraphicsPipe() : _max_allocation_size(0) {
       features2.pNext = &ro2_features;
     }
 
-    VkPhysicalDeviceVertexAttributeDivisorFeaturesEXT div_features = {
-      VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_ATTRIBUTE_DIVISOR_FEATURES_EXT,
+    VkPhysicalDeviceVertexAttributeDivisorFeaturesKHR div_features = {
+      VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_ATTRIBUTE_DIVISOR_FEATURES_KHR,
       features2.pNext,
     };
-    if (has_device_extension(VK_EXT_VERTEX_ATTRIBUTE_DIVISOR_EXTENSION_NAME)) {
+    if (has_device_extension(VK_KHR_VERTEX_ATTRIBUTE_DIVISOR_EXTENSION_NAME) ||
+        has_device_extension(VK_EXT_VERTEX_ATTRIBUTE_DIVISOR_EXTENSION_NAME)) {
       features2.pNext = &div_features;
     }
 

@@ -175,10 +175,17 @@ clear_buffer(VkCommandBuffer cmd, uint32_t fill) {
   nassertv(_buffer != VK_NULL_HANDLE);
 
   vkCmdFillBuffer(cmd, _buffer, 0, VK_WHOLE_SIZE, fill);
+  mark_written(VK_PIPELINE_STAGE_TRANSFER_BIT, VK_ACCESS_TRANSFER_WRITE_BIT);
 }
 
 /**
  * Issues a command to transition the image to a new layout or queue family.
+ * Also issues the appropriate memory barrier to prevent read-after-write and
+ * write-after-write hazards.
+ *
+ * For a buffer texture, layout is ignored.
+ *
+ * Implicitly calls mark_read() or mark_written() depending on the access mask.
  * Does not (yet) do inter-queue synchronization.
  */
 void VulkanTextureContext::
@@ -186,33 +193,82 @@ transition(VkCommandBuffer cmd, uint32_t queue_family, VkImageLayout layout,
            VkPipelineStageFlags dst_stage_mask, VkAccessFlags dst_access_mask) {
 
   if (_image == VK_NULL_HANDLE) {
+    layout = _layout;
+  }
+
+  // Are we writing to the texture?
+  VkAccessFlags write_mask = (dst_access_mask &
+    (VK_ACCESS_SHADER_WRITE_BIT |
+     VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
+     VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT |
+     VK_ACCESS_TRANSFER_WRITE_BIT |
+     VK_ACCESS_HOST_WRITE_BIT |
+     VK_ACCESS_MEMORY_WRITE_BIT));
+
+  // If we wrote to this recently (or performed a layout transition), we must
+  // wait for that to be finished.
+  VkPipelineStageFlags src_stage_mask = _write_stage_mask;
+
+  if (_layout != layout || write_mask != 0) {
+    // Before a layout transition or a write, all previous reads must have
+    // finished.
+    src_stage_mask |= _read_stage_mask;
+
+    if (src_stage_mask == 0) {
+      // Can't specify a source stage mask of zero.
+      src_stage_mask = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+    }
+  }
+  else if (src_stage_mask == 0) {
+    // This is a read-after-read, nothing to do here.
     return;
   }
 
-  if (_layout == layout) {
-    return;
+  VkImageMemoryBarrier img_barrier;
+  if (_image != VK_NULL_HANDLE) {
+    img_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+    img_barrier.pNext = nullptr;
+    img_barrier.srcAccessMask = _write_access_mask;
+    img_barrier.dstAccessMask = dst_access_mask;
+    img_barrier.oldLayout = _layout;
+    img_barrier.newLayout = layout;
+    img_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    img_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    img_barrier.image = _image;
+    img_barrier.subresourceRange.aspectMask = _aspect_mask;
+    img_barrier.subresourceRange.baseMipLevel = 0;
+    img_barrier.subresourceRange.levelCount = _mip_levels;
+    img_barrier.subresourceRange.baseArrayLayer = 0;
+    img_barrier.subresourceRange.layerCount = _array_layers;
   }
-
-  VkImageMemoryBarrier barrier;
-  barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-  barrier.pNext = nullptr;
-  barrier.srcAccessMask = _access_mask;
-  barrier.dstAccessMask = dst_access_mask;
-  barrier.oldLayout = _layout;
-  barrier.newLayout = layout;
-  barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;//_graphics_queue_family_index;
-  barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;//_graphics_queue_family_index;
-  barrier.image = _image;
-  barrier.subresourceRange.aspectMask = _aspect_mask;
-  barrier.subresourceRange.baseMipLevel = 0;
-  barrier.subresourceRange.levelCount = _mip_levels;
-  barrier.subresourceRange.baseArrayLayer = 0;
-  barrier.subresourceRange.layerCount = _array_layers;
-
-  vkCmdPipelineBarrier(cmd, _stage_mask, dst_stage_mask, 0,
-                       0, nullptr, 0, nullptr, 1, &barrier);
+  VkBufferMemoryBarrier buf_barrier;
+  if (_buffer != VK_NULL_HANDLE) {
+    buf_barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+    buf_barrier.pNext = nullptr;
+    buf_barrier.srcAccessMask = _write_access_mask;
+    buf_barrier.dstAccessMask = dst_access_mask;
+    buf_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    buf_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    buf_barrier.buffer = _buffer;
+    buf_barrier.offset = 0;
+    buf_barrier.size = VK_WHOLE_SIZE;
+  }
+  vkCmdPipelineBarrier(cmd, src_stage_mask, dst_stage_mask, 0,
+                       0, nullptr,
+                       (_buffer != VK_NULL_HANDLE), &buf_barrier,
+                       (_image != VK_NULL_HANDLE), &img_barrier);
 
   _layout = layout;
-  _access_mask = dst_access_mask;
-  _stage_mask = dst_stage_mask;
+
+  if (write_mask != 0) {
+    // We are writing to it, remember that for next time.
+    _write_stage_mask = dst_stage_mask;
+    _write_access_mask = write_mask;
+  } else {
+    // Note that layout transitions create an implicit execution dependency,
+    // so if we're not writing, we don't need to set _write_stage_mask here.
+    _write_stage_mask = 0;
+    _write_access_mask = 0;
+  }
+  _read_stage_mask = dst_stage_mask & ~VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
 }

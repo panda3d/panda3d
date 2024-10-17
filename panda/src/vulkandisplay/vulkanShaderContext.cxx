@@ -367,6 +367,26 @@ r_extract_resources(const Shader::Parameter &param, const AccessChain &chain,
   if (desc._binding == nullptr) {
     desc._binding = param._binding;
     desc._stage_mask = param._stage_mask;
+    desc._pipeline_stage_mask = 0;
+
+    if (desc._stage_mask & VK_SHADER_STAGE_VERTEX_BIT) {
+      desc._pipeline_stage_mask |= VK_PIPELINE_STAGE_VERTEX_SHADER_BIT;
+    }
+    if (desc._stage_mask & VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT) {
+      desc._pipeline_stage_mask |= VK_PIPELINE_STAGE_TESSELLATION_CONTROL_SHADER_BIT;
+    }
+    if (desc._stage_mask & VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT) {
+      desc._pipeline_stage_mask |= VK_PIPELINE_STAGE_TESSELLATION_EVALUATION_SHADER_BIT;
+    }
+    if (desc._stage_mask & VK_SHADER_STAGE_GEOMETRY_BIT) {
+      desc._pipeline_stage_mask |= VK_PIPELINE_STAGE_GEOMETRY_SHADER_BIT;
+    }
+    if (desc._stage_mask & VK_SHADER_STAGE_FRAGMENT_BIT) {
+      desc._pipeline_stage_mask |= VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+    }
+    if (desc._stage_mask & VK_SHADER_STAGE_COMPUTE_BIT) {
+      desc._pipeline_stage_mask |= VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+    }
 
     if (const ShaderType::SampledImage *sampler = type->as_sampled_image()) {
       desc._type =
@@ -565,7 +585,7 @@ fetch_descriptor(VulkanGraphicsStateGuardian *gsg, const Descriptor &desc,
       tc->transition(gsg->_frame_data->_transfer_cmd,
                      gsg->_graphics_queue_family_index,
                      VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                     desc._stage_mask, VK_ACCESS_SHADER_READ_BIT);
+                     desc._pipeline_stage_mask, VK_ACCESS_SHADER_READ_BIT);
 
       VkDescriptorImageInfo &image_info = *image_infos++;
       image_info.sampler = sc->_sampler;
@@ -591,7 +611,7 @@ fetch_descriptor(VulkanGraphicsStateGuardian *gsg, const Descriptor &desc,
       tc->transition(gsg->_frame_data->_transfer_cmd,
                      gsg->_graphics_queue_family_index,
                      VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                     desc._stage_mask, VK_ACCESS_SHADER_READ_BIT);
+                     desc._pipeline_stage_mask, VK_ACCESS_SHADER_READ_BIT);
 
       VkBufferView &texel_buffer_view = *texel_buffer_views++;
       texel_buffer_view = tc->get_buffer_view(view);
@@ -630,7 +650,7 @@ fetch_descriptor(VulkanGraphicsStateGuardian *gsg, const Descriptor &desc,
       tc->transition(gsg->_frame_data->_transfer_cmd,
                      gsg->_graphics_queue_family_index,
                      VK_IMAGE_LAYOUT_GENERAL,
-                     desc._stage_mask, access_mask);
+                     desc._pipeline_stage_mask, access_mask);
 
       int view = gsg->get_current_tex_view_offset();
       if (desc._type == VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER) {

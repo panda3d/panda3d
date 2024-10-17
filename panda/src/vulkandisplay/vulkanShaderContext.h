@@ -122,7 +122,7 @@ private:
     };
     pvector<Binding> _bindings;
     VkDeviceSize _size = 0;
-    int _stage_mask = 0;
+    VkShaderStageFlags _stage_mask = 0;
     int _deps = 0;
   };
   Block _shader_input_block;
@@ -135,7 +135,8 @@ private:
     VkDescriptorType _type;
     PT(ShaderInputBinding) _binding;
     small_vector<ResourceId, 1> _resource_ids;
-    int _stage_mask = 0;
+    VkShaderStageFlags _stage_mask = 0;
+    VkPipelineStageFlags _pipeline_stage_mask = 0;
     ShaderType::Access _access = ShaderType::Access::READ_WRITE;
   };
   pvector<Descriptor> _tattr_descriptors;
@@ -152,9 +153,9 @@ private:
 
   // These are for the push constants; maybe in the future we'll replace this
   // with a more generic and flexible system.
-  int _push_constant_stage_mask = 0;
-  int _projection_mat_stage_mask = 0;
-  int _color_scale_stage_mask = 0;
+  VkShaderStageFlags _push_constant_stage_mask = 0;
+  VkShaderStageFlags _projection_mat_stage_mask = 0;
+  VkShaderStageFlags _color_scale_stage_mask = 0;
 
   // A map of all pipelines that use this shader.  This is in ShaderContext
   // because when a shader is released we have no more use of the pipelines
