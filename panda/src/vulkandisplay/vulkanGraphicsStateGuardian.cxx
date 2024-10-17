@@ -77,8 +77,36 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   GraphicsStateGuardian(CS_default, engine, pipe),
   _graphics_queue_family_index(queue_family_index)
 {
-  reset();
+}
+
+/**
+ *
+ */
+VulkanGraphicsStateGuardian::
+~VulkanGraphicsStateGuardian() {
+  destroy_device();
+}
+
+/**
+ * Resets all internal state as if the gsg were newly created.
+ */
+void VulkanGraphicsStateGuardian::
+reset() {
+  if (_device != VK_NULL_HANDLE) {
+    close_gsg();
+    destroy_device();
+    _closing_gsg = false;
+    _prepared_objects = new PreparedGraphicsObjects;
+  }
+
+  GraphicsStateGuardian::reset();
+  _needs_reset = true;
   _is_valid = false;
+
+  _current_shader = nullptr;
+
+  VulkanGraphicsPipe *pipe;
+  DCAST_INTO_V(pipe, get_pipe());
 
   const VkPhysicalDeviceLimits &limits = pipe->_gpu_properties.limits;
   const VkPhysicalDeviceFeatures &features = pipe->_gpu_features;
@@ -115,6 +143,8 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
 
     extensions.push_back(VK_EXT_CUSTOM_BORDER_COLOR_EXTENSION_NAME);
     _supports_custom_border_colors = true;
+  } else {
+    _supports_custom_border_colors = false;
   }
 
   bool supports_null_descriptor = false;
@@ -143,6 +173,9 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
     extensions.push_back(VK_EXT_VERTEX_ATTRIBUTE_DIVISOR_EXTENSION_NAME);
     _supports_vertex_attrib_divisor = true;
     _supports_vertex_attrib_zero_divisor = pipe->_gpu_supports_vertex_attrib_zero_divisor;
+  } else {
+    _supports_vertex_attrib_divisor = false;
+    _supports_vertex_attrib_zero_divisor = false;
   }
 
   // VK_EXT_extended_dynamic_state and VK_EXT_extended_dynamic_state2
@@ -157,6 +190,8 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
 
     extensions.push_back(VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME);
     _supports_extended_dynamic_state2 = true;
+  } else {
+    _supports_extended_dynamic_state2 = false;
   }
 
   // VK_EXT_extended_dynamic_state2
@@ -172,6 +207,8 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
 
     extensions.push_back(VK_EXT_EXTENDED_DYNAMIC_STATE_2_EXTENSION_NAME);
     _supports_extended_dynamic_state2_patch_control_points = pipe->_gpu_supports_extended_dynamic_state2_patch_control_points;
+  } else {
+    _supports_extended_dynamic_state2_patch_control_points = false;
   }
 
   // VK_KHR_portability_subset
@@ -227,6 +264,8 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
   err = vkCreateDevice(pipe->_gpu, &device_info, nullptr, &_device);
   if (err) {
     vulkan_error(err, "Failed to create device");
+    _is_valid = false;
+    _needs_reset = true;
     return;
   }
 
@@ -635,18 +674,13 @@ VulkanGraphicsStateGuardian(GraphicsEngine *engine, VulkanGraphicsPipe *pipe,
 }
 
 /**
- *
+ * Releases the device and all associated resources.
  */
-VulkanGraphicsStateGuardian::
-~VulkanGraphicsStateGuardian() {
+void VulkanGraphicsStateGuardian::
+destroy_device() {
   if (_device == VK_NULL_HANDLE) {
     nassertv(_memory_pages.empty());
     return;
-  }
-
-  // And all the semaphores that were generated on this device.
-  for (VkSemaphore semaphore : _semaphores) {
-    vkDestroySemaphore(_device, semaphore, nullptr);
   }
 
   // Remove the things we created in the constructor, in reverse order.
@@ -659,10 +693,12 @@ VulkanGraphicsStateGuardian::
 
   if (_null_vertex_buffer != VK_NULL_HANDLE) {
     vkDestroyBuffer(_device, _null_vertex_buffer, nullptr);
+    _null_vertex_buffer = VK_NULL_HANDLE;
   }
 
   if (_staging_buffer != VK_NULL_HANDLE) {
     vkDestroyBuffer(_device, _staging_buffer, nullptr);
+    _staging_buffer = VK_NULL_HANDLE;
   }
 
   for (FrameData &frame_data : _frame_data_pool) {
@@ -716,6 +752,7 @@ close_gsg() {
       _frame_data = nullptr;
       finish_frame(frame_data);
     }
+    _default_sc = nullptr;
   }
 
   GraphicsStateGuardian::close_gsg();
@@ -2624,6 +2661,9 @@ begin_frame(Thread *current_thread) {
     }
     else if (err) {
       vulkan_error(err, "Failure waiting for command buffer fence");
+      if (err == VK_ERROR_DEVICE_LOST) {
+        mark_new();
+      }
       return false;
     }
 
@@ -2716,6 +2756,9 @@ begin_frame(Thread *current_thread) {
   err = vkQueueSubmit(_queue, 1, &submit_info, _frame_data->_fence);
   if (err) {
     vulkan_error(err, "Error submitting queue");
+    if (err == VK_ERROR_DEVICE_LOST) {
+      mark_new();
+    }
   }
   _frame_data = nullptr;
   return false;
@@ -2845,6 +2888,9 @@ end_frame(Thread *current_thread, VkSemaphore wait_for, VkSemaphore signal_done)
   err = vkQueueSubmit(_queue, 1, &submit_info, _frame_data->_fence);
   if (err) {
     vulkan_error(err, "Error submitting queue");
+    if (err == VK_ERROR_DEVICE_LOST) {
+      mark_new();
+    }
     return;
   }
 
@@ -2857,6 +2903,9 @@ end_frame(Thread *current_thread, VkSemaphore wait_for, VkSemaphore signal_done)
     }
     if (err) {
       vulkan_error(err, "Failed to wait for command buffer execution");
+      if (err == VK_ERROR_DEVICE_LOST) {
+        mark_new();
+      }
       vkQueueWaitIdle(_queue);
     }
 
@@ -2881,7 +2930,9 @@ end_frame(Thread *current_thread, VkSemaphore wait_for, VkSemaphore signal_done)
 
     // Reset the used fences to unsignaled status.
     VkResult err = vkResetFences(_device, num_reset_fences, reset_fences);
-    nassertv(!err);
+    if (err != VK_SUCCESS) {
+      vulkan_error(err, "Error resetting fences");
+    }
   }
 
   _last_frame_data = _frame_data;
@@ -3172,14 +3223,6 @@ draw_points(const GeomPrimitivePipelineReader *reader, bool force) {
 void VulkanGraphicsStateGuardian::
 end_draw_primitives() {
   GraphicsStateGuardian::end_draw_primitives();
-}
-
-/**
- * Resets all internal state as if the gsg were newly created.
- */
-void VulkanGraphicsStateGuardian::
-reset() {
-  GraphicsStateGuardian::reset();
 }
 
 /**
@@ -3600,7 +3643,6 @@ create_semaphore() {
   VkResult
   err = vkCreateSemaphore(_device, &semaphore_info, nullptr, &semaphore);
   nassertr_always(err == VK_SUCCESS, VK_NULL_HANDLE);
-  _semaphores.push_back(semaphore);
   return semaphore;
 }
 
@@ -4155,6 +4197,8 @@ make_compute_pipeline(VulkanShaderContext *sc) {
  */
 bool VulkanGraphicsStateGuardian::
 get_attrib_descriptor_set(VkDescriptorSet &out, VkDescriptorSetLayout layout, const RenderAttrib *attrib) {
+  nassertr(_current_shader != nullptr, false);
+
   // Look it up in the attribute map.
   auto it = _current_shader->_attrib_descriptor_set_map.find(attrib);
   if (it != _current_shader->_attrib_descriptor_set_map.end()) {

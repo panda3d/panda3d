@@ -95,13 +95,32 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 
   VulkanGraphicsStateGuardian *vkgsg;
   DCAST_INTO_R(vkgsg, _gsg, false);
-  //vkgsg->reset_if_new();
 
-  if (_current_clear_mask != _clear_mask) {
+  if (vkgsg->needs_reset()) {
+    vkQueueWaitIdle(vkgsg->_queue);
+    if (_image_available != VK_NULL_HANDLE) {
+      vkDestroySemaphore(vkgsg->_device, _image_available, nullptr);
+      _image_available = VK_NULL_HANDLE;
+    }
+    destroy_swapchain();
+    if (_render_pass != VK_NULL_HANDLE) {
+      vkDestroyRenderPass(vkgsg->_device, _render_pass, nullptr);
+      _render_pass = VK_NULL_HANDLE;
+    }
+    vkgsg->reset_if_new();
+  }
+
+  if (!vkgsg->is_valid()) {
+    return false;
+  }
+
+  if (_current_clear_mask != _clear_mask || _render_pass == VK_NULL_HANDLE) {
     // The clear flags have changed.  Recreate the render pass.  Note that the
     // clear flags don't factor into render pass compatibility, so we don't
     // need to recreate the framebuffer.
-    setup_render_pass();
+    if (!setup_render_pass()) {
+      return false;
+    }
   }
 
   if (_swapchain_size != _size) {
@@ -312,21 +331,25 @@ begin_flip() {
   present.pResults = results;
 
   err = vkQueuePresentKHR(queue, &present);
-  if (err == VK_ERROR_OUT_OF_DATE_KHR) {
+  if (err == VK_ERROR_OUT_OF_DATE_KHR || err == VK_SUBOPTIMAL_KHR) {
     // It's out of date.  We need to recreate the swap chain.
     if (vulkandisplay_cat.is_debug()) {
       vulkandisplay_cat.debug()
-        << "Swap chain out of date for VulkanGraphicsWindow " << this << "\n";
+        << "Swap chain "
+        << ((err == VK_SUBOPTIMAL_KHR) ? "suboptimal" : "out of date")
+        << " for VulkanGraphicsWindow " << this << "\n";
     }
     _swapchain_size.set(-1, -1);
     _flip_ready = false;
     return;
   }
-  else if (err == VK_SUBOPTIMAL_KHR) {
-    std::cerr << "suboptimal.\n";
-  }
   else if (err != VK_SUCCESS) {
     vulkan_error(err, "Error presenting queue");
+
+    if (err == VK_ERROR_DEVICE_LOST) {
+      vkgsg->mark_new();
+      _flip_ready = false;
+    }
 
     if (err == VK_ERROR_FULL_SCREEN_EXCLUSIVE_MODE_LOST_EXT || err == VK_ERROR_SURFACE_LOST_KHR) {
       _flip_ready = false;
@@ -363,24 +386,28 @@ end_flip() {
   DCAST_INTO_V(vkgsg, _gsg);
 
   nassertv(_image_available == VK_NULL_HANDLE);
-
-  VkSemaphoreCreateInfo semaphore_info = {};
-  semaphore_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-  VkResult err = vkCreateSemaphore(vkgsg->_device, &semaphore_info, nullptr, &_image_available);
-  nassertv_always(err == VK_SUCCESS);
+  _image_available = vkgsg->create_semaphore();
+  nassertv(_image_available != VK_NULL_HANDLE);
 
   // Get a new image for rendering into.  This may wait until a new image is
   // available.
+  VkResult
   err = vkAcquireNextImageKHR(vkgsg->_device, _swapchain, UINT64_MAX,
                               _image_available, VK_NULL_HANDLE, &_image_index);
-
-  if (err == VK_ERROR_OUT_OF_DATE_KHR) {
+  if (err == VK_ERROR_OUT_OF_DATE_KHR || err == VK_SUBOPTIMAL_KHR) {
     // It's out of date.  We need to recreate the swap chain.
     if (vulkandisplay_cat.is_debug()) {
       vulkandisplay_cat.debug()
-        << "Swap chain out of date for VulkanGraphicsWindow " << this << "\n";
+        << "Swap chain "
+        << ((err == VK_SUBOPTIMAL_KHR) ? "suboptimal" : "out of date")
+        << " for VulkanGraphicsWindow " << this << "\n";
     }
     _swapchain_size.set(-1, -1);
+    _flip_ready = false;
+    return;
+  }
+  if (err == VK_ERROR_DEVICE_LOST) {
+    vkgsg->mark_new();
     _flip_ready = false;
     return;
   }
@@ -528,6 +555,7 @@ open_window() {
     DCAST_INTO_R(vkgsg, _gsg.p(), false);
   }
 
+  vkgsg->reset_if_new();
   if (!vkgsg->is_valid()) {
     _gsg.clear();
     vulkandisplay_cat.error()
@@ -831,6 +859,7 @@ destroy_swapchain() {
     buffer._tc->_image = VK_NULL_HANDLE;
     buffer._tc->destroy_now(device);
     delete buffer._tc;
+    vkDestroySemaphore(device, buffer._render_complete, nullptr);
   }
   _swap_buffers.clear();
 
@@ -852,6 +881,7 @@ destroy_swapchain() {
     _swapchain = VK_NULL_HANDLE;
   }
 
+  _swapchain_size.set(-1, -1);
   _image_index = 0;
 }
 
@@ -938,6 +968,9 @@ create_swapchain() {
   err = vkCreateSwapchainKHR(device, &swapchain_info, nullptr, &_swapchain);
   if (err) {
     vulkan_error(err, "Failed to create swap chain");
+    if (err == VK_ERROR_DEVICE_LOST) {
+      vkgsg->mark_new();
+    }
     return false;
   }
 
@@ -1124,11 +1157,8 @@ create_swapchain() {
   }
 
   // Create a semaphore for signalling the availability of an image.
-  VkSemaphoreCreateInfo semaphore_info = {};
-  semaphore_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-
-  err = vkCreateSemaphore(vkgsg->_device, &semaphore_info, nullptr, &_image_available);
-  nassertr_always(err == VK_SUCCESS, false);
+  _image_available = vkgsg->create_semaphore();
+  nassertr(_image_available != VK_NULL_HANDLE, false);
 
   // We need to acquire an image before we continue rendering.
   _image_index = 0;
@@ -1137,6 +1167,9 @@ create_swapchain() {
                               _image_available, VK_NULL_HANDLE, &_image_index);
   if (err) {
     vulkan_error(err, "Failed to acquire swapchain image");
+    if (err == VK_ERROR_DEVICE_LOST) {
+      vkgsg->mark_new();
+    }
     return false;
   }
 

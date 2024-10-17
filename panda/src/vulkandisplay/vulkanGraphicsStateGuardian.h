@@ -41,6 +41,9 @@ public:
                               uint32_t queue_family_index);
   virtual ~VulkanGraphicsStateGuardian();
 
+  virtual void reset();
+
+  void destroy_device();
   virtual void close_gsg();
 
   virtual std::string get_driver_vendor();
@@ -127,8 +130,6 @@ public:
   virtual bool draw_points(const GeomPrimitivePipelineReader *reader,
                            bool force);
   virtual void end_draw_primitives();
-
-  virtual void reset();
 
   virtual bool framebuffer_copy_to_texture(Texture *tex, int view, int z,
                                            const DisplayRegion *dr,
@@ -232,9 +233,6 @@ private:
   VulkanTextureContext *_fb_color_tc = nullptr;
   VulkanTextureContext *_fb_depth_tc = nullptr;
   VkSampleCountFlagBits _fb_ms_count = VK_SAMPLE_COUNT_1_BIT;
-
-  // Remembers semaphores created on this device.
-  pvector<VkSemaphore> _semaphores;
 
   // Static "null" vertex buffer if nullDescriptor is not supported.
   VkBuffer _null_vertex_buffer = VK_NULL_HANDLE;
