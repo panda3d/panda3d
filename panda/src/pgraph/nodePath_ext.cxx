@@ -279,7 +279,7 @@ set_shader_inputs(PyObject *args, PyObject *kwargs) {
   PyObject *key, *value;
   Py_ssize_t pos = 0;
 
-  Py_BEGIN_CRITICAL_SECTION(dict);
+  Py_BEGIN_CRITICAL_SECTION(kwargs);
   while (PyDict_Next(kwargs, &pos, &key, &value)) {
     char *buffer;
     Py_ssize_t length;
