@@ -379,14 +379,23 @@ VulkanGraphicsPipe() : _max_allocation_size(0) {
     _max_allocation_size = std::max(_max_allocation_size, heap.size);
   }
 
-  // Query more specific memory limits if available.
-  if (has_device_extension("VK_KHR_maintenance3")) {
-    VkPhysicalDeviceMaintenance3Properties maint3_props = {};
-    maint3_props.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_3_PROPERTIES;
+  VkPhysicalDeviceDriverProperties driver_props = {
+    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DRIVER_PROPERTIES, nullptr,
+  };
+  if (_gpu_properties.apiVersion > VK_MAKE_VERSION(1, 1, 0) || has_props2_ext) {
+    VkPhysicalDeviceProperties2 props2 = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2, &driver_props};
+    VkPhysicalDeviceMaintenance3Properties maint3_props;
     maint3_props.maxMemoryAllocationSize = _max_allocation_size;
 
-    VkPhysicalDeviceProperties2 props2 =
-      {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2, &maint3_props};
+    // Query more specific memory limits if available.
+    if (_gpu_properties.apiVersion >= VK_MAKE_VERSION(1, 1, 0) ||
+        has_device_extension("VK_KHR_maintenance3")) {
+      maint3_props.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_3_PROPERTIES;
+      maint3_props.pNext = nullptr;
+      maint3_props.maxPerSetDescriptors = 0;
+      maint3_props.maxMemoryAllocationSize = _max_allocation_size;
+      driver_props.pNext = &maint3_props;
+    }
 
     if (_gpu_properties.apiVersion >= VK_MAKE_VERSION(1, 1, 0)) {
       PFN_vkGetPhysicalDeviceProperties2 pVkGetPhysicalDeviceProperties2 =
@@ -394,18 +403,17 @@ VulkanGraphicsPipe() : _max_allocation_size(0) {
 
       if (pVkGetPhysicalDeviceProperties2 != nullptr) {
         pVkGetPhysicalDeviceProperties2(_gpu, &props2);
-        _max_allocation_size = maint3_props.maxMemoryAllocationSize;
       }
-    }
-    else if (has_props2_ext) {
+    } else {
       PFN_vkGetPhysicalDeviceProperties2KHR pVkGetPhysicalDeviceProperties2KHR =
         (PFN_vkGetPhysicalDeviceProperties2KHR)vkGetInstanceProcAddr(_instance, "vkGetPhysicalDeviceProperties2KHR");
 
       if (pVkGetPhysicalDeviceProperties2KHR != nullptr) {
         pVkGetPhysicalDeviceProperties2KHR(_gpu, &props2);
-        _max_allocation_size = maint3_props.maxMemoryAllocationSize;
       }
     }
+
+    _max_allocation_size = maint3_props.maxMemoryAllocationSize;
   }
 
   // Fill in DisplayInformation.
@@ -420,7 +428,8 @@ VulkanGraphicsPipe() : _max_allocation_size(0) {
       << ((_gpu_properties.apiVersion >> 12) & 0x3ff) << '.'
       << (_gpu_properties.apiVersion & 0xfff) << '\n';
 
-    if (_gpu_properties.vendorID == 0x10DE) {
+    if (driver_props.driverID == VK_DRIVER_ID_NVIDIA_PROPRIETARY ||
+        (driver_props.driverID == 0 && _gpu_properties.vendorID == 0x10DE)) {
       // This is how NVIDIA encodes their driver version.
       vulkandisplay_cat.debug()
         << "driverVersion: " << _gpu_properties.driverVersion << " ("
@@ -441,6 +450,19 @@ VulkanGraphicsPipe() : _max_allocation_size(0) {
     } else {
       vulkandisplay_cat.debug()
         << "driverVersion: " << _gpu_properties.driverVersion << "\n";
+    }
+
+    if (driver_props.driverID != 0) {
+      vulkandisplay_cat.debug()
+        << "driverID: " << driver_props.driverID << "\n";
+    }
+    if (driver_props.driverName[0] != 0) {
+      vulkandisplay_cat.debug()
+        << "driverName: " << driver_props.driverName << "\n";
+    }
+    if (driver_props.driverInfo[0] != 0) {
+      vulkandisplay_cat.debug()
+        << "driverInfo: " << driver_props.driverInfo << "\n";
     }
 
     char vendor_id[5], device_id[5];
@@ -944,6 +966,12 @@ get_vendor_name() const {
 
   // Khronos vendor IDs for vendors without PCI.  See vk.xml.
   case 0x10001: return "Vivante Corporation";
+  case 0x10002: return "VeriSilicon";
+  case 0x10003: return "Kazan";
+  case 0x10004: return "Codeplay Software Ltd.";
+  case 0x10005: return "Mesa";
+  case 0x10006: return "PoCL";
+  case 0x10007: return "Mobileye";
   default:
     return nullptr;
   }
