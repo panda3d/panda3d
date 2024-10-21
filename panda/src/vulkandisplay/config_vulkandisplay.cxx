@@ -65,9 +65,9 @@ ConfigVariableBool vulkan_support_custom_border_color
 ("vulkan-support-custom-border-color", true,
  PRC_DESC("If this is set to true, and this is supported by the video card, "
           "any value for the texture border color is supported.  If false, "
-          "only opaque white, transparent white, opaque black and transparent "
-          "black are supported.  If you do not need to use a different border "
-          "color than these, it is strongly recommended to set this to false."));
+          "only opaque white or black, and transparent black are supported.  "
+          "If you do not need to use a different border color than these, it "
+          "is strongly recommended to set this to false."));
 
 #define VK_ERROR_INVALID_SHADER_NV -1000012000
 

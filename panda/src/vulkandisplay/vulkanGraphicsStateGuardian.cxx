@@ -1862,13 +1862,13 @@ prepare_sampler(const SamplerState &sampler) {
 
   LColor border_color = sampler.get_border_color();
   VkSamplerCustomBorderColorCreateInfoEXT custom_border_color;
-  if (border_color == LColor(0.0, 0.0, 0.0, 0.0)) {
+  if (border_color.almost_equal(LColor(0.0, 0.0, 0.0, 0.0))) {
     sampler_info.borderColor = VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK;
   }
-  else if (border_color == LColor(0.0, 0.0, 0.0, 1.0)) {
+  else if (border_color.almost_equal(LColor(0.0, 0.0, 0.0, 1.0))) {
     sampler_info.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK;
   }
-  else if (border_color == LColor(1.0, 1.0, 1.0, 1.0)) {
+  else if (border_color.almost_equal(LColor(1.0, 1.0, 1.0, 1.0))) {
     sampler_info.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
   }
   else if (_supports_custom_border_colors) {
