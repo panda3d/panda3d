@@ -76,6 +76,8 @@ public:
   INLINE void *map_persistent();
   INLINE void unmap_persistent();
 
+  INLINE void flush();
+
   friend class VulkanMemoryPage;
 };
 

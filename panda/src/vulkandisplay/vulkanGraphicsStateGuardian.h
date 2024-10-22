@@ -232,6 +232,7 @@ private:
   VulkanMemoryBlock _staging_buffer_memory;
   CircularAllocator _staging_buffer_allocator;
   void *_staging_buffer_ptr = nullptr;
+  bool _has_unified_memory = false;
 
   // Stores current framebuffer info.
   VkRenderPass _render_pass = VK_NULL_HANDLE;

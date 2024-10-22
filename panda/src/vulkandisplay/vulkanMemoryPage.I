@@ -196,6 +196,25 @@ unmap_persistent() {
 }
 
 /**
+ * Flushes any writes to mapped memory from this block.  Does nothing if the
+ * memory range is host-coherent.
+ */
+INLINE void VulkanMemoryBlock::
+flush() {
+  VulkanMemoryPage *page = (VulkanMemoryPage *)get_allocator();
+  if (page->_flags & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT) {
+    return;
+  }
+  VkMappedMemoryRange range;
+  range.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
+  range.pNext = nullptr;
+  range.memory = page->_memory;
+  range.offset = get_start();
+  range.size = get_size();
+  vkFlushMappedMemoryRanges(page->_device, 1, &range);
+}
+
+/**
  * Just grabs the page lock.
  */
 INLINE VulkanMemoryMapping::

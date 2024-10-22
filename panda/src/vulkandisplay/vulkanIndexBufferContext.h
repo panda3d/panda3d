@@ -29,10 +29,15 @@ public:
 
   virtual void evict_lru();
 
+  INLINE bool is_used_this_frame(VulkanFrameData &frame_data) const;
+  INLINE void mark_used_this_frame(VulkanFrameData &frame_data);
+
 public:
   VkBuffer _buffer;
   VulkanMemoryBlock _block;
   VkIndexType _index_type;
+
+  uint64_t _last_use_frame = 0;
 
 public:
   static TypeHandle get_class_type() {

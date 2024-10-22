@@ -488,6 +488,9 @@ reset() {
   }
   _uniform_buffer_allocator = CircularAllocator(uniform_buffer_size, limits.minUniformBufferOffsetAlignment);
 
+  // If we have only one heap, it's safe to assume we're on a UMA system.
+  _has_unified_memory = (pipe->_memory_properties.memoryHeapCount == 1);
+
   // Create a staging buffer for CPU-to-GPU uploads.
   VkDeviceSize staging_buffer_size = vulkan_staging_buffer_size;
   if (staging_buffer_size > 0) {
@@ -2128,7 +2131,8 @@ bool VulkanGraphicsStateGuardian::
 update_vertex_buffer(VulkanVertexBufferContext *vbc,
                      const GeomVertexArrayDataHandle *reader,
                      bool force) {
-  vbc->set_active(true);
+
+  VulkanFrameData &frame_data = get_frame_data();
 
   if (vbc->was_modified(reader)) {
     VkDeviceSize num_bytes = reader->get_data_size_bytes();
@@ -2138,41 +2142,55 @@ update_vertex_buffer(VulkanVertexBufferContext *vbc,
         return false;
       }
 
-      VkBuffer buffer;
-      uint32_t buffer_offset;
-      void *data = alloc_staging_buffer(num_bytes, buffer, buffer_offset);
-      if (!data) {
-        vulkandisplay_cat.error()
-          << "Failed to allocate staging buffer for updating vertex buffer.\n";
-        return false;
+      bool use_staging_buffer = true;
+      if (_has_unified_memory) {
+        // If we have UMA, and the buffer is not in use, we can skip the
+        // staging buffer and write directly to buffer memory.
+        use_staging_buffer = vbc->_last_use_frame > _last_finished_frame;
       }
-      memcpy(data, client_pointer,  num_bytes);
-      _data_transferred_pcollector.add_level(num_bytes);
 
-      VkBufferCopy region;
-      region.srcOffset = buffer_offset;
-      region.dstOffset = 0;
-      region.size = num_bytes;
-      vkCmdCopyBuffer(_frame_data->_transfer_cmd, buffer, vbc->_buffer, 1, &region);
+      if (use_staging_buffer) {
+        VkBuffer buffer;
+        uint32_t buffer_offset;
+        void *data = alloc_staging_buffer(num_bytes, buffer, buffer_offset);
+        if (!data) {
+          vulkandisplay_cat.error()
+            << "Failed to allocate staging buffer for updating vertex buffer.\n";
+          return false;
+        }
+        memcpy(data, client_pointer, num_bytes);
+
+        VkBufferCopy region;
+        region.srcOffset = buffer_offset;
+        region.dstOffset = 0;
+        region.size = num_bytes;
+        vkCmdCopyBuffer(frame_data._transfer_cmd, buffer, vbc->_buffer, 1, &region);
+      } else {
+        VulkanMemoryMapping mapping = vbc->_block.map();
+        memcpy(mapping, client_pointer, num_bytes);
+        vbc->_block.flush();
+      }
+      _data_transferred_pcollector.add_level(num_bytes);
 
       VkBufferMemoryBarrier barrier;
       barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
       barrier.pNext = nullptr;
-      barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+      barrier.srcAccessMask = use_staging_buffer ? VK_ACCESS_TRANSFER_WRITE_BIT : VK_ACCESS_HOST_WRITE_BIT;
       barrier.dstAccessMask = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
       barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
       barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
       barrier.buffer = vbc->_buffer;
       barrier.offset = 0;
       barrier.size = VK_WHOLE_SIZE;
-      vkCmdPipelineBarrier(_frame_data->_transfer_cmd,
-                           VK_PIPELINE_STAGE_TRANSFER_BIT,
+      vkCmdPipelineBarrier(frame_data._transfer_cmd,
+                           use_staging_buffer ? VK_PIPELINE_STAGE_TRANSFER_BIT : VK_PIPELINE_STAGE_HOST_BIT,
                            VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
                            0, 0, nullptr, 1, &barrier, 0, nullptr);
     }
 
     vbc->mark_loaded(reader);
   }
+  vbc->mark_used_this_frame(frame_data);
   vbc->enqueue_lru(&_prepared_objects->_graphics_memory_lru);
 
   return true;
@@ -2211,9 +2229,9 @@ prepare_index_buffer(GeomPrimitive *primitive) {
   if (index_type == GeomEnums::NT_uint8) {
     // We widen 8-bits indices to 16-bits.
     data_size *= 2;
-
-  } else if (index_type != GeomEnums::NT_uint16 &&
-             index_type != GeomEnums::NT_uint32) {
+  }
+  else if (index_type != GeomEnums::NT_uint16 &&
+           index_type != GeomEnums::NT_uint32) {
     vulkandisplay_cat.error()
       << "Unsupported index type: " << index_type;
     return nullptr;
@@ -2254,7 +2272,7 @@ bool VulkanGraphicsStateGuardian::
 update_index_buffer(VulkanIndexBufferContext *ibc,
                     const GeomPrimitivePipelineReader *reader,
                     bool force) {
-  ibc->set_active(true);
+  VulkanFrameData &frame_data = get_frame_data();
 
   if (ibc->was_modified(reader)) {
     VkDeviceSize num_bytes = reader->get_data_size_bytes();
@@ -2276,50 +2294,71 @@ update_index_buffer(VulkanIndexBufferContext *ibc,
         return false;
       }
 
-      VkBuffer buffer;
-      uint32_t buffer_offset;
-      void *data = alloc_staging_buffer(num_bytes, buffer, buffer_offset);
-      if (!data) {
-        vulkandisplay_cat.error()
-          << "Failed to allocate staging buffer for updating index buffer.\n";
-        return false;
+      bool use_staging_buffer = true;
+      if (_has_unified_memory) {
+        // If we have UMA, and the buffer is not in use, we can skip the
+        // staging buffer and write directly to buffer memory.
+        use_staging_buffer = ibc->_last_use_frame > _last_finished_frame;
       }
 
-      if (index_type == GeomEnums::NT_uint8) {
-        // Widen to 16-bits, as Vulkan doesn't support 8-bits indices.
-        uint16_t *ptr = (uint16_t *)data;
-        for (size_t i = 0; i < num_bytes; i += 2) {
-          *ptr++ = (uint16_t)*client_pointer++;
+      if (use_staging_buffer) {
+        VkBuffer buffer;
+        uint32_t buffer_offset;
+        void *data = alloc_staging_buffer(num_bytes, buffer, buffer_offset);
+        if (!data) {
+          vulkandisplay_cat.error()
+            << "Failed to allocate staging buffer for updating index buffer.\n";
+          return false;
         }
+
+        if (index_type == GeomEnums::NT_uint8) {
+          // Widen to 16-bits, as Vulkan doesn't support 8-bits indices.
+          uint16_t *ptr = (uint16_t *)data;
+          for (size_t i = 0; i < num_bytes; i += 2) {
+            *ptr++ = (uint16_t)*client_pointer++;
+          }
+        } else {
+          memcpy(data, client_pointer, num_bytes);
+        }
+
+        VkBufferCopy region;
+        region.srcOffset = buffer_offset;
+        region.dstOffset = 0;
+        region.size = num_bytes;
+        vkCmdCopyBuffer(_frame_data->_transfer_cmd, buffer, ibc->_buffer, 1, &region);
       } else {
-        memcpy(data, client_pointer, num_bytes);
+        VulkanMemoryMapping mapping = ibc->_block.map();
+        if (index_type == GeomEnums::NT_uint8) {
+          uint16_t *ptr = (uint16_t *)mapping;
+          for (size_t i = 0; i < num_bytes; i += 2) {
+            *ptr++ = (uint16_t)*client_pointer++;
+          }
+        } else {
+          memcpy(mapping, client_pointer, num_bytes);
+        }
+        ibc->_block.flush();
       }
       _data_transferred_pcollector.add_level(num_bytes);
-
-      VkBufferCopy region;
-      region.srcOffset = buffer_offset;
-      region.dstOffset = 0;
-      region.size = num_bytes;
-      vkCmdCopyBuffer(_frame_data->_transfer_cmd, buffer, ibc->_buffer, 1, &region);
 
       VkBufferMemoryBarrier barrier;
       barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
       barrier.pNext = nullptr;
-      barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+      barrier.srcAccessMask = use_staging_buffer ? VK_ACCESS_TRANSFER_WRITE_BIT : VK_ACCESS_HOST_WRITE_BIT;
       barrier.dstAccessMask = VK_ACCESS_INDEX_READ_BIT;
       barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
       barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
       barrier.buffer = ibc->_buffer;
       barrier.offset = 0;
       barrier.size = VK_WHOLE_SIZE;
-      vkCmdPipelineBarrier(_frame_data->_transfer_cmd,
-                           VK_PIPELINE_STAGE_TRANSFER_BIT,
+      vkCmdPipelineBarrier(frame_data._transfer_cmd,
+                           use_staging_buffer ? VK_PIPELINE_STAGE_TRANSFER_BIT : VK_PIPELINE_STAGE_HOST_BIT,
                            VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
                            0, 0, nullptr, 1, &barrier, 0, nullptr);
     }
 
     ibc->mark_loaded(reader);
   }
+  ibc->mark_used_this_frame(frame_data);
   ibc->enqueue_lru(&_prepared_objects->_graphics_memory_lru);
 
   return true;
@@ -2356,10 +2395,12 @@ prepare_shader_buffer(ShaderBuffer *data) {
 
   VkDeviceSize data_size = data->get_data_size_bytes();
 
+  bool use_staging_buffer = !_has_unified_memory;
+
   VkBuffer buffer;
   VulkanMemoryBlock block;
   if (!create_buffer(data_size, buffer, block,
-                     VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+                     VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | (use_staging_buffer ? VK_BUFFER_USAGE_TRANSFER_DST_BIT : 0),
                      VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)) {
     vulkandisplay_cat.error()
       << "Failed to create shader buffer.\n";
@@ -2373,27 +2414,34 @@ prepare_shader_buffer(ShaderBuffer *data) {
 
   const unsigned char *initial_data = data->get_initial_data();
   if (initial_data != nullptr) {
-    VkBuffer buffer;
-    uint32_t buffer_offset;
-    void *data = alloc_staging_buffer(data_size, buffer, buffer_offset);
-    if (!data) {
-      vulkandisplay_cat.error()
-        << "Failed to allocate staging buffer for updating shader buffer.\n";
-      return nullptr;
-    }
-    memcpy(data, initial_data, data_size);
-    _data_transferred_pcollector.add_level(data_size);
+    if (!_has_unified_memory) {
+      VkBuffer buffer;
+      uint32_t buffer_offset;
+      void *data = alloc_staging_buffer(data_size, buffer, buffer_offset);
+      if (!data) {
+        vulkandisplay_cat.error()
+          << "Failed to allocate staging buffer for updating shader buffer.\n";
+        return nullptr;
+      }
+      memcpy(data, initial_data, data_size);
 
-    VkBufferCopy region;
-    region.srcOffset = buffer_offset;
-    region.dstOffset = 0;
-    region.size = data_size;
-    vkCmdCopyBuffer(_frame_data->_transfer_cmd, buffer, bc->_buffer, 1, &region);
+      VkBufferCopy region;
+      region.srcOffset = buffer_offset;
+      region.dstOffset = 0;
+      region.size = data_size;
+      vkCmdCopyBuffer(_frame_data->_transfer_cmd, buffer, bc->_buffer, 1, &region);
+    }
+    else {
+      VulkanMemoryMapping mapping = bc->_block.map();
+      memcpy(mapping, initial_data, data_size);
+      bc->_block.flush();
+    }
+    _data_transferred_pcollector.add_level(data_size);
 
     VkBufferMemoryBarrier barrier;
     barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
     barrier.pNext = nullptr;
-    barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+    barrier.srcAccessMask = use_staging_buffer ? VK_ACCESS_TRANSFER_WRITE_BIT : VK_ACCESS_HOST_WRITE_BIT;
     barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
     barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
     barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
@@ -2401,7 +2449,7 @@ prepare_shader_buffer(ShaderBuffer *data) {
     barrier.offset = 0;
     barrier.size = VK_WHOLE_SIZE;
     vkCmdPipelineBarrier(_frame_data->_transfer_cmd,
-                         VK_PIPELINE_STAGE_TRANSFER_BIT,
+                         use_staging_buffer ? VK_PIPELINE_STAGE_TRANSFER_BIT : VK_PIPELINE_STAGE_HOST_BIT,
                          VK_PIPELINE_STAGE_VERTEX_SHADER_BIT |
                          VK_PIPELINE_STAGE_TESSELLATION_CONTROL_SHADER_BIT |
                          VK_PIPELINE_STAGE_TESSELLATION_EVALUATION_SHADER_BIT |

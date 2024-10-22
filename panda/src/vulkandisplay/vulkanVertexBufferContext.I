@@ -20,3 +20,24 @@ VulkanVertexBufferContext(PreparedGraphicsObjects *pgo,
   VertexBufferContext(pgo, data),
   _buffer(VK_NULL_HANDLE) {
 }
+
+/**
+ * Returns true if the buffer has been used this frame.
+ */
+INLINE bool VulkanVertexBufferContext::
+is_used_this_frame(VulkanFrameData &frame_data) const {
+  return frame_data._frame_index == _last_use_frame;
+}
+
+/**
+ * Marks the buffer as having been used this frame.
+ */
+INLINE void VulkanVertexBufferContext::
+mark_used_this_frame(VulkanFrameData &frame_data) {
+  if (frame_data._frame_index != _last_use_frame) {
+    _last_use_frame = frame_data._frame_index;
+
+    // Good opportunity to call this.
+    set_active(true);
+  }
+}
