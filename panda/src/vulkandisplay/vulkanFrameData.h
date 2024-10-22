@@ -18,12 +18,30 @@
 #include "vulkanMemoryPage.h"
 #include "screenshotRequest.h"
 
+class VulkanTextureContext;
+
 /**
  * Stores all the data that has been collected between a begin_frame/end_frame
  * pair, until the frame has finished rendering on the GPU.
+ *
+ * At the moment, the frame is divided up into two command buffers, one
+ * collecting all the actions needed to prepare and upload the texture data
+ * (_transfer_cmd) and one containing the actual rendering (_cmd).  At the end
+ * of the transfer cmd we issue a barrier for preparing all the resources for
+ * their first use.  Both command buffers are submitted in gsg->end_frame().
  */
 class VulkanFrameData {
 public:
+  bool add_initial_barrier(VulkanTextureContext *tc, VkImageLayout layout,
+                           VkPipelineStageFlags stage_mask,
+                           VkAccessFlags access_mask = 0);
+
+  bool begin_transfer_cmd();
+  void end_transfer_cmd();
+
+  bool begin_render_cmd();
+  void end_render_cmd();
+
   void finish_downloads(VkDevice device);
 
 public:
@@ -35,6 +53,14 @@ public:
   // The frame data takes ownership of this semaphore, which indicates when the
   // frame is allowed to start rendering (the image is available).
   VkSemaphore _wait_semaphore = VK_NULL_HANDLE;
+
+  // Barriers that are aggregated for the beginning of the frame, put at the
+  // end of the transfer command buffer.
+  pvector<VulkanTextureContext *> _initial_barrier_textures;
+  VkPipelineStageFlags _initial_barrier_src_stage_mask = 0;
+  VkPipelineStageFlags _initial_barrier_dst_stage_mask = 0;
+  size_t _initial_barrier_image_count = 0;
+  size_t _initial_barrier_buffer_count = 0;
 
   // Keep track of resources that should be deleted after this frame is done.
   pvector<VulkanMemoryBlock> _pending_free;

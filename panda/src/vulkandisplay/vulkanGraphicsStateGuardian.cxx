@@ -917,6 +917,76 @@ allocate_memory(VulkanMemoryBlock &block, const VkMemoryRequirements &reqs,
 }
 
 /**
+ * Prepares the texture for the given usage of the texture, performing any
+ * updates as necessary.  If discard is true, the existing contents are
+ * disregarded, and any pending upload is discarded.
+ */
+VulkanTextureContext *VulkanGraphicsStateGuardian::
+use_texture(Texture *texture, VkImageLayout layout,
+            VkPipelineStageFlags stage_mask, VkAccessFlags access_mask,
+            bool discard) {
+  VulkanFrameData &frame_data = get_frame_data();
+
+  VulkanTextureContext *tc;
+  DCAST_INTO_R(tc, texture->prepare_now(_prepared_objects, this), nullptr);
+
+  // We only update the texture the first time it is used in a frame.
+  // Otherwise, we would have to invalidate the descriptor sets.
+  if (!tc->is_used_this_frame(frame_data)) {
+    if (tc->was_modified()) {
+      if (tc->needs_recreation()) {
+        tc->release(frame_data);
+        if (!create_texture(tc)) {
+          return nullptr;
+        }
+      }
+
+      // If discard is true, we are about to replace the texture contents, so we
+      // just skip the upload step and mark it as loaded anyway.
+      if (!discard && !upload_texture(tc)) {
+        return nullptr;
+      }
+
+      tc->mark_loaded();
+    }
+
+    tc->mark_used_this_frame(frame_data);
+    tc->enqueue_lru(&_prepared_objects->_graphics_memory_lru);
+  }
+
+  if (discard) {
+    // Flags it as not caring if the current contents get stomped over.
+    tc->discard();
+  }
+
+  bool is_write = 0 != (access_mask & (
+    VK_ACCESS_SHADER_WRITE_BIT |
+    VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
+    VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT |
+    VK_ACCESS_TRANSFER_WRITE_BIT |
+    VK_ACCESS_HOST_WRITE_BIT |
+    VK_ACCESS_MEMORY_WRITE_BIT));
+
+  // We pool together all reads before the first write in a frame into a single
+  // barrier, issued at the end of the transfer command buffer (so before all
+  // of the rendering).
+  if (tc->_last_write_frame != frame_data._frame_index) {
+    if (is_write) {
+      tc->_last_write_frame = frame_data._frame_index;
+    }
+    else if (frame_data.add_initial_barrier(tc, layout, stage_mask, access_mask)) {
+      return tc;
+    }
+  }
+
+  // We've already written to the texture from the GPU this frame, so we must
+  // issue a barrier in the middle of the command stream.  At the moment, we
+  // make no attempt to combine with other barriers, this may be suboptimal.
+  tc->transition(frame_data._cmd, _graphics_queue_family_index, layout, stage_mask, access_mask);
+  return tc;
+}
+
+/**
  * Creates whatever structures the GSG requires to represent the texture
  * internally, and returns a newly-allocated TextureContext object with this
  * data.  It is the responsibility of the calling function to later call
@@ -1389,6 +1459,12 @@ bool VulkanGraphicsStateGuardian::
 upload_texture(VulkanTextureContext *tc) {
   nassertr(_frame_data != nullptr, false);
 
+  // Textures can only be updated before the first time they are used in a
+  // frame.  This prevents out-of-order calls to transition(), which would
+  // otherwise generate invalid barriers, and also prevents invalid descriptor
+  // sets (which are also only updated the first time in a frame).
+  nassertr(!tc->is_used_this_frame(*_frame_data), false);
+
   Texture *texture = tc->get_texture();
   VkImage image = tc->_image;
 
@@ -1711,35 +1787,7 @@ update_texture(TextureContext *tc, bool force) {
   DCAST_INTO_R(vtc, tc, false);
 
   if (vtc->was_modified()) {
-    Texture *tex = tc->get_texture();
-    int num_views = tex->get_num_views();
-
-    VkExtent3D extent;
-    extent.width = tex->get_x_size();
-    extent.height = tex->get_y_size();
-    uint32_t arrayLayers;
-
-    if (tex->get_texture_type() == Texture::TT_3d_texture) {
-      extent.depth = tex->get_z_size();
-      arrayLayers = 1;
-    } else if (tex->get_texture_type() == Texture::TT_1d_texture_array) {
-      extent.height = 1;
-      extent.depth = 1;
-      arrayLayers = tex->get_y_size();
-    } else {
-      extent.depth = 1;
-      arrayLayers = tex->get_z_size();
-    }
-    arrayLayers *= num_views;
-
-    //VkFormat format = get_image_format(tex);
-
-    if (//format != vtc->_format ||
-        extent.width != vtc->_extent.width ||
-        extent.height != vtc->_extent.height ||
-        extent.depth != vtc->_extent.depth ||
-        arrayLayers != vtc->_array_layers ||
-        (size_t)num_views != vtc->_image_views.size()) {
+    if (vtc->needs_recreation()) {
       // We need to recreate the image entirely.
       vtc->release(*_frame_data);
       if (!create_texture(vtc)) {
@@ -2740,16 +2788,7 @@ begin_frame(Thread *current_thread) {
   _frame_data = &_frame_data_pool[_frame_data_head % _frame_data_capacity];
 
   // Begin the transfer command buffer, for preparing resources.
-  VkCommandBufferBeginInfo begin_info;
-  begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-  begin_info.pNext = nullptr;
-  begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-  begin_info.pInheritanceInfo = nullptr;
-
-  VkResult err;
-  err = vkBeginCommandBuffer(_frame_data->_transfer_cmd, &begin_info);
-  if (err) {
-    vulkan_error(err, "Can't begin transfer command buffer");
+  if (!_frame_data->begin_transfer_cmd()) {
     _frame_data = nullptr;
     return false;
   }
@@ -2785,20 +2824,18 @@ begin_frame(Thread *current_thread) {
   // transfer command buffer, which is why we've begun it already.
   if (GraphicsStateGuardian::begin_frame(current_thread)) {
     // Now begin the main (ie. graphics) command buffer.
-    err = vkBeginCommandBuffer(_frame_data->_cmd, &begin_info);
-    if (!err) {
+    if (_frame_data->begin_render_cmd()) {
       // Bind the "null" vertex buffer.
       const VkDeviceSize offset = 0;
       _vkCmdBindVertexBuffers(_frame_data->_cmd, 0, 1, &_null_vertex_buffer, &offset);
       return true;
     }
-    vulkan_error(err, "Can't begin command buffer");
   }
 
   // We've already started putting stuff in the transfer command buffer, so now
   // we are obliged to submit it, even if we won't actually end up rendering
   // anything in this frame.
-  vkEndCommandBuffer(_frame_data->_transfer_cmd);
+  _frame_data->end_transfer_cmd();
 
   VkSubmitInfo submit_info;
   submit_info.pNext = nullptr;
@@ -2811,7 +2848,7 @@ begin_frame(Thread *current_thread) {
   submit_info.signalSemaphoreCount = 0;
   submit_info.pSignalSemaphores = nullptr;
 
-  err = vkQueueSubmit(_queue, 1, &submit_info, _frame_data->_fence);
+  VkResult err = vkQueueSubmit(_queue, 1, &submit_info, _frame_data->_fence);
   if (err) {
     vulkan_error(err, "Error submitting queue");
     if (err == VK_ERROR_DEVICE_LOST) {
@@ -2867,8 +2904,7 @@ void VulkanGraphicsStateGuardian::
 end_frame(Thread *current_thread, VkSemaphore wait_for, VkSemaphore signal_done) {
   GraphicsStateGuardian::end_frame(current_thread);
 
-  nassertv(_frame_data->_transfer_cmd != VK_NULL_HANDLE);
-  vkEndCommandBuffer(_frame_data->_transfer_cmd);
+  _frame_data->end_transfer_cmd();
 
   // Note down the current watermark of the ring buffers.
   _frame_data->_uniform_buffer_head = _uniform_buffer_allocator.get_head();
@@ -2910,8 +2946,7 @@ end_frame(Thread *current_thread, VkSemaphore wait_for, VkSemaphore signal_done)
                          0, nullptr, (uint32_t)num_downloads, barriers, 0, nullptr);
   }
 
-  nassertv(_frame_data->_cmd != VK_NULL_HANDLE);
-  vkEndCommandBuffer(_frame_data->_cmd);
+  _frame_data->end_render_cmd();
 
   VkCommandBuffer cmdbufs[] = {_frame_data->_transfer_cmd, _frame_data->_cmd};
 
@@ -2929,7 +2964,8 @@ end_frame(Thread *current_thread, VkSemaphore wait_for, VkSemaphore signal_done)
 
   if (wait_for != VK_NULL_HANDLE) {
     // We may need to wait until the attachments are available for writing.
-    static const VkPipelineStageFlags flags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    // TOP_OF_PIPE placates the validation layer, not sure why it's needed.
+    static const VkPipelineStageFlags flags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
     submit_info.waitSemaphoreCount = 1;
     submit_info.pWaitSemaphores = &wait_for;
     submit_info.pWaitDstStageMask = &flags;
@@ -3325,17 +3361,11 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
     }
   }
 
-  PreparedGraphicsObjects *pgo = get_prepared_objects();
-
   VulkanTextureContext *tc;
-  DCAST_INTO_R(tc, tex->prepare_now(pgo, this), false);
-
-  // Temporary, prepare_now should really deal with the resizing
-  if (tc->_extent.width != (uint32_t)tex->get_x_size() ||
-      tc->_extent.height != (uint32_t)tex->get_y_size()) {
-    pgo->release_texture(tc);
-    DCAST_INTO_R(tc, tex->prepare_now(pgo, this), false);
-  }
+  tc = use_texture(tex, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                   VK_PIPELINE_STAGE_TRANSFER_BIT, VK_ACCESS_TRANSFER_WRITE_BIT,
+                   true);
+  nassertr(tc != nullptr, false);
 
   nassertr(fbtc->_extent.width <= tc->_extent.width &&
            fbtc->_extent.height <= tc->_extent.height &&
@@ -3349,10 +3379,6 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
   fbtc->transition(_frame_data->_cmd, _graphics_queue_family_index,
     VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
     VK_PIPELINE_STAGE_TRANSFER_BIT, VK_ACCESS_TRANSFER_READ_BIT);
-
-  tc->transition(_frame_data->_cmd, _graphics_queue_family_index,
-    VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-    VK_PIPELINE_STAGE_TRANSFER_BIT, VK_ACCESS_TRANSFER_WRITE_BIT);
 
   if (fbtc->_format == tc->_format) {
     // The formats are the same.  This is just an image copy.
@@ -4344,15 +4370,6 @@ update_lattr_descriptor_set(VkDescriptorSet ds, const LightAttrib *attr) {
       texture = dummy;
     }
 
-    VulkanTextureContext *tc;
-    DCAST_INTO_R(tc, texture->prepare_now(0, _prepared_objects, this), false);
-
-    tc->set_active(true);
-    update_texture(tc, true);
-
-    // Transition the texture so that it can be read by the shader.  This has
-    // to happen on the transfer command buffer, since it can't happen during
-    // an active render pass.
     // We don't know at this point which stages is using them, and finding out
     // would require duplication of descriptor sets, so we flag all stages.
     VkPipelineStageFlags stage_flags = 0
@@ -4360,6 +4377,7 @@ update_lattr_descriptor_set(VkDescriptorSet ds, const LightAttrib *attr) {
       | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT
       | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT
       ;
+
     if (_supported_shader_caps & ShaderModule::C_tessellation_shader) {
       //stage_flags |= VK_PIPELINE_STAGE_TESSELLATION_CONTROL_SHADER_BIT;
       //stage_flags |= VK_PIPELINE_STAGE_TESSELLATION_EVALUATION_SHADER_BIT;
@@ -4368,9 +4386,9 @@ update_lattr_descriptor_set(VkDescriptorSet ds, const LightAttrib *attr) {
       //stage_flags |= VK_PIPELINE_STAGE_GEOMETRY_SHADER_BIT;
     }
 
-    tc->transition(_frame_data->_transfer_cmd, _graphics_queue_family_index,
-                   VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                   stage_flags, VK_ACCESS_SHADER_READ_BIT);
+    VulkanTextureContext *tc;
+    tc = use_texture(texture, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                     stage_flags, VK_ACCESS_SHADER_READ_BIT);
 
     VkDescriptorImageInfo &image_info = image_infos[i];
     image_info.sampler = VK_NULL_HANDLE;

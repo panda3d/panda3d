@@ -53,6 +53,10 @@ public:
   bool allocate_memory(VulkanMemoryBlock &block, const VkMemoryRequirements &reqs,
                        VkFlags required_flags, bool linear);
 
+  VulkanTextureContext *use_texture(Texture *texture, VkImageLayout layout,
+                                    VkPipelineStageFlags stage_mask,
+                                    VkAccessFlags access_mask,
+                                    bool discard=false);
   virtual TextureContext *prepare_texture(Texture *tex);
   bool create_texture(VulkanTextureContext *vtc);
   bool upload_texture(VulkanTextureContext *vtc);
@@ -103,6 +107,7 @@ public:
   virtual void end_frame(Thread *current_thread);
   void end_frame(Thread *current_thread, VkSemaphore wait_for, VkSemaphore signal_done);
   void finish_frame(FrameData &frame_data);
+  INLINE FrameData &get_frame_data();
 
   virtual bool begin_draw_primitives(const GeomPipelineReader *geom_reader,
                                      const GeomVertexDataPipelineReader *data_reader,

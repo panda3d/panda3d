@@ -574,18 +574,13 @@ fetch_descriptor(VulkanGraphicsStateGuardian *gsg, const Descriptor &desc,
       PT(Texture) texture = desc._binding->fetch_texture(state, id, sampler, view);
 
       VulkanTextureContext *tc;
-      DCAST_INTO_R(tc, texture->prepare_now(pgo, gsg), false);
+      tc = gsg->use_texture(texture,
+                            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                            desc._pipeline_stage_mask,
+                            VK_ACCESS_SHADER_READ_BIT);
 
       VulkanSamplerContext *sc;
       DCAST_INTO_R(sc, sampler.prepare_now(pgo, gsg), false);
-
-      tc->set_active(true);
-      gsg->update_texture(tc, true);
-
-      tc->transition(gsg->_frame_data->_transfer_cmd,
-                     gsg->_graphics_queue_family_index,
-                     VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                     desc._pipeline_stage_mask, VK_ACCESS_SHADER_READ_BIT);
 
       VkDescriptorImageInfo &image_info = *image_infos++;
       image_info.sampler = sc->_sampler;
@@ -603,15 +598,10 @@ fetch_descriptor(VulkanGraphicsStateGuardian *gsg, const Descriptor &desc,
       PT(Texture) texture = desc._binding->fetch_texture(state, id, sampler, view);
 
       VulkanTextureContext *tc;
-      DCAST_INTO_R(tc, texture->prepare_now(pgo, gsg), false);
-
-      tc->set_active(true);
-      gsg->update_texture(tc, true);
-
-      tc->transition(gsg->_frame_data->_transfer_cmd,
-                     gsg->_graphics_queue_family_index,
-                     VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                     desc._pipeline_stage_mask, VK_ACCESS_SHADER_READ_BIT);
+      tc = gsg->use_texture(texture,
+                            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                            desc._pipeline_stage_mask,
+                            VK_ACCESS_SHADER_READ_BIT);
 
       VkBufferView &texel_buffer_view = *texel_buffer_views++;
       texel_buffer_view = tc->get_buffer_view(view);
@@ -642,15 +632,8 @@ fetch_descriptor(VulkanGraphicsStateGuardian *gsg, const Descriptor &desc,
       }
 
       VulkanTextureContext *tc;
-      DCAST_INTO_R(tc, texture->prepare_now(pgo, gsg), false);
-
-      tc->set_active(true);
-      gsg->update_texture(tc, true);
-
-      tc->transition(gsg->_frame_data->_transfer_cmd,
-                     gsg->_graphics_queue_family_index,
-                     VK_IMAGE_LAYOUT_GENERAL,
-                     desc._pipeline_stage_mask, access_mask);
+      tc = gsg->use_texture(texture, VK_IMAGE_LAYOUT_GENERAL,
+                            desc._pipeline_stage_mask, access_mask);
 
       int view = gsg->get_current_tex_view_offset();
       if (desc._type == VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER) {

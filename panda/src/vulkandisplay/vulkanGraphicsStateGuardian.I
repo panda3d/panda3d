@@ -10,3 +10,13 @@
  * @author rdb
  * @date 2016-02-16
  */
+
+/**
+ * Returns the current frame data object.
+ * May only be called between begin_frame() and end_frame().
+ */
+INLINE VulkanFrameData &VulkanGraphicsStateGuardian::
+get_frame_data() {
+  nassertr(_frame_data != nullptr, *_last_frame_data);
+  return *_frame_data;
+}

@@ -28,11 +28,16 @@ public:
 
   ALLOC_DELETED_CHAIN(VulkanTextureContext);
 
+  bool needs_recreation() const;
+
   void release(VulkanFrameData &frame_data);
   void destroy_now(VkDevice device);
 
   INLINE VkImageView get_image_view(int view) const;
   INLINE VkBufferView get_buffer_view(int view) const;
+
+  INLINE bool is_used_this_frame(VulkanFrameData &frame_data) const;
+  INLINE void mark_used_this_frame(VulkanFrameData &frame_data);
 
   INLINE void mark_read(VkPipelineStageFlags stage_mask);
   INLINE void mark_written(VkPipelineStageFlags stage_mask,
@@ -65,10 +70,25 @@ public:
   small_vector<VkBufferView> _buffer_views;
   VulkanMemoryBlock _block;
 
+  // Frame number of the last time gsg->use_texture() was called.
+  uint64_t _last_use_frame = 0;
+
+  // These fields are managed by VulkanFrameData::add_initial_transition(),
+  // and are used to keep track of the transition we do at the beginning of a
+  // frame.
+  VkImageLayout _initial_src_layout = VK_IMAGE_LAYOUT_UNDEFINED;
+  VkImageLayout _initial_dst_layout = VK_IMAGE_LAYOUT_UNDEFINED;
+  VkAccessFlags _initial_src_access_mask = 0;
+  VkAccessFlags _initial_dst_access_mask = 0;
+
+  // Frame number of the last GPU write to this texture.
+  uint64_t _last_write_frame = 0;
+
+  // The "current" layout and access mask (as of the last command submitted)
   VkImageLayout _layout = VK_IMAGE_LAYOUT_UNDEFINED;
   VkAccessFlags _write_access_mask = 0;
-  VkPipelineStageFlags _write_stage_mask = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-  VkPipelineStageFlags _read_stage_mask = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+  VkPipelineStageFlags _write_stage_mask = 0;
+  VkPipelineStageFlags _read_stage_mask = 0;
 
 public:
   static TypeHandle get_class_type() {

@@ -17,6 +17,43 @@
 TypeHandle VulkanTextureContext::_type_handle;
 
 /**
+ * Returns true if the texture needs to be recreated because of a change to the
+ * size or format.
+ */
+bool VulkanTextureContext::
+needs_recreation() const {
+  Texture *tex = get_texture();
+  int num_views = tex->get_num_views();
+
+  VkExtent3D extent;
+  extent.width = tex->get_x_size();
+  extent.height = tex->get_y_size();
+  uint32_t arrayLayers;
+
+  if (tex->get_texture_type() == Texture::TT_3d_texture) {
+    extent.depth = tex->get_z_size();
+    arrayLayers = 1;
+  } else if (tex->get_texture_type() == Texture::TT_1d_texture_array) {
+    extent.height = 1;
+    extent.depth = 1;
+    arrayLayers = tex->get_y_size();
+  } else {
+    extent.depth = 1;
+    arrayLayers = tex->get_z_size();
+  }
+  arrayLayers *= num_views;
+
+  //VkFormat format = get_image_format(tex);
+
+  return (//format != _format ||
+          extent.width != _extent.width ||
+          extent.height != _extent.height ||
+          extent.depth != _extent.depth ||
+          arrayLayers != _array_layers ||
+          (size_t)num_views != _image_views.size());
+}
+
+/**
  * Schedules the deletion of the image resources for the end of the frame.
  */
 void VulkanTextureContext::
@@ -174,6 +211,10 @@ void VulkanTextureContext::
 clear_buffer(VkCommandBuffer cmd, uint32_t fill) {
   nassertv(_buffer != VK_NULL_HANDLE);
 
+  discard();
+  transition(cmd, 0,//vkgsg->_graphics_queue_family_index,
+    _layout, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_ACCESS_TRANSFER_WRITE_BIT);
+
   vkCmdFillBuffer(cmd, _buffer, 0, VK_WHOLE_SIZE, fill);
   mark_written(VK_PIPELINE_STAGE_TRANSFER_BIT, VK_ACCESS_TRANSFER_WRITE_BIT);
 }
@@ -184,6 +225,12 @@ clear_buffer(VkCommandBuffer cmd, uint32_t fill) {
  * write-after-write hazards.
  *
  * For a buffer texture, layout is ignored.
+ *
+ * Please be very aware on which command buffer the transition is happening:
+ * it is assumed that the command written by this call is also submitted in
+ * the same order as the transition() calls are made, so you may not call
+ * transition() on the transfer command buffer after having called it on the
+ * render command buffer!
  *
  * Implicitly calls mark_read() or mark_written() depending on the access mask.
  * Does not (yet) do inter-queue synchronization.
@@ -220,8 +267,17 @@ transition(VkCommandBuffer cmd, uint32_t queue_family, VkImageLayout layout,
     }
   }
   else if (src_stage_mask == 0) {
-    // This is a read-after-read, nothing to do here.
+    // No write has been done, nothing to do here.
     return;
+  }
+  else {
+    // We've already synchronized these reads since the last write.
+    dst_stage_mask &= ~_read_stage_mask;
+    if (dst_stage_mask == 0) {
+      // We could probably improve this by also early-outing if we've already
+      // synchronized a *preceding* stage.
+      return;
+    }
   }
 
   VkImageMemoryBarrier img_barrier;
@@ -261,14 +317,24 @@ transition(VkCommandBuffer cmd, uint32_t queue_family, VkImageLayout layout,
   _layout = layout;
 
   if (write_mask != 0) {
-    // We are writing to it, remember that for next time.
+    // Remember which stages wrote to it and how.
     _write_stage_mask = dst_stage_mask;
     _write_access_mask = write_mask;
-  } else {
-    // Note that layout transitions create an implicit execution dependency,
-    // so if we're not writing, we don't need to set _write_stage_mask here.
-    _write_stage_mask = 0;
-    _write_access_mask = 0;
+    _read_stage_mask = 0;
   }
-  _read_stage_mask = dst_stage_mask & ~VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+  else {
+    // This is a read-after-write barrier.  It's possible that there will be
+    // another read later from a different (earlier) stage, which is why we
+    // don't zero out _write_stage_mask.  We can just check _read_stage_mask
+    // the next time to see what we have already synchronized with the write.
+    mark_read(dst_stage_mask);
+
+    if (dst_stage_mask & (VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT | VK_PIPELINE_STAGE_ALL_COMMANDS_BIT)) {
+      // Actually, looks like we've synchronized all stages.  We still do need
+      // to keep _read_access_mask, since a subsequent write still needs to
+      // wait for this read to complete.
+      _write_stage_mask = 0;
+      _write_access_mask = 0;
+    }
+  }
 }

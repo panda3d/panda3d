@@ -140,7 +140,8 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 
   // Now that we have a command buffer, start our render pass.  First
   // transition the swapchain images into the valid state for rendering into.
-  VkCommandBuffer cmd = vkgsg->_frame_data->_cmd;
+  VulkanFrameData &frame_data = vkgsg->get_frame_data();
+  VkCommandBuffer cmd = frame_data._cmd;
 
   VkClearValue *clears = (VkClearValue *)
     alloca(sizeof(VkClearValue) * _attachments.size());
@@ -159,7 +160,8 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 
   for (size_t i = 0; i < _attachments.size(); ++i) {
     Attachment &attach = _attachments[i];
-    attach._tc->set_active(true);
+    nassertr(!attach._tc->is_used_this_frame(frame_data), false);
+    attach._tc->mark_used_this_frame(frame_data);
 
     VkImageLayout layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
     VkAccessFlags write_access_mask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
@@ -173,7 +175,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
       stage_mask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT
                  | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
       write_access_mask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-      read_access_mask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+      read_access_mask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
     }
     else if (attach._plane == RTP_color) {
       vkgsg->_fb_color_tc = attach._tc;
@@ -191,9 +193,12 @@ begin_frame(FrameMode mode, Thread *current_thread) {
       attach._tc->_read_stage_mask = stage_mask;
       attach._tc->_write_stage_mask = stage_mask;
       attach._tc->_write_access_mask = write_access_mask;
-    } else {
-      attach._tc->transition(cmd, vkgsg->_graphics_queue_family_index,
-                             layout, stage_mask, read_access_mask | write_access_mask);
+    }
+    else if (attach._tc->_layout != layout ||
+             (attach._tc->_write_stage_mask & ~stage_mask) != 0 ||
+             (attach._tc->_read_stage_mask & ~stage_mask) != 0) {
+      frame_data.add_initial_barrier(attach._tc,
+        layout, stage_mask, read_access_mask | write_access_mask);
     }
   }
 
@@ -449,6 +454,15 @@ setup_render_pass() {
   VkAttachmentReference depth_reference;
   depth_reference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
+  VkSubpassDependency dependency;
+  dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+  dependency.dstSubpass = 0;
+  dependency.srcStageMask = 0;
+  dependency.dstStageMask = VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT;
+  dependency.srcAccessMask = 0;
+  dependency.dstAccessMask = 0;
+  dependency.dependencyFlags = 0;
+
   if (_color_format != VK_FORMAT_UNDEFINED) {
     VkAttachmentDescription &attach = attachments[ai];
     attach.flags = 0;
@@ -472,6 +486,11 @@ setup_render_pass() {
       attach.finalLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
       attach.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
     }
+
+    dependency.srcStageMask |= VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    dependency.srcAccessMask |= VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    dependency.dstAccessMask |= VK_ACCESS_COLOR_ATTACHMENT_READ_BIT |
+                                VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
     color_reference.attachment = ai++;
   }
@@ -505,7 +524,16 @@ setup_render_pass() {
       attach.stencilStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
     }
 
+    dependency.srcStageMask |= VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+    dependency.dstStageMask |= VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+    dependency.srcAccessMask |= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+    dependency.dstAccessMask |= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
+
     depth_reference.attachment = ai++;
+  }
+
+  if (dependency.srcStageMask == 0) {
+    dependency.srcStageMask = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
   }
 
   VkSubpassDescription subpass;
@@ -528,8 +556,8 @@ setup_render_pass() {
   pass_info.pAttachments = attachments;
   pass_info.subpassCount = 1;
   pass_info.pSubpasses = &subpass;
-  pass_info.dependencyCount = 0;
-  pass_info.pDependencies = nullptr;
+  pass_info.dependencyCount = 1;
+  pass_info.pDependencies = &dependency;
 
   VkRenderPass pass;
   VkResult

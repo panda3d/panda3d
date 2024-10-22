@@ -150,13 +150,17 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   nassertr(_image_index < _swap_buffers.size(), false);
   SwapBuffer &buffer = _swap_buffers[_image_index];
 
+  VulkanFrameData &frame_data = vkgsg->get_frame_data();
+
   VulkanTextureContext *color_tc;
-  buffer._tc->set_active(true);
+  nassertr(!buffer._tc->is_used_this_frame(frame_data), false);
+  buffer._tc->mark_used_this_frame(frame_data);
 
   // If we have multisamples, we render to a different image, which we then
   // resolve into the swap chain image.
   if (_ms_color_tc != nullptr) {
-    _ms_color_tc->set_active(true);
+    nassertr(!_ms_color_tc->is_used_this_frame(frame_data), false);
+    _ms_color_tc->mark_used_this_frame(frame_data);
     color_tc = _ms_color_tc;
   } else {
     color_tc = buffer._tc;
@@ -168,7 +172,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 
   // Now that we have a command buffer, start our render pass.  First
   // transition the swapchain images into the valid state for rendering into.
-  VkCommandBuffer cmd = vkgsg->_frame_data->_cmd;
+  VkCommandBuffer cmd = frame_data._cmd;
 
   VkClearValue clears[2];
 
@@ -198,13 +202,17 @@ begin_frame(FrameMode mode, Thread *current_thread) {
       //color_tc->clear_color_image(cmd, clears[0].color);
     }
 
-    color_tc->transition(cmd, vkgsg->_graphics_queue_family_index,
-                         VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-                         VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-                         VK_ACCESS_COLOR_ATTACHMENT_READ_BIT |
-                         VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
-  } else {
-    // This transition will be made when the first subpass is started.
+    if (color_tc->_layout != VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL ||
+        (color_tc->_write_stage_mask & ~VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT) != 0 ||
+        (color_tc->_read_stage_mask & ~VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT) != 0) {
+      frame_data.add_initial_barrier(color_tc,
+        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+        VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
+    }
+  }
+  else {
+    // This transition will be made when the render pass ends.
     color_tc->_layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
     color_tc->_read_stage_mask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
     color_tc->_write_stage_mask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
@@ -219,22 +227,26 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   }
 
   if (_depth_stencil_tc != nullptr) {
-    _depth_stencil_tc->set_active(true);
+    nassertr(!_depth_stencil_tc->is_used_this_frame(frame_data), false);
+    _depth_stencil_tc->mark_used_this_frame(frame_data);
 
     // Transition the depth-stencil image to a consistent state.
     if (!get_clear_depth_active() || !get_clear_stencil_active()) {
-      _depth_stencil_tc->transition(cmd, vkgsg->_graphics_queue_family_index,
-        VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-        VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
-        VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT);
-    } else {
+      if (_depth_stencil_tc->_layout != VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL ||
+          (_depth_stencil_tc->_write_stage_mask & ~VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT) != 0 ||
+          (_depth_stencil_tc->_read_stage_mask & ~VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT) != 0) {
+        frame_data.add_initial_barrier(_depth_stencil_tc,
+          VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+          VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
+          VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT);
+      }
+    }
+    else {
       // This transition will be made when the first subpass is started.
       _depth_stencil_tc->_layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
       _depth_stencil_tc->_write_access_mask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-      _depth_stencil_tc->_write_stage_mask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT |
-                                             VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
-      _depth_stencil_tc->_read_stage_mask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT |
-                                            VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+      _depth_stencil_tc->_write_stage_mask = VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+      _depth_stencil_tc->_read_stage_mask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
     }
 
     if (get_clear_depth_active() || get_clear_stencil_active()) {
@@ -278,17 +290,26 @@ end_frame(FrameMode mode, Thread *current_thread) {
     buffer._tc->mark_written(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
                              VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
 
+    if (_depth_stencil_tc != nullptr) {
+      _depth_stencil_tc->_layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+      _depth_stencil_tc->mark_written(
+        VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
+        VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT);
+    }
+
     // Now we can do copy-to-texture, now that the render pass has ended.
     copy_to_textures();
 
     signal_done = buffer._render_complete;
-  }
 
-  // If we copied the textures, transition it back to the present state.
-  buffer._tc->transition(cmd, vkgsg->_graphics_queue_family_index,
-                         VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-                         VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-                         VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
+    // If we copied the textures, transition it back to the present state.
+    if (buffer._tc->_layout != VK_IMAGE_LAYOUT_PRESENT_SRC_KHR) {
+      buffer._tc->transition(cmd, vkgsg->_graphics_queue_family_index,
+                             VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+                             VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                             VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
+    }
+  }
 
   // Note: this will close the command buffer, and unsignal the previous
   // frame's semaphore.
@@ -760,6 +781,16 @@ setup_render_pass() {
   color_reference.attachment = 0;
   color_reference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
+  VkSubpassDependency dependency;
+  dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+  dependency.dstSubpass = 0;
+  dependency.srcStageMask = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+  dependency.dstStageMask = VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT;
+  dependency.srcAccessMask = 0;
+  dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT
+                           | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+  dependency.dependencyFlags = 0;
+
   size_t i = 1;
   if (_depth_stencil_format) {
     attachments[i].flags = 0;
@@ -789,6 +820,11 @@ setup_render_pass() {
     depth_reference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
     subpass.pDepthStencilAttachment = &depth_reference;
     ++i;
+
+    dependency.srcStageMask = VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+    dependency.dstStageMask |= VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+    dependency.srcAccessMask |= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+    dependency.dstAccessMask |= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
   }
 
   // Also create an attachment reference for the resolve target.
@@ -817,8 +853,8 @@ setup_render_pass() {
   pass_info.pAttachments = attachments;
   pass_info.subpassCount = 1;
   pass_info.pSubpasses = &subpass;
-  pass_info.dependencyCount = 0;
-  pass_info.pDependencies = nullptr;
+  pass_info.dependencyCount = 1;
+  pass_info.pDependencies = &dependency;
 
   VkRenderPass pass;
   VkResult
