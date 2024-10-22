@@ -64,6 +64,8 @@ static const std::string default_fshader =
   "}\n";
 
 static PStatCollector _make_pipeline_pcollector("Draw:Primitive:Make Pipeline");
+static PStatCollector _update_lattr_descriptor_set_pcollector("Draw:Update Descriptor Sets:LightAttrib");
+static PStatCollector _bind_descriptor_sets_pcollector("Draw:Set State:Bind Descriptor Sets");
 
 TypeHandle VulkanGraphicsStateGuardian::_type_handle;
 
@@ -104,6 +106,7 @@ reset() {
   _is_valid = false;
 
   _current_shader = nullptr;
+  _current_sc = nullptr;
 
   VulkanGraphicsPipe *pipe;
   DCAST_INTO_V(pipe, get_pipe());
@@ -1461,6 +1464,7 @@ create_texture(VulkanTextureContext *tc) {
 bool VulkanGraphicsStateGuardian::
 upload_texture(VulkanTextureContext *tc) {
   nassertr(_frame_data != nullptr, false);
+  PStatTimer timer(_load_texture_pcollector);
 
   // Textures can only be updated before the first time they are used in a
   // frame.  This prevents out-of-order calls to transition(), which would
@@ -2135,6 +2139,8 @@ update_vertex_buffer(VulkanVertexBufferContext *vbc,
   VulkanFrameData &frame_data = get_frame_data();
 
   if (vbc->was_modified(reader)) {
+    PStatTimer timer(_load_vertex_buffer_pcollector);
+
     VkDeviceSize num_bytes = reader->get_data_size_bytes();
     if (num_bytes != 0) {
       const unsigned char *client_pointer = reader->get_read_pointer(force);
@@ -2293,6 +2299,8 @@ update_index_buffer(VulkanIndexBufferContext *ibc,
   VulkanFrameData &frame_data = get_frame_data();
 
   if (ibc->was_modified(reader)) {
+    PStatTimer timer(_load_index_buffer_pcollector);
+
     VkDeviceSize num_bytes = reader->get_data_size_bytes();
     if (num_bytes != 0) {
       const unsigned char *client_pointer = reader->get_read_pointer(force);
@@ -2526,9 +2534,11 @@ dispatch_compute(int num_groups_x, int num_groups_y, int num_groups_z) {
   nassertv(_frame_data != nullptr);
   nassertv(_current_shader != nullptr);
 
+  PStatTimer timer(_compute_dispatch_pcollector);
+
   //TODO: must actually be outside render pass, and on a queue that supports
   // compute.  Should we have separate pool/queue/buffer for compute?
-  VkPipeline pipeline = _current_shader->get_compute_pipeline(this);
+  VkPipeline pipeline = _current_sc->get_compute_pipeline(this);
   nassertv(pipeline != VK_NULL_HANDLE);
   _vkCmdBindPipeline(_frame_data->_cmd, VK_PIPELINE_BIND_POINT_COMPUTE, pipeline);
 
@@ -2553,68 +2563,96 @@ make_geom_munger(const RenderState *state, Thread *current_thread) {
  * get_cs_transform().  (Previously, this used to be the "external" net
  * transform, with the assumption that that GSG would convert it internally,
  * but that is no longer the case.)
- *
- * Special case: if (state==NULL), then the target state is already stored in
- * _target.
  */
 void VulkanGraphicsStateGuardian::
 set_state_and_transform(const RenderState *state,
                         const TransformState *trans) {
+  PStatTimer timer(_draw_set_state_pcollector);
+
   // This does not actually set the state just yet, because we can't make a
   // pipeline state without knowing the vertex format.
-  _state_rs = state;
   _target_rs = state;
   _internal_transform = trans;
 
   determine_target_shader();
 
-  VulkanShaderContext *sc = _default_sc;
+  bool shader_changed = false;
+  VulkanShaderContext *sc = _current_sc;
   Shader *shader = (Shader *)_target_shader->get_shader();
-  if (shader != nullptr) {
-    sc = DCAST(VulkanShaderContext, shader->prepare_now(get_prepared_objects(), this));
-  }
+  if (sc == nullptr || shader != _current_shader) {
+    _current_shader = shader;
 
-  _current_shader = sc;
+    if (shader != nullptr) {
+      sc = DCAST(VulkanShaderContext, shader->prepare_now(get_prepared_objects(), this));
+    } else {
+      sc = _default_sc;
+    }
+    _current_sc = sc;
+    shader_changed = true;
+  }
   if (UNLIKELY(sc == nullptr)) {
     // Don't bother updating the state if we don't have a valid shader, because
     // begin_draw_primitives will return false anyway.
     return;
   }
 
+  VkCommandBuffer cmd = _frame_data->_cmd;
+
   // Put the modelview projection matrix and color scale in the push constants.
   if (sc->_projection_mat_stage_mask != 0) {
     CPT(TransformState) combined = _projection_mat->compose(trans);
     LMatrix4f matrix = LCAST(float, combined->get_mat());
-    _vkCmdPushConstants(_frame_data->_cmd, sc->_pipeline_layout,
+    _vkCmdPushConstants(cmd, sc->_pipeline_layout,
                         sc->_push_constant_stage_mask, 0, 64, matrix.get_data());
   }
 
   if (sc->_color_scale_stage_mask != 0) {
-    const ColorScaleAttrib *color_scale_attrib;
-    state->get_attrib_def(color_scale_attrib);
-    LColorf color = LCAST(float, color_scale_attrib->get_scale());
-    _vkCmdPushConstants(_frame_data->_cmd, sc->_pipeline_layout,
-                        sc->_push_constant_stage_mask, 64, 16, color.get_data());
+    const ColorScaleAttrib *target_color_scale;
+    state->get_attrib(target_color_scale);
+    if (target_color_scale != _state_rs->get_attrib(ColorScaleAttrib::get_class_slot()) ||
+        shader_changed) {
+
+      LColorf color(1.0f, 1.0f, 1.0f, 1.0f);
+      if (target_color_scale != nullptr) {
+        color = LCAST(float, target_color_scale->get_scale());
+      }
+      _vkCmdPushConstants(cmd, sc->_pipeline_layout,
+                          sc->_push_constant_stage_mask, 64, 16, color.get_data());
+    }
   }
 
   // Update and bind descriptor sets.
   VkDescriptorSet descriptor_sets[DS_SET_COUNT] = {};
 
+  uint32_t first_set = 0;
   const LightAttrib *target_light;
   state->get_attrib_def(target_light);
-  if (get_attrib_descriptor_set(descriptor_sets[DS_light_attrib],
-                                _lattr_descriptor_set_layout,
-                                target_light)) {
-    // The first time this set is bound in this frame, we update it.  Once we
-    // use it in a command buffer, we can't update it again anyway.
-    update_lattr_descriptor_set(descriptor_sets[DS_light_attrib], target_light);
+  if (shader_changed ||
+      target_light != _state_rs->get_attrib_def(LightAttrib::get_class_slot())) {
+    if (get_attrib_descriptor_set(descriptor_sets[DS_light_attrib],
+                                  _lattr_descriptor_set_layout,
+                                  target_light)) {
+      // The first time this set is bound in this frame, we update it.  Once we
+      // use it in a command buffer, we can't update it again anyway.
+      update_lattr_descriptor_set(descriptor_sets[DS_light_attrib], target_light);
+    }
+  } else {
+    first_set = 1;
   }
 
-  determine_target_texture();
-  if (get_attrib_descriptor_set(descriptor_sets[DS_texture_attrib],
-                                sc->_tattr_descriptor_set_layout,
-                                _target_texture)) {
-    sc->update_tattr_descriptor_set(this, descriptor_sets[DS_texture_attrib]);
+  const TextureAttrib *target_texture;
+  state->get_attrib_def(target_texture);
+  if (true || first_set != 1 || shader_changed ||
+      target_texture != _state_rs->get_attrib_def(TextureAttrib::get_class_slot())) {
+    //FIXME: there is still a bug here, removing the "true" above causes some
+    // glitches
+    if (get_attrib_descriptor_set(descriptor_sets[DS_texture_attrib],
+                                  sc->_tattr_descriptor_set_layout,
+                                  target_texture)) {
+      sc->update_tattr_descriptor_set(this, descriptor_sets[DS_texture_attrib]);
+    }
+  } else {
+    first_set = 2;
   }
 
   if (get_attrib_descriptor_set(descriptor_sets[DS_shader_attrib],
@@ -2624,18 +2662,23 @@ set_state_and_transform(const RenderState *state,
   }
 
   const ColorAttrib *target_color;
-  if (sc->_uses_vertex_color && state->get_attrib(target_color) &&
-      target_color->get_color_type() == ColorAttrib::T_flat) {
-    //FIXME: this doesn't need to be aligned to minUniformBufferOffsetAlignment,
-    // which can be way more excessive (up to 256 bytes) than needed.
-    float *ptr = (float *)alloc_dynamic_uniform_buffer(16, _current_color_buffer, _current_color_offset);
-    ptr[0] = target_color->get_color()[0];
-    ptr[1] = target_color->get_color()[1];
-    ptr[2] = target_color->get_color()[2];
-    ptr[3] = target_color->get_color()[3];
-  } else {
-    _current_color_buffer = _uniform_buffer;
-    _current_color_offset = _uniform_buffer_white_offset;
+  state->get_attrib(target_color);
+  if (target_color != _state_rs->get_attrib(ColorAttrib::get_class_slot()) ||
+      shader_changed) {
+
+    if (sc->_uses_vertex_color && target_color != nullptr &&
+        target_color->get_color_type() == ColorAttrib::T_flat) {
+      //FIXME: this doesn't need to be aligned to minUniformBufferOffsetAlignment,
+      // which can be way more excessive (up to 256 bytes) than needed.
+      float *ptr = (float *)alloc_dynamic_uniform_buffer(16, _current_color_buffer, _current_color_offset);
+      ptr[0] = target_color->get_color()[0];
+      ptr[1] = target_color->get_color()[1];
+      ptr[2] = target_color->get_color()[2];
+      ptr[3] = target_color->get_color()[3];
+    } else {
+      _current_color_buffer = _uniform_buffer;
+      _current_color_offset = _uniform_buffer_white_offset;
+    }
   }
 
   //TODO: properly compute altered field.
@@ -2649,9 +2692,11 @@ set_state_and_transform(const RenderState *state,
   // Note that this set may be recreated by update_dynamic_uniforms, above.
   descriptor_sets[DS_dynamic_uniforms] = sc->_uniform_descriptor_set;
 
-  bool is_compute = (sc->_modules[(size_t)Shader::Stage::COMPUTE] != VK_NULL_HANDLE);
-  vkCmdBindDescriptorSets(_frame_data->_cmd, is_compute ? VK_PIPELINE_BIND_POINT_COMPUTE : VK_PIPELINE_BIND_POINT_GRAPHICS,
-                          sc->_pipeline_layout, 0, DS_SET_COUNT, descriptor_sets,
+  _state_rs = state;
+
+  PStatTimer timer2(_bind_descriptor_sets_pcollector);
+  vkCmdBindDescriptorSets(cmd, sc->_bind_point, sc->_pipeline_layout,
+                          first_set, DS_SET_COUNT - first_set, descriptor_sets + first_set,
                           num_offsets, &offset);
 }
 
@@ -2909,6 +2954,9 @@ begin_frame(Thread *current_thread) {
   if (GraphicsStateGuardian::begin_frame(current_thread)) {
     // Now begin the main (ie. graphics) command buffer.
     if (_frame_data->begin_render_cmd()) {
+      _current_shader = nullptr;
+      _current_sc = nullptr;
+
       // Bind the "null" vertex buffer.
       const VkDeviceSize offset = 0;
       _vkCmdBindVertexBuffers(_frame_data->_cmd, 0, 1, &_null_vertex_buffer, &offset);
@@ -3213,7 +3261,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   }
 
   // We need to have a valid shader to be able to render anything.
-  if (_current_shader == nullptr) {
+  if (_current_sc == nullptr) {
     return false;
   }
 
@@ -3221,7 +3269,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
 
   // Prepare and bind the vertex buffers.
   size_t num_arrays = data_reader->get_num_arrays();
-  size_t num_buffers = num_arrays + _current_shader->_uses_vertex_color;
+  size_t num_buffers = num_arrays + _current_sc->_uses_vertex_color;
   VkBuffer *buffers = (VkBuffer *)alloca(sizeof(VkBuffer) * num_buffers);
   VkDeviceSize *offsets = (VkDeviceSize *)alloca(sizeof(VkDeviceSize) * num_buffers);
 
@@ -3239,7 +3287,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     offsets[i] = 0;
   }
 
-  if (_current_shader->_uses_vertex_color) {
+  if (_current_sc->_uses_vertex_color) {
     buffers[i] = _current_color_buffer;
     offsets[i] = _current_color_offset;
     ++i;
@@ -3280,7 +3328,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
       return false;
     }
 
-    VkPipeline pipeline = _current_shader->get_pipeline(this, _state_rs, data_reader->get_format(), topology, 0, _fb_ms_count);
+    VkPipeline pipeline = _current_sc->get_pipeline(this, _state_rs, data_reader->get_format(), topology, 0, _fb_ms_count);
     nassertr(pipeline != VK_NULL_HANDLE, false);
     _vkCmdBindPipeline(_frame_data->_cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
   } else {
@@ -3336,6 +3384,8 @@ draw_trifans(const GeomPrimitivePipelineReader *reader, bool force) {
  */
 bool VulkanGraphicsStateGuardian::
 draw_patches(const GeomPrimitivePipelineReader *reader, bool force) {
+  PStatTimer timer(_draw_primitive_pcollector);
+
   uint32_t patch_control_points = ((const GeomPrimitive *)reader->get_object())->get_num_vertices_per_primitive();
   if (_supports_extended_dynamic_state2_patch_control_points) {
     // No need to set topology, there's no reason not to bake that into the
@@ -3344,7 +3394,7 @@ draw_patches(const GeomPrimitivePipelineReader *reader, bool force) {
   } else {
     // Bind a pipeline which has both the topology and number of patch control
     // points baked in.
-    VkPipeline pipeline = _current_shader->get_pipeline(this, _state_rs, _format, VK_PRIMITIVE_TOPOLOGY_PATCH_LIST, patch_control_points, _fb_ms_count);
+    VkPipeline pipeline = _current_sc->get_pipeline(this, _state_rs, _format, VK_PRIMITIVE_TOPOLOGY_PATCH_LIST, patch_control_points, _fb_ms_count);
     nassertr(pipeline != VK_NULL_HANDLE, false);
     _vkCmdBindPipeline(_frame_data->_cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
   }
@@ -3647,11 +3697,13 @@ do_draw_primitive_with_topology(const GeomPrimitivePipelineReader *reader,
                                 bool force, VkPrimitiveTopology topology,
                                 bool primitive_restart_enable) {
 
+  PStatTimer timer(_draw_primitive_pcollector);
+
   if (_supports_extended_dynamic_state2) {
     _vkCmdSetPrimitiveTopologyEXT(_frame_data->_cmd, topology);
     _vkCmdSetPrimitiveRestartEnableEXT(_frame_data->_cmd, primitive_restart_enable && reader->is_indexed());
   } else {
-    VkPipeline pipeline = _current_shader->get_pipeline(this, _state_rs, _format, topology, 0, _fb_ms_count);
+    VkPipeline pipeline = _current_sc->get_pipeline(this, _state_rs, _format, topology, 0, _fb_ms_count);
     nassertr(pipeline != VK_NULL_HANDLE, false);
     _vkCmdBindPipeline(_frame_data->_cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
   }
@@ -4363,11 +4415,11 @@ make_compute_pipeline(VulkanShaderContext *sc) {
  */
 bool VulkanGraphicsStateGuardian::
 get_attrib_descriptor_set(VkDescriptorSet &out, VkDescriptorSetLayout layout, const RenderAttrib *attrib) {
-  nassertr(_current_shader != nullptr, false);
+  nassertr(_current_sc != nullptr, false);
 
   // Look it up in the attribute map.
-  auto it = _current_shader->_attrib_descriptor_set_map.find(attrib);
-  if (it != _current_shader->_attrib_descriptor_set_map.end()) {
+  auto it = _current_sc->_attrib_descriptor_set_map.find(attrib);
+  if (it != _current_sc->_attrib_descriptor_set_map.end()) {
     // Found something.  Check that it's not just a different state that has
     // been allocated in the memory of a previous state.
     VulkanShaderContext::DescriptorSet &set = it->second;
@@ -4418,7 +4470,7 @@ get_attrib_descriptor_set(VkDescriptorSet &out, VkDescriptorSetLayout layout, co
   set._last_update_frame = _frame_counter;
 
   out = set._handle;
-  _current_shader->_attrib_descriptor_set_map[attrib] = std::move(set);
+  _current_sc->_attrib_descriptor_set_map[attrib] = std::move(set);
   return true;
 }
 
@@ -4427,6 +4479,8 @@ get_attrib_descriptor_set(VkDescriptorSet &out, VkDescriptorSetLayout layout, co
  */
 bool VulkanGraphicsStateGuardian::
 update_lattr_descriptor_set(VkDescriptorSet ds, const LightAttrib *attr) {
+  PStatTimer timer(_update_lattr_descriptor_set_pcollector);
+
   const size_t num_shadow_maps = 8;
   VkWriteDescriptorSet *writes = (VkWriteDescriptorSet *)alloca(num_shadow_maps * sizeof(VkWriteDescriptorSet));
   VkDescriptorImageInfo *image_infos = (VkDescriptorImageInfo *)alloca(num_shadow_maps * sizeof(VkDescriptorImageInfo));

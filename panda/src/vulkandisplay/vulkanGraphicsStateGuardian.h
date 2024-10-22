@@ -211,7 +211,8 @@ private:
   VkPipelineCache _pipeline_cache = VK_NULL_HANDLE;
   VkDescriptorPool _descriptor_pool = VK_NULL_HANDLE;
   VulkanShaderContext *_default_sc = nullptr;
-  VulkanShaderContext *_current_shader = nullptr;
+  Shader *_current_shader = nullptr;
+  VulkanShaderContext *_current_sc = nullptr;
   const ShaderType::Struct *_push_constant_block_type = nullptr;
   CPT(GeomVertexFormat) _format;
   uint32_t _instance_count = 0;

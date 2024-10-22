@@ -98,6 +98,7 @@ public:
   };
 
 private:
+  VkPipelineBindPoint _bind_point = VK_PIPELINE_BIND_POINT_GRAPHICS;
   VkShaderModule _modules[(size_t)Shader::Stage::COMPUTE + 1];
   VkDescriptorSetLayout _tattr_descriptor_set_layout = VK_NULL_HANDLE;
   VkDescriptorSetLayout _sattr_descriptor_set_layout = VK_NULL_HANDLE;

@@ -20,6 +20,9 @@
 #include "spirVMakeBlockPass.h"
 #include "spirVRemoveUnusedVariablesPass.h"
 
+static PStatCollector _update_tattr_descriptor_set_pcollector("Draw:Update Descriptor Sets:TextureAttrib");
+static PStatCollector _update_sattr_descriptor_set_pcollector("Draw:Update Descriptor Sets:ShaderAttrib");
+
 TypeHandle VulkanShaderContext::_type_handle;
 
 /**
@@ -145,6 +148,10 @@ create_modules(VkDevice device, const ShaderType::Struct *push_constant_block_ty
         << " are not supported in Vulkan\n";
       success = false;
       continue;
+    }
+
+    if (module->get_stage() == Shader::Stage::COMPUTE) {
+      _bind_point = VK_PIPELINE_BIND_POINT_COMPUTE;
     }
 
     const ShaderModuleSpirV *spv_module = (const ShaderModuleSpirV *)module.p();
@@ -678,6 +685,8 @@ fetch_descriptor(VulkanGraphicsStateGuardian *gsg, const Descriptor &desc,
  */
 bool VulkanShaderContext::
 update_tattr_descriptor_set(VulkanGraphicsStateGuardian *gsg, VkDescriptorSet ds) {
+  PStatTimer timer(_update_tattr_descriptor_set_pcollector);
+
   VkWriteDescriptorSet *writes = (VkWriteDescriptorSet *)alloca(_tattr_descriptors.size() * sizeof(VkWriteDescriptorSet));
   VkDescriptorImageInfo *image_infos = (VkDescriptorImageInfo *)alloca(_num_tattr_descriptor_elements * sizeof(VkDescriptorImageInfo));
   VkDescriptorBufferInfo *buffer_infos = (VkDescriptorBufferInfo *)alloca(_num_tattr_descriptor_elements * sizeof(VkDescriptorBufferInfo));
@@ -702,6 +711,8 @@ update_tattr_descriptor_set(VulkanGraphicsStateGuardian *gsg, VkDescriptorSet ds
  */
 bool VulkanShaderContext::
 update_sattr_descriptor_set(VulkanGraphicsStateGuardian *gsg, VkDescriptorSet ds) {
+  PStatTimer timer(_update_sattr_descriptor_set_pcollector);
+
   // Allocate enough memory.
   size_t max_num_descriptors = 1 + _sattr_descriptors.size();
   VkWriteDescriptorSet *writes = (VkWriteDescriptorSet *)alloca(max_num_descriptors * sizeof(VkWriteDescriptorSet));
@@ -877,7 +888,7 @@ get_compute_pipeline(VulkanGraphicsStateGuardian *gsg) {
     return _compute_pipeline;
   }
 
-  nassertr(_modules[(size_t)Shader::Stage::COMPUTE] != VK_NULL_HANDLE, VK_NULL_HANDLE);
+  nassertr(_bind_point == VK_PIPELINE_BIND_POINT_COMPUTE, VK_NULL_HANDLE);
 
   VkPipeline pipeline = gsg->make_compute_pipeline(this);
   _compute_pipeline = pipeline;
