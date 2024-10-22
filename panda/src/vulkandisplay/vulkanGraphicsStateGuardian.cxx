@@ -2143,10 +2143,28 @@ update_vertex_buffer(VulkanVertexBufferContext *vbc,
       }
 
       bool use_staging_buffer = true;
-      if (_has_unified_memory) {
+      if (vbc->_last_use_frame > _last_finished_frame) {
+        // Still in use, so insert an execution dependency.
+        // Surely there should be a more optimal way to do this...
+        VkBufferMemoryBarrier barrier;
+        barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+        barrier.pNext = nullptr;
+        barrier.srcAccessMask = 0;
+        barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+        barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.buffer = vbc->_buffer;
+        barrier.offset = 0;
+        barrier.size = VK_WHOLE_SIZE;
+        vkCmdPipelineBarrier(frame_data._transfer_cmd,
+                             VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
+                             VK_PIPELINE_STAGE_TRANSFER_BIT,
+                             0, 0, nullptr, 1, &barrier, 0, nullptr);
+      }
+      else if (_has_unified_memory) {
         // If we have UMA, and the buffer is not in use, we can skip the
         // staging buffer and write directly to buffer memory.
-        use_staging_buffer = vbc->_last_use_frame > _last_finished_frame;
+        use_staging_buffer = false;
       }
 
       if (use_staging_buffer) {
@@ -2295,10 +2313,28 @@ update_index_buffer(VulkanIndexBufferContext *ibc,
       }
 
       bool use_staging_buffer = true;
-      if (_has_unified_memory) {
+      if (ibc->_last_use_frame > _last_finished_frame) {
+        // Still in use, so insert an execution dependency.
+        // Surely there should be a more optimal way to do this...
+        VkBufferMemoryBarrier barrier;
+        barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+        barrier.pNext = nullptr;
+        barrier.srcAccessMask = 0;
+        barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+        barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.buffer = ibc->_buffer;
+        barrier.offset = 0;
+        barrier.size = VK_WHOLE_SIZE;
+        vkCmdPipelineBarrier(frame_data._transfer_cmd,
+                             VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
+                             VK_PIPELINE_STAGE_TRANSFER_BIT,
+                             0, 0, nullptr, 1, &barrier, 0, nullptr);
+      }
+      else if (_has_unified_memory) {
         // If we have UMA, and the buffer is not in use, we can skip the
         // staging buffer and write directly to buffer memory.
-        use_staging_buffer = ibc->_last_use_frame > _last_finished_frame;
+        use_staging_buffer = false;
       }
 
       if (use_staging_buffer) {
