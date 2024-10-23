@@ -703,19 +703,6 @@ get_num_interface_locations() const {
 }
 
 /**
- * Returns the number of uniform locations taken up by uniform variables having
- * this type.
- */
-int ShaderType::Struct::
-get_num_parameter_locations() const {
-  int total = 0;
-  for (const Member &member : _members) {
-    total += member.type->get_num_parameter_locations();
-  }
-  return total;
-}
-
-/**
  * Returns the number of resources (samplers, etc.) in this type.
  */
 int ShaderType::Struct::
@@ -927,15 +914,6 @@ get_size_bytes() const {
 int ShaderType::Array::
 get_num_interface_locations() const {
   return _element_type->get_num_interface_locations() * _num_elements;
-}
-
-/**
- * Returns the number of uniform locations taken up by uniform variables having
- * this type.
- */
-int ShaderType::Array::
-get_num_parameter_locations() const {
-  return _element_type->get_num_parameter_locations() * _num_elements;
 }
 
 /**

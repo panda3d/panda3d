@@ -146,7 +146,7 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, BamCacheRecord *reco
   transformer.run(SpirVRemoveUnusedVariablesPass());
 
   // Add in location decorations for any inputs that are missing it.
-  transformer.assign_locations(stage);
+  transformer.assign_interface_locations(stage);
 
   // Get rid of uniform locations and bindings.  The numbering rules are
   // different for each back-end, so we regenerate these later.
@@ -642,25 +642,6 @@ remap_input_locations(const pmap<int, int> &locations) {
       pmap<int, int>::const_iterator it = locations.find(input.get_location());
       if (it != locations.end()) {
         input._location = it->second;
-      }
-    }
-  }
-}
-
-/**
- * Remaps parameters with a given location to a given other location.  Locations
- * not included in the map remain untouched.
- */
-void ShaderModuleSpirV::
-remap_parameter_locations(const pmap<int, int> &locations) {
-  remap_locations(spv::StorageClassUniformConstant, locations);
-
-  // If we extracted out the parameters, replace the locations there as well.
-  for (Variable &parameter : _parameters) {
-    if (parameter.has_location()) {
-      pmap<int, int>::const_iterator it = locations.find(parameter.get_location());
-      if (it != locations.end()) {
-        parameter._location = it->second;
       }
     }
   }

@@ -89,7 +89,6 @@ public:
 
   virtual bool link_inputs(const ShaderModule *previous, pmap<int, int> &remap) const;
   virtual void remap_input_locations(const pmap<int, int> &remap);
-  virtual void remap_parameter_locations(const pmap<int, int> &remap);
 
 PUBLISHED:
   MAKE_PROPERTY(stage, get_stage);

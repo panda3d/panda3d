@@ -69,14 +69,6 @@ remap_input_locations(const pmap<int, int> &locations) {
 }
 
 /**
- * Remaps parameters with a given location to a given other location.  Locations
- * not included in the map remain untouched.
- */
-void ShaderModule::
-remap_parameter_locations(const pmap<int, int> &locations) {
-}
-
-/**
  *
  */
 void ShaderModule::

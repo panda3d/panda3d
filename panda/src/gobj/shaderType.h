@@ -38,7 +38,6 @@ public:
   virtual uint32_t get_align_bytes() const { return 1; }
   virtual uint32_t get_size_bytes() const { return 0; }
   virtual int get_num_interface_locations() const { return 1; }
-  virtual int get_num_parameter_locations() const { return 1; }
   virtual int get_num_resources() const { return 0; }
 
   enum ScalarType {
@@ -337,7 +336,6 @@ public:
   virtual uint32_t get_align_bytes() const override;
   virtual uint32_t get_size_bytes() const override;
   virtual int get_num_interface_locations() const override;
-  virtual int get_num_parameter_locations() const override;
   virtual int get_num_resources() const override;
 
   bool is_aggregate_type() const override { return true; }
@@ -404,7 +402,6 @@ public:
   virtual uint32_t get_align_bytes() const override;
   virtual uint32_t get_size_bytes() const override;
   virtual int get_num_interface_locations() const override;
-  virtual int get_num_parameter_locations() const override;
   virtual int get_num_resources() const override;
 
   bool is_aggregate_type() const override { return true; }

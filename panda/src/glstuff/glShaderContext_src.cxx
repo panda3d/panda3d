@@ -247,7 +247,8 @@ r_count_locations_bindings(const ShaderType *type,
   }
 
   if (type->as_sampled_image() != nullptr ||
-      type->as_image() != nullptr) {
+      type->as_image() != nullptr ||
+      type == ShaderType::void_type) {
     ++num_locations;
     return;
   }
@@ -414,6 +415,10 @@ r_collect_uniforms(const Shader::Parameter &param, UniformBlock &block,
                          offset + member.offset);
     }
     return;
+  }
+  if (type == ShaderType::void_type) {
+    // We use this as a placeholder to advance the location by one.
+    ++cur_location;
   }
 
   if (type->as_storage_buffer() != nullptr) {
@@ -693,6 +698,7 @@ reflect_program(SparseArray &active_locations, LocationMap &locations, LocationM
   struct StackItem {
     std::string name;
     GLint loc;
+    GLint next_loc;
     int num_elements; // 0 means not an array
     ShaderType::Struct type;
   };
@@ -717,6 +723,7 @@ reflect_program(SparseArray &active_locations, LocationMap &locations, LocationM
       }
     }
 
+    // Count the number of parts in the name that match the current stack.
     size_t i = 0;
     bool skip = false;
     while (i < struct_stack.size() && i < parts.size() - 1 &&
@@ -734,6 +741,7 @@ reflect_program(SparseArray &active_locations, LocationMap &locations, LocationM
       continue;
     }
 
+    // Pop everything else from the end of the stack.
     while (i < struct_stack.size()) {
       StackItem item = std::move(struct_stack.back());
       struct_stack.pop_back();
@@ -750,15 +758,18 @@ reflect_program(SparseArray &active_locations, LocationMap &locations, LocationM
       }
       else if (struct_stack.back().num_elements <= 1) {
         // Add as nested struct member
-        while (item.loc > struct_stack.back().loc + struct_stack.back().type.get_num_parameter_locations()) {
+        while (item.loc > struct_stack.back().next_loc) {
           // Add a dummy member
           struct_stack.back().type.add_member(ShaderType::void_type, "");
+          struct_stack.back().next_loc++;
         }
         struct_stack.back().type.add_member(type, item.name);
+        struct_stack.back().next_loc = item.next_loc;
       }
     }
+    // Push the remaining parts (except the last) onto the stack.
     while (struct_stack.size() < parts.size() - 1) {
-      struct_stack.push_back({parts[struct_stack.size()], loc, sizes[struct_stack.size()], {}});
+      struct_stack.push_back({parts[struct_stack.size()], loc, loc, sizes[struct_stack.size()], {}});
     }
 
     const ShaderType *type = get_param_type(param.type);
@@ -776,11 +787,13 @@ reflect_program(SparseArray &active_locations, LocationMap &locations, LocationM
     else if (struct_stack.back().num_elements <= 1) {
       // Add as struct member
       assert(parts.size() > 1);
-      while (loc > struct_stack.back().loc + struct_stack.back().type.get_num_parameter_locations()) {
+      while (loc > struct_stack.back().next_loc) {
         // Add a dummy member
         struct_stack.back().type.add_member(ShaderType::void_type, "");
+        struct_stack.back().next_loc++;
       }
       struct_stack.back().type.add_member(type, parts.back());
+      struct_stack.back().next_loc += param.size;
     }
   }
 
@@ -800,11 +813,13 @@ reflect_program(SparseArray &active_locations, LocationMap &locations, LocationM
     }
     else if (struct_stack.back().num_elements <= 1) {
       // Add as nested struct member
-      while (item.loc > struct_stack.back().loc + struct_stack.back().type.get_num_parameter_locations()) {
+      while (item.loc > struct_stack.back().next_loc) {
         // Add a dummy member
         struct_stack.back().type.add_member(ShaderType::void_type, "");
+        struct_stack.back().next_loc++;
       }
       struct_stack.back().type.add_member(type, item.name);
+      struct_stack.back().next_loc = item.next_loc;
     }
   }
 }

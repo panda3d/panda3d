@@ -244,7 +244,9 @@ check_light_struct_member(const string &name, const ShaderType *type) {
   uint32_t num_rows = 1;
   uint32_t min_cols = 3;
   uint32_t max_cols = 4;
-  if (name == "color") {
+  if (name.empty()) {
+    return type == ShaderType::void_type;
+  } else if (name == "color") {
   } else if (name == "specular") {
   } else if (name == "ambient") {
   } else if (name == "diffuse") {
@@ -786,6 +788,9 @@ make_fog(const ShaderType *type) {
   bool success = true;
   for (size_t i = 0; i < struct_type->get_num_members(); ++i) {
     const ShaderType::Struct::Member &member = struct_type->get_member(i);
+    if (member.type == ShaderType::void_type) {
+      continue;
+    }
 
     CPT(InternalName) fqname = InternalName::make(member.name);
     if (member.name == "color") {
@@ -866,6 +871,9 @@ make_material(const ShaderType *type) {
   bool success = true;
   for (size_t i = 0; i < struct_type->get_num_members(); ++i) {
     const ShaderType::Struct::Member &member = struct_type->get_member(i);
+    if (member.type == ShaderType::void_type) {
+      continue;
+    }
 
     CPT(InternalName) fqname = InternalName::make(member.name);
     if (member.name == "baseColor") {
@@ -1317,6 +1325,9 @@ ShaderLightStructBinding(const ShaderType *type, const InternalName *input) {
 
   for (size_t i = 0; i < struct_type->get_num_members(); ++i) {
     const ShaderType::Struct::Member &member = struct_type->get_member(i);
+    if (member.type == ShaderType::void_type) {
+      continue;
+    }
 
     PT(InternalName) fqname = InternalName::make("light")->append(member.name);
     if (member.name == "color") {
