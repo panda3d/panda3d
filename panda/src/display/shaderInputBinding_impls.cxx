@@ -1813,7 +1813,7 @@ int ShaderBufferBinding::
 get_state_dep() const {
   // We don't specify D_frame, because we don't (yet) support updating shader
   // buffers from the CPU.
-  return Shader::D_frame | Shader::D_shader_inputs;
+  return Shader::D_shader_inputs;
 }
 
 /**
