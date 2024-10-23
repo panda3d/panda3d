@@ -208,8 +208,8 @@ transform_function_op(Instruction op) {
 
   case spv::OpSelect:
     // The result type for this op must be the same for both operands.
-    nassertd(_pointer_ids.count(op.args[3]) == _pointer_ids.count(op.args[4]));
-    nassertd(_object_ids.count(op.args[3]) == _object_ids.count(op.args[4]));
+    nassertd(_pointer_ids.count(op.args[3]) == _pointer_ids.count(op.args[4])) {}
+    nassertd(_object_ids.count(op.args[3]) == _object_ids.count(op.args[4])) {}
 
     if (_pointer_ids.count(op.args[3])) {
       Definition &def = _db.modify_definition(op.args[1]);

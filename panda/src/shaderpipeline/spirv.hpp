@@ -4005,9 +4005,7 @@ inline const char* NamedMaximumNumberOfRegistersToString(NamedMaximumNumberOfReg
 }
 
 inline const char* FPEncodingToString(FPEncoding value) {
-    switch (value) {
-    default: return "Unknown";
-    }
+    return "Unknown";
 }
 
 inline const char* OpToString(Op value) {

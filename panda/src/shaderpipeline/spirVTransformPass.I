@@ -116,7 +116,7 @@ INLINE void SpirVTransformPass::
 decorate(uint32_t id, spv::Decoration decoration) {
   nassertv(decoration != spv::DecorationLocation);
   _new_annotations.insert(_new_annotations.end(),
-    {spv::OpDecorate | (3 << spv::WordCountShift), id, decoration});
+    {spv::OpDecorate | (3 << spv::WordCountShift), id, (uint32_t)decoration});
 }
 
 /**
@@ -125,7 +125,7 @@ decorate(uint32_t id, spv::Decoration decoration) {
 INLINE void SpirVTransformPass::
 decorate(uint32_t id, spv::Decoration decoration, uint32_t value) {
   _new_annotations.insert(_new_annotations.end(),
-    {spv::OpDecorate | (4 << spv::WordCountShift), id, decoration, value});
+    {spv::OpDecorate | (4 << spv::WordCountShift), id, (uint32_t)decoration, value});
 
   if (decoration == spv::DecorationLocation) {
     _db.modify_definition(id)._location = (int)value;

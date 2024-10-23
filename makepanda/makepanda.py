@@ -3931,7 +3931,7 @@ cg_preamble = WriteEmbeddedStringFile('cg_preamble', inputs=[
 ])
 TargetAdd('p3shaderpipeline_cg_preamble.obj', opts=OPTS, input=cg_preamble)
 
-OPTS=['DIR:panda/src/shaderpipeline']
+OPTS=['DIR:panda/src/shaderpipeline', 'SPIRV-TOOLS']
 IGATEFILES=GetDirectoryContents('panda/src/shaderpipeline', ["*.h", "*_composite*.cxx"])
 TargetAdd('libp3shaderpipeline.in', opts=OPTS, input=IGATEFILES)
 TargetAdd('libp3shaderpipeline.in', opts=['IMOD:panda3d.core', 'ILIB:libp3shaderpipeline', 'SRCDIR:panda/src/shaderpipeline'])
@@ -4513,7 +4513,7 @@ if GetTarget() == 'windows':
 #
 
 if GetTarget() == 'windows' and not PkgSkip("DX9"):
-    OPTS=['DIR:panda/src/dxgsg9', 'BUILDING:PANDADX', 'DX9', 'SPIRV-CROSS-HLSL']
+    OPTS=['DIR:panda/src/dxgsg9', 'BUILDING:PANDADX', 'DX9', 'SPIRV-CROSS-HLSL', 'SPIRV-TOOLS']
     TargetAdd('p3dxgsg9_dxGraphicsStateGuardian9.obj', opts=OPTS, input='dxGraphicsStateGuardian9.cxx')
     TargetAdd('p3dxgsg9_composite1.obj', opts=OPTS, input='p3dxgsg9_composite1.cxx')
     OPTS=['DIR:panda/metalibs/pandadx9', 'BUILDING:PANDADX', 'DX9']
@@ -4586,7 +4586,7 @@ TargetAdd('libp3framework.dll', opts=['ADVAPI'])
 #
 
 if not PkgSkip("GL"):
-    OPTS=['DIR:panda/src/glgsg', 'DIR:panda/src/glstuff', 'BUILDING:PANDAGL', 'GL', 'SPIRV-CROSS-GLSL']
+    OPTS=['DIR:panda/src/glgsg', 'DIR:panda/src/glstuff', 'BUILDING:PANDAGL', 'GL', 'SPIRV-CROSS-GLSL', 'SPIRV-TOOLS']
     TargetAdd('p3glgsg_config_glgsg.obj', opts=OPTS, input='config_glgsg.cxx')
     TargetAdd('p3glgsg_glgsg.obj', opts=OPTS, input='glgsg.cxx')
 
@@ -4604,7 +4604,7 @@ if not PkgSkip("GLES"):
 #
 
 if not PkgSkip("GLES2"):
-    OPTS=['DIR:panda/src/gles2gsg', 'DIR:panda/src/glstuff', 'BUILDING:PANDAGLES2', 'GLES2', 'SPIRV-CROSS-GLSL']
+    OPTS=['DIR:panda/src/gles2gsg', 'DIR:panda/src/glstuff', 'BUILDING:PANDAGLES2', 'GLES2', 'SPIRV-CROSS-GLSL', 'SPIRV-TOOLS']
     TargetAdd('p3gles2gsg_config_gles2gsg.obj', opts=OPTS, input='config_gles2gsg.cxx')
     TargetAdd('p3gles2gsg_gles2gsg.obj', opts=OPTS, input='gles2gsg.cxx')
 
