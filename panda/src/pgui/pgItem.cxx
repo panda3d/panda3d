@@ -784,9 +784,14 @@ move(const MouseWatcherParameter &param) {
  */
 void PGItem::
 background_press(const MouseWatcherParameter &param) {
-  for (PGItem *item : _background_focus) {
+  // We have to be careful, because objects may remove themselves from the set
+  // while we're iterating over it.
+  auto it = _background_focus.begin();
+  while (it != _background_focus.end()) {
+    PGItem *item = *it++;
     if (!item->get_focus()) {
-      item->press(param, true);
+      PT(PGItem) item_ref(item);
+      item_ref->press(param, true);
     }
   }
 }
@@ -796,9 +801,12 @@ background_press(const MouseWatcherParameter &param) {
  */
 void PGItem::
 background_release(const MouseWatcherParameter &param) {
-  for (PGItem *item : _background_focus) {
+  auto it = _background_focus.begin();
+  while (it != _background_focus.end()) {
+    PGItem *item = *it++;
     if (!item->get_focus()) {
-      item->release(param, true);
+      PT(PGItem) item_ref(item);
+      item_ref->release(param, true);
     }
   }
 }
@@ -808,9 +816,12 @@ background_release(const MouseWatcherParameter &param) {
  */
 void PGItem::
 background_keystroke(const MouseWatcherParameter &param) {
-  for (PGItem *item : _background_focus) {
+  auto it = _background_focus.begin();
+  while (it != _background_focus.end()) {
+    PGItem *item = *it++;
     if (!item->get_focus()) {
-      item->keystroke(param, true);
+      PT(PGItem) item_ref(item);
+      item_ref->keystroke(param, true);
     }
   }
 }
@@ -820,9 +831,12 @@ background_keystroke(const MouseWatcherParameter &param) {
  */
 void PGItem::
 background_candidate(const MouseWatcherParameter &param) {
-  for (PGItem *item : _background_focus) {
+  auto it = _background_focus.begin();
+  while (it != _background_focus.end()) {
+    PGItem *item = *it++;
     if (!item->get_focus()) {
-      item->candidate(param, true);
+      PT(PGItem) item_ref(item);
+      item_ref->candidate(param, true);
     }
   }
 }
