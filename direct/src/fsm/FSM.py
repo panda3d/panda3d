@@ -420,10 +420,12 @@ class FSM(DirectObject):
                     cur_index = self.stateArray.index(self.state)
                     new_index = (cur_index + 1) % len(self.stateArray)
                     self.request(self.stateArray[new_index], args)
-            else:
+            elif hasattr(self, 'notifier'):
                 assert self.notifier.debug(
                                     "stateArray empty. Can't switch to next.")
-
+            else:
+                assert self.notify.debug(
+                                    "stateArray empty. Can't switch to next.")
         finally:
             self.fsmLock.release()
 
@@ -438,8 +440,11 @@ class FSM(DirectObject):
                     cur_index = self.stateArray.index(self.state)
                     new_index = (cur_index - 1) % len(self.stateArray)
                     self.request(self.stateArray[new_index], args)
-            else:
+            elif hasattr(self, 'notifier'):
                 assert self.notifier.debug(
+                                    "stateArray empty. Can't switch to next.")
+            else:
+                assert self.notify.debug(
                                     "stateArray empty. Can't switch to next.")
         finally:
             self.fsmLock.release()
