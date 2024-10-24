@@ -56,7 +56,7 @@ def glob1(dirname, pattern):
         dirname = unicode(dirname, sys.getfilesystemencoding() or
                                    sys.getdefaultencoding())
     try:
-        names = os.listdir(dirname)
+        names = file.listdir(dirname)
     except os.error:
         return []
     if pattern[0] != '.':
