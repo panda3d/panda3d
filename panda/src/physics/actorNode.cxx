@@ -15,7 +15,7 @@
 #include "config_physics.h"
 #include "physicsObject.h"
 
-#include "transformState.h"
+#include "transform.h"
 
 TypeHandle ActorNode::_type_handle;
 
@@ -65,7 +65,7 @@ update_transform() {
 
   // lock the callback so that this doesn't call transform_changed.
   _ok_to_callback = false;
-  set_transform(TransformState::make_mat(lcs));
+  set_transform(Transform::make_mat(lcs));
   _ok_to_callback = true;
 }
 
@@ -75,8 +75,8 @@ update_transform() {
  * applied.
  */
 void ActorNode::
-test_transform(const TransformState *ts) const {
-  LPoint3 pos(ts->get_pos());
+test_transform(const Transform &transform) const {
+  LPoint3 pos(transform.get_pos());
   nassertv(pos[0] < _transform_limit);
   nassertv(pos[0] > -_transform_limit);
   nassertv(pos[1] < _transform_limit);
@@ -100,19 +100,19 @@ transform_changed() {
   }
 
   // get the transform
-  CPT(TransformState) transform = get_transform();
+  Transform transform = get_transform();
 
   if (_transform_limit > 0.0) {
     test_transform(transform);
   }
 
   // extract the orientation
-  if (_mass_center->get_oriented() == true) {
-    _mass_center->set_orientation(transform->get_quat());
+  if (_mass_center->get_oriented()) {
+    _mass_center->set_orientation(transform.get_quat());
   }
 
   // apply
-  _mass_center->set_position(transform->get_pos());
+  _mass_center->set_position(transform.get_pos());
 }
 
 

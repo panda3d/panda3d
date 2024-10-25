@@ -263,9 +263,9 @@ public:
     CPT(GeometricBoundingVolume) gbv = DCAST(GeometricBoundingVolume, volume);
 
     if (np.has_parent()) {
-      CPT(TransformState) net_transform = np.get_parent().get_net_transform();
+      Transform net_transform = np.get_parent().get_net_transform();
       PT(GeometricBoundingVolume) new_gbv = DCAST(GeometricBoundingVolume, gbv->make_copy());
-      new_gbv->xform(net_transform->get_mat());
+      new_gbv->xform(net_transform.get_mat());
       gbv = new_gbv;
     }
 

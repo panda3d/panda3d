@@ -182,10 +182,10 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
 
   // Scale the transform by the calculated aspect ratio.
   if (aspect_ratio != _last_aspect_ratio) {
-    _aspect_ratio_transform = TransformState::make_scale(LVecBase3(aspect_ratio, 1, 1));
+    _aspect_ratio_transform = Transform::make_scale(LVecBase3(aspect_ratio, 1, 1));
     _last_aspect_ratio = aspect_ratio;
   }
-  data._net_transform = data._net_transform->compose(_aspect_ratio_transform);
+  data._net_transform = data._net_transform.compose(_aspect_ratio_transform);
 
   // Check to see if it's time to update.
   double now = _clock_object->get_frame_time(current_thread);

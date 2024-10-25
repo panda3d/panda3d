@@ -44,10 +44,14 @@ void PartBundleNode::
 apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
                           GeomTransformer &transformer) {
   if ((attrib_types & SceneGraphReducer::TT_transform) != 0) {
+    if (attribs._transform_state == nullptr) {
+      attribs._transform_state = TransformState::make_mat(attribs._transform.get_mat());
+    }
+
     LightMutexHolder holder(_lock);
     for (PT(PartBundleHandle) handle : _bundles) {
       PartBundle *bundle = handle->get_bundle();
-      PT(PartBundle) new_bundle = bundle->apply_transform(attribs._transform);
+      PT(PartBundle) new_bundle = bundle->apply_transform(attribs._transform_state);
       update_bundle(handle, new_bundle);
     }
 

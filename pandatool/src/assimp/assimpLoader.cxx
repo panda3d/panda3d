@@ -1210,7 +1210,7 @@ load_node(const aiNode &node, PandaNode *parent, bool under_joint) {
                   t.a2, t.b2, t.c2, t.d2,
                   t.a3, t.b3, t.c3, t.d3,
                   t.a4, t.b4, t.c4, t.d4);
-    pnode->set_transform(TransformState::make_mat(mat));
+    pnode->set_transform(Transform::make_mat(mat));
   }
 
   for (size_t i = 0; i < node.mNumChildren; ++i) {
@@ -1303,7 +1303,7 @@ load_light(const aiLight &light) {
     LPoint3 pos (light.mPosition.x, light.mPosition.y, light.mPosition.z);
     LQuaternion quat;
     ::look_at(quat, LPoint3(vec.x, vec.y, vec.z), LVector3::up());
-    plight->set_transform(TransformState::make_pos_quat(pos, quat));
+    plight->set_transform(Transform::make_pos_quat(pos, quat));
     break; }
 
   case aiLightSource_AMBIENT:

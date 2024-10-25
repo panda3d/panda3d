@@ -203,22 +203,21 @@ has_cull_callback() const {
  */
 void ScissorEffect::
 cull_callback(CullTraverser *trav, CullTraverserData &data,
-              CPT(TransformState) &node_transform,
-              CPT(RenderState) &node_state) const {
+              Transform &node_transform, CPT(RenderState) &node_state) const {
   LVecBase4 frame;
   const Lens *lens = trav->get_scene()->get_lens();
-  CPT(TransformState) modelview_transform = data.get_modelview_transform(trav);
-  CPT(TransformState) net_transform = modelview_transform->compose(node_transform);
-  if (net_transform->is_singular()) {
+  Transform modelview_transform = data.get_modelview_transform(trav);
+  Transform net_transform = modelview_transform.compose(node_transform);
+  /*if (net_transform.is_singular()) {
     // If we're under a singular transform, never mind.
     return;
-  }
+  }*/
 
   if (is_screen()) {
     frame = _frame;
   } else {
     const LMatrix4 &proj_mat = lens->get_projection_mat();
-    LMatrix4 net_mat = net_transform->get_mat() * proj_mat;
+    LMatrix4 net_mat = net_transform.get_mat() * proj_mat;
 
     bool any_points = false;
 
@@ -232,7 +231,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data,
 
       } else {
         // Relative to some other node.
-        LMatrix4 other_mat = point._node.get_net_transform()->get_mat() * proj_mat;
+        LMatrix4 other_mat = point._node.get_net_transform().get_mat() * proj_mat;
         pv = pv * other_mat;
       }
 
@@ -277,7 +276,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data,
   // frame into the eight corners of the bounding frustum.
   PT(GeometricBoundingVolume) frustum = make_frustum(lens, frame);
   if (frustum != nullptr) {
-    frustum->xform(modelview_transform->get_inverse()->get_mat());
+    frustum->xform(modelview_transform.get_inverse().get_mat());
     data.set_view_frustum(std::move(frustum));
   }
 }

@@ -154,14 +154,14 @@ setup(PN_stdfloat width, PN_stdfloat height,
   // Create new slider bars.
   PT(PGSliderBar) horizontal_slider = new PGSliderBar("horizontal");
   horizontal_slider->setup_scroll_bar(false, width - slider_width - bevel * 2, slider_width, bevel);
-  horizontal_slider->set_transform(TransformState::make_pos(LVector3::rfu(width / 2.0f - slider_width / 2.0f, 0, slider_width / 2.0f + bevel)));
+  horizontal_slider->set_transform(Transform::make_pos(LVector3::rfu(width / 2.0f - slider_width / 2.0f, 0, slider_width / 2.0f + bevel)));
   add_child(horizontal_slider);
   set_horizontal_slider(horizontal_slider);
 
   PT(PGSliderBar) vertical_slider = new PGSliderBar("vertical");
   vertical_slider->setup_scroll_bar(true, width - slider_width - bevel * 2, slider_width, bevel);
   add_child(vertical_slider);
-  vertical_slider->set_transform(TransformState::make_pos(LVector3::rfu(width - slider_width / 2.0f - bevel, 0, width / 2.0f + slider_width / 2.0f)));
+  vertical_slider->set_transform(Transform::make_pos(LVector3::rfu(width - slider_width / 2.0f - bevel, 0, width / 2.0f + slider_width / 2.0f)));
   set_vertical_slider(vertical_slider);
 
   set_manage_pieces(true);
@@ -381,7 +381,7 @@ recompute_canvas() {
                           _virtual_frame[3], _virtual_frame[2],
                           _vertical_slider);
 
-  _canvas_node->set_transform(TransformState::make_pos(LVector3::rfu(cx, 0, cy)));
+  _canvas_node->set_transform(Transform::make_pos(LVector3::rfu(cx, 0, cy)));
 }
 
 /**

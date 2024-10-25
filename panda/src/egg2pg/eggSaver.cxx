@@ -472,8 +472,8 @@ convert_collision_node(CollisionNode *node, const WorkingNodePath &node_path,
   egg_group->set_collide_flags(EggGroup::CF_descend);
 
   NodePath np = node_path.get_node_path();
-  CPT(TransformState) net_transform = np.get_net_transform();
-  LMatrix4 net_mat = net_transform->get_mat();
+  Transform net_transform = np.get_net_transform();
+  LMatrix4 net_mat = net_transform.get_mat();
   LMatrix4 inv = LCAST(PN_stdfloat, egg_parent->get_vertex_frame_inv());
   net_mat = net_mat * inv;
 
@@ -696,8 +696,8 @@ convert_geom_node(GeomNode *node, const WorkingNodePath &node_path,
 
   NodePath np = node_path.get_node_path();
   CPT(RenderState) net_state = np.get_net_state();
-  CPT(TransformState) net_transform = np.get_net_transform();
-  LMatrix4 net_mat = net_transform->get_mat();
+  Transform net_transform = np.get_net_transform();
+  LMatrix4 net_mat = net_transform.get_mat();
   LMatrix4 inv = LCAST(PN_stdfloat, egg_parent->get_vertex_frame_inv());
   net_mat = net_mat * inv;
 
@@ -1103,9 +1103,9 @@ apply_node_properties(EggGroup *egg_group, PandaNode *node, bool allow_backstage
     }
   }
 
-  const TransformState *transform = node->get_transform();
-  if (!transform->is_identity()) {
-    if (transform->has_components()) {
+  Transform transform;
+  if (node->get_transform(transform)) {
+    /*if (transform->has_components()) {
       // If the transform can be represented componentwise, we prefer storing
       // it that way in the egg file.
       const LVecBase3 &scale = transform->get_scale();
@@ -1123,8 +1123,18 @@ apply_node_properties(EggGroup *egg_group, PandaNode *node, bool allow_backstage
 
     } else if (transform->has_mat()) {
       // Otherwise, we store the raw matrix.
-      const LMatrix4 &mat = transform->get_mat();
+      const LMatrix4 &mat = transform.get_mat();
       egg_group->set_transform3d(LCAST(double, mat));
+    }*/
+    LMatrix3 mat3 = transform.get_mat3();
+    if (mat3.almost_equal(LMatrix3::ident_mat())) {
+      LPoint3 pos = transform.get_pos();
+      if (!pos.almost_equal(LVecBase3::zero())) {
+        egg_group->add_translate3d(LCAST(double, pos));
+      }
+    } else {
+      // Otherwise, we store the raw matrix.
+      egg_group->set_transform3d(LCAST(double, transform.get_mat()));
     }
     any_applied = true;
   }

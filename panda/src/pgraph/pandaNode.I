@@ -305,10 +305,25 @@ clear_effects(Thread *current_thread) {
  * not the net transform from the root, but simply the transform on this
  * particular node.
  */
-INLINE CPT(TransformState) PandaNode::
+INLINE Transform PandaNode::
 get_transform(Thread *current_thread) const {
   CDReader cdata(_cycler, current_thread);
-  return cdata->_transform.p();
+  return cdata->_transform;
+}
+
+/**
+ * If there is a transform associated with this node, writes it to the argument
+ * passed in as reference and returns true.  Otherwise, returns false.
+ */
+INLINE bool PandaNode::
+get_transform(Transform &transform, Thread *current_thread) const {
+  CDReader cdata(_cycler, current_thread);
+  if (cdata->_fancy_bits & FB_transform) {
+    transform = cdata->_transform;
+    return true;
+  } else {
+    return false;
+  }
 }
 
 /**
@@ -316,22 +331,22 @@ get_transform(Thread *current_thread) const {
  */
 INLINE void PandaNode::
 clear_transform(Thread *current_thread) {
-  set_transform(TransformState::make_identity(), current_thread);
+  set_transform(Transform::make_identity(), current_thread);
 }
 
 /**
  * Returns the transform that has been set as this node's "previous" position.
  * See set_prev_transform().
  */
-INLINE CPT(TransformState) PandaNode::
+INLINE Transform PandaNode::
 get_prev_transform(Thread *current_thread) const {
   CDReader cdata(_cycler, current_thread);
   if (_prev_transform_valid == _reset_prev_transform_seq) {
-    return cdata->_prev_transform.p();
+    return cdata->_prev_transform;
   } else {
     // If these values are different, someone called reset_prev_transform(),
     // and we haven't changed our transform since then.
-    return cdata->_transform.p();
+    return cdata->_transform;
   }
 }
 
@@ -1489,7 +1504,7 @@ get_effects() const {
  * not the net transform from the root, but simply the transform on this
  * particular node.
  */
-INLINE const TransformState *PandaNodePipelineReader::
+INLINE const Transform &PandaNodePipelineReader::
 get_transform() const {
   return _cdata->_transform;
 }
@@ -1498,7 +1513,7 @@ get_transform() const {
  * Returns the transform that has been set as this node's "previous" position.
  * See set_prev_transform().
  */
-const TransformState *PandaNodePipelineReader::
+const Transform &PandaNodePipelineReader::
 get_prev_transform() const {
   if (_node->_prev_transform_valid == PandaNode::_reset_prev_transform_seq) {
     return _cdata->_prev_transform;

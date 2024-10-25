@@ -51,26 +51,26 @@ PUBLISHED:
 
 public:
   virtual bool safe_to_transform() const;
-  virtual CPT(TransformState) prepare_flatten_transform(const TransformState *net_transform) const;
+  virtual Transform prepare_flatten_transform(const Transform &net_transform) const;
   virtual void output(std::ostream &out) const;
 
   virtual bool has_cull_callback() const;
   virtual void cull_callback(CullTraverser *trav, CullTraverserData &data,
-                             CPT(TransformState) &node_transform,
+                             Transform &node_transform,
                              CPT(RenderState) &node_state) const;
 
   virtual bool has_adjust_transform() const;
-  virtual void adjust_transform(CPT(TransformState) &net_transform,
-                                CPT(TransformState) &node_transform,
+  virtual void adjust_transform(Transform &net_transform,
+                                Transform &node_transform,
                                 const PandaNode *node) const;
 
 protected:
   virtual int compare_to_impl(const RenderEffect *other) const;
 
 private:
-  void compute_billboard(CPT(TransformState) &node_transform,
-                         const TransformState *net_transform,
-                         const TransformState *camera_transform) const;
+  void compute_billboard(Transform &node_transform,
+                         const Transform &net_transform,
+                         const Transform &camera_transform) const;
 
 private:
   bool _off;

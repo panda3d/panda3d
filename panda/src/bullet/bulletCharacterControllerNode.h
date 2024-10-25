@@ -71,7 +71,7 @@ protected:
   virtual void transform_changed();
 
 private:
-  CPT(TransformState) _sync;
+  Transform _sync;
   bool _sync_disable;
 
   BulletUpAxis _up;

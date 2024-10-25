@@ -160,15 +160,15 @@ combine_with(PandaNode *other) {
  * over several nodes, so it may enter with min_point, max_point, and
  * found_any already set.
  */
-CPT(TransformState) InstancedNode::
+Transform InstancedNode::
 calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point, bool &found_any,
-                  const TransformState *transform, Thread *current_thread) const {
+                  const Transform &transform, Thread *current_thread) const {
 
   CPT(InstanceList) instances = get_instances(current_thread);
-  CPT(TransformState) next_transform = transform->compose(get_transform(current_thread));
+  Transform next_transform = transform.compose(get_transform(current_thread));
 
   for (size_t ii = 0; ii < instances->size(); ++ii) {
-    CPT(TransformState) instance_transform = next_transform->compose((*instances)[ii].get_transform());
+    Transform instance_transform = next_transform.compose((*instances)[ii].get_transform());
 
     Children cr = get_children(current_thread);
     size_t num_children = cr.get_num_children();
@@ -212,7 +212,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
     new_list->reserve(data._instances->size() * instances->size());
     for (const InstanceList::Instance &parent_instance : *data._instances) {
       for (const InstanceList::Instance &this_instance : *instances) {
-        new_list->append(parent_instance.get_transform()->compose(this_instance.get_transform()));
+        new_list->append(parent_instance.get_transform().compose(this_instance.get_transform()));
       }
     }
     instances = new_list;
@@ -379,9 +379,9 @@ compute_external_bounds(CPT(BoundingVolume) &external_bounds,
 
   // If we have a transform, apply it to the bounding volume we just
   // computed.
-  CPT(TransformState) transform = get_transform(current_thread);
-  if (!transform->is_identity()) {
-    gbv->xform(transform->get_mat());
+  Transform transform = get_transform(current_thread);
+  if (!transform.is_identity()) {
+    gbv->xform(transform.get_mat());
   }
 
   external_bounds = gbv;

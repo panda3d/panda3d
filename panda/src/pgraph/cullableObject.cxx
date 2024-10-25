@@ -88,7 +88,13 @@ munge_geom(GraphicsStateGuardianBase *gsg, GeomMunger *munger,
 
       geom_rendering = geom_reader.get_geom_rendering();
       geom_rendering = _state->get_geom_rendering(geom_rendering);
-      geom_rendering = _internal_transform->get_geom_rendering(geom_rendering);
+
+      if ((geom_rendering & GeomEnums::GR_point_perspective) != 0) {
+        if (!_internal_transform.get_scale().almost_equal(LVecBase3(1, 1, 1))) {
+          geom_rendering |= GeomEnums::GR_point_scale;
+        }
+      }
+
       unsupported_bits = geom_rendering & ~gsg_bits;
 
       if (unsupported_bits & Geom::GR_per_point_size) {
@@ -384,8 +390,8 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
   }
 
   CoordinateSystem internal_cs = gsg->get_internal_coordinate_system();
-  LMatrix4 internal = _internal_transform->get_mat();
-  PN_stdfloat scale = _internal_transform->get_scale()[1];
+  LMatrix4 internal = _internal_transform.get_mat();
+  PN_stdfloat scale = _internal_transform.get_scale()[1];
 
   SceneSetup *scene = traverser->get_scene();
   const Lens *lens = scene->get_lens();

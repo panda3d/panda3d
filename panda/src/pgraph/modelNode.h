@@ -77,7 +77,7 @@ protected:
   void fillin(DatagramIterator &scan, BamReader *manager);
 
   virtual void transform_changed();
-  void test_transform(const TransformState *ts) const;
+  void test_transform(const Transform &ts) const;
 
   PN_stdfloat _transform_limit;
 

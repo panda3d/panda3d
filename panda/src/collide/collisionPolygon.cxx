@@ -388,12 +388,10 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   const CollisionSphere *sphere;
   DCAST_INTO_R(sphere, entry.get_from(), nullptr);
 
-  CPT(TransformState) wrt_space = entry.get_wrt_space();
-  CPT(TransformState) wrt_prev_space = entry.get_wrt_prev_space();
+  Transform wrt_space = entry.get_wrt_space();
+  Transform wrt_prev_space = entry.get_wrt_prev_space();
 
-  const LMatrix4 &wrt_mat = wrt_space->get_mat();
-
-  LPoint3 orig_center = sphere->get_center() * wrt_mat;
+  LPoint3 orig_center = wrt_space.xform_point(sphere->get_center());
   LPoint3 from_center = orig_center;
   bool moved_from_center = false;
   PN_stdfloat t = 1.0f;
@@ -401,16 +399,17 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   PN_stdfloat actual_t = 1.0f;
 
   LVector3 from_radius_v =
-    LVector3(sphere->get_radius(), 0.0f, 0.0f) * wrt_mat;
+    wrt_space.xform_vec(LVector3(sphere->get_radius(), 0.0f, 0.0f));
   PN_stdfloat from_radius_2 = from_radius_v.length_squared();
   PN_stdfloat from_radius = csqrt(from_radius_2);
 
-  if (wrt_prev_space != wrt_space) {
+  LPoint3 prev_center = wrt_prev_space.xform_point(sphere->get_center());
+  if (orig_center != prev_center) {
     // If we have a delta between the previous position and the current
     // position, we use that to determine some more properties of the
     // collision.
     LPoint3 b = from_center;
-    LPoint3 a = sphere->get_center() * wrt_prev_space->get_mat();
+    LPoint3 a = prev_center;
     LVector3 delta = b - a;
 
     // First, there is no collision if the "from" object is definitely moving
@@ -795,13 +794,12 @@ test_intersection_from_capsule(const CollisionEntry &entry) const {
   const CollisionCapsule *capsule;
   DCAST_INTO_R(capsule, entry.get_from(), nullptr);
 
-  CPT(TransformState) wrt_space = entry.get_wrt_space();
-  const LMatrix4 &wrt_mat = wrt_space->get_mat();
+  Transform wrt_space = entry.get_wrt_space();
 
-  LPoint3 from_a = capsule->get_point_a() * wrt_mat;
-  LPoint3 from_b = capsule->get_point_b() * wrt_mat;
+  LPoint3 from_a = wrt_space.xform_point(capsule->get_point_a());
+  LPoint3 from_b = wrt_space.xform_point(capsule->get_point_b());
   LVector3 from_radius_v =
-    LVector3(capsule->get_radius(), 0.0f, 0.0f) * wrt_mat;
+    wrt_space.xform_vec(LVector3(capsule->get_radius(), 0.0f, 0.0f));
   PN_stdfloat from_radius_2 = from_radius_v.length_squared();
   PN_stdfloat from_radius = csqrt(from_radius_2);
 
@@ -821,17 +819,18 @@ test_intersection_from_capsule(const CollisionEntry &entry) const {
       return nullptr;
     }
 
-    CPT(TransformState) wrt_prev_space = entry.get_wrt_prev_space();
-    if (wrt_prev_space == wrt_space) {
-      return nullptr;
-    }
+    Transform wrt_prev_space = entry.get_wrt_prev_space();
 
     // Note that we only check for a sphere at the center, since we don't
     // know whether the capsule has undergone any rotation.
-    LPoint3 from_center = LPoint3((from_a + from_b) * 0.5f) * _to_2d_mat;
-    LPoint3 prev_center =
-      (LPoint3((capsule->get_point_a() + capsule->get_point_b()) * 0.5f) *
-       wrt_prev_space->get_mat()) * _to_2d_mat;
+    LPoint3 from_center = (from_a + from_b) * 0.5f;
+    LPoint3 prev_center = wrt_prev_space.xform_point((capsule->get_point_a() + capsule->get_point_b()) * 0.5f);
+    if (from_center == prev_center) {
+      return nullptr;
+    }
+
+    from_center = from_center * _to_2d_mat;
+    prev_center = prev_center * _to_2d_mat;
 
     if (prev_center[1] > 0) {
       // The center didn't pass through the polygon.
@@ -1134,8 +1133,8 @@ test_intersection_from_box(const CollisionEntry &entry) const {
 
   // To make things easier, transform the box into the coordinate space of the
   // plane.
-  CPT(TransformState) wrt_space = entry.get_wrt_space();
-  const LMatrix4 &wrt_mat = wrt_space->get_mat();
+  Transform wrt_space = entry.get_wrt_space();
+  LMatrix4 wrt_mat = wrt_space.get_mat();
   LMatrix4 plane_mat = wrt_mat * _to_2d_mat;
 
   LPoint3 from_center = box->get_center() * plane_mat;
@@ -1215,13 +1214,10 @@ test_intersection_from_box(const CollisionEntry &entry) const {
       return nullptr;
     }
 
-    CPT(TransformState) wrt_prev_space = entry.get_wrt_prev_space();
-    if (wrt_prev_space == wrt_space) {
-      return nullptr;
-    }
+    Transform wrt_prev_space = entry.get_wrt_prev_space();
 
     // Did the center travel into the plane of the polygon?
-    LPoint3 prev_center = box->get_center() * (wrt_prev_space->get_mat() * _to_2d_mat);
+    LPoint3 prev_center = wrt_prev_space.xform_point(box->get_center()) * _to_2d_mat;
     if (prev_center[1] > 0.0f) {
       // Nope, it did not.
       return nullptr;
@@ -1781,7 +1777,7 @@ clip_polygon(CollisionPolygon::Points &new_points,
 bool CollisionPolygon::
 apply_clip_plane(CollisionPolygon::Points &new_points,
                  const ClipPlaneAttrib *cpa,
-                 const TransformState *net_transform) const {
+                 const Transform &net_transform) const {
   bool all_in = true;
 
   int num_planes = cpa->get_num_on_planes();
@@ -1791,10 +1787,10 @@ apply_clip_plane(CollisionPolygon::Points &new_points,
     NodePath plane_path = cpa->get_on_plane(i);
     PlaneNode *plane_node = DCAST(PlaneNode, plane_path.node());
     if ((plane_node->get_clip_effect() & PlaneNode::CE_collision) != 0) {
-      CPT(TransformState) new_transform =
-        net_transform->invert_compose(plane_path.get_net_transform());
+      Transform new_transform =
+        net_transform.invert_compose(plane_path.get_net_transform());
 
-      LPlane plane = plane_node->get_plane() * new_transform->get_mat();
+      LPlane plane = plane_node->get_plane() * new_transform.get_mat();
       if (first_plane) {
         first_plane = false;
         if (!clip_polygon(new_points, _points, plane)) {

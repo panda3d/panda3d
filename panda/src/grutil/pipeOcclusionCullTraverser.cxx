@@ -158,17 +158,17 @@ set_scene(SceneSetup *scene_setup, GraphicsStateGuardianBase *gsgbase,
     // not from the camera root.
     NodePath cull_center = _scene->get_cull_center();
     NodePath scene_parent = _scene->get_scene_root().get_parent(current_thread);
-    CPT(TransformState) camera_transform = cull_center.get_transform(scene_parent, current_thread);
-    CPT(TransformState) world_transform = scene_parent.get_transform(cull_center, current_thread);
-    CPT(TransformState) cs_world_transform = _scene->get_cs_transform()->compose(world_transform);
+    Transform camera_transform = cull_center.get_transform(scene_parent, current_thread);
+    Transform world_transform = scene_parent.get_transform(cull_center, current_thread);
+    Transform cs_world_transform = _scene->get_cs_transform().compose(world_transform);
     _scene->set_camera_transform(camera_transform);
     _scene->set_world_transform(world_transform);
     _scene->set_cs_world_transform(cs_world_transform);
 
     // We use this to recover the original net_transform.
-    _inv_cs_world_transform = cs_world_transform->get_inverse();
+    _inv_cs_world_transform = cs_world_transform.get_inverse();
   } else {
-    _inv_cs_world_transform = _scene->get_cs_world_transform()->get_inverse();
+    _inv_cs_world_transform = _scene->get_cs_world_transform().get_inverse();
   }
 
   nassertv(_scene->get_cs_transform() == scene_setup->get_cs_transform());
@@ -319,8 +319,8 @@ is_in_view(CullTraverserData &data) {
     // occlusion test on this particular node.  Do it.
 
     CPT(BoundingVolume) vol = node_reader->get_bounds();
-    CPT(TransformState) net_transform = data.get_net_transform(this);
-    CPT(TransformState) internal_transform;
+    Transform net_transform = data.get_net_transform(this);
+    Transform internal_transform;
 
     CPT(Geom) geom;
     if (get_volume_viz(vol, geom, net_transform, internal_transform)) {
@@ -385,8 +385,8 @@ record_object(CullableObject *object, const CullTraverser *traverser) {
   } else {
     // Issue an occlusion test for this object.
     CPT(BoundingVolume) vol = object->_geom->get_bounds(current_thread);
-    CPT(TransformState) net_transform = _inv_cs_world_transform->compose(object->_internal_transform);
-    CPT(TransformState) internal_transform;
+    Transform net_transform = _inv_cs_world_transform.compose(object->_internal_transform);
+    Transform internal_transform;
     CPT(Geom) geom;
     if (get_volume_viz(vol, geom, net_transform, internal_transform)) {
       pobj._query =
@@ -512,8 +512,8 @@ make_solid_test_state() {
 bool PipeOcclusionCullTraverser::
 get_volume_viz(const BoundingVolume *vol,
                CPT(Geom) &geom,  // OUT
-               CPT(TransformState) &net_transform, // IN-OUT
-               CPT(TransformState) &internal_transform  // OUT
+               Transform &net_transform, // IN-OUT
+               Transform &internal_transform  // OUT
                ) {
   if (vol->is_infinite() || vol->is_empty()) {
     return false;
@@ -521,28 +521,28 @@ get_volume_viz(const BoundingVolume *vol,
 
   if (vol->is_exact_type(BoundingSphere::get_class_type())) {
     const BoundingSphere *sphere = DCAST(BoundingSphere, vol);
-    CPT(TransformState) local_transform =
-      TransformState::make_pos_hpr_scale(sphere->get_center(),
-                                         LVecBase3(0, 0, 0),
-                                         sphere->get_radius());
-    net_transform = net_transform->compose(local_transform);
+    Transform local_transform =
+      Transform::make_pos_hpr_scale(sphere->get_center(),
+                                    LVecBase3(0, 0, 0),
+                                    sphere->get_radius());
+    net_transform = net_transform.compose(local_transform);
 
-    CPT(TransformState) modelview_transform =
-      _internal_trav->get_world_transform()->compose(net_transform);
+    Transform modelview_transform =
+      _internal_trav->get_world_transform().compose(net_transform);
 
     // See if the bounding sphere is clipped by the near plane.  If it is, the
     // occlusion test may fail, so we won't bother performing it for this
     // object.  Anyway, it's not occluded by anything, since it's intersecting
     // the near plane.
-    const LPoint3 &center = modelview_transform->get_pos();
-    const LVecBase3 &radius = modelview_transform->get_scale();
+    LPoint3 center = modelview_transform.get_pos();
+    LVecBase3 radius = modelview_transform.get_scale();
     if (center[1] - radius[1] < 0.0f) {
       return false;
     }
 
     // Construct the internal transform for the internal traverser.
     internal_transform = _internal_trav->get_scene()->
-      get_cs_transform()->compose(modelview_transform);
+      get_cs_transform().compose(modelview_transform);
 
     // The sphere looks good.
     geom = _sphere_geom;
@@ -550,14 +550,14 @@ get_volume_viz(const BoundingVolume *vol,
 
   } else if (vol->is_exact_type(BoundingBox::get_class_type())) {
     const BoundingBox *box = DCAST(BoundingBox, vol);
-    CPT(TransformState) local_transform =
-      TransformState::make_pos_hpr_scale(box->get_minq(),
-                                         LVecBase3(0, 0, 0),
-                                         box->get_maxq() - box->get_minq());
-    net_transform = net_transform->compose(local_transform);
+    Transform local_transform =
+      Transform::make_pos_hpr_scale(box->get_minq(),
+                                    LVecBase3(0, 0, 0),
+                                    box->get_maxq() - box->get_minq());
+    net_transform = net_transform.compose(local_transform);
 
-    CPT(TransformState) modelview_transform =
-      _internal_trav->get_world_transform()->compose(net_transform);
+    Transform modelview_transform =
+      _internal_trav->get_world_transform().compose(net_transform);
 
     // See if the bounding box is clipped by the near plane.  If it is, the
     // occlusion test may fail, so we won't bother performing it for this
@@ -573,9 +573,8 @@ get_volume_viz(const BoundingVolume *vol,
       LPoint3(1.0f, 1.0f, 0.0f),
       LPoint3(1.0f, 1.0f, 1.0f),
     };
-    const LMatrix4 &mat = modelview_transform->get_mat();
     for (int i = 0; i < 8; ++i) {
-      LPoint3 p = points[i] * mat;
+      LPoint3 p = modelview_transform.xform_point(points[i]);
       if (p[1] < 0.0f) {
         return false;
       }
@@ -583,7 +582,7 @@ get_volume_viz(const BoundingVolume *vol,
 
     // Construct the internal transform for the internal traverser.
     internal_transform = _internal_trav->get_scene()->
-      get_cs_transform()->compose(modelview_transform);
+      get_cs_transform().compose(modelview_transform);
 
     // The box looks good.
     geom = _box_geom;
@@ -599,8 +598,8 @@ get_volume_viz(const BoundingVolume *vol,
  * visibility.
  */
 PT(OcclusionQueryContext) PipeOcclusionCullTraverser::
-perform_occlusion_test(const Geom *geom, const TransformState *net_transform,
-                       const TransformState *internal_transform) {
+perform_occlusion_test(const Geom *geom, const Transform &net_transform,
+                       const Transform &internal_transform) {
   _occlusion_tests_pcollector.add_level(1);
   PStatTimer timer(_test_occlusion_pcollector);
 
@@ -637,8 +636,8 @@ perform_occlusion_test(const Geom *geom, const TransformState *net_transform,
  */
 void PipeOcclusionCullTraverser::
 show_results(int num_fragments, const Geom *geom,
-             const TransformState *net_transform,
-             const TransformState *internal_transform) {
+             const Transform &net_transform,
+             const Transform &internal_transform) {
   LColor color;
   if (num_fragments == 0) {
     // Magenta: culled
@@ -659,8 +658,7 @@ show_results(int num_fragments, const Geom *geom,
   _internal_cull_handler->record_object(internal_viz, _internal_trav);
 
   // Also render the viz in the main scene.
-  internal_transform = get_scene()->get_cs_world_transform()->compose(net_transform);
   CullableObject *main_viz =
-    new CullableObject(geom, state, internal_transform);
+    new CullableObject(geom, state, get_scene()->get_cs_world_transform().compose(net_transform));
   _true_cull_handler->record_object(main_viz, this);
 }

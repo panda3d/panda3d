@@ -18,7 +18,7 @@
 #include "mouseButton.h"
 #include "mouseWatcherParameter.h"
 #include "colorAttrib.h"
-#include "transformState.h"
+#include "transform.h"
 
 TypeHandle PGButton::_type_handle;
 
@@ -190,7 +190,7 @@ setup(const std::string &label, PN_stdfloat bevel) {
   style.set_type(PGFrameStyle::T_bevel_in);
   style.set_color(0.8f, 0.8f, 0.8f, 1.0f);
   set_frame_style(S_depressed, style);
-  depressed->set_transform(TransformState::make_pos(LVector3(0.05f, 0.0f, -0.05f)));
+  depressed->set_transform(Transform::make_pos(LVector3(0.05f, 0.0f, -0.05f)));
 
   get_state_def(S_ready).attach_new_node(ready, 1);
   get_state_def(S_depressed).attach_new_node(depressed, 1);

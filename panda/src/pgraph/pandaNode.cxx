@@ -275,7 +275,7 @@ void PandaNode::
 apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
                           GeomTransformer &transformer) {
   if ((attrib_types & SceneGraphReducer::TT_transform) != 0) {
-    const LMatrix4 &mat = attribs._transform->get_mat();
+    LMatrix4 mat = attribs._transform.get_mat();
     xform(mat);
 
     Thread *current_thread = Thread::get_current_thread();
@@ -341,10 +341,10 @@ combine_with(PandaNode *other) {
  * This function is recursive, and the return value is the transform after it
  * has been modified by this node's transform.
  */
-CPT(TransformState) PandaNode::
+Transform PandaNode::
 calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point, bool &found_any,
-                  const TransformState *transform, Thread *current_thread) const {
-  CPT(TransformState) next_transform = transform->compose(get_transform());
+                  const Transform &transform, Thread *current_thread) const {
+  Transform next_transform = transform.compose(get_transform());
 
   Children cr = get_children(current_thread);
   int num_children = cr.get_num_children();
@@ -1049,8 +1049,8 @@ set_effects(const RenderEffects *effects, Thread *current_thread) {
  * defines a new coordinate space at this point in the scene graph and below.
  */
 void PandaNode::
-set_transform(const TransformState *transform, Thread *current_thread) {
-  nassertv(!transform->is_invalid());
+set_transform(const Transform &transform, Thread *current_thread) {
+  nassertv(!transform.is_invalid());
 
   // Apply this operation to the current stage as well as to all upstream
   // stages.
@@ -1067,7 +1067,7 @@ set_transform(const TransformState *transform, Thread *current_thread) {
       }
 
       cdata->_transform = transform;
-      cdata->set_fancy_bit(FB_transform, !transform->is_identity());
+      cdata->set_fancy_bit(FB_transform, !transform.is_identity());
       any_changed = true;
     }
   }
@@ -1086,8 +1086,8 @@ set_transform(const TransformState *transform, Thread *current_thread) {
  * calculations.
  */
 void PandaNode::
-set_prev_transform(const TransformState *transform, Thread *current_thread) {
-  nassertv(!transform->is_invalid());
+set_prev_transform(const Transform &transform, Thread *current_thread) {
+  nassertv(!transform.is_invalid());
 
   // Apply this operation to the current stage as well as to all upstream
   // stages.
@@ -1760,9 +1760,10 @@ write(ostream &out, int indent_level) const {
     list_tags(out, " ");
     out << "]";
   }
-  CPT(TransformState) transform = get_transform();
-  if (!transform->is_identity()) {
-    out << " " << *transform;
+  //FIXME: has_transform
+  Transform transform = get_transform();
+  if (!transform.is_identity()) {
+    out << " " << transform;
   }
   CPT(RenderState) state = get_state();
   if (!state->is_empty()) {
@@ -2257,13 +2258,13 @@ compute_external_bounds(CPT(BoundingVolume) &external_bounds,
                         const BoundingVolume **volumes, size_t num_volumes,
                         int pipeline_stage, Thread *current_thread) const {
 
-  CPT(TransformState) transform = get_transform(current_thread);
+  Transform transform = get_transform(current_thread);
   PT(GeometricBoundingVolume) gbv;
 
   if (btype == BoundingVolume::BT_box) {
     gbv = new BoundingBox;
   }
-  else if (btype == BoundingVolume::BT_sphere || !transform->is_identity()) {
+  else if (btype == BoundingVolume::BT_sphere || !transform.is_identity()) {
     gbv = new BoundingSphere;
   }
   else {
@@ -2291,8 +2292,8 @@ compute_external_bounds(CPT(BoundingVolume) &external_bounds,
 
     // If we have a transform, apply it to the bounding volume we just
     // computed.
-    if (!transform->is_identity()) {
-      gbv->xform(transform->get_mat());
+    if (!transform.is_identity()) {
+      gbv->xform(transform.get_mat());
     }
   }
 
@@ -3674,8 +3675,8 @@ fillin_recorder(DatagramIterator &scan, BamReader *) {
 PandaNode::CData::
 CData() :
   _state(RenderState::make_empty()),
-  _transform(TransformState::make_identity()),
-  _prev_transform(TransformState::make_identity()),
+  _transform(Transform::make_identity()),
+  _prev_transform(Transform::make_identity()),
 
   _effects(RenderEffects::make_empty()),
   _draw_control_mask(DrawMask::all_off()),
@@ -3758,7 +3759,8 @@ make_copy() const {
 void PandaNode::CData::
 write_datagram(BamWriter *manager, Datagram &dg) const {
   manager->write_pointer(dg, _state);
-  manager->write_pointer(dg, _transform);
+  //FIXME
+  //manager->write_pointer(dg, _transform);
 
 
   manager->write_pointer(dg, _effects);
@@ -3809,7 +3811,8 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
 
   TransformState *transform;
   DCAST_INTO_R(transform, p_list[pi++], pi);
-  _prev_transform = _transform = transform;
+  _transform = Transform::make_mat(transform->get_mat());
+  _prev_transform = _transform;
 
 /*
  * Finalize these pointers now to decrement their artificially-held reference
@@ -3821,7 +3824,7 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
  * memory leak (see the comments in TransformState::finalize(), etc.).
  */
   manager->finalize_now((RenderState *)_state.p());
-  manager->finalize_now((TransformState *)_transform.p());
+  manager->finalize_now(transform);
 
 
 
@@ -3850,7 +3853,7 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
 
   // Since the _effects and _states members have been finalized by now, this
   // should be safe.
-  set_fancy_bit(FB_transform, !_transform->is_identity());
+  set_fancy_bit(FB_transform, !_transform.is_identity());
   set_fancy_bit(FB_state, !_state->is_empty());
   set_fancy_bit(FB_effects, !_effects->is_empty());
   set_fancy_bit(FB_tag, !_tag_data.is_empty());
@@ -3861,8 +3864,8 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   // Mark the bounds stale.
   ++_next_update;
 
-  nassertr(!_transform->is_invalid(), pi);
-  nassertr(!_prev_transform->is_invalid(), pi);
+  nassertr(!_transform.is_invalid(), pi);
+  nassertr(!_prev_transform.is_invalid(), pi);
 
   return pi;
 }

@@ -20,7 +20,6 @@
 #include "config_egg.h"
 #include "nodePath.h"
 #include "renderState.h"
-#include "transformState.h"
 #include "texturePool.h"
 #include "billboardEffect.h"
 #include "decalEffect.h"
@@ -468,11 +467,125 @@ make_polyset(EggBin *egg_bin, PandaNode *parent, const LMatrix4d *transform,
 }
 
 /**
+ * Creates a Transform object corresponding to the indicated EggTransform.
+ */
+Transform EggLoader::
+make_transform(const EggTransform *egg_transform) {
+  Transform ts = Transform::make_identity();
+  int num_components = egg_transform->get_num_components();
+  for (int i = 0; i < num_components; i++) {
+    switch (egg_transform->get_component_type(i)) {
+    case EggTransform::CT_translate2d:
+      {
+        LVecBase2 trans2d(LCAST(PN_stdfloat, egg_transform->get_component_vec2(i)));
+        LVecBase3 trans3d(trans2d[0], trans2d[1], 0.0f);
+        ts = Transform::make_pos(trans3d).compose(ts);
+      }
+      break;
+
+    case EggTransform::CT_translate3d:
+      {
+        LVecBase3 trans3d(LCAST(PN_stdfloat, egg_transform->get_component_vec3(i)));
+        ts = Transform::make_pos(trans3d).compose(ts);
+      }
+      break;
+
+    case EggTransform::CT_rotate2d:
+      {
+        LRotation rot(LVector3(0.0f, 0.0f, 1.0f),
+                       (PN_stdfloat)egg_transform->get_component_number(i));
+        ts = Transform::make_quat(rot).compose(ts);
+      }
+      break;
+
+    case EggTransform::CT_rotx:
+      {
+        LRotation rot(LVector3(1.0f, 0.0f, 0.0f),
+                       (PN_stdfloat)egg_transform->get_component_number(i));
+        ts = Transform::make_quat(rot).compose(ts);
+      }
+      break;
+
+    case EggTransform::CT_roty:
+      {
+        LRotation rot(LVector3(0.0f, 1.0f, 0.0f),
+                       (PN_stdfloat)egg_transform->get_component_number(i));
+        ts = Transform::make_quat(rot).compose(ts);
+      }
+      break;
+
+    case EggTransform::CT_rotz:
+      {
+        LRotation rot(LVector3(0.0f, 0.0f, 1.0f),
+                       (PN_stdfloat)egg_transform->get_component_number(i));
+        ts = Transform::make_quat(rot).compose(ts);
+      }
+      break;
+
+    case EggTransform::CT_rotate3d:
+      {
+        LRotation rot(LCAST(PN_stdfloat, egg_transform->get_component_vec3(i)),
+                       (PN_stdfloat)egg_transform->get_component_number(i));
+        ts = Transform::make_quat(rot).compose(ts);
+      }
+      break;
+
+    case EggTransform::CT_scale2d:
+      {
+        LVecBase2 scale2d(LCAST(PN_stdfloat, egg_transform->get_component_vec2(i)));
+        LVecBase3 scale3d(scale2d[0], scale2d[1], 1.0f);
+        ts = Transform::make_scale(scale3d).compose(ts);
+      }
+      break;
+
+    case EggTransform::CT_scale3d:
+      {
+        LVecBase3 scale3d(LCAST(PN_stdfloat, egg_transform->get_component_vec3(i)));
+        ts = Transform::make_scale(scale3d).compose(ts);
+      }
+      break;
+
+    case EggTransform::CT_uniform_scale:
+      {
+        PN_stdfloat scale = (PN_stdfloat)egg_transform->get_component_number(i);
+        ts = Transform::make_scale(scale).compose(ts);
+      }
+      break;
+
+    case EggTransform::CT_matrix3:
+      {
+        LMatrix3 m(LCAST(PN_stdfloat, egg_transform->get_component_mat3(i)));
+        LMatrix4 mat4(m(0, 0), m(0, 1), 0.0, m(0, 2),
+                       m(1, 0), m(1, 1), 0.0, m(1, 2),
+                       0.0, 0.0, 1.0, 0.0,
+                       m(2, 0), m(2, 1), 0.0, m(2, 2));
+
+        ts = Transform::make_mat(mat4).compose(ts);
+      }
+      break;
+
+    case EggTransform::CT_matrix4:
+      {
+        LMatrix4 mat4(LCAST(PN_stdfloat, egg_transform->get_component_mat4(i)));
+        ts = Transform::make_mat(mat4).compose(ts);
+      }
+      break;
+
+    case EggTransform::CT_invalid:
+      nassertr(false, ts);
+      break;
+    }
+  }
+
+  return ts;
+}
+
+/**
  * Creates a TransformState object corresponding to the indicated
  * EggTransform.
  */
 CPT(TransformState) EggLoader::
-make_transform(const EggTransform *egg_transform) {
+make_transform_state(const EggTransform *egg_transform) {
   // We'll build up the transform componentwise, so we preserve any
   // componentwise properties of the egg transform.
 
@@ -1925,7 +2038,7 @@ make_node(EggGroup *egg_group, PandaNode *parent) {
 
     // Piggy-back the desired transform to apply onto the node, since we can't
     // break the ABI in 1.10.
-    node->set_transform(TransformState::make_mat(LCAST(PN_stdfloat, egg_group->get_vertex_to_node())));
+    node->set_transform(Transform::make_mat(LCAST(PN_stdfloat, egg_group->get_vertex_to_node())));
     make_collision_solids(egg_group, egg_group, (CollisionNode *)node.p());
     node->clear_transform();
 
@@ -2100,7 +2213,7 @@ create_group_arc(EggGroup *egg_group, PandaNode *parent, PandaNode *node) {
 
   // If the group had a transform, apply it to the node.
   if (egg_group->has_transform()) {
-    CPT(TransformState) transform = make_transform(egg_group);
+    Transform transform = make_transform(egg_group);
     node->set_transform(transform);
     node->set_prev_transform(transform);
   }
@@ -3026,7 +3139,7 @@ make_collision_plane(EggGroup *egg_group, CollisionNode *cnode,
           create_collision_plane(DCAST(EggPolygon, *ci), egg_group);
         if (csplane != nullptr) {
           apply_collision_flags(csplane, flags);
-          csplane->xform(cnode->get_transform()->get_mat());
+          csplane->xform(cnode->get_transform().get_mat());
           cnode->add_solid(csplane);
           return;
         }
@@ -3128,7 +3241,7 @@ make_collision_sphere(EggGroup *egg_group, CollisionNode *cnode,
     CollisionSphere *cssphere =
       new CollisionSphere(center, radius);
     apply_collision_flags(cssphere, flags);
-    cssphere->xform(cnode->get_transform()->get_mat());
+    cssphere->xform(cnode->get_transform().get_mat());
     cnode->add_solid(cssphere);
   }
 }
@@ -3142,8 +3255,8 @@ make_collision_box(EggGroup *egg_group, CollisionNode *cnode,
                    EggGroup::CollideFlags flags) {
   LPoint3 min_p;
   LPoint3 max_p;
-  CPT(TransformState) transform = cnode->get_transform();
-  if (make_box(egg_group, flags, transform->get_mat(), min_p, max_p)) {
+  Transform transform = cnode->get_transform();
+  if (make_box(egg_group, flags, transform.get_mat(), min_p, max_p)) {
     CollisionBox *csbox =
       new CollisionBox(min_p, max_p);
     apply_collision_flags(csbox, flags);
@@ -3165,7 +3278,7 @@ make_collision_inv_sphere(EggGroup *egg_group, CollisionNode *cnode,
     CollisionInvSphere *cssphere =
       new CollisionInvSphere(center, radius);
     apply_collision_flags(cssphere, flags);
-    cssphere->xform(cnode->get_transform()->get_mat());
+    cssphere->xform(cnode->get_transform().get_mat());
     cnode->add_solid(cssphere);
   }
 }
@@ -3358,9 +3471,9 @@ make_collision_capsule(EggGroup *egg_group, CollisionNode *cnode,
 
         CollisionCapsule *cscapsule =
           new CollisionCapsule(LCAST(PN_stdfloat, point_a), LCAST(PN_stdfloat, point_b),
-                            radius);
+                               radius);
         apply_collision_flags(cscapsule, flags);
-        cscapsule->xform(cnode->get_transform()->get_mat());
+        cscapsule->xform(cnode->get_transform().get_mat());
         cnode->add_solid(cscapsule);
       }
     }
@@ -3522,7 +3635,7 @@ create_collision_polygons(CollisionNode *cnode, EggPolygon *egg_poly,
         new CollisionPolygon(vertices_begin, vertices_end);
       if (cspoly->is_valid()) {
         apply_collision_flags(cspoly, flags);
-        cspoly->xform(cnode->get_transform()->get_mat());
+        cspoly->xform(cnode->get_transform().get_mat());
         cnode->add_solid(cspoly);
       }
     }
@@ -3613,7 +3726,7 @@ create_collision_floor_mesh(CollisionNode *cnode,
     CollisionFloorMesh::TriangleIndices triangle = *ti;
     csfloor->add_triangle(triangle.p1, triangle.p2, triangle.p3);
   }
-  csfloor->xform(cnode->get_transform()->get_mat());
+  csfloor->xform(cnode->get_transform().get_mat());
   cnode->add_solid(csfloor);
 }
 

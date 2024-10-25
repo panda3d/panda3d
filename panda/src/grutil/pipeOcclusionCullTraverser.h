@@ -71,17 +71,17 @@ private:
 
   bool get_volume_viz(const BoundingVolume *vol,
                       CPT(Geom) &geom,  // OUT
-                      CPT(TransformState) &net_transform, // IN-OUT
-                      CPT(TransformState) &internal_transform  // OUT
+                      Transform &net_transform, // IN-OUT
+                      Transform &internal_transform  // OUT
                       );
   PT(OcclusionQueryContext)
     perform_occlusion_test(const Geom *geom,
-                           const TransformState *net_transform,
-                           const TransformState *internal_transform);
+                           const Transform &net_transform,
+                           const Transform &internal_transform);
 
   void show_results(int num_fragments, const Geom *geom,
-                    const TransformState *net_transform,
-                    const TransformState *internal_transform);
+                    const Transform &net_transform,
+                    const Transform &internal_transform);
 private:
   bool _live;
 
@@ -92,7 +92,7 @@ private:
 
   PT(SceneSetup) _scene;
   PT(CullTraverser) _internal_trav;
-  CPT(TransformState) _inv_cs_world_transform;
+  Transform _inv_cs_world_transform;
 
   CullHandler *_internal_cull_handler;
   CullHandler *_true_cull_handler;

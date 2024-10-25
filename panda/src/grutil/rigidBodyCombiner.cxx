@@ -161,7 +161,8 @@ r_collect(PandaNode *node, const RenderState *state,
           const VertexTransform *transform) {
   CPT(RenderState) next_state = state->compose(node->get_state());
   CPT(VertexTransform) next_transform = transform;
-  if (!node->get_transform()->is_identity() ||
+  Transform node_transform;
+  if (node->get_transform(node_transform) ||
       (node->is_of_type(ModelNode::get_class_type()) &&
        DCAST(ModelNode, node)->get_preserve_transform() != ModelNode::PT_none)) {
     // This node has a transform we need to keep.

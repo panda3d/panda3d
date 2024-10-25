@@ -45,10 +45,9 @@ public:
                                          GeomTransformer &transformer);
   virtual void xform(const LMatrix4 &mat);
   virtual PandaNode *combine_with(PandaNode *other);
-  virtual CPT(TransformState)
+  virtual Transform
     calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
-                      bool &found_any,
-                      const TransformState *transform,
+                      bool &found_any, const Transform &transform,
                       Thread *current_thread) const;
   virtual void add_for_draw(CullTraverser *trav, CullTraverserData &data);
   virtual CollideMask get_legal_collide_mask() const;

@@ -154,7 +154,7 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
   _engine(engine)
 {
   _coordinate_system = CS_invalid;
-  _internal_transform = TransformState::make_identity();
+  _internal_transform = Transform::make_identity();
 
   if (_internal_coordinate_system == CS_default) {
     _internal_coordinate_system = get_default_coordinate_system();
@@ -167,8 +167,8 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
   _current_stereo_channel = Lens::SC_mono;
   _current_tex_view_offset = 0;
   _current_lens = nullptr;
-  _projection_mat = TransformState::make_identity();
-  _projection_mat_inv = TransformState::make_identity();
+  _projection_mat = LMatrix4::ident_mat();
+  _projection_mat_inv = LMatrix4::ident_mat();
 
   _needs_reset = true;
   _is_valid = false;
@@ -380,16 +380,16 @@ set_coordinate_system(CoordinateSystem cs) {
   // Changing the external coordinate system changes the cs_transform.
   if (_internal_coordinate_system == CS_default ||
       _internal_coordinate_system == _coordinate_system) {
-    _cs_transform = TransformState::make_identity();
-    _inv_cs_transform = TransformState::make_identity();
+    _cs_transform = Transform::make_identity();
+    _inv_cs_transform = Transform::make_identity();
 
   } else {
     _cs_transform =
-      TransformState::make_mat
+      Transform::make_mat
       (LMatrix4::convert_mat(_coordinate_system,
                               _internal_coordinate_system));
     _inv_cs_transform =
-      TransformState::make_mat
+      Transform::make_mat
       (LMatrix4::convert_mat(_internal_coordinate_system,
                               _coordinate_system));
   }
@@ -526,11 +526,12 @@ set_scene(SceneSetup *scene_setup) {
 
   set_coordinate_system(_current_lens->get_coordinate_system());
 
-  _projection_mat = calc_projection_mat(_current_lens);
-  if (_projection_mat == nullptr) {
+  if (!calc_projection_mat(_projection_mat, _current_lens)) {
     return false;
   }
-  _projection_mat_inv = _projection_mat->get_inverse();
+  if (!_projection_mat_inv.invert_from(_projection_mat)) {
+    return false;
+  }
   return prepare_lens();
 }
 
@@ -1236,8 +1237,8 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
     DCAST_INTO_V(lt, np.node());
     LColor const &c = lt->get_color();
     LColor const &s = lt->get_specular_color();
-    LMatrix4 t = np.get_net_transform()->get_mat() *
-                 _scene_setup->get_world_transform()->get_mat();
+    LMatrix4 t = np.get_net_transform().get_mat() *
+                 _scene_setup->get_world_transform().get_mat();
     LVecBase3 d = -(t.xform_vec(lt->get_direction()));
     d.normalize();
     LVecBase3 h = d + LVecBase3(0,-1,0);
@@ -1256,8 +1257,8 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
     DCAST_INTO_V(lt, np.node());
     LColor const &c = lt->get_color();
     LColor const &s = lt->get_specular_color();
-    LMatrix4 t = np.get_net_transform()->get_mat() *
-                 _scene_setup->get_world_transform()->get_mat();
+    LMatrix4 t = np.get_net_transform().get_mat() *
+                 _scene_setup->get_world_transform().get_mat();
     LVecBase3 p = (t.xform_point(lt->get_point()));
     LVecBase3 a = lt->get_attenuation();
     Lens *lens = lt->get_lens(0);
@@ -1280,8 +1281,8 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
     LColor const &c = lt->get_color();
     LColor const &s = lt->get_specular_color();
     PN_stdfloat cutoff = ccos(deg_2_rad(lens->get_hfov() * 0.5f));
-    LMatrix4 t = np.get_net_transform()->get_mat() *
-                 _scene_setup->get_world_transform()->get_mat();
+    LMatrix4 t = np.get_net_transform().get_mat() *
+                 _scene_setup->get_world_transform().get_mat();
     LVecBase3 p = t.xform_point(lens->get_nodal_point());
     LVecBase3 d = -(t.xform_vec(lens->get_view_vector()));
     into[0].set(c[0], c[1], c[2], c[3]);
@@ -1439,10 +1440,10 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
     DCAST_INTO_V(plane_node, np.node());
 
     // Transform plane to world space
-    CPT(TransformState) transform = np.get_net_transform();
+    Transform transform = np.get_net_transform();
     LPlane plane = plane_node->get_plane();
-    if (!transform->is_identity()) {
-      plane.xform(transform->get_mat());
+    if (!transform.is_identity()) {
+      plane.xform(transform.get_mat());
     }
     into[0] = LCAST(float, plane);
     return;
@@ -1459,11 +1460,11 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
       const PlaneNode *plane_node;
       DCAST_INTO_V(plane_node, plane.node());
 
-      CPT(TransformState) transform =
-        _scene_setup->get_cs_world_transform()->compose(
+      Transform transform =
+        _scene_setup->get_cs_world_transform().compose(
           plane.get_transform(_scene_setup->get_scene_root().get_parent()));
 
-      LPlane xformed_plane = plane_node->get_plane() * transform->get_mat();
+      LPlane xformed_plane = plane_node->get_plane() * transform.get_mat();
       into[i] = LCAST(float, xformed_plane);
     }
 
@@ -1488,35 +1489,35 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
     return;
   }
   case Shader::SMO_world_to_view: {
-    *(LMatrix4f *)into = LCAST(float, _scene_setup->get_world_transform()->get_mat());
+    *(LMatrix4f *)into = LCAST(float, _scene_setup->get_world_transform().get_mat());
     return;
   }
   case Shader::SMO_view_to_world: {
-    *(LMatrix4f *)into = LCAST(float, _scene_setup->get_camera_transform()->get_mat());
+    *(LMatrix4f *)into = LCAST(float, _scene_setup->get_camera_transform().get_mat());
     return;
   }
   case Shader::SMO_model_to_view: {
-    *(LMatrix4f *)into = LCAST(float, _inv_cs_transform->compose(_internal_transform)->get_mat());
+    *(LMatrix4f *)into = LCAST(float, _inv_cs_transform.compose(_internal_transform).get_mat());
     return;
   }
   case Shader::SMO_model_to_apiview: {
-    *(LMatrix4f *)into = LCAST(float, _internal_transform->get_mat());
+    *(LMatrix4f *)into = LCAST(float, _internal_transform.get_mat());
     return;
   }
   case Shader::SMO_view_to_model: {
-    *(LMatrix4f *)into = LCAST(float, _internal_transform->invert_compose(_cs_transform)->get_mat());
+    *(LMatrix4f *)into = LCAST(float, _internal_transform.invert_compose(_cs_transform).get_mat());
     return;
   }
   case Shader::SMO_apiview_to_model: {
-    *(LMatrix4f *)into = LCAST(float, _internal_transform->get_inverse()->get_mat());
+    *(LMatrix4f *)into = LCAST(float, _internal_transform.get_inverse().get_mat());
     return;
   }
   case Shader::SMO_apiview_to_view: {
-    *(LMatrix4f *)into = LCAST(float, _inv_cs_transform->get_mat());
+    *(LMatrix4f *)into = LCAST(float, _inv_cs_transform.get_mat());
     return;
   }
   case Shader::SMO_view_to_apiview: {
-    *(LMatrix4f *)into = LCAST(float, _cs_transform->get_mat());
+    *(LMatrix4f *)into = LCAST(float, _cs_transform.get_mat());
     return;
   }
   case Shader::SMO_clip_to_view: {
@@ -1540,48 +1541,48 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
     return;
   }
   case Shader::SMO_apiclip_to_view: {
-    *(LMatrix4f *)into = LCAST(float, _projection_mat_inv->get_mat() * _inv_cs_transform->get_mat());
+    *(LMatrix4f *)into = LCAST(float, _projection_mat_inv * _inv_cs_transform.get_mat());
     return;
   }
   case Shader::SMO_view_to_apiclip: {
-    *(LMatrix4f *)into = LCAST(float, _cs_transform->get_mat() * _projection_mat->get_mat());
+    *(LMatrix4f *)into = LCAST(float, _cs_transform.get_mat() * _projection_mat);
     return;
   }
   case Shader::SMO_apiclip_to_apiview: {
-    *(LMatrix4f *)into = LCAST(float, _projection_mat_inv->get_mat());
+    *(LMatrix4f *)into = LCAST(float, _projection_mat_inv);
     return;
   }
   case Shader::SMO_apiview_to_apiclip: {
-    *(LMatrix4f *)into = LCAST(float, _projection_mat->get_mat());
+    *(LMatrix4f *)into = LCAST(float, _projection_mat);
     return;
   }
   case Shader::SMO_view_x_to_view: {
     const NodePath &np = _target_shader->get_shader_input_nodepath(name);
     nassertv(!np.is_empty());
-    *(LMatrix4f *)into = LCAST(float, np.get_net_transform()->get_mat() *
-      _scene_setup->get_world_transform()->get_mat());
+    *(LMatrix4f *)into = LCAST(float, np.get_net_transform().get_mat() *
+      _scene_setup->get_world_transform().get_mat());
     return;
   }
   case Shader::SMO_view_to_view_x: {
     const NodePath &np = _target_shader->get_shader_input_nodepath(name);
     nassertv(!np.is_empty());
-    *(LMatrix4f *)into = LCAST(float, _scene_setup->get_camera_transform()->get_mat() *
-      np.get_net_transform()->get_inverse()->get_mat());
+    *(LMatrix4f *)into = LCAST(float, _scene_setup->get_camera_transform().get_mat() *
+      np.get_net_transform().get_inverse().get_mat());
     return;
   }
   case Shader::SMO_apiview_x_to_view: {
     const NodePath &np = _target_shader->get_shader_input_nodepath(name);
     nassertv(!np.is_empty());
     *(LMatrix4f *)into = LCAST(float, LMatrix4::convert_mat(_internal_coordinate_system, _coordinate_system) *
-      np.get_net_transform()->get_mat() *
-      _scene_setup->get_world_transform()->get_mat());
+      np.get_net_transform().get_mat() *
+      _scene_setup->get_world_transform().get_mat());
     return;
   }
   case Shader::SMO_view_to_apiview_x: {
     const NodePath &np = _target_shader->get_shader_input_nodepath(name);
     nassertv(!np.is_empty());
-    *(LMatrix4f *)into = LCAST(float, (_scene_setup->get_camera_transform()->get_mat() *
-         np.get_net_transform()->get_inverse()->get_mat() *
+    *(LMatrix4f *)into = LCAST(float, (_scene_setup->get_camera_transform().get_mat() *
+         np.get_net_transform().get_inverse().get_mat() *
          LMatrix4::convert_mat(_coordinate_system, _internal_coordinate_system)));
     return;
   }
@@ -1593,8 +1594,8 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
     const Lens *lens = node->get_lens();
     *(LMatrix4f *)into = LCAST(float, lens->get_projection_mat_inv(_current_stereo_channel) *
       LMatrix4::convert_mat(lens->get_coordinate_system(), _coordinate_system) *
-      np.get_net_transform()->get_mat() *
-      _scene_setup->get_world_transform()->get_mat());
+      np.get_net_transform().get_mat() *
+      _scene_setup->get_world_transform().get_mat());
     return;
   }
   case Shader::SMO_view_to_clip_x: {
@@ -1603,8 +1604,8 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
     const LensNode *node;
     DCAST_INTO_V(node, np.node());
     const Lens *lens = node->get_lens();
-    *(LMatrix4f *)into = LCAST(float, _scene_setup->get_camera_transform()->get_mat() *
-      np.get_net_transform()->get_inverse()->get_mat() *
+    *(LMatrix4f *)into = LCAST(float, _scene_setup->get_camera_transform().get_mat() *
+      np.get_net_transform().get_inverse().get_mat() *
       LMatrix4::convert_mat(_coordinate_system, lens->get_coordinate_system()) *
       lens->get_projection_mat(_current_stereo_channel));
     return;
@@ -1615,10 +1616,14 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
     const LensNode *node;
     DCAST_INTO_V(node, np.node());
     const Lens *lens = node->get_lens();
-    *(LMatrix4f *)into = LCAST(float, calc_projection_mat(lens)->get_inverse()->get_mat() *
-      get_cs_transform_for(lens->get_coordinate_system())->get_inverse()->get_mat() *
-      np.get_net_transform()->get_mat() *
-      _scene_setup->get_world_transform()->get_mat());
+    LMatrix4 proj_mat;
+    calc_projection_mat(proj_mat, lens);
+    LMatrix4 proj_mat_inv;
+    proj_mat_inv.invert_from(proj_mat);
+    *(LMatrix4f *)into = LCAST(float, proj_mat_inv *
+      get_cs_transform_for(lens->get_coordinate_system()).get_inverse().get_mat() *
+      np.get_net_transform().get_mat() *
+      _scene_setup->get_world_transform().get_mat());
     return;
   }
   case Shader::SMO_view_to_apiclip_x: {
@@ -1627,10 +1632,12 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
     const LensNode *node;
     DCAST_INTO_V(node, np.node());
     const Lens *lens = node->get_lens();
-    *(LMatrix4f *)into = LCAST(float, _scene_setup->get_camera_transform()->get_mat() *
-      np.get_net_transform()->get_inverse()->get_mat() *
-      get_cs_transform_for(lens->get_coordinate_system())->get_mat() *
-      calc_projection_mat(lens)->get_mat());
+    LMatrix4 proj_mat;
+    calc_projection_mat(proj_mat, lens);
+    *(LMatrix4f *)into = LCAST(float, _scene_setup->get_camera_transform().get_mat() *
+      np.get_net_transform().get_inverse().get_mat() *
+      get_cs_transform_for(lens->get_coordinate_system()).get_mat() *
+      proj_mat);
     return;
   }
   case Shader::SMO_mat_constant_x_attrib: {
@@ -1656,9 +1663,9 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
       const LensNode *lnode = (const LensNode *)node;
       const Lens *lens = lnode->get_lens();
 
-      LMatrix4 t = _inv_cs_transform->get_mat() *
-        _scene_setup->get_camera_transform()->get_mat() *
-        np.get_net_transform()->get_inverse()->get_mat() *
+      LMatrix4 t = _inv_cs_transform.get_mat() *
+        _scene_setup->get_camera_transform().get_mat() *
+        np.get_net_transform().get_inverse().get_mat() *
         LMatrix4::convert_mat(_coordinate_system, lens->get_coordinate_system());
 
       if (!lnode->is_of_type(PointLight::get_class_type())) {
@@ -1731,9 +1738,9 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
       DCAST_INTO_V(lnode, light.node());
       Lens *lens = lnode->get_lens();
 
-      LMatrix4 t = _inv_cs_transform->get_mat() *
-        _scene_setup->get_camera_transform()->get_mat() *
-        light.get_net_transform()->get_inverse()->get_mat() *
+      LMatrix4 t = _inv_cs_transform.get_mat() *
+        _scene_setup->get_camera_transform().get_mat() *
+        light.get_net_transform().get_inverse().get_mat() *
         LMatrix4::convert_mat(_coordinate_system, lens->get_coordinate_system());
 
       if (!lnode->is_of_type(PointLight::get_class_type())) {
@@ -1767,8 +1774,8 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
       into[0] = LCAST(float, light->get_color());
       into[1] = LVecBase4f(LCAST(float, light->get_attenuation()), 0);
 
-      LMatrix4 mat = np.get_net_transform()->get_mat() *
-        _scene_setup->get_world_transform()->get_mat();
+      LMatrix4 mat = np.get_net_transform().get_mat() *
+        _scene_setup->get_world_transform().get_mat();
 
       if (node->is_of_type(DirectionalLight::get_class_type())) {
         LVecBase3 d = mat.xform_vec(((const DirectionalLight *)node)->get_direction());
@@ -1831,8 +1838,8 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name,
       LVecBase2i pixel_size = _current_display_region->get_pixel_size();
 
       LVector3 height(0.0f, thickness, 1.0f);
-      height = height * _projection_mat->get_mat();
-      height = height * _internal_transform->get_scale()[1];
+      height = height * _projection_mat;
+      height = height * _internal_transform.get_scale()[1];
       PN_stdfloat s = height[1] * pixel_size[1];
 
       if (_current_lens->is_orthographic()) {
@@ -1938,9 +1945,9 @@ fetch_specified_member(const NodePath &np, CPT_InternalName attrib, LVecBase4f &
       DirectionalLight *light;
       DCAST_INTO_V(light, node);
 
-      CPT(TransformState) transform = np.get_transform(_scene_setup->get_scene_root().get_parent());
-      LVector3 dir = -(light->get_direction() * transform->get_mat());
-      dir *= _scene_setup->get_cs_world_transform()->get_mat();
+      Transform transform = np.get_transform(_scene_setup->get_scene_root().get_parent());
+      LVector3 dir = -transform.xform_vec(light->get_direction());
+      dir = _scene_setup->get_cs_world_transform().xform_vec(dir);
       v.set(dir[0], dir[1], dir[2], 0);
     }
     else {
@@ -1949,12 +1956,11 @@ fetch_specified_member(const NodePath &np, CPT_InternalName attrib, LVecBase4f &
       Lens *lens = light->get_lens();
       nassertv(lens != nullptr);
 
-      CPT(TransformState) transform =
-        _scene_setup->get_cs_world_transform()->compose(
+      Transform transform =
+        _scene_setup->get_cs_world_transform().compose(
           np.get_transform(_scene_setup->get_scene_root().get_parent()));
 
-      const LMatrix4 &light_mat = transform->get_mat();
-      LPoint3 pos = lens->get_nodal_point() * light_mat;
+      LPoint3 pos = transform.xform_point(lens->get_nodal_point());
       v.set(pos[0], pos[1], pos[2], 1);
     }
   }
@@ -1970,9 +1976,9 @@ fetch_specified_member(const NodePath &np, CPT_InternalName attrib, LVecBase4f &
       DirectionalLight *light;
       DCAST_INTO_V(light, node);
 
-      CPT(TransformState) transform = np.get_transform(_scene_setup->get_scene_root().get_parent());
-      LVector3 dir = -(light->get_direction() * transform->get_mat());
-      dir *= _scene_setup->get_cs_world_transform()->get_mat();
+      Transform transform = np.get_transform(_scene_setup->get_scene_root().get_parent());
+      LVector3 dir = -transform.xform_vec(light->get_direction());
+      dir *= _scene_setup->get_cs_world_transform().get_mat();
       dir.normalize();
       dir += LVector3(0, 0, 1);
       dir.normalize();
@@ -1984,12 +1990,11 @@ fetch_specified_member(const NodePath &np, CPT_InternalName attrib, LVecBase4f &
       Lens *lens = light->get_lens();
       nassertv(lens != nullptr);
 
-      CPT(TransformState) transform =
-        _scene_setup->get_cs_world_transform()->compose(
+      Transform transform =
+        _scene_setup->get_cs_world_transform().compose(
           np.get_transform(_scene_setup->get_scene_root().get_parent()));
 
-      const LMatrix4 &light_mat = transform->get_mat();
-      LPoint3 pos = lens->get_nodal_point() * light_mat;
+      LPoint3 pos = transform.xform_point(lens->get_nodal_point());
       pos.normalize();
       pos += LVector3(0, 0, 1);
       pos.normalize();
@@ -2010,12 +2015,11 @@ fetch_specified_member(const NodePath &np, CPT_InternalName attrib, LVecBase4f &
       Lens *lens = light->get_lens();
       nassertv(lens != nullptr);
 
-      CPT(TransformState) transform =
-        _scene_setup->get_cs_world_transform()->compose(
+      Transform transform =
+        _scene_setup->get_cs_world_transform().compose(
           np.get_transform(_scene_setup->get_scene_root().get_parent()));
 
-      const LMatrix4 &light_mat = transform->get_mat();
-      LVector3 dir = lens->get_view_vector() * light_mat;
+      LVector3 dir = transform.xform_vec(lens->get_view_vector());
       v.set(dir[0], dir[1], dir[2], 0);
     }
   }
@@ -2149,11 +2153,10 @@ fetch_specified_light(const NodePath &np, LVecBase4f *into) {
       into[Shader::LA_ambient].set(0, 0, 0, 1);
       into[Shader::LA_diffuse] = color;
 
-      CPT(TransformState) net_transform =
+      Transform net_transform =
         np.get_transform(_scene_setup->get_scene_root().get_parent());
-      CPT(TransformState) transform =
-        _scene_setup->get_cs_world_transform()->compose(net_transform);
-      const LMatrix4 &light_mat = transform->get_mat();
+      Transform transform =
+        _scene_setup->get_cs_world_transform().compose(net_transform);
 
       LightLensNode *light;
       DCAST_INTO_V(light, node);
@@ -2164,7 +2167,7 @@ fetch_specified_light(const NodePath &np, LVecBase4f *into) {
         DirectionalLight *light;
         DCAST_INTO_V(light, node);
 
-        LVector3 dir = -(light->get_direction() * light_mat);
+        LVector3 dir = -transform.xform_vec(light->get_direction());
         into[Shader::LA_position].set(dir[0], dir[1], dir[2], 0);
 
         dir.normalize();
@@ -2173,7 +2176,7 @@ fetch_specified_light(const NodePath &np, LVecBase4f *into) {
         into[Shader::LA_half_vector].set(dir[0], dir[1], dir[2], 1);
       }
       else {
-        LPoint3 pos = lens->get_nodal_point() * light_mat;
+        LPoint3 pos = transform.xform_point(lens->get_nodal_point());
         into[Shader::LA_position].set(pos[0], pos[1], pos[2], 1);
 
         pos.normalize();
@@ -2190,12 +2193,12 @@ fetch_specified_light(const NodePath &np, LVecBase4f *into) {
         into[Shader::LA_spot_params].set(-1, 180, light->get_exponent(), 0);
       }
 
-      LVector3 dir = lens->get_view_vector() * light_mat;
+      LVector3 dir = transform.xform_vec(lens->get_view_vector());
       into[Shader::LA_spot_direction].set(dir[0], dir[1], dir[2], 0);
 
-      LMatrix4 t = _inv_cs_transform->get_mat() *
-        _scene_setup->get_camera_transform()->get_mat() *
-        net_transform->get_inverse()->get_mat() *
+      LMatrix4 t = _inv_cs_transform.get_mat() *
+        _scene_setup->get_camera_transform().get_mat() *
+        net_transform.get_inverse().get_mat() *
         LMatrix4::convert_mat(_coordinate_system, lens->get_coordinate_system());
 
       if (!node->is_of_type(PointLight::get_class_type())) {
@@ -2633,21 +2636,24 @@ prepare_lens() {
 }
 
 /**
- * Given a lens, this function calculates the appropriate projection matrix
- * for this gsg.  The result depends on the peculiarities of the rendering
- * API.
+ * Given a lens, calculates the appropriate projection matrix for use with
+ * this gsg.  Note that the projection matrix depends a lot upon the
+ * coordinate system of the rendering API.
+ *
+ * The return value is true if the lens is acceptable, false if it is not.
  */
-CPT(TransformState) GraphicsStateGuardian::
-calc_projection_mat(const Lens *lens) {
+bool GraphicsStateGuardian::
+calc_projection_mat(LMatrix4 &mat, const Lens *lens) {
   if (lens == nullptr) {
-    return nullptr;
+    return false;
   }
 
   if (!lens->is_linear()) {
-    return nullptr;
+    return false;
   }
 
-  return TransformState::make_identity();
+  mat = LMatrix4::ident_mat();
+  return true;
 }
 
 /**
@@ -3017,7 +3023,7 @@ reset() {
  */
 void GraphicsStateGuardian::
 set_state_and_transform(const RenderState *state,
-                        const TransformState *trans) {
+                        const Transform &trans) {
 }
 
 /**
@@ -3047,7 +3053,7 @@ get_render_buffer(int buffer_type, const FrameBufferProperties &prop) {
  * set_coordinate_system(cs).  This is another way of saying the cs_transform
  * when rendering the scene for a camera with the indicated coordinate system.
  */
-CPT(TransformState) GraphicsStateGuardian::
+Transform GraphicsStateGuardian::
 get_cs_transform_for(CoordinateSystem cs) const {
   if (_coordinate_system == cs) {
     // We've already calculated this.
@@ -3055,10 +3061,10 @@ get_cs_transform_for(CoordinateSystem cs) const {
 
   } else if (_internal_coordinate_system == CS_default ||
              _internal_coordinate_system == cs) {
-    return TransformState::make_identity();
+    return Transform::make_identity();
 
   } else {
-    return TransformState::make_mat
+    return Transform::make_mat
       (LMatrix4::convert_mat(cs, _internal_coordinate_system));
   }
 }
@@ -3069,7 +3075,7 @@ get_cs_transform_for(CoordinateSystem cs) const {
  * (as returned by get_internal_coordinate_system()).  This is used for
  * rendering.
  */
-CPT(TransformState) GraphicsStateGuardian::
+Transform GraphicsStateGuardian::
 get_cs_transform() const {
   return _cs_transform;
 }

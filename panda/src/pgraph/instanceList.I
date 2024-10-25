@@ -15,14 +15,14 @@
  * Initializes an instance with the identity transform.
  */
 INLINE InstanceList::Instance::
-Instance() : _transform(TransformState::make_identity()) {
+Instance() : _transform(Transform::make_identity()) {
 }
 
 /**
  * Initializes an instance with the given transformation.
  */
 INLINE InstanceList::Instance::
-Instance(CPT(TransformState) transform) : _transform(std::move(transform)) {
+Instance(const Transform &transform) : _transform(transform) {
 }
 
 /**
@@ -30,7 +30,7 @@ Instance(CPT(TransformState) transform) : _transform(std::move(transform)) {
  */
 INLINE LPoint3 InstanceList::Instance::
 get_pos() const {
-  return get_transform()->get_pos();
+  return _transform.get_pos();
 }
 
 /**
@@ -38,7 +38,7 @@ get_pos() const {
  */
 INLINE void InstanceList::Instance::
 set_pos(const LPoint3 &pos) {
-  set_transform(get_transform()->set_pos(pos));
+  _transform.set_pos(pos);
 }
 
 /**
@@ -46,7 +46,7 @@ set_pos(const LPoint3 &pos) {
  */
 INLINE void InstanceList::Instance::
 set_pos(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z) {
-  set_pos(LPoint3(x, y, z));
+  _transform.set_pos(LPoint3(x, y, z));
 }
 
 /**
@@ -54,7 +54,7 @@ set_pos(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z) {
  */
 INLINE LVecBase3 InstanceList::Instance::
 get_hpr() const {
-  return get_transform()->get_hpr();
+  return _transform.get_hpr();
 }
 
 /**
@@ -62,7 +62,7 @@ get_hpr() const {
  */
 INLINE void InstanceList::Instance::
 set_hpr(const LVecBase3 &hpr) {
-  set_transform(get_transform()->set_hpr(hpr));
+  _transform.set_hpr(hpr);
 }
 
 /**
@@ -70,7 +70,7 @@ set_hpr(const LVecBase3 &hpr) {
  */
 INLINE void InstanceList::Instance::
 set_hpr(PN_stdfloat h, PN_stdfloat p, PN_stdfloat r) {
-  set_hpr(LVecBase3(h, p, r));
+  _transform.set_hpr(LVecBase3(h, p, r));
 }
 
 /**
@@ -78,7 +78,7 @@ set_hpr(PN_stdfloat h, PN_stdfloat p, PN_stdfloat r) {
  */
 INLINE LQuaternion InstanceList::Instance::
 get_quat() const {
-  return get_transform()->get_quat();
+  return _transform.get_quat();
 }
 
 /**
@@ -86,7 +86,7 @@ get_quat() const {
  */
 INLINE void InstanceList::Instance::
 set_quat(const LQuaternion &quat) {
-  set_transform(get_transform()->set_quat(quat));
+  _transform.set_quat(quat);
 }
 
 /**
@@ -94,7 +94,7 @@ set_quat(const LQuaternion &quat) {
  */
 INLINE LVecBase3 InstanceList::Instance::
 get_scale() const {
-  return get_transform()->get_scale();
+  return _transform.get_scale();
 }
 
 /**
@@ -102,7 +102,7 @@ get_scale() const {
  */
 INLINE void InstanceList::Instance::
 set_scale(const LVecBase3 &scale) {
-  set_transform(get_transform()->set_scale(scale));
+  _transform.set_scale(scale);
 }
 
 /**
@@ -110,15 +110,15 @@ set_scale(const LVecBase3 &scale) {
  */
 INLINE void InstanceList::Instance::
 set_scale(PN_stdfloat sx, PN_stdfloat sy, PN_stdfloat sz) {
-  set_scale(LVecBase3(sx, sy, sz));
+  _transform.set_scale(LVecBase3(sx, sy, sz));
 }
 
 /**
  *
  */
-INLINE const LMatrix4 &InstanceList::Instance::
+INLINE LMatrix4 InstanceList::Instance::
 get_mat() const {
-  return get_transform()->get_mat();
+  return _transform.get_mat();
 }
 
 /**
@@ -126,23 +126,23 @@ get_mat() const {
  */
 INLINE void InstanceList::Instance::
 set_mat(const LMatrix4 &mat) {
-  set_transform(TransformState::make_mat(mat));
+  _transform = Transform::make_mat(mat);
 }
 
 /**
  *
  */
-INLINE const TransformState *InstanceList::Instance::
+INLINE Transform InstanceList::Instance::
 get_transform() const {
-  return _transform.p();
+  return _transform;
 }
 
 /**
  *
  */
 INLINE void InstanceList::Instance::
-set_transform(CPT(TransformState) transform) {
-  _transform = std::move(transform);
+set_transform(const Transform &transform) {
+  _transform = transform;
 }
 
 /**
@@ -158,8 +158,17 @@ append(InstanceList::Instance instance) {
  * Adds a new instance with the indicated transformation to the list.
  */
 INLINE void InstanceList::
-append(const TransformState *transform) {
+append(const Transform &transform) {
   _instances.push_back(Instance(transform));
+  _cached_array.clear();
+}
+
+/**
+ * Adds a new instance with the indicated transformation to the list.
+ */
+INLINE void InstanceList::
+append(const TransformState *transform) {
+  _instances.push_back(Instance(Transform::make_mat(transform->get_mat())));
   _cached_array.clear();
 }
 
@@ -169,7 +178,7 @@ append(const TransformState *transform) {
 INLINE void InstanceList::
 append(const LPoint3 &pos, const LVecBase3 &hpr, const LVecBase3 &scale) {
 
-  append(TransformState::make_pos_hpr_scale(pos, hpr, scale));
+  append(Transform::make_pos_hpr_scale(pos, hpr, scale));
 }
 
 /**
@@ -178,7 +187,7 @@ append(const LPoint3 &pos, const LVecBase3 &hpr, const LVecBase3 &scale) {
 INLINE void InstanceList::
 append(const LPoint3 &pos, const LQuaternion &quat, const LVecBase3 &scale) {
 
-  append(TransformState::make_pos_quat_scale(pos, quat, scale));
+  append(Transform::make_pos_quat_scale(pos, quat, scale));
 }
 
 /**

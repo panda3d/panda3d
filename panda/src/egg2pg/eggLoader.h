@@ -77,7 +77,8 @@ public:
                     const LMatrix4d *transform, bool is_dynamic,
                     CharacterMaker *character_maker);
 
-  CPT(TransformState) make_transform(const EggTransform *egg_transform);
+  Transform make_transform(const EggTransform *egg_transform);
+  CPT(TransformState) make_transform_state(const EggTransform *egg_transform);
 
 private:
   class TextureDef {

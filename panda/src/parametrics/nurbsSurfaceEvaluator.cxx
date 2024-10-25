@@ -236,9 +236,8 @@ get_vertices(NurbsSurfaceEvaluator::Vert4Array &verts, const NodePath &rel_to) c
     if (space.is_empty()) {
       verts.push_back(vertex);
     } else {
-      CPT(TransformState) transform = space.get_transform(rel_to);
-      const LMatrix4 &mat = transform->get_mat();
-      verts.push_back(vertex * mat);
+      Transform transform = space.get_transform(rel_to);
+      verts.push_back(vertex * transform.get_mat());
     }
   }
 }
@@ -260,9 +259,8 @@ get_vertices(NurbsSurfaceEvaluator::Vert3Array &verts, const NodePath &rel_to) c
     const NodePath &space = _vertices[vi].get_space(rel_to);
     LVecBase4 vertex = _vertices[vi].get_vertex();
     if (!space.is_empty()) {
-      CPT(TransformState) transform = space.get_transform(rel_to);
-      const LMatrix4 &mat = transform->get_mat();
-      vertex = vertex * mat;
+      Transform transform = space.get_transform(rel_to);
+      vertex = vertex * transform.get_mat();
     }
     LPoint3 v3(vertex[0] / vertex[3], vertex[1] / vertex[3], vertex[2] / vertex[3]);
     verts.push_back(v3);

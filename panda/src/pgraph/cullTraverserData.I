@@ -16,7 +16,7 @@
  */
 INLINE CullTraverserData::
 CullTraverserData(const NodePath &start,
-                  const TransformState *net_transform,
+                  const Transform &net_transform,
                   CPT(RenderState) state,
                   GeometricBoundingVolume *view_frustum,
                   Thread *current_thread) :
@@ -37,7 +37,7 @@ CullTraverserData(const NodePath &start,
  */
 INLINE CullTraverserData::
 CullTraverserData(const CullTraverserData &parent, PandaNode *child,
-                  const TransformState *net_transform,
+                  const Transform &net_transform,
                   CPT(RenderState) state,
                   GeometricBoundingVolume *view_frustum) :
   _next(&parent),
@@ -61,7 +61,7 @@ CullTraverserData(const CullTraverserData &parent, PandaNode *child,
 INLINE CullTraverserData::
 CullTraverserData(const CullTraverserData &parent,
                   PandaNodePipelineReader &&node_reader,
-                  const TransformState *net_transform,
+                  const Transform &net_transform,
                   CPT(RenderState) state,
                   GeometricBoundingVolume *view_frustum) :
   _next(&parent),
@@ -138,26 +138,26 @@ set_view_frustum(PT(GeometricBoundingVolume) view_frustum) {
  * Returns the modelview transform: the relative transform from the camera to
  * the model.
  */
-INLINE CPT(TransformState) CullTraverserData::
+INLINE Transform CullTraverserData::
 get_modelview_transform(const CullTraverser *trav) const {
-  return trav->get_world_transform()->compose(_net_transform);
+  return trav->get_world_transform().compose(_net_transform);
 }
 
 /**
  * Returns the internal transform: the modelview transform in the GSG's
  * internal coordinate system.
  */
-INLINE CPT(TransformState) CullTraverserData::
+INLINE Transform CullTraverserData::
 get_internal_transform(const CullTraverser *trav) const {
-  const TransformState *cs_world_transform = trav->get_scene()->get_cs_world_transform();
-  return cs_world_transform->compose(_net_transform);
+  const Transform &cs_world_transform = trav->get_scene()->get_cs_world_transform();
+  return cs_world_transform.compose(_net_transform);
 }
 
 /**
  * Returns the net transform: the relative transform from root of the scene
  * graph to the current node.
  */
-INLINE const TransformState *CullTraverserData::
+INLINE const Transform &CullTraverserData::
 get_net_transform(const CullTraverser *) const {
   return _net_transform;
 }
@@ -176,7 +176,7 @@ is_in_view(const DrawMask &camera_mask) const {
     return BoundingVolume::IF_no_intersection;
   }
 
-  if (_node_reader.get_transform()->is_invalid()) {
+  if (_node_reader.get_transform().is_invalid()) {
     // If the transform is invalid, forget it.
     return BoundingVolume::IF_no_intersection;
   }
@@ -205,7 +205,7 @@ is_child_in_view(const PandaNodePipelineReader &node_reader, const DrawMask &cam
     return BoundingVolume::IF_no_intersection;
   }
 
-  if (_node_reader.get_transform()->is_invalid()) {
+  if (_node_reader.get_transform().is_invalid()) {
     // If the transform is invalid, forget it.
     return BoundingVolume::IF_no_intersection;
   }

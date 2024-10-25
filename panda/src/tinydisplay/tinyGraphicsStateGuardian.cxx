@@ -291,17 +291,16 @@ prepare_display_region(DisplayRegionPipelineReader *dr) {
  * this gsg.  Note that the projection matrix depends a lot upon the
  * coordinate system of the rendering API.
  *
- * The return value is a TransformState if the lens is acceptable, NULL if it
- * is not.
+ * The return value is true if the lens is acceptable, false if it is not.
  */
-CPT(TransformState) TinyGraphicsStateGuardian::
-calc_projection_mat(const Lens *lens) {
+bool TinyGraphicsStateGuardian::
+calc_projection_mat(LMatrix4 &result, const Lens *lens) {
   if (lens == nullptr) {
-    return nullptr;
+    return false;
   }
 
   if (!lens->is_linear()) {
-    return nullptr;
+    return false;
   }
 
   // The projection matrix must always be right-handed Y-up, even if our
@@ -311,7 +310,7 @@ calc_projection_mat(const Lens *lens) {
   // coordinate system, we'll use a Y-up projection matrix, and store the
   // conversion to our coordinate system of choice in the modelview matrix.
 
-  LMatrix4 result =
+  result =
     LMatrix4::convert_mat(CS_yup_right, _current_lens->get_coordinate_system()) *
     lens->get_projection_mat(_current_stereo_channel);
 
@@ -321,7 +320,7 @@ calc_projection_mat(const Lens *lens) {
     result *= LMatrix4::scale_mat(1.0f, -1.0f, 1.0f);
   }
 
-  return TransformState::make_mat(result);
+  return true;
 }
 
 /**
@@ -491,18 +490,18 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     // If the vertex data claims to be already transformed into clip
     // coordinates, wipe out the current projection and modelview matrix (so
     // we don't attempt to transform it again).
-    const TransformState *ident = TransformState::make_identity();
+    Transform ident = Transform::make_identity();
     load_matrix(&_c->matrix_model_view, ident);
-    load_matrix(&_c->matrix_projection, _scissor_mat);
+    load_matrix(&_c->matrix_projection, _scissor_mat.get_mat());
     load_matrix(&_c->matrix_model_view_inv, ident);
-    load_matrix(&_c->matrix_model_projection, _scissor_mat);
+    load_matrix(&_c->matrix_model_projection, _scissor_mat.get_mat());
     _c->matrix_model_projection_no_w_transform = 1;
     _transform_stale = true;
 
   } else if (_transform_stale) {
     // Load the actual transform.
 
-    CPT(TransformState) scissor_proj_mat = _scissor_mat->compose(_projection_mat);
+    LMatrix4 scissor_proj_mat = _projection_mat * _scissor_mat.get_mat();
 
     if (_c->lighting_enabled) {
       // With the lighting equation, we need to keep the modelview and
@@ -520,7 +519,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
 
     // Compose the modelview and projection matrices.
     load_matrix(&_c->matrix_model_projection,
-                scissor_proj_mat->compose(_internal_transform));
+                _internal_transform.get_mat() * scissor_proj_mat);
 
     /* test to accelerate computation */
     _c->matrix_model_projection_no_w_transform = 0;
@@ -584,7 +583,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
       tcdata[si]._r2 = GeomVertexReader(data_reader, InternalName::get_vertex(),
                                         force);
       texgen_func[si] = &texgen_sphere_map;
-      tcdata[si]._mat = _internal_transform->get_mat();
+      tcdata[si]._mat = _internal_transform.get_mat();
       break;
 
     case TexGenAttrib::M_eye_position:
@@ -592,9 +591,9 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
                                        force);
       texgen_func[si] = &texgen_texmat;
       {
-        CPT(TransformState) eye_transform =
-          _cs_transform->invert_compose(_internal_transform);
-        tcdata[si]._mat = eye_transform->get_mat();
+        Transform eye_transform =
+          _cs_transform.invert_compose(_internal_transform);
+        tcdata[si]._mat = eye_transform.get_mat();
       }
       if (target_tex_matrix->has_stage(stage)) {
         tcdata[si]._mat = tcdata[si]._mat * target_tex_matrix->get_mat(stage);
@@ -606,11 +605,11 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
                                        force);
       texgen_func[si] = &texgen_texmat;
       {
-        CPT(TransformState) render_transform =
-          _cs_transform->compose(_scene_setup->get_world_transform());
-        CPT(TransformState) world_inv_transform =
-          render_transform->invert_compose(_internal_transform);
-        tcdata[si]._mat = world_inv_transform->get_mat();
+        Transform render_transform =
+          _cs_transform.compose(_scene_setup->get_world_transform());
+        Transform world_inv_transform =
+          render_transform.invert_compose(_internal_transform);
+        tcdata[si]._mat = world_inv_transform.get_mat();
       }
       if (target_tex_matrix->has_stage(stage)) {
         tcdata[si]._mat = tcdata[si]._mat * target_tex_matrix->get_mat(stage);
@@ -1484,14 +1483,13 @@ framebuffer_copy_to_ram(Texture *tex, int view, int z,
  * _target.
  */
 void TinyGraphicsStateGuardian::
-set_state_and_transform(const RenderState *target,
-                        const TransformState *transform) {
+set_state_and_transform(const RenderState *target, const Transform &transform) {
 #ifndef NDEBUG
   if (tinydisplay_cat.is_spam()) {
     tinydisplay_cat.spam()
       << "Setting GSG state to " << (void *)target << ":\n";
     target->write(tinydisplay_cat.spam(false), 2);
-    transform->write(tinydisplay_cat.spam(false), 2);
+    transform.write(tinydisplay_cat.spam(false), 2);
   }
 #endif
 
@@ -1815,13 +1813,13 @@ bind_light(PointLight *light_obj, const NodePath &light, int light_id) {
 
     // Position needs to specify x, y, z, and w w == 1 implies non-infinite
     // position
-    CPT(TransformState) render_transform =
-      _cs_transform->compose(_scene_setup->get_world_transform());
+    Transform render_transform =
+      _cs_transform.compose(_scene_setup->get_world_transform());
 
-    CPT(TransformState) transform = light.get_transform(_scene_setup->get_scene_root().get_parent());
-    CPT(TransformState) net_transform = render_transform->compose(transform);
+    Transform transform = light.get_transform(_scene_setup->get_scene_root().get_parent());
+    Transform net_transform = render_transform.compose(transform);
 
-    LPoint3 pos = light_obj->get_point() * net_transform->get_mat();
+    LPoint3 pos = light_obj->get_point() * net_transform.get_mat();
     gl_light->position.v[0] = pos[0];
     gl_light->position.v[1] = pos[1];
     gl_light->position.v[2] = pos[2];
@@ -1867,13 +1865,13 @@ bind_light(DirectionalLight *light_obj, const NodePath &light, int light_id) {
 
     // Position needs to specify x, y, z, and w w == 0 implies light is at
     // infinity
-    CPT(TransformState) render_transform =
-      _cs_transform->compose(_scene_setup->get_world_transform());
+    Transform render_transform =
+      _cs_transform.compose(_scene_setup->get_world_transform());
 
-    CPT(TransformState) transform = light.get_transform(_scene_setup->get_scene_root().get_parent());
-    CPT(TransformState) net_transform = render_transform->compose(transform);
+    Transform transform = light.get_transform(_scene_setup->get_scene_root().get_parent());
+    Transform net_transform = render_transform.compose(transform);
 
-    LVector3 dir = light_obj->get_direction() * net_transform->get_mat();
+    LVector3 dir = net_transform.xform_vec(light_obj->get_direction());
     dir.normalize();
     gl_light->position.v[0] = -dir[0];
     gl_light->position.v[1] = -dir[1];
@@ -1929,15 +1927,14 @@ bind_light(Spotlight *light_obj, const NodePath &light, int light_id) {
 
     // Position needs to specify x, y, z, and w w == 1 implies non-infinite
     // position
-    CPT(TransformState) render_transform =
-      _cs_transform->compose(_scene_setup->get_world_transform());
+    Transform render_transform =
+      _cs_transform.compose(_scene_setup->get_world_transform());
 
-    CPT(TransformState) transform = light.get_transform(_scene_setup->get_scene_root().get_parent());
-    CPT(TransformState) net_transform = render_transform->compose(transform);
+    Transform transform = light.get_transform(_scene_setup->get_scene_root().get_parent());
+    Transform net_transform = render_transform.compose(transform);
 
-    const LMatrix4 &light_mat = net_transform->get_mat();
-    LPoint3 pos = lens->get_nodal_point() * light_mat;
-    LVector3 dir = lens->get_view_vector() * light_mat;
+    LPoint3 pos = net_transform.xform_point(lens->get_nodal_point());
+    LVector3 dir = net_transform.xform_vec(lens->get_view_vector());
     dir.normalize();
 
     gl_light->position.v[0] = pos[0];
@@ -2361,9 +2358,10 @@ set_scissor(PN_stdfloat left, PN_stdfloat right, PN_stdfloat bottom, PN_stdfloat
   if (xsize == 0.0f || ysize == 0.0f) {
     // If the scissor region is zero, nothing will be drawn anyway, so don't
     // worry about it.
-    _scissor_mat = TransformState::make_identity();
+    _scissor_mat = Transform::make_identity();
   } else {
-    _scissor_mat = TransformState::make_scale(LVecBase3(1.0f / xsize, 1.0f / ysize, 1.0f))->compose(TransformState::make_pos(LPoint3(-xcenter, -ycenter, 0.0f)));
+    _scissor_mat = Transform::make_scale(LVecBase3(1.0f / xsize, 1.0f / ysize, 1.0f));
+    _scissor_mat.set_pos(LPoint3(-xcenter, -ycenter, 0.0f));
   }
 }
 
@@ -2999,10 +2997,12 @@ setup_material(GLMaterial *gl_material, const Material *material) {
  */
 void TinyGraphicsStateGuardian::
 do_auto_rescale_normal() {
-  if (_internal_transform->has_uniform_scale()) {
+  LVecBase3 scale = _internal_transform.get_scale();
+
+  if (scale[0] == scale[1] && scale[0] == scale[2]) {
     // There's a uniform scale; rescale the normals uniformly.
     _c->normalize_enabled = false;
-    _c->normal_scale = _internal_transform->get_uniform_scale();
+    _c->normal_scale = scale[0];
 
   } else {
     // If there's a non-uniform scale, normalize everything.
@@ -3012,12 +3012,26 @@ do_auto_rescale_normal() {
 }
 
 /**
- * Copies the Panda matrix stored in the indicated TransformState object into
+ * Copies the Panda matrix stored in the indicated matrix object into
  * the indicated TinyGL matrix.
  */
 void TinyGraphicsStateGuardian::
-load_matrix(M4 *matrix, const TransformState *transform) {
-  const LMatrix4 &pm = transform->get_mat();
+load_matrix(M4 *matrix, const LMatrix4 &pm) {
+  for (int i = 0; i < 4; ++i) {
+    matrix->m[0][i] = pm.get_cell(i, 0);
+    matrix->m[1][i] = pm.get_cell(i, 1);
+    matrix->m[2][i] = pm.get_cell(i, 2);
+    matrix->m[3][i] = pm.get_cell(i, 3);
+  }
+}
+
+/**
+ * Copies the Panda matrix stored in the indicated Transform object into
+ * the indicated TinyGL matrix.
+ */
+void TinyGraphicsStateGuardian::
+load_matrix(M4 *matrix, const Transform &transform) {
+  LMatrix4 pm = transform.get_mat();
   for (int i = 0; i < 4; ++i) {
     matrix->m[0][i] = pm.get_cell(i, 0);
     matrix->m[1][i] = pm.get_cell(i, 1);

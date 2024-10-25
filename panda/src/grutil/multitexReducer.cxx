@@ -77,14 +77,14 @@ clear() {
  * indicated starting state.
  */
 void MultitexReducer::
-scan(PandaNode *node, const RenderState *state, const TransformState *transform) {
+scan(PandaNode *node, const RenderState *state, const Transform &transform) {
   if (grutil_cat.is_debug()) {
     grutil_cat.debug()
-      << "scan(" << *node << ", " << *state << ", " << *transform << ")\n";
+      << "scan(" << *node << ", " << *state << ", " << transform << ")\n";
   }
 
   CPT(RenderState) next_state = state->compose(node->get_state());
-  CPT(TransformState) next_transform = transform->compose(node->get_transform());
+  Transform next_transform = transform.compose(node->get_transform());
 
   // We must turn off any textures we come across in the scan() operation,
   // since the flattened texture will be applied to the Geoms after the
@@ -423,11 +423,11 @@ flatten(GraphicsOutput *window) {
  */
 void MultitexReducer::
 scan_geom_node(GeomNode *node, const RenderState *state,
-               const TransformState *transform) {
+               const Transform &transform) {
   if (grutil_cat.is_debug()) {
     grutil_cat.debug()
       << "scan_geom_node(" << *node << ", " << *state << ", "
-      << *transform << ")\n";
+      << transform << ")\n";
   }
 
   _geom_node_list.push_back(GeomNodeInfo(state, node));

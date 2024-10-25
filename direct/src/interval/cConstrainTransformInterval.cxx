@@ -48,10 +48,10 @@ priv_step(double t) {
   _state = S_started;
   _curr_t = t;
 
-  if(! _target.is_empty()) {
-    CPT(TransformState) transform;
-    if(_wrt) {
-      if(! _node.is_same_graph(_target)){
+  if (!_target.is_empty()) {
+    Transform transform;
+    if (_wrt) {
+      if (!_node.is_same_graph(_target)) {
         interval_cat.warning()
           << "Unable to copy transform in CConstrainTransformInterval::priv_step;\n"
           << "node (" << _node.get_name()

@@ -41,7 +41,7 @@ CullHandler::
  */
 void CullHandler::
 record_object(CullableObject *object, const CullTraverser *traverser) {
-  nout << *object->_geom << " " << *object->_internal_transform << " "
+  nout << *object->_geom << " " << object->_internal_transform << " "
        << *object->_state << "\n";
   delete object;
 }

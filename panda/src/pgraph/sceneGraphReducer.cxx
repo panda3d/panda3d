@@ -235,7 +235,7 @@ r_apply_attribs(PandaNode *node, const AccumulatedAttribs &attribs,
   if (pgraph_cat.is_spam()) {
     pgraph_cat.spam()
       << "r_apply_attribs(" << *node << "), node's attribs are:\n";
-    node->get_transform()->write(pgraph_cat.spam(false), 2);
+    node->get_transform().write(pgraph_cat.spam(false), 2);
     node->get_state()->write(pgraph_cat.spam(false), 2);
     node->get_effects()->write(pgraph_cat.spam(false), 2);
   }
@@ -271,7 +271,7 @@ r_apply_attribs(PandaNode *node, const AccumulatedAttribs &attribs,
         << "Node " << *node
         << " contains a non-transformable effect; leaving transform here.\n";
     }
-    next_attribs._transform = effects->prepare_flatten_transform(next_attribs._transform);
+    next_attribs._transform = effects->prepare_flatten_transform(Transform::make_mat(next_attribs._transform.get_mat()));
     apply_types |= TT_transform;
   }
   if (!node->safe_to_transform()) {
@@ -475,7 +475,7 @@ r_flatten(PandaNode *grandparent_node, PandaNode *parent_node,
         PandaNode *child_node = parent_node->get_child(i);
         if (child_node->is_exact_type(PandaNode::get_class_type()) &&
             child_node->get_num_children() == 0 &&
-            child_node->get_transform()->is_identity() &&
+            child_node->get_transform().is_identity() &&
             child_node->get_effects()->is_empty()) {
           parent_node->remove_child(child_node);
           ++num_nodes;
@@ -495,8 +495,9 @@ public:
 
 INLINE bool SortByState::
 operator () (const PandaNode *node1, const PandaNode *node2) const {
-  if (node1->get_transform() != node2->get_transform()) {
-    return node1->get_transform() < node2->get_transform();
+  int cmp = node1->get_transform().compare_to(node2->get_transform());
+  if (cmp != 0) {
+    return cmp < 0;
   }
   if (node1->get_state() != node2->get_state()) {
     return node1->get_state() < node2->get_state();
@@ -510,7 +511,7 @@ operator () (const PandaNode *node1, const PandaNode *node2) const {
   if (node1->get_draw_show_mask() != node2->get_draw_show_mask()) {
     return node1->get_draw_show_mask() < node2->get_draw_show_mask();
   }
-  int cmp = (node1->compare_tags(node2));
+  cmp = (node1->compare_tags(node2));
   if (cmp != 0) {
     return cmp < 0;
   }
@@ -806,7 +807,7 @@ r_collect_vertex_data(PandaNode *node, int collect_bits,
   if (node->is_of_type(ModelNode::get_class_type())) {
     this_node_bits |= CVD_model;
   }
-  if (!node->get_transform()->is_identity()) {
+  if (!node->get_transform().is_identity()) {
     this_node_bits |= CVD_transform;
   }
   if (node->is_geom_node()) {

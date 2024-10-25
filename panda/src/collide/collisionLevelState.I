@@ -344,16 +344,10 @@ apply_transform() {
   } else {
     // Otherwise, in the usual case, the bounds tests will continue.
     // Recompute the bounds list of this node (if we have a transform).
-    const TransformState *node_transform = node()->get_transform();
-    if (!node_transform->is_identity()) {
-      CPT(TransformState) inv_transform =
-        node_transform->invert_compose(TransformState::make_identity());
-      if (!inv_transform->has_mat()) {
-        // No inverse.
-        return false;
-      }
-
-      const LMatrix4 &mat = inv_transform->get_mat();
+    Transform node_transform;
+    if (node()->get_transform(node_transform)) {
+      Transform inv_transform = node_transform.get_inverse();
+      LMatrix4 mat = inv_transform.get_mat();
 
       // Now build the new bounding volumes list.
       BoundingVolumes new_bounds;

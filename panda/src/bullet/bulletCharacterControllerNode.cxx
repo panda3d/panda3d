@@ -30,7 +30,7 @@ BulletCharacterControllerNode::
 BulletCharacterControllerNode(BulletShape *shape, PN_stdfloat step_height, const char *name) : BulletBaseCharacterControllerNode(name) {
 
   // Synchronised transform
-  _sync = TransformState::make_identity();
+  _sync = Transform::make_identity();
   _sync_disable = false;
 
   // Initial transform
@@ -143,18 +143,15 @@ void BulletCharacterControllerNode::
 do_sync_b2p() {
 
   NodePath np = NodePath::any_path((PandaNode *)this);
-  LVecBase3 scale = np.get_net_transform()->get_scale();
+  LVecBase3 scale = np.get_net_transform().get_scale();
 
   btTransform trans = _ghost->getWorldTransform();
-  CPT(TransformState) ts = btTrans_to_TransformState(trans, scale);
+  Transform transform = btTrans_to_Transform(trans, scale);
 
-  LMatrix4 m_sync = _sync->get_mat();
-  LMatrix4 m_ts = ts->get_mat();
-
-  if (!m_sync.almost_equal(m_ts)) {
-    _sync = ts;
+  if (!_sync.almost_equal(transform)) {
+    _sync = transform;
     _sync_disable = true;
-    np.set_transform(NodePath(), ts);
+    np.set_transform(NodePath(), transform);
     _sync_disable = false;
   }
 }
@@ -168,18 +165,16 @@ do_transform_changed() {
   if (_sync_disable) return;
 
   NodePath np = NodePath::any_path((PandaNode *)this);
-  CPT(TransformState) ts = np.get_net_transform();
+  Transform transform = np.get_net_transform();
 
-  LMatrix4 m_sync = _sync->get_mat();
-  LMatrix4 m_ts = ts->get_mat();
-
-  if (!m_sync.almost_equal(m_ts)) {
-    _sync = ts;
+  if (!_sync.almost_equal(transform)) {
+    _sync = transform;
 
     // Get translation, heading and scale
-    LPoint3 pos = ts->get_pos();
-    PN_stdfloat heading = ts->get_hpr().get_x();
-    LVecBase3 scale = ts->get_scale();
+    LPoint3 pos;
+    LVecBase3 hpr;
+    LVecBase3 scale;
+    transform.get_pos_hpr_scale(pos, hpr, scale);
 
     // Set translation
     _character->warp(LVecBase3_to_btVector3(pos));
@@ -188,7 +183,7 @@ do_transform_changed() {
     btMatrix3x3 m = _ghost->getWorldTransform().getBasis();
     btVector3 up = m[_up];
 
-    m = btMatrix3x3(btQuaternion(up, deg_2_rad(heading)));
+    m = btMatrix3x3(btQuaternion(up, deg_2_rad(hpr[0])));
 
     _ghost->getWorldTransform().setBasis(m);
 

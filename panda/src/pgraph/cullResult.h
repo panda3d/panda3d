@@ -31,7 +31,6 @@ class CullTraverser;
 class GraphicsStateGuardianBase;
 class RenderState;
 class SceneSetup;
-class TransformState;
 
 /**
  * This stores the result of a BinCullHandler traversal: an ordered collection

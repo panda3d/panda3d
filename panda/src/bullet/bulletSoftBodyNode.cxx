@@ -33,7 +33,7 @@ BulletSoftBodyNode::
 BulletSoftBodyNode(btSoftBody *body, const char *name) : BulletBodyNode(name) {
 
   // Synchronised transform
-  _sync = TransformState::make_identity();
+  _sync = Transform::make_identity();
   _sync_disable = false;
 
   // Softbody
@@ -175,15 +175,12 @@ transform_changed() {
   LightMutexHolder holder(BulletWorld::get_global_lock());
 
   NodePath np = NodePath::any_path((PandaNode *)this);
-  CPT(TransformState) ts = np.get_net_transform();
+  Transform transform = np.get_net_transform();
 
-  LMatrix4 m_sync = _sync->get_mat();
-  LMatrix4 m_ts = ts->get_mat();
-
-  if (!m_sync.almost_equal(m_ts)) {
+  if (!_sync.almost_equal(transform)) {
 
     // New transform for the center
-    btTransform trans = TransformState_to_btTrans(ts);
+    btTransform trans = Transform_to_btTrans(ts);
 
     // Offset between current approx center and current initial transform
     btVector3 pos = LVecBase3_to_btVector3(this->do_get_aabb().get_approx_center());
@@ -206,8 +203,8 @@ transform_changed() {
     _soft->transform(trans);
 
     if (ts->has_scale()) {
-      btVector3 current_scale = LVecBase3_to_btVector3(_sync->get_scale());
-      btVector3 new_scale = LVecBase3_to_btVector3(ts->get_scale());
+      btVector3 current_scale = LVecBase3_to_btVector3(_sync.get_scale());
+      btVector3 new_scale = LVecBase3_to_btVector3(transform.get_scale());
 
       current_scale.setX(1.0 / current_scale.getX());
       current_scale.setY(1.0 / current_scale.getY());

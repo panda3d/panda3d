@@ -17,7 +17,7 @@
 #include "throw_event.h"
 #include "config_pgui.h"
 #include "throw_event.h"
-#include "transformState.h"
+#include "transform.h"
 #include "mouseButton.h"
 
 using std::max;
@@ -294,7 +294,7 @@ setup_scroll_bar(bool vertical, PN_stdfloat length, PN_stdfloat width, PN_stdflo
   left->setup("", bevel);
   left->set_frame(-width / 2.0f, width / 2.0f,
                   -width / 2.0f, width / 2.0f);
-  left->set_transform(TransformState::make_pos(((width - length) / 2.0f) * _axis));
+  left->set_transform(Transform::make_pos(((width - length) / 2.0f) * _axis));
   add_child(left);
   set_left_button(left);
 
@@ -302,7 +302,7 @@ setup_scroll_bar(bool vertical, PN_stdfloat length, PN_stdfloat width, PN_stdflo
   right->setup("", bevel);
   right->set_frame(-width / 2.0f, width / 2.0f,
                    -width / 2.0f, width / 2.0f);
-  right->set_transform(TransformState::make_pos(((length - width) / 2.0f) * _axis));
+  right->set_transform(Transform::make_pos(((length - width) / 2.0f) * _axis));
   add_child(right);
   set_right_button(right);
 
@@ -416,19 +416,19 @@ remanage() {
   if (_left_button != nullptr) {
     _left_button->set_frame(-width / 2.0f, width / 2.0f,
                             -width / 2.0f, width / 2.0f);
-    _left_button->set_transform(TransformState::make_pos(center + ((width - length) / 2.0f) * _axis));
+    _left_button->set_transform(Transform::make_pos(center + ((width - length) / 2.0f) * _axis));
   }
 
   if (_right_button != nullptr) {
     _right_button->set_frame(-width / 2.0f, width / 2.0f,
                              -width / 2.0f, width / 2.0f);
-    _right_button->set_transform(TransformState::make_pos(center + ((length - width) / 2.0f) * _axis));
+    _right_button->set_transform(Transform::make_pos(center + ((length - width) / 2.0f) * _axis));
   }
 
   if (_thumb_button != nullptr) {
     _thumb_button->set_frame(-width / 2.0f, width / 2.0f,
                              -width / 2.0f, width / 2.0f);
-    _thumb_button->set_transform(TransformState::make_pos(center));
+    _thumb_button->set_transform(Transform::make_pos(center));
   }
 
   recompute();
@@ -657,14 +657,12 @@ reposition() {
 
   if (_thumb_button != nullptr) {
     LPoint3 pos = (t * _range_x) * _axis + _thumb_start;
-    CPT(TransformState) transform = TransformState::make_pos(pos);
-    CPT(TransformState) orig_transform = _thumb_button->get_transform();
+    Transform transform = Transform::make_pos(pos);
+    Transform orig_transform = _thumb_button->get_transform();
 
     // It's important not to update the transform frivolously, or we'll get
     // caught in an update loop.
-    if (transform == orig_transform) {
-      // No change.
-    } else if (*transform != *orig_transform) {
+    if (transform != orig_transform) {
       _thumb_button->set_transform(transform);
     }
   }

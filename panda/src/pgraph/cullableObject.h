@@ -19,7 +19,7 @@
 #include "geom.h"
 #include "geomVertexData.h"
 #include "renderState.h"
-#include "transformState.h"
+#include "transform.h"
 #include "pointerTo.h"
 #include "geomNode.h"
 #include "cullTraverserData.h"
@@ -43,7 +43,7 @@ class EXPCL_PANDA_PGRAPH CullableObject {
 public:
   INLINE CullableObject();
   INLINE CullableObject(CPT(Geom) geom, CPT(RenderState) state,
-                        CPT(TransformState) internal_transform);
+                        const Transform &internal_transform);
 
   INLINE CullableObject(const CullableObject &copy);
   INLINE void operator = (const CullableObject &copy);
@@ -72,7 +72,7 @@ public:
   CPT(Geom) _geom;
   CPT(GeomVertexData) _munged_data;
   CPT(RenderState) _state;
-  CPT(TransformState) _internal_transform;
+  Transform _internal_transform;
   PT(CallbackObject) _draw_callback;
   CPT(InstanceList) _instances;
   int _num_instances = 1;

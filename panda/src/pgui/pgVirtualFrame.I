@@ -47,7 +47,7 @@ has_clip_frame() const {
  * all child nodes of the canvas_node.
  */
 INLINE void PGVirtualFrame::
-set_canvas_transform(const TransformState *transform) {
+set_canvas_transform(const Transform &transform) {
   LightReMutexHolder holder(_lock);
   _canvas_node->set_transform(transform);
 }
@@ -56,7 +56,7 @@ set_canvas_transform(const TransformState *transform) {
  * Returns the transform of the virtual canvas.  This transform is applied to
  * all child nodes of the canvas_node.
  */
-INLINE const TransformState *PGVirtualFrame::
+INLINE Transform PGVirtualFrame::
 get_canvas_transform() const {
   LightReMutexHolder holder(_lock);
   return _canvas_node->get_transform();

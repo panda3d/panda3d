@@ -61,9 +61,5 @@ operator < (const ObjectData &other) const {
   }
 
   // Uniform updates are actually pretty fast.
-  if (_object->_internal_transform != other._object->_internal_transform) {
-    return _object->_internal_transform < other._object->_internal_transform;
-  }
-
-  return 0;
+  return _object->_internal_transform.compare_to(other._object->_internal_transform) < 0;
 }

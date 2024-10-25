@@ -163,7 +163,7 @@ generate_screen(const NodePath &projector, const std::string &screen_name,
   // First, get the relative coordinate space of the projector.
   LMatrix4 rel_mat;
   NodePath this_np(this);
-  rel_mat = projector.get_transform(this_np)->get_mat();
+  rel_mat = projector.get_transform(this_np).get_mat();
 
   // Create a GeomNode to hold this mesh.
   PT(GeomNode) geom_node = new GeomNode(screen_name);
@@ -327,8 +327,8 @@ recompute_if_stale(const NodePath &this_np) {
 
     } else {
       // Get the relative transform to ensure it hasn't changed.
-      CPT(TransformState) transform = this_np.get_transform(_projector);
-      const LMatrix4 &top_mat = transform->get_mat();
+      Transform transform = this_np.get_transform(_projector);
+      LMatrix4 top_mat = transform.get_mat();
       if (!_rel_top_mat.almost_equal(top_mat)) {
         _rel_top_mat = top_mat;
         _computed_rel_top_mat = true;
@@ -401,8 +401,8 @@ recompute_child(const WorkingNodePath &np, LMatrix4 &rel_mat,
                 bool &computed_rel_mat) {
   PandaNode *child = np.node();
 
-  const TransformState *transform = child->get_transform();
-  if (!transform->is_identity()) {
+  Transform transform;
+  if (child->get_transform(transform)) {
     // This child node has a transform; therefore, we must recompute the
     // relative matrix from this point.
     LMatrix4 new_rel_mat;
@@ -432,7 +432,7 @@ recompute_geom_node(const WorkingNodePath &np, LMatrix4 &rel_mat,
   if (!computed_rel_mat) {
     // All right, time to compute the matrix.
     NodePath true_np = np.get_node_path();
-    rel_mat = true_np.get_transform(_projector)->get_mat();
+    rel_mat = true_np.get_transform(_projector).get_mat();
     computed_rel_mat = true;
 
     if (distort_cat.is_spam()) {
@@ -611,8 +611,8 @@ make_mesh_children(PandaNode *new_node, const WorkingNodePath &np,
     PandaNode *child = node->get_child(i);
     PandaNode *new_child;
 
-    const TransformState *transform = child->get_transform();
-    if (!transform->is_identity()) {
+    Transform transform;
+    if (child->get_transform(transform)) {
       // This child node has a transform; therefore, we must recompute the
       // relative matrix from this point.
       LMatrix4 new_rel_mat;
@@ -648,7 +648,7 @@ make_mesh_geom_node(const WorkingNodePath &np, const NodePath &camera,
   if (!computed_rel_mat) {
     // All right, time to compute the matrix.
     NodePath true_np = np.get_node_path();
-    rel_mat = true_np.get_transform(camera)->get_mat();
+    rel_mat = true_np.get_transform(camera).get_mat();
     computed_rel_mat = true;
   }
 

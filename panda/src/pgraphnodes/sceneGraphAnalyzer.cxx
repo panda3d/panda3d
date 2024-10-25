@@ -310,7 +310,8 @@ collect_statistics(PandaNode *node, bool under_instance) {
       }
     }
   }
-  if (!node->get_transform()->is_identity()) {
+  Transform transform;
+  if (node->get_transform(transform)) {
     _num_transforms++;
   }
 

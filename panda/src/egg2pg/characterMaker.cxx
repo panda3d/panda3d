@@ -24,7 +24,7 @@
 #include "characterSlider.h"
 #include "character.h"
 #include "geomNode.h"
-#include "transformState.h"
+#include "transform.h"
 #include "eggSurface.h"
 #include "eggCurve.h"
 #include "modelNode.h"
@@ -314,7 +314,7 @@ parent_joint_nodes(PartGroup *part) {
     if (joint_node != nullptr) {
       _character_node->add_child(joint_node);
       joint->add_net_transform(joint_node);
-      joint_node->set_transform(TransformState::make_mat(joint->_net_transform));
+      joint_node->set_transform(Transform::make_mat(joint->_net_transform));
     }
   }
 

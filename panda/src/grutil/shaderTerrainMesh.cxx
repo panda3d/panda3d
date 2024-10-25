@@ -478,7 +478,7 @@ void ShaderTerrainMesh::add_for_draw(CullTraverser *trav, CullTraverserData &dat
   }
 
   // Get transform and render state for this render pass
-  CPT(TransformState) modelview_transform = data.get_internal_transform(trav);
+  Transform modelview_transform = data.get_internal_transform(trav);
   CPT(RenderState) state = data._state->compose(get_state());
 
   // Store a handle to the scene setup
@@ -492,12 +492,12 @@ void ShaderTerrainMesh::add_for_draw(CullTraverser *trav, CullTraverserData &dat
   PT(BoundingVolume) cam_bounds = scene->get_cull_bounds();
 
   // Transform the camera bounds with the main camera transform
-  DCAST(GeometricBoundingVolume, cam_bounds)->xform(scene->get_camera_transform()->get_mat());
+  DCAST(GeometricBoundingVolume, cam_bounds)->xform(scene->get_camera_transform().get_mat());
 
   TraversalData traversal_data;
   traversal_data.cam_bounds = cam_bounds;
-  traversal_data.model_mat = get_transform()->get_mat();
-  traversal_data.mvp_mat = modelview_transform->get_mat() * projection_mat;
+  traversal_data.model_mat = get_transform().get_mat();
+  traversal_data.mvp_mat = modelview_transform.get_mat() * projection_mat;
   traversal_data.emitted_chunks = 0;
   traversal_data.storage_ptr = (ChunkDataEntry*)_data_texture->modify_ram_image().p();
   traversal_data.screen_size.set(scene->get_viewport_width(), scene->get_viewport_height());
@@ -568,16 +568,15 @@ void ShaderTerrainMesh::add_for_draw(CullTraverser *trav, CullTraverserData &dat
  * over several nodes, so it may enter with min_point, max_point, and
  * found_any already set.
  */
-CPT(TransformState) ShaderTerrainMesh::
+Transform ShaderTerrainMesh::
 calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point, bool &found_any,
-                  const TransformState *transform, Thread *current_thread) const {
-  CPT(TransformState) next_transform =
+                  const Transform &transform, Thread *current_thread) const {
+  Transform next_transform =
     PandaNode::calc_tight_bounds(min_point, max_point, found_any, transform,
                                  current_thread);
 
-  const LMatrix4 &mat = next_transform->get_mat();
-  LPoint3 terrain_min_point = LPoint3(0, 0, 0) * mat;
-  LPoint3 terrain_max_point = LPoint3(1, 1, 1) * mat;
+  LPoint3 terrain_min_point = next_transform.xform_point(LPoint3(0, 0, 0));
+  LPoint3 terrain_max_point = next_transform.xform_point(LPoint3(1, 1, 1));
   if (!found_any) {
     min_point = terrain_min_point;
     max_point = terrain_max_point;
@@ -780,5 +779,5 @@ LPoint3 ShaderTerrainMesh::uv_to_world(const LTexCoord& coord) const {
     return LPoint3(0);
   }
   LPoint3 unit_point(coord.get_x(), coord.get_y(), result.get_x());
-  return get_transform()->get_mat().xform_point_general(unit_point);
+  return get_transform().xform_point(unit_point);
 }

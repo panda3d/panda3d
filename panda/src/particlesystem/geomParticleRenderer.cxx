@@ -14,7 +14,7 @@
 #include "geomParticleRenderer.h"
 #include "baseParticle.h"
 
-#include "transformState.h"
+#include "transform.h"
 #include "colorScaleAttrib.h"
 #include "colorAttrib.h"
 #include "pStatTimer.h"
@@ -231,7 +231,7 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
         }
       }
 
-      cur_node->set_transform(TransformState::make_pos_quat_scale
+      cur_node->set_transform(Transform::make_pos_quat_scale
                               (cur_particle->get_position(),
                                cur_particle->get_orientation(),
                                LVecBase3(current_x_scale, current_y_scale, current_z_scale)));

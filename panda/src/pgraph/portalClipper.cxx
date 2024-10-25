@@ -216,10 +216,9 @@ prepare_portal(const NodePath &node_path)
   }
 
   // Get the camera transformation matrix
-  CPT(TransformState) ctransform = node_path.get_transform(_scene_setup->get_cull_center());
-  // CPT(TransformState) ctransform =
-  // node_path.get_transform(_scene_setup->get_camera_path());
-  LMatrix4 cmat = ctransform->get_mat();
+  Transform ctransform = node_path.get_transform(_scene_setup->get_cull_center());
+  //Transform ctransform = node_path.get_transform(_scene_setup->get_camera_path());
+  LMatrix4 cmat = ctransform.get_mat();
   if (portal_cat.is_spam()) {
     portal_cat.spam() << cmat << endl;
   }

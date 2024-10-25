@@ -249,10 +249,11 @@ handle_entries() {
           #endif
 
           // This is the part where the node actually gets moved:
-          CPT(TransformState) trans = def._target.get_transform();
-          LVecBase3 pos = trans->get_pos();
-          pos += net_shove * trans->get_mat();
-          def._target.set_transform(trans->set_pos(pos));
+          Transform trans = def._target.get_transform();
+          LVecBase3 pos = trans.get_pos();
+          pos += trans.xform_vec(net_shove);
+          trans.set_pos(pos);
+          def._target.set_transform(trans);
           def.updated_transform();
 
           // We call this to allow derived classes to do other fix-ups as they

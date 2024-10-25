@@ -921,17 +921,16 @@ prepare_display_region(DisplayRegionPipelineReader *dr) {
  * this gsg.  Note that the projection matrix depends a lot upon the
  * coordinate system of the rendering API.
  *
- * The return value is a TransformState if the lens is acceptable, NULL if it
- * is not.
+ * The return value is true if the lens is acceptable, false if it is not.
  */
-CPT(TransformState) DXGraphicsStateGuardian9::
-calc_projection_mat(const Lens *lens) {
+bool DXGraphicsStateGuardian9::
+calc_projection_mat(LMatrix4 &result, const Lens *lens) {
   if (lens == nullptr) {
-    return nullptr;
+    return false;
   }
 
   if (!lens->is_linear()) {
-    return nullptr;
+    return false;
   }
 
   // DirectX also uses a Z range of 0 to 1, whereas the Panda convention is
@@ -943,7 +942,7 @@ calc_projection_mat(const Lens *lens) {
      0, 0, 0.5, 0,
      0, 0, 0.5, 1);
 
-  LMatrix4 result =
+  result =
     LMatrix4::convert_mat(CS_yup_left, _current_lens->get_coordinate_system()) *
     lens->get_projection_mat(_current_stereo_channel) *
     rescale_mat;
@@ -954,7 +953,7 @@ calc_projection_mat(const Lens *lens) {
     result *= LMatrix4::scale_mat(1.0f, -1.0f, 1.0f);
   }
 
-  return TransformState::make_mat(result);
+  return true;
 }
 
 /**
@@ -2281,9 +2280,9 @@ reset() {
   HRESULT hr;
 
   // make sure gsg passes all current state down to us
-  // set_state_and_transform(RenderState::make_empty(),
-  // TransformState::make_identity()); want gsg to pass all state settings
-  // down so any non-matching defaults we set here get overwritten
+  //set_state_and_transform(RenderState::make_empty(), Transform::make_identity());
+  // want gsg to pass all state settings down so any non-matching defaults
+  // we set here get overwritten
 
   nassertv(_screen->_d3d9 != nullptr);
 
@@ -2803,7 +2802,7 @@ apply_fog(Fog *fog) {
  */
 void DXGraphicsStateGuardian9::
 do_issue_transform() {
-  const TransformState *transform = _internal_transform;
+  const Transform &transform = _internal_transform;
   DO_PSTATS_STUFF(_transform_state_pcollector.add_level(1));
 
   if (_current_shader_context) {
@@ -2812,13 +2811,13 @@ do_issue_transform() {
 
 // ??? NO NEED TO SET THE D3D TRANSFORM VIA SetTransform SINCE THE TRANSFORM
 // IS ONLY USED IN THE SHADER
-    LMatrix4f mat = LCAST(float, transform->get_mat());
+    LMatrix4f mat = LCAST(float, transform.get_mat());
     const D3DMATRIX *d3d_mat = (const D3DMATRIX *)mat.get_data();
     _d3d_device->SetTransform(D3DTS_WORLD, d3d_mat);
 
   }
   else {
-    LMatrix4f mat = LCAST(float, transform->get_mat());
+    LMatrix4f mat = LCAST(float, transform.get_mat());
     const D3DMATRIX *d3d_mat = (const D3DMATRIX *)mat.get_data();
     _d3d_device->SetTransform(D3DTS_WORLD, d3d_mat);
 
@@ -3117,8 +3116,7 @@ do_issue_shade_model() {
  * _target.
  */
 void DXGraphicsStateGuardian9::
-set_state_and_transform(const RenderState *target,
-                        const TransformState *transform) {
+set_state_and_transform(const RenderState *target, const Transform &transform) {
 #ifndef NDEBUG
   if (gsg_cat.is_spam()) {
     gsg_cat.spam() << "Setting GSG state to " << (void *)target << ":\n";

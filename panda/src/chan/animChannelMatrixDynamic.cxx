@@ -41,7 +41,7 @@ AnimChannelMatrixDynamic(AnimGroup *parent, const AnimChannelMatrixDynamic &copy
   AnimChannelMatrix(parent, copy),
   _value_node(copy._value_node),
   _value(copy._value),
-  _last_value(nullptr)
+  _last_value(Transform::make_identity())
 {
 }
 
@@ -52,8 +52,8 @@ AnimChannelMatrixDynamic::
 AnimChannelMatrixDynamic(const std::string &name)
   : AnimChannelMatrix(name)
 {
-  _value = TransformState::make_identity();
-  _last_value = nullptr;  // This is impossible; thus, has_changed() will
+  _value = Transform::make_identity();
+  _last_value = Transform::make_identity();  // This is impossible; thus, has_changed() will
                        // always return true the first time.
 }
 
@@ -80,7 +80,7 @@ get_value(int, LMatrix4 &mat) {
   if (_value_node != nullptr) {
     _value = _value_node->get_transform();
   }
-  mat = _value->get_mat();
+  mat = _value.get_mat();
 }
 
 /**
@@ -92,12 +92,12 @@ get_value_no_scale_shear(int, LMatrix4 &mat) {
   if (_value_node != nullptr) {
     _value = _value_node->get_transform();
   }
-  if (_value->has_scale() || _value->has_shear()) {
+  //if (_value->has_scale() || _value->has_shear()) {
     compose_matrix(mat, LVecBase3(1.0f, 1.0f, 1.0f),
-                   _value->get_hpr(), _value->get_pos());
-  } else {
-    mat = _value->get_mat();
-  }
+                   _value.get_hpr(), _value.get_pos());
+  //} else {
+  //  mat = _value.get_mat();
+  //}
 }
 
 /**
@@ -108,7 +108,7 @@ get_scale(int, LVecBase3 &scale) {
   if (_value_node != nullptr) {
     _value = _value_node->get_transform();
   }
-  scale = _value->get_scale();
+  scale = _value.get_scale();
 }
 
 /**
@@ -120,7 +120,7 @@ get_hpr(int, LVecBase3 &hpr) {
   if (_value_node != nullptr) {
     _value = _value_node->get_transform();
   }
-  hpr = _value->get_hpr();
+  hpr = _value.get_hpr();
 }
 
 /**
@@ -133,7 +133,7 @@ get_quat(int, LQuaternion &quat) {
   if (_value_node != nullptr) {
     _value = _value_node->get_transform();
   }
-  quat = _value->get_quat();
+  quat = _value.get_quat();
 }
 
 /**
@@ -145,7 +145,7 @@ get_pos(int, LVecBase3 &pos) {
   if (_value_node != nullptr) {
     _value = _value_node->get_transform();
   }
-  pos = _value->get_pos();
+  pos = _value.get_pos();
 }
 
 /**
@@ -157,7 +157,7 @@ get_shear(int, LVecBase3 &shear) {
   if (_value_node != nullptr) {
     _value = _value_node->get_transform();
   }
-  shear = _value->get_shear();
+  shear = _value.get_shear();
 }
 
 /**
@@ -165,16 +165,16 @@ get_shear(int, LVecBase3 &shear) {
  */
 void AnimChannelMatrixDynamic::
 set_value(const LMatrix4 &value) {
-  _value = TransformState::make_mat(value);
+  _value = Transform::make_mat(value);
   _value_node.clear();
 }
 
 /**
- * Explicitly sets the matrix value, using the indicated TransformState object
- * as a convenience.
+ * Explicitly sets the matrix value, using the indicated Transform object as a
+ * convenience.
  */
 void AnimChannelMatrixDynamic::
-set_value(const TransformState *value) {
+set_value(const Transform &value) {
   _value = value;
   _value_node.clear();
 }
@@ -210,7 +210,7 @@ void AnimChannelMatrixDynamic::
 write_datagram(BamWriter *manager, Datagram &dg) {
   AnimChannelMatrix::write_datagram(manager, dg);
   manager->write_pointer(dg, _value_node);
-  manager->write_pointer(dg, _value);
+  manager->write_pointer(dg, TransformState::make_mat(_value.get_mat()));
 }
 
 /**
@@ -223,7 +223,9 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
 
   // Get the _value_node and _value pointers.
   _value_node = DCAST(PandaNode, p_list[pi++]);
-  _value = DCAST(TransformState, p_list[pi++]);
+
+  CPT(TransformState) value = DCAST(TransformState, p_list[pi++]);
+  _value = Transform::make_mat(value->get_mat());
 
   return pi;
 }

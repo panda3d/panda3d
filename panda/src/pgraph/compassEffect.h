@@ -72,12 +72,12 @@ public:
 
   virtual bool has_cull_callback() const;
   virtual void cull_callback(CullTraverser *trav, CullTraverserData &data,
-                             CPT(TransformState) &node_transform,
+                             Transform &node_transform,
                              CPT(RenderState) &node_state) const;
 
   virtual bool has_adjust_transform() const;
-  virtual void adjust_transform(CPT(TransformState) &net_transform,
-                                CPT(TransformState) &node_transform,
+  virtual void adjust_transform(Transform &net_transform,
+                                Transform &node_transform,
                                 const PandaNode *node) const;
 
 protected:

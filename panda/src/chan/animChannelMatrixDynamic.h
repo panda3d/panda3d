@@ -51,10 +51,10 @@ public:
 
 PUBLISHED:
   void set_value(const LMatrix4 &value);
-  void set_value(const TransformState *value);
+  void set_value(const Transform &value);
   void set_value_node(PandaNode *node);
 
-  INLINE const TransformState *get_value_transform() const;
+  INLINE const Transform &get_value_transform() const;
   INLINE PandaNode *get_value_node() const;
 
   MAKE_PROPERTY(value_node, get_value_node, set_value_node);
@@ -69,8 +69,8 @@ private:
   // frame.
   PT(PandaNode) _value_node;
 
-  CPT(TransformState) _value;
-  CPT(TransformState) _last_value;
+  Transform _value;
+  Transform _last_value;
 
 public:
   static void register_with_read_factory();

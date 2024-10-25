@@ -133,20 +133,18 @@ output(std::ostream &out) const {
  * node's position within the scene graph (if linear fog is in effect).
  */
 void Fog::
-adjust_to_camera(const TransformState *camera_transform) {
+adjust_to_camera(const Transform &camera_transform) {
   LVector3 forward = LVector3::forward();
 
   if (get_num_parents() != 0) {
     // Linear fog is relative to the fog's net transform in the scene graph.
     NodePath this_np(this);
 
-    CPT(TransformState) rel_transform =
-      camera_transform->invert_compose(this_np.get_net_transform());
-
-    const LMatrix4 &mat = rel_transform->get_mat();
+    Transform rel_transform =
+      camera_transform.invert_compose(this_np.get_net_transform());
 
     // How far out of whack are we?
-    LVector3 fog_vector = (_linear_opaque_point - _linear_onset_point) * mat;
+    LVector3 fog_vector = rel_transform.xform_point(_linear_opaque_point - _linear_onset_point);
     fog_vector.normalize();
     PN_stdfloat cosa = fog_vector.dot(forward);
     if (cabs(cosa) < _linear_fallback_cosa) {
@@ -155,8 +153,8 @@ adjust_to_camera(const TransformState *camera_transform) {
       _transformed_opaque = _linear_fallback_opaque;
 
     } else {
-      _transformed_onset = forward.dot(_linear_onset_point * mat);
-      _transformed_opaque = forward.dot(_linear_opaque_point * mat);
+      _transformed_onset = forward.dot(rel_transform.xform_point(_linear_onset_point));
+      _transformed_opaque = forward.dot(rel_transform.xform_point(_linear_opaque_point));
     }
 
   } else {

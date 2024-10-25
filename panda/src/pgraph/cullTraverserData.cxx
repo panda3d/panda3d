@@ -48,7 +48,7 @@ apply_transform_and_state(CullTraverser *trav) {
     apply_transform(_node_reader.get_transform());
   } else {
     // The cull callback may decide to modify the node_transform.
-    CPT(TransformState) node_transform = _node_reader.get_transform();
+    Transform node_transform = _node_reader.get_transform();
     node_effects->cull_callback(trav, *this, node_transform, node_state);
     apply_transform(node_transform);
 
@@ -94,44 +94,35 @@ apply_transform_and_state(CullTraverser *trav) {
  * Applies the indicated transform changes onto the current data.
  */
 void CullTraverserData::
-apply_transform(const TransformState *node_transform) {
-  if (!node_transform->is_identity()) {
+apply_transform(const Transform &node_transform) {
+  if (!node_transform.is_identity()) {
     if (_instances != nullptr) {
       InstanceList *instances = new InstanceList(*_instances);
       for (InstanceList::Instance &instance : *instances) {
-        instance.set_transform(instance.get_transform()->compose(node_transform));
+        instance.set_transform(instance.get_transform().compose(node_transform));
       }
       _instances = std::move(instances);
       return;
     }
 
-    _net_transform = _net_transform->compose(node_transform);
+    _net_transform = _net_transform.compose(node_transform);
 
     if (_view_frustum != nullptr || _cull_planes != nullptr) {
       // We need to move the viewing frustums into the node's coordinate space
       // by applying the node's inverse transform.
-      const LMatrix4 *inverse_mat = node_transform->get_inverse_mat();
-      if (inverse_mat != nullptr) {
-        // Copy the bounding volumes for the frustums so we can transform
-        // them.
-        if (_view_frustum != nullptr) {
-          _view_frustum = _view_frustum->make_copy()->as_geometric_bounding_volume();
-          nassertv(_view_frustum != nullptr);
+      LMatrix4 inverse_mat = node_transform.get_inverse().get_mat();
 
-          _view_frustum->xform(*inverse_mat);
-        }
+      // Copy the bounding volumes for the frustums so we can transform
+      // them.
+      if (_view_frustum != nullptr) {
+        _view_frustum = _view_frustum->make_copy()->as_geometric_bounding_volume();
+        nassertv(_view_frustum != nullptr);
 
-        if (_cull_planes != nullptr) {
-          _cull_planes = _cull_planes->xform(*inverse_mat);
-        }
+        _view_frustum->xform(inverse_mat);
       }
-      else {
-        // But we can't invert a singular transform!  Instead of trying, we'll
-        // just give up on frustum culling from this point down.
-        pgraph_cat.warning()
-          << "Singular transformation detected on node: " << get_node_path() << "\n";
-        _view_frustum = nullptr;
-        _cull_planes = nullptr;
+
+      if (_cull_planes != nullptr) {
+        _cull_planes = _cull_planes->xform(inverse_mat);
       }
     }
   }
@@ -142,26 +133,22 @@ apply_transform(const TransformState *node_transform) {
  * in view if first transformed by the given transform, false otherwise.
  */
 bool CullTraverserData::
-is_instance_in_view(const TransformState *instance_transform, const DrawMask &camera_mask) const {
+is_instance_in_view(const Transform &instance_transform, const DrawMask &camera_mask) const {
   PT(GeometricBoundingVolume) view_frustum_p;
   const GeometricBoundingVolume *view_frustum = nullptr;
 
   if (_view_frustum != nullptr) {
-    if (!instance_transform->is_identity()) {
+    if (!instance_transform.is_identity()) {
       // We need to move the viewing frustums into the node's coordinate space
       // by applying the node's inverse transform.
-      const LMatrix4 *inverse_mat = instance_transform->get_inverse_mat();
-      if (inverse_mat != nullptr) {
-        // Copy the bounding volumes for the frustums so we can transform them.
-        view_frustum_p = _view_frustum->make_copy()->as_geometric_bounding_volume();
-        nassertr(view_frustum_p != nullptr, false);
+      LMatrix4 inverse_mat = instance_transform.get_inverse().get_mat();
 
-        view_frustum_p->xform(*inverse_mat);
-        view_frustum = view_frustum_p;
-      } else {
-        // Don't render instances with a singular transformation.
-        return false;
-      }
+      // Copy the bounding volumes for the frustums so we can transform them.
+      view_frustum_p = _view_frustum->make_copy()->as_geometric_bounding_volume();
+      nassertr(view_frustum_p != nullptr, false);
+
+      view_frustum_p->xform(inverse_mat);
+      view_frustum = view_frustum_p;
     } else {
       view_frustum = _view_frustum;
     }

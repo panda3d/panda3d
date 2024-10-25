@@ -21,11 +21,11 @@
 #include "pointerTo.h"
 #include "luse.h"
 #include "geomNode.h"
+#include "transform.h"
 
 class CullableObject;
 class GraphicsStateGuardianBase;
 class SceneSetup;
-class TransformState;
 class RenderState;
 class PandaNode;
 
@@ -84,7 +84,7 @@ protected:
 
   private:
     int _object_index;
-    CPT(TransformState) _current_transform;
+    Transform _current_transform;
     CPT(RenderState) _current_state;
     PT(PandaNode) _root_node;
     PT(GeomNode) _current_node;

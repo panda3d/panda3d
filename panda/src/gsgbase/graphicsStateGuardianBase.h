@@ -63,7 +63,7 @@ class Shader;
 class ShaderContext;
 class ShaderBuffer;
 class RenderState;
-class TransformState;
+class Transform;
 class Material;
 
 class ColorScaleAttrib;
@@ -180,7 +180,7 @@ public:
                                          Thread *current_thread)=0;
 
   virtual void set_state_and_transform(const RenderState *state,
-                                       const TransformState *transform)=0;
+                                       const Transform &transform)=0;
 
   // This function may only be called during a render traversal; it will
   // compute the distance to the indicated point, assumed to be in eye

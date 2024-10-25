@@ -5,7 +5,7 @@ import pytest
 @pytest.mark.parametrize("coordsys", (core.CS_zup_right, core.CS_yup_right, core.CS_zup_left, core.CS_yup_left))
 def test_compose_matrix(coordsys):
     scale = core.LVecBase3(1.2, 0.5, 2)
-    hpr = core.LVecBase3(45, -90, 12.5)
+    hpr = core.LVecBase3(60, -80, 12.5)
     shear = core.LVecBase3(0, 0, 0)
 
     mat = core.LMatrix3()

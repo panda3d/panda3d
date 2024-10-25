@@ -4184,17 +4184,16 @@ clear_before_callback() {
  * this gsg.  Note that the projection matrix depends a lot upon the
  * coordinate system of the rendering API.
  *
- * The return value is a TransformState if the lens is acceptable, NULL if it
- * is not.
+ * The return value is true if the lens is acceptable, false if it is not.
  */
-CPT(TransformState) CLP(GraphicsStateGuardian)::
-calc_projection_mat(const Lens *lens) {
+bool CLP(GraphicsStateGuardian)::
+calc_projection_mat(LMatrix4 &result, const Lens *lens) {
   if (lens == nullptr) {
-    return nullptr;
+    return false;
   }
 
   if (!lens->is_linear()) {
-    return nullptr;
+    return false;
   }
 
   // The projection matrix must always be right-handed Y-up, even if our
@@ -4204,7 +4203,7 @@ calc_projection_mat(const Lens *lens) {
   // coordinate system, we'll use a Y-up projection matrix, and store the
   // conversion to our coordinate system of choice in the modelview matrix.
 
-  LMatrix4 result =
+  result =
     LMatrix4::convert_mat(_internal_coordinate_system,
                           lens->get_coordinate_system()) *
     lens->get_projection_mat(_current_stereo_channel);
@@ -4228,7 +4227,7 @@ calc_projection_mat(const Lens *lens) {
     result *= LMatrix4::scale_mat(1.0f, -1.0f, 1.0f);
   }
 
-  return TransformState::make_mat(result);
+  return true;
 }
 
 /**
@@ -4245,11 +4244,11 @@ prepare_lens() {
   if (has_fixed_function_pipeline()) {
     if (GLCAT.is_spam()) {
       GLCAT.spam()
-        << "glMatrixMode(GL_PROJECTION): " << _projection_mat->get_mat() << endl;
+        << "glMatrixMode(GL_PROJECTION): " << _projection_mat << endl;
     }
 
     glMatrixMode(GL_PROJECTION);
-    call_glLoadMatrix(_projection_mat->get_mat());
+    call_glLoadMatrix(_projection_mat);
     report_my_gl_errors();
 
     do_point_size();
@@ -6206,7 +6205,7 @@ end_draw_primitives() {
 #ifdef SUPPORT_FIXED_FUNCTION
   if (has_fixed_function_pipeline() && _transform_stale) {
     glMatrixMode(GL_MODELVIEW);
-    call_glLoadMatrix(_internal_transform->get_mat());
+    call_glLoadMatrix(_internal_transform.get_mat());
   }
 
   if (has_fixed_function_pipeline() && _data_reader->is_vertex_transformed()) {
@@ -8374,15 +8373,15 @@ do_issue_transform() {
   if (has_fixed_function_pipeline()) {
     // OpenGL ES 2 does not support glLoadMatrix.
 
-    const TransformState *transform = _internal_transform;
+    const Transform &transform = _internal_transform;
     if (GLCAT.is_spam()) {
       GLCAT.spam()
-        << "glLoadMatrix(GL_MODELVIEW): " << transform->get_mat() << endl;
+        << "glLoadMatrix(GL_MODELVIEW): " << transform.get_mat() << endl;
     }
 
     DO_PSTATS_STUFF(_transform_state_pcollector.add_level(1));
     glMatrixMode(GL_MODELVIEW);
-    call_glLoadMatrix(transform->get_mat());
+    call_glLoadMatrix(transform.get_mat());
   }
 #endif
   _transform_stale = false;
@@ -9198,8 +9197,8 @@ bind_light(PointLight *light_obj, const NodePath &light, int light_id) {
 
   // Position needs to specify x, y, z, and w w == 1 implies non-infinite
   // position
-  CPT(TransformState) transform = light.get_transform(_scene_setup->get_scene_root().get_parent());
-  LPoint3 pos = light_obj->get_point() * transform->get_mat();
+  Transform transform = light.get_transform(_scene_setup->get_scene_root().get_parent());
+  LPoint3 pos = transform.xform_point(light_obj->get_point());
 
   LPoint4 fpos(pos[0], pos[1], pos[2], 1.0f);
   call_glLightfv(id, GL_POSITION, fpos);
@@ -9240,8 +9239,8 @@ bind_light(DirectionalLight *light_obj, const NodePath &light, int light_id) {
   DirectionalLightFrameData &fdata = (*lookup.first).second;
   if (lookup.second) {
     // The light was not computed yet this frame.  Compute it now.
-    CPT(TransformState) transform = light.get_transform(_scene_setup->get_scene_root().get_parent());
-    LVector3 dir = light_obj->get_direction() * transform->get_mat();
+    Transform transform = light.get_transform(_scene_setup->get_scene_root().get_parent());
+    LVector3 dir = transform.xform_vec(light_obj->get_direction());
     fdata._neg_dir.set(-dir[0], -dir[1], -dir[2], 0);
   }
 
@@ -9300,10 +9299,9 @@ bind_light(Spotlight *light_obj, const NodePath &light, int light_id) {
 
   // Position needs to specify x, y, z, and w w == 1 implies non-infinite
   // position
-  CPT(TransformState) transform = light.get_transform(_scene_setup->get_scene_root().get_parent());
-  const LMatrix4 &light_mat = transform->get_mat();
-  LPoint3 pos = lens->get_nodal_point() * light_mat;
-  LVector3 dir = lens->get_view_vector() * light_mat;
+  Transform transform = light.get_transform(_scene_setup->get_scene_root().get_parent());
+  LPoint3 pos = transform.xform_point(lens->get_nodal_point());
+  LVector3 dir = transform.xform_vec(lens->get_view_vector());
 
   LPoint4 fpos(pos[0], pos[1], pos[2], 1.0f);
   call_glLightfv(id, GL_POSITION, fpos);
@@ -12186,12 +12184,12 @@ begin_bind_lights() {
   // to the root, by composing with the matrix computed by
   // _internal_transform->invert_compose(render_transform). But I think
   // loading a completely new matrix is simpler.)
-  CPT(TransformState) render_transform =
-    _cs_transform->compose(_scene_setup->get_world_transform());
+  Transform render_transform =
+    _cs_transform.compose(_scene_setup->get_world_transform());
 
   glMatrixMode(GL_MODELVIEW);
   glPushMatrix();
-  call_glLoadMatrix(render_transform->get_mat());
+  call_glLoadMatrix(render_transform.get_mat());
 }
 #endif  // SUPPORT_FIXED_FUNCTION
 
@@ -12253,12 +12251,12 @@ begin_bind_clip_planes() {
   // relative to the root, by composing with the matrix computed by
   // _internal_transform->invert_compose(render_transform). But I think
   // loading a completely new matrix is simpler.)
-  CPT(TransformState) render_transform =
-    _cs_transform->compose(_scene_setup->get_world_transform());
+  Transform render_transform =
+    _cs_transform.compose(_scene_setup->get_world_transform());
 
   glMatrixMode(GL_MODELVIEW);
   glPushMatrix();
-  call_glLoadMatrix(render_transform->get_mat());
+  call_glLoadMatrix(render_transform.get_mat());
 }
 #endif  // SUPPORT_FIXED_FUNCTION
 
@@ -12274,10 +12272,10 @@ bind_clip_plane(const NodePath &plane, int plane_id) {
 
   GLenum id = get_clip_plane_id(plane_id);
 
-  CPT(TransformState) transform = plane.get_transform(_scene_setup->get_scene_root().get_parent());
+  Transform transform = plane.get_transform(_scene_setup->get_scene_root().get_parent());
   const PlaneNode *plane_node;
   DCAST_INTO_V(plane_node, plane.node());
-  LPlane xformed_plane = plane_node->get_plane() * transform->get_mat();
+  LPlane xformed_plane = plane_node->get_plane() * transform.get_mat();
 
 #ifdef OPENGLES
   // OpenGL ES uses a single-precision call.
@@ -12322,8 +12320,7 @@ end_bind_clip_planes() {
  * _target.
  */
 void CLP(GraphicsStateGuardian)::
-set_state_and_transform(const RenderState *target,
-                        const TransformState *transform) {
+set_state_and_transform(const RenderState *target, const Transform &transform) {
   report_my_gl_errors();
 #ifndef NDEBUG
   if (gsg_cat.is_spam()) {
@@ -13352,7 +13349,7 @@ do_issue_tex_gen() {
         // We need to rotate the normals out of GL's coordinate system and
         // into the user's coordinate system.  We do this by composing a
         // transform onto the texture matrix.
-        LMatrix4 mat = _inv_cs_transform->get_mat();
+        LMatrix4 mat = _inv_cs_transform.get_mat();
         mat.set_row(3, LVecBase3(0.0f, 0.0f, 0.0f));
         glMatrixMode(GL_TEXTURE);
         GLPf(MultMatrix)(mat.get_data());
@@ -13377,9 +13374,9 @@ do_issue_tex_gen() {
         // matrix.  Unlike M_world_position, we can't achieve this effect by
         // monkeying with the modelview transform, since the current modelview
         // doesn't affect GL_REFLECTION_MAP.
-        CPT(TransformState) camera_transform = _scene_setup->get_camera_transform()->compose(_inv_cs_transform);
+        Transform camera_transform = _scene_setup->get_camera_transform().compose(_inv_cs_transform);
 
-        LMatrix4 mat = camera_transform->get_mat();
+        LMatrix4 mat = camera_transform.get_mat();
         mat.set_row(3, LVecBase3(0.0f, 0.0f, 0.0f));
         glMatrixMode(GL_TEXTURE);
         GLPf(MultMatrix)(mat.get_data());
@@ -13402,7 +13399,7 @@ do_issue_tex_gen() {
         // We need to rotate the normals out of GL's coordinate system and
         // into the user's coordinate system.  We do this by composing a
         // transform onto the texture matrix.
-        LMatrix4 mat = _inv_cs_transform->get_mat();
+        LMatrix4 mat = _inv_cs_transform.get_mat();
         mat.set_row(3, LVecBase3(0.0f, 0.0f, 0.0f));
         glMatrixMode(GL_TEXTURE);
         GLPf(MultMatrix)(mat.get_data());
@@ -13427,9 +13424,9 @@ do_issue_tex_gen() {
         // matrix.  Unlike M_world_position, we can't achieve this effect by
         // monkeying with the modelview transform, since the current modelview
         // doesn't affect GL_NORMAL_MAP.
-        CPT(TransformState) camera_transform = _scene_setup->get_camera_transform()->compose(_inv_cs_transform);
+        Transform camera_transform = _scene_setup->get_camera_transform().compose(_inv_cs_transform);
 
-        LMatrix4 mat = camera_transform->get_mat();
+        LMatrix4 mat = camera_transform.get_mat();
         mat.set_row(3, LVecBase3(0.0f, 0.0f, 0.0f));
         glMatrixMode(GL_TEXTURE);
         GLPf(MultMatrix)(mat.get_data());
@@ -13452,7 +13449,7 @@ do_issue_tex_gen() {
       // coordinate-system transform.
       glMatrixMode(GL_MODELVIEW);
       glPushMatrix();
-      call_glLoadMatrix(_cs_transform->get_mat());
+      call_glLoadMatrix(_cs_transform.get_mat());
 
       glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
       glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
@@ -13480,8 +13477,8 @@ do_issue_tex_gen() {
       {
         glMatrixMode(GL_MODELVIEW);
         glPushMatrix();
-        CPT(TransformState) root_transform = _cs_transform->compose(_scene_setup->get_world_transform());
-        call_glLoadMatrix(root_transform->get_mat());
+        Transform root_transform = _cs_transform.compose(_scene_setup->get_world_transform());
+        call_glLoadMatrix(root_transform.get_mat());
         glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
         glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
         glTexGeni(GL_R, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
@@ -15871,8 +15868,8 @@ do_point_size() {
     // To arrange that, we need to figure out the appropriate scaling factor
     // based on the current viewport and projection matrix.
     LVector3 height(0.0f, _point_size, 1.0f);
-    height = height * _projection_mat->get_mat();
-    height = height * _internal_transform->get_scale()[1];
+    height = height * _projection_mat;
+    height = height * _internal_transform.get_scale()[1];
     PN_stdfloat s = height[1] * _viewport_height / _point_size;
 
     if (_current_lens->is_orthographic()) {

@@ -175,15 +175,15 @@ birth_particle() {
   NodePath physical_np = get_physical_node_path();
   NodePath render_np = _renderer->get_render_node_path();
 
-  CPT(TransformState) transform = physical_np.get_transform(render_np);
-  const LMatrix4 &birth_to_render_xform = transform->get_mat();
-  world_pos = new_pos * birth_to_render_xform;
+  Transform transform = physical_np.get_transform(render_np);
+  world_pos = transform.xform_point(new_pos);
 
   // cout << "New particle at " << world_pos << endl;
 
   // possibly transform the initial velocity as well.
-  if (_local_velocity_flag == false)
-    new_vel = new_vel * birth_to_render_xform;
+  if (!_local_velocity_flag) {
+    new_vel = transform.xform_vec(new_vel);
+  }
 
   bp->reset_position(world_pos/* + (NORMALIZED_RAND() * new_vel)*/);
   bp->set_velocity(new_vel);
@@ -270,13 +270,10 @@ spawn_child_system(BaseParticle *bp) {
   // child.
   parent->add_child(new_pn);
 
-  CPT(TransformState) transform = physical_np.get_transform(parent_np);
-  const LMatrix4 &old_system_to_parent_xform = transform->get_mat();
+  Transform transform = physical_np.get_transform(parent_np);
+  LMatrix4 child_space_xform = transform.get_mat() * bp->get_lcs();
 
-  LMatrix4 child_space_xform = old_system_to_parent_xform *
-    bp->get_lcs();
-
-  new_pn->set_transform(TransformState::make_mat(child_space_xform));
+  new_pn->set_transform(Transform::make_mat(child_space_xform));
 
   // tack the new system onto the managers
   _manager->attach_particlesystem(new_ps);

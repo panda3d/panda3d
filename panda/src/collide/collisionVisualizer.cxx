@@ -131,9 +131,9 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
     // We don't want to inherit the transform from above!  We ignore whatever
     // transforms were above the CollisionVisualizer node; it always renders
     // its objects according to their appropriate net transform.
-    xform_data._net_transform = TransformState::make_identity();
+    xform_data._net_transform = Transform::make_identity();
     xform_data._view_frustum = trav->get_view_frustum();
-    xform_data.apply_transform(net_transform);
+    xform_data.apply_transform(Transform::make_mat(net_transform->get_mat()));
 
     // Draw all the collision solids.
     Solids::const_iterator si;
@@ -284,7 +284,7 @@ collision_tested(const CollisionEntry &entry, bool detected) {
   CollisionRecorder::collision_tested(entry, detected);
 
   NodePath node_path = entry.get_into_node_path();
-  CPT(TransformState) net_transform = node_path.get_net_transform();
+  CPT(TransformState) net_transform = TransformState::make_mat(node_path.get_net_transform().get_mat());
   CPT(CollisionSolid) solid = entry.get_into();
   nassertv(!solid.is_null());
 

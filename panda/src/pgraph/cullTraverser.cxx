@@ -14,7 +14,6 @@
 #include "config_pgraph.h"
 #include "cullTraverser.h"
 #include "cullTraverserData.h"
-#include "transformState.h"
 #include "renderState.h"
 #include "colorAttrib.h"
 #include "textureAttrib.h"
@@ -136,7 +135,7 @@ traverse(const NodePath &root) {
     // Store this pointer in this
     set_portal_clipper(&portal_viewer);
 
-    CullTraverserData data(root, TransformState::make_identity(),
+    CullTraverserData data(root, Transform::make_identity(),
                            _initial_state, _view_frustum,
                            _current_thread);
 
@@ -151,17 +150,17 @@ traverse(const NodePath &root) {
 
     // Render the frustum relative to the cull center.
     NodePath cull_center = _scene_setup->get_cull_center();
-    CPT(TransformState) transform = cull_center.get_transform(root);
+    Transform transform = cull_center.get_transform(root);
 
     CullTraverserData my_data(data, portal_viewer._previous,
-                              data._net_transform->compose(transform),
+                              data._net_transform.compose(transform),
                               data._state, data._view_frustum);
     if (my_data.is_in_view(_camera_mask)) {
       do_traverse(my_data);
     }
 
   } else {
-    CullTraverserData data(root, TransformState::make_identity(),
+    CullTraverserData data(root, Transform::make_identity(),
                            _initial_state, _view_frustum,
                            _current_thread);
 
@@ -254,7 +253,7 @@ end_traverse() {
  */
 void CullTraverser::
 draw_bounding_volume(const BoundingVolume *vol,
-                     const TransformState *internal_transform) const {
+                     const Transform &internal_transform) const {
   PT(Geom) bounds_viz = make_bounds_viz(vol);
 
   if (bounds_viz != nullptr) {
@@ -276,7 +275,7 @@ draw_bounding_volume(const BoundingVolume *vol,
  */
 void CullTraverser::
 do_fake_cull(const CullTraverserData &data, PandaNode *child,
-             const TransformState *net_transform, const RenderState *state) {
+             const Transform &net_transform, const RenderState *state) {
 #ifndef NDEBUG
   // Once someone asks for this pointer, we hold its reference count and never
   // free it.
@@ -302,7 +301,7 @@ do_fake_cull(const CullTraverserData &data, PandaNode *child,
 void CullTraverser::
 show_bounds(CullTraverserData &data, bool tight) {
   PandaNode *node = data.node();
-  CPT(TransformState) internal_transform = data.get_internal_transform(this);
+  Transform internal_transform = data.get_internal_transform(this);
 
   if (tight) {
     PT(Geom) bounds_viz = make_tight_bounds_viz(node);
@@ -320,7 +319,7 @@ show_bounds(CullTraverserData &data, bool tight) {
 
     if (node->is_geom_node()) {
       // Also show the bounding volumes of included Geoms.
-      internal_transform = internal_transform->compose(node->get_transform());
+      internal_transform = internal_transform.compose(node->get_transform());
       GeomNode *gnode = (GeomNode *)node;
       int num_geoms = gnode->get_num_geoms();
       for (int i = 0; i < num_geoms; ++i) {
@@ -331,12 +330,12 @@ show_bounds(CullTraverserData &data, bool tight) {
   } else {
     // Draw bounds for every instance.
     for (const InstanceList::Instance &instance : *data._instances) {
-      CPT(TransformState) transform = internal_transform->compose(instance.get_transform());
+      Transform transform = internal_transform.compose(instance.get_transform());
       draw_bounding_volume(node->get_bounds(), transform);
 
       if (node->is_geom_node()) {
         // Also show the bounding volumes of included Geoms.
-        transform = transform->compose(node->get_transform());
+        transform = transform.compose(node->get_transform());
         GeomNode *gnode = (GeomNode *)node;
         int num_geoms = gnode->get_num_geoms();
         for (int i = 0; i < num_geoms; ++i) {
@@ -474,7 +473,7 @@ make_tight_bounds_viz(PandaNode *node) const {
 
   LPoint3 n, x;
   bool found_any = false;
-  node->calc_tight_bounds(n, x, found_any, TransformState::make_identity(),
+  node->calc_tight_bounds(n, x, found_any, Transform::make_identity(),
                           _current_thread);
   if (found_any) {
     PT(GeomVertexData) vdata = new GeomVertexData

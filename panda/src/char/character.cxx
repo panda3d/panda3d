@@ -171,8 +171,8 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   if (_do_lod_animation) {
     int this_frame = ClockObject::get_global_clock()->get_frame_count();
 
-    CPT(TransformState) rel_transform = get_rel_transform(trav, data);
-    LPoint3 center = _lod_center * rel_transform->get_mat();
+    Transform rel_transform = get_rel_transform(trav, data);
+    LPoint3 center = rel_transform.xform_point(_lod_center);
     PN_stdfloat dist2 = center.dot(center);
 
     if (this_frame != _view_frame || dist2 < _view_distance2) {
@@ -215,9 +215,9 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
  * This function is recursive, and the return value is the transform after it
  * has been modified by this node's transform.
  */
-CPT(TransformState) Character::
+Transform Character::
 calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point, bool &found_any,
-                  const TransformState *transform, Thread *current_thread) const {
+                  const Transform &transform, Thread *current_thread) const {
   // This method is overridden by Character solely to provide a hook to force
   // the joints to update before computing the bounding volume.
   ((Character *)this)->update_to_now();
@@ -510,23 +510,23 @@ update_bundle(PartBundleHandle *old_bundle_handle, PartBundle *new_bundle) {
  * Returns the relative transform to convert from the LODNode space to the
  * camera space.
  */
-CPT(TransformState) Character::
+Transform Character::
 get_rel_transform(CullTraverser *trav, CullTraverserData &data) {
   // Get a pointer to the camera node.
   Camera *camera = trav->get_scene()->get_camera_node();
 
   // Get the camera space transform.
-  CPT(TransformState) rel_transform;
+  Transform rel_transform;
 
   NodePath lod_center = camera->get_lod_center();
   if (!lod_center.is_empty()) {
     rel_transform =
-      lod_center.get_net_transform()->invert_compose(data.get_net_transform(trav));
+      lod_center.get_net_transform().invert_compose(data.get_net_transform(trav));
   } else {
     NodePath cull_center = camera->get_cull_center();
     if (!cull_center.is_empty()) {
       rel_transform =
-        cull_center.get_net_transform()->invert_compose(data.get_net_transform(trav));
+        cull_center.get_net_transform().invert_compose(data.get_net_transform(trav));
     } else {
       rel_transform = data.get_modelview_transform(trav);
     }

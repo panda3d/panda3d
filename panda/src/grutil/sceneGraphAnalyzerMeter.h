@@ -73,7 +73,7 @@ private:
   ClockObject *_clock_object;
 
   PN_stdfloat _last_aspect_ratio;
-  CPT(TransformState) _aspect_ratio_transform;
+  Transform _aspect_ratio_transform;
 
   static PStatCollector _show_analyzer_pcollector;
 

@@ -15,7 +15,7 @@
 #define ACCUMULATEDATTRIBS_H
 
 #include "pandabase.h"
-#include "transformState.h"
+#include "transform.h"
 #include "renderAttrib.h"
 #include "renderState.h"
 #include "pointerTo.h"
@@ -39,7 +39,8 @@ public:
   CPT(RenderState) collect(const RenderState *state, int attrib_types);
   void apply_to_node(PandaNode *node, int attrib_types);
 
-  CPT(TransformState) _transform;
+  Transform _transform;
+  mutable CPT(TransformState) _transform_state;
   CPT(RenderAttrib) _color;
   int _color_override;
   CPT(RenderAttrib) _color_scale;

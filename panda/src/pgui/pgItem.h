@@ -77,7 +77,7 @@ protected:
                                Thread *current_thread);
 
   virtual void xform(const LMatrix4 &mat);
-  bool activate_region(const LMatrix4 &transform, int sort,
+  bool activate_region(const Transform &transform, int sort,
                        const ClipPlaneAttrib *cpa,
                        const ScissorAttrib *sa);
 

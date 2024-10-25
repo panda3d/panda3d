@@ -21,6 +21,7 @@
 #include "textureAttrib.cxx"
 #include "texGenAttrib.cxx"
 #include "textureStageCollection.cxx"
+#include "transform.cxx"
 #include "transformState.cxx"
 #include "transparencyAttrib.cxx"
 #include "weakNodePath.cxx"

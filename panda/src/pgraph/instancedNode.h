@@ -56,10 +56,9 @@ public:
   virtual void xform(const LMatrix4 &mat) override;
   virtual PandaNode *combine_with(PandaNode *other) override;
 
-  virtual CPT(TransformState)
+  virtual Transform
     calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
-                      bool &found_any,
-                      const TransformState *transform,
+                      bool &found_any, const Transform &transform,
                       Thread *current_thread) const override;
 
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data) override;

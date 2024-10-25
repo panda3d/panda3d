@@ -23,7 +23,7 @@
  */
 INLINE void MultitexReducer::
 scan(const NodePath &node) {
-  scan(node.node(), RenderState::make_empty(), TransformState::make_identity());
+  scan(node.node(), RenderState::make_empty(), Transform::make_identity());
 }
 
 /**

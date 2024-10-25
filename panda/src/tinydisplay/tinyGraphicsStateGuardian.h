@@ -54,7 +54,7 @@ public:
   virtual void clear(DrawableRegion *clearable);
 
   virtual void prepare_display_region(DisplayRegionPipelineReader *dr);
-  virtual CPT(TransformState) calc_projection_mat(const Lens *lens);
+  virtual bool calc_projection_mat(LMatrix4 &result, const Lens *lens);
   virtual bool prepare_lens();
 
   virtual bool begin_frame(Thread *current_thread);
@@ -82,7 +82,7 @@ public:
    ScreenshotRequest *request);
 
   virtual void set_state_and_transform(const RenderState *state,
-                                       const TransformState *transform);
+                                       const Transform &transform);
 
   virtual TextureContext *prepare_texture(Texture *tex);
   virtual bool update_texture(TextureContext *tc, bool force);
@@ -124,7 +124,8 @@ private:
 
   void setup_material(GLMaterial *gl_material, const Material *material);
   void do_auto_rescale_normal();
-  static void load_matrix(M4 *matrix, const TransformState *transform);
+  static void load_matrix(M4 *matrix, const LMatrix4 &pm);
+  static void load_matrix(M4 *matrix, const Transform &transform);
   static int get_color_blend_op(ColorBlendAttrib::Operand operand);
   static ZB_lookupTextureFunc get_tex_filter_func(SamplerState::FilterType filter);
   static ZB_texWrapFunc get_tex_wrap_func(SamplerState::WrapMode wrap_mode);
@@ -166,7 +167,7 @@ private:
   bool _filled_flat;
   bool _auto_rescale_normal;
 
-  CPT(TransformState) _scissor_mat;
+  Transform _scissor_mat;
 
   // Cache the data necessary to bind each particular light each frame, so if
   // we bind a given light multiple times, we only have to compute its data

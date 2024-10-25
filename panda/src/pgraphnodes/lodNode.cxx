@@ -142,7 +142,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
 
   CDReader cdata(_cycler);
 
-  CPT(TransformState) rel_transform = get_rel_transform(trav, data);
+  Transform rel_transform = get_rel_transform(trav, data);
   PN_stdfloat lod_scale = cdata->_lod_scale *
     trav->get_scene()->get_camera_node()->get_lod_scale();
 
@@ -150,7 +150,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   int num_children = std::min(children.get_num_children(), cdata->_switch_vector.size());
 
   if (data._instances == nullptr || cdata->_got_force_switch) {
-    LPoint3 center = cdata->_center * rel_transform->get_mat();
+    LPoint3 center = cdata->_center * rel_transform.get_mat();
     PN_stdfloat dist2 = center.dot(center);
 
     for (int index = 0; index < num_children; ++index) {
@@ -176,7 +176,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
 
     for (size_t ii = 0; ii < num_instances; ++ii) {
       LPoint3 inst_center = cdata->_center *
-        rel_transform->compose((*data._instances)[ii].get_transform())->get_mat();
+        rel_transform.compose((*data._instances)[ii].get_transform()).get_mat();
       PN_stdfloat dist2 = inst_center.dot(inst_center);
 
       for (int index = 0; index < num_children; ++index) {
@@ -339,11 +339,11 @@ verify_child_bounds() const {
  */
 int LODNode::
 compute_child(CullTraverser *trav, CullTraverserData &data) {
-  if (data.get_net_transform(trav)->is_singular()) {
+  /*if (data.get_net_transform(trav)->is_singular()) {
     // If we're under a singular transform, we can't compute the LOD; select
     // none of them instead.
     return -1;
-  }
+  }*/
 
   CDReader cdata(_cycler);
 
@@ -354,19 +354,19 @@ compute_child(CullTraverser *trav, CullTraverserData &data) {
   PN_stdfloat lod_scale = cdata->_lod_scale *
     trav->get_scene()->get_camera_node()->get_lod_scale();
 
-  CPT(TransformState) rel_transform = get_rel_transform(trav, data);
+  Transform rel_transform = get_rel_transform(trav, data);
   LPoint3 center;
 
   if (data._instances == nullptr) {
-    center = cdata->_center * rel_transform->get_mat();
+    center = rel_transform.xform_point(cdata->_center);
   }
   else {
     // Can't really do much with instancing in FadeLODNode; let's instead
     // just calculate the centroid of the visible instances.
     center = LPoint3(0);
     for (const InstanceList::Instance &instance : *data._instances) {
-      center += cdata->_center *
-        rel_transform->compose(instance.get_transform())->get_mat();
+      center +=
+        rel_transform.compose(instance.get_transform()).xform_point(cdata->_center);
     }
     center *= 1.0 / data._instances->size();
   }
@@ -404,8 +404,8 @@ bool LODNode::
 show_switches_cull_callback(CullTraverser *trav, CullTraverserData &data) {
   CDReader cdata(_cycler);
 
-  CPT(TransformState) rel_transform = get_rel_transform(trav, data);
-  LPoint3 center = cdata->_center * rel_transform->get_mat();
+  Transform rel_transform = get_rel_transform(trav, data);
+  LPoint3 center = cdata->_center * rel_transform.get_mat();
   PN_stdfloat dist2 = center.dot(center);
 
   // Now orient the disk(s) in camera space such that their origin is at
@@ -413,8 +413,8 @@ show_switches_cull_callback(CullTraverser *trav, CullTraverserData &data) {
   LMatrix4 mat;
   look_at(mat, -center, LVector3(0.0f, 0.0f, 1.0f));
   mat.set_row(3, center);
-  CPT(TransformState) viz_transform =
-    rel_transform->invert_compose(TransformState::make_mat(mat));
+  //Transform viz_transform =
+  //  rel_transform.invert_compose(Transform::make_mat(mat));
 
   for (int index = 0; index < (int)cdata->_switch_vector.size(); ++index) {
     const Switch &sw = cdata->_switch_vector[index];
@@ -502,23 +502,23 @@ compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
  * Returns the relative transform to convert from the LODNode space to the
  * camera space.
  */
-CPT(TransformState) LODNode::
+Transform LODNode::
 get_rel_transform(CullTraverser *trav, CullTraverserData &data) {
   // Get a pointer to the camera node.
   Camera *camera = trav->get_scene()->get_camera_node();
 
   // Get the camera space transform.
-  CPT(TransformState) rel_transform;
+  Transform rel_transform;
 
   NodePath lod_center = camera->get_lod_center();
   if (!lod_center.is_empty()) {
     rel_transform =
-      lod_center.get_net_transform()->invert_compose(data.get_net_transform(trav));
+      lod_center.get_net_transform().invert_compose(data.get_net_transform(trav));
   } else {
     NodePath cull_center = camera->get_cull_center();
     if (!cull_center.is_empty()) {
       rel_transform =
-        cull_center.get_net_transform()->invert_compose(data.get_net_transform(trav));
+        cull_center.get_net_transform().invert_compose(data.get_net_transform(trav));
     } else {
       rel_transform = data.get_modelview_transform(trav);
     }
@@ -625,7 +625,7 @@ do_verify_child_bounds(const LODNode::CData *cdata, int index,
 
       bool found_any = false;
       child->calc_tight_bounds(min_point, max_point, found_any,
-                               TransformState::make_identity(),
+                               Transform::make_identity(),
                                Thread::get_current_thread());
       if (!found_any) {
         // Hmm, the child has no geometry after all.

@@ -261,7 +261,7 @@ has_contact_normal() const {
 /**
  * Returns the relative transform of the from node as seen from the into node.
  */
-INLINE CPT(TransformState) CollisionEntry::
+INLINE Transform CollisionEntry::
 get_wrt_space() const {
   return _from_node_path.get_transform(_into_node_path);
 }
@@ -269,7 +269,7 @@ get_wrt_space() const {
 /**
  * Returns the relative transform of the into node as seen from the from node.
  */
-INLINE CPT(TransformState) CollisionEntry::
+INLINE Transform CollisionEntry::
 get_inv_wrt_space() const {
   return _into_node_path.get_transform(_from_node_path);
 }
@@ -279,7 +279,7 @@ get_inv_wrt_space() const {
  * as of the previous frame (according to set_prev_transform(),
  * set_fluid_pos(), etc.)
  */
-INLINE CPT(TransformState) CollisionEntry::
+INLINE Transform CollisionEntry::
 get_wrt_prev_space() const {
   if (get_respect_prev_transform()) {
     return _from_node_path.get_prev_transform(_into_node_path);
@@ -291,17 +291,17 @@ get_wrt_prev_space() const {
 /**
  * Returns the relative transform of the from node as seen from the into node.
  */
-INLINE const LMatrix4 &CollisionEntry::
+INLINE LMatrix4 CollisionEntry::
 get_wrt_mat() const {
-  return get_wrt_space()->get_mat();
+  return get_wrt_space().get_mat();
 }
 
 /**
  * Returns the relative transform of the into node as seen from the from node.
  */
-INLINE const LMatrix4 &CollisionEntry::
+INLINE LMatrix4 CollisionEntry::
 get_inv_wrt_mat() const {
-  return get_inv_wrt_space()->get_mat();
+  return get_inv_wrt_space().get_mat();
 }
 
 /**
@@ -309,9 +309,9 @@ get_inv_wrt_mat() const {
  * as of the previous frame (according to set_prev_transform(),
  * set_fluid_pos(), etc.)
  */
-INLINE const LMatrix4 &CollisionEntry::
+INLINE LMatrix4 CollisionEntry::
 get_wrt_prev_mat() const {
-  return get_wrt_prev_space()->get_mat();
+  return get_wrt_prev_space().get_mat();
 }
 
 /**

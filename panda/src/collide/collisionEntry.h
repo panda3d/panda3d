@@ -105,13 +105,13 @@ PUBLISHED:
   MAKE_PROPERTY(respect_prev_transform, get_respect_prev_transform);
 
 public:
-  INLINE CPT(TransformState) get_wrt_space() const;
-  INLINE CPT(TransformState) get_inv_wrt_space() const;
-  INLINE CPT(TransformState) get_wrt_prev_space() const;
+  INLINE Transform get_wrt_space() const;
+  INLINE Transform get_inv_wrt_space() const;
+  INLINE Transform get_wrt_prev_space() const;
 
-  INLINE const LMatrix4 &get_wrt_mat() const;
-  INLINE const LMatrix4 &get_inv_wrt_mat() const;
-  INLINE const LMatrix4 &get_wrt_prev_mat() const;
+  INLINE LMatrix4 get_wrt_mat() const;
+  INLINE LMatrix4 get_inv_wrt_mat() const;
+  INLINE LMatrix4 get_wrt_prev_mat() const;
 
   INLINE const ClipPlaneAttrib *get_into_clip_planes() const;
 

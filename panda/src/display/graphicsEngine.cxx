@@ -33,7 +33,7 @@
 #include "string_utils.h"
 #include "geomCacheManager.h"
 #include "renderState.h"
-#include "transformState.h"
+#include "transform.h"
 #include "thread.h"
 #include "pipeline.h"
 #include "throw_event.h"
@@ -1206,7 +1206,7 @@ dispatch_compute(const LVecBase3i &work_groups, const RenderState *state, Graphi
   if (draw_name.empty()) {
     // A single-threaded environment.  No problem.
     gsg->push_group_marker(std::string("Compute ") + shader->get_filename(Shader::ST_compute).get_basename());
-    gsg->set_state_and_transform(state, TransformState::make_identity());
+    gsg->set_state_and_transform(state, Transform::make_identity());
     gsg->dispatch_compute(work_groups[0], work_groups[1], work_groups[2]);
     gsg->pop_group_marker();
 
@@ -2017,10 +2017,10 @@ setup_scene(GraphicsStateGuardian *gsg, DisplayRegionPipelineReader *dr) {
   // the parent of the scene_root is the empty NodePath, although it need not
   // be.)
   NodePath scene_parent = scene_root.get_parent(current_thread);
-  CPT(TransformState) camera_transform = camera.get_transform(scene_parent, current_thread);
-  CPT(TransformState) world_transform = scene_parent.get_transform(camera, current_thread);
+  Transform camera_transform = camera.get_transform(scene_parent, current_thread);
+  Transform world_transform = scene_parent.get_transform(camera, current_thread);
 
-  if (camera_transform->is_invalid()) {
+  /*if (camera_transform.is_invalid()) {
     // There must be a singular transform over the scene.
     if (!_singular_warning_last_frame) {
       display_cat.warning()
@@ -2029,9 +2029,9 @@ setup_scene(GraphicsStateGuardian *gsg, DisplayRegionPipelineReader *dr) {
       _singular_warning_this_frame = true;
     }
     return nullptr;
-  }
+  }*/
 
-  if (world_transform->is_invalid()) {
+  /*if (world_transform.is_invalid()) {
     // There must be a singular transform over the camera.
     if (!_singular_warning_last_frame) {
       display_cat.warning()
@@ -2040,7 +2040,7 @@ setup_scene(GraphicsStateGuardian *gsg, DisplayRegionPipelineReader *dr) {
     }
     _singular_warning_this_frame = true;
     return nullptr;
-  }
+  }*/
 
   CPT(RenderState) initial_state = camera_node->get_initial_state();
 
@@ -2065,10 +2065,10 @@ setup_scene(GraphicsStateGuardian *gsg, DisplayRegionPipelineReader *dr) {
   scene_setup->set_camera_transform(camera_transform);
   scene_setup->set_world_transform(world_transform);
 
-  CPT(TransformState) cs_transform = gsg->get_cs_transform_for(lens->get_coordinate_system());
+  Transform cs_transform = gsg->get_cs_transform_for(lens->get_coordinate_system());
   scene_setup->set_cs_transform(cs_transform);
 
-  CPT(TransformState) cs_world_transform = cs_transform->compose(world_transform);
+  Transform cs_world_transform = cs_transform.compose(world_transform);
   scene_setup->set_cs_world_transform(cs_world_transform);
 
   if (view_frustum_cull) {
@@ -2086,9 +2086,9 @@ setup_scene(GraphicsStateGuardian *gsg, DisplayRegionPipelineReader *dr) {
       local_frustum = bv->make_copy()->as_geometric_bounding_volume();
       nassertr(!local_frustum.is_null(), nullptr);
 
-      CPT(TransformState) cull_center_transform =
+      Transform cull_center_transform =
         scene_setup->get_cull_center().get_transform(scene_parent, current_thread);
-      local_frustum->xform(cull_center_transform->get_mat());
+      local_frustum->xform(cull_center_transform.get_mat());
 
       scene_setup->set_view_frustum(local_frustum);
     }
@@ -2137,7 +2137,7 @@ do_draw(GraphicsOutput *win, GraphicsStateGuardian *gsg, DisplayRegion *dr, Thre
     static CPT(RenderState) state = RenderState::make(
       DepthTestAttrib::make(DepthTestAttrib::M_none));
     gsg->clear_before_callback();
-    gsg->set_state_and_transform(state, TransformState::make_identity());
+    gsg->set_state_and_transform(state, Transform::make_identity());
 
     DisplayRegionDrawCallbackData cbdata(cull_result, scene_setup);
     cbobj->do_callback(&cbdata);
@@ -2810,7 +2810,7 @@ thread_main() {
         const ShaderAttrib *sattr;
         _state->get_attrib(sattr);
         _gsg->push_group_marker(std::string("Compute ") + sattr->get_shader()->get_filename(Shader::ST_compute).get_basename());
-        _gsg->set_state_and_transform(_state, TransformState::make_identity());
+        _gsg->set_state_and_transform(_state, Transform::make_identity());
         _gsg->dispatch_compute(_work_groups[0], _work_groups[1], _work_groups[2]);
         _gsg->pop_group_marker();
       }

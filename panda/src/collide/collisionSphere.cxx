@@ -127,17 +127,14 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   const CollisionSphere *sphere;
   DCAST_INTO_R(sphere, entry.get_from(), nullptr);
 
-  CPT(TransformState) wrt_space = entry.get_wrt_space();
+  Transform wrt_space = entry.get_wrt_space();
 
-  const LMatrix4 &wrt_mat = wrt_space->get_mat();
-
-  LPoint3 from_b = sphere->get_center() * wrt_mat;
+  LPoint3 from_b = wrt_space.xform_point(sphere->get_center());
 
   LPoint3 into_center(get_center());
   PN_stdfloat into_radius(get_radius());
 
-  LVector3 from_radius_v =
-    LVector3(sphere->get_radius(), 0.0f, 0.0f) * wrt_mat;
+  LVector3 from_radius_v = wrt_space.xform_vec(LVector3(sphere->get_radius(), 0.0f, 0.0f));
   PN_stdfloat from_radius = length(from_radius_v);
 
   LPoint3 into_intersection_point(from_b);
@@ -150,8 +147,8 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   if (dist2 > (into_radius + from_radius) * (into_radius + from_radius)) {
     // No intersection with the current position.  Check the delta from the
     // previous frame.
-    CPT(TransformState) wrt_prev_space = entry.get_wrt_prev_space();
-    LPoint3 from_a = sphere->get_center() * wrt_prev_space->get_mat();
+    Transform wrt_prev_space = entry.get_wrt_prev_space();
+    LPoint3 from_a = wrt_prev_space.xform_point(sphere->get_center());
 
     if (!from_a.almost_equal(from_b)) {
       LVector3 from_direction = from_b - from_a;
@@ -192,7 +189,7 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   }
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
-  LPoint3 from_center = sphere->get_center() * wrt_mat;
+  LPoint3 from_center = wrt_space.xform_point(sphere->get_center());
 
   LVector3 surface_normal;
   LVector3 v(into_intersection_point - into_center);
@@ -603,7 +600,7 @@ fill_viz_geom() {
   PT(Geom) ring_geom = new Geom(vdata);
   ring_geom->add_primitive(ring);
 
-  CPT(TransformState) transform = TransformState::make_pos(get_center());
+  Transform transform = Transform::make_pos(get_center());
 
   _viz_geom->add_geom(geom, get_solid_viz_state());
   _viz_geom->add_geom(ring_geom, get_wireframe_viz_state());

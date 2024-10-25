@@ -27,10 +27,10 @@ CullableObject() {
  */
 INLINE CullableObject::
 CullableObject(CPT(Geom) geom, CPT(RenderState) state,
-               CPT(TransformState) internal_transform) :
+               const Transform &internal_transform) :
   _geom(std::move(geom)),
   _state(std::move(state)),
-  _internal_transform(std::move(internal_transform))
+  _internal_transform(internal_transform)
 {
 #ifdef DO_MEMORY_USAGE
   MemoryUsage::record_pointer(this, get_class_type());
@@ -97,7 +97,7 @@ draw(GraphicsStateGuardianBase *gsg, bool force, Thread *current_thread) {
     data_reader.check_array_readers();
 
     for (const InstanceList::Instance &instance : *_instances) {
-      gsg->set_state_and_transform(_state, _internal_transform->compose(instance.get_transform()));
+      gsg->set_state_and_transform(_state, _internal_transform.compose(instance.get_transform()));
       geom_reader.draw(gsg, &data_reader, _num_instances, force);
     }
   }

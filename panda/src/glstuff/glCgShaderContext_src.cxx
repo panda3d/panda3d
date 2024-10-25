@@ -424,9 +424,9 @@ unbind() {
  */
 void CLP(CgShaderContext)::
 set_state_and_transform(const RenderState *target_rs,
-                        const TransformState *modelview_transform,
-                        const TransformState *camera_transform,
-                        const TransformState *projection_transform) {
+                        const Transform &modelview_transform,
+                        const Transform &camera_transform,
+                        const LMatrix4 &projection_mat) {
 
   if (!valid()) {
     return;
@@ -443,8 +443,8 @@ set_state_and_transform(const RenderState *target_rs,
     _camera_transform = camera_transform;
     altered |= Shader::SSD_transform;
   }
-  if (_projection_transform != projection_transform) {
-    _projection_transform = projection_transform;
+  if (_projection_mat != projection_mat) {
+    _projection_mat = projection_mat;
     altered |= Shader::SSD_projection;
   }
 

@@ -231,7 +231,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
       PGCullTraverser *pg_trav;
       DCAST_INTO_R(pg_trav, trav, true);
 
-      const LMatrix4 &transform = data.get_net_transform(trav)->get_mat();
+      Transform transform = data.get_net_transform(trav);
 
       // Consider the cull bin this object is in.  Since the binning affects
       // the render order, we want bins that render later to get higher sort
@@ -366,12 +366,14 @@ r_prepare_scene(GraphicsStateGuardianBase *gsg, const RenderState *node_state,
  */
 void PGItem::
 xform(const LMatrix4 &mat) {
+  Transform transform = Transform::make_mat(mat);
+
   LightReMutexHolder holder(_lock);
   // Transform the frame.
   LPoint3 ll(_frame[0], 0.0f, _frame[2]);
   LPoint3 ur(_frame[1], 0.0f, _frame[3]);
-  ll = ll * mat;
-  ur = ur * mat;
+  ll = transform.xform_point(ll);
+  ur = transform.xform_point(ur);
   _frame.set(ll[0], ur[0], ll[2], ur[2]);
 
   // Transform the individual states and their frame styles.
@@ -379,7 +381,7 @@ xform(const LMatrix4 &mat) {
     StateDef &def = _state_defs[state];
     NodePath &root = def._root;
     // Apply the matrix to the previous transform.
-    root.set_transform(root.get_transform()->compose(TransformState::make_mat(mat)));
+    root.set_transform(root.get_transform().compose(transform));
 
     // Now flatten the transform into the subgraph.
     SceneGraphReducer gr;
@@ -409,7 +411,7 @@ xform(const LMatrix4 &mat) {
  * completely clipped.
  */
 bool PGItem::
-activate_region(const LMatrix4 &transform, int sort,
+activate_region(const Transform &transform, int sort,
                 const ClipPlaneAttrib *cpa,
                 const ScissorAttrib *sa) {
   using std::min;
@@ -418,10 +420,10 @@ activate_region(const LMatrix4 &transform, int sort,
   LightReMutexHolder holder(_lock);
   // Transform all four vertices, and get the new bounding box.  This way the
   // region works (mostly) even if has been rotated.
-  LPoint3 ll = LPoint3::rfu(_frame[0], 0.0f, _frame[2]) * transform;
-  LPoint3 lr = LPoint3::rfu(_frame[1], 0.0f, _frame[2]) * transform;
-  LPoint3 ul = LPoint3::rfu(_frame[0], 0.0f, _frame[3]) * transform;
-  LPoint3 ur = LPoint3::rfu(_frame[1], 0.0f, _frame[3]) * transform;
+  LPoint3 ll = transform.xform_point(LPoint3::rfu(_frame[0], 0.0f, _frame[2]));
+  LPoint3 lr = transform.xform_point(LPoint3::rfu(_frame[1], 0.0f, _frame[2]));
+  LPoint3 ul = transform.xform_point(LPoint3::rfu(_frame[0], 0.0f, _frame[3]));
+  LPoint3 ur = transform.xform_point(LPoint3::rfu(_frame[1], 0.0f, _frame[3]));
   LVector3 up = LVector3::up();
   int up_axis;
   if (up[1]) {
@@ -461,7 +463,7 @@ activate_region(const LMatrix4 &transform, int sort,
     for (int i = 0; i < num_on_planes; ++i) {
       NodePath plane_path = cpa->get_on_plane(i);
       LPlane plane = DCAST(PlaneNode, plane_path.node())->get_plane();
-      plane.xform(plane_path.get_net_transform()->get_mat());
+      plane.xform(plane_path.get_net_transform().get_mat());
 
       // We ignore the forward axis, assuming the frame is still in the right-
       // up plane after being transformed.  Not sure if we really need to
@@ -514,7 +516,7 @@ activate_region(const LMatrix4 &transform, int sort,
 
   // calculate the inverse of this transform, which is needed to go back to
   // the frame space.
-  _frame_inv_xform.invert_from(transform);
+  _frame_inv_xform = transform.get_inverse().get_mat();
 
   return true;
 }
@@ -1170,8 +1172,8 @@ mouse_to_local(const LPoint2 &mouse_point) const {
   // This is ambiguous if the PGItem has multiple instances.  Why would you do
   // that, anyway?
   NodePath this_np((PGItem *)this);
-  CPT(TransformState) inv_transform = NodePath().get_transform(this_np);
-  return inv_transform->get_mat().xform_point(LVector3::rfu(mouse_point[0], 0, mouse_point[1]));
+  Transform inv_transform = NodePath().get_transform(this_np);
+  return inv_transform.xform_point(LVector3::rfu(mouse_point[0], 0, mouse_point[1]));
 }
 
 /**

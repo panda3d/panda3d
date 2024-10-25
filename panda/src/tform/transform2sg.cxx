@@ -66,7 +66,7 @@ do_transmit_data(DataGraphTraverser *trav, const DataNodeTransmit &input,
     const TransformState *transform;
     DCAST_INTO_V(transform, input.get_data(_transform_input).get_ptr());
     if (_node != nullptr) {
-      _node->set_transform(transform, current_thread);
+      _node->set_transform(Transform::make_mat(transform->get_mat()), current_thread);
     }
   }
 }

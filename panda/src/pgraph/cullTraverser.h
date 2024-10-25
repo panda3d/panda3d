@@ -19,7 +19,7 @@
 #include "geom.h"
 #include "sceneSetup.h"
 #include "renderState.h"
-#include "transformState.h"
+#include "transform.h"
 #include "geometricBoundingVolume.h"
 #include "pointerTo.h"
 #include "camera.h"
@@ -60,8 +60,8 @@ PUBLISHED:
   INLINE void set_camera_mask(const DrawMask &camera_mask);
   INLINE const DrawMask &get_camera_mask() const;
 
-  INLINE const TransformState *get_camera_transform() const;
-  INLINE const TransformState *get_world_transform() const;
+  INLINE const Transform &get_camera_transform() const;
+  INLINE const Transform &get_world_transform() const;
 
   INLINE const RenderState *get_initial_state() const;
   INLINE bool get_depth_offset_decals() const;
@@ -87,12 +87,12 @@ PUBLISHED:
   virtual void end_traverse();
 
   void draw_bounding_volume(const BoundingVolume *vol,
-                            const TransformState *internal_transform) const;
+                            const Transform &internal_transform) const;
 
 public:
   INLINE void traverse_down(const CullTraverserData &data, PandaNode *child);
   INLINE void traverse_down(const CullTraverserData &data, PandaNode *child,
-                            const TransformState *net_transform,
+                            const Transform &net_transform,
                             const RenderState *state);
   INLINE void traverse_down(const CullTraverserData &data,
                             const PandaNode::DownConnection &child);
@@ -101,7 +101,7 @@ public:
                             const RenderState *state);
 
   void do_fake_cull(const CullTraverserData &data, PandaNode *child,
-                    const TransformState *net_transform,
+                    const Transform &net_transform,
                     const RenderState *state);
 
 public:

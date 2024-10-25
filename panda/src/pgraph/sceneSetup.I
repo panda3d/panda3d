@@ -21,10 +21,10 @@ SceneSetup() {
   _viewport_height = 0;
   _inverted = false;
   _initial_state = RenderState::make_empty();
-  _camera_transform = TransformState::make_identity();
-  _world_transform = TransformState::make_identity();
-  _cs_transform = TransformState::make_identity();
-  _cs_world_transform = TransformState::make_identity();
+  _camera_transform = Transform::make_identity();
+  _world_transform = Transform::make_identity();
+  _cs_transform = Transform::make_identity();
+  _cs_world_transform = Transform::make_identity();
 }
 
 /**
@@ -220,14 +220,14 @@ get_initial_state() const {
  * Specifies the position of the camera relative to the starting node.
  */
 INLINE void SceneSetup::
-set_camera_transform(const TransformState *camera_transform) {
+set_camera_transform(const Transform &camera_transform) {
   _camera_transform = camera_transform;
 }
 
 /**
  * Returns the position of the camera relative to the starting node.
  */
-INLINE const TransformState *SceneSetup::
+INLINE const Transform &SceneSetup::
 get_camera_transform() const {
   return _camera_transform;
 }
@@ -237,7 +237,7 @@ get_camera_transform() const {
  * is the inverse of the camera transform.
  */
 INLINE void SceneSetup::
-set_world_transform(const TransformState *world_transform) {
+set_world_transform(const Transform &world_transform) {
   _world_transform = world_transform;
 }
 
@@ -245,7 +245,7 @@ set_world_transform(const TransformState *world_transform) {
  * Returns the position of the starting node relative to the camera.  This is
  * the inverse of the camera transform.
  */
-INLINE const TransformState *SceneSetup::
+INLINE const Transform &SceneSetup::
 get_world_transform() const {
   return _world_transform;
 }
@@ -255,7 +255,7 @@ get_world_transform() const {
  * internal coordinate system.
  */
 INLINE void SceneSetup::
-set_cs_transform(const TransformState *cs_transform) {
+set_cs_transform(const Transform &cs_transform) {
   _cs_transform = cs_transform;
 }
 
@@ -263,7 +263,7 @@ set_cs_transform(const TransformState *cs_transform) {
  * Returns the transform from the camera's coordinate system to the GSG's
  * internal coordinate system.
  */
-INLINE const TransformState *SceneSetup::
+INLINE const Transform &SceneSetup::
 get_cs_transform() const {
   return _cs_transform;
 }
@@ -273,7 +273,7 @@ get_cs_transform() const {
  * the GSG's internal coordinate system.
  */
 INLINE void SceneSetup::
-set_cs_world_transform(const TransformState *cs_world_transform) {
+set_cs_world_transform(const Transform &cs_world_transform) {
   _cs_world_transform = cs_world_transform;
 }
 
@@ -281,7 +281,7 @@ set_cs_world_transform(const TransformState *cs_world_transform) {
  * Returns the position from the starting node relative to the camera, in the
  * GSG's internal coordinate system.
  */
-INLINE const TransformState *SceneSetup::
+INLINE const Transform &SceneSetup::
 get_cs_world_transform() const {
   return _cs_world_transform;
 }

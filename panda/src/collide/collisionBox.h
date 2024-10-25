@@ -144,7 +144,7 @@ public:
                     size_t num_source_points, const LPlane &plane,
                     int plane_no) const;
   bool apply_clip_plane(Points &new_points, const ClipPlaneAttrib *cpa,
-                        const TransformState *net_transform, int plane_no) const;
+                        const Transform &net_transform, int plane_no) const;
 
 private:
   PointDef _points[6][4]; // one set of points for each of the six planes that make up the box

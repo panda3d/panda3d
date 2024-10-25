@@ -330,7 +330,7 @@ public:
                                           Thread *current_thread);
 
   virtual void set_state_and_transform(const RenderState *state,
-                                       const TransformState *transform);
+                                       const Transform &transform);
 
   PN_stdfloat compute_distance_to(const LPoint3 &point) const;
 
@@ -355,7 +355,7 @@ public:
 
   virtual void remove_window(GraphicsOutputBase *window);
 
-  virtual CPT(TransformState) calc_projection_mat(const Lens *lens);
+  virtual bool calc_projection_mat(LMatrix4 &mat, const Lens *lens);
   virtual bool prepare_lens();
 
   virtual bool begin_frame(Thread *current_thread);
@@ -404,8 +404,8 @@ public:
   INLINE void mark_new();
   virtual void reset();
 
-  INLINE CPT(TransformState) get_external_transform() const;
-  INLINE CPT(TransformState) get_internal_transform() const;
+  INLINE Transform get_external_transform() const;
+  INLINE Transform get_internal_transform() const;
 
   RenderBuffer get_render_buffer(int buffer_type, const FrameBufferProperties &prop);
 
@@ -414,9 +414,9 @@ public:
   INLINE int get_current_tex_view_offset() const;
   INLINE const Lens *get_current_lens() const;
 
-  virtual CPT(TransformState) get_cs_transform_for(CoordinateSystem cs) const;
-  virtual CPT(TransformState) get_cs_transform() const;
-  INLINE CPT(TransformState) get_inv_cs_transform() const;
+  virtual Transform get_cs_transform_for(CoordinateSystem cs) const;
+  virtual Transform get_cs_transform() const;
+  INLINE Transform get_inv_cs_transform() const;
 
   void do_issue_clip_plane();
   void do_issue_color();
@@ -499,7 +499,7 @@ protected:
   RenderState::SlotMask _inv_state_mask;
 
   // The current transform, as of the last call to set_state_and_transform().
-  CPT(TransformState) _internal_transform;
+  Transform _internal_transform;
 
   // The current TextureAttrib is a special case; we may further restrict it
   // (according to graphics cards limits) or extend it (according to
@@ -525,14 +525,14 @@ protected:
   Lens::StereoChannel _current_stereo_channel;
   int _current_tex_view_offset;
   CPT(Lens) _current_lens;
-  CPT(TransformState) _projection_mat;
-  CPT(TransformState) _projection_mat_inv;
+  LMatrix4 _projection_mat;
+  LMatrix4 _projection_mat_inv;
   const FrameBufferProperties *_current_properties;
 
   CoordinateSystem _coordinate_system;
   CoordinateSystem _internal_coordinate_system;
-  CPT(TransformState) _cs_transform;
-  CPT(TransformState) _inv_cs_transform;
+  Transform _cs_transform;
+  Transform _inv_cs_transform;
 
   LColor _scene_graph_color;
   bool _has_scene_graph_color;

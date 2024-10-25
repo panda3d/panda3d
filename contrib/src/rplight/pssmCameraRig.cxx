@@ -119,7 +119,7 @@ void PSSMCameraRig::reparent_to(NodePath parent) {
  * @return view-projection matrix of the split
  */
 LMatrix4 PSSMCameraRig::compute_mvp(size_t split_index) {
-  LMatrix4 transform = _parent.get_transform(_cam_nodes[split_index])->get_mat();
+  LMatrix4 transform = _parent.get_transform(_cam_nodes[split_index]).get_mat();
   return transform * _cameras[split_index]->get_lens()->get_projection_mat();
 }
 
@@ -308,7 +308,7 @@ void PSSMCameraRig::compute_pssm_splits(const LMatrix4& transform, float max_dis
     LVecBase3 best_min_extent, best_max_extent;
 
     // Find minimum and maximum extents of the points
-    LMatrix4 merged_transform = _parent.get_transform(_cam_nodes[i])->get_mat();
+    LMatrix4 merged_transform = _parent.get_transform(_cam_nodes[i]).get_mat();
     find_min_max_extents(best_min_extent, best_max_extent, merged_transform, proj_points, cam);
 
     // Find the film size to cover all points
@@ -367,7 +367,7 @@ void PSSMCameraRig::update(NodePath cam_node, const LVecBase3 &light_vector) {
   _update_collector.start();
 
   // Get camera node transform
-  LMatrix4 transform = cam_node.get_transform()->get_mat();
+  LMatrix4 transform = cam_node.get_transform().get_mat();
 
   // Get Camera and Lens pointers
   Camera *cam;

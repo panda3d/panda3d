@@ -28,7 +28,7 @@
  */
 AccumulatedAttribs::
 AccumulatedAttribs() {
-  _transform = TransformState::make_identity();
+  _transform = Transform::make_identity();
   _color_override = 0;
   _color_scale_override = 0;
   _tex_matrix_override = 0;
@@ -44,6 +44,7 @@ AccumulatedAttribs() {
 AccumulatedAttribs::
 AccumulatedAttribs(const AccumulatedAttribs &copy) :
   _transform(copy._transform),
+  _transform_state(copy._transform_state),
   _color(copy._color),
   _color_override(copy._color_override),
   _color_scale(copy._color_scale),
@@ -66,6 +67,7 @@ AccumulatedAttribs(const AccumulatedAttribs &copy) :
 void AccumulatedAttribs::
 operator = (const AccumulatedAttribs &copy) {
   _transform = copy._transform;
+  _transform_state = copy._transform_state;
   _color = copy._color;
   _color_override = copy._color_override;
   _color_scale = copy._color_scale;
@@ -87,7 +89,7 @@ operator = (const AccumulatedAttribs &copy) {
 void AccumulatedAttribs::
 write(std::ostream &out, int attrib_types, int indent_level) const {
   if ((attrib_types & SceneGraphReducer::TT_transform) != 0) {
-    _transform->write(out, indent_level);
+    _transform.write(out, indent_level);
   }
   if ((attrib_types & SceneGraphReducer::TT_color) != 0) {
     if (_color == nullptr) {
@@ -137,10 +139,13 @@ void AccumulatedAttribs::
 collect(PandaNode *node, int attrib_types) {
   if ((attrib_types & SceneGraphReducer::TT_transform) != 0) {
     // Collect the node's transform.
-    nassertv(_transform != nullptr);
-    _transform = _transform->compose(node->get_transform());
-    node->set_transform(TransformState::make_identity());
-    node->set_prev_transform(TransformState::make_identity());
+    Transform node_transform;
+    if (node->get_transform(node_transform)) {
+      _transform = _transform.compose(node_transform);
+      _transform_state.clear();
+      node->set_transform(Transform::make_identity());
+    }
+    node->set_prev_transform(Transform::make_identity());
   }
 
   CPT(RenderState) new_state = collect(node->get_state(), attrib_types);
@@ -285,9 +290,10 @@ collect(const RenderState *state, int attrib_types) {
 void AccumulatedAttribs::
 apply_to_node(PandaNode *node, int attrib_types) {
   if ((attrib_types & SceneGraphReducer::TT_transform) != 0) {
-    node->set_transform(_transform->compose(node->get_transform())->get_unique());
+    node->set_transform(_transform.compose(node->get_transform()));
     node->reset_prev_transform();
-    _transform = TransformState::make_identity();
+    _transform = Transform::make_identity();
+    _transform_state.clear();
   }
 
   if ((attrib_types & SceneGraphReducer::TT_color) != 0) {

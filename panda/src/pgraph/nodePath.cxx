@@ -789,35 +789,24 @@ set_state(const NodePath &other, const RenderState *state,
 }
 
 /**
- * Returns the complete transform object set on this node.
- */
-const TransformState *NodePath::
-get_transform(Thread *current_thread) const {
-  // This method is declared non-inline to avoid a compiler bug in gcc-3.4 and
-  // gcc-4.0.
-  nassertr_always(!is_empty(), TransformState::make_identity());
-  return node()->get_transform(current_thread);
-}
-
-/**
  * Returns the relative transform to this node from the other node; i.e.  the
  * transformation of this node as seen from the other node.
  */
-CPT(TransformState) NodePath::
+Transform NodePath::
 get_transform(const NodePath &other, Thread *current_thread) const {
-  nassertr(_error_type == ET_ok && other._error_type == ET_ok, TransformState::make_identity());
+  nassertr(_error_type == ET_ok && other._error_type == ET_ok, Transform::make_identity());
   PStatTimer timer(_get_transform_pcollector);
 
   if (other.is_empty()) {
     return get_net_transform(current_thread);
   }
   if (is_empty()) {
-    return other.get_net_transform(current_thread)->invert_compose(TransformState::make_identity());
+    return other.get_net_transform(current_thread).invert_compose(Transform::make_identity());
   }
 
 #if defined(_DEBUG) || (defined(HAVE_THREADS) && defined(SIMPLE_THREADS))
-  nassertr(verify_complete(current_thread), TransformState::make_identity());
-  nassertr(other.verify_complete(current_thread), TransformState::make_identity());
+  nassertr(verify_complete(current_thread), Transform::make_identity());
+  nassertr(other.verify_complete(current_thread), Transform::make_identity());
 #endif
 
   int a_count, b_count;
@@ -831,17 +820,17 @@ get_transform(const NodePath &other, Thread *current_thread) const {
       pgraph_cat.error()
         << *this << " is not related to " << other << "\n";
       nassert_raise("unrelated nodes");
-      return TransformState::make_identity();
+      return Transform::make_identity();
     }
   }
 
-  CPT(TransformState) a_transform, b_transform;
+  Transform a_transform, b_transform;
+  bool have_b_transform = false;
 
-  a_transform = r_get_partial_transform(_head, a_count, current_thread);
-  if (a_transform != nullptr) {
-    b_transform = r_get_partial_transform(other._head, b_count, current_thread);
+  if (r_get_partial_transform(a_transform, _head, a_count, current_thread)) {
+    have_b_transform = r_get_partial_transform(b_transform, other._head, b_count, current_thread);
   }
-  if (b_transform == nullptr) {
+  if (!have_b_transform) {
     // If either path involved a node with a net_transform RenderEffect
     // applied, we have to go all the way up to the root to get the right
     // answer.
@@ -849,7 +838,7 @@ get_transform(const NodePath &other, Thread *current_thread) const {
     b_transform = r_get_net_transform(other._head, current_thread);
   }
 
-  return b_transform->invert_compose(a_transform);
+  return b_transform.invert_compose(a_transform);
 }
 
 /**
@@ -858,33 +847,21 @@ get_transform(const NodePath &other, Thread *current_thread) const {
  * seen from the other node.
  */
 void NodePath::
-set_transform(const NodePath &other, const TransformState *transform,
+set_transform(const NodePath &other, const Transform &transform,
               Thread *current_thread) {
   nassertv(_error_type == ET_ok && other._error_type == ET_ok);
   nassertv_always(!is_empty());
 
   // First, we perform a wrt to the parent, to get the conversion.
-  CPT(TransformState) rel_trans;
+  Transform rel_trans;
   if (has_parent()) {
     rel_trans = other.get_transform(get_parent(current_thread), current_thread);
   } else {
     rel_trans = other.get_transform(NodePath(), current_thread);
   }
 
-  CPT(TransformState) new_trans = rel_trans->compose(transform);
+  Transform new_trans = rel_trans.compose(transform);
   set_transform(new_trans, current_thread);
-}
-
-/**
- * Returns the transform that has been set as this node's "previous" position.
- * See set_prev_transform().
- */
-const TransformState *NodePath::
-get_prev_transform(Thread *current_thread) const {
-  // This method is declared non-inline to avoid a compiler bug in gcc-3.4 and
-  // gcc-4.0.
-  nassertr_always(!is_empty(), TransformState::make_identity());
-  return node()->get_prev_transform(current_thread);
 }
 
 /**
@@ -892,20 +869,20 @@ get_prev_transform(Thread *current_thread) const {
  * i.e.  the position of this node in the previous frame, as seen by the other
  * node in the previous frame.
  */
-CPT(TransformState) NodePath::
+Transform NodePath::
 get_prev_transform(const NodePath &other, Thread *current_thread) const {
-  nassertr(_error_type == ET_ok && other._error_type == ET_ok, TransformState::make_identity());
+  nassertr(_error_type == ET_ok && other._error_type == ET_ok, Transform::make_identity());
 
   if (other.is_empty()) {
     return get_net_prev_transform(current_thread);
   }
   if (is_empty()) {
-    return other.get_net_prev_transform(current_thread)->invert_compose(TransformState::make_identity());
+    return other.get_net_prev_transform(current_thread).invert_compose(Transform::make_identity());
   }
 
 #if defined(_DEBUG) || (defined(HAVE_THREADS) && defined(SIMPLE_THREADS))
-  nassertr(verify_complete(current_thread), TransformState::make_identity());
-  nassertr(other.verify_complete(current_thread), TransformState::make_identity());
+  nassertr(verify_complete(current_thread), Transform::make_identity());
+  nassertr(other.verify_complete(current_thread), Transform::make_identity());
 #endif
 
   int a_count, b_count;
@@ -917,13 +894,13 @@ get_prev_transform(const NodePath &other, Thread *current_thread) const {
       pgraph_cat.error()
         << *this << " is not related to " << other << "\n";
       nassert_raise("unrelated nodes");
-      return TransformState::make_identity();
+      return Transform::make_identity();
     }
   }
 
-  CPT(TransformState) a_prev_transform = r_get_partial_prev_transform(_head, a_count, current_thread);
-  CPT(TransformState) b_prev_transform = r_get_partial_prev_transform(other._head, b_count, current_thread);
-  return b_prev_transform->invert_compose(a_prev_transform);
+  Transform a_prev_transform = r_get_partial_prev_transform(_head, a_count, current_thread);
+  Transform b_prev_transform = r_get_partial_prev_transform(other._head, b_count, current_thread);
+  return b_prev_transform.invert_compose(a_prev_transform);
 }
 
 /**
@@ -932,20 +909,20 @@ get_prev_transform(const NodePath &other, Thread *current_thread) const {
  * value when seen from the other node.
  */
 void NodePath::
-set_prev_transform(const NodePath &other, const TransformState *transform,
+set_prev_transform(const NodePath &other, const Transform &transform,
                    Thread *current_thread) {
   nassertv(_error_type == ET_ok && other._error_type == ET_ok);
   nassertv_always(!is_empty());
 
   // First, we perform a wrt to the parent, to get the conversion.
-  CPT(TransformState) rel_trans;
+  Transform rel_trans;
   if (has_parent(current_thread)) {
     rel_trans = other.get_prev_transform(get_parent(current_thread), current_thread);
   } else {
     rel_trans = other.get_prev_transform(NodePath(), current_thread);
   }
 
-  CPT(TransformState) new_trans = rel_trans->compose(transform);
+  Transform new_trans = rel_trans.compose(transform);
   set_prev_transform(new_trans, current_thread);
 }
 
@@ -959,7 +936,9 @@ set_prev_transform(const NodePath &other, const TransformState *transform,
 void NodePath::
 set_pos(const LVecBase3 &pos) {
   nassertv_always(!is_empty());
-  set_transform(get_transform()->set_pos(pos));
+  Transform transform = get_transform();
+  transform.set_pos(pos);
+  set_transform(transform);
   node()->reset_prev_transform();
 }
 
@@ -1010,7 +989,9 @@ set_z(PN_stdfloat z) {
 void NodePath::
 set_fluid_pos(const LVecBase3 &pos) {
   nassertv_always(!is_empty());
-  set_transform(get_transform()->set_pos(pos));
+  Transform transform = get_transform();
+  transform.set_pos(pos);
+  set_transform(transform);
 }
 
 void NodePath::
@@ -1038,15 +1019,6 @@ set_fluid_z(PN_stdfloat z) {
 }
 
 /**
- * Retrieves the translation component of the transform.
- */
-LPoint3 NodePath::
-get_pos() const {
-  nassertr_always(!is_empty(), LPoint3(0.0f, 0.0f, 0.0f));
-  return get_transform()->get_pos();
-}
-
-/**
  * Returns the delta vector from this node's position in the previous frame
  * (according to set_prev_transform(), typically set via the use of
  * set_fluid_pos()) and its position in the current frame.  This is the vector
@@ -1058,7 +1030,7 @@ get_pos() const {
 LVector3 NodePath::
 get_pos_delta() const {
   nassertr_always(!is_empty(), LPoint3(0.0f, 0.0f, 0.0f));
-  return get_transform()->get_pos() - get_prev_transform()->get_pos();
+  return get_transform().get_pos() - get_prev_transform().get_pos();
 }
 
 /**
@@ -1068,39 +1040,39 @@ get_pos_delta() const {
 void NodePath::
 set_hpr(const LVecBase3 &hpr) {
   nassertv_always(!is_empty());
-  CPT(TransformState) transform = get_transform();
-  nassertv(transform->has_hpr());
-  set_transform(transform->set_hpr(hpr));
+  Transform transform = get_transform();
+  transform.set_hpr(hpr);
+  set_transform(transform);
 }
 
 void NodePath::
 set_h(PN_stdfloat h) {
   nassertv_always(!is_empty());
-  CPT(TransformState) transform = get_transform();
-  nassertv(transform->has_hpr());
-  LVecBase3 hpr = transform->get_hpr();
+  Transform transform = get_transform();
+  LVecBase3 hpr = transform.get_hpr();
   hpr[0] = h;
-  set_transform(transform->set_hpr(hpr));
+  transform.set_hpr(hpr);
+  set_transform(transform);
 }
 
 void NodePath::
 set_p(PN_stdfloat p) {
   nassertv_always(!is_empty());
-  CPT(TransformState) transform = get_transform();
-  nassertv(transform->has_hpr());
-  LVecBase3 hpr = transform->get_hpr();
+  Transform transform = get_transform();
+  LVecBase3 hpr = transform.get_hpr();
   hpr[1] = p;
-  set_transform(transform->set_hpr(hpr));
+  transform.set_hpr(hpr);
+  set_transform(transform);
 }
 
 void NodePath::
 set_r(PN_stdfloat r) {
   nassertv_always(!is_empty());
-  CPT(TransformState) transform = get_transform();
-  nassertv(transform->has_hpr());
-  LVecBase3 hpr = transform->get_hpr();
+  Transform transform = get_transform();
+  LVecBase3 hpr = transform.get_hpr();
   hpr[2] = r;
-  set_transform(transform->set_hpr(hpr));
+  transform.set_hpr(hpr);
+  set_transform(transform);
 }
 
 /**
@@ -1109,9 +1081,7 @@ set_r(PN_stdfloat r) {
 LVecBase3 NodePath::
 get_hpr() const {
   nassertr_always(!is_empty(), LVecBase3(0.0f, 0.0f, 0.0f));
-  CPT(TransformState) transform = get_transform();
-  nassertr(transform->has_hpr(), LVecBase3(0.0f, 0.0f, 0.0f));
-  return transform->get_hpr();
+  return get_transform().get_hpr();
 }
 
 /**
@@ -1121,8 +1091,9 @@ get_hpr() const {
 void NodePath::
 set_quat(const LQuaternion &quat) {
   nassertv_always(!is_empty());
-  CPT(TransformState) transform = get_transform();
-  set_transform(transform->set_quat(quat));
+  Transform transform = get_transform();
+  transform.set_quat(quat);
+  set_transform(transform);
 }
 
 /**
@@ -1131,8 +1102,8 @@ set_quat(const LQuaternion &quat) {
 LQuaternion NodePath::
 get_quat() const {
   nassertr_always(!is_empty(), LQuaternion::ident_quat());
-  CPT(TransformState) transform = get_transform();
-  return transform->get_quat();
+  Transform transform = get_transform();
+  return transform.get_quat();
 }
 
 /**
@@ -1142,8 +1113,9 @@ get_quat() const {
 void NodePath::
 set_scale(const LVecBase3 &scale) {
   nassertv_always(!is_empty());
-  CPT(TransformState) transform = get_transform();
-  set_transform(transform->set_scale(scale));
+  Transform transform = get_transform();
+  transform.set_scale(scale);
+  set_transform(transform);
 }
 
 /**
@@ -1154,10 +1126,11 @@ set_scale(const LVecBase3 &scale) {
 void NodePath::
 set_sx(PN_stdfloat sx) {
   nassertv_always(!is_empty());
-  CPT(TransformState) transform = get_transform();
-  LVecBase3 scale = transform->get_scale();
+  Transform transform = get_transform();
+  LVecBase3 scale = transform.get_scale();
   scale[0] = sx;
-  set_transform(transform->set_scale(scale));
+  transform.set_scale(scale);
+  set_transform(transform);
 }
 
 /**
@@ -1168,10 +1141,11 @@ set_sx(PN_stdfloat sx) {
 void NodePath::
 set_sy(PN_stdfloat sy) {
   nassertv_always(!is_empty());
-  CPT(TransformState) transform = get_transform();
-  LVecBase3 scale = transform->get_scale();
+  Transform transform = get_transform();
+  LVecBase3 scale = transform.get_scale();
   scale[1] = sy;
-  set_transform(transform->set_scale(scale));
+  transform.set_scale(scale);
+  set_transform(transform);
 }
 
 /**
@@ -1182,10 +1156,11 @@ set_sy(PN_stdfloat sy) {
 void NodePath::
 set_sz(PN_stdfloat sz) {
   nassertv_always(!is_empty());
-  CPT(TransformState) transform = get_transform();
-  LVecBase3 scale = transform->get_scale();
+  Transform transform = get_transform();
+  LVecBase3 scale = transform.get_scale();
   scale[2] = sz;
-  set_transform(transform->set_scale(scale));
+  transform.set_scale(scale);
+  set_transform(transform);
 }
 
 /**
@@ -1194,8 +1169,8 @@ set_sz(PN_stdfloat sz) {
 LVecBase3 NodePath::
 get_scale() const {
   nassertr_always(!is_empty(), LVecBase3(0.0f, 0.0f, 0.0f));
-  CPT(TransformState) transform = get_transform();
-  return transform->get_scale();
+  Transform transform = get_transform();
+  return transform.get_scale();
 }
 
 /**
@@ -1205,35 +1180,39 @@ get_scale() const {
 void NodePath::
 set_shear(const LVecBase3 &shear) {
   nassertv_always(!is_empty());
-  CPT(TransformState) transform = get_transform();
-  set_transform(transform->set_shear(shear));
+  Transform transform = get_transform();
+  transform.set_shear(shear);
+  set_transform(transform);
 }
 
 void NodePath::
 set_shxy(PN_stdfloat shxy) {
   nassertv_always(!is_empty());
-  CPT(TransformState) transform = get_transform();
-  LVecBase3 shear = transform->get_shear();
+  Transform transform = get_transform();
+  LVecBase3 shear = transform.get_shear();
   shear[0] = shxy;
-  set_transform(transform->set_shear(shear));
+  transform.set_shear(shear);
+  set_transform(transform);
 }
 
 void NodePath::
 set_shxz(PN_stdfloat shxz) {
   nassertv_always(!is_empty());
-  CPT(TransformState) transform = get_transform();
-  LVecBase3 shear = transform->get_shear();
+  Transform transform = get_transform();
+  LVecBase3 shear = transform.get_shear();
   shear[1] = shxz;
-  set_transform(transform->set_shear(shear));
+  transform.set_shear(shear);
+  set_transform(transform);
 }
 
 void NodePath::
 set_shyz(PN_stdfloat shyz) {
   nassertv_always(!is_empty());
-  CPT(TransformState) transform = get_transform();
-  LVecBase3 shear = transform->get_shear();
+  Transform transform = get_transform();
+  LVecBase3 shear = transform.get_shear();
   shear[2] = shyz;
-  set_transform(transform->set_shear(shear));
+  transform.set_shear(shear);
+  set_transform(transform);
 }
 
 /**
@@ -1242,8 +1221,8 @@ set_shyz(PN_stdfloat shyz) {
 LVecBase3 NodePath::
 get_shear() const {
   nassertr_always(!is_empty(), LVecBase3(0.0f, 0.0f, 0.0f));
-  CPT(TransformState) transform = get_transform();
-  return transform->get_shear();
+  Transform transform = get_transform();
+  return transform.get_shear();
 }
 
 /**
@@ -1253,9 +1232,9 @@ get_shear() const {
 void NodePath::
 set_pos_hpr(const LVecBase3 &pos, const LVecBase3 &hpr) {
   nassertv_always(!is_empty());
-  CPT(TransformState) transform = get_transform();
-  transform = TransformState::make_pos_hpr_scale_shear
-    (pos, hpr, transform->get_scale(), transform->get_shear());
+  Transform transform = get_transform();
+  transform = Transform::make_pos_hpr_scale_shear
+    (pos, hpr, transform.get_scale(), transform.get_shear());
   set_transform(transform);
   node()->reset_prev_transform();
 }
@@ -1267,9 +1246,9 @@ set_pos_hpr(const LVecBase3 &pos, const LVecBase3 &hpr) {
 void NodePath::
 set_pos_quat(const LVecBase3 &pos, const LQuaternion &quat) {
   nassertv_always(!is_empty());
-  CPT(TransformState) transform = get_transform();
-  transform = TransformState::make_pos_quat_scale_shear
-    (pos, quat, transform->get_scale(), transform->get_shear());
+  Transform transform = get_transform();
+  transform = Transform::make_pos_quat_scale_shear
+    (pos, quat, transform.get_scale(), transform.get_shear());
   set_transform(transform);
   node()->reset_prev_transform();
 }
@@ -1281,9 +1260,9 @@ set_pos_quat(const LVecBase3 &pos, const LQuaternion &quat) {
 void NodePath::
 set_hpr_scale(const LVecBase3 &hpr, const LVecBase3 &scale) {
   nassertv_always(!is_empty());
-  CPT(TransformState) transform = get_transform();
-  transform = TransformState::make_pos_hpr_scale_shear
-    (transform->get_pos(), hpr, scale, transform->get_shear());
+  Transform transform = get_transform();
+  transform = Transform::make_pos_hpr_scale_shear
+    (transform.get_pos(), hpr, scale, transform.get_shear());
   set_transform(transform);
 }
 
@@ -1294,9 +1273,9 @@ set_hpr_scale(const LVecBase3 &hpr, const LVecBase3 &scale) {
 void NodePath::
 set_quat_scale(const LQuaternion &quat, const LVecBase3 &scale) {
   nassertv_always(!is_empty());
-  CPT(TransformState) transform = get_transform();
-  transform = TransformState::make_pos_quat_scale_shear
-    (transform->get_pos(), quat, scale, transform->get_shear());
+  Transform transform = get_transform();
+  transform = Transform::make_pos_quat_scale_shear
+    (transform.get_pos(), quat, scale, transform.get_shear());
   set_transform(transform);
 }
 
@@ -1308,7 +1287,7 @@ void NodePath::
 set_pos_hpr_scale(const LVecBase3 &pos, const LVecBase3 &hpr,
                   const LVecBase3 &scale) {
   nassertv_always(!is_empty());
-  set_transform(TransformState::make_pos_hpr_scale
+  set_transform(Transform::make_pos_hpr_scale
                 (pos, hpr, scale));
   node()->reset_prev_transform();
 }
@@ -1321,7 +1300,7 @@ void NodePath::
 set_pos_quat_scale(const LVecBase3 &pos, const LQuaternion &quat,
                    const LVecBase3 &scale) {
   nassertv_always(!is_empty());
-  set_transform(TransformState::make_pos_quat_scale
+  set_transform(Transform::make_pos_quat_scale
                 (pos, quat, scale));
   node()->reset_prev_transform();
 }
@@ -1334,7 +1313,7 @@ void NodePath::
 set_pos_hpr_scale_shear(const LVecBase3 &pos, const LVecBase3 &hpr,
                         const LVecBase3 &scale, const LVecBase3 &shear) {
   nassertv_always(!is_empty());
-  set_transform(TransformState::make_pos_hpr_scale_shear
+  set_transform(Transform::make_pos_hpr_scale_shear
                 (pos, hpr, scale, shear));
   node()->reset_prev_transform();
 }
@@ -1347,7 +1326,7 @@ void NodePath::
 set_pos_quat_scale_shear(const LVecBase3 &pos, const LQuaternion &quat,
                          const LVecBase3 &scale, const LVecBase3 &shear) {
   nassertv_always(!is_empty());
-  set_transform(TransformState::make_pos_quat_scale_shear
+  set_transform(Transform::make_pos_quat_scale_shear
                 (pos, quat, scale, shear));
   node()->reset_prev_transform();
 }
@@ -1358,7 +1337,7 @@ set_pos_quat_scale_shear(const LVecBase3 &pos, const LQuaternion &quat,
 void NodePath::
 set_mat(const LMatrix4 &mat) {
   nassertv_always(!is_empty());
-  set_transform(TransformState::make_mat(mat));
+  set_transform(Transform::make_mat(mat));
   node()->reset_prev_transform();
 }
 
@@ -1399,24 +1378,26 @@ heads_up(const LPoint3 &point, const LVector3 &up) {
 void NodePath::
 set_pos(const NodePath &other, const LVecBase3 &pos) {
   nassertv_always(!is_empty());
-  CPT(TransformState) rel_transform = get_transform(other);
+  Transform rel_transform = get_transform(other);
 
-  CPT(TransformState) orig_transform = get_transform();
-  if (orig_transform->has_components()) {
+  /*Transform orig_transform = get_transform();
+  if (orig_transform.has_components()) {
     // If we had a componentwise transform before we started, we should be
     // careful to preserve the other three components.  We wouldn't need to do
     // this, except for the possibility of numerical error or decompose
     // ambiguity.
-    const LVecBase3 &orig_hpr = orig_transform->get_hpr();
-    const LVecBase3 &orig_scale = orig_transform->get_scale();
-    const LVecBase3 &orig_shear = orig_transform->get_shear();
+    const LVecBase3 &orig_hpr = orig_transform.get_hpr();
+    const LVecBase3 &orig_scale = orig_transform.get_scale();
+    const LVecBase3 &orig_shear = orig_transform.get_shear();
 
-    set_transform(other, rel_transform->set_pos(pos));
-    set_pos_hpr_scale_shear(get_transform()->get_pos(), orig_hpr, orig_scale, orig_shear);
+    rel_transform.set_pos(pos);
+    set_transform(other, rel_transform);
+    set_pos_hpr_scale_shear(get_transform().get_pos(), orig_hpr, orig_scale, orig_shear);
 
-  } else {
+  } else */{
     // If we didn't have a componentwise transform already, never mind.
-    set_transform(other, rel_transform->set_pos(pos));
+    rel_transform.set_pos(pos);
+    set_transform(other, rel_transform);
   }
   node()->reset_prev_transform();
 }
@@ -1452,27 +1433,29 @@ set_z(const NodePath &other, PN_stdfloat z) {
 void NodePath::
 set_fluid_pos(const NodePath &other, const LVecBase3 &pos) {
   nassertv_always(!is_empty());
-  CPT(TransformState) rel_transform = get_transform(other);
+  Transform rel_transform = get_transform(other);
 
-  CPT(TransformState) orig_transform = get_transform();
-  if (orig_transform->has_components()) {
+  /*Transform orig_transform = get_transform();
+  if (orig_transform.has_components()) {
     // If we had a componentwise transform before we started, we should be
     // careful to preserve the other three components.  We wouldn't need to do
     // this, except for the possibility of numerical error or decompose
     // ambiguity.
-    const LVecBase3 &orig_hpr = orig_transform->get_hpr();
-    const LVecBase3 &orig_scale = orig_transform->get_scale();
-    const LVecBase3 &orig_shear = orig_transform->get_shear();
+    const LVecBase3 &orig_hpr = orig_transform.get_hpr();
+    const LVecBase3 &orig_scale = orig_transform.get_scale();
+    const LVecBase3 &orig_shear = orig_transform.get_shear();
 
     // Use the relative set_transform() to compute the relative pos, and then
     // reset all of the other components back to the way they were.
-    set_transform(other, rel_transform->set_pos(pos));
-    set_transform(TransformState::make_pos_hpr_scale_shear
-                  (get_transform()->get_pos(), orig_hpr, orig_scale, orig_shear));
+    rel_transform.set_pos(pos);
+    set_transform(other, rel_transform);
+    set_transform(Transform::make_pos_hpr_scale_shear
+                  (get_transform().get_pos(), orig_hpr, orig_scale, orig_shear));
 
-  } else {
+  } else*/ {
     // If we didn't have a componentwise transform already, never mind.
-    set_transform(other, rel_transform->set_pos(pos));
+    rel_transform.set_pos(pos);
+    set_transform(other, rel_transform);
   }
 }
 
@@ -1507,7 +1490,7 @@ set_fluid_z(const NodePath &other, PN_stdfloat z) {
 LPoint3 NodePath::
 get_pos(const NodePath &other) const {
   nassertr_always(!is_empty(), LPoint3(0.0f, 0.0f, 0.0f));
-  return get_transform(other)->get_pos();
+  return get_transform(other).get_pos();
 }
 
 /**
@@ -1522,7 +1505,7 @@ get_pos(const NodePath &other) const {
 LVector3 NodePath::
 get_pos_delta(const NodePath &other) const {
   nassertr_always(!is_empty(), LPoint3(0.0f, 0.0f, 0.0f));
-  return get_transform(other)->get_pos() - get_prev_transform(other)->get_pos();
+  return get_transform(other).get_pos() - get_prev_transform(other).get_pos();
 }
 
 /**
@@ -1531,29 +1514,31 @@ get_pos_delta(const NodePath &other) const {
 void NodePath::
 set_hpr(const NodePath &other, const LVecBase3 &hpr) {
   nassertv_always(!is_empty());
-  CPT(TransformState) rel_transform = get_transform(other);
-  nassertv(rel_transform->has_hpr());
+  Transform rel_transform = get_transform(other);
+  //nassertv(rel_transform.has_hpr());
 
-  CPT(TransformState) transform = get_transform();
-  if (transform->has_components()) {
+  /*Transform transform = get_transform();
+  if (transform.has_components()) {
     // If we had a componentwise transform before we started, we should be
     // careful to preserve the other three components.  We wouldn't need to do
     // this, except for the possibility of numerical error or decompose
     // ambiguity.
-    const LVecBase3 &orig_pos = transform->get_pos();
-    const LVecBase3 &orig_scale = transform->get_scale();
-    const LVecBase3 &orig_shear = transform->get_shear();
+    const LVecBase3 &orig_pos = transform.get_pos();
+    const LVecBase3 &orig_scale = transform.get_scale();
+    const LVecBase3 &orig_shear = transform.get_shear();
 
-    set_transform(other, rel_transform->set_hpr(hpr));
+    rel_transform.set_hpr(hpr);
+    set_transform(other, rel_transform);
     transform = get_transform();
-    if (transform->has_components()) {
-      set_transform(TransformState::make_pos_hpr_scale_shear
-                    (orig_pos, transform->get_hpr(), orig_scale, orig_shear));
+    if (transform.has_components()) {
+      set_transform(Transform::make_pos_hpr_scale_shear
+                    (orig_pos, transform.get_hpr(), orig_scale, orig_shear));
     }
 
-  } else {
+  } else*/ {
     // If we didn't have a componentwise transform already, never mind.
-    set_transform(other, rel_transform->set_hpr(hpr));
+    rel_transform.set_hpr(hpr);
+    set_transform(other, rel_transform);
   }
 }
 
@@ -1588,9 +1573,9 @@ set_r(const NodePath &other, PN_stdfloat r) {
 LVecBase3 NodePath::
 get_hpr(const NodePath &other) const {
   nassertr_always(!is_empty(), LVecBase3(0.0f, 0.0f, 0.0f));
-  CPT(TransformState) transform = get_transform(other);
-  nassertr(transform->has_hpr(), LVecBase3(0.0f, 0.0f, 0.0f));
-  return transform->get_hpr();
+  Transform transform = get_transform(other);
+  //nassertr(transform.has_hpr(), LVecBase3(0.0f, 0.0f, 0.0f));
+  return transform.get_hpr();
 }
 
 /**
@@ -1599,28 +1584,30 @@ get_hpr(const NodePath &other) const {
 void NodePath::
 set_quat(const NodePath &other, const LQuaternion &quat) {
   nassertv_always(!is_empty());
-  CPT(TransformState) rel_transform = get_transform(other);
+  Transform rel_transform = get_transform(other);
 
-  CPT(TransformState) transform = get_transform();
-  if (transform->has_components()) {
+  /*Transform transform = get_transform();
+  if (transform.has_components()) {
     // If we had a componentwise transform before we started, we should be
     // careful to preserve the other three components.  We wouldn't need to do
     // this, except for the possibility of numerical error or decompose
     // ambiguity.
-    const LVecBase3 &orig_pos = transform->get_pos();
-    const LVecBase3 &orig_scale = transform->get_scale();
-    const LVecBase3 &orig_shear = transform->get_shear();
+    const LVecBase3 &orig_pos = transform.get_pos();
+    const LVecBase3 &orig_scale = transform.get_scale();
+    const LVecBase3 &orig_shear = transform.get_shear();
 
-    set_transform(other, rel_transform->set_quat(quat));
+    rel_transform.set_quat(quat);
+    set_transform(other, rel_transform);
     transform = get_transform();
-    if (transform->has_components()) {
-      set_transform(TransformState::make_pos_quat_scale_shear
-                    (orig_pos, transform->get_quat(), orig_scale, orig_shear));
+    if (transform.has_components()) {
+      set_transform(Transform::make_pos_quat_scale_shear
+                    (orig_pos, transform.get_quat(), orig_scale, orig_shear));
     }
 
-  } else {
+  } else*/ {
     // If we didn't have a componentwise transform already, never mind.
-    set_transform(other, rel_transform->set_quat(quat));
+    rel_transform.set_quat(quat);
+    set_transform(other, rel_transform);
   }
 }
 
@@ -1631,8 +1618,8 @@ set_quat(const NodePath &other, const LQuaternion &quat) {
 LQuaternion NodePath::
 get_quat(const NodePath &other) const {
   nassertr_always(!is_empty(), LQuaternion::ident_quat());
-  CPT(TransformState) transform = get_transform(other);
-  return transform->get_quat();
+  Transform transform = get_transform(other);
+  return transform.get_quat();
 }
 
 /**
@@ -1641,28 +1628,30 @@ get_quat(const NodePath &other) const {
 void NodePath::
 set_scale(const NodePath &other, const LVecBase3 &scale) {
   nassertv_always(!is_empty());
-  CPT(TransformState) rel_transform = get_transform(other);
+  Transform rel_transform = get_transform(other);
 
-  CPT(TransformState) transform = get_transform();
-  if (transform->has_components()) {
+  /*Transform transform = get_transform();
+  if (transform.has_components()) {
     // If we had a componentwise transform before we started, we should be
     // careful to preserve the other three components.  We wouldn't need to do
     // this, except for the possibility of numerical error or decompose
     // ambiguity.
-    const LVecBase3 &orig_pos = transform->get_pos();
-    const LVecBase3 &orig_hpr = transform->get_hpr();
-    const LVecBase3 &orig_shear = transform->get_shear();
+    const LVecBase3 &orig_pos = transform.get_pos();
+    const LVecBase3 &orig_hpr = transform.get_hpr();
+    const LVecBase3 &orig_shear = transform.get_shear();
 
-    set_transform(other, rel_transform->set_scale(scale));
+    rel_transform.set_scale(scale);
+    set_transform(other, rel_transform);
     transform = get_transform();
-    if (transform->has_components()) {
-      set_transform(TransformState::make_pos_hpr_scale_shear
-                    (orig_pos, orig_hpr, transform->get_scale(), orig_shear));
+    if (transform.has_components()) {
+      set_transform(Transform::make_pos_hpr_scale_shear
+                    (orig_pos, orig_hpr, transform.get_scale(), orig_shear));
     }
 
-  } else {
+  } else*/ {
     // If we didn't have a componentwise transform already, never mind.
-    set_transform(other, rel_transform->set_scale(scale));
+    rel_transform.set_scale(scale);
+    set_transform(other, rel_transform);
   }
 }
 
@@ -1696,8 +1685,8 @@ set_sz(const NodePath &other, PN_stdfloat sz) {
 LVecBase3 NodePath::
 get_scale(const NodePath &other) const {
   nassertr_always(!is_empty(), LVecBase3(0.0f, 0.0f, 0.0f));
-  CPT(TransformState) transform = get_transform(other);
-  return transform->get_scale();
+  Transform transform = get_transform(other);
+  return transform.get_scale();
 }
 
 /**
@@ -1706,28 +1695,30 @@ get_scale(const NodePath &other) const {
 void NodePath::
 set_shear(const NodePath &other, const LVecBase3 &shear) {
   nassertv_always(!is_empty());
-  CPT(TransformState) rel_transform = get_transform(other);
+  Transform rel_transform = get_transform(other);
 
-  CPT(TransformState) transform = get_transform();
-  if (transform->has_components()) {
+  /*Transform transform = get_transform();
+  if (transform.has_components()) {
     // If we had a componentwise transform before we started, we should be
     // careful to preserve the other three components.  We wouldn't need to do
     // this, except for the possibility of numerical error or decompose
     // ambiguity.
-    const LVecBase3 &orig_pos = transform->get_pos();
-    const LVecBase3 &orig_hpr = transform->get_hpr();
-    const LVecBase3 &orig_scale = transform->get_scale();
+    const LVecBase3 &orig_pos = transform.get_pos();
+    const LVecBase3 &orig_hpr = transform.get_hpr();
+    const LVecBase3 &orig_scale = transform.get_scale();
 
-    set_transform(other, rel_transform->set_shear(shear));
+    rel_transform.set_shear(shear);
+    set_transform(other, rel_transform);
     transform = get_transform();
-    if (transform->has_components()) {
-      set_transform(TransformState::make_pos_hpr_scale_shear
-                    (orig_pos, orig_hpr, orig_scale, transform->get_shear()));
+    if (transform.has_components()) {
+      set_transform(Transform::make_pos_hpr_scale_shear
+                    (orig_pos, orig_hpr, orig_scale, transform.get_shear()));
     }
 
-  } else {
+  } else*/ {
     // If we didn't have a componentwise transform already, never mind.
-    set_transform(other, rel_transform->set_shear(shear));
+    rel_transform.set_shear(shear);
+    set_transform(other, rel_transform);
   }
 }
 
@@ -1761,8 +1752,8 @@ set_shyz(const NodePath &other, PN_stdfloat shyz) {
 LVecBase3 NodePath::
 get_shear(const NodePath &other) const {
   nassertr_always(!is_empty(), LVecBase3(0.0f, 0.0f, 0.0f));
-  CPT(TransformState) transform = get_transform(other);
-  return transform->get_shear();
+  Transform transform = get_transform(other);
+  return transform.get_shear();
 }
 
 /**
@@ -1773,29 +1764,29 @@ void NodePath::
 set_pos_hpr(const NodePath &other, const LVecBase3 &pos,
             const LVecBase3 &hpr) {
   nassertv_always(!is_empty());
-  CPT(TransformState) rel_transform = get_transform(other);
+  Transform rel_transform = get_transform(other);
 
-  CPT(TransformState) transform = get_transform();
-  if (transform->has_components()) {
+  /*Transform transform = get_transform();
+  if (transform.has_components()) {
     // If we had a componentwise transform before we started, we should be
     // careful to preserve the other two components.  We wouldn't need to do
     // this, except for the possibility of numerical error or decompose
     // ambiguity.
-    const LVecBase3 &orig_scale = transform->get_scale();
-    const LVecBase3 &orig_shear = transform->get_shear();
+    const LVecBase3 &orig_scale = transform.get_scale();
+    const LVecBase3 &orig_shear = transform.get_shear();
 
-    set_transform(other, TransformState::make_pos_hpr_scale_shear
-                  (pos, hpr, rel_transform->get_scale(), rel_transform->get_shear()));
+    set_transform(other, Transform::make_pos_hpr_scale_shear
+                  (pos, hpr, rel_transform.get_scale(), rel_transform.get_shear()));
     transform = get_transform();
-    if (transform->has_components()) {
-      set_pos_hpr_scale_shear(transform->get_pos(), transform->get_hpr(),
+    if (transform.has_components()) {
+      set_pos_hpr_scale_shear(transform.get_pos(), transform.get_hpr(),
                               orig_scale, orig_shear);
     }
 
-  } else {
+  } else*/ {
     // If we didn't have a componentwise transform already, never mind.
-    set_transform(other, TransformState::make_pos_hpr_scale_shear
-                  (pos, hpr, rel_transform->get_scale(), rel_transform->get_shear()));
+    set_transform(other, Transform::make_pos_hpr_scale_shear
+                  (pos, hpr, rel_transform.get_scale(), rel_transform.get_shear()));
     node()->reset_prev_transform();
   }
 }
@@ -1808,29 +1799,29 @@ void NodePath::
 set_pos_quat(const NodePath &other, const LVecBase3 &pos,
              const LQuaternion &quat) {
   nassertv_always(!is_empty());
-  CPT(TransformState) rel_transform = get_transform(other);
+  Transform rel_transform = get_transform(other);
 
-  CPT(TransformState) transform = get_transform();
-  if (transform->has_components()) {
+  /*Transform transform = get_transform();
+  if (transform.has_components()) {
     // If we had a componentwise transform before we started, we should be
     // careful to preserve the other two components.  We wouldn't need to do
     // this, except for the possibility of numerical error or decompose
     // ambiguity.
-    const LVecBase3 &orig_scale = transform->get_scale();
-    const LVecBase3 &orig_shear = transform->get_shear();
+    const LVecBase3 &orig_scale = transform.get_scale();
+    const LVecBase3 &orig_shear = transform.get_shear();
 
-    set_transform(other, TransformState::make_pos_quat_scale_shear
-                  (pos, quat, rel_transform->get_scale(), rel_transform->get_shear()));
+    set_transform(other, Transform::make_pos_quat_scale_shear
+                  (pos, quat, rel_transform.get_scale(), rel_transform.get_shear()));
     transform = get_transform();
-    if (transform->has_components()) {
-      set_pos_quat_scale_shear(transform->get_pos(), transform->get_quat(),
+    if (transform.has_components()) {
+      set_pos_quat_scale_shear(transform.get_pos(), transform.get_quat(),
                                orig_scale, orig_shear);
     }
 
-  } else {
+  } else */{
     // If we didn't have a componentwise transform already, never mind.
-    set_transform(other, TransformState::make_pos_quat_scale_shear
-                  (pos, quat, rel_transform->get_scale(), rel_transform->get_shear()));
+    set_transform(other, Transform::make_pos_quat_scale_shear
+                  (pos, quat, rel_transform.get_scale(), rel_transform.get_shear()));
     node()->reset_prev_transform();
   }
 }
@@ -1846,9 +1837,9 @@ set_hpr_scale(const NodePath &other, const LVecBase3 &hpr, const LVecBase3 &scal
   // unlike the work we do above to preserve hpr or scale, since it generally
   // doesn't matter that much if pos is off by a few thousandths.
   nassertv_always(!is_empty());
-  CPT(TransformState) transform = get_transform(other);
-  transform = TransformState::make_pos_hpr_scale_shear
-    (transform->get_pos(), hpr, scale, transform->get_shear());
+  Transform transform = get_transform(other);
+  transform = Transform::make_pos_hpr_scale_shear
+    (transform.get_pos(), hpr, scale, transform.get_shear());
   set_transform(other, transform);
 }
 
@@ -1864,9 +1855,9 @@ set_quat_scale(const NodePath &other, const LQuaternion &quat,
   // unlike the work we do above to preserve quat or scale, since it generally
   // doesn't matter that much if pos is off by a few thousandths.
   nassertv_always(!is_empty());
-  CPT(TransformState) transform = get_transform(other);
-  transform = TransformState::make_pos_quat_scale_shear
-    (transform->get_pos(), quat, scale, transform->get_shear());
+  Transform transform = get_transform(other);
+  transform = Transform::make_pos_quat_scale_shear
+    (transform.get_pos(), quat, scale, transform.get_shear());
   set_transform(other, transform);
 }
 
@@ -1879,7 +1870,7 @@ set_pos_hpr_scale(const NodePath &other,
                   const LVecBase3 &pos, const LVecBase3 &hpr,
                   const LVecBase3 &scale) {
   nassertv_always(!is_empty());
-  set_transform(other, TransformState::make_pos_hpr_scale
+  set_transform(other, Transform::make_pos_hpr_scale
                 (pos, hpr, scale));
   node()->reset_prev_transform();
 }
@@ -1893,7 +1884,7 @@ set_pos_quat_scale(const NodePath &other,
                    const LVecBase3 &pos, const LQuaternion &quat,
                    const LVecBase3 &scale) {
   nassertv_always(!is_empty());
-  set_transform(other, TransformState::make_pos_quat_scale
+  set_transform(other, Transform::make_pos_quat_scale
                 (pos, quat, scale));
   node()->reset_prev_transform();
 }
@@ -1907,7 +1898,7 @@ set_pos_hpr_scale_shear(const NodePath &other,
                         const LVecBase3 &pos, const LVecBase3 &hpr,
                         const LVecBase3 &scale, const LVecBase3 &shear) {
   nassertv_always(!is_empty());
-  set_transform(other, TransformState::make_pos_hpr_scale_shear
+  set_transform(other, Transform::make_pos_hpr_scale_shear
                 (pos, hpr, scale, shear));
   node()->reset_prev_transform();
 }
@@ -1921,7 +1912,7 @@ set_pos_quat_scale_shear(const NodePath &other,
                          const LVecBase3 &pos, const LQuaternion &quat,
                          const LVecBase3 &scale, const LVecBase3 &shear) {
   nassertv_always(!is_empty());
-  set_transform(other, TransformState::make_pos_quat_scale_shear
+  set_transform(other, Transform::make_pos_quat_scale_shear
                 (pos, quat, scale, shear));
   node()->reset_prev_transform();
 }
@@ -1932,12 +1923,8 @@ set_pos_quat_scale_shear(const NodePath &other,
  */
 LMatrix4 NodePath::
 get_mat(const NodePath &other) const {
-  CPT(TransformState) transform = get_transform(other);
-  // We can't safely return a reference to the matrix, because we can't assume
-  // the transform won't go away when the function returns.  If the transform
-  // was partially modified by, say, a CompassEffect, it won't be stored in
-  // the cache, and thus we might have the only reference to it.
-  return transform->get_mat();
+  Transform transform = get_transform(other);
+  return transform.get_mat();
 }
 
 /**
@@ -1947,7 +1934,7 @@ get_mat(const NodePath &other) const {
 void NodePath::
 set_mat(const NodePath &other, const LMatrix4 &mat) {
   nassertv_always(!is_empty());
-  set_transform(other, TransformState::make_mat(mat));
+  set_transform(other, Transform::make_mat(mat));
   node()->reset_prev_transform();
 }
 
@@ -1957,9 +1944,7 @@ set_mat(const NodePath &other, const LMatrix4 &mat) {
  */
 LPoint3 NodePath::
 get_relative_point(const NodePath &other, const LVecBase3 &point) const {
-  CPT(TransformState) transform = other.get_transform(*this);
-  LPoint3 rel_point = LPoint3(point) * transform->get_mat();
-  return rel_point;
+  return other.get_transform(*this).xform_point(point);
 }
 
 /**
@@ -1968,9 +1953,7 @@ get_relative_point(const NodePath &other, const LVecBase3 &point) const {
  */
 LVector3 NodePath::
 get_relative_vector(const NodePath &other, const LVecBase3 &vec) const {
-  CPT(TransformState) transform = other.get_transform(*this);
-  LVector3 rel_vector = LVector3(vec) * transform->get_mat();
-  return rel_vector;
+  return other.get_transform(*this).xform_vec(vec);
 }
 
 /**
@@ -1981,9 +1964,7 @@ void NodePath::
 look_at(const NodePath &other, const LPoint3 &point, const LVector3 &up) {
   nassertv_always(!is_empty());
 
-  CPT(TransformState) transform = other.get_transform(get_parent());
-  LPoint3 rel_point = point * transform->get_mat();
-
+  LPoint3 rel_point = other.get_transform(get_parent()).xform_point(point);
   LPoint3 pos = get_pos();
 
   LQuaternion quat;
@@ -1999,9 +1980,7 @@ void NodePath::
 heads_up(const NodePath &other, const LPoint3 &point, const LVector3 &up) {
   nassertv_always(!is_empty());
 
-  CPT(TransformState) transform = other.get_transform(get_parent());
-  LPoint3 rel_point = point * transform->get_mat();
-
+  LPoint3 rel_point = other.get_transform(get_parent()).xform_point(point);
   LPoint3 pos = get_pos();
 
   LQuaternion quat;
@@ -4784,11 +4763,10 @@ void NodePath::
 do_billboard_axis(const NodePath &camera, PN_stdfloat offset) {
   nassertv_always(!is_empty());
 
-  CPT(TransformState) transform = camera.get_transform(get_parent());
-  const LMatrix4 &rel_mat = transform->get_mat();
+  Transform transform = camera.get_transform(get_parent());
 
   LVector3 up = LVector3::up();
-  LVector3 rel_pos = -rel_mat.get_row3(3);
+  LVector3 rel_pos = -transform.get_pos();
 
   LQuaternion quat;
   ::heads_up(quat, rel_pos, up);
@@ -4797,7 +4775,7 @@ do_billboard_axis(const NodePath &camera, PN_stdfloat offset) {
   // Also slide the geometry towards the camera according to the offset
   // factor.
   if (offset != 0.0f) {
-    LVector3 translate = rel_mat.get_row3(3);
+    LVector3 translate = transform.get_pos();
     translate.normalize();
     translate *= offset;
     set_pos(translate);
@@ -4814,11 +4792,9 @@ void NodePath::
 do_billboard_point_eye(const NodePath &camera, PN_stdfloat offset) {
   nassertv_always(!is_empty());
 
-  CPT(TransformState) transform = camera.get_transform(get_parent());
-  const LMatrix4 &rel_mat = transform->get_mat();
-
-  LVector3 up = LVector3::up() * rel_mat;
-  LVector3 rel_pos = LVector3::forward() * rel_mat;
+  Transform transform = camera.get_transform(get_parent());
+  LVector3 up = transform.xform_vec(LVector3::up());
+  LVector3 rel_pos = transform.xform_vec(LVector3::forward());
 
   LQuaternion quat;
   ::look_at(quat, rel_pos, up);
@@ -4827,7 +4803,7 @@ do_billboard_point_eye(const NodePath &camera, PN_stdfloat offset) {
   // Also slide the geometry towards the camera according to the offset
   // factor.
   if (offset != 0.0f) {
-    LVector3 translate = rel_mat.get_row3(3);
+    LVector3 translate = transform.get_pos();
     translate.normalize();
     translate *= offset;
     set_pos(translate);
@@ -4843,11 +4819,10 @@ void NodePath::
 do_billboard_point_world(const NodePath &camera, PN_stdfloat offset) {
   nassertv_always(!is_empty());
 
-  CPT(TransformState) transform = camera.get_transform(get_parent());
-  const LMatrix4 &rel_mat = transform->get_mat();
+  Transform transform = camera.get_transform(get_parent());
 
   LVector3 up = LVector3::up();
-  LVector3 rel_pos = -rel_mat.get_row3(3);
+  LVector3 rel_pos = -transform.get_pos();
 
   LQuaternion quat;
   ::look_at(quat, rel_pos, up);
@@ -4856,7 +4831,7 @@ do_billboard_point_world(const NodePath &camera, PN_stdfloat offset) {
   // Also slide the geometry towards the camera according to the offset
   // factor.
   if (offset != 0.0f) {
-    LVector3 translate = rel_mat.get_row3(3);
+    LVector3 translate = transform.get_pos();
     translate.normalize();
     translate *= offset;
     set_pos(translate);
@@ -5555,14 +5530,14 @@ calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
   max_point.set(0.0f, 0.0f, 0.0f);
   nassertr_always(!is_empty(), false);
 
-  CPT(TransformState) transform = TransformState::make_identity();
+  Transform transform = Transform::make_identity();
   if (!other.is_empty()) {
-    transform = get_transform(other)->compose(get_transform()->get_inverse());
+    transform = get_transform(other).compose(get_transform().get_inverse());
   }
 
   bool found_any = false;
   node()->calc_tight_bounds(min_point, max_point, found_any,
-                            std::move(transform), current_thread);
+                            transform, current_thread);
 
   return found_any;
 }
@@ -6044,26 +6019,26 @@ r_get_partial_state(NodePathComponent *comp, int n,
  * Recursively determines the net transform to the indicated component node
  * from the root of the graph.
  */
-CPT(TransformState) NodePath::
+Transform NodePath::
 r_get_net_transform(NodePathComponent *comp, Thread *current_thread) const {
   if (comp == nullptr) {
-    return TransformState::make_identity();
+    return Transform::make_identity();
   } else {
     PandaNode *node = comp->get_node();
     int pipeline_stage = current_thread->get_pipeline_stage();
-    CPT(TransformState) net_transform = r_get_net_transform(comp->get_next(pipeline_stage, current_thread), current_thread);
+    Transform net_transform = r_get_net_transform(comp->get_next(pipeline_stage, current_thread), current_thread);
 
     PandaNode::CDReader node_cdata(node->_cycler, current_thread);
     if (!node_cdata->_effects->has_adjust_transform()) {
-      if (node_cdata->_transform->is_identity()) {
+      if (node_cdata->_transform.is_identity()) {
         return net_transform;
       } else {
-        return net_transform->compose(node_cdata->_transform);
+        return net_transform.compose(node_cdata->_transform);
       }
     } else {
-      CPT(TransformState) transform = node_cdata->_transform.p();
+      Transform transform = node_cdata->_transform;
       node_cdata->_effects->adjust_transform(net_transform, transform, node);
-      return net_transform->compose(transform);
+      return net_transform.compose(transform);
     }
   }
 }
@@ -6073,45 +6048,46 @@ r_get_net_transform(NodePathComponent *comp, Thread *current_thread) const {
  * from the nth node above it.  If n exceeds the length of the path, this
  * returns the net transform from the root of the graph.
  *
- * If any node in the path had a net_transform effect applied, returns NULL--
+ * If any node in the path had a net_transform effect applied, returns false--
  * in this case the partial transform cannot be easily determined.
  */
-CPT(TransformState) NodePath::
-r_get_partial_transform(NodePathComponent *comp, int n,
+bool NodePath::
+r_get_partial_transform(Transform &result, NodePathComponent *comp, int n,
                         Thread *current_thread) const {
   if (n == 0 || comp == nullptr) {
-    return TransformState::make_identity();
+    result = Transform::make_identity();
   } else {
     PandaNode *node = comp->get_node();
     PandaNode::CDReader node_cdata(node->_cycler, current_thread);
     if (node_cdata->_effects->has_adjust_transform()) {
-      return nullptr;
+      return false;
     }
     int pipeline_stage = current_thread->get_pipeline_stage();
-    CPT(TransformState) partial = r_get_partial_transform(comp->get_next(pipeline_stage, current_thread), n - 1, current_thread);
-    if (partial == nullptr) {
-      return nullptr;
+    Transform partial;
+    if (!r_get_partial_transform(partial, comp->get_next(pipeline_stage, current_thread), n - 1, current_thread)) {
+      return false;
     }
-    if (node_cdata->_transform->is_identity()) {
-      return partial;
+    if (node_cdata->_transform.is_identity()) {
+      result = partial;
     } else {
-      return partial->compose(node_cdata->_transform);
+      result = partial.compose(node_cdata->_transform);
     }
   }
+  return true;
 }
 
 /**
  * Recursively determines the net "previous" transform to the indicated
  * component node from the root of the graph.
  */
-CPT(TransformState) NodePath::
+Transform NodePath::
 r_get_net_prev_transform(NodePathComponent *comp, Thread *current_thread) const {
   if (comp == nullptr) {
-    return TransformState::make_identity();
+    return Transform::make_identity();
   } else {
-    CPT(TransformState) transform = comp->get_node()->get_prev_transform(current_thread);
+    Transform transform = comp->get_node()->get_prev_transform(current_thread);
     int pipeline_stage = current_thread->get_pipeline_stage();
-    return r_get_net_prev_transform(comp->get_next(pipeline_stage, current_thread), current_thread)->compose(transform);
+    return r_get_net_prev_transform(comp->get_next(pipeline_stage, current_thread), current_thread).compose(transform);
   }
 }
 
@@ -6120,14 +6096,14 @@ r_get_net_prev_transform(NodePathComponent *comp, Thread *current_thread) const 
  * component node from the nth node above it.  If n exceeds the length of the
  * path, this returns the net previous transform from the root of the graph.
  */
-CPT(TransformState) NodePath::
+Transform NodePath::
 r_get_partial_prev_transform(NodePathComponent *comp, int n, Thread *current_thread) const {
   if (n == 0 || comp == nullptr) {
-    return TransformState::make_identity();
+    return Transform::make_identity();
   } else {
-    CPT(TransformState) transform = comp->get_node()->get_prev_transform(current_thread);
+    Transform transform = comp->get_node()->get_prev_transform(current_thread);
     int pipeline_stage = current_thread->get_pipeline_stage();
-    return r_get_partial_prev_transform(comp->get_next(pipeline_stage, current_thread), n - 1, current_thread)->compose(transform);
+    return r_get_partial_prev_transform(comp->get_next(pipeline_stage, current_thread), n - 1, current_thread).compose(transform);
   }
 }
 

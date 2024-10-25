@@ -23,7 +23,7 @@
 
 #include "pandaNode.h"
 #include "renderState.h"
-#include "transformState.h"
+#include "transform.h"
 #include "renderModeAttrib.h"
 #include "transparencyAttrib.h"
 #include "logicOpAttrib.h"
@@ -302,19 +302,19 @@ PUBLISHED:
   INLINE const RenderEffects *get_effects() const;
   INLINE void clear_effects();
 
-  const TransformState *get_transform(Thread *current_thread = Thread::get_current_thread()) const;
+  INLINE Transform get_transform(Thread *current_thread = Thread::get_current_thread()) const;
   INLINE void clear_transform(Thread *current_thread = Thread::get_current_thread());
-  INLINE void set_transform(const TransformState *transform, Thread *current_thread = Thread::get_current_thread());
-  CPT(TransformState) get_transform(const NodePath &other, Thread *current_thread = Thread::get_current_thread()) const;
+  INLINE void set_transform(const Transform &transform, Thread *current_thread = Thread::get_current_thread());
+  Transform get_transform(const NodePath &other, Thread *current_thread = Thread::get_current_thread()) const;
   INLINE void clear_transform(const NodePath &other, Thread *current_thread = Thread::get_current_thread());
-  void set_transform(const NodePath &other, const TransformState *transform, Thread *current_thread = Thread::get_current_thread());
-  INLINE CPT(TransformState) get_net_transform(Thread *current_thread = Thread::get_current_thread()) const;
+  void set_transform(const NodePath &other, const Transform &transform, Thread *current_thread = Thread::get_current_thread());
+  INLINE Transform get_net_transform(Thread *current_thread = Thread::get_current_thread()) const;
 
-  const TransformState *get_prev_transform(Thread *current_thread = Thread::get_current_thread()) const;
-  INLINE void set_prev_transform(const TransformState *transform, Thread *current_thread = Thread::get_current_thread());
-  CPT(TransformState) get_prev_transform(const NodePath &other, Thread *current_thread = Thread::get_current_thread()) const;
-  void set_prev_transform(const NodePath &other, const TransformState *transform, Thread *current_thread = Thread::get_current_thread());
-  INLINE CPT(TransformState) get_net_prev_transform(Thread *current_thread = Thread::get_current_thread()) const;
+  INLINE Transform get_prev_transform(Thread *current_thread = Thread::get_current_thread()) const;
+  INLINE void set_prev_transform(const Transform &transform, Thread *current_thread = Thread::get_current_thread());
+  Transform get_prev_transform(const NodePath &other, Thread *current_thread = Thread::get_current_thread()) const;
+  void set_prev_transform(const NodePath &other, const Transform &transform, Thread *current_thread = Thread::get_current_thread());
+  INLINE Transform get_net_prev_transform(Thread *current_thread = Thread::get_current_thread()) const;
 
 
   // Methods that get and set the matrix transform: pos, hpr, scale, in the
@@ -330,7 +330,7 @@ PUBLISHED:
   void set_fluid_x(PN_stdfloat x);
   void set_fluid_y(PN_stdfloat y);
   void set_fluid_z(PN_stdfloat z);
-  LPoint3 get_pos() const;
+  INLINE LPoint3 get_pos() const;
   INLINE PN_stdfloat get_x() const;
   INLINE PN_stdfloat get_y() const;
   INLINE PN_stdfloat get_z() const;
@@ -405,7 +405,7 @@ PUBLISHED:
   void set_mat(const LMatrix4 &mat);
   INLINE void clear_mat();
   INLINE bool has_mat() const;
-  INLINE const LMatrix4 &get_mat() const;
+  INLINE LMatrix4 get_mat() const;
 
   INLINE void look_at(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z);
   void look_at(const LPoint3 &point, const LVector3 &up = LVector3::up());
@@ -976,14 +976,14 @@ private:
                                    Thread *current_thread) const;
   CPT(RenderState) r_get_partial_state(NodePathComponent *comp, int n,
                                        Thread *current_thread) const;
-  CPT(TransformState) r_get_net_transform(NodePathComponent *comp,
-                                          Thread *current_thread) const;
-  CPT(TransformState) r_get_partial_transform(NodePathComponent *comp, int n,
-                                              Thread *current_thread) const;
-  CPT(TransformState) r_get_net_prev_transform(NodePathComponent *comp,
-                                               Thread *current_thread) const;
-  CPT(TransformState) r_get_partial_prev_transform(NodePathComponent *comp,
-                                                   int n, Thread *current_thread) const;
+  Transform r_get_net_transform(NodePathComponent *comp,
+                                Thread *current_thread) const;
+  bool r_get_partial_transform(Transform &result, NodePathComponent *comp,
+                               int n, Thread *current_thread) const;
+  Transform r_get_net_prev_transform(NodePathComponent *comp,
+                                     Thread *current_thread) const;
+  Transform r_get_partial_prev_transform(NodePathComponent *comp,
+                                         int n, Thread *current_thread) const;
 
   void find_matches(NodePathCollection &result,
                     const std::string &approx_path_str,

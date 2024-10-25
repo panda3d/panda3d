@@ -41,7 +41,7 @@ AnimChannelScalarDynamic(AnimGroup *parent, const AnimChannelScalarDynamic &copy
   AnimChannelScalar(parent, copy),
   _value_node(copy._value_node),
   _value(copy._value),
-  _last_value(nullptr),
+  _last_value(Transform::make_identity()),
   _value_changed(true),
   _float_value(copy._float_value)
 {
@@ -54,7 +54,7 @@ AnimChannelScalarDynamic::
 AnimChannelScalarDynamic(const std::string &name)
   : AnimChannelScalar(name)
 {
-  _last_value = _value = TransformState::make_identity();
+  _last_value = _value = Transform::make_identity();
   _value_changed = true;
   _float_value = 0.0;
 }
@@ -106,7 +106,7 @@ set_value(PN_stdfloat value) {
 void AnimChannelScalarDynamic::
 set_value_node(PandaNode *value_node) {
   if (_value_node == nullptr) {
-    _last_value = TransformState::make_pos(LVecBase3(_float_value, 0.0f, 0.0f));
+    _last_value = Transform::make_pos(LVecBase3(_float_value, 0.0f, 0.0f));
   }
 
   _value_node = value_node;
@@ -135,7 +135,7 @@ void AnimChannelScalarDynamic::
 write_datagram(BamWriter *manager, Datagram &dg) {
   AnimChannelScalar::write_datagram(manager, dg);
   manager->write_pointer(dg, _value_node);
-  manager->write_pointer(dg, _value);
+  manager->write_pointer(dg, TransformState::make_mat(_value.get_mat()));
   dg.add_stdfloat(_float_value);
 }
 
@@ -149,7 +149,9 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
 
   // Get the _value_node and _value pointers.
   _value_node = DCAST(PandaNode, p_list[pi++]);
-  _value = DCAST(TransformState, p_list[pi++]);
+
+  CPT(TransformState) value = DCAST(TransformState, p_list[pi++]);
+  _value = Transform::make_mat(value->get_mat());
 
   return pi;
 }

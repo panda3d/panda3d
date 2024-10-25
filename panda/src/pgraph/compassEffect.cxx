@@ -113,60 +113,59 @@ has_cull_callback() const {
  */
 void CompassEffect::
 cull_callback(CullTraverser *trav, CullTraverserData &data,
-              CPT(TransformState) &node_transform,
-              CPT(RenderState) &) const {
+              Transform &node_transform, CPT(RenderState) &) const {
   if (_properties == 0) {
     // Nothing to do.
     return;
   }
 
   if (data._instances == nullptr) {
-    CPT(TransformState) true_net_transform = data.get_net_transform(trav);
-    CPT(TransformState) want_net_transform = true_net_transform;
+    Transform true_net_transform = data.get_net_transform(trav);
+    Transform want_net_transform = true_net_transform;
     adjust_transform(want_net_transform, node_transform, data.node());
 
     // Now compute the transform that will convert true_net_transform to
     // want_transform.  This is inv(true_net_transform) * want_transform.
-    CPT(TransformState) compass_transform =
-      true_net_transform->invert_compose(want_net_transform);
+    Transform compass_transform =
+      true_net_transform.invert_compose(want_net_transform);
 
     // And modify our local node's apparent transform so that
     // true_net_transform->compose(new_node_transform) produces the same result
     // we would have gotten had we actually computed
     // want_transform->compose(orig_node_transform).
-    node_transform = compass_transform->compose(node_transform);
+    node_transform = compass_transform.compose(node_transform);
   }
   else {
     // Compute the billboard effect for every instance individually.
     InstanceList *instances = new InstanceList(*data._instances);
     data._instances = instances;
 
-    CPT(TransformState) parent_net_transform = data.get_net_transform(trav);
-    CPT(TransformState) invert_net_transform = parent_net_transform->get_inverse();
+    Transform parent_net_transform = data.get_net_transform(trav);
+    Transform invert_net_transform = parent_net_transform.get_inverse();
 
     // We make use of the fact that we know adjust_transform() does not modify
     // its node_transform parameter.
-    CPT(TransformState) node_transform_copy = node_transform;
-    if (node_transform_copy->is_identity()) {
+    Transform node_transform_copy = node_transform;
+    if (node_transform_copy.is_identity()) {
       // Slightly optimized case.
       for (InstanceList::Instance &instance : *instances) {
-        CPT(TransformState) true_net_transform = parent_net_transform->compose(instance.get_transform());
-        CPT(TransformState) want_net_transform = true_net_transform;
+        Transform true_net_transform = parent_net_transform.compose(instance.get_transform());
+        Transform want_net_transform = true_net_transform;
         adjust_transform(want_net_transform, node_transform_copy, data.node());
 
-        instance.set_transform(invert_net_transform->compose(want_net_transform));
+        instance.set_transform(invert_net_transform.compose(want_net_transform));
       }
     }
     else {
       // We apply the node_transform to the instances.
-      node_transform = TransformState::make_identity();
+      node_transform = Transform::make_identity();
 
       for (InstanceList::Instance &instance : *instances) {
-        CPT(TransformState) true_net_transform = parent_net_transform->compose(instance.get_transform());
-        CPT(TransformState) want_net_transform = true_net_transform;
+        Transform true_net_transform = parent_net_transform.compose(instance.get_transform());
+        Transform want_net_transform = true_net_transform;
         adjust_transform(want_net_transform, node_transform_copy, data.node());
 
-        instance.set_transform(invert_net_transform->compose(want_net_transform)->compose(node_transform_copy));
+        instance.set_transform(invert_net_transform.compose(want_net_transform).compose(node_transform_copy));
       }
     }
   }
@@ -191,8 +190,8 @@ has_adjust_transform() const {
  * they may (or may not) be modified in-place by the RenderEffect.
  */
 void CompassEffect::
-adjust_transform(CPT(TransformState) &net_transform,
-                 CPT(TransformState) &node_transform,
+adjust_transform(Transform &net_transform,
+                 Transform &node_transform,
                  const PandaNode *) const {
   if (_properties == 0) {
     // Nothing to do.
@@ -201,9 +200,9 @@ adjust_transform(CPT(TransformState) &net_transform,
 
   // The reference transform: where we are acting as if we inherit from.
   // Either the root node (identity) or the specified reference node.
-  CPT(TransformState) ref_transform;
+  Transform ref_transform;
   if (_reference.is_empty()) {
-    ref_transform = TransformState::make_identity();
+    ref_transform = Transform::make_identity();
   } else {
     ref_transform = _reference.get_net_transform();
   }
@@ -212,7 +211,7 @@ adjust_transform(CPT(TransformState) &net_transform,
   // of the components from the net transform we want to inherit normally from
   // our parent, with all of the components from the ref transform we want to
   // inherit from our reference.
-  CPT(TransformState) want_net_transform;
+  Transform want_net_transform;
   if (_properties == P_all) {
     // If we want to steal the whole transform, that's easy.
     want_net_transform = ref_transform;
@@ -220,8 +219,8 @@ adjust_transform(CPT(TransformState) &net_transform,
   } else {
     // How much of the pos do we want to steal?  We can always determine a
     // transform's pos, even if it's nondecomposable.
-    LVecBase3 want_pos = net_transform->get_pos();
-    const LVecBase3 &ref_pos = ref_transform->get_pos();
+    LVecBase3 want_pos = net_transform.get_pos();
+    const LVecBase3 &ref_pos = ref_transform.get_pos();
     if ((_properties & P_x) != 0) {
       want_pos[0] = ref_pos[0];
     }
@@ -234,30 +233,33 @@ adjust_transform(CPT(TransformState) &net_transform,
 
     if ((_properties & ~P_pos) == 0) {
       // If we only want to steal the pos, that's pretty easy.
-      want_net_transform = net_transform->set_pos(want_pos);
+      want_net_transform = net_transform;
+      want_net_transform.set_pos(want_pos);
 
     } else if ((_properties & (P_rot | P_scale)) == (P_rot | P_scale)) {
       // If we want to steal everything *but* the pos, also easy.
-      want_net_transform = ref_transform->set_pos(want_pos);
+      want_net_transform = ref_transform;
+      want_net_transform.set_pos(want_pos);
 
     } else {
       // For any other combination, we have to be able to decompose both
       // transforms.
-      if (!net_transform->has_components() ||
+      /*if (!net_transform->has_components() ||
           !ref_transform->has_components()) {
         // If we can't decompose, just do the best we can: steal everything
         // but the pos.
-        want_net_transform = ref_transform->set_pos(want_pos);
+        want_net_transform = ref_transform;
+        want_net_transform.set_pos(want_pos);
 
-      } else {
+      } else {*/
         // If we can decompose, then take only the components we want.
-        LQuaternion want_quat = net_transform->get_quat();
+        LQuaternion want_quat = net_transform.get_quat();
         if ((_properties & P_rot) != 0) {
-          want_quat = ref_transform->get_quat();
+          want_quat = ref_transform.get_quat();
         }
 
-        LVecBase3 want_scale = net_transform->get_scale();
-        const LVecBase3 &ref_scale = ref_transform->get_scale();
+        LVecBase3 want_scale = net_transform.get_scale();
+        LVecBase3 ref_scale = ref_transform.get_scale();
         if ((_properties & P_sx) != 0) {
           want_scale[0] = ref_scale[0];
         }
@@ -269,8 +271,8 @@ adjust_transform(CPT(TransformState) &net_transform,
         }
 
         want_net_transform =
-          TransformState::make_pos_quat_scale(want_pos, want_quat, want_scale);
-      }
+          Transform::make_pos_quat_scale(want_pos, want_quat, want_scale);
+      //}
     }
   }
 

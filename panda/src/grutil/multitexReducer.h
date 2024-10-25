@@ -19,7 +19,7 @@
 #include "textureAttrib.h"
 #include "textureStage.h"
 #include "texMatrixAttrib.h"
-#include "transformState.h"
+#include "transform.h"
 #include "geomNode.h"
 #include "nodePath.h"
 #include "luse.h"
@@ -30,7 +30,6 @@
 class GraphicsOutput;
 class PandaNode;
 class RenderState;
-class TransformState;
 
 /**
  * This object presents an interface for generating new texture images that
@@ -52,8 +51,7 @@ PUBLISHED:
   void clear();
   INLINE void scan(const NodePath &node);
   INLINE void scan(const NodePath &node, const NodePath &state_from);
-  void scan(PandaNode *node, const RenderState *state,
-            const TransformState *transform);
+  void scan(PandaNode *node, const RenderState *state, const Transform &transform);
 
   void set_target(TextureStage *stage);
   void set_use_geom(bool use_geom);
@@ -108,7 +106,7 @@ private:
 
 private:
   void scan_geom_node(GeomNode *node, const RenderState *state,
-                      const TransformState *transform);
+                      const Transform &transform);
 
   void record_stage_list(const StageList &stage_list,
                          const GeomInfo &geom_info);

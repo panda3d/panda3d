@@ -15,7 +15,7 @@
  * Returns the explicit TransformState value that was set via set_value(), if
  * any.
  */
-INLINE const TransformState *AnimChannelMatrixDynamic::
+INLINE const Transform &AnimChannelMatrixDynamic::
 get_value_transform() const {
   return _value;
 }

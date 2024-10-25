@@ -223,10 +223,11 @@ handle_entries() {
             adjust = std::max(adjust, -max_adjust);
           }
 
-          CPT(TransformState) trans = def._target.get_transform();
-          LVecBase3 pos = trans->get_pos();
+          Transform trans = def._target.get_transform();
+          LVecBase3 pos = trans.get_pos();
           pos[2] += adjust;
-          def._target.set_transform(trans->set_pos(pos));
+          trans.set_pos(pos);
+          def._target.set_transform(trans);
           def.updated_transform();
 
           apply_linear_force(def, LVector3(0.0f, 0.0f, adjust));

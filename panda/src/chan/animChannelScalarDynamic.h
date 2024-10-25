@@ -59,8 +59,8 @@ private:
   // get an implicit value from the transform on the indicated node each
   // frame.
   PT(PandaNode) _value_node;
-  CPT(TransformState) _value;
-  CPT(TransformState) _last_value;
+  Transform _value;
+  Transform _last_value;
 
   // This is used only if we are using the explicit set_value() interface.
   bool _value_changed;

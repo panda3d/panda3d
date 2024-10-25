@@ -57,7 +57,7 @@ get_tag_state_key() const {
 /**
  * Returns the position of the camera relative to the starting node.
  */
-INLINE const TransformState *CullTraverser::
+INLINE const Transform &CullTraverser::
 get_camera_transform() const {
   return _scene_setup->get_camera_transform();
 }
@@ -71,7 +71,7 @@ get_camera_transform() const {
  * transform of the current node use
  * CullTraverserData::get_modelview_transform().
  */
-INLINE const TransformState *CullTraverser::
+INLINE const Transform &CullTraverser::
 get_world_transform() const {
   return _scene_setup->get_world_transform();
 }
@@ -232,7 +232,7 @@ traverse_down(const CullTraverserData &data, PandaNode *node) {
  */
 INLINE void CullTraverser::
 traverse_down(const CullTraverserData &data, PandaNode *node,
-               const TransformState *net_transform, const RenderState *state) {
+               const Transform &net_transform, const RenderState *state) {
   PandaNodePipelineReader node_reader(node, data._node_reader.get_current_thread());
 
   int result = data.is_child_in_view(node_reader, _camera_mask);

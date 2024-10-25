@@ -2566,7 +2566,7 @@ copy_graphic_to(PandaNode *node, const RenderState *state) const {
     node->add_child(intermediate_node);
 
     intermediate_node->set_transform(
-      TransformState::make_pos_hpr_scale_shear(
+      Transform::make_pos_hpr_scale_shear(
         LVecBase3(_xpos, 0, _ypos),
         LVecBase3::zero(),
         LVecBase3(_scale, 1, _scale),

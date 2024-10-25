@@ -178,8 +178,7 @@ has_cull_callback() const {
  */
 void TexProjectorEffect::
 cull_callback(CullTraverser *trav, CullTraverserData &data,
-              CPT(TransformState) &node_transform,
-              CPT(RenderState) &node_state) const {
+              Transform &node_transform, CPT(RenderState) &node_state) const {
   CPT(TexMatrixAttrib) tex_matrix = DCAST(TexMatrixAttrib, TexMatrixAttrib::make());
 
   Stages::const_iterator mi;
@@ -187,7 +186,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data,
     TextureStage *stage = (*mi).first;
     const StageDef &def = (*mi).second;
 
-    CPT(TransformState) transform = def._from.get_transform(def._to);
+    CPT(TransformState) transform = TransformState::make_mat(def._from.get_transform(def._to).get_mat());
 
     if (def._to_lens_node != nullptr &&
         def._to_lens_node->get_lens() != nullptr) {

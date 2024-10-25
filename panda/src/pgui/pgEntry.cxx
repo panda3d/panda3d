@@ -17,7 +17,7 @@
 #include "cullTraverser.h"
 #include "cullTraverserData.h"
 #include "throw_event.h"
-#include "transformState.h"
+#include "transform.h"
 #include "mouseWatcherParameter.h"
 #include "keyboardButton.h"
 #include "mouseButton.h"
@@ -63,7 +63,7 @@ PGEntry(const string &name) :
 
   _text_render_root = NodePath("text_root");
 
-  CPT(TransformState) transform = TransformState::make_mat(LMatrix4::convert_mat(CS_default, CS_zup_right));
+  Transform transform = Transform::make_mat(LMatrix4::convert_mat(CS_default, CS_zup_right));
   _text_render_root.set_transform(transform);
 
   _cursor_scale = _text_render_root.attach_new_node("cursor_scale");

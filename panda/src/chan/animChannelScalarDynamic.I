@@ -19,7 +19,7 @@
 INLINE PN_stdfloat AnimChannelScalarDynamic::
 get_value() const {
   if (_value_node != nullptr) {
-    return _value->get_pos()[0];
+    return _value.get_pos()[0];
   } else {
     return _float_value;
   }

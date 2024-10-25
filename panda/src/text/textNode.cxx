@@ -382,7 +382,7 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
     CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
 
     if ((attrib_types & SceneGraphReducer::TT_transform) != 0) {
-      const LMatrix4 &mat = attribs._transform->get_mat();
+      LMatrix4 mat = attribs._transform.get_mat();
       cdata->_transform *= mat;
 
       if ((cdata->_flags & F_needs_measure) == 0) {
@@ -448,10 +448,10 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
  * over several nodes, so it may enter with min_point, max_point, and
  * found_any already set.
  */
-CPT(TransformState) TextNode::
+Transform TextNode::
 calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point, bool &found_any,
-                  const TransformState *transform, Thread *current_thread) const {
-  CPT(TransformState) next_transform =
+                  const Transform &transform, Thread *current_thread) const {
+  Transform next_transform =
     PandaNode::calc_tight_bounds(min_point, max_point, found_any, transform,
                                  current_thread);
 
@@ -629,7 +629,7 @@ do_generate(CData *cdata) {
     LMatrix4::convert_mat(CS_zup_right, cdata->_coordinate_system) *
     cdata->_transform;
 
-  CPT(TransformState) transform = TransformState::make_mat(mat);
+  Transform transform = Transform::make_mat(mat);
   root->set_transform(transform);
 
   // Assemble the text.

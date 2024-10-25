@@ -223,8 +223,8 @@ set_highest_collision(const NodePath &target_node_path, const NodePath &from_nod
  * what is the normal of the avatar that the avatar is colliding with relative
  * to the plane.
  */
-    CPT(TransformState) transform = highest->get_into_node_path().get_transform(from_node_path);
-    _contact_normal = DCAST(CollisionPlane, highest->get_into())->get_normal() * transform->get_mat();
+    Transform transform = highest->get_into_node_path().get_transform(from_node_path);
+    _contact_normal = transform.xform_vec(DCAST(CollisionPlane, highest->get_into())->get_normal());
   } else {
     _contact_normal = highest->get_surface_normal(from_node_path);
   }
@@ -307,10 +307,11 @@ handle_entries() {
           _current_colliding.clear();
         }
 
-        CPT(TransformState) trans = def._target.get_transform();
-        LVecBase3 pos = trans->get_pos();
+        Transform trans = def._target.get_transform();
+        LVecBase3 pos = trans.get_pos();
         pos[2] += adjust;
-        def._target.set_transform(trans->set_pos(pos));
+        trans.set_pos(pos);
+        def._target.set_transform(trans);
         def.updated_transform();
 
         apply_linear_force(def, LVector3(0.0f, 0.0f, adjust));

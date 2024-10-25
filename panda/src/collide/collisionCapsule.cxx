@@ -30,7 +30,7 @@
 #include "bamReader.h"
 #include "bamWriter.h"
 #include "cmath.h"
-#include "transformState.h"
+#include "transform.h"
 #include "geom.h"
 #include "geomTristrips.h"
 #include "geomVertexWriter.h"
@@ -230,26 +230,22 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   const CollisionSphere *sphere;
   DCAST_INTO_R(sphere, entry.get_from(), nullptr);
 
-  CPT(TransformState) wrt_space = entry.get_wrt_space();
-  CPT(TransformState) wrt_prev_space = entry.get_wrt_prev_space();
+  Transform wrt_space = entry.get_wrt_space();
+  Transform wrt_prev_space = entry.get_wrt_prev_space();
 
-  const LMatrix4 &wrt_mat = wrt_space->get_mat();
-
-  LPoint3 from_a = sphere->get_center() * wrt_mat;
+  LPoint3 from_a = wrt_space.xform_point(sphere->get_center());
   LPoint3 from_b = from_a;
 
   LPoint3 contact_point;
   PN_stdfloat actual_t = 0.0f;
 
-  if (wrt_prev_space != wrt_space) {
-    // If the sphere is moving relative to the capsule, it becomes a capsule itself.
-    from_a = sphere->get_center() * wrt_prev_space->get_mat();
-  }
+  // If the sphere is moving relative to the capsule, it becomes a capsule itself.
+  from_a = wrt_prev_space.xform_point(sphere->get_center());
 
   LVector3 from_direction = from_b - from_a;
 
   LVector3 from_radius_v =
-    LVector3(sphere->get_radius(), 0.0f, 0.0f) * wrt_mat;
+    wrt_space.xform_vec(LVector3(sphere->get_radius(), 0.0f, 0.0f));
   PN_stdfloat from_radius = length(from_radius_v);
 
   double t1, t2;

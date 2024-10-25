@@ -118,9 +118,10 @@ add_object(CullableObject *object, const CullTraverser *traverser) {
   if (rescale->get_mode() == RescaleNormalAttrib::M_auto) {
     RescaleNormalAttrib::Mode mode;
 
-    if (object->_internal_transform->has_identity_scale()) {
+    LVecBase3 scale = object->_internal_transform.get_scale();
+    if (scale.almost_equal(LVecBase3(1, 1, 1))) {
       mode = RescaleNormalAttrib::M_none;
-    } else if (object->_internal_transform->has_uniform_scale()) {
+    } else if (scale[0] == scale[1] && scale[0] == scale[2]) {
       mode = RescaleNormalAttrib::M_rescale;
     } else {
       mode = RescaleNormalAttrib::M_normalize;

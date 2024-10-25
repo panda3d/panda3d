@@ -109,7 +109,7 @@ apply_net_shove(ColliderDef &def, const LVector3& net_shove,
       "  adjustment set "<<adjustment<<" len "<<adjustment.length());
 
   // NodePath np(def._node); CPT(TransformState) trans =
-  // np.get_net_transform(); adjustment=adjustment*trans->get_mat();
+  // np.get_net_transform(); adjustment=adjustment*trans.get_mat();
   // physics_debug( "  adjustment trn "<<adjustment<<" len
   // "<<adjustment.length());
 

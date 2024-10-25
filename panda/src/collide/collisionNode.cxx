@@ -196,9 +196,9 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
     // Determine the previous frame's position, relative to the current
     // position.
     NodePath node_path = data.get_node_path();
-    CPT(TransformState) transform = node_path.get_net_transform()->invert_compose(node_path.get_net_prev_transform());
+    Transform transform = node_path.get_net_transform().invert_compose(node_path.get_net_prev_transform());
 
-    if (!transform->is_identity()) {
+    if (!transform.is_identity()) {
       // If we have a velocity, also draw the previous frame's position,
       // ghosted.
 
@@ -207,7 +207,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
         PT(PandaNode) node = solid->get_viz(trav, data, false);
         if (node != nullptr) {
           trav->traverse_down(data, node,
-            data._net_transform->compose(transform), get_last_pos_state());
+            data._net_transform.compose(transform), get_last_pos_state());
         }
       }
     }

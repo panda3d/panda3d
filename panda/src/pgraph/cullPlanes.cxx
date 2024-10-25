@@ -98,7 +98,8 @@ apply_state(CPT(CullPlanes) &planes,
     }
   }
 
-  CPT(TransformState) net_transform = nullptr;
+  bool have_net_transform = false;
+  Transform net_transform;
 
   if (net_attrib != nullptr) {
     int num_on_planes = net_attrib->get_num_on_planes();
@@ -113,15 +114,16 @@ apply_state(CPT(CullPlanes) &planes,
         if (!off_attrib->has_off_plane(clip_plane)) {
           // Here's a new clip plane; add it to the list.  For this we need
           // the net transform to this node.
-          if (net_transform == nullptr) {
+          if (!have_net_transform) {
             net_transform = data->get_net_transform(trav);
+            have_net_transform = true;
           }
 
           PlaneNode *plane_node = DCAST(PlaneNode, clip_plane.node());
-          CPT(TransformState) new_transform =
-            net_transform->invert_compose(clip_plane.get_net_transform());
+          Transform new_transform =
+            net_transform.invert_compose(clip_plane.get_net_transform());
 
-          LPlane plane = plane_node->get_plane() * new_transform->get_mat();
+          LPlane plane = plane_node->get_plane() * new_transform.get_mat();
           new_planes->_planes[clip_plane] = new BoundingPlane(-plane);
         }
       }
@@ -129,7 +131,9 @@ apply_state(CPT(CullPlanes) &planes,
   }
 
   if (node_effect != nullptr) {
-    CPT(TransformState) center_transform = nullptr;
+    bool have_center_transform = false;
+    Transform center_transform;
+
     // We'll need to know the occluder's frustum in cull-center space.
     SceneSetup *scene = trav->get_scene();
     const Lens *lens = scene->get_lens();
@@ -147,16 +151,18 @@ apply_state(CPT(CullPlanes) &planes,
         OccluderNode *occluder_node = DCAST(OccluderNode, occluder.node());
         nassertv(occluder_node->get_num_vertices() == 4);
 
-        CPT(TransformState) occluder_transform = occluder.get_transform(scene->get_cull_center());
+        Transform occluder_transform = occluder.get_transform(scene->get_cull_center());
 
         // And the transform from cull-center space into the current node's
         // coordinate space.
-        if (center_transform == nullptr) {
-          if (net_transform == nullptr) {
+        if (!have_center_transform) {
+          if (!have_net_transform) {
             net_transform = data->get_net_transform(trav);
+            have_net_transform = true;
           }
 
-          center_transform = net_transform->invert_compose(scene->get_cull_center().get_net_transform());
+          center_transform = net_transform.invert_compose(scene->get_cull_center().get_net_transform());
+          have_center_transform = true;
         }
 
         // Compare the occluder node's bounding volume to the view frustum.
@@ -168,13 +174,12 @@ apply_state(CPT(CullPlanes) &planes,
         PT(BoundingBox) occluder_gbv;
         // Get a transform from the occluder directly to this node's space for
         // comparing with the current view frustum.
-        CPT(TransformState) composed_transform = center_transform->compose(occluder_transform);
-        const LMatrix4 &composed_mat = composed_transform->get_mat();
+        Transform composed_transform = center_transform.compose(occluder_transform);
         LPoint3 ccp[4];
-        ccp[0] = occluder_node->get_vertex(0) * composed_mat;
-        ccp[1] = occluder_node->get_vertex(1) * composed_mat;
-        ccp[2] = occluder_node->get_vertex(2) * composed_mat;
-        ccp[3] = occluder_node->get_vertex(3) * composed_mat;
+        ccp[0] = composed_transform.xform_point(occluder_node->get_vertex(0));
+        ccp[1] = composed_transform.xform_point(occluder_node->get_vertex(1));
+        ccp[2] = composed_transform.xform_point(occluder_node->get_vertex(2));
+        ccp[3] = composed_transform.xform_point(occluder_node->get_vertex(3));
 
         LPoint3 ccp_min(min(min(ccp[0][0], ccp[1][0]),
                      min(ccp[2][0], ccp[3][0])),
@@ -204,12 +209,11 @@ apply_state(CPT(CullPlanes) &planes,
         }
 
         // Get the occluder geometry in cull-center space.
-        const LMatrix4 &occluder_mat_cull = occluder_transform->get_mat();
         LPoint3 points_near[4];
-        points_near[0] = occluder_node->get_vertex(0) * occluder_mat_cull;
-        points_near[1] = occluder_node->get_vertex(1) * occluder_mat_cull;
-        points_near[2] = occluder_node->get_vertex(2) * occluder_mat_cull;
-        points_near[3] = occluder_node->get_vertex(3) * occluder_mat_cull;
+        points_near[0] = occluder_transform.xform_point(occluder_node->get_vertex(0));
+        points_near[1] = occluder_transform.xform_point(occluder_node->get_vertex(1));
+        points_near[2] = occluder_transform.xform_point(occluder_node->get_vertex(2));
+        points_near[3] = occluder_transform.xform_point(occluder_node->get_vertex(3));
         LPlane plane(points_near[0], points_near[1], points_near[2]);
 
         if (plane.get_normal().dot(LVector3::forward()) >= 0.0) {
@@ -277,15 +281,17 @@ apply_state(CPT(CullPlanes) &planes,
         // are fully contained within this new one.
 
         // Get the occluder coordinates in global space.
-        const LMatrix4 &occluder_mat = occluder.get_net_transform()->get_mat();
-        points_near[0] = occluder_node->get_vertex(0) * occluder_mat;
-        points_near[1] = occluder_node->get_vertex(1) * occluder_mat;
-        points_near[2] = occluder_node->get_vertex(2) * occluder_mat;
-        points_near[3] = occluder_node->get_vertex(3) * occluder_mat;
+        {
+          Transform transform = occluder.get_net_transform();
+          points_near[0] = transform.xform_point(occluder_node->get_vertex(0));
+          points_near[1] = transform.xform_point(occluder_node->get_vertex(1));
+          points_near[2] = transform.xform_point(occluder_node->get_vertex(2));
+          points_near[3] = transform.xform_point(occluder_node->get_vertex(3));
+        }
 
         // For the far points, project PAST the far clip of the lens to
         // ensures we get stuff that might be intersecting the far clip.
-        LPoint3 center = scene->get_cull_center().get_net_transform()->get_pos();
+        LPoint3 center = scene->get_cull_center().get_net_transform().get_pos();
         PN_stdfloat far_clip = scene->get_lens()->get_far() * 2.0;
         LPoint3 points_far[4];
         points_far[0] = normalize(points_near[0] - center) * far_clip + points_near[0];
@@ -303,7 +309,7 @@ apply_state(CPT(CullPlanes) &planes,
 
         if (show_occluder_volumes) {
           // Draw the frustum for visualization.
-          nassertv(net_transform != nullptr);
+          nassertv(have_net_transform);
           trav->draw_bounding_volume(frustum, data->get_internal_transform(trav));
         }
       }

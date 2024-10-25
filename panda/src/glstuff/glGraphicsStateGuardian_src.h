@@ -293,7 +293,7 @@ public:
 
   virtual void prepare_display_region(DisplayRegionPipelineReader *dr);
   virtual void clear_before_callback();
-  virtual CPT(TransformState) calc_projection_mat(const Lens *lens);
+  virtual bool calc_projection_mat(LMatrix4 &result, const Lens *lens);
   virtual bool prepare_lens();
 
   virtual bool begin_frame(Thread *current_thread);
@@ -455,7 +455,7 @@ public:
   INLINE int get_max_vertex_attrib_stride() const;
 
   virtual void set_state_and_transform(const RenderState *state,
-                                       const TransformState *transform);
+                                       const Transform &transform);
 
   void bind_fbo(GLuint fbo);
   virtual bool get_supports_cg_profile(const std::string &name) const;

@@ -185,12 +185,10 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   const CollisionSphere *sphere;
   DCAST_INTO_R(sphere, entry.get_from(), nullptr);
 
-  CPT(TransformState) wrt_space = entry.get_wrt_space();
-  CPT(TransformState) wrt_prev_space = entry.get_wrt_prev_space();
+  Transform wrt_space = entry.get_wrt_space();
+  Transform wrt_prev_space = entry.get_wrt_prev_space();
 
-  const LMatrix4 &wrt_mat = wrt_space->get_mat();
-
-  LPoint3 orig_center = sphere->get_center() * wrt_mat;
+  LPoint3 orig_center = wrt_space.xform_point(sphere->get_center());
   LPoint3 from_center = orig_center;
   bool moved_from_center = false;
   PN_stdfloat t = 1.0f;
@@ -198,7 +196,7 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   PN_stdfloat actual_t = 1.0f;
 
   LVector3 from_radius_v =
-    LVector3(sphere->get_radius(), 0.0f, 0.0f) * wrt_mat;
+    wrt_space.xform_vec(LVector3(sphere->get_radius(), 0.0f, 0.0f));
   PN_stdfloat from_radius_2 = from_radius_v.length_squared();
   PN_stdfloat from_radius = csqrt(from_radius_2);
 
@@ -213,12 +211,13 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   for(ip = 0, intersect = false; ip < 6 && !intersect; ip++) {
     plane = get_plane(ip);
 
-    if (wrt_prev_space != wrt_space) {
+    LPoint3 prev_center = wrt_prev_space.xform_point(sphere->get_center());
+    if (orig_center != prev_center) {
       // If we have a delta between the previous position and the current
       // position, we use that to determine some more properties of the
       // collision.
       LPoint3 b = from_center;
-      LPoint3 a = sphere->get_center() * wrt_prev_space->get_mat();
+      LPoint3 a = prev_center;
       LVector3 delta = b - a;
 
       // First, there is no collision if the "from" object is definitely
@@ -1097,7 +1096,7 @@ intersects_line(double &t1, double &t2,
 bool CollisionBox::
 apply_clip_plane(CollisionBox::Points &new_points,
                  const ClipPlaneAttrib *cpa,
-                 const TransformState *net_transform, int plane_no) const {
+                 const Transform &net_transform, int plane_no) const {
   bool all_in = true;
 
   int num_planes = cpa->get_num_on_planes();
@@ -1107,10 +1106,10 @@ apply_clip_plane(CollisionBox::Points &new_points,
     NodePath plane_path = cpa->get_on_plane(i);
     PlaneNode *plane_node = DCAST(PlaneNode, plane_path.node());
     if ((plane_node->get_clip_effect() & PlaneNode::CE_collision) != 0) {
-      CPT(TransformState) new_transform =
-        net_transform->invert_compose(plane_path.get_net_transform());
+      Transform new_transform =
+        net_transform.invert_compose(plane_path.get_net_transform());
 
-      LPlane plane = plane_node->get_plane() * new_transform->get_mat();
+      LPlane plane = plane_node->get_plane() * new_transform.get_mat();
       if (first_plane) {
         first_plane = false;
         if (!clip_polygon(new_points, _points[plane_no], 4, plane, plane_no)) {

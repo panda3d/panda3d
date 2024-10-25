@@ -140,8 +140,8 @@ register_with_read_factory() {
  * applied.
  */
 void ModelNode::
-test_transform(const TransformState *ts) const {
-  LPoint3 pos(ts->get_pos());
+test_transform(const Transform &ts) const {
+  LPoint3 pos(ts.get_pos());
   nassertv(pos[0] < _transform_limit);
   nassertv(pos[0] > -_transform_limit);
   nassertv(pos[1] < _transform_limit);
@@ -158,14 +158,12 @@ test_transform(const TransformState *ts) const {
 void ModelNode::
 transform_changed() {
   PandaNode::transform_changed();
-  // get the transform
-  CPT(TransformState) transform = get_transform();
 
+  Transform transform = get_transform();
   if (_transform_limit > 0.0) {
     test_transform(transform);
   }
 }
-
 
 /**
  * Writes the contents of this object to the datagram for shipping out to a

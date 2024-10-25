@@ -246,14 +246,14 @@ do_sync_b2p() {
     PandaNode *node = (PandaNode *)info.m_clientInfo;
     if (node) {
 
-      CPT(TransformState) ts = btTrans_to_TransformState(info.m_worldTransform);
+      Transform transform = btTrans_to_Transform(info.m_worldTransform);
 
       // <A> Transform relative to wheel node's parent
-      // node->set_transform(ts);
+      // node->set_transform(transform);
 
       // <B> Transform absolute
       NodePath np = NodePath::any_path(node);
-      np.set_transform(np.get_top(), ts);
+      np.set_transform(np.get_top(), transform);
     }
   }
 }

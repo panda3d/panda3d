@@ -18,7 +18,7 @@
 #include "cullPlanes.h"
 #include "workingNodePath.h"
 #include "renderState.h"
-#include "transformState.h"
+#include "transform.h"
 #include "geometricBoundingVolume.h"
 #include "pointerTo.h"
 #include "drawMask.h"
@@ -41,18 +41,18 @@ class CullTraverser;
 class EXPCL_PANDA_PGRAPH CullTraverserData {
 public:
   INLINE CullTraverserData(const NodePath &start,
-                           const TransformState *net_transform,
+                           const Transform &net_transform,
                            CPT(RenderState) state,
                            GeometricBoundingVolume *view_frustum,
                            Thread *current_thread);
   INLINE CullTraverserData(const CullTraverserData &parent,
                            PandaNode *child,
-                           const TransformState *net_transform,
+                           const Transform &net_transform,
                            CPT(RenderState) state,
                            GeometricBoundingVolume *view_frustum);
   INLINE CullTraverserData(const CullTraverserData &parent,
                            PandaNodePipelineReader &&node_reader,
-                           const TransformState *net_transform,
+                           const Transform &net_transform,
                            CPT(RenderState) state,
                            GeometricBoundingVolume *view_frustum);
 
@@ -69,9 +69,9 @@ public:
   INLINE void set_view_frustum(PT(GeometricBoundingVolume) view_frustum);
 
 PUBLISHED:
-  INLINE CPT(TransformState) get_modelview_transform(const CullTraverser *trav) const;
-  INLINE CPT(TransformState) get_internal_transform(const CullTraverser *trav) const;
-  INLINE const TransformState *get_net_transform(const CullTraverser *trav) const;
+  INLINE Transform get_modelview_transform(const CullTraverser *trav) const;
+  INLINE Transform get_internal_transform(const CullTraverser *trav) const;
+  INLINE const Transform &get_net_transform(const CullTraverser *trav) const;
 
   INLINE int is_in_view(const DrawMask &camera_mask) const;
   INLINE bool is_this_node_hidden(const DrawMask &camera_mask) const;
@@ -79,13 +79,13 @@ PUBLISHED:
   bool apply_cull_planes(const CullPlanes *planes, const GeometricBoundingVolume *node_gbv);
 
   void apply_transform_and_state(CullTraverser *trav);
-  void apply_transform(const TransformState *node_transform);
+  void apply_transform(const Transform &node_transform);
 
   MAKE_PROPERTY(node_path, get_node_path);
   MAKE_PROPERTY(view_frustum, get_view_frustum, set_view_frustum);
 
 public:
-  bool is_instance_in_view(const TransformState *instance_transform, const DrawMask &camera_mask) const;
+  bool is_instance_in_view(const Transform &instance_transform, const DrawMask &camera_mask) const;
   INLINE int is_child_in_view(const PandaNodePipelineReader &node_reader, const DrawMask &camera_mask) const;
   INLINE int is_child_in_view(const PandaNode::DownConnection &child, const DrawMask &camera_mask) const;
 
@@ -97,7 +97,7 @@ private:
 
 public:
   PandaNodePipelineReader _node_reader;
-  CPT(TransformState) _net_transform;
+  Transform _net_transform;
   CPT(RenderState) _state;
   PT(GeometricBoundingVolume) _view_frustum;
   CPT(CullPlanes) _cull_planes;

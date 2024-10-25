@@ -255,8 +255,8 @@ rescale_source_geometry() {
 
   LVector3 trans = frame_ctr - geom_center;
 
-  CPT(TransformState) transform =
-    TransformState::make_pos_hpr_scale(trans, LPoint3(0.0f, 0.0f, 0.0f), scale);
+  Transform transform =
+    Transform::make_pos_hpr_scale(trans, LPoint3(0.0f, 0.0f, 0.0f), scale);
   root->set_transform(transform);
 
   if (_has_color) {

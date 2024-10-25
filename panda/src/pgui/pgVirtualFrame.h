@@ -61,8 +61,8 @@ PUBLISHED:
   void clear_clip_frame();
   MAKE_PROPERTY2(clip_frame, has_clip_frame, get_clip_frame, set_clip_frame, clear_clip_frame);
 
-  INLINE void set_canvas_transform(const TransformState *transform);
-  INLINE const TransformState *get_canvas_transform() const;
+  INLINE void set_canvas_transform(const Transform &transform);
+  INLINE Transform get_canvas_transform() const;
   MAKE_PROPERTY(canvas_transform, get_canvas_transform, set_canvas_transform);
 
   INLINE PandaNode *get_canvas_node() const;

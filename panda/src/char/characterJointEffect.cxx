@@ -121,7 +121,7 @@ has_cull_callback() const {
  */
 void CharacterJointEffect::
 cull_callback(CullTraverser *trav, CullTraverserData &data,
-              CPT(TransformState) &node_transform,
+              Transform &node_transform,
               CPT(RenderState) &) const {
   if (auto character = _character.lock()) {
     character->update();
@@ -148,8 +148,8 @@ has_adjust_transform() const {
  * they may (or may not) be modified in-place by the RenderEffect.
  */
 void CharacterJointEffect::
-adjust_transform(CPT(TransformState) &net_transform,
-                 CPT(TransformState) &node_transform,
+adjust_transform(Transform &net_transform,
+                 Transform &node_transform,
                  const PandaNode *node) const {
   if (auto character = _character.lock()) {
     character->update();

@@ -481,10 +481,10 @@ reextract() {
   LMatrix4 m = _orig;
   if (!_rel_to.is_empty()) {
     NodePath root;
-    m = _orig * root.get_transform(_rel_to)->get_mat();
+    m = _orig * root.get_transform(_rel_to).get_mat();
   }
 
-  m.get_row3(_translation,3);
+  m.get_row3(_translation, 3);
   _rotation = m;
   _rotation.set_row(3, LVecBase3(0.0f, 0.0f, 0.0f));
 }
@@ -499,7 +499,7 @@ recompute() {
 
   if (!_rel_to.is_empty()) {
     NodePath root;
-    _orig = _orig * _rel_to.get_transform(root)->get_mat();
+    _orig = _orig * _rel_to.get_transform(root).get_mat();
   }
 
   if (_invert) {

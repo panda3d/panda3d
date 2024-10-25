@@ -25,7 +25,7 @@
 #include "pipelineCycler.h"
 #include "renderState.h"
 #include "renderEffects.h"
-#include "transformState.h"
+#include "transform.h"
 #include "drawMask.h"
 #include "typedWritable.h"
 #include "collideMask.h"
@@ -91,10 +91,9 @@ public:
                                          GeomTransformer &transformer);
   virtual void xform(const LMatrix4 &mat);
 
-  virtual CPT(TransformState)
+  virtual Transform
     calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
-                      bool &found_any,
-                      const TransformState *transform,
+                      bool &found_any, const Transform &transform,
                       Thread *current_thread = Thread::get_current_thread()) const;
 
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
@@ -175,13 +174,14 @@ PUBLISHED:
   INLINE void clear_effects(Thread *current_thread = Thread::get_current_thread());
   MAKE_PROPERTY(effects, get_effects, set_effects);
 
-  void set_transform(const TransformState *transform, Thread *current_thread = Thread::get_current_thread());
-  INLINE CPT(TransformState) get_transform(Thread *current_thread = Thread::get_current_thread()) const;
+  void set_transform(const Transform &transform, Thread *current_thread = Thread::get_current_thread());
+  INLINE Transform get_transform(Thread *current_thread = Thread::get_current_thread()) const;
+  INLINE bool get_transform(Transform &transform, Thread *current_thread = Thread::get_current_thread()) const;
   INLINE void clear_transform(Thread *current_thread = Thread::get_current_thread());
   MAKE_PROPERTY(transform, get_transform, set_transform);
 
-  void set_prev_transform(const TransformState *transform, Thread *current_thread = Thread::get_current_thread());
-  INLINE CPT(TransformState) get_prev_transform(Thread *current_thread = Thread::get_current_thread()) const;
+  void set_prev_transform(const Transform &transform, Thread *current_thread = Thread::get_current_thread());
+  INLINE Transform get_prev_transform(Thread *current_thread = Thread::get_current_thread()) const;
   void reset_prev_transform(Thread *current_thread = Thread::get_current_thread());
   INLINE bool has_dirty_prev_transform() const;
   static void reset_all_prev_transform(Thread *current_thread = Thread::get_current_thread());
@@ -580,8 +580,8 @@ private:
     // to change fairly often: transform and state.
 
     NCPT(RenderState) _state;
-    NCPT(TransformState) _transform;
-    NCPT(TransformState) _prev_transform;
+    Transform _transform;
+    Transform _prev_transform;
 
   public:
     // This section contains the heavierweight parts of the node that are less
@@ -896,8 +896,8 @@ public:
 
   INLINE const RenderState *get_state() const;
   INLINE const RenderEffects *get_effects() const;
-  INLINE const TransformState *get_transform() const;
-  INLINE const TransformState *get_prev_transform() const;
+  INLINE const Transform &get_transform() const;
+  INLINE const Transform &get_prev_transform() const;
 
   INLINE std::string get_tag(const std::string &key) const;
   INLINE bool has_tag(const std::string &key) const;

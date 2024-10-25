@@ -353,16 +353,21 @@ do_add_shape(BulletShape *bullet_shape, const TransformState *ts) {
 
   // Reset the shape scaling before we add a shape, and remember the current
   // Scale so we can restore it later...
-  CPT(TransformState) prev_transform = get_transform();
+  Transform transform;
+  LVecBase3 prev_scale;
   bool scale_changed = false;
-  if (!prev_transform->is_identity() && prev_transform->get_scale() != LVecBase3(1.0, 1.0, 1.0)) {
-    // As a hack, temporarily release the lock, since transform_changed will
-    // otherwise deadlock trying to grab it again.  See GitHub issue #689.
-    LightMutex &lock = BulletWorld::get_global_lock();
-    lock.release();
-    set_transform(prev_transform->set_scale(LVecBase3(1.0, 1.0, 1.0)));
-    lock.acquire();
-    scale_changed = true;
+  if (get_transform(transform)) {
+    prev_scale = transform.get_scale();
+    if (prev_scale != LVecBase3(1.0, 1.0, 1.0)) {
+      // As a hack, temporarily release the lock, since transform_changed will
+      // otherwise deadlock trying to grab it again.  See GitHub issue #689.
+      LightMutex &lock = BulletWorld::get_global_lock();
+      lock.release();
+      transform.set_scale(LVecBase3(1, 1, 1));
+      set_transform(transform);
+      lock.acquire();
+      scale_changed = true;
+    }
   }
 
   // Root shape
@@ -426,10 +431,11 @@ do_add_shape(BulletShape *bullet_shape, const TransformState *ts) {
 
   // Restore the local scaling again
   if (scale_changed) {
-    CPT(TransformState) transform = get_transform()->set_scale(prev_transform->get_scale());
+    Transform transform = get_transform();
+    transform.set_scale(prev_scale);
     LightMutex &lock = BulletWorld::get_global_lock();
     lock.release();
-    set_transform(std::move(transform));
+    set_transform(transform);
     lock.acquire();
   }
 

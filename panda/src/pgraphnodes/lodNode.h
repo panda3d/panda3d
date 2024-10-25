@@ -103,7 +103,7 @@ protected:
 
   INLINE void consider_verify_lods(CullTraverser *trav, CullTraverserData &data);
 
-  CPT(TransformState) get_rel_transform(CullTraverser *trav, CullTraverserData &data);
+  Transform get_rel_transform(CullTraverser *trav, CullTraverserData &data);
 
 private:
   class CData;

@@ -16,7 +16,7 @@
 
 #include "pandabase.h"
 #include "copyOnWriteObject.h"
-#include "transformState.h"
+#include "transform.h"
 #include "pvector.h"
 #include "geomVertexArrayData.h"
 
@@ -46,7 +46,7 @@ PUBLISHED:
   class EXPCL_PANDA_PGRAPH Instance {
   public:
     INLINE explicit Instance();
-    INLINE explicit Instance(CPT(TransformState) transform);
+    INLINE explicit Instance(const Transform &transform);
 
   PUBLISHED:
     INLINE LPoint3 get_pos() const;
@@ -64,18 +64,19 @@ PUBLISHED:
     INLINE void set_scale(const LVecBase3 &);
     INLINE void set_scale(PN_stdfloat sx, PN_stdfloat sy, PN_stdfloat sz);
 
-    INLINE const LMatrix4 &get_mat() const;
+    INLINE LMatrix4 get_mat() const;
     INLINE void set_mat(const LMatrix4 &mat);
 
-    INLINE const TransformState *get_transform() const;
-    INLINE void set_transform(CPT(TransformState));
+    INLINE Transform get_transform() const;
+    INLINE void set_transform(const Transform &);
     MAKE_PROPERTY(transform, get_transform);
 
   private:
-    CPT(TransformState) _transform;
+    Transform _transform;
   };
 
   void append(Instance instance);
+  void append(const Transform &transform);
   void append(const TransformState *transform);
   void append(const LPoint3 &pos,
               const LVecBase3 &hpr = LVecBase3(0),

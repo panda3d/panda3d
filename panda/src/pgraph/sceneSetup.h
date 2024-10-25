@@ -19,7 +19,7 @@
 #include "typedReferenceCount.h"
 #include "nodePath.h"
 #include "camera.h"
-#include "transformState.h"
+#include "transform.h"
 #include "lens.h"
 #include "pointerTo.h"
 #include "geometricBoundingVolume.h"
@@ -66,17 +66,17 @@ PUBLISHED:
   INLINE void set_initial_state(const RenderState *initial_state);
   INLINE const RenderState *get_initial_state() const;
 
-  INLINE void set_camera_transform(const TransformState *camera_transform);
-  INLINE const TransformState *get_camera_transform() const;
+  INLINE void set_camera_transform(const Transform &camera_transform);
+  INLINE const Transform &get_camera_transform() const;
 
-  INLINE void set_world_transform(const TransformState *world_transform);
-  INLINE const TransformState *get_world_transform() const;
+  INLINE void set_world_transform(const Transform &world_transform);
+  INLINE const Transform &get_world_transform() const;
 
-  INLINE void set_cs_transform(const TransformState *cs_transform);
-  INLINE const TransformState *get_cs_transform() const;
+  INLINE void set_cs_transform(const Transform &cs_transform);
+  INLINE const Transform &get_cs_transform() const;
 
-  INLINE void set_cs_world_transform(const TransformState *cs_world_transform);
-  INLINE const TransformState *get_cs_world_transform() const;
+  INLINE void set_cs_world_transform(const Transform &cs_world_transform);
+  INLINE const Transform &get_cs_world_transform() const;
 
 private:
   DisplayRegion *_display_region;
@@ -88,10 +88,10 @@ private:
   CPT(Lens) _lens;
   bool _inverted;
   CPT(RenderState) _initial_state;
-  CPT(TransformState) _camera_transform;
-  CPT(TransformState) _world_transform;
-  CPT(TransformState) _cs_transform;
-  CPT(TransformState) _cs_world_transform;
+  Transform _camera_transform;
+  Transform _world_transform;
+  Transform _cs_transform;
+  Transform _cs_world_transform;
   PT(GeometricBoundingVolume) _view_frustum;
 
 public:

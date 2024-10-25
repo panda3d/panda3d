@@ -279,11 +279,10 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   const CollisionSphere *sphere;
   DCAST_INTO_R(sphere, entry.get_from(), nullptr);
 
-  CPT(TransformState) wrt_space = entry.get_wrt_space();
-  const LMatrix4 &wrt_mat = wrt_space->get_mat();
+  Transform wrt_space = entry.get_wrt_space();
 
-  LPoint3 center = sphere->get_center() * wrt_mat;
-  LVector3 radius_v = LVector3(sphere->get_radius(), 0.0f, 0.0f) * wrt_mat;
+  LPoint3 center = wrt_space.xform_point(sphere->get_center());
+  LVector3 radius_v = wrt_space.xform_vec(LVector3(sphere->get_radius(), 0.0f, 0.0f));
   PN_stdfloat radius_2 = radius_v.length_squared();
   PN_stdfloat radius = csqrt(radius_2);
 

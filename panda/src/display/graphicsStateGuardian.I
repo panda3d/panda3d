@@ -857,9 +857,9 @@ mark_new() {
  * when geometry is about to be rendered.  Therefore, this "get" function is
  * typically only meaningful during the geometry rendering process.
  */
-INLINE CPT(TransformState) GraphicsStateGuardian::
+INLINE Transform GraphicsStateGuardian::
 get_external_transform() const {
-  return _inv_cs_transform->compose(_internal_transform);
+  return _inv_cs_transform.compose(_internal_transform);
 }
 
 /**
@@ -867,7 +867,7 @@ get_external_transform() const {
  * when geometry is about to be rendered.  Therefore, this "get" function is
  * typically only meaningful during the geometry rendering process.
  */
-INLINE CPT(TransformState) GraphicsStateGuardian::
+INLINE Transform GraphicsStateGuardian::
 get_internal_transform() const {
   return _internal_transform;
 }
@@ -911,7 +911,7 @@ get_current_lens() const {
 /**
  * Returns the inverse of the transform returned by get_cs_transform().
  */
-INLINE CPT(TransformState) GraphicsStateGuardian::
+INLINE Transform GraphicsStateGuardian::
 get_inv_cs_transform() const {
   return _inv_cs_transform;
 }

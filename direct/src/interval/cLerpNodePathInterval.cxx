@@ -109,11 +109,11 @@ priv_step(double t) {
   double d = compute_delta(t);
 
   // Save this in case we want to restore it later.
-  CPT(TransformState) prev_transform = _node.get_prev_transform();
+  Transform prev_transform = _node.get_prev_transform();
 
   if ((_flags & (F_end_pos | F_end_hpr | F_end_quat | F_end_scale | F_end_shear)) != 0) {
     // We have some transform lerp.
-    CPT(TransformState) transform;
+    Transform transform;
 
     if (_other.is_empty()) {
       // If there is no other node, it's a local transform lerp.
@@ -136,12 +136,12 @@ priv_step(double t) {
 
       } else if ((_flags & F_bake_in_start) != 0) {
         // Get the current starting pos, and bake it in.
-        set_start_pos(transform->get_pos());
+        set_start_pos(transform.get_pos());
         lerp_value(pos, d, _start_pos, _end_pos);
 
       } else {
         // "smart" lerp from the current pos to the new pos.
-        pos = transform->get_pos();
+        pos = transform.get_pos();
         lerp_value_from_prev(pos, d, _prev_d, pos, _end_pos);
       }
     }
@@ -155,11 +155,11 @@ priv_step(double t) {
         lerp_value(hpr, d, _start_hpr, _end_hpr);
 
       } else if ((_flags & F_bake_in_start) != 0) {
-        set_start_hpr(transform->get_hpr());
+        set_start_hpr(transform.get_hpr());
         lerp_value(hpr, d, _start_hpr, _end_hpr);
 
       } else {
-        hpr = transform->get_hpr();
+        hpr = transform.get_hpr();
         lerp_value_from_prev(hpr, d, _prev_d, hpr, _end_hpr);
       }
     }
@@ -174,14 +174,17 @@ priv_step(double t) {
           setup_slerp();
 
         } else if ((_flags & F_bake_in_start) != 0) {
-          set_start_quat(transform->get_norm_quat());
+          LQuaternion norm_quat = transform.get_quat();
+          norm_quat.normalize();
+          set_start_quat(norm_quat);
           setup_slerp();
 
         } else {
           if (_prev_d == 1.0) {
             _start_quat = _end_quat;
           } else {
-            LQuaternion prev_value = transform->get_norm_quat();
+            LQuaternion prev_value = transform.get_quat();
+            prev_value.normalize();
             _start_quat = (prev_value - _prev_d * _end_quat) / (1.0 - _prev_d);
           }
           setup_slerp();
@@ -199,11 +202,11 @@ priv_step(double t) {
         lerp_value(scale, d, _start_scale, _end_scale);
 
       } else if ((_flags & F_bake_in_start) != 0) {
-        set_start_scale(transform->get_scale());
+        set_start_scale(transform.get_scale());
         lerp_value(scale, d, _start_scale, _end_scale);
 
       } else {
-        scale = transform->get_scale();
+        scale = transform.get_scale();
         lerp_value_from_prev(scale, d, _prev_d, scale, _end_scale);
       }
     }
@@ -212,11 +215,11 @@ priv_step(double t) {
         lerp_value(shear, d, _start_shear, _end_shear);
 
       } else if ((_flags & F_bake_in_start) != 0) {
-        set_start_shear(transform->get_shear());
+        set_start_shear(transform.get_shear());
         lerp_value(shear, d, _start_shear, _end_shear);
 
       } else {
-        shear = transform->get_shear();
+        shear = transform.get_shear();
         lerp_value_from_prev(shear, d, _prev_d, shear, _end_shear);
       }
     }
@@ -295,19 +298,19 @@ priv_step(double t) {
       break;
 
     case F_end_pos | F_end_scale:
-      if (transform->quat_given()) {
+      /*if (transform->quat_given()) {
         if (_other.is_empty()) {
-          _node.set_pos_quat_scale(pos, transform->get_quat(), scale);
+          _node.set_pos_quat_scale(pos, transform.get_quat(), scale);
         } else {
-          _node.set_pos_quat_scale(_other, pos, transform->get_quat(), scale);
+          _node.set_pos_quat_scale(_other, pos, transform.get_quat(), scale);
         }
-      } else {
+      } else {*/
         if (_other.is_empty()) {
-          _node.set_pos_hpr_scale(pos, transform->get_hpr(), scale);
+          _node.set_pos_hpr_scale(pos, transform.get_hpr(), scale);
         } else {
-          _node.set_pos_hpr_scale(_other, pos, transform->get_hpr(), scale);
+          _node.set_pos_hpr_scale(_other, pos, transform.get_hpr(), scale);
         }
-      }
+      //}
       break;
 
     case F_end_pos | F_end_hpr | F_end_scale:

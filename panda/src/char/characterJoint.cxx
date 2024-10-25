@@ -134,7 +134,7 @@ update_internals(PartBundle *root, PartGroup *parent, bool self_changed,
 
   if (net_changed) {
     if (!_net_transform_nodes.empty()) {
-      CPT(TransformState) t = TransformState::make_mat(_net_transform);
+      Transform t = Transform::make_mat(_net_transform);
 
       NodeList::iterator ai;
       for (ai = _net_transform_nodes.begin();
@@ -157,7 +157,7 @@ update_internals(PartBundle *root, PartGroup *parent, bool self_changed,
   }
 
   if (self_changed && !_local_transform_nodes.empty()) {
-    CPT(TransformState) t = TransformState::make_mat(_value);
+    Transform t = Transform::make_mat(_value);
 
     NodeList::iterator ai;
     for (ai = _local_transform_nodes.begin();
@@ -197,7 +197,7 @@ add_net_transform(PandaNode *node) {
   if (_character != nullptr) {
     node->set_effect(CharacterJointEffect::make(_character));
   }
-  CPT(TransformState) t = TransformState::make_mat(_net_transform);
+  Transform t = Transform::make_mat(_net_transform);
   node->set_transform(t, Thread::get_current_thread());
   return _net_transform_nodes.insert(node).second;
 }
@@ -289,7 +289,7 @@ add_local_transform(PandaNode *node) {
   if (_character != nullptr) {
     node->set_effect(CharacterJointEffect::make(_character));
   }
-  CPT(TransformState) t = TransformState::make_mat(_value);
+  Transform t = Transform::make_mat(_value);
   node->set_transform(t, Thread::get_current_thread());
   return _local_transform_nodes.insert(node).second;
 }
@@ -374,7 +374,7 @@ get_transform(LMatrix4 &transform) const {
 
 CPT(TransformState) CharacterJoint::
 get_transform_state() const {
-    return TransformState::make_mat( _value );
+  return TransformState::make_mat(_value);
 }
 
 /**

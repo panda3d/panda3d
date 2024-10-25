@@ -74,8 +74,8 @@ safe_to_transform() const {
  * through) this node due to a flatten operation.  The returned value will be
  * used instead.
  */
-CPT(TransformState) RenderEffect::
-prepare_flatten_transform(const TransformState *net_transform) const {
+Transform RenderEffect::
+prepare_flatten_transform(const Transform &net_transform) const {
   return net_transform;
 }
 
@@ -121,7 +121,7 @@ has_cull_callback() const {
  */
 void RenderEffect::
 cull_callback(CullTraverser *, CullTraverserData &,
-              CPT(TransformState) &, CPT(RenderState) &) const {
+              Transform &, CPT(RenderState) &) const {
 }
 
 /**
@@ -143,8 +143,7 @@ has_adjust_transform() const {
  * they may (or may not) be modified in-place by the RenderEffect.
  */
 void RenderEffect::
-adjust_transform(CPT(TransformState) &, CPT(TransformState) &,
-                 const PandaNode *) const {
+adjust_transform(Transform &, Transform &, const PandaNode *) const {
 }
 
 /**

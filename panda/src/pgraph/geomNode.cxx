@@ -110,8 +110,8 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
   }
 
   if ((attrib_types & SceneGraphReducer::TT_transform) != 0) {
-    if (!attribs._transform->is_identity()) {
-      transformer.transform_vertices(this, attribs._transform->get_mat());
+    if (!attribs._transform.is_identity()) {
+      transformer.transform_vertices(this, attribs._transform.get_mat());
     }
   }
 
@@ -484,14 +484,15 @@ combine_with(PandaNode *other) {
  * over several nodes, so it may enter with min_point, max_point, and
  * found_any already set.
  */
-CPT(TransformState) GeomNode::
+Transform GeomNode::
 calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point, bool &found_any,
-                  const TransformState *transform, Thread *current_thread) const {
-  CPT(TransformState) next_transform =
+                  const Transform &transform, Thread *current_thread) const {
+  Transform next_transform =
     PandaNode::calc_tight_bounds(min_point, max_point, found_any, transform,
                                  current_thread);
 
-  const LMatrix4 &mat = next_transform->get_mat();
+  LMatrix4 mat = next_transform.get_mat();
+  bool is_identity = next_transform.is_identity();
 
   CDReader cdata(_cycler, current_thread);
   GeomList::const_iterator gi;
@@ -500,8 +501,7 @@ calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point, bool &found_any,
     CPT(Geom) geom = (*gi)._geom.get_read_pointer();
     geom->calc_tight_bounds(min_point, max_point, found_any,
                             geom->get_animated_vertex_data(true, current_thread),
-                            !next_transform->is_identity(), mat,
-                            current_thread);
+                            !is_identity, mat, current_thread);
   }
 
   return next_transform;
@@ -528,7 +528,7 @@ add_for_draw(CullTraverser *trav, CullTraverserData &data) {
   Geoms geoms = get_geoms(current_thread);
   int num_geoms = geoms.get_num_geoms();
   trav->_geoms_pcollector.add_level(num_geoms);
-  CPT(TransformState) internal_transform = data.get_internal_transform(trav);
+  Transform internal_transform = data.get_internal_transform(trav);
 
   if (num_geoms == 1) {
     // If there's only one Geom, we don't need to bother culling each individual
@@ -539,7 +539,7 @@ add_for_draw(CullTraverser *trav, CullTraverserData &data) {
       CPT(RenderState) state = data._state->compose(geoms.get_geom_state(0));
       if (!state->has_cull_callback() || state->cull_callback(trav, data)) {
         CullableObject *object =
-          new CullableObject(std::move(geom), std::move(state), std::move(internal_transform));
+          new CullableObject(std::move(geom), std::move(state), internal_transform);
         object->_instances = data._instances;
         trav->get_cull_handler()->record_object(object, trav);
       }

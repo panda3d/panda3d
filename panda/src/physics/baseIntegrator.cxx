@@ -66,7 +66,7 @@ precompute_linear_matrices(Physical *physical,
 
     NodePath force_np = (*fi)->get_force_node_path();
     _precomputed_linear_matrices.push_back(
-        force_np.get_transform(parent_physical_np)->get_mat());
+        force_np.get_transform(parent_physical_np).get_mat());
   }
 
   // tally the local xforms
@@ -76,7 +76,7 @@ precompute_linear_matrices(Physical *physical,
 
     NodePath force_np = (*fi)->get_force_node_path();
     _precomputed_linear_matrices.push_back(
-        force_np.get_transform(parent_physical_np)->get_mat());
+        force_np.get_transform(parent_physical_np).get_mat());
   }
 }
 
@@ -113,7 +113,7 @@ precompute_angular_matrices(Physical *physical,
 
     NodePath force_np = (*fi)->get_force_node_path();
     _precomputed_angular_matrices.push_back(
-        force_np.get_transform(parent_physical_np)->get_mat());
+        force_np.get_transform(parent_physical_np).get_mat());
   }
 
   // tally the local xforms
@@ -123,7 +123,7 @@ precompute_angular_matrices(Physical *physical,
 
     NodePath force_np = (*fi)->get_force_node_path();
     _precomputed_angular_matrices.push_back(
-        force_np.get_transform(parent_physical_np)->get_mat());
+        force_np.get_transform(parent_physical_np).get_mat());
   }
 }
 

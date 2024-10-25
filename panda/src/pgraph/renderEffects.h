@@ -16,7 +16,7 @@
 
 #include "pandabase.h"
 
-#include "transformState.h"
+#include "transform.h"
 #include "renderState.h"
 
 #include "renderEffect.h"
@@ -49,7 +49,7 @@ public:
   RenderEffects &operator = (const RenderEffects &copy) = delete;
 
   bool safe_to_transform() const;
-  virtual CPT(TransformState) prepare_flatten_transform(const TransformState *net_transform) const;
+  virtual Transform prepare_flatten_transform(const Transform &transform) const;
   bool safe_to_combine() const;
   CPT(RenderEffects) xform(const LMatrix4 &mat) const;
 
@@ -99,12 +99,12 @@ public:
 
   INLINE bool has_cull_callback() const;
   void cull_callback(CullTraverser *trav, CullTraverserData &data,
-                     CPT(TransformState) &node_transform,
+                     Transform &node_transform,
                      CPT(RenderState) &node_state) const;
 
   INLINE bool has_adjust_transform() const;
-  void adjust_transform(CPT(TransformState) &net_transform,
-                        CPT(TransformState) &node_transform,
+  void adjust_transform(Transform &net_transform,
+                        Transform &node_transform,
                         const PandaNode *node) const;
 
   static void init_states();

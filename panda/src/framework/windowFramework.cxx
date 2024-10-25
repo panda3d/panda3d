@@ -506,9 +506,9 @@ center_trackball(const NodePath &object) {
   CPT(GeometricBoundingVolume) gbv = DCAST(GeometricBoundingVolume, volume);
 
   if (object.has_parent()) {
-    CPT(TransformState) net_transform = object.get_parent().get_net_transform();
+    Transform net_transform = object.get_parent().get_net_transform();
     PT(GeometricBoundingVolume) new_gbv = DCAST(GeometricBoundingVolume, gbv->make_copy());
-    new_gbv->xform(net_transform->get_mat());
+    new_gbv->xform(net_transform.get_mat());
     gbv = new_gbv;
   }
 

@@ -83,9 +83,9 @@ safe_to_transform() const {
  * through) this node due to a flatten operation.  The returned value will be
  * used instead.
  */
-CPT(TransformState) RenderEffects::
-prepare_flatten_transform(const TransformState *net_transform) const {
-  CPT(TransformState) result = net_transform;
+Transform RenderEffects::
+prepare_flatten_transform(const Transform &net_transform) const {
+  Transform result = net_transform;
   Effects::const_iterator ai;
   for (ai = _effects.begin(); ai != _effects.end(); ++ai) {
     const Effect &effect = (*ai);
@@ -456,7 +456,7 @@ validate_states() {
  */
 void RenderEffects::
 cull_callback(CullTraverser *trav, CullTraverserData &data,
-              CPT(TransformState) &node_transform,
+              Transform &node_transform,
               CPT(RenderState) &node_state) const {
   Effects::const_iterator ei;
   for (ei = _effects.begin(); ei != _effects.end(); ++ei) {
@@ -474,8 +474,8 @@ cull_callback(CullTraverser *trav, CullTraverserData &data,
  * node, you might get indeterminate results.
  */
 void RenderEffects::
-adjust_transform(CPT(TransformState) &net_transform,
-                 CPT(TransformState) &node_transform,
+adjust_transform(Transform &net_transform,
+                 Transform &node_transform,
                  const PandaNode *node) const {
   Effects::const_iterator ei;
   for (ei = _effects.begin(); ei != _effects.end(); ++ei) {

@@ -173,7 +173,7 @@ get_viz(CullTraverser *trav, CullTraverserData &data) {
 
   // Figure out whether we are looking at the front or the back of the plane.
   const Lens *lens = trav->get_scene()->get_lens();
-  LPlane eye_plane = cdata->_plane * data.get_modelview_transform(trav)->get_mat();
+  LPlane eye_plane = cdata->_plane * data.get_modelview_transform(trav).get_mat();
   bool front = (eye_plane.dist_to_plane(lens->get_nodal_point()) >= 0.0f);
 
   if (cdata->_front_viz != nullptr) {

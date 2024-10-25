@@ -284,8 +284,9 @@ list_hierarchy(PandaNode *node, int indent_level) {
 
   if (_verbose_transitions) {
     nout << "\n";
-    if (!node->get_transform()->is_identity()) {
-      node->get_transform()->write(nout, indent_level);
+    Transform transform;
+    if (node->get_transform(transform)) {
+      transform.write(nout, indent_level);
     }
     if (!node->get_state()->is_empty()) {
       node->get_state()->write(nout, indent_level);
@@ -295,8 +296,9 @@ list_hierarchy(PandaNode *node, int indent_level) {
     }
 
   } else {
-    if (!node->get_transform()->is_identity()) {
-      nout << " " << *node->get_transform();
+    Transform transform;
+    if (node->get_transform(transform)) {
+      nout << " " << transform;
     }
     if (!node->get_state()->is_empty()) {
       nout << " " << *node->get_state();

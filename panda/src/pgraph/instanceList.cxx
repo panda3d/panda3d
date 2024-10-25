@@ -136,7 +136,7 @@ void InstanceList::
 write(std::ostream &out, int indent_level) const {
   indent(out, indent_level) << "InstanceList[" << size() << "]:\n";
   for (const Instance &instance : *this) {
-    indent(out, indent_level + 2) << *instance.get_transform() << "\n";
+    indent(out, indent_level + 2) << instance.get_transform() << "\n";
   }
 }
 
@@ -156,9 +156,10 @@ void InstanceList::
 write_datagram(BamWriter *manager, Datagram &dg) {
   CopyOnWriteObject::write_datagram(manager, dg);
 
-  for (const Instance &instance : *(const InstanceList *)this) {
-    manager->write_pointer(dg, instance.get_transform());
-  }
+  //TODO
+  //for (const Instance &instance : *(const InstanceList *)this) {
+  //  manager->write_pointer(dg, instance.get_transform());
+  //}
 }
 
 /**
@@ -169,9 +170,10 @@ int InstanceList::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = CopyOnWriteObject::complete_pointers(p_list, manager);
 
-  for (Instance &instance : *this) {
-    instance = Instance(DCAST(TransformState, p_list[pi++]));
-  }
+  //TODO
+  //for (Instance &instance : *this) {
+  //  instance = Instance(DCAST(TransformState, p_list[pi++]));
+  //}
 
   return pi;
 }

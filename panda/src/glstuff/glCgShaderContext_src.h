@@ -38,9 +38,9 @@ public:
   void unbind() override;
 
   void set_state_and_transform(const RenderState *state,
-                               const TransformState *modelview_transform,
-                               const TransformState *camera_transform,
-                               const TransformState *projection_transform) override;
+                               const Transform &modelview_transform,
+                               const Transform &camera_transform,
+                               const LMatrix4 &projection_transform) override;
 
   void issue_parameters(int altered) override;
   void update_transform_table(const TransformTable *table);
@@ -80,9 +80,9 @@ private:
   pvector<CGparameter> _cg_parameter_map;
 
   WCPT(RenderState) _state_rs;
-  CPT(TransformState) _modelview_transform;
-  CPT(TransformState) _camera_transform;
-  CPT(TransformState) _projection_transform;
+  Transform _modelview_transform;
+  Transform _camera_transform;
+  LMatrix4 _projection_mat;
   GLint _frame_number;
 
   CLP(GraphicsStateGuardian) *_glgsg;

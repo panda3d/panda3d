@@ -231,7 +231,7 @@ protected:
 private:
   btSoftBody *_soft;
 
-  CPT(TransformState) _sync;
+  Transform _sync;
   bool _sync_disable;
 
   PT(Geom) _geom;

@@ -119,9 +119,20 @@ btTransform LMatrix4_to_btTrans(const LMatrix4 &m) {
  */
 LMatrix4 btTrans_to_LMatrix4(const btTransform &trans) {
 
-  return TransformState::make_pos_quat(
+  return Transform::make_pos_quat(
     btVector3_to_LVector3(trans.getOrigin()),
-    btQuat_to_LQuaternion(trans.getRotation()))->get_mat();
+    btQuat_to_LQuaternion(trans.getRotation())).get_mat();
+}
+
+/**
+ *
+ */
+Transform btTrans_to_Transform(const btTransform &trans) {
+
+  LVecBase3 pos = btVector3_to_LVector3(trans.getOrigin());
+  LQuaternion quat = btQuat_to_LQuaternion(trans.getRotation());
+
+  return Transform::make_pos_quat(pos, quat);
 }
 
 /**
@@ -133,6 +144,21 @@ CPT(TransformState) btTrans_to_TransformState(const btTransform &trans, const LV
   LQuaternion quat = btQuat_to_LQuaternion(trans.getRotation());
 
   return TransformState::make_pos_quat_scale(pos, quat, scale);
+}
+
+/**
+ *
+ */
+btTransform Transform_to_btTrans(const Transform &transform) {
+
+  LPoint3 pos;
+  LQuaternion quat;
+  transform.get_pos_quat(pos, quat);
+
+  btQuaternion btq = LQuaternion_to_btQuat(quat);
+  btVector3 btv = LVecBase3_to_btVector3(pos);
+
+  return btTransform(btq, btv);
 }
 
 /**
@@ -179,26 +205,23 @@ BulletUpAxis get_default_up_axis() {
 void get_node_transform(btTransform &trans, PandaNode *node) {
 
   // Get TS
-  CPT(TransformState) ts;
+  Transform transform;
   if (node->get_num_parents() == 0) {
-    ts = node->get_transform();
+    if (!node->get_transform(transform)) {
+      trans.setIdentity();
+      return;
+    }
   }
   else {
     NodePath np = NodePath::any_path(node);
-    ts = np.get_net_transform();
+    transform = np.get_net_transform();
   }
 
   // Remove scale from TS, since scale fudges the orientation
-  ts = ts->set_scale(1.0);
+  transform.set_scale(1.0);
 
-  // Convert
-  LMatrix4 m = ts->get_mat();
-
-  LQuaternion quat;
-  quat.set_from_matrix(m.get_upper_3());
-
-  btQuaternion btq = LQuaternion_to_btQuat(quat);
-  btVector3 btv = LVecBase3_to_btVector3(m.get_row3(3));
+  btQuaternion btq = LQuaternion_to_btQuat(transform.get_quat());
+  btVector3 btv = LVecBase3_to_btVector3(transform.get_pos());
 
   trans.setRotation(btq);
   trans.setOrigin(btv);

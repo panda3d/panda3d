@@ -577,7 +577,7 @@ CPT(RenderAttrib) EggRenderState::
 apply_tex_mat(CPT(RenderAttrib) tex_mat_attrib,
               TextureStage *stage, const EggTexture *egg_tex) {
   if (egg_tex->has_transform()) {
-    CPT(TransformState) transform = _loader.make_transform(egg_tex);
+    CPT(TransformState) transform = _loader.make_transform_state(egg_tex);
 
     if (tex_mat_attrib == nullptr) {
       tex_mat_attrib = TexMatrixAttrib::make();

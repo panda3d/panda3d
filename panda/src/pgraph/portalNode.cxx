@@ -230,11 +230,11 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
         PT(BoundingHexahedron) new_bh = DCAST(BoundingHexahedron, vf->make_copy());
 
         // Get the net trasform of the _cell_out as seen from the camera.
-        CPT(TransformState) cell_transform = _cell_out.get_net_transform();
-        CPT(TransformState) frustum_transform = cell_transform ->invert_compose(portal_viewer->_scene_setup->get_cull_center().get_net_transform());
+        Transform cell_transform = _cell_out.get_net_transform();
+        Transform frustum_transform = cell_transform.invert_compose(portal_viewer->_scene_setup->get_cull_center().get_net_transform());
 
         // transform to _cell_out space
-        new_bh->xform(frustum_transform->get_mat());
+        new_bh->xform(frustum_transform.get_mat());
 
         CPT(RenderState) next_state = data._state;
 
@@ -244,12 +244,12 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
           // camera space to this portal node's space (because the clip planes
           // are attached to this node)
           PT(BoundingHexahedron) temp_bh = DCAST(BoundingHexahedron, vf->make_copy());
-          CPT(TransformState) temp_frustum_transform = data.get_node_path().get_net_transform()->invert_compose(portal_viewer->_scene_setup->get_cull_center().get_net_transform());
+          Transform temp_frustum_transform = data.get_node_path().get_net_transform().invert_compose(portal_viewer->_scene_setup->get_cull_center().get_net_transform());
 
-          portal_cat.spam() << "clipping plane frustum transform " << *temp_frustum_transform << endl;
+          portal_cat.spam() << "clipping plane frustum transform " << temp_frustum_transform << endl;
           portal_cat.spam() << "frustum before transform " << *temp_bh << endl;
           // transform to portalNode space
-          temp_bh->xform(temp_frustum_transform->get_mat());
+          temp_bh->xform(temp_frustum_transform.get_mat());
 
           portal_cat.spam() << "frustum after transform " << *temp_bh << endl;
 

@@ -551,18 +551,28 @@ clear_effects() {
 }
 
 /**
+ * Returns the complete transform object set on this node.
+ */
+INLINE Transform NodePath::
+get_transform(Thread *current_thread) const {
+  nassertr_always(!is_empty(), Transform::make_identity());
+  return node()->get_transform(current_thread);
+}
+
+/**
  * Sets the transform object on this node to identity.
  */
 INLINE void NodePath::
 clear_transform(Thread *current_thread) {
-  set_transform(TransformState::make_identity(), current_thread);
+  nassertv_always(!is_empty());
+  node()->clear_transform(current_thread);
 }
 
 /**
  * Changes the complete transform object on this node.
  */
 INLINE void NodePath::
-set_transform(const TransformState *transform, Thread *current_thread) {
+set_transform(const Transform &transform, Thread *current_thread) {
   nassertv_always(!is_empty());
   node()->set_transform(transform, current_thread);
 }
@@ -574,16 +584,26 @@ set_transform(const TransformState *transform, Thread *current_thread) {
  */
 INLINE void NodePath::
 clear_transform(const NodePath &other, Thread *current_thread) {
-  set_transform(other, TransformState::make_identity(), current_thread);
+  set_transform(other, Transform::make_identity(), current_thread);
 }
 
 /**
  * Returns the net transform on this node from the root.
  */
-INLINE CPT(TransformState) NodePath::
+INLINE Transform NodePath::
 get_net_transform(Thread *current_thread) const {
-  nassertr(_error_type == ET_ok, TransformState::make_identity());
+  nassertr(_error_type == ET_ok, Transform::make_identity());
   return r_get_net_transform(_head, current_thread);
+}
+
+/**
+ * Returns the transform that has been set as this node's "previous" position.
+ * See set_prev_transform().
+ */
+INLINE Transform NodePath::
+get_prev_transform(Thread *current_thread) const {
+  nassertr_always(!is_empty(), Transform::make_identity());
+  return node()->get_prev_transform(current_thread);
 }
 
 /**
@@ -592,7 +612,7 @@ get_net_transform(Thread *current_thread) const {
  * calculations.
  */
 INLINE void NodePath::
-set_prev_transform(const TransformState *transform, Thread *current_thread) {
+set_prev_transform(const Transform &transform, Thread *current_thread) {
   nassertv_always(!is_empty());
   node()->set_prev_transform(transform, current_thread);
 }
@@ -601,9 +621,9 @@ set_prev_transform(const TransformState *transform, Thread *current_thread) {
  * Returns the net "previous" transform on this node from the root.  See
  * set_prev_transform().
  */
-INLINE CPT(TransformState) NodePath::
+INLINE Transform NodePath::
 get_net_prev_transform(Thread *current_thread) const {
-  nassertr(_error_type == ET_ok, TransformState::make_identity());
+  nassertr(_error_type == ET_ok, Transform::make_identity());
   return r_get_net_prev_transform(_head, current_thread);
 }
 
@@ -626,6 +646,15 @@ set_pos(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z) {
 INLINE void NodePath::
 set_fluid_pos(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z) {
   set_fluid_pos(LPoint3(x, y, z));
+}
+
+/**
+ * Retrieves the translation component of the transform.
+ */
+INLINE LPoint3 NodePath::
+get_pos() const {
+  nassertr_always(!is_empty(), LPoint3(0.0f, 0.0f, 0.0f));
+  return get_transform().get_pos();
 }
 
 INLINE PN_stdfloat NodePath::
@@ -765,18 +794,23 @@ clear_mat() {
 INLINE bool NodePath::
 has_mat() const {
   nassertr_always(!is_empty(), false);
-  return !node()->get_transform()->is_identity();
+  Transform transform;
+  if (node()->get_transform(transform)) {
+    return !transform.is_identity();
+  } else {
+    return false;
+  }
 }
 
 /**
  * Returns the transform matrix that has been applied to the referenced node,
  * or the identity matrix if no matrix has been applied.
  */
-INLINE const LMatrix4 &NodePath::
+INLINE LMatrix4 NodePath::
 get_mat() const {
   nassertr_always(!is_empty(), LMatrix4::ident_mat());
 
-  return node()->get_transform()->get_mat();
+  return node()->get_transform().get_mat();
 }
 
 

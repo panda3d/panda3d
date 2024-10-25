@@ -56,11 +56,13 @@ safe_to_transform() const {
  * through) this node due to a flatten operation.  The returned value will be
  * used instead.
  */
-CPT(TransformState) BillboardEffect::
-prepare_flatten_transform(const TransformState *net_transform) const {
+Transform BillboardEffect::
+prepare_flatten_transform(const Transform &net_transform) const {
   // We don't want any flatten operation to rotate the billboarded node, since
   // the billboard effect should eat any rotation that comes in from above.
-  return net_transform->set_hpr(LVecBase3(0, 0, 0));
+  Transform result(net_transform);
+  result.set_hpr(LVecBase3(0, 0, 0));
+  return result;
 }
 
 /**
@@ -122,22 +124,21 @@ has_cull_callback() const {
  */
 void BillboardEffect::
 cull_callback(CullTraverser *trav, CullTraverserData &data,
-              CPT(TransformState) &node_transform,
-              CPT(RenderState) &) const {
-  CPT(TransformState) modelview_transform = data.get_modelview_transform(trav);
-  if (modelview_transform->is_singular()) {
+              Transform &node_transform, CPT(RenderState) &) const {
+  Transform modelview_transform = data.get_modelview_transform(trav);
+  /*if (modelview_transform->is_singular()) {
     // If we're under a singular transform, never mind.
     return;
-  }
+  }*/
 
   // Since the "modelview" transform from the cull traverser already includes
   // the inverse camera transform, the camera transform is identity.
-  CPT(TransformState) camera_transform = TransformState::make_identity();
+  Transform camera_transform = Transform::make_identity();
 
   // But if we're rotating to face something other than the camera, we have to
   // compute the "camera" transform to compensate for that.
   if (!_look_at.is_empty()) {
-    camera_transform = trav->get_camera_transform()->invert_compose(_look_at.get_net_transform());
+    camera_transform = trav->get_camera_transform().invert_compose(_look_at.get_net_transform());
   }
 
   if (data._instances == nullptr) {
@@ -149,15 +150,15 @@ cull_callback(CullTraverser *trav, CullTraverserData &data,
     data._instances = instances;
 
     for (InstanceList::Instance &instance : *instances) {
-      CPT(TransformState) inst_node_transform = node_transform;
-      CPT(TransformState) inst_modelview_transform = modelview_transform->compose(instance.get_transform());
+      Transform inst_node_transform = node_transform;
+      Transform inst_modelview_transform = modelview_transform.compose(instance.get_transform());
       compute_billboard(inst_node_transform, inst_modelview_transform, camera_transform);
 
-      instance.set_transform(instance.get_transform()->compose(inst_node_transform));
+      instance.set_transform(instance.get_transform().compose(inst_node_transform));
     }
 
     // We've already applied this onto the instances.
-    node_transform = TransformState::make_identity();
+    node_transform = Transform::make_identity();
   }
 }
 
@@ -183,8 +184,8 @@ has_adjust_transform() const {
  * they may (or may not) be modified in-place by the RenderEffect.
  */
 void BillboardEffect::
-adjust_transform(CPT(TransformState) &net_transform,
-                 CPT(TransformState) &node_transform,
+adjust_transform(Transform &net_transform,
+                 Transform &node_transform,
                  const PandaNode *) const {
   // A BillboardEffect can only affect the net transform when it is to a
   // particular node.  A billboard to a camera is camera-dependent, of course,
@@ -193,7 +194,7 @@ adjust_transform(CPT(TransformState) &net_transform,
     return;
   }
 
-  CPT(TransformState) camera_transform = _look_at.get_net_transform();
+  Transform camera_transform = _look_at.get_net_transform();
 
   compute_billboard(node_transform, net_transform, camera_transform);
 }
@@ -250,26 +251,20 @@ compare_to_impl(const RenderEffect *other) const {
  * The result is applied to node_transform, which is modified in-place.
  */
 void BillboardEffect::
-compute_billboard(CPT(TransformState) &node_transform,
-                  const TransformState *net_transform,
-                  const TransformState *camera_transform) const {
+compute_billboard(Transform &node_transform,
+                  const Transform &net_transform,
+                  const Transform &camera_transform) const {
   // First, extract out just the translation component of the node's local
   // transform.  This gets applied to the net transform, to compute the look-
   // at direction properly.
-  CPT(TransformState) translate = TransformState::make_pos(node_transform->get_pos());
+  Transform translate = Transform::make_pos(node_transform.get_pos());
 
   // And then the translation gets removed from the node, but we keep its
   // rotation etc., which gets applied after the billboard operation.
-  node_transform = node_transform->set_pos(LPoint3(0.0f, 0.0f, 0.0f));
+  node_transform.set_pos(LPoint3(0.0f, 0.0f, 0.0f));
 
-  CPT(TransformState) rel_transform =
-    net_transform->compose(translate)->invert_compose(camera_transform);
-  if (!rel_transform->has_mat()) {
-    // Never mind.
-    return;
-  }
-
-  const LMatrix4 &rel_mat = rel_transform->get_mat();
+  Transform rel_transform =
+    net_transform.compose(translate).invert_compose(camera_transform);
 
   // Determine the look_at point in the camera space.
   LVector3 camera_pos, up;
@@ -280,12 +275,12 @@ compute_billboard(CPT(TransformState) &node_transform,
   // direction, not directly to the camera.
 
   if (_eye_relative) {
-    up = _up_vector * rel_mat;
-    camera_pos = LVector3::forward() * rel_mat;
+    up = rel_transform.xform_vec(_up_vector);
+    camera_pos = rel_transform.xform_vec(LVector3::forward());
 
   } else {
     up = _up_vector;
-    camera_pos = -(_look_at_point * rel_mat);
+    camera_pos = -rel_transform.xform_point(_look_at_point);
   }
 
   // Now determine the rotation matrix for the Billboard.
@@ -299,10 +294,10 @@ compute_billboard(CPT(TransformState) &node_transform,
   // Also slide the billboard geometry towards the camera according to the
   // offset factor.
   if (_offset != 0.0f || _fixed_depth) {
-    LVector3 translate(rel_mat(3, 0), rel_mat(3, 1), rel_mat(3, 2));
+    LVector3 translate = rel_transform.get_pos();
     LPoint3 pos;
     if (_fixed_depth) {
-      pos = translate / rel_mat(3, 3);
+      pos = translate;
     } else {
       pos.fill(0.0f);
     }
@@ -311,7 +306,7 @@ compute_billboard(CPT(TransformState) &node_transform,
     rotate.set_row(3, pos + translate);
   }
 
-  node_transform = translate->compose(TransformState::make_mat(rotate))->compose(node_transform);
+  node_transform = translate.compose(Transform::make_mat(rotate)).compose(node_transform);
 }
 
 /**

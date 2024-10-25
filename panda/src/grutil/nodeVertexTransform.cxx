@@ -35,10 +35,10 @@ get_matrix(LMatrix4 &matrix) const {
   if (_prev != nullptr) {
     LMatrix4 prev_matrix;
     _prev->get_matrix(prev_matrix);
-    matrix.multiply(_node->get_transform()->get_mat(), prev_matrix);
+    matrix.multiply(_node->get_transform().get_mat(), prev_matrix);
 
   } else {
-    matrix = _node->get_transform()->get_mat();
+    matrix = _node->get_transform().get_mat();
   }
 }
 

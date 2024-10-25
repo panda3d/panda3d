@@ -18,6 +18,9 @@
 #include "internalName.h"
 #include "savedContext.h"
 #include "shader.h"
+#include "lmatrix.h"
+
+class Transform;
 
 /**
  * The ShaderContext is meant to contain the compiled version of a shader
@@ -33,9 +36,9 @@ public:
   INLINE ShaderContext(Shader *se);
 
   virtual void set_state_and_transform(const RenderState *,
-                                       const TransformState *,
-                                       const TransformState *,
-                                       const TransformState *) {};
+                                       const Transform &,
+                                       const Transform &,
+                                       const LMatrix4 &) {};
 
   INLINE virtual bool valid() { return false; }
   INLINE virtual void bind() {};

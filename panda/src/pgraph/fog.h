@@ -21,7 +21,7 @@
 #include "cmath.h"
 #include "deg_2_rad.h"
 
-class TransformState;
+class Transform;
 
 /**
  * Specifies how atmospheric fog effects are applied to geometry.  The Fog
@@ -88,7 +88,7 @@ PUBLISHED:
   void output(std::ostream &out) const;
 
 public:
-  void adjust_to_camera(const TransformState *camera_transform);
+  void adjust_to_camera(const Transform &camera_transform);
   void get_linear_range(PN_stdfloat &onset, PN_stdfloat &opaque);
 
 protected:

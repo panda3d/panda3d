@@ -49,10 +49,9 @@ public:
 
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
 
-  virtual CPT(TransformState)
+  virtual Transform
     calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
-                      bool &found_any,
-                      const TransformState *transform,
+                      bool &found_any, const Transform &transform,
                       Thread *current_thread) const;
 
 PUBLISHED:
@@ -82,7 +81,7 @@ protected:
                                Thread *current_thread);
   virtual void update_bundle(PartBundleHandle *old_bundle_handle,
                              PartBundle *new_bundle);
-  CPT(TransformState) get_rel_transform(CullTraverser *trav, CullTraverserData &data);
+  Transform get_rel_transform(CullTraverser *trav, CullTraverserData &data);
 
 private:
   void do_update();

@@ -131,16 +131,15 @@ handle_entries() {
       LVector3 N(M);
 
       const LPoint3 orig_pos(from_node_path.get_pos(wrt_node));
-      CPT(TransformState) prev_trans(from_node_path.get_prev_transform(wrt_node));
-      const LPoint3 orig_prev_pos(prev_trans->get_pos());
+      Transform prev_trans(from_node_path.get_prev_transform(wrt_node));
+      const LPoint3 orig_prev_pos(prev_trans.get_pos());
 
       // currently we only support spheres as the collider
       const CollisionSphere *sphere;
       DCAST_INTO_R(sphere, entries.front()->get_from(), false);
 
       from_node_path.set_pos(wrt_node, 0,0,0);
-      LPoint3 sphere_offset = (sphere->get_center() *
-                                from_node_path.get_transform(wrt_node)->get_mat());
+      LPoint3 sphere_offset = from_node_path.get_transform(wrt_node).xform_point(sphere->get_center());
       from_node_path.set_pos(wrt_node, orig_pos);
 
       // this will hold the final calculated position at each iteration
@@ -209,14 +208,14 @@ handle_entries() {
         }
 
         from_node_path.set_pos(wrt_node, candidate_final_pos);
-        CPT(TransformState) prev_trans(from_node_path.get_prev_transform(wrt_node));
-        prev_trans = prev_trans->set_pos(contact_pos);
+        Transform prev_trans(from_node_path.get_prev_transform(wrt_node));
+        prev_trans.set_pos(contact_pos);
         from_node_path.set_prev_transform(wrt_node, prev_trans);
 
         /*{
           const LPoint3 new_pos(from_node_path.get_pos(wrt_node));
-          CPT(TransformState) new_prev_trans(from_node_path.get_prev_transform(wrt_node));
-          const LPoint3 new_prev_pos(new_prev_trans->get_pos());
+          Transform new_prev_trans(from_node_path.get_prev_transform(wrt_node));
+          const LPoint3 new_prev_pos(new_prev_trans.get_pos());
         }*/
 
         // recalculate the position delta
@@ -245,7 +244,7 @@ handle_entries() {
       from_node_path.set_pos(wrt_node, orig_pos);
       // restore the appropriate previous position
       prev_trans = from_node_path.get_prev_transform(wrt_node);
-      prev_trans = prev_trans->set_pos(orig_prev_pos);
+      prev_trans.set_pos(orig_prev_pos);
       from_node_path.set_prev_transform(wrt_node, prev_trans);
 
       LVector3 net_shove(candidate_final_pos - orig_pos);

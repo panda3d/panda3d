@@ -141,7 +141,7 @@ private:
   bool clip_polygon(Points &new_points, const Points &source_points,
                     const LPlane &plane) const;
   bool apply_clip_plane(Points &new_points, const ClipPlaneAttrib *cpa,
-                        const TransformState *net_transform) const;
+                        const Transform &net_transform) const;
 
 private:
   Points _points;

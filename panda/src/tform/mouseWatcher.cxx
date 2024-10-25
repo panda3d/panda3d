@@ -1235,7 +1235,7 @@ set_mouse(const LVecBase2 &xy, const LVecBase2 &pixel_xy) {
 
   if (!_geometry.is_null()) {
     // Transform the mouse pointer.
-    _geometry->set_transform(TransformState::make_pos(LVecBase3(xy[0], 0, xy[1])));
+    _geometry->set_transform(Transform::make_pos(LVecBase3(xy[0], 0, xy[1])));
     if (!_has_mouse) {
       // Show the mouse pointer.
       _geometry->set_overall_hidden(false);

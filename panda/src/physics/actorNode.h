@@ -50,7 +50,7 @@ private:
   // node hook if the client changes the node's transform.  i.e.  copy from
   // PandaNode to PhysicsObject
   virtual void transform_changed();
-  void test_transform(const TransformState *ts) const;
+  void test_transform(const Transform &transform) const;
 
 public:
   static TypeHandle get_class_type() {

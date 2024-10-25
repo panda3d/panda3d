@@ -60,8 +60,7 @@ add_object(CullableObject *object, Thread *current_thread) {
   nassertv(gbv != nullptr);
 
   LPoint3 center = gbv->get_approx_center();
-  nassertv(object->_internal_transform != nullptr);
-  center = center * object->_internal_transform->get_mat();
+  center = object->_internal_transform.xform_point(center);
 
   PN_stdfloat distance = _gsg->compute_distance_to(center);
   _objects.push_back(ObjectData(object, distance));
