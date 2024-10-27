@@ -100,6 +100,11 @@ void fshader(out float4 o_color : COLOR,
 """
 
 
+class ToneMap:
+    ACES = object()
+    PBR_NEUTRAL = object()
+
+
 class FilterConfig:
     pass
 
@@ -279,16 +284,19 @@ class CommonFilters:
 
             text = "//Cg\n"
             if "HighDynamicRange" in configuration:
-                text += "static const float3x3 aces_input_mat = {\n"
-                text += "  {0.59719, 0.35458, 0.04823},\n"
-                text += "  {0.07600, 0.90834, 0.01566},\n"
-                text += "  {0.02840, 0.13383, 0.83777},\n"
-                text += "};\n"
-                text += "static const float3x3 aces_output_mat = {\n"
-                text += "  { 1.60475, -0.53108, -0.07367},\n"
-                text += "  {-0.10208,  1.10813, -0.00605},\n"
-                text += "  {-0.00327, -0.07276,  1.07602},\n"
-                text += "};\n"
+                tonemap = configuration["HighDynamicRange"]
+                if tonemap is ToneMap.ACES:
+                    text += "static const float3x3 aces_input_mat = {\n"
+                    text += "  {0.59719, 0.35458, 0.04823},\n"
+                    text += "  {0.07600, 0.90834, 0.01566},\n"
+                    text += "  {0.02840, 0.13383, 0.83777},\n"
+                    text += "};\n"
+                    text += "static const float3x3 aces_output_mat = {\n"
+                    text += "  { 1.60475, -0.53108, -0.07367},\n"
+                    text += "  {-0.10208,  1.10813, -0.00605},\n"
+                    text += "  {-0.00327, -0.07276,  1.07602},\n"
+                    text += "};\n"
+
             text += "void vshader(float4 vtx_position : POSITION,\n"
             text += "  out float4 l_position : POSITION,\n"
 
@@ -381,10 +389,30 @@ class CommonFilters:
             if "ExposureAdjust" in configuration:
                 text += "  o_color.rgb *= k_exposure;\n"
 
-            # With thanks to Stephen Hill!
             if "HighDynamicRange" in configuration:
-                text += "  float3 aces_color = mul(aces_input_mat, o_color.rgb);\n"
-                text += "  o_color.rgb = saturate(mul(aces_output_mat, (aces_color * (aces_color + 0.0245786f) - 0.000090537f) / (aces_color * (0.983729f * aces_color + 0.4329510f) + 0.238081f)));\n"
+                tonemap = configuration["HighDynamicRange"]
+                if tonemap is ToneMap.ACES:
+                    # With thanks to Stephen Hill!
+                    text += "  float3 aces_color = mul(aces_input_mat, o_color.rgb);\n"
+                    text += "  o_color.rgb = saturate(mul(aces_output_mat, (aces_color * (aces_color + 0.0245786f) - 0.000090537f) / (aces_color * (0.983729f * aces_color + 0.4329510f) + 0.238081f)));\n"
+                elif tonemap is ToneMap.PBR_NEUTRAL:
+                    text += "  const float start_compression = 0.8 - 0.04;\n"
+                    text += "  const float desaturation = 0.15;\n"
+
+                    text += "  float x = min(o_color.r, min(o_color.g, o_color.b));\n"
+                    text += "  float offset = x < 0.08 ? x - 6.25 * x * x : 0.04;\n"
+                    text += "  o_color.rgb -= offset;\n"
+
+                    text += "  float peak = max(o_color.r, max(o_color.g, o_color.b));\n"
+
+                    text += "  if (peak >= start_compression) {\n"
+                    text += "    const float d = 1.0 - start_compression;\n"
+                    text += "    float new_peak = 1.0 - d * d / (peak + d - start_compression);\n"
+                    text += "    o_color.rgb *= new_peak / peak;\n"
+                    text += "    float g = 1.0 - 1.0 / (desaturation * (peak - new_peak) + 1.0);\n"
+
+                    text += "    o_color.rgb = lerp(o_color.rgb, new_peak * float3(1, 1, 1), g);\n"
+                    text += "}\n"
 
             if "GammaAdjust" in configuration:
                 gamma = configuration["GammaAdjust"]
@@ -668,10 +696,10 @@ class CommonFilters:
             return self.reconfigure(old_enable, "SrgbEncode")
         return True
 
-    def setHighDynamicRange(self):
+    def setHighDynamicRange(self, tonemap=ToneMap.ACES):
         """ Enables HDR rendering by using a floating-point framebuffer,
         disabling color clamping on the main scene, and applying a tone map
-        operator (ACES).
+        operator (ACES or Khronos PBR Neutral).
 
         It may also be necessary to use setExposureAdjust to perform exposure
         compensation on the scene, depending on the lighting intensity.
@@ -679,8 +707,11 @@ class CommonFilters:
         .. versionadded:: 1.10.7
         """
 
-        fullrebuild = (("HighDynamicRange" in self.configuration) is False)
-        self.configuration["HighDynamicRange"] = 1
+        fullrebuild = "HighDynamicRange" not in self.configuration or \
+                      self.configuration["HighDynamicRange"] is not tonemap
+        if tonemap is not ToneMap.ACES and tonemap is not ToneMap.PBR_NEUTRAL:
+            raise ValueError("Invalid value for tonemap")
+        self.configuration["HighDynamicRange"] = tonemap
         return self.reconfigure(fullrebuild, "HighDynamicRange")
 
     def delHighDynamicRange(self):
