@@ -1449,5 +1449,13 @@ fillin(DatagramIterator& scan, BamReader* manager) {
       v.read_datagram(scan);
       _points[i].push_back(PointDef(p, v));
     }
+    if (size < 4) {
+      LPoint3 array[4];
+      array[0] = _vertex[plane_def[i][0]];
+      array[1] = _vertex[plane_def[i][1]];
+      array[2] = _vertex[plane_def[i][2]];
+      array[3] = _vertex[plane_def[i][3]];
+      setup_points(array, array+4, i);
+    }
   }
 }
