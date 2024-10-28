@@ -2,8 +2,81 @@ name: Continuous Integration
 on: [push, pull_request]
 
 jobs:
+  build_thirdparty:
+    name: Thirdparty Dependencies
+    if: "!contains(github.event.head_commit.message, '[skip ci]') && !contains(github.event.head_commit.message, '[ci skip]')"
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - dir: win-libs-vc14-x64
+          generator: Visual Studio 17 2022
+          os: windows-2022
+          args: -A x64
+          archive: thirdparty-win64.zip
+        - dir: win-libs-vc14
+          generator: Visual Studio 17 2022
+          os: windows-2022
+          args: -A Win32
+          archive: thirdparty-win32.zip
+        - dir: linux-libs-x64
+          generator: Unix Makefiles
+          os: ubuntu-20.04
+          args: >-
+            -DBUILD_PNG=OFF
+            -DBUILD_JPEG=OFF
+            -DBUILD_TIFF=OFF
+            -DBUILD_ZLIB=OFF
+            -DBUILD_FCOLLADA=OFF
+          archive: thirdparty-linux64.tar.xz
+        - dir: darwin-libs-a
+          generator: Unix Makefiles
+          os: macos-11
+          args: >-
+            -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
+            -DBUILD_NVIDIACG=OFF
+          archive: thirdparty-mac.tar.xz
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        id: cache
+        with:
+          path: thirdparty
+          key: ${{matrix.dir}}-${{hashFiles('**/cmake/thirdparty/**')}}
+          restore-keys: |
+            ${{matrix.dir}}-
+      - name: Install yasm (ubuntu)
+        if: startsWith(matrix.os, 'ubuntu')
+        run: sudo apt-get install yasm
+      - name: Build
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          cmake -S cmake/thirdparty -B thirdparty-build -G "${{matrix.generator}}" -DCMAKE_BUILD_TYPE=Release -DTHIRDPARTY_BASE_DIR=thirdparty ${{matrix.args}} -D CMAKE_EP_GIT_REMOTE_UPDATE_STRATEGY=CHECKOUT
+          cmake --build thirdparty-build --config Release -j4
+      - name: Get Python and Utils (Windows)
+        if: runner.os == 'Windows' && steps.cache.outputs.cache-hit != 'true'
+        working-directory: cmake/thirdparty
+        run: |
+          .\install-python.ps1 ${{github.workspace}}/thirdparty/${{matrix.dir}}
+          cp -v -R win-util ${{github.workspace}}/thirdparty/win-util
+      - name: Make ZIP file
+        if: steps.cache.outputs.cache-hit != 'true' && endsWith(matrix.archive, '.zip')
+        working-directory:  thirdparty
+        run: 7z a ${{matrix.archive}} ${{matrix.dir}} win-util win-python*/
+      - name: Make tarball
+        if: steps.cache.outputs.cache-hit != 'true' && endsWith(matrix.archive, '.tar.xz')
+        working-directory:  thirdparty
+        run: tar -cJvf ${{matrix.archive}} ${{matrix.dir}}
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: panda3d-${{github.head_ref || github.ref_name}}-${{matrix.dir}}
+          path: thirdparty/${{matrix.archive}}
+          compression-level: 0
   cmake:
     name: CMake Buildsystem
+    needs: build_thirdparty
     if: "!contains(github.event.head_commit.message, '[skip ci]') && !contains(github.event.head_commit.message, '[ci skip]')"
 
     strategy:
@@ -11,15 +84,15 @@ jobs:
 
       matrix:
         profile:
-        - ubuntu-bionic-standard-unity-makefile
-        - ubuntu-bionic-coverage-ninja
+        - ubuntu-standard-unity-makefile
+        - ubuntu-coverage-ninja
         - macos-eigen-coverage-unity-xcode
         - macos-nometa-standard-makefile
         - windows-standard-unity-msvc
         - windows-nopython-nometa-standard-msvc
 
         include:
-        - profile: ubuntu-bionic-standard-unity-makefile
+        - profile: ubuntu-standard-unity-makefile
           os: ubuntu-20.04
           config: Standard
           unity: YES
@@ -28,8 +101,9 @@ jobs:
           metalibs: YES
           python: YES
           eigen: NO
+          thirdparty-dir: linux-libs-x64
 
-        - profile: ubuntu-bionic-coverage-ninja
+        - profile: ubuntu-coverage-ninja
           os: ubuntu-20.04
           config: Coverage
           unity: NO
@@ -38,6 +112,7 @@ jobs:
           metalibs: YES
           python: YES
           eigen: NO
+          thirdparty-dir: linux-libs-x64
 
         - profile: macos-eigen-coverage-unity-xcode
           os: macOS-12
@@ -48,6 +123,7 @@ jobs:
           metalibs: YES
           python: YES
           eigen: YES
+          thirdparty-dir: darwin-libs-a
 
         - profile: macos-nometa-standard-makefile
           os: macOS-12
@@ -58,6 +134,7 @@ jobs:
           metalibs: NO
           python: YES
           eigen: NO
+          thirdparty-dir: darwin-libs-a
 
         - profile: windows-standard-unity-msvc
           os: windows-2022
@@ -68,6 +145,7 @@ jobs:
           metalibs: YES
           python: YES
           eigen: NO
+          thirdparty-dir: win-libs-vc14-x64
 
         - profile: windows-nopython-nometa-standard-msvc
           os: windows-2022
@@ -78,28 +156,27 @@ jobs:
           metalibs: NO
           python: NO
           eigen: NO
+          thirdparty-dir: win-libs-vc14-x64
 
     runs-on: ${{ matrix.os }}
 
     steps:
-    - uses: actions/checkout@v1
-      with:
-        fetch-depth: 10
+    - uses: actions/checkout@v4
 
     - name: Self-destruct makepanda
       run: python3 makepanda/selfdestruct.py --yes
 
-    - name: Install dependencies (macOS)
+    - name: Get thirdparty cache
+      uses: actions/cache@v4
+      id: cache
+      with:
+        fail-on-cache-miss: true
+        path: thirdparty
+        key: ${{matrix.thirdparty-dir}}-${{hashFiles('**/cmake/thirdparty/**')}}
+
+    - name: Install extra dependencies (macOS)
       if: runner.os == 'macOS'
       run: |
-        curl -O https://www.panda3d.org/download/panda3d-1.10.14/panda3d-1.10.14-tools-mac.tar.gz
-        tar -xf panda3d-1.10.14-tools-mac.tar.gz
-        mv panda3d-1.10.14/thirdparty thirdparty
-        rmdir panda3d-1.10.14
-
-        # Temporary hack so that pzip can run, since we are about to remove Cg anyway.
-        install_name_tool -id "$(pwd)/thirdparty/darwin-libs-a/nvidiacg/lib/libCg.dylib" thirdparty/darwin-libs-a/nvidiacg/lib/libCg.dylib
-
         brew install ccache
 
     - name: Install dependencies (Ubuntu)
@@ -110,31 +187,13 @@ jobs:
         sudo apt-get install
         build-essential ninja-build clang llvm ccache
         bison flex
-        libeigen3-dev libfreetype6-dev libgl1-mesa-dev libjpeg-dev libode-dev
-        libopenal-dev libpng-dev libssl-dev libvorbis-dev libx11-dev
-        libxcursor-dev libxrandr-dev nvidia-cg-toolkit zlib1g-dev
+        libgl1-mesa-dev libx11-dev libxcursor-dev libxrandr-dev
         python3-setuptools python3-tk
-
-    - name: Cache dependencies (Windows)
-      if: runner.os == 'Windows'
-      uses: actions/cache@v1
-      with:
-        path: thirdparty
-        key: ci-cmake-${{ runner.OS }}-thirdparty-v1.10.14-r1
-    - name: Install dependencies (Windows)
-      if: runner.os == 'Windows'
-      shell: powershell
-      run: |
-        if (!(Test-Path thirdparty/win-libs-vc14-x64)) {
-          $wc = New-Object System.Net.WebClient
-          $wc.DownloadFile("https://www.panda3d.org/download/panda3d-1.10.14/panda3d-1.10.14-tools-win64.zip", "thirdparty-tools.zip")
-          Expand-Archive -Path thirdparty-tools.zip
-          Move-Item -Path thirdparty-tools/panda3d-1.10.14/thirdparty -Destination .
-        }
+        libtiff-dev libpng-dev libjpeg-dev zlib1g-dev
 
     - name: ccache (non-Windows)
       if: runner.os != 'Windows'
-      uses: actions/cache@v1
+      uses: actions/cache@v4
       with:
         path: ccache
         key: ci-cmake-ccache-${{ matrix.profile }}
@@ -171,6 +230,7 @@ jobs:
         -D BUILD_METALIBS=${{ matrix.metalibs }}
         -D HAVE_PYTHON=${{ runner.os != 'Windows' && matrix.python || 'NO' }}
         -D HAVE_EIGEN=${{ matrix.eigen }}
+        -D HAVE_CG=${{ runner.os != 'macOS' && 'ON' || 'OFF' }}
         ..
 
     - name: Build (no Python)

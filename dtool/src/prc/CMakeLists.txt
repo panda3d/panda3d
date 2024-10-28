@@ -94,17 +94,15 @@ add_library(p3prc
   ${P3PRC_HEADERS} ${P3PRC_SOURCES})
 set_target_properties(p3prc PROPERTIES DEFINE_SYMBOL BUILDING_DTOOL_PRC)
 target_include_directories(p3prc PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>)
-target_link_libraries(p3prc p3dtool PKG::OPENSSL)
+target_link_libraries(p3prc PUBLIC p3dtool PRIVATE PKG::OPENSSL)
 target_interrogate(p3prc ALL EXTENSIONS ${P3PRC_IGATEEXT})
 
 if(ANDROID)
-  target_link_libraries(p3prc log)
+  target_link_libraries(p3prc PUBLIC log)
 endif()
 
-if(HAVE_OPENSSL AND CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Clang)$")
-  # Do not re-export symbols from these libraries.
-  target_link_options(p3prc PRIVATE "LINKER:--exclude-libs,libssl.a")
-  target_link_options(p3prc PRIVATE "LINKER:--exclude-libs,libcrypto.a")
+if(HAVE_OPENSSL)
+  target_link_libraries(p3prc PRIVATE OpenSSL::applink)
 endif()
 
 install(TARGETS p3prc
