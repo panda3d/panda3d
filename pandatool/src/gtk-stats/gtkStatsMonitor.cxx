@@ -316,8 +316,8 @@ open_timeline() {
  * Opens a new flame graph showing the indicated data.
  */
 PStatGraph *GtkStatsMonitor::
-open_flame_graph(int thread_index, int collector_index) {
-  GtkStatsFlameGraph *graph = new GtkStatsFlameGraph(this, thread_index, collector_index);
+open_flame_graph(int thread_index, int collector_index, int frame_number) {
+  GtkStatsFlameGraph *graph = new GtkStatsFlameGraph(this, thread_index, collector_index, frame_number);
   add_graph(graph);
   return graph;
 }
@@ -734,7 +734,7 @@ status_bar_button_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
       const PStatViewLevel *child_level = view_level->get_child(c);
 
       int child_collector = child_level->get_collector();
-      const MenuDef *menu_def = monitor->add_menu({0, child_collector, CT_strip_chart, true});
+      const MenuDef *menu_def = monitor->add_menu({CT_strip_chart, 0, child_collector, -1, true});
 
       double value = child_level->get_net_value();
 
@@ -787,7 +787,8 @@ menu_activate(GtkWidget *widget, gpointer data) {
 
   case CT_flame_graph:
     monitor->open_flame_graph(menu_def._thread_index,
-                              menu_def._collector_index);
+                              menu_def._collector_index,
+                              menu_def._frame_number);
     break;
 
   case CT_piano_roll:
@@ -853,7 +854,7 @@ handle_status_bar_popup(int item) {
       const PStatViewLevel *child_level = view_level->get_child(c);
 
       int child_collector = child_level->get_collector();
-      const MenuDef *menu_def = add_menu({0, child_collector, CT_strip_chart, true});
+      const MenuDef *menu_def = add_menu({CT_strip_chart, 0, child_collector, -1, true});
 
       double value = child_level->get_net_value();
 

@@ -243,8 +243,8 @@ on_popup_label(int collector_index) {
 
   {
     const GtkStatsMonitor::MenuDef *menu_def = GtkStatsGraph::_monitor->add_menu({
-      _thread_index, collector_index,
-      GtkStatsMonitor::CT_strip_chart, get_view().get_show_level(),
+      GtkStatsMonitor::CT_strip_chart, _thread_index, collector_index, -1,
+      get_view().get_show_level(),
     });
 
     GtkWidget *menu_item = gtk_menu_item_new_with_label("Open Strip Chart");
@@ -256,7 +256,7 @@ on_popup_label(int collector_index) {
 
   if (!get_view().get_show_level()) {
     const GtkStatsMonitor::MenuDef *menu_def = GtkStatsGraph::_monitor->add_menu({
-      _thread_index, collector_index, GtkStatsMonitor::CT_flame_graph,
+      GtkStatsMonitor::CT_flame_graph, _thread_index, collector_index,
     });
 
     GtkWidget *menu_item = gtk_menu_item_new_with_label("Open Flame Graph");
@@ -273,7 +273,7 @@ on_popup_label(int collector_index) {
 
   {
     const GtkStatsMonitor::MenuDef *menu_def = GtkStatsGraph::_monitor->add_menu({
-      -1, collector_index, GtkStatsMonitor::CT_choose_color,
+      GtkStatsMonitor::CT_choose_color, -1, collector_index,
     });
 
     GtkWidget *menu_item = gtk_menu_item_new_with_label("Change Color...");
@@ -285,7 +285,7 @@ on_popup_label(int collector_index) {
 
   {
     const GtkStatsMonitor::MenuDef *menu_def = GtkStatsGraph::_monitor->add_menu({
-      -1, collector_index, GtkStatsMonitor::CT_reset_color,
+      GtkStatsMonitor::CT_reset_color, -1, collector_index,
     });
 
     GtkWidget *menu_item = gtk_menu_item_new_with_label("Reset Color");

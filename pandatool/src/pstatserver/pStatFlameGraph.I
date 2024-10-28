@@ -28,6 +28,15 @@ get_collector_index() const {
 }
 
 /**
+ * Returns the particular frame number whose data this flame graph reflects.
+ * Returns -1 if we're looking at a moving average instead.
+ */
+INLINE int PStatFlameGraph::
+get_frame_number() const {
+  return _frame_number;
+}
+
+/**
  * Returns the amount of total time the width of the horizontal axis
  * represents.
  */

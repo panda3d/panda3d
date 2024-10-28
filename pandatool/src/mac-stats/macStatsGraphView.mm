@@ -45,15 +45,13 @@
 }
 
 - (void)keyDown:(NSEvent *)event {
-  if (!event.isARepeat) {
-    NSPoint pos = [self convertPoint:event.locationInWindow fromView:nil];
-    UniChar c = 0;
-    NSString *str = [event charactersIgnoringModifiers];
-    if (str != nil && str.length == 1) {
-      c = [str characterAtIndex:0];
-    }
-    _graph->handle_key(pos.x, pos.y, true, c, event.keyCode);
+  NSPoint pos = [self convertPoint:event.locationInWindow fromView:nil];
+  UniChar c = 0;
+  NSString *str = [event charactersIgnoringModifiers];
+  if (str != nil && str.length == 1) {
+    c = [str characterAtIndex:0];
   }
+  _graph->handle_key(pos.x, pos.y, true, c, event.keyCode);
 }
 
 - (void)keyUp:(NSEvent *)event {

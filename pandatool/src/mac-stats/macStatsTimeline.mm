@@ -819,7 +819,7 @@ handle_open_strip_chart() {
 void MacStatsTimeline::
 handle_open_flame_graph() {
   const ColorBar &bar = _popup_bar;
-  MacStatsGraph::_monitor->open_flame_graph(bar._thread_index, bar._collector_index);
+  MacStatsGraph::_monitor->open_flame_graph(bar._thread_index, bar._collector_index, bar._frame_number);
 }
 
 /**
