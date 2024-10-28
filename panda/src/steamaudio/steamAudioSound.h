@@ -7,7 +7,7 @@
  * with this source code in a file named "LICENSE."
  *
  * @file steamAudioSound.h
- * 
+ * @author Jackson Sutherland
  * this file is based on openalAudioSound.h.
  */
 
@@ -19,7 +19,7 @@
 #include "audioSound.h"
 #include "movieAudioCursor.h"
 #include "trueClock.h"
-#include "openalAudioManager.h"
+#include "steamAudioManager.h"
 
 // OSX uses the OpenAL framework
 #ifdef HAVE_OPENAL_FRAMEWORK
@@ -30,12 +30,13 @@
   #include <AL/alc.h>
 #endif
 
-class EXPCL_OPENAL_AUDIO OpenALAudioSound final : public AudioSound {
-  friend class OpenALAudioManager;
+//IMPORTANT!! Since many functions we need to modify are not public, make sure no pointers to this class are given as AudioSound/OpenALAudioSound pointers!!
+class EXPCL_OPENAL_AUDIO SteamAudioSound final : public OpenALAudioSound {
+  friend class SteamAudioManager;
 
-public:
+PUBLISHED:
 
-  ~OpenALAudioSound();
+  ~SteamAudioSound();
 
   // For best compatibility, set the loop_count, start_time, volume, and
   // balance, prior to calling play().  You may set them while they're
@@ -55,10 +56,6 @@ public:
   void set_loop_start(PN_stdfloat loop_start=0);
   PN_stdfloat get_loop_start() const;
 
-  // 0 = beginning; length() = end.  inits to 0.0.
-  void set_time(PN_stdfloat time=0.0);
-  PN_stdfloat get_time() const;
-
   // 0 = minimum; 1.0 = maximum.  inits to 1.0.
   void set_volume(PN_stdfloat volume=1.0);
   PN_stdfloat get_volume() const;
@@ -71,54 +68,10 @@ public:
   void set_play_rate(PN_stdfloat play_rate=1.0f);
   PN_stdfloat get_play_rate() const;
 
-  // inits to manager's state.
-  void set_active(bool active=true);
-  bool get_active() const;
-
-  // This is the string that throw_event() will throw when the sound finishes
-  // playing.  It is not triggered when the sound is stopped with stop().
-  void set_finished_event(const std::string& event);
-  const std::string& get_finished_event() const;
-
-  const std::string &get_name() const;
-
-  // return: playing time in seconds.
-  PN_stdfloat length() const;
-
-  // Controls the position of this sound's emitter.  pos is a pointer to an
-  // xyz triplet of the emitter's position.  vel is a pointer to an xyz
-  // triplet of the emitter's velocity.
-  void set_3d_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx, PN_stdfloat vy, PN_stdfloat vz);
-  void get_3d_attributes(PN_stdfloat *px, PN_stdfloat *py, PN_stdfloat *pz, PN_stdfloat *vx, PN_stdfloat *vy, PN_stdfloat *vz);
-
-  // Controls the direction of this sound emitter.
-  void set_3d_direction(LVector3 d);
-  LVector3 get_3d_direction() const;
-
-  void set_3d_min_distance(PN_stdfloat dist);
-  PN_stdfloat get_3d_min_distance() const;
-
-  void set_3d_max_distance(PN_stdfloat dist);
-  PN_stdfloat get_3d_max_distance() const;
-
-  void set_3d_drop_off_factor(PN_stdfloat factor);
-  PN_stdfloat get_3d_drop_off_factor() const;
-
-  void set_3d_cone_inner_angle(PN_stdfloat angle);
-  PN_stdfloat get_3d_cone_inner_angle() const;
-
-  void set_3d_cone_outer_angle(PN_stdfloat angle);
-  PN_stdfloat get_3d_cone_outer_angle() const;
-
-  void set_3d_cone_outer_gain(PN_stdfloat gain);
-  PN_stdfloat get_3d_cone_outer_gain() const;
-
-  AudioSound::SoundStatus status() const;
-
   void finished();
 
 private:
-  OpenALAudioSound(OpenALAudioManager* manager,
+  SteamAudioSound(SteamAudioManager* manager,
                    MovieAudio *movie,
                    bool positional,
                    int mode);

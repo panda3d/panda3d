@@ -7,7 +7,7 @@
  * with this source code in a file named "LICENSE."
  *
  * @file steamAudioSound.cxx
- * 
+ * @author Jackson Sutherland
  * this file is based on openalAudioSound.cxx.
  */
 
@@ -15,26 +15,26 @@
 
 // Panda Headers
 #include "throw_event.h"
-#include "openalAudioSound.h"
-#include "openalAudioManager.h"
+#include "SteamAudioSound.h"
+#include "SteamAudioManager.h"
 
-TypeHandle OpenALAudioSound::_type_handle;
+TypeHandle SteamAudioSound::_type_handle;
 
 
 #ifndef NDEBUG //[
-  #define openal_audio_debug(x) \
-      audio_debug("OpenALAudioSound \""<<get_name() \
+  #define steam_audio_debug(x) \
+      audio_debug("SteamAudioSound \""<<get_name() \
       <<"\" "<< x )
 #else //][
-#define openal_audio_debug(x) ((void)0)
+#define steam_audio_debug(x) ((void)0)
 #endif //]
 
 /**
  *
  */
 
-OpenALAudioSound::
-OpenALAudioSound(OpenALAudioManager *manager,
+SteamAudioSound::
+SteamAudioSound(SteamAudioManager *manager,
                  MovieAudio *movie,
                  bool positional,
                  int mode) :
@@ -75,7 +75,7 @@ OpenALAudioSound(OpenALAudioManager *manager,
   _direction[1] = 0.0f;
   _direction[2] = 0.0f;
 
-  ReMutexHolder holder(OpenALAudioManager::_lock);
+  ReMutexHolder holder(SteamAudioManager::_lock);
 
   if (!require_sound_data()) {
     cleanup();
@@ -95,8 +95,8 @@ OpenALAudioSound(OpenALAudioManager *manager,
 /**
  *
  */
-OpenALAudioSound::
-~OpenALAudioSound() {
+SteamAudioSound::
+~SteamAudioSound() {
   cleanup();
 }
 
@@ -104,9 +104,9 @@ OpenALAudioSound::
  * Disables the sound forever.  Releases resources and detaches the sound from
  * its audio manager.
  */
-void OpenALAudioSound::
+void SteamAudioSound::
 cleanup() {
-  ReMutexHolder holder(OpenALAudioManager::_lock);
+  ReMutexHolder holder(SteamAudioManager::_lock);
   if (!is_valid()) {
     return;
   }
@@ -123,9 +123,9 @@ cleanup() {
 /**
  * Plays a sound.
  */
-void OpenALAudioSound::
+void SteamAudioSound::
 play() {
-  ReMutexHolder holder(OpenALAudioManager::_lock);
+  ReMutexHolder holder(SteamAudioManager::_lock);
 
   if (!is_valid()) return;
 
@@ -212,9 +212,9 @@ play() {
 /**
  * Stop a sound
  */
-void OpenALAudioSound::
+void SteamAudioSound::
 stop() {
-  ReMutexHolder holder(OpenALAudioManager::_lock);
+  ReMutexHolder holder(SteamAudioManager::_lock);
 
   if (!is_valid()) return;
 
@@ -246,9 +246,9 @@ stop() {
 /**
  *
  */
-void OpenALAudioSound::
+void SteamAudioSound::
 finished() {
-  ReMutexHolder holder(OpenALAudioManager::_lock);
+  ReMutexHolder holder(SteamAudioManager::_lock);
 
   if (!is_valid()) return;
 
@@ -262,16 +262,16 @@ finished() {
 /**
  * Turns looping on and off
  */
-void OpenALAudioSound::
+void SteamAudioSound::
 set_loop(bool loop) {
-  ReMutexHolder holder(OpenALAudioManager::_lock);
+  ReMutexHolder holder(SteamAudioManager::_lock);
   set_loop_count((loop)?0:1);
 }
 
 /**
  * Returns whether looping is on or off
  */
-bool OpenALAudioSound::
+bool SteamAudioSound::
 get_loop() const {
   return (_loop_count == 0);
 }
@@ -279,9 +279,9 @@ get_loop() const {
 /**
  *
  */
-void OpenALAudioSound::
+void SteamAudioSound::
 set_loop_count(unsigned long loop_count) {
-  ReMutexHolder holder(OpenALAudioManager::_lock);
+  ReMutexHolder holder(SteamAudioManager::_lock);
 
   if (!is_valid()) return;
 
@@ -294,7 +294,7 @@ set_loop_count(unsigned long loop_count) {
 /**
  * Return how many times a sound will loop.
  */
-unsigned long OpenALAudioSound::
+unsigned long SteamAudioSound::
 get_loop_count() const {
   return _loop_count;
 }
@@ -303,9 +303,9 @@ get_loop_count() const {
  * Sets the time at which subsequent loops will begin.
  * A value of 0 indicates the beginning of the audio.
  */
-void OpenALAudioSound::
+void SteamAudioSound::
 set_loop_start(PN_stdfloat loop_start) {
-  ReMutexHolder holder(OpenALAudioManager::_lock);
+  ReMutexHolder holder(SteamAudioManager::_lock);
 
   if (!is_valid()) {
     return;
@@ -324,7 +324,7 @@ set_loop_start(PN_stdfloat loop_start) {
  * Return the time at which subsequent loops will begin.
  * A value of 0 indicates the beginning of the audio.
  */
-PN_stdfloat OpenALAudioSound::
+PN_stdfloat SteamAudioSound::
 get_loop_start() const {
   return _loop_start;
 }
@@ -336,9 +336,9 @@ get_loop_start() const {
  * finally gets around to refilling the queue, it is necessary to tell OpenAL
  * to resume playing.
  */
-void OpenALAudioSound::
+void SteamAudioSound::
 restart_stalled_audio() {
-  ReMutexHolder holder(OpenALAudioManager::_lock);
+  ReMutexHolder holder(SteamAudioManager::_lock);
   ALenum status;
 
   if (!is_valid()) return;
@@ -358,9 +358,9 @@ restart_stalled_audio() {
 /**
  * Pushes a buffer into the source queue.
  */
-void OpenALAudioSound::
+void SteamAudioSound::
 queue_buffer(ALuint buffer, int samples, int loop_index, double time_offset) {
-  ReMutexHolder holder(OpenALAudioManager::_lock);
+  ReMutexHolder holder(SteamAudioManager::_lock);
 
   nassertv(is_playing());
 
@@ -384,9 +384,9 @@ queue_buffer(ALuint buffer, int samples, int loop_index, double time_offset) {
 /**
  * Creates an OpenAL buffer object.
  */
-ALuint OpenALAudioSound::
+ALuint SteamAudioSound::
 make_buffer(int samples, int channels, int rate, unsigned char *data) {
-  ReMutexHolder holder(OpenALAudioManager::_lock);
+  ReMutexHolder holder(SteamAudioManager::_lock);
 
   nassertr(is_playing(), 0);
 
@@ -418,9 +418,9 @@ make_buffer(int samples, int channels, int rate, unsigned char *data) {
  * Fills a buffer with data from the stream.  Returns the number of samples
  * stored in the buffer.
  */
-int OpenALAudioSound::
+int SteamAudioSound::
 read_stream_data(int bytelen, unsigned char *buffer) {
-  ReMutexHolder holder(OpenALAudioManager::_lock);
+  ReMutexHolder holder(SteamAudioManager::_lock);
 
   nassertr(has_sound_data(), 0);
 
@@ -481,9 +481,9 @@ read_stream_data(int bytelen, unsigned char *buffer) {
  * This routine is quite careful to make sure that the calibrated clock moves
  * in a smooth, monotonic way.
  */
-void OpenALAudioSound::
+void SteamAudioSound::
 correct_calibrated_clock(double rtc, double t) {
-  ReMutexHolder holder(OpenALAudioManager::_lock);
+  ReMutexHolder holder(SteamAudioManager::_lock);
 
   nassertv(is_playing());
 
@@ -515,9 +515,9 @@ correct_calibrated_clock(double rtc, double t) {
 /**
  * Pulls any used buffers out of OpenAL's queue.
  */
-void OpenALAudioSound::
+void SteamAudioSound::
 pull_used_buffers() {
-  ReMutexHolder holder(OpenALAudioManager::_lock);
+  ReMutexHolder holder(SteamAudioManager::_lock);
 
   if (!is_valid()) return;
   nassertv(is_playing());
@@ -573,9 +573,9 @@ pull_used_buffers() {
  * Pushes fresh buffers into OpenAL's queue until the queue is "full" (ie, has
  * plenty of data).
  */
-void OpenALAudioSound::
+void SteamAudioSound::
 push_fresh_buffers() {
-  ReMutexHolder holder(OpenALAudioManager::_lock);
+  ReMutexHolder holder(SteamAudioManager::_lock);
   static unsigned char data[65536];
 
   if (!is_valid()) return;
@@ -616,38 +616,11 @@ push_fresh_buffers() {
 }
 
 /**
- * Sets the offset within the sound.  If the sound is currently playing, its
- * position is updated immediately.
- */
-void OpenALAudioSound::
-set_time(PN_stdfloat time) {
-  ReMutexHolder holder(OpenALAudioManager::_lock);
-  _start_time = time;
-
-  if (is_playing()) {
-    // Ensure that the position is updated immediately.
-    play();
-  }
-}
-
-/**
- * Gets the play position within the sound
- */
-PN_stdfloat OpenALAudioSound::
-get_time() const {
-  ReMutexHolder holder(OpenALAudioManager::_lock);
-  if (!is_valid()) {
-    return 0.0;
-  }
-  return _current_time;
-}
-
-/**
  * Updates the current_time field of a playing sound.
  */
-void OpenALAudioSound::
+void SteamAudioSound::
 cache_time(double rtc) {
-  ReMutexHolder holder(OpenALAudioManager::_lock);
+  ReMutexHolder holder(SteamAudioManager::_lock);
 
   nassertv(is_playing());
 
@@ -663,9 +636,9 @@ cache_time(double rtc) {
 /**
  * 0.0 to 1.0 scale of volume converted to Fmod's internal 0.0 to 255.0 scale.
  */
-void OpenALAudioSound::
+void SteamAudioSound::
 set_volume(PN_stdfloat volume) {
-  ReMutexHolder holder(OpenALAudioManager::_lock);
+  ReMutexHolder holder(SteamAudioManager::_lock);
   _volume=volume;
 
   if (is_playing()) {
@@ -680,7 +653,7 @@ set_volume(PN_stdfloat volume) {
 /**
  * Gets the current volume of a sound.  1 is Max.  O is Min.
  */
-PN_stdfloat OpenALAudioSound::
+PN_stdfloat SteamAudioSound::
 get_volume() const {
   return _volume;
 }
@@ -688,18 +661,18 @@ get_volume() const {
 /**
  * -1.0 to 1.0 scale
  */
-void OpenALAudioSound::
+void SteamAudioSound::
 set_balance(PN_stdfloat balance_right) {
-  audio_debug("OpenALAudioSound::set_balance() not implemented");
+  audio_debug("SteamAudioSound::set_balance() not implemented");
 }
 
 /**
  * -1.0 to 1.0 scale -1 should be all the way left.  1 is all the way to the
  * right.
  */
-PN_stdfloat OpenALAudioSound::
+PN_stdfloat SteamAudioSound::
 get_balance() const {
-  audio_debug("OpenALAudioSound::get_balance() not implemented");
+  audio_debug("SteamAudioSound::get_balance() not implemented");
   return 0;
 }
 
@@ -708,9 +681,9 @@ get_balance() const {
  * sound, normal playback speed.  IE 2 would play back 2 times fast, 3 would
  * play 3 times, and so on.
  */
-void OpenALAudioSound::
+void SteamAudioSound::
 set_play_rate(PN_stdfloat play_rate) {
-  ReMutexHolder holder(OpenALAudioManager::_lock);
+  ReMutexHolder holder(SteamAudioManager::_lock);
   _play_rate = play_rate;
   if (is_playing()) {
     alSourcef(_source, AL_PITCH, play_rate);
@@ -720,335 +693,7 @@ set_play_rate(PN_stdfloat play_rate) {
 /**
  *
  */
-PN_stdfloat OpenALAudioSound::
+PN_stdfloat SteamAudioSound::
 get_play_rate() const {
   return _play_rate;
-}
-
-/**
- * Get length
- */
-PN_stdfloat OpenALAudioSound::
-length() const {
-  return _length;
-}
-
-/**
- * Set position and velocity of this sound
- *
- * Both Panda3D and OpenAL use a right handed coordinate system.  However, in
- * Panda3D the Y-Axis is going into the Screen and the Z-Axis is going up.  In
- * OpenAL the Y-Axis is going up and the Z-Axis is coming out of the screen.
- *
- * The solution is simple, we just flip the Y and Z axis and negate the Z, as
- * we move coordinates from Panda to OpenAL and back.
- */
-void OpenALAudioSound::
-set_3d_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx, PN_stdfloat vy, PN_stdfloat vz) {
-  ReMutexHolder holder(OpenALAudioManager::_lock);
-  _location[0] = px;
-  _location[1] = pz;
-  _location[2] = -py;
-
-  _velocity[0] = vx;
-  _velocity[1] = vz;
-  _velocity[2] = -vy;
-
-  if (is_playing()) {
-    _manager->make_current();
-
-    alGetError(); // clear errors
-    alSourcefv(_source,AL_POSITION,_location);
-    al_audio_errcheck("alSourcefv(_source,AL_POSITION)");
-    alSourcefv(_source,AL_VELOCITY,_velocity);
-    al_audio_errcheck("alSourcefv(_source,AL_VELOCITY)");
-  }
-}
-
-/**
- * Get position and velocity of this sound Currently unimplemented.  Get the
- * attributes of the attached object.
- */
-void OpenALAudioSound::
-get_3d_attributes(PN_stdfloat *px, PN_stdfloat *py, PN_stdfloat *pz, PN_stdfloat *vx, PN_stdfloat *vy, PN_stdfloat *vz) {
-  ReMutexHolder holder(OpenALAudioManager::_lock);
-  *px = _location[0];
-  *py = -_location[2];
-  *pz = _location[1];
-
-  *vx = _velocity[0];
-  *vy = -_velocity[2];
-  *vz = _velocity[1];
-}
-
-/**
-* Set the direction of this sound
-*
-* Both Panda3D and OpenAL use a right handed coordinate system.  However, in
-* Panda3D the Y-Axis is going into the Screen and the Z-Axis is going up.  In
-* OpenAL the Y-Axis is going up and the Z-Axis is coming out of the screen.
-*
-* The solution is simple, we just flip the Y and Z axis and negate the Z, as
-* we move coordinates from Panda to OpenAL and back.
-*/
-void OpenALAudioSound::
-set_3d_direction(LVector3 d) {
-  ReMutexHolder holder(OpenALAudioManager::_lock);
-  _direction[0] = d.get_x();
-  _direction[1] = d.get_z();
-  _direction[2] = -d.get_y();
-
-  if (is_playing()) {
-    _manager->make_current();
-
-    alGetError(); // clear errors
-    alSourcefv(_source, AL_DIRECTION, _direction);
-    al_audio_errcheck("alSourcefv(_source,AL_DIRECTION)");
-  }
-}
-
-/**
- * Get the direction of this sound.
- */
-LVector3 OpenALAudioSound::
-get_3d_direction() const {
-  ReMutexHolder holder(OpenALAudioManager::_lock);
-  return LVector3(_direction[0], -_direction[2], _direction[1]);
-}
-
-/**
- * Set the distance that this sound begins to fall off.  Also affects the rate
- * it falls off.
- */
-void OpenALAudioSound::
-set_3d_min_distance(PN_stdfloat dist) {
-  ReMutexHolder holder(OpenALAudioManager::_lock);
-  _min_dist = dist;
-
-  if (is_playing()) {
-    _manager->make_current();
-
-    alGetError(); // clear errors
-    alSourcef(_source,AL_REFERENCE_DISTANCE,_min_dist);
-    al_audio_errcheck("alSourcefv(_source,AL_REFERENCE_DISTANCE)");
-  }
-}
-
-/**
- * Get the distance that this sound begins to fall off
- */
-PN_stdfloat OpenALAudioSound::
-get_3d_min_distance() const {
-  return _min_dist;
-}
-
-/**
- * Set the distance that this sound stops falling off
- */
-void OpenALAudioSound::
-set_3d_max_distance(PN_stdfloat dist) {
-  ReMutexHolder holder(OpenALAudioManager::_lock);
-  _max_dist = dist;
-
-  if (is_playing()) {
-    _manager->make_current();
-
-    alGetError(); // clear errors
-    alSourcef(_source,AL_MAX_DISTANCE,_max_dist);
-    al_audio_errcheck("alSourcefv(_source,AL_MAX_DISTANCE)");
-  }
-}
-
-/**
- * Get the distance that this sound stops falling off
- */
-PN_stdfloat OpenALAudioSound::
-get_3d_max_distance() const {
-  return _max_dist;
-}
-
-/**
- * Control the effect distance has on audability.  Defaults to 1.0
- */
-void OpenALAudioSound::
-set_3d_drop_off_factor(PN_stdfloat factor) {
-  ReMutexHolder holder(OpenALAudioManager::_lock);
-  _drop_off_factor = factor;
-
-  if (is_playing()) {
-    _manager->make_current();
-
-    alGetError(); // clear errors
-    alSourcef(_source,AL_ROLLOFF_FACTOR,_drop_off_factor*_manager->audio_3d_get_drop_off_factor());
-    al_audio_errcheck("alSourcefv(_source,AL_ROLLOFF_FACTOR)");
-  }
-}
-
-/**
- * Control the effect distance has on audability.  Defaults to 1.0
- */
-PN_stdfloat OpenALAudioSound::
-get_3d_drop_off_factor() const {
-  return _drop_off_factor;
-}
-
-/**
- * Set the inner angle of a directional sound
- */
-void OpenALAudioSound::
-set_3d_cone_inner_angle(PN_stdfloat angle) {
-  ReMutexHolder holder(OpenALAudioManager::_lock);
-  _cone_inner_angle = angle;
-
-  if (is_playing()) {
-    _manager->make_current();
-
-    alGetError(); // clear errors
-    alSourcef(_source, AL_CONE_INNER_ANGLE, _cone_inner_angle);
-    al_audio_errcheck("alSourcefv(_source,AL_CONE_INNER_ANGLE)");
-  }
-}
-
-/**
- * Get the inner angle of a directional sound
- */
-PN_stdfloat OpenALAudioSound::
-get_3d_cone_inner_angle() const {
-  return _cone_inner_angle;
-}
-
-/**
- * Set the outer angle of a directional sound
- */
-void OpenALAudioSound::
-set_3d_cone_outer_angle(PN_stdfloat angle) {
-  ReMutexHolder holder(OpenALAudioManager::_lock);
-  _cone_outer_angle = angle;
-
-  if (is_playing()) {
-    _manager->make_current();
-
-    alGetError(); // clear errors
-    alSourcef(_source, AL_CONE_OUTER_ANGLE, _cone_outer_angle);
-    al_audio_errcheck("alSourcefv(_source,AL_CONE_OUTER_ANGLE)");
-  }
-}
-
-/**
- * Get the outer angle of a directional sound
- */
-PN_stdfloat OpenALAudioSound::
-get_3d_cone_outer_angle() const {
-  return _cone_outer_angle;
-}
-
-/**
- * Set the outer gain factor of a directional sound
- */
-void OpenALAudioSound::
-set_3d_cone_outer_gain(PN_stdfloat gain) {
-  ReMutexHolder holder(OpenALAudioManager::_lock);
-  _cone_outer_gain = gain;
-
-  if (is_playing()) {
-    _manager->make_current();
-
-    alGetError(); // clear errors
-    alSourcef(_source, AL_CONE_OUTER_GAIN, _cone_outer_gain);
-    al_audio_errcheck("alSourcefv(_source,AL_CONE_OUTER_GAIN)");
-  }
-}
-
-/**
- * Get the outer gain of a directional sound
- */
-PN_stdfloat OpenALAudioSound::
-get_3d_cone_outer_gain() const {
-  return _cone_outer_gain;
-}
-
-/**
- * Sets whether the sound is marked "active".  By default, the active flag is
- * true for all sounds.  If the active flag is set to false for any particular
- * sound, the sound will not be heard.
- */
-void OpenALAudioSound::
-set_active(bool active) {
-  ReMutexHolder holder(OpenALAudioManager::_lock);
-
-  if (!is_valid()) return;
-
-  if (_active!=active) {
-    _active=active;
-    if (_active) {
-      // ...activate the sound.
-      if (_paused && _loop_count==0) {
-        // ...this sound was looping when it was paused.
-        _paused=false;
-        play();
-      }
-    } else {
-      // ...deactivate the sound.
-      if (status()==PLAYING) {
-        // Store off the current time so we can resume from where we paused.
-        _start_time = get_time();
-        stop();
-        if (_loop_count == 0) {
-          // ...we're pausing a looping sound.
-          _paused = true;
-        }
-      }
-    }
-  }
-}
-
-
-/**
- * Returns whether the sound has been marked "active".
- */
-bool OpenALAudioSound::
-get_active() const {
-  return _active;
-}
-
-/**
- *
- */
-void OpenALAudioSound::
-set_finished_event(const std::string& event) {
-  _finished_event = event;
-}
-
-/**
- *
- */
-const std::string& OpenALAudioSound::
-get_finished_event() const {
-  return _finished_event;
-}
-
-/**
- * Get name of sound file
- */
-const std::string& OpenALAudioSound::
-get_name() const {
-  return _basename;
-}
-
-/**
- * Get status of the sound.
- *
- * This returns the status as of the last push_fresh_buffers
- */
-AudioSound::SoundStatus OpenALAudioSound::
-status() const {
-  ReMutexHolder holder(OpenALAudioManager::_lock);
-  if (!is_playing()) {
-    return AudioSound::READY;
-  }
-  if ((_loops_completed >= _playing_loops)&&(_stream_queued.size()==0)) {
-    return AudioSound::READY;
-  } else {
-    return AudioSound::PLAYING;
-  }
 }

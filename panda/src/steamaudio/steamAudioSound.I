@@ -7,7 +7,7 @@
  * with this source code in a file named "LICENSE."
  *
  * @file steamAudioSound.i
- * 
+ * @author Jackson Sutherland
  * this file is based on openalAudioSound.i.
  */
 
@@ -22,7 +22,7 @@
  * 1/4 second or so), we calibrate our real-time-clock by speeding it up or
  * slowing it down.
  */
-INLINE void OpenALAudioSound::
+INLINE void SteamAudioSound::
 set_calibrated_clock(double rtc, double t, double accel) {
   _calibrated_clock_scale = _playing_rate * accel;
   _calibrated_clock_base = rtc - (t / _calibrated_clock_scale);
@@ -31,7 +31,7 @@ set_calibrated_clock(double rtc, double t, double accel) {
 /**
  * Returns the value of the calibrated clock.
  */
-INLINE double OpenALAudioSound::
+INLINE double SteamAudioSound::
 get_calibrated_clock(double rtc) const {
   return (rtc - _calibrated_clock_base) * _calibrated_clock_scale;
 }
@@ -41,7 +41,7 @@ get_calibrated_clock(double rtc) const {
  *
  * Returns true on success, false on failure.
  */
-INLINE bool OpenALAudioSound::
+INLINE bool SteamAudioSound::
 require_sound_data() {
   if (_sd==0) {
     _sd = _manager->get_sound_data(_movie, _desired_mode);
@@ -62,7 +62,7 @@ require_sound_data() {
  * so.  The `force` argument overrides this, indicating we don't intend to
  * reacquire the sound data.
  */
-INLINE void OpenALAudioSound::
+INLINE void SteamAudioSound::
 release_sound_data(bool force) {
   if (!has_sound_data()) return;
 
@@ -75,7 +75,7 @@ release_sound_data(bool force) {
 /**
  * Checks if the sound has NOT been cleaned up yet.
  */
-INLINE bool OpenALAudioSound::
+INLINE bool SteamAudioSound::
 is_valid() const {
   return _manager != nullptr;
 }
@@ -86,7 +86,7 @@ is_valid() const {
  *
  * This is mainly intended for use in asserts.
  */
-INLINE bool OpenALAudioSound::
+INLINE bool SteamAudioSound::
 is_playing() const {
   // Manager only gives us a _source if we need it (to talk to OpenAL), so:
   return _source != 0;
@@ -97,7 +97,7 @@ is_playing() const {
  *
  * This is mainly intended for use in asserts.
  */
-INLINE bool OpenALAudioSound::
+INLINE bool SteamAudioSound::
 has_sound_data() const {
   return _sd != nullptr;
 }
