@@ -117,7 +117,7 @@ jobs:
 
     - name: Cache dependencies (Windows)
       if: runner.os == 'Windows'
-      uses: actions/cache@v1
+      uses: actions/cache@v4
       with:
         path: thirdparty
         key: ci-cmake-${{ runner.OS }}-thirdparty-v1.10.14-r1
@@ -134,7 +134,7 @@ jobs:
 
     - name: ccache (non-Windows)
       if: runner.os != 'Windows'
-      uses: actions/cache@v1
+      uses: actions/cache@v4
       with:
         path: ccache
         key: ci-cmake-ccache-${{ matrix.profile }}
