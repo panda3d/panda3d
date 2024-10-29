@@ -45,6 +45,10 @@ public:
   INLINE int get_thread_index() const;
   INLINE int get_collector_index() const;
   void set_collector_index(int collector_index);
+  void push_collector_index(int collector_index);
+  bool pop_collector_index();
+  INLINE void clear_history();
+  INLINE size_t get_history_depth() const;
 
   INLINE int get_frame_number() const;
   void set_frame_number(int collector_index);
@@ -137,6 +141,8 @@ private:
   double _time_width;
   int _current_frame;
   bool _title_unknown;
+
+  std::vector<int> _history;
 };
 
 #include "pStatFlameGraph.I"

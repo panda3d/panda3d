@@ -161,7 +161,7 @@ set_time_units(int unit_mask) {
  */
 void GtkStatsFlameGraph::
 on_click_label(int collector_index) {
-  set_collector_index(collector_index);
+  push_collector_index(collector_index);
 }
 
 /**
@@ -440,7 +440,7 @@ handle_button_press(int graph_x, int graph_y, bool double_click, int button) {
             g_signal_connect(G_OBJECT(menu_item), "activate",
               G_CALLBACK(+[] (GtkWidget *widget, gpointer data) {
                 GtkStatsFlameGraph *self = (GtkStatsFlameGraph *)data;
-                self->set_collector_index(self->_popup_index);
+                self->push_collector_index(self->_popup_index);
               }),
               this);
           }
@@ -508,7 +508,13 @@ handle_button_press(int graph_x, int graph_y, bool double_click, int button) {
     else if (double_click && button == 1) {
       // Double-clicking on a color bar in the graph will zoom the graph into
       // that collector.
-      set_collector_index(collector_index);
+      if (collector_index >= 0) {
+        push_collector_index(collector_index);
+      } else {
+        // Double-clicking the background goes to the top.
+        clear_history();
+        set_collector_index(-1);
+      }
       return TRUE;
     }
   }
@@ -772,19 +778,29 @@ key_press_callback(GtkWidget *widget, GdkEventKey *event, gpointer data) {
   bool changed = false;
   switch (event->keyval) {
   case GDK_KEY_Left:
-    changed = self->prev_frame();
+    if (event->state & GDK_MOD1_MASK) {
+      changed = self->pop_collector_index();
+    } else {
+      changed = self->prev_frame();
+    }
     break;
 
   case GDK_KEY_Right:
-    changed = self->next_frame();
+    if ((event->state & GDK_MOD1_MASK) == 0) {
+      changed = self->next_frame();
+    }
     break;
 
   case GDK_KEY_Home:
-    changed = self->first_frame();
+    if ((event->state & GDK_MOD1_MASK) == 0) {
+      changed = self->first_frame();
+    }
     break;
 
   case GDK_KEY_End:
-    changed = self->last_frame();
+    if ((event->state & GDK_MOD1_MASK) == 0) {
+      changed = self->last_frame();
+    }
     break;
   }
 
