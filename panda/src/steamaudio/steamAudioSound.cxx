@@ -383,7 +383,8 @@ queue_buffer(ALuint buffer, int samples, int loop_index, double time_offset) {
 }
 
 /**
- * Creates an OpenAL buffer object.
+ * Creates and fills an OpenAL buffer object.
+ * This function has been modified from the OpenAL implementation to apply Steam Audio filters before filling the buffer. TODO::Modify the function.
  */
 ALuint SteamAudioSound::
 make_buffer(int samples, int channels, int rate, unsigned char* data) {
@@ -401,6 +402,7 @@ make_buffer(int samples, int channels, int rate, unsigned char* data) {
     return 0;
   }
 
+  //TODO::Put call to Steam Audio Processing Here<-------------------------------------------------------------------
   // Now fill the buffer with the data provided.
   alBufferData(buffer,
     (channels > 1) ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16,
@@ -443,13 +445,13 @@ read_stream_data(int bytelen, unsigned char* buffer) {
       cursor->seek(_loop_start);
       continue;
     }
-    if (_sd->_stream->ready() == 0) {
+    if (_sd->_stream->ready() == 0) {//no samples are ready, this is for microphones and such
       if (_sd->_stream->aborted()) {
         _loops_completed = _playing_loops;
       }
       return fill;
     }
-    if (samples > space) {
+    if (samples > space) {//Prevents drawing more data than available
       samples = space;
     }
     if (samples > _sd->_stream->ready()) {
@@ -586,14 +588,14 @@ push_fresh_buffers() {
   nassertv(is_playing());
   nassertv(has_sound_data());
 
-  if (_sd->_sample) {
+  if (_sd->_sample) {//SM_sample
     while ((_loops_completed < _playing_loops) &&
       (_stream_queued.size() < 100)) {
       queue_buffer(_sd->_sample, 0, _loops_completed, _loop_start);
       _loops_completed += 1;
     }
   }
-  else {
+  else {//SM_stream aka what is generally more relevant here
     MovieAudioCursor* cursor = _sd->_stream;
     int channels = cursor->audio_channels();
     int rate = cursor->audio_rate();
@@ -604,10 +606,10 @@ push_fresh_buffers() {
     }
 
     while ((_loops_completed < _playing_loops) &&
-      (fill < (int)(audio_buffering_seconds * rate * channels))) {
+      (fill < (int)(audio_buffering_seconds * rate * channels))) {//TODO:: change audio_buffering_seconds to a unique steamaudio configvar
       int loop_index = _loops_completed;
       double time_offset = cursor->tell();
-      int samples = read_stream_data(65536, data);
+      int samples = read_stream_data(65536, data);//first val is max value of 16-bit int
       if (samples == 0) {
         break;
       }
@@ -1060,3 +1062,26 @@ status() const {
     return AudioSound::PLAYING;
   }
 }
+
+//Steam Audio Functions Below::
+
+SteamAudioSound::SteamGlobalHolder
+::SteamGlobalHolder(IPLAudioSettings* audio_settings, IPLContext* steam_context, int channels, int samples) :
+  _audio_settings = audio_settings;
+  _steam_context = steam_context;
+  _channels = channels;
+  _samples = samples;
+  source = (NodePath*)_sourceNP
+{
+    if (!_manager->_listenerNP == nullptr) {
+      listener = (NodePath*)_manager->_listenerNP;
+    }
+    else {
+      listener = source;
+    }
+
+}
+
+/**
+*
+**/

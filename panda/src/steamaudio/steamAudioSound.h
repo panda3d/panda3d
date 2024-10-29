@@ -16,10 +16,11 @@
 
 #include "pandabase.h"
 
-#include "steamAudioSound.h"
+#include "audioSound.h"
 #include "movieAudioCursor.h"
 #include "trueClock.h"
 #include "steamAudioManager.h"
+#include "nodePath.h"
 
 #include <phonon.h>//Import steam audio
 
@@ -146,7 +147,7 @@ private:
 private:
 
   PT(MovieAudio) _movie;
-  SteamAudioManager::SoundData* _sd;
+  SteamAudioManager::SteamSoundData* _sd;
 
   struct QueuedBuffer {
     ALuint _buffer;
@@ -215,6 +216,20 @@ private:
   PN_stdfloat _cone_inner_angle;
   PN_stdfloat _cone_outer_angle;
   PN_stdfloat _cone_outer_gain;
+
+ private:
+   NodePath _sourceNP;
+
+   class SteamGlobalHolder {
+   public:
+     SteamGlobalHolder(IPLAudioSettings* audio_settings, IPLContext* steam_context, int channels, int samples);
+     IPLAudioSettings* _audio_settings;
+     IPLContext* _steam_context;
+     int _channels;
+     int _samples;
+     NodePath* listener;
+     NodePath* source;
+   };
 
 public:
   static TypeHandle get_class_type() {

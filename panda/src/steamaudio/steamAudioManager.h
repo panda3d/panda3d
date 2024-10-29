@@ -30,6 +30,7 @@
 #include "pset.h"
 #include "movieAudioCursor.h"
 #include "reMutex.h"
+#include "nodePath.h"
 
 #include <phonon.h>//Import steam audio
 
@@ -220,6 +221,10 @@ private:
   ALfloat _position[3];
   ALfloat _velocity[3];
   ALfloat _forward_up[6];
+
+  private://SteamAudio related stuff:
+    static IPLContext _steamContext;
+    NodePath _listenerNP;
 
   // These are needed for Panda's Pointer System.  DO NOT ERASE!
 public:
