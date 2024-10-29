@@ -145,43 +145,47 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   LPoint3 contact_point(into_intersection_point);
   PN_stdfloat actual_t = 0.0f;
 
-  LVector3 vec = from_b - into_center;
-  PN_stdfloat dist2 = dot(vec, vec);
-  if (dist2 > (into_radius + from_radius) * (into_radius + from_radius)) {
-    // No intersection with the current position.  Check the delta from the
-    // previous frame.
+  LPoint3 from_a = from_b;
+  if (entry.get_respect_prev_transform()) {
     CPT(TransformState) wrt_prev_space = entry.get_wrt_prev_space();
-    LPoint3 from_a = sphere->get_center() * wrt_prev_space->get_mat();
+    if (wrt_prev_space != wrt_space) {
+      from_a = sphere->get_center() * wrt_prev_space->get_mat();
+    }
+  }
 
-    if (!from_a.almost_equal(from_b)) {
-      LVector3 from_direction = from_b - from_a;
-      if (!intersects_line(t1, t2, from_a, from_direction, from_radius)) {
-        // No intersection.
-        return nullptr;
-      }
+  if (from_a.almost_equal(from_b)) {
+    LVector3 vec = from_b - into_center;
+    PN_stdfloat dist2 = dot(vec, vec);
 
-      if (t2 < 0.0 || t1 > 1.0) {
-        // Both intersection points are before the start of the segment or
-        // after the end of the segment.
-        return nullptr;
-      }
-
-      // doubles, not floats, to satisfy min and max templates.
-      actual_t = min(1.0, max(0.0, t1));
-      contact_point = from_a + actual_t * (from_b - from_a);
-
-      if (t1 < 0.0) {
-        // Point a is within the sphere.  The first intersection point is
-        // point a itself.
-        into_intersection_point = from_a;
-      } else {
-        // Point a is outside the sphere, and point b is either inside the
-        // sphere or beyond it.  The first intersection point is at t1.
-        into_intersection_point = from_a + t1 * from_direction;
-      }
-    } else {
-      // No delta, therefore no intersection.
+    if (dist2 > (into_radius + from_radius) * (into_radius + from_radius)) {
+      // No intersection with the current position.
       return nullptr;
+    }
+  } else {
+    LVector3 from_direction = from_b - from_a;
+    if (!intersects_line(t1, t2, from_a, from_direction, from_radius)) {
+      // No intersection.
+      return nullptr;
+    }
+
+    if (t2 < 0.0 || t1 > 1.0) {
+      // Both intersection points are before the start of the segment or
+      // after the end of the segment.
+      return nullptr;
+    }
+
+    // doubles, not floats, to satisfy min and max templates.
+    actual_t = min(1.0, max(0.0, t1));
+    contact_point = from_a + actual_t * (from_b - from_a);
+
+    if (t1 < 0.0) {
+      // Point a is within the sphere.  The first intersection point is
+      // point a itself.
+      into_intersection_point = from_a;
+    } else {
+      // Point a is outside the sphere, and point b is either inside the
+      // sphere or beyond it.  The first intersection point is at t1.
+      into_intersection_point = from_a + t1 * from_direction;
     }
   }
 

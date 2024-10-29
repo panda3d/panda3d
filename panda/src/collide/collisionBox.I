@@ -21,11 +21,9 @@ CollisionBox(const LPoint3 &center, PN_stdfloat x, PN_stdfloat y, PN_stdfloat z)
 {
   _min = LPoint3(_center.get_x() - x, _center.get_y() - y, _center.get_z() - z);
   _max = LPoint3(_center.get_x() + x, _center.get_y() + y, _center.get_z() + z);
-  for(int v = 0; v < 8; v++)
-    _vertex[v] = get_point_aabb(v);
-  for(int p = 0; p < 6; p++)
+  for (int p = 0; p < 6; ++p) {
     _planes[p] = set_plane(p);
-  setup_box();
+  }
 }
 
 /**
@@ -33,14 +31,11 @@ CollisionBox(const LPoint3 &center, PN_stdfloat x, PN_stdfloat y, PN_stdfloat z)
  */
 INLINE CollisionBox::
 CollisionBox(const LPoint3 &min, const LPoint3 &max) :
-  _min(min), _max(max)
+  _center((min + max) / 2), _min(min), _max(max)
 {
-  _center = (_min + _max) / 2;
-  for(int v = 0; v < 8; v++)
-    _vertex[v] = get_point_aabb(v);
-  for(int p = 0; p < 6; p++)
+  for (int p = 0; p < 6; ++p) {
     _planes[p] = set_plane(p);
-  setup_box();
+  }
 }
 
 /**
@@ -60,11 +55,9 @@ CollisionBox(const CollisionBox &copy) :
   _min(copy._min),
   _max(copy._max)
 {
-  for(int v = 0; v < 8; v++)
-    _vertex[v] = copy._vertex[v];
-  for(int p = 0; p < 6; p++)
+  for (int p = 0; p < 6; ++p) {
     _planes[p] = copy._planes[p];
-  setup_box();
+  }
 }
 
 /**
@@ -139,8 +132,7 @@ get_num_points() const {
  */
 INLINE LPoint3 CollisionBox::
 get_point(int n) const {
-  nassertr(n >= 0 && n < 8, LPoint3::zero());
-  return _vertex[n];
+  return get_point_aabb(n);
 }
 
 /**
@@ -175,6 +167,8 @@ get_plane(int n) const {
 
 /**
  * Creates the nth face of the rectangular solid.
+ *
+ * @deprecated Same as get_plane().
  */
 INLINE LPlane CollisionBox::
 set_plane(int n) const {
@@ -182,92 +176,4 @@ set_plane(int n) const {
   return LPlane(get_point(plane_def[n][0]),
                 get_point(plane_def[n][1]),
                 get_point(plane_def[n][2]));
-}
-
-
-/**
- * Returns true if the 2-d v1 is to the right of v2.
- */
-INLINE bool CollisionBox::
-is_right(const LVector2 &v1, const LVector2 &v2) {
-  return (v1[0] * v2[1] - v1[1] * v2[0]) > 1.0e-6f;
-}
-
-/**
- * Returns the linear distance of p to the line defined by f and f+v, where v
- * is a normalized vector.  The result is negative if p is left of the line,
- * positive if it is right of the line.
- */
-INLINE PN_stdfloat CollisionBox::
-dist_to_line(const LPoint2 &p,
-             const LPoint2 &f, const LVector2 &v) {
-  LVector2 v1 = (p - f);
-  return (v1[0] * v[1] - v1[1] * v[0]);
-}
-
-/**
- * Assuming the indicated point in 3-d space lies within the polygon's plane,
- * returns the corresponding point in the polygon's 2-d definition space.
- */
-INLINE LPoint2 CollisionBox::
-to_2d(const LVecBase3 &point3d, int plane) const {
-  LPoint3 point = LPoint3(point3d) * _to_2d_mat[plane];
-  return LPoint2(point[0], point[2]);
-}
-
-/**
- * Fills the indicated matrix with the appropriate rotation transform to move
- * points from the 2-d plane into the 3-d (X, 0, Z) plane.
- */
-INLINE void CollisionBox::
-calc_to_3d_mat(LMatrix4 &to_3d_mat,int plane) const {
-  // We have to be explicit about the coordinate system--we specifically mean
-  // CS_zup_right, because that points the forward vector down the Y axis and
-  // moves the coords in (X, 0, Z).  We want this effect regardless of the
-  // user's coordinate system of choice.
-
-  // The up vector, on the other hand, is completely arbitrary.
-
-  look_at(to_3d_mat, -get_plane(plane).get_normal(),
-          LVector3(0.0f, 0.0f, 1.0f), CS_zup_right);
-  to_3d_mat.set_row(3, get_plane(plane).get_point());
-}
-
-/**
- * Extrude the indicated point in the polygon's 2-d definition space back into
- * 3-d coordinates.
- */
-INLINE LPoint3 CollisionBox::
-to_3d(const LVecBase2 &point2d, const LMatrix4 &to_3d_mat) {
-  return LPoint3(point2d[0], 0.0f, point2d[1]) * to_3d_mat;
-}
-
-/**
- *
- */
-INLINE CollisionBox::PointDef::
-PointDef(const LPoint2 &p, const LVector2 &v) : _p(p), _v(v) {
-}
-
-/**
- *
- */
-INLINE CollisionBox::PointDef::
-PointDef(PN_stdfloat x, PN_stdfloat y) : _p(x, y), _v(0.0f, 0.0f) {
-}
-
-/**
- *
- */
-INLINE CollisionBox::PointDef::
-PointDef(const CollisionBox::PointDef &copy) : _p(copy._p), _v(copy._v) {
-}
-
-/**
- *
- */
-INLINE void CollisionBox::PointDef::
-operator = (const CollisionBox::PointDef &copy) {
-  _p = copy._p;
-  _v = copy._v;
 }

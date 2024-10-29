@@ -49,7 +49,6 @@ public:
   virtual void output(std::ostream &out) const;
 
   INLINE static void flush_level();
-  void setup_box();
 
 PUBLISHED:
   INLINE int get_num_points() const;
@@ -94,61 +93,20 @@ protected:
   bool intersects_line(double &t1, double &t2,
                        const LPoint3 &from, const LVector3 &delta,
                        PN_stdfloat inflate_size=0) const;
+  bool intersects_capsule(double &t,
+                          const LPoint3 &from, const LVector3 &delta,
+                          PN_stdfloat radius_sq) const;
 
 private:
   LPoint3 _center;
   LPoint3 _min;
   LPoint3 _max;
-  LPoint3 _vertex[8]; // Each of the Eight Vertices of the Box
   LPlane _planes[6]; //Points to each of the six sides of the Box
 
   static const int plane_def[6][4];
 
   static PStatCollector _volume_pcollector;
   static PStatCollector _test_pcollector;
-
-private:
-  INLINE static bool is_right(const LVector2 &v1, const LVector2 &v2);
-  INLINE static PN_stdfloat dist_to_line(const LPoint2 &p,
-                                   const LPoint2 &f, const LVector2 &v);
-  static PN_stdfloat dist_to_line_segment(const LPoint2 &p,
-                                    const LPoint2 &f, const LPoint2 &t,
-                                    const LVector2 &v);
-
-public:
-  class PointDef {
-  public:
-    PointDef() = default;
-    INLINE PointDef(const LPoint2 &p, const LVector2 &v);
-    INLINE PointDef(PN_stdfloat x, PN_stdfloat y);
-    INLINE PointDef(const PointDef &copy);
-    INLINE void operator = (const PointDef &copy);
-
-    LPoint2 _p;  // the point in 2-d space
-    LVector2 _v; // the normalized vector to the next point
-  };
-  typedef pvector<PointDef> Points;
-
-  static void compute_vectors(Points &points);
-  void draw_polygon(GeomNode *viz_geom_node, GeomNode *bounds_viz_geom_node,
-                    const Points &points) const;
-
-  bool point_is_inside(const LPoint2 &p, const Points &points) const;
-  PN_stdfloat dist_to_polygon(const LPoint2 &p, const PointDef *points, size_t num_points) const;
-
-  void setup_points(int plane);
-  INLINE LPoint2 to_2d(const LVecBase3 &point3d, int plane) const;
-  INLINE void calc_to_3d_mat(LMatrix4 &to_3d_mat, int plane) const;
-  INLINE static LPoint3 to_3d(const LVecBase2 &point2d, const LMatrix4 &to_3d_mat);
-  bool clip_polygon(Points &new_points, const PointDef *source_points,
-                    size_t num_source_points, const LPlane &plane,
-                    int plane_no) const;
-  bool apply_clip_plane(Points &new_points, const ClipPlaneAttrib *cpa,
-                        const TransformState *net_transform, int plane_no) const;
-
-private:
-  PointDef _points[6][4]; // one set of points for each of the six planes that make up the box
-  LMatrix4 _to_2d_mat[6];
 
 public:
   static void register_with_read_factory();

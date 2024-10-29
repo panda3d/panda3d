@@ -161,7 +161,7 @@ do_update() {
   _last_level_index = view.get_level_index();
 
   const PStatClientData *client_data = _monitor->get_client_data();
-  if (client_data->get_num_collectors() > _collector_items.size()) {
+  if ((size_t)client_data->get_num_collectors() > _collector_items.size()) {
     _collector_items.resize(client_data->get_num_collectors(), std::make_pair(nullptr, nullptr));
   }
 
@@ -226,7 +226,7 @@ add_view(GtkWidget *parent_menu, const PStatViewLevel *view_level,
   }
   else if (menu_item != nullptr && menu == nullptr) {
     // Unhook the signal handler, we are creating a submenu.
-    GtkStatsMonitor::MenuDef smd(_thread_index, collector, GtkStatsMonitor::CT_strip_chart, show_level);
+    GtkStatsMonitor::MenuDef smd(GtkStatsMonitor::CT_strip_chart, _thread_index, collector, -1, show_level);
     const GtkStatsMonitor::MenuDef *menu_def = _monitor->add_menu(smd);
 
     g_signal_handlers_disconnect_by_data(G_OBJECT(menu_item), (void *)menu_def);
@@ -277,7 +277,7 @@ add_view(GtkWidget *parent_menu, const PStatViewLevel *view_level,
 GtkWidget *GtkStatsChartMenu::
 make_menu_item(const char *label, int collector_index, ChartType chart_type,
                bool show_level) {
-  GtkStatsMonitor::MenuDef smd(_thread_index, collector_index, chart_type, show_level);
+  GtkStatsMonitor::MenuDef smd(chart_type, _thread_index, collector_index, -1, show_level);
   const GtkStatsMonitor::MenuDef *menu_def = _monitor->add_menu(smd);
 
   GtkWidget *menu_item = gtk_menu_item_new_with_label(label);

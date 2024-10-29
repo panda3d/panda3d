@@ -312,9 +312,9 @@ open_timeline() {
  * Opens a new flame graph showing the indicated data.
  */
 PStatGraph *MacStatsMonitor::
-open_flame_graph(int thread_index, int collector_index) {
+open_flame_graph(int thread_index, int collector_index, int frame_number) {
   MacStatsFlameGraph *graph =
-    new MacStatsFlameGraph(this, thread_index, collector_index);
+    new MacStatsFlameGraph(this, thread_index, collector_index, frame_number);
   add_graph(graph);
   return graph;
 }

@@ -5261,7 +5261,7 @@ FrameBufferProperties DXGraphicsStateGuardian9::
 calc_fb_properties(DWORD cformat, DWORD dformat,
                    DWORD multisampletype, DWORD multisamplequality) {
   FrameBufferProperties props;
-  int index=0;
+  int index=0, isfloat=0;
   int r=0, g=0, b=0, a=0;
   switch (cformat) {
   case D3DFMT_R8G8B8:      r=8; g=8; b=8; a=0; break;
@@ -5275,9 +5275,18 @@ calc_fb_properties(DWORD cformat, DWORD dformat,
   case D3DFMT_A8R3G3B2:    r=3; g=3; b=2; a=8; break;
   case D3DFMT_X4R4G4B4:    r=4; g=4; b=4; a=0; break;
   case D3DFMT_A2B10G10R10: r=10;g=10;b=10;a=2; break;
+  case D3DFMT_R16F:        r=16; isfloat=1; break;
+  case D3DFMT_G16R16F:     r=16; isfloat=1; break;
+  case D3DFMT_A16B16G16R16F:r=16; g=16; b=16; a=16; isfloat=1; break;
+  case D3DFMT_R32F:        r=32; isfloat=1; break;
+  case D3DFMT_G32R32F:     r=32; isfloat=1; break;
+  case D3DFMT_A32B32G32R32F:r=32; g=32; b=32; a=32; isfloat=1; break;
   case D3DFMT_A8P8:        index=8; a=8; break;
   case D3DFMT_P8:          index=8; a=0; break;
   default: break;
+  }
+  if (isfloat > 0) {
+    props.set_float_color(true);
   }
   if (index > 0) {
     props.set_rgb_color(0);

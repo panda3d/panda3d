@@ -327,8 +327,6 @@ class Transitions:
         else:
             self.transitionIval = self.getIrisInIval(t, finishIval, blendType)
             self.__transitionFuture = AsyncFuture()
-            if finishIval:
-                self.transitionIval.append(finishIval)
             self.transitionIval.start()
             return self.__transitionFuture
 
@@ -349,8 +347,6 @@ class Transitions:
         else:
             self.transitionIval = self.getIrisOutIval(t, finishIval, blendType)
             self.__transitionFuture = AsyncFuture()
-            if finishIval:
-                self.transitionIval.append(finishIval)
             self.transitionIval.start()
             return self.__transitionFuture
 

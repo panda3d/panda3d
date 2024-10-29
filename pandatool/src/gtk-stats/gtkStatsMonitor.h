@@ -46,13 +46,14 @@ public:
 
   class MenuDef {
   public:
-    INLINE MenuDef(int thread_index, int collector_index,
-                   ChartType chart_type, bool show_level = false);
+    INLINE MenuDef(ChartType chart_type, int thread_index, int collector_index,
+                   int frame_number = -1, bool show_level = false);
     INLINE bool operator < (const MenuDef &other) const;
 
+    ChartType _chart_type;
     int _thread_index;
     int _collector_index;
-    ChartType _chart_type;
+    int _frame_number;
     bool _show_level;
     GtkStatsMonitor *_monitor;
   };
@@ -84,7 +85,7 @@ public:
 
   PStatGraph *open_timeline();
   PStatGraph *open_strip_chart(int thread_index, int collector_index, bool show_level);
-  PStatGraph *open_flame_graph(int thread_index, int collector_index = -1);
+  PStatGraph *open_flame_graph(int thread_index, int collector_index = -1, int frame_number = -1);
   PStatGraph *open_piano_roll(int thread_index);
 
   void choose_collector_color(int collector_index);

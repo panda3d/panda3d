@@ -654,7 +654,7 @@ open_strip_chart(int thread_index, int collector_index, bool show_level) {
  * Opens a new flame graph showing the indicated data.
  */
 PStatGraph *PStatMonitor::
-open_flame_graph(int thread_index, int collector_index) {
+open_flame_graph(int thread_index, int collector_index, int frame_number) {
   return nullptr;
 }
 

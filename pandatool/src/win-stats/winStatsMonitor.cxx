@@ -332,8 +332,8 @@ open_strip_chart(int thread_index, int collector_index, bool show_level) {
  * Opens a new flame graph showing the indicated data.
  */
 PStatGraph *WinStatsMonitor::
-open_flame_graph(int thread_index, int collector_index) {
-  WinStatsFlameGraph *graph = new WinStatsFlameGraph(this, thread_index, collector_index);
+open_flame_graph(int thread_index, int collector_index, int frame_number) {
+  WinStatsFlameGraph *graph = new WinStatsFlameGraph(this, thread_index, collector_index, frame_number);
   add_graph(graph);
   return graph;
 }
