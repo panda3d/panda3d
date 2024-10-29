@@ -2189,11 +2189,15 @@ def SdkLocatePython(prefer_thirdparty_python=False):
         sysroot = SDK.get("MACOSX", "")
         version = locations.get_python_version()
 
-        py_fwx = "{0}/System/Library/Frameworks/Python.framework/Versions/{1}".format(sysroot, version)
+        framework_name = "Python"
+        if 't' in abiflags:
+            framework_name += "T"
+
+        py_fwx = "{0}/System/Library/Frameworks/{1}.framework/Versions/{2}".format(sysroot, framework_name, version)
 
         if not os.path.exists(py_fwx):
             # Fall back to looking on the system.
-            py_fwx = "/Library/Frameworks/Python.framework/Versions/" + version
+            py_fwx = "/Library/Frameworks/{0}.framework/Versions/{1}".format(framework_name, version)
 
         if not os.path.exists(py_fwx):
             # Newer macOS versions use this scheme.

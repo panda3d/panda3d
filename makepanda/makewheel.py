@@ -497,7 +497,8 @@ class WheelFile(object):
                         self.consider_add_dependency(target_dep, dep_path)
                         continue
 
-                    elif dep.startswith('/Library/Frameworks/Python.framework/'):
+                    elif dep.startswith('/Library/Frameworks/Python.framework/') or \
+                         dep.startswith('/Library/Frameworks/PythonT.framework/'):
                         # Add this dependency if it's in the Python directory.
                         target_dep = os.path.dirname(target_path) + '/' + os.path.basename(dep)
                         target_dep = self.consider_add_dependency(target_dep, dep, loader_path)
