@@ -2252,11 +2252,15 @@ def SdkLocatePython(prefer_thirdparty_python=False):
         sysroot = SDK.get("MACOSX", "")
         version = locations.get_python_version()
 
-        py_fwx = "{0}/System/Library/Frameworks/Python.framework/Versions/{1}".format(sysroot, version)
+        framework_name = "Python"
+        if 't' in abiflags:
+            framework_name += "T"
+
+        py_fwx = "{0}/System/Library/Frameworks/{1}.framework/Versions/{2}".format(sysroot, framework_name, version)
 
         if not os.path.exists(py_fwx):
             # Fall back to looking on the system.
-            py_fwx = "/Library/Frameworks/Python.framework/Versions/" + version
+            py_fwx = "/Library/Frameworks/{0}.framework/Versions/{1}".format(framework_name, version)
 
         if not os.path.exists(py_fwx):
             # Newer macOS versions use this scheme.
@@ -3505,10 +3509,12 @@ def GetExtensionSuffix():
         else:
             dllext = ''
 
+        gil_disabled = locations.get_config_var("Py_GIL_DISABLED")
+        suffix = 't' if gil_disabled and int(gil_disabled) else ''
         if GetTargetArch() == 'x64':
-            return dllext + '.cp%d%d-win_amd64.pyd' % (sys.version_info[:2])
+            return dllext + '.cp%d%d%s-win_amd64.pyd' % (sys.version_info[0], sys.version_info[1], suffix)
         else:
-            return dllext + '.cp%d%d-win32.pyd' % (sys.version_info[:2])
+            return dllext + '.cp%d%d%s-win32.pyd' % (sys.version_info[0], sys.version_info[1], suffix)
 
     elif sys.version_info >= (3, 0):
         import _imp
@@ -3525,6 +3531,11 @@ def GetPythonABI():
         return soabi
 
     soabi = 'cpython-%d%d' % (sys.version_info[:2])
+
+    if sys.version_info >= (3, 13):
+        gil_disabled = locations.get_config_var("Py_GIL_DISABLED")
+        if gil_disabled and int(gil_disabled):
+            return soabi + 't'
 
     if sys.version_info >= (3, 8):
         return soabi
@@ -3655,7 +3666,7 @@ def GetCurrentPythonVersionInfo():
         return
 
     return {
-        "version": SDK["PYTHONVERSION"][6:].rstrip('dmu'),
+        "version": SDK["PYTHONVERSION"][6:].rstrip('dmut'),
         "soabi": GetPythonABI(),
         "ext_suffix": GetExtensionSuffix(),
         "executable": sys.executable,

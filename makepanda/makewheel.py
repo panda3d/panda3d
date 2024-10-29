@@ -20,6 +20,17 @@ from sysconfig import get_platform
 
 
 def get_abi_tag():
+    if sys.version_info >= (3, 13):
+        ver = 'cp%d%d' % sys.version_info[:2]
+        if hasattr(sys, 'abiflags'):
+            return ver + sys.abiflags
+
+        gil_disabled = get_config_var("Py_GIL_DISABLED")
+        if gil_disabled and int(gil_disabled):
+            return ver + 't'
+
+        return ver
+
     if sys.version_info >= (3, 0):
         soabi = get_config_var('SOABI')
         if soabi and soabi.startswith('cpython-'):
@@ -432,7 +443,8 @@ class WheelFile(object):
                             continue
                         new_dep = os.path.join(deps_path, os.path.relpath(target_dep, os.path.dirname(target_path)))
 
-                    elif dep.startswith('/Library/Frameworks/Python.framework/'):
+                    elif dep.startswith('/Library/Frameworks/Python.framework/') or \
+                         dep.startswith('/Library/Frameworks/PythonT.framework/'):
                         # Add this dependency if it's in the Python directory.
                         target_dep = os.path.dirname(target_path) + '/' + os.path.basename(dep)
                         target_dep = self.consider_add_dependency(target_dep, dep, loader_path)
