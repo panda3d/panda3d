@@ -13,20 +13,20 @@
 
 #include "pandabase.h"
 
-// Panda Headers
+ // Panda Headers
 #include "throw_event.h"
-#include "SteamAudioSound.h"
-#include "SteamAudioManager.h"
+#include "steamAudioSound.h"
+#include "steamAudioManager.h"
 
 TypeHandle SteamAudioSound::_type_handle;
 
 
 #ifndef NDEBUG //[
-  #define steam_audio_debug(x) \
+#define Steam_audio_debug(x) \
       audio_debug("SteamAudioSound \""<<get_name() \
       <<"\" "<< x )
 #else //][
-#define steam_audio_debug(x) ((void)0)
+#define Steam_audio_debug(x) ((void)0)
 #endif //]
 
 /**
@@ -34,10 +34,10 @@ TypeHandle SteamAudioSound::_type_handle;
  */
 
 SteamAudioSound::
-SteamAudioSound(SteamAudioManager *manager,
-                 MovieAudio *movie,
-                 bool positional,
-                 int mode) :
+SteamAudioSound(SteamAudioManager* manager,
+  MovieAudio* movie,
+  bool positional,
+  int mode) :
   AudioSound(positional),
   _movie(movie),
   _sd(nullptr),
@@ -154,7 +154,7 @@ play() {
 
   // nonpositional sources are made relative to the listener so they don't
   // move
-  alSourcei(_source,AL_SOURCE_RELATIVE,_positional?AL_FALSE:AL_TRUE);
+  alSourcei(_source, AL_SOURCE_RELATIVE, _positional ? AL_FALSE : AL_TRUE);
   al_audio_errcheck("alSourcei(_source,AL_SOURCE_RELATIVE)");
 
   // set source properties that we have stored
@@ -183,7 +183,7 @@ play() {
     push_fresh_buffers();
     // The macOS implementation of alSourcePlay resets the offset, so we call
     // it before and avoid calling restart_stalled_audio() afterwards (#1607)
-#ifdef HAVE_OPENAL_FRAMEWORK
+#ifdef HAVE_Steam_FRAMEWORK
     ALenum status;
     alGetSourcei(_source, AL_SOURCE_STATE, &status);
     if (status != AL_PLAYING) {
@@ -192,10 +192,11 @@ play() {
 #endif
     alSourcef(_source, AL_SEC_OFFSET, _start_time);
     _stream_queued[0]._time_offset = _start_time;
-#ifndef HAVE_OPENAL_FRAMEWORK
+#ifndef HAVE_Steam_FRAMEWORK
     restart_stalled_audio();
 #endif
-  } else {
+  }
+  else {
     audio_debug("Play: stream tell = " << _sd->_stream->tell() << " seeking " << _start_time);
     if (_sd->_stream->tell() != _start_time) {
       _sd->_stream->seek(_start_time);
@@ -228,7 +229,7 @@ stop() {
     al_audio_errcheck("stopping a source");
     alSourcei(_source, AL_BUFFER, 0);
     al_audio_errcheck("clear source buffers");
-    for (int i=0; i<((int)(_stream_queued.size())); i++) {
+    for (int i = 0; i < ((int)(_stream_queued.size())); i++) {
       ALuint buffer = _stream_queued[i]._buffer;
       if (buffer != _sd->_sample) {
         _manager->delete_buffer(buffer);
@@ -265,7 +266,7 @@ finished() {
 void SteamAudioSound::
 set_loop(bool loop) {
   ReMutexHolder holder(SteamAudioManager::_lock);
-  set_loop_count((loop)?0:1);
+  set_loop_count((loop) ? 0 : 1);
 }
 
 /**
@@ -288,7 +289,7 @@ set_loop_count(unsigned long loop_count) {
   if (loop_count >= 1000000000) {
     loop_count = 0;
   }
-  _loop_count=loop_count;
+  _loop_count = loop_count;
 }
 
 /**
@@ -330,7 +331,7 @@ get_loop_start() const {
 }
 
 /**
- * When streaming audio, the computer is supposed to keep OpenAL's queue full.
+ * When streaming audio, the computer is supposed to keep OpenAl's queue full.
  * However, there are times when the computer is running slow and the queue
  * empties prematurely.  In that case, OpenAL will stop.  When the computer
  * finally gets around to refilling the queue, it is necessary to tell OpenAL
@@ -366,7 +367,7 @@ queue_buffer(ALuint buffer, int samples, int loop_index, double time_offset) {
 
   // Now push the buffer into the stream queue.
   alGetError();
-  alSourceQueueBuffers(_source,1,&buffer);
+  alSourceQueueBuffers(_source, 1, &buffer);
   ALenum err = alGetError();
   if (err != AL_NO_ERROR) {
     audio_error("could not load sample buffer into the queue");
@@ -385,7 +386,7 @@ queue_buffer(ALuint buffer, int samples, int loop_index, double time_offset) {
  * Creates an OpenAL buffer object.
  */
 ALuint SteamAudioSound::
-make_buffer(int samples, int channels, int rate, unsigned char *data) {
+make_buffer(int samples, int channels, int rate, unsigned char* data) {
   ReMutexHolder holder(SteamAudioManager::_lock);
 
   nassertr(is_playing(), 0);
@@ -402,8 +403,8 @@ make_buffer(int samples, int channels, int rate, unsigned char *data) {
 
   // Now fill the buffer with the data provided.
   alBufferData(buffer,
-               (channels>1) ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16,
-               data, samples * channels * 2, rate);
+    (channels > 1) ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16,
+    data, samples * channels * 2, rate);
   int err = alGetError();
   if (err != AL_NO_ERROR) {
     audio_error("could not fill OpenAL buffer object with data");
@@ -419,12 +420,12 @@ make_buffer(int samples, int channels, int rate, unsigned char *data) {
  * stored in the buffer.
  */
 int SteamAudioSound::
-read_stream_data(int bytelen, unsigned char *buffer) {
+read_stream_data(int bytelen, unsigned char* buffer) {
   ReMutexHolder holder(SteamAudioManager::_lock);
 
   nassertr(has_sound_data(), 0);
 
-  MovieAudioCursor *cursor = _sd->_stream;
+  MovieAudioCursor* cursor = _sd->_stream;
   int channels = cursor->audio_channels();
   int rate = cursor->audio_rate();
   int space = bytelen / (channels * 2);
@@ -454,9 +455,9 @@ read_stream_data(int bytelen, unsigned char *buffer) {
     if (samples > _sd->_stream->ready()) {
       samples = _sd->_stream->ready();
     }
-    samples = cursor->read_samples(samples, (int16_t *)buffer);
+    samples = cursor->read_samples(samples, (int16_t*)buffer);
     if (audio_cat.is_debug()) {
-      size_t hval = AddHash::add_hash(0, (uint8_t*)buffer, samples*channels*2);
+      size_t hval = AddHash::add_hash(0, (uint8_t*)buffer, samples * channels * 2);
       audio_debug("Streaming " << cursor->get_source()->get_name() << " at " << t << " hash " << hval);
     }
     if (samples == 0) {
@@ -488,12 +489,13 @@ correct_calibrated_clock(double rtc, double t) {
   nassertv(is_playing());
 
   double cc = (rtc - _calibrated_clock_base) * _calibrated_clock_scale;
-  double diff = cc-t;
+  double diff = cc - t;
   _calibrated_clock_decavg = (_calibrated_clock_decavg * 0.95) + (diff * 0.05);
   if (diff > 0.5) {
     set_calibrated_clock(rtc, t, 1.0);
     _calibrated_clock_decavg = 0.0;
-  } else {
+  }
+  else {
     double scale = 1.0;
     if ((_calibrated_clock_decavg > 0.01) && (diff > 0.01)) {
       scale = 0.98;
@@ -552,7 +554,8 @@ pull_used_buffers() {
           cleanup();
           return;
         }
-      } else {
+      }
+      else {
         _stream_queued.pop_front();
         if (_stream_queued.size()) {
           double al = _stream_queued[0]._time_offset + _stream_queued[0]._loop_index * _length;
@@ -563,7 +566,8 @@ pull_used_buffers() {
           _manager->delete_buffer(buffer);
         }
       }
-    } else {
+    }
+    else {
       break;
     }
   }
@@ -584,12 +588,13 @@ push_fresh_buffers() {
 
   if (_sd->_sample) {
     while ((_loops_completed < _playing_loops) &&
-           (_stream_queued.size() < 100)) {
-      queue_buffer(_sd->_sample, 0,_loops_completed, _loop_start);
+      (_stream_queued.size() < 100)) {
+      queue_buffer(_sd->_sample, 0, _loops_completed, _loop_start);
       _loops_completed += 1;
     }
-  } else {
-    MovieAudioCursor *cursor = _sd->_stream;
+  }
+  else {
+    MovieAudioCursor* cursor = _sd->_stream;
     int channels = cursor->audio_channels();
     int rate = cursor->audio_rate();
 
@@ -599,7 +604,7 @@ push_fresh_buffers() {
     }
 
     while ((_loops_completed < _playing_loops) &&
-           (fill < (int)(audio_buffering_seconds * rate * channels))) {
+      (fill < (int)(audio_buffering_seconds * rate * channels))) {
       int loop_index = _loops_completed;
       double time_offset = cursor->tell();
       int samples = read_stream_data(65536, data);
@@ -616,6 +621,33 @@ push_fresh_buffers() {
 }
 
 /**
+ * Sets the offset within the sound.  If the sound is currently playing, its
+ * position is updated immediately.
+ */
+void SteamAudioSound::
+set_time(PN_stdfloat time) {
+  ReMutexHolder holder(SteamAudioManager::_lock);
+  _start_time = time;
+
+  if (is_playing()) {
+    // Ensure that the position is updated immediately.
+    play();
+  }
+}
+
+/**
+ * Gets the play position within the sound
+ */
+PN_stdfloat SteamAudioSound::
+get_time() const {
+  ReMutexHolder holder(SteamAudioManager::_lock);
+  if (!is_valid()) {
+    return 0.0;
+  }
+  return _current_time;
+}
+
+/**
  * Updates the current_time field of a playing sound.
  */
 void SteamAudioSound::
@@ -624,11 +656,12 @@ cache_time(double rtc) {
 
   nassertv(is_playing());
 
-  double t=get_calibrated_clock(rtc);
+  double t = get_calibrated_clock(rtc);
   double max = _length * _playing_loops;
   if (t >= max) {
     _current_time = _length;
-  } else {
+  }
+  else {
     _current_time = fmod(t, _length);
   }
 }
@@ -639,13 +672,13 @@ cache_time(double rtc) {
 void SteamAudioSound::
 set_volume(PN_stdfloat volume) {
   ReMutexHolder holder(SteamAudioManager::_lock);
-  _volume=volume;
+  _volume = volume;
 
   if (is_playing()) {
-    volume*=_manager->get_volume();
+    volume *= _manager->get_volume();
     _manager->make_current();
     alGetError(); // clear errors
-    alSourcef(_source,AL_GAIN,volume);
+    alSourcef(_source, AL_GAIN, volume);
     al_audio_errcheck("alSourcef(_source,AL_GAIN)");
   }
 }
@@ -696,4 +729,334 @@ set_play_rate(PN_stdfloat play_rate) {
 PN_stdfloat SteamAudioSound::
 get_play_rate() const {
   return _play_rate;
+}
+
+/**
+ * Get length
+ */
+PN_stdfloat SteamAudioSound::
+length() const {
+  return _length;
+}
+
+/**
+ * Set position and velocity of this sound
+ *
+ * Both Panda3D and OpenAL use a right handed coordinate system.  However, in
+ * Panda3D the Y-Axis is going into the Screen and the Z-Axis is going up.  In
+ * OpenAL the Y-Axis is going up and the Z-Axis is coming out of the screen.
+ *
+ * The solution is simple, we just flip the Y and Z axis and negate the Z, as
+ * we move coordinates from Panda to OpenAL and back.
+ */
+void SteamAudioSound::
+set_3d_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx, PN_stdfloat vy, PN_stdfloat vz) {
+  ReMutexHolder holder(SteamAudioManager::_lock);
+  _location[0] = px;
+  _location[1] = pz;
+  _location[2] = -py;
+
+  _velocity[0] = vx;
+  _velocity[1] = vz;
+  _velocity[2] = -vy;
+
+  if (is_playing()) {
+    _manager->make_current();
+
+    alGetError(); // clear errors
+    alSourcefv(_source, AL_POSITION, _location);
+    al_audio_errcheck("alSourcefv(_source,AL_POSITION)");
+    alSourcefv(_source, AL_VELOCITY, _velocity);
+    al_audio_errcheck("alSourcefv(_source,AL_VELOCITY)");
+  }
+}
+
+/**
+ * Get position and velocity of this sound Currently unimplemented.  Get the
+ * attributes of the attached object.
+ */
+void SteamAudioSound::
+get_3d_attributes(PN_stdfloat* px, PN_stdfloat* py, PN_stdfloat* pz, PN_stdfloat* vx, PN_stdfloat* vy, PN_stdfloat* vz) {
+  ReMutexHolder holder(SteamAudioManager::_lock);
+  *px = _location[0];
+  *py = -_location[2];
+  *pz = _location[1];
+
+  *vx = _velocity[0];
+  *vy = -_velocity[2];
+  *vz = _velocity[1];
+}
+
+/**
+* Set the direction of this sound
+*
+* Both Panda3D and OpenAL use a right handed coordinate system.  However, in
+* Panda3D the Y-Axis is going into the Screen and the Z-Axis is going up.  In
+* OpenAL the Y-Axis is going up and the Z-Axis is coming out of the screen.
+*
+* The solution is simple, we just flip the Y and Z axis and negate the Z, as
+* we move coordinates from Panda to OpenAL and back.
+*/
+void SteamAudioSound::
+set_3d_direction(LVector3 d) {
+  ReMutexHolder holder(SteamAudioManager::_lock);
+  _direction[0] = d.get_x();
+  _direction[1] = d.get_z();
+  _direction[2] = -d.get_y();
+
+  if (is_playing()) {
+    _manager->make_current();
+
+    alGetError(); // clear errors
+    alSourcefv(_source, AL_DIRECTION, _direction);
+    al_audio_errcheck("alSourcefv(_source,AL_DIRECTION)");
+  }
+}
+
+/**
+ * Get the direction of this sound.
+ */
+LVector3 SteamAudioSound::
+get_3d_direction() const {
+  ReMutexHolder holder(SteamAudioManager::_lock);
+  return LVector3(_direction[0], -_direction[2], _direction[1]);
+}
+
+/**
+ * Set the distance that this sound begins to fall off.  Also affects the rate
+ * it falls off.
+ */
+void SteamAudioSound::
+set_3d_min_distance(PN_stdfloat dist) {
+  ReMutexHolder holder(SteamAudioManager::_lock);
+  _min_dist = dist;
+
+  if (is_playing()) {
+    _manager->make_current();
+
+    alGetError(); // clear errors
+    alSourcef(_source, AL_REFERENCE_DISTANCE, _min_dist);
+    al_audio_errcheck("alSourcefv(_source,AL_REFERENCE_DISTANCE)");
+  }
+}
+
+/**
+ * Get the distance that this sound begins to fall off
+ */
+PN_stdfloat SteamAudioSound::
+get_3d_min_distance() const {
+  return _min_dist;
+}
+
+/**
+ * Set the distance that this sound stops falling off
+ */
+void SteamAudioSound::
+set_3d_max_distance(PN_stdfloat dist) {
+  ReMutexHolder holder(SteamAudioManager::_lock);
+  _max_dist = dist;
+
+  if (is_playing()) {
+    _manager->make_current();
+
+    alGetError(); // clear errors
+    alSourcef(_source, AL_MAX_DISTANCE, _max_dist);
+    al_audio_errcheck("alSourcefv(_source,AL_MAX_DISTANCE)");
+  }
+}
+
+/**
+ * Get the distance that this sound stops falling off
+ */
+PN_stdfloat SteamAudioSound::
+get_3d_max_distance() const {
+  return _max_dist;
+}
+
+/**
+ * Control the effect distance has on audability.  Defaults to 1.0
+ */
+void SteamAudioSound::
+set_3d_drop_off_factor(PN_stdfloat factor) {
+  ReMutexHolder holder(SteamAudioManager::_lock);
+  _drop_off_factor = factor;
+
+  if (is_playing()) {
+    _manager->make_current();
+
+    alGetError(); // clear errors
+    alSourcef(_source, AL_ROLLOFF_FACTOR, _drop_off_factor * _manager->audio_3d_get_drop_off_factor());
+    al_audio_errcheck("alSourcefv(_source,AL_ROLLOFF_FACTOR)");
+  }
+}
+
+/**
+ * Control the effect distance has on audability.  Defaults to 1.0
+ */
+PN_stdfloat SteamAudioSound::
+get_3d_drop_off_factor() const {
+  return _drop_off_factor;
+}
+
+/**
+ * Set the inner angle of a directional sound
+ */
+void SteamAudioSound::
+set_3d_cone_inner_angle(PN_stdfloat angle) {
+  ReMutexHolder holder(SteamAudioManager::_lock);
+  _cone_inner_angle = angle;
+
+  if (is_playing()) {
+    _manager->make_current();
+
+    alGetError(); // clear errors
+    alSourcef(_source, AL_CONE_INNER_ANGLE, _cone_inner_angle);
+    al_audio_errcheck("alSourcefv(_source,AL_CONE_INNER_ANGLE)");
+  }
+}
+
+/**
+ * Get the inner angle of a directional sound
+ */
+PN_stdfloat SteamAudioSound::
+get_3d_cone_inner_angle() const {
+  return _cone_inner_angle;
+}
+
+/**
+ * Set the outer angle of a directional sound
+ */
+void SteamAudioSound::
+set_3d_cone_outer_angle(PN_stdfloat angle) {
+  ReMutexHolder holder(SteamAudioManager::_lock);
+  _cone_outer_angle = angle;
+
+  if (is_playing()) {
+    _manager->make_current();
+
+    alGetError(); // clear errors
+    alSourcef(_source, AL_CONE_OUTER_ANGLE, _cone_outer_angle);
+    al_audio_errcheck("alSourcefv(_source,AL_CONE_OUTER_ANGLE)");
+  }
+}
+
+/**
+ * Get the outer angle of a directional sound
+ */
+PN_stdfloat SteamAudioSound::
+get_3d_cone_outer_angle() const {
+  return _cone_outer_angle;
+}
+
+/**
+ * Set the outer gain factor of a directional sound
+ */
+void SteamAudioSound::
+set_3d_cone_outer_gain(PN_stdfloat gain) {
+  ReMutexHolder holder(SteamAudioManager::_lock);
+  _cone_outer_gain = gain;
+
+  if (is_playing()) {
+    _manager->make_current();
+
+    alGetError(); // clear errors
+    alSourcef(_source, AL_CONE_OUTER_GAIN, _cone_outer_gain);
+    al_audio_errcheck("alSourcefv(_source,AL_CONE_OUTER_GAIN)");
+  }
+}
+
+/**
+ * Get the outer gain of a directional sound
+ */
+PN_stdfloat SteamAudioSound::
+get_3d_cone_outer_gain() const {
+  return _cone_outer_gain;
+}
+
+/**
+ * Sets whether the sound is marked "active".  By default, the active flag is
+ * true for all sounds.  If the active flag is set to false for any particular
+ * sound, the sound will not be heard.
+ */
+void SteamAudioSound::
+set_active(bool active) {
+  ReMutexHolder holder(SteamAudioManager::_lock);
+
+  if (!is_valid()) return;
+
+  if (_active != active) {
+    _active = active;
+    if (_active) {
+      // ...activate the sound.
+      if (_paused && _loop_count == 0) {
+        // ...this sound was looping when it was paused.
+        _paused = false;
+        play();
+      }
+    }
+    else {
+      // ...deactivate the sound.
+      if (status() == PLAYING) {
+        // Store off the current time so we can resume from where we paused.
+        _start_time = get_time();
+        stop();
+        if (_loop_count == 0) {
+          // ...we're pausing a looping sound.
+          _paused = true;
+        }
+      }
+    }
+  }
+}
+
+
+/**
+ * Returns whether the sound has been marked "active".
+ */
+bool SteamAudioSound::
+get_active() const {
+  return _active;
+}
+
+/**
+ *
+ */
+void SteamAudioSound::
+set_finished_event(const std::string& event) {
+  _finished_event = event;
+}
+
+/**
+ *
+ */
+const std::string& SteamAudioSound::
+get_finished_event() const {
+  return _finished_event;
+}
+
+/**
+ * Get name of sound file
+ */
+const std::string& SteamAudioSound::
+get_name() const {
+  return _basename;
+}
+
+/**
+ * Get status of the sound.
+ *
+ * This returns the status as of the last push_fresh_buffers
+ */
+AudioSound::SoundStatus SteamAudioSound::
+status() const {
+  ReMutexHolder holder(SteamAudioManager::_lock);
+  if (!is_playing()) {
+    return AudioSound::READY;
+  }
+  if ((_loops_completed >= _playing_loops) && (_stream_queued.size() == 0)) {
+    return AudioSound::READY;
+  }
+  else {
+    return AudioSound::PLAYING;
+  }
 }

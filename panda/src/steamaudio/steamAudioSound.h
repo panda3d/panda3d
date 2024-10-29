@@ -16,10 +16,12 @@
 
 #include "pandabase.h"
 
-#include "audioSound.h"
+#include "steamAudioSound.h"
 #include "movieAudioCursor.h"
 #include "trueClock.h"
 #include "steamAudioManager.h"
+
+#include <phonon.h>//Import steam audio
 
 // OSX uses the OpenAL framework
 #ifdef HAVE_OPENAL_FRAMEWORK
@@ -35,7 +37,10 @@ class EXPCL_OPENAL_AUDIO SteamAudioSound final : public OpenALAudioSound {
   friend class SteamAudioManager;
 
 PUBLISHED:
-
+  SteamAudioSound(SteamAudioManager* manager,
+    MovieAudio* movie,
+    bool positional,
+    int mode);
   ~SteamAudioSound();
 
   // For best compatibility, set the loop_count, start_time, volume, and
@@ -45,36 +50,80 @@ PUBLISHED:
   void stop();
 
   // loop: false = play once; true = play forever.  inits to false.
-  void set_loop(bool loop=true);
+  void set_loop(bool loop = true);
   bool get_loop() const;
 
   // loop_count: 0 = forever; 1 = play once; n = play n times.  inits to 1.
-  void set_loop_count(unsigned long loop_count=1);
+  void set_loop_count(unsigned long loop_count = 1);
   unsigned long get_loop_count() const;
 
   // loop_start: 0 = beginning.  expressed in seconds.  inits to 0.
-  void set_loop_start(PN_stdfloat loop_start=0);
+  void set_loop_start(PN_stdfloat loop_start = 0);
   PN_stdfloat get_loop_start() const;
 
+  // 0 = beginning; length() = end.  inits to 0.0.
+  void set_time(PN_stdfloat time = 0.0);
+  PN_stdfloat get_time() const;
+
   // 0 = minimum; 1.0 = maximum.  inits to 1.0.
-  void set_volume(PN_stdfloat volume=1.0);
+  void set_volume(PN_stdfloat volume = 1.0);
   PN_stdfloat get_volume() const;
 
   // -1.0 is hard left 0.0 is centered 1.0 is hard right inits to 0.0.
-  void set_balance(PN_stdfloat balance_right=0.0);
+  void set_balance(PN_stdfloat balance_right = 0.0);
   PN_stdfloat get_balance() const;
 
   // play_rate is any positive float value.  inits to 1.0.
-  void set_play_rate(PN_stdfloat play_rate=1.0f);
+  void set_play_rate(PN_stdfloat play_rate = 1.0f);
   PN_stdfloat get_play_rate() const;
+
+  // inits to manager's state.
+  void set_active(bool active = true);
+  bool get_active() const;
+
+  // This is the string that throw_event() will throw when the sound finishes
+  // playing.  It is not triggered when the sound is stopped with stop().
+  void set_finished_event(const std::string& event);
+  const std::string& get_finished_event() const;
+
+  const std::string& get_name() const;
+
+  // return: playing time in seconds.
+  PN_stdfloat length() const;
+
+  // Controls the position of this sound's emitter.  pos is a pointer to an
+  // xyz triplet of the emitter's position.  vel is a pointer to an xyz
+  // triplet of the emitter's velocity.
+  void set_3d_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx, PN_stdfloat vy, PN_stdfloat vz);
+  void get_3d_attributes(PN_stdfloat* px, PN_stdfloat* py, PN_stdfloat* pz, PN_stdfloat* vx, PN_stdfloat* vy, PN_stdfloat* vz);
+
+  // Controls the direction of this sound emitter.
+  void set_3d_direction(LVector3 d);
+  LVector3 get_3d_direction() const;
+
+  void set_3d_min_distance(PN_stdfloat dist);
+  PN_stdfloat get_3d_min_distance() const;
+
+  void set_3d_max_distance(PN_stdfloat dist);
+  PN_stdfloat get_3d_max_distance() const;
+
+  void set_3d_drop_off_factor(PN_stdfloat factor);
+  PN_stdfloat get_3d_drop_off_factor() const;
+
+  void set_3d_cone_inner_angle(PN_stdfloat angle);
+  PN_stdfloat get_3d_cone_inner_angle() const;
+
+  void set_3d_cone_outer_angle(PN_stdfloat angle);
+  PN_stdfloat get_3d_cone_outer_angle() const;
+
+  void set_3d_cone_outer_gain(PN_stdfloat gain);
+  PN_stdfloat get_3d_cone_outer_gain() const;
+
+  AudioSound::SoundStatus status() const;
 
   void finished();
 
 private:
-  SteamAudioSound(SteamAudioManager* manager,
-                   MovieAudio *movie,
-                   bool positional,
-                   int mode);
   INLINE void   set_calibrated_clock(double rtc, double t, double playrate);
   INLINE double get_calibrated_clock(double rtc) const;
   void          correct_calibrated_clock(double rtc, double t);
@@ -82,9 +131,9 @@ private:
   void cleanup();
   void restart_stalled_audio();
   void delete_queued_buffers();
-  ALuint make_buffer(int samples, int channels, int rate, unsigned char *data);
+  ALuint make_buffer(int samples, int channels, int rate, unsigned char* data);
   void queue_buffer(ALuint buffer, int samples, int loop_index, double time_offset);
-  int  read_stream_data(int bytelen, unsigned char *data);
+  int  read_stream_data(int bytelen, unsigned char* data);
   void pull_used_buffers();
   void push_fresh_buffers();
   INLINE bool require_sound_data();
@@ -97,7 +146,7 @@ private:
 private:
 
   PT(MovieAudio) _movie;
-  OpenALAudioManager::SoundData *_sd;
+  SteamAudioManager::SoundData* _sd;
 
   struct QueuedBuffer {
     ALuint _buffer;
@@ -113,7 +162,7 @@ private:
   int                  _loops_completed;
 
   ALuint _source;
-  PT(OpenALAudioManager) _manager;
+  PT(SteamAudioManager) _manager;
 
   PN_stdfloat _volume; // 0..1.0
   PN_stdfloat _balance; // -1..1
@@ -173,7 +222,7 @@ public:
   }
   static void init_type() {
     AudioSound::init_type();
-    register_type(_type_handle, "OpenALAudioSound", AudioSound::get_class_type());
+    register_type(_type_handle, "SteamAudioSound", SteamAudioSound::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -187,6 +236,6 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "openalAudioSound.I"
+#include "steamAudioSound.I"
 
-#endif /* __OPENALAUDIOSOUND_H__ */
+#endif /* __STEAMAUDIOSOUND_H__ */

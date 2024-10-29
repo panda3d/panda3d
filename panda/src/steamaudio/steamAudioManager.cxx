@@ -18,14 +18,13 @@
 #include "config_express.h"
 #include "config_openalAudio.h"
 #include "steamAudioManager.h"
-#include "openalAudioSound.h"
+#include "steamAudioSound.h"
 #include "virtualFileSystem.h"
 #include "movieAudio.h"
 #include "reMutexHolder.h"
 
 #include <algorithm>
 
-//Since this implementation also uses OpenAl
 #ifndef ALC_DEFAULT_ALL_DEVICES_SPECIFIER
 #define ALC_DEFAULT_ALL_DEVICES_SPECIFIER 0x1012
 #endif
@@ -39,12 +38,43 @@ using std::string;
 
 TypeHandle SteamAudioManager::_type_handle;
 
-ReMutex SteamAudioManager::_steamLock;
+ReMutex SteamAudioManager::_lock;
+int SteamAudioManager::_active_managers = 0;
+bool SteamAudioManager::_openal_active = false;
+ALCdevice* SteamAudioManager::_device = nullptr;
+ALCcontext* SteamAudioManager::_context = nullptr;
 
 // This is the list of all SteamAudioManager objects in the world.  It must
 // be a pointer rather than a concrete object, so it won't be destructed at
 // exit time before we're done removing things from it.
 SteamAudioManager::Managers* SteamAudioManager::_managers = nullptr;
+
+SteamAudioManager::SourceCache* SteamAudioManager::_al_sources = nullptr;
+
+
+// Central dispatcher for audio errors.
+void al_audio_errcheck(const char* context) {
+  ALenum result = alGetError();
+  if (result != AL_NO_ERROR) {
+    audio_error(context << ": " << alGetString(result));
+  }
+}
+
+void alc_audio_errcheck(const char* context, ALCdevice* device) {
+  ALCenum result = alcGetError(device);
+  if (result != ALC_NO_ERROR) {
+    audio_error(context << ": " << alcGetString(device, result));
+  }
+}
+
+/**
+ * Factory Function
+ */
+AudioManager* Create_SteamAudioManager() {
+  audio_debug("Create_SteamAudioManager()");
+  return new SteamAudioManager;
+}
+
 
 /**
  *
@@ -293,6 +323,15 @@ select_audio_device() {
 }
 
 /**
+ * This makes this manager's OpenAL context the current context.  Needed
+ * before any parameter sets.
+ */
+void SteamAudioManager::
+make_current() const {
+  // Since we only use one context, this is now a no-op.
+}
+
+/**
  * Returns true if the specified MovieAudioCursor can be used by this
  * AudioManager.  Mostly, this involves checking whether or not the format is
  * implemented/supported.
@@ -305,7 +344,6 @@ can_use_audio(MovieAudioCursor* source) {
     audio_error("Currently, only mono and stereo are supported.");
     return false;
   }
-  //TODO::add (temporary) check that sample rate matches our config value
   return true;
 }
 
@@ -401,7 +439,7 @@ get_sound_data(MovieAudio* movie, int mode) {
   audio_debug("  - Channels: " << sd->_channels);
   audio_debug("  - Length: " << sd->_length);
 
-  if (should_load_audio(stream, mode)) {//Todo:: should I just disable this? Steam Audio is mostely useless without the ability to update audio in real time...
+  if (should_load_audio(stream, mode)) {
     audio_debug(path.get_basename() << ": loading as sample");
     make_current();
     alGetError(); // clear errors
@@ -446,8 +484,8 @@ get_sound(MovieAudio* sound, bool positional, int mode) {
   if (!is_valid()) {
     return get_null_sound();
   }
-  PT(OpenALAudioSound) oas =
-    new OpenALAudioSound(this, sound, positional, mode);
+  PT(SteamAudioSound) oas =
+    new SteamAudioSound(this, sound, positional, mode);
 
   if (!oas->_manager) {
     // The sound cleaned itself up immediately. It pretty clearly didn't like
@@ -456,7 +494,7 @@ get_sound(MovieAudio* sound, bool positional, int mode) {
   }
 
   _all_sounds.insert(oas);
-  PT(SteamAudioSound) res = (SteamAudioSound*)oas;
+  PT(SteamAudioSound) res = (SteamAudioSound*)oas;//Since This doesn't work like other kinds of AudioManagers, we return a distinct kind of pointer.
   return res;
 }
 
@@ -481,8 +519,8 @@ get_sound(const Filename& file_name, bool positional, int mode) {
 
   PT(MovieAudio) mva = MovieAudio::get(path);
 
-  PT(OpenALAudioSound) oas =
-    new OpenALAudioSound(this, mva, positional, mode);
+  PT(SteamAudioSound) oas =
+    new SteamAudioSound(this, mva, positional, mode);
 
   if (!oas->_manager) {
     // The sound cleaned itself up immediately. It pretty clearly didn't like
@@ -546,10 +584,28 @@ clear_cache() {
 }
 
 /**
+ * Set the number of sounds that the cache can hold.
+ */
+void SteamAudioManager::
+set_cache_limit(unsigned int count) {
+  ReMutexHolder holder(_lock);
+  _cache_limit = count;
+  discard_excess_cache(count);
+}
+
+/**
+ *
+ */
+unsigned int SteamAudioManager::
+get_cache_limit() const {
+  return _cache_limit;
+}
+
+/**
  *
  */
 void SteamAudioManager::
-release_sound(OpenALAudioSound* audioSound) {
+release_sound(SteamAudioSound* audioSound) {
   ReMutexHolder holder(_lock);
   AllSounds::iterator ai = _all_sounds.find(audioSound);
   if (ai != _all_sounds.end()) {
@@ -558,12 +614,249 @@ release_sound(OpenALAudioSound* audioSound) {
 }
 
 /**
+ *
+ * Sets listener gain
+ */
+void SteamAudioManager::set_volume(PN_stdfloat volume) {
+  ReMutexHolder holder(_lock);
+  if (_volume != volume) {
+    _volume = volume;
+
+    // Tell our AudioSounds to adjust:
+    AllSounds::iterator i = _all_sounds.begin();
+    for (; i != _all_sounds.end(); ++i) {
+      (**i).set_volume((**i).get_volume());
+    }
+
+    /*
+    // this was neat alternative to the above look when we had a seperate
+    // context for each manager
+    make_current();
+
+    alGetError(); // clear errors
+    alListenerf(AL_GAIN,(ALfloat)_volume);
+    al_audio_errcheck("alListerf(AL_GAIN)");*/
+  }
+}
+
+/**
+ *
+ * Gets listener gain
+ */
+PN_stdfloat SteamAudioManager::
+get_volume() const {
+  return _volume;
+}
+
+/**
+ * set the overall play rate
+ */
+void SteamAudioManager::
+set_play_rate(PN_stdfloat play_rate) {
+  ReMutexHolder holder(_lock);
+  if (_play_rate != play_rate) {
+    _play_rate = play_rate;
+    // Tell our AudioSounds to adjust:
+    AllSounds::iterator i = _all_sounds.begin();
+    for (; i != _all_sounds.end(); ++i) {
+      (**i).set_play_rate((**i).get_play_rate());
+    }
+  }
+}
+
+/**
+ * get the overall speed/pitch/play rate
+ */
+PN_stdfloat SteamAudioManager::
+get_play_rate() const {
+  return _play_rate;
+}
+
+/**
+ * Turn on/off Warning: not implemented.
+ */
+void SteamAudioManager::
+set_active(bool active) {
+  ReMutexHolder holder(_lock);
+  if (_active != active) {
+    _active = active;
+    // Tell our AudioSounds to adjust:
+    AllSounds::iterator i = _all_sounds.begin();
+    for (; i != _all_sounds.end(); ++i) {
+      (**i).set_active(_active);
+    }
+  }
+}
+
+/**
+ *
+ */
+bool SteamAudioManager::
+get_active() const {
+  return _active;
+}
+
+/**
+ * Set position of the "ear" that picks up 3d sounds NOW LISTEN UP!!! THIS IS
+ * IMPORTANT! Both Panda3D and OpenAL use a right handed coordinate system.
+ * But there is a major difference!  In Panda3D the Y-Axis is going into the
+ * Screen and the Z-Axis is going up.  In OpenAL the Y-Axis is going up and
+ * the Z-Axis is coming out of the screen.  The solution is simple, we just
+ * flip the Y and Z axis and negate the Z, as we move coordinates from Panda
+ * to OpenAL and back.  What does did mean to average Panda user?  Nothing,
+ * they shouldn't notice anyway.  But if you decide to do any 3D audio work in
+ * here you have to keep it in mind.  I told you, so you can't say I didn't.
+ */
+void SteamAudioManager::
+audio_3d_set_listener_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx, PN_stdfloat vy, PN_stdfloat vz, PN_stdfloat fx, PN_stdfloat fy, PN_stdfloat fz, PN_stdfloat ux, PN_stdfloat uy, PN_stdfloat uz) {
+  ReMutexHolder holder(_lock);
+  _position[0] = px;
+  _position[1] = pz;
+  _position[2] = -py;
+
+  _velocity[0] = vx;
+  _velocity[1] = vz;
+  _velocity[2] = -vy;
+
+  _forward_up[0] = fx;
+  _forward_up[1] = fz;
+  _forward_up[2] = -fy;
+
+  _forward_up[3] = ux;
+  _forward_up[4] = uz;
+  _forward_up[5] = -uy;
+
+
+  make_current();
+
+  alGetError(); // clear errors
+  alListenerfv(AL_POSITION, _position);
+  al_audio_errcheck("alListerfv(AL_POSITION)");
+  alListenerfv(AL_VELOCITY, _velocity);
+  al_audio_errcheck("alListerfv(AL_VELOCITY)");
+  alListenerfv(AL_ORIENTATION, _forward_up);
+  al_audio_errcheck("alListerfv(AL_ORIENTATION)");
+}
+
+/**
+ * Get position of the "ear" that picks up 3d sounds
+ */
+void SteamAudioManager::
+audio_3d_get_listener_attributes(PN_stdfloat* px, PN_stdfloat* py, PN_stdfloat* pz, PN_stdfloat* vx, PN_stdfloat* vy, PN_stdfloat* vz, PN_stdfloat* fx, PN_stdfloat* fy, PN_stdfloat* fz, PN_stdfloat* ux, PN_stdfloat* uy, PN_stdfloat* uz) {
+  ReMutexHolder holder(_lock);
+  *px = _position[0];
+  *py = -_position[2];
+  *pz = _position[1];
+
+  *vx = _velocity[0];
+  *vy = -_velocity[2];
+  *vz = _velocity[1];
+
+  *fx = _forward_up[0];
+  *fy = -_forward_up[2];
+  *fz = _forward_up[1];
+
+  *ux = _forward_up[3];
+  *uy = -_forward_up[5];
+  *uz = _forward_up[4];
+}
+
+/**
+ * Set value in units per meter
+ * WARNING: OpenAL has no distance factor but we use this as a scale
+ *          on the min/max distances of sounds to preserve FMOD compatibility.
+ *          Also adjusts the speed of sound to compensate for unit difference.
+ */
+void SteamAudioManager::
+audio_3d_set_distance_factor(PN_stdfloat factor) {
+  ReMutexHolder holder(_lock);
+  _distance_factor = factor;
+
+  make_current();
+
+  alGetError(); // clear errors
+
+  if (_distance_factor > 0) {
+    alSpeedOfSound(343.3 * _distance_factor);
+    al_audio_errcheck("alSpeedOfSound()");
+    // resets the doppler factor to the correct setting in case it was set to
+    // 0.0 by a distance_factor<=0.0
+    alDopplerFactor(_doppler_factor);
+    al_audio_errcheck("alDopplerFactor()");
+  }
+  else {
+    audio_debug("can't set speed of sound if distance_factor <=0.0, setting doppler factor to 0.0 instead");
+    alDopplerFactor(0.0);
+    al_audio_errcheck("alDopplerFactor()");
+  }
+
+  AllSounds::iterator i = _all_sounds.begin();
+  for (; i != _all_sounds.end(); ++i) {
+    (**i).set_3d_min_distance((**i).get_3d_min_distance());
+    (**i).set_3d_max_distance((**i).get_3d_max_distance());
+  }
+}
+
+/**
+ * Get value in units per meter
+ */
+PN_stdfloat SteamAudioManager::
+audio_3d_get_distance_factor() const {
+  return _distance_factor;
+}
+
+/**
+ * Exaggerates or diminishes the Doppler effect.  Defaults to 1.0
+ */
+void SteamAudioManager::
+audio_3d_set_doppler_factor(PN_stdfloat factor) {
+  ReMutexHolder holder(_lock);
+  _doppler_factor = factor;
+
+  make_current();
+
+  alGetError(); // clear errors
+  alDopplerFactor(_doppler_factor);
+  al_audio_errcheck("alDopplerFactor()");
+}
+
+/**
+ *
+ */
+PN_stdfloat SteamAudioManager::
+audio_3d_get_doppler_factor() const {
+  return _doppler_factor;
+}
+
+/**
+ * Control the effect distance has on audability.  Defaults to 1.0
+ */
+void SteamAudioManager::
+audio_3d_set_drop_off_factor(PN_stdfloat factor) {
+  ReMutexHolder holder(_lock);
+  _drop_off_factor = factor;
+
+  AllSounds::iterator i = _all_sounds.begin();
+  for (; i != _all_sounds.end(); ++i) {
+    (**i).set_3d_drop_off_factor((**i).get_3d_drop_off_factor());
+  }
+}
+
+/**
+ *
+ */
+PN_stdfloat SteamAudioManager::
+audio_3d_get_drop_off_factor() const {
+  return _drop_off_factor;
+}
+
+/**
  * Inform the manager that a sound is about to play.  The manager will add
  * this sound to the table of sounds that are playing, and will allocate a
  * source to this sound.
  */
 void SteamAudioManager::
-starting_sound(OpenALAudioSound* audio) {
+starting_sound(SteamAudioSound* audio) {
   ReMutexHolder holder(_lock);
   ALuint source = 0;
 
@@ -611,13 +904,64 @@ starting_sound(OpenALAudioSound* audio) {
  * sound (this should not be called if a sound is only paused).
  */
 void SteamAudioManager::
-stopping_sound(OpenALAudioSound* audio) {
+stopping_sound(SteamAudioSound* audio) {
   ReMutexHolder holder(_lock);
   if (audio->_source) {
     _al_sources->insert(audio->_source);
     audio->_source = 0;
   }
   _sounds_playing.erase(audio); // This could cause the sound to destruct.
+}
+
+/**
+ *
+ */
+void SteamAudioManager::
+set_concurrent_sound_limit(unsigned int limit) {
+  ReMutexHolder holder(_lock);
+  _concurrent_sound_limit = limit;
+  reduce_sounds_playing_to(_concurrent_sound_limit);
+}
+
+/**
+ *
+ */
+unsigned int SteamAudioManager::
+get_concurrent_sound_limit() const {
+  return _concurrent_sound_limit;
+}
+
+/**
+ *
+ */
+void SteamAudioManager::
+reduce_sounds_playing_to(unsigned int count) {
+  ReMutexHolder holder(_lock);
+  // first give all sounds that have finished a chance to stop, so that these
+  // get stopped first
+  update();
+
+  int limit = _sounds_playing.size() - count;
+  while (limit-- > 0) {
+    SoundsPlaying::iterator sound = _sounds_playing.begin();
+    nassertv(sound != _sounds_playing.end());
+    // When the user stops a sound, there is still a PT in the user's hand.
+    // When we stop a sound here, however, this can remove the last PT.  This
+    // can cause an ugly recursion where stop calls the destructor, and the
+    // destructor calls stop.  To avoid this, we create a temporary PT, stop
+    // the sound, and then release the PT.
+    PT(SteamAudioSound) s = (*sound);
+    s->stop();
+  }
+}
+
+/**
+ * Stop playback on all sounds managed by this manager.
+ */
+void SteamAudioManager::
+stop_all_sounds() {
+  ReMutexHolder holder(_lock);
+  reduce_sounds_playing_to(0);
 }
 
 /**
@@ -632,9 +976,9 @@ update() {
   SoundsPlaying::iterator i = _sounds_playing.begin();
   while (i != _sounds_playing.end()) {
     // The post-increment syntax is *very* important here.
-    // As both OpenALAudioSound::pull_used_buffers and OpenALAudioSound::finished can modify the list of sounds playing
+    // As both SteamAudioSound::pull_used_buffers and SteamAudioSound::finished can modify the list of sounds playing
     // by erasing 'sound' from the list, thus invaliding the iterator.
-    PT(OpenALAudioSound) sound = *(i++);
+    PT(SteamAudioSound) sound = *(i++);
     sound->pull_used_buffers();
 
     // If pull_used_buffers() encountered an error, the sound was cleaned up.
@@ -716,6 +1060,80 @@ cleanup() {
     }
   }
   _cleanup_required = false;
+}
+
+/**
+ *
+ */
+SteamAudioManager::SoundData::
+SoundData() :
+  _manager(nullptr),
+  _sample(0),
+  _stream(nullptr),
+  _length(0.0),
+  _rate(0),
+  _channels(0),
+  _client_count(0)
+{
+}
+
+/**
+ *
+ */
+SteamAudioManager::SoundData::
+~SoundData() {
+  ReMutexHolder holder(SteamAudioManager::_lock);
+  if (_sample != 0) {
+    if (_manager->_is_valid) {
+      _manager->make_current();
+      _manager->delete_buffer(_sample);
+    }
+    _sample = 0;
+  }
+}
+
+/**
+ * Increments the SoundData's client count.  Any SoundData that is actively in
+ * use (ie, has a client) is removed entirely from the expiration queue.
+ */
+void SteamAudioManager::
+increment_client_count(SoundData* sd) {
+  ReMutexHolder holder(_lock);
+  sd->_client_count += 1;
+  audio_debug("Incrementing: " << sd->_movie->get_filename().get_basename() << " " << sd->_client_count);
+  if (sd->_client_count == 1) {
+    if (sd->_sample) {
+      _expiring_samples.erase(sd->_expire);
+    }
+    else {
+      _expiring_streams.erase(sd->_expire);
+    }
+  }
+}
+
+/**
+ * Decrements the SoundData's client count.  Sounds that are no longer in use
+ * (ie, have no clients) go into the expiration queue.  When the expiration
+ * queue reaches the cache limit, the first item on the queue is freed.
+ */
+void SteamAudioManager::
+decrement_client_count(SoundData* sd) {
+  ReMutexHolder holder(_lock);
+  sd->_client_count -= 1;
+  audio_debug("Decrementing: " << sd->_movie->get_filename().get_basename() << " " << sd->_client_count);
+  if (sd->_client_count == 0) {
+    if (sd->_sample) {
+      _expiring_samples.push_back(sd);
+      sd->_expire = _expiring_samples.end();
+      sd->_expire--;
+    }
+    else {
+      _expiring_streams.push_back(sd);
+      sd->_expire = _expiring_streams.end();
+      sd->_expire--;
+    }
+    discard_excess_cache(_cache_limit);
+  }
 }
 
 /**
