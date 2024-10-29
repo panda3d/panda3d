@@ -3365,10 +3365,12 @@ def GetExtensionSuffix():
         else:
             dllext = ''
 
+        gil_disabled = locations.get_config_var("Py_GIL_DISABLED")
+        suffix = 't' if gil_disabled and int(gil_disabled) else ''
         if GetTargetArch() == 'x64':
-            return dllext + '.cp%d%d-win_amd64.pyd' % (sys.version_info[:2])
+            return dllext + '.cp%d%d%s-win_amd64.pyd' % (sys.version_info[0], sys.version_info[1], suffix)
         else:
-            return dllext + '.cp%d%d-win32.pyd' % (sys.version_info[:2])
+            return dllext + '.cp%d%d%s-win32.pyd' % (sys.version_info[0], sys.version_info[1], suffix)
     elif target == 'emscripten':
         return '.so'
     elif CrossCompiling():
