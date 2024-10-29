@@ -25,6 +25,9 @@
 
 #include <algorithm>
 
+//Steam Audio
+#include <phonon.h>
+
 #ifndef ALC_DEFAULT_ALL_DEVICES_SPECIFIER
 #define ALC_DEFAULT_ALL_DEVICES_SPECIFIER 0x1012
 #endif
@@ -51,6 +54,12 @@ SteamAudioManager::Managers* SteamAudioManager::_managers = nullptr;
 
 SteamAudioManager::SourceCache* SteamAudioManager::_al_sources = nullptr;
 
+
+//Steam Audio Variables
+IPLContext SteamAudioManager::_steamContext = nullptr;
+IPLAudioSettings SteamAudioManager::_steamAudioSettings = nullptr
+
+NodePath SteamAudioManager::_listenerNP = nullptr;
 
 // Central dispatcher for audio errors.
 void al_audio_errcheck(const char* context) {
@@ -193,6 +202,18 @@ SteamAudioManager() {
     audio_cat.debug() << "AL_RENDERER:" << alGetString(AL_RENDERER) << endl;
     audio_cat.debug() << "AL_VENDOR:" << alGetString(AL_VENDOR) << endl;
     audio_cat.debug() << "AL_VERSION:" << alGetString(AL_VERSION) << endl;
+  }
+
+  //SteamAudio initialization
+  if (_steamContext == nullptr) {//we haven't made a context yet
+    IPLContextSettings contextSettings{};
+    contextSettings.version = STEAMAUDIO_VERSION;
+    iplContextCreate(&contextSettings, &_steamContext);
+
+    //make audiosettings
+    _steamAudioSettings = new IPLAudioSettings{};
+    _steamAudioSettings.samplingRate = 44100;//TODO:: make this dependant on a configvar
+    _steamAudioSettings.frameSize = 8192;
   }
 }
 

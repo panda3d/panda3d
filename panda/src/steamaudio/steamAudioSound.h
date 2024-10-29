@@ -20,7 +20,9 @@
 #include "movieAudioCursor.h"
 #include "trueClock.h"
 #include "steamAudioManager.h"
+#include "steamAudioEffect.h"
 #include "nodePath.h"
+#include "pset.h"
 
 #include <phonon.h>//Import steam audio
 
@@ -37,11 +39,12 @@
 class EXPCL_OPENAL_AUDIO SteamAudioSound final : public OpenALAudioSound {
   friend class SteamAudioManager;
 
-PUBLISHED:
+public:
   SteamAudioSound(SteamAudioManager* manager,
     MovieAudio* movie,
     bool positional,
     int mode);
+PUBLISHED:
   ~SteamAudioSound();
 
   // For best compatibility, set the loop_count, start_time, volume, and
@@ -219,6 +222,8 @@ private:
 
  private:
    NodePath _sourceNP;
+   typedef phash_set<PT(SteamAudioEffect)> SAEffects;
+   SAEffects _steam_effects;
 
    class SteamGlobalHolder {
    public:

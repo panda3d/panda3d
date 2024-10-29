@@ -384,7 +384,7 @@ queue_buffer(ALuint buffer, int samples, int loop_index, double time_offset) {
 
 /**
  * Creates and fills an OpenAL buffer object.
- * This function has been modified from the OpenAL implementation to apply Steam Audio filters before filling the buffer. TODO::Modify the function.
+ * This function has been modified from the OpenAL implementation to apply Steam Audio filters before filling the buffer.
  */
 ALuint SteamAudioSound::
 make_buffer(int samples, int channels, int rate, unsigned char* data) {
@@ -402,7 +402,6 @@ make_buffer(int samples, int channels, int rate, unsigned char* data) {
     return 0;
   }
 
-  //TODO::Put call to Steam Audio Processing Here<-------------------------------------------------------------------
   // Now fill the buffer with the data provided.
   alBufferData(buffer,
     (channels > 1) ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16,
@@ -599,6 +598,7 @@ push_fresh_buffers() {
     MovieAudioCursor* cursor = _sd->_stream;
     int channels = cursor->audio_channels();
     int rate = cursor->audio_rate();
+    //TODO:: assert that the audiorate is what we specify in convar
 
     int fill = 0;
     for (size_t i = 0; i < _stream_queued.size(); i++) {
@@ -609,9 +609,25 @@ push_fresh_buffers() {
       (fill < (int)(audio_buffering_seconds * rate * channels))) {//TODO:: change audio_buffering_seconds to a unique steamaudio configvar
       int loop_index = _loops_completed;
       double time_offset = cursor->tell();
-      int samples = read_stream_data(65536, data);//first val is max value of 16-bit int
+      int samples = read_stream_data(65536, data);
       if (samples == 0) {
         break;
+      }
+      if (_steam_effects > 0 || _manager->_steam_effects > 0) {//If we have any steam effects, we need to apply them.
+        IPLfloat32 fData[8192];//we need to change 16ints to IPLfloats
+        for (i = 0; i < data.size(); i++) {
+          fData[i] = (IPLfloat32)(float)int16_t*(data)[i];//get int16_t and cast to IPLfloat32
+        }
+        IPLAudioBuffer inBuffer;
+        iplAudioBufferAllocate(_manager->_steamContext, channels, samples, &inBuffer);
+        iplAudioBufferDeinterleave(_manager->_steamContext, *fData, inBuffer);
+        SteamAudioSound::SteamGlobalHolder globals(_manager->_audioSettings*, _manager->_steamContext*, channels, samples);//input variables
+        //Put call to effect application here<------------------------------------------------------
+        iplAudioBufferInterleave(_manager->_steamContext, inBuffer, *fData);
+        iplBufferFree(_manager->_steamContext, inBuffer);
+        for (i = 0; i < data.size(); i++) {
+          (int16_t*)data[i] = (int16_t)(float)fData[i];
+        }
       }
       ALuint buffer = make_buffer(samples, channels, rate, data);
       if (!is_valid() || !buffer) return;

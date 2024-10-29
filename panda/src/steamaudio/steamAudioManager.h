@@ -224,6 +224,11 @@ private:
 
   private://SteamAudio related stuff:
     static IPLContext _steamContext;
+    static IPLAudioSettings _steamAudioSettings;
+
+    typedef phash_set<PT(SteamAudioEffect)> SAEffects;
+    SAEffects _steam_effects;
+
     NodePath _listenerNP;
 
   // These are needed for Panda's Pointer System.  DO NOT ERASE!

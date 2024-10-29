@@ -27,7 +27,9 @@ TypeHandle SteamAudioManager::_type_handle;
 /**
 *
 **/
-SteamAudioEffect::SteamAudioEffect() {
+SteamAudioEffect::SteamAudioEffect() :
+  _is_active = True;
+{
 
 }
 
@@ -36,6 +38,20 @@ SteamAudioEffect::SteamAudioEffect() {
 **/
 SteamAudioEffect::~SteamAudioEffect() {
 
+}
+
+/**
+*Sets whether this effect has an impact on audiosounds it's applied to.
+**/
+SteamAudioEffect::set_active(bool val) {
+  _is_active = state;
+}
+
+/**
+*Retrieves the _is_active flag.
+**/
+SteamAudioEffect::get_active() {
+  return _is_active;
 }
 
 /**
