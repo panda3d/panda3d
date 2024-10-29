@@ -45,9 +45,10 @@ wdxGraphicsBuffer9(GraphicsEngine *engine, GraphicsPipe *pipe,
   _color_backing_store = nullptr;
   _depth_backing_store = nullptr;
 
-  // is this correct ??? Since the pbuffer never gets flipped, we get
-  // screenshots from the same buffer we draw into.
-  _screenshot_buffer_type = _draw_buffer_type;
+  // Since the pbuffer never gets flipped, we get screenshots from the same
+  // buffer we draw into, which is the back buffer.
+  _draw_buffer_type = RenderBuffer::T_back;
+  _screenshot_buffer_type = RenderBuffer::T_back;
 
   _shared_depth_buffer = 0;
   _debug = 0;
@@ -414,7 +415,7 @@ rebuild_bitplanes() {
         _depth_backing_store->Release();
         _depth_backing_store = nullptr;
       }
-      if (!_depth_backing_store) {
+      if (!_depth_backing_store && _saved_depth_buffer != nullptr) {
         hr = _dxgsg -> _d3d_device ->
           CreateDepthStencilSurface (bitplane_x, bitplane_y, _saved_depth_desc.Format,
                                      _saved_depth_desc.MultiSampleType, _saved_depth_desc.MultiSampleQuality,
@@ -758,10 +759,19 @@ open_buffer() {
     dxgsg9_cat.error ( ) << "GetDesc " << D3DERRORSTRING(hr) FL;
     return false;
   }
-  hr = _saved_depth_buffer -> GetDesc (&_saved_depth_desc);
-  if (!SUCCEEDED (hr)) {
-    dxgsg9_cat.error ( ) << "GetDesc " << D3DERRORSTRING(hr) FL;
-    return false;
+  if (_saved_depth_buffer) {
+    hr = _saved_depth_buffer -> GetDesc (&_saved_depth_desc);
+    if (!SUCCEEDED (hr)) {
+      dxgsg9_cat.error ( ) << "GetDesc " << D3DERRORSTRING(hr) FL;
+      return false;
+    }
+  } else {
+    ZeroMemory(&_saved_depth_desc, sizeof(_saved_depth_desc));
+  }
+  if (_fb_properties.get_alpha_bits() > 0 &&
+      _saved_color_desc.Format == D3DFMT_X8R8G8B8) {
+    // Add alpha if we didn't have it and we do need it.
+    _saved_color_desc.Format = D3DFMT_A8R8G8B8;
   }
   _fb_properties = _dxgsg->
     calc_fb_properties(_saved_color_desc.Format,

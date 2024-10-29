@@ -184,7 +184,7 @@ Try to group logically-similar lines, separating them with a single blank line.
 Modern language features
 ------------------------
 
-Panda3D is a C++11 project.  The use of the following modern language features
+Panda3D is a C++14 project.  The use of the following modern language features
 is greatly encouraged:
 
 1. `nullptr` over `NULL`
@@ -197,4 +197,4 @@ creating a typedef for the container type instead.
 Avoid using `std::function` in cases where a lambda can be accepted directly
 (using a template function), since it has extra overhead over lambdas.
 
-C++14 and C++17 features should be avoided for now.
+C++17 features should be avoided for now.

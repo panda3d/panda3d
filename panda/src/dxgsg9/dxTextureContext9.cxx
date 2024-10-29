@@ -231,6 +231,8 @@ create_texture(DXScreenData &scrn) {
     case 1:
       if (num_alpha_bits > 0) {
         _d3d_format = D3DFMT_A8;
+      } else if (tex->get_component_type() == Texture::T_float) {
+        _d3d_format = D3DFMT_R32F;
       } else {
         _d3d_format = D3DFMT_L8;
       }
@@ -242,7 +244,11 @@ create_texture(DXScreenData &scrn) {
       _d3d_format = D3DFMT_R8G8B8;
       break;
     case 4:
-      _d3d_format = D3DFMT_A8R8G8B8;
+      if (tex->get_component_type() == Texture::T_float) {
+        _d3d_format = D3DFMT_A32B32G32R32F;
+      } else {
+        _d3d_format = D3DFMT_A8R8G8B8;
+      }
       break;
     }
 
@@ -499,6 +505,13 @@ create_texture(DXScreenData &scrn) {
       break;
     }
 
+    if (num_color_channels == 1) {
+      CHECK_FOR_FMT(R32F);
+      CHECK_FOR_FMT(X8R8G8B8);
+      CHECK_FOR_FMT(R8G8B8);
+      break;
+    }
+
     if (!((num_color_channels == 3) || (num_color_channels == 4)))
       break; //bail
 
@@ -664,22 +677,7 @@ create_texture(DXScreenData &scrn) {
       }
     }
   case 8:
-    if (needs_luminance) {
-      // don't bother handling those other 8bit lum fmts like 4-4, since 16
-      // 8-8 is usually supported too
-      nassertr(num_color_channels == 1, false);
-
-      // look for native lum fmt first
-      CHECK_FOR_FMT(L8);
-      CHECK_FOR_FMT(L8);
-
-      CHECK_FOR_FMT(R8G8B8);
-      CHECK_FOR_FMT(X8R8G8B8);
-
-      CHECK_FOR_FMT(R5G6B5);
-      CHECK_FOR_FMT(X1R5G5B5);
-
-    } else if (num_alpha_bits == 8) {
+    if (num_alpha_bits == 8) {
       // look for 16bpp A8L8, else 32-bit ARGB, else 16-4444.
 
       // skip 8bit alpha only (D3DFMT_A8), because I think only voodoo
@@ -690,6 +688,21 @@ create_texture(DXScreenData &scrn) {
       CHECK_FOR_FMT(A8L8);
       CHECK_FOR_FMT(A8R8G8B8);
       CHECK_FOR_FMT(A4R4G4B4);
+    } else {
+      if (needs_luminance) {
+        // don't bother handling those other 8bit lum fmts like 4-4, since 16
+        // 8-8 is usually supported too
+        nassertr(num_color_channels == 1, false);
+
+        // look for native lum fmt first
+        CHECK_FOR_FMT(L8);
+      }
+
+      CHECK_FOR_FMT(R8G8B8);
+      CHECK_FOR_FMT(X8R8G8B8);
+
+      CHECK_FOR_FMT(R5G6B5);
+      CHECK_FOR_FMT(X1R5G5B5);
     }
     break;
 
@@ -1563,8 +1576,8 @@ d3d_surface_to_texture(RECT &source_rect, IDirect3DSurface9 *d3d_surface,
 
       for (DWORD y = 0; y < copy_height; y++) {
         source_word = ((DWORD*)surface_bytes) + x_window_offset;
-        memcpy(dest_line, source_word, byte_pitch);
-        dest_line += byte_pitch;
+        memcpy(dest_line, source_word, copy_width * 4);
+        dest_line += copy_width * 4;
         surface_bytes += byte_pitch;
       }
     } else {
@@ -1614,8 +1627,8 @@ d3d_surface_to_texture(RECT &source_rect, IDirect3DSurface9 *d3d_surface,
       // 24bpp texture case (numComponents == 3)
       for (DWORD y = 0; y < copy_height; y++) {
         source_byte = surface_bytes + x_window_offset * 3 * sizeof(BYTE);
-        memcpy(dest_byte, source_byte, byte_pitch);
-        dest_byte += byte_pitch;
+        memcpy(dest_byte, source_byte, copy_width * 3);
+        dest_byte += copy_width * 3;
         surface_bytes += byte_pitch;
       }
     }
@@ -1808,16 +1821,21 @@ fill_d3d_texture_mipmap_pixels(int mip_level, int depth_index, D3DFORMAT source_
 
   // Preallocate temporary buffer for conversion
   BYTE *temp_buffer = nullptr;
-  if (source_format == D3DFMT_A8 || component_width != 1) {
-    int num_pixels = width * height;
-    if (source_format == D3DFMT_A8) {
-      num_pixels *= 2;
+  if (source_format == D3DFMT_A8 || (component_width != 1 && _d3d_format != D3DFMT_R32F)) {
+    size_t num_bytes = width * height;
+    if (_d3d_format == D3DFMT_A32B32G32R32F && source_format == D3DFMT_A32B32G32R32F) {
+      num_bytes *= 16;
+    }
+    else if (source_format == D3DFMT_A8) {
+      num_bytes *= 2;
       source_format = D3DFMT_A8L8;
       source_row_byte_length *= 2;
-    } else {
-      num_pixels *= num_color_channels;
     }
-    temp_buffer = new BYTE[num_pixels];
+    else {
+      num_bytes *= num_color_channels;
+    }
+
+    temp_buffer = new BYTE[num_bytes];
     if (!IS_VALID_PTR(temp_buffer)) {
       dxgsg9_cat.error()
         << "FillDDSurfaceTexturePixels couldnt alloc mem for temp pixbuf!\n";
@@ -1872,9 +1890,22 @@ fill_d3d_texture_mipmap_pixels(int mip_level, int depth_index, D3DFORMAT source_
             *out_pixels = ((*source_pixels) << 8) | 0xFF;
           }
         }
-        pixels = (BYTE *)temp_buffer;
+        pixels = temp_buffer;
       }
-      else if (component_width != 1) {
+      else if (_d3d_format == D3DFMT_A32B32G32R32F && source_format == D3DFMT_A32B32G32R32F) {
+        // Swap red and blue components.
+        float *out_pixels = (float *)temp_buffer;
+        const float *source_pixels = (const float *)pixels;
+        size_t total_components = (size_t)width * (size_t)height * 4;
+        for (int i = 0; i < total_components; i += 4) {
+          out_pixels[i] = source_pixels[i + 2];
+          out_pixels[i + 1] = source_pixels[i + 1];
+          out_pixels[i + 2] = source_pixels[i + 0];
+          out_pixels[i + 3] = source_pixels[i + 3];
+        }
+        pixels = temp_buffer;
+      }
+      else if (component_width != 1 && _d3d_format != D3DFMT_R32F) {
         // Convert from 16-bit per channel (or larger) format down to 8-bit per
         // channel.  This throws away precision in the original image, but dx8
         // doesn't support high-precision images anyway.
@@ -1887,7 +1918,7 @@ fill_d3d_texture_mipmap_pixels(int mip_level, int depth_index, D3DFORMAT source_
           temp_buffer[i] = *source_pixels;
           source_pixels += component_width;
         }
-        pixels = (BYTE *)temp_buffer;
+        pixels = temp_buffer;
       }
 
       IDirect3DSurface9 *mip_surface = nullptr;
@@ -2166,6 +2197,11 @@ fill_d3d_volume_texture_pixels(DXScreenData &scrn) {
     image_compression = Texture::CM_off;
   }
 
+  if (image.is_null() && tex->has_clear_color()) {
+    // Make an image, filled with the texture's clear color.
+    image = get_texture()->make_ram_image();
+  }
+
   if (image.is_null()) {
     // The texture doesn't have an image to load.  That's ok; it might be a
     // texture we've rendered to by frame buffer operations or something.
@@ -2189,17 +2225,22 @@ fill_d3d_volume_texture_pixels(DXScreenData &scrn) {
 
   // Preallocate temporary buffer for conversion
   BYTE *temp_buffer = nullptr;
-  if (_d3d_format == D3DFMT_A8 || component_width != 1) {
-    int num_pixels = orig_width * orig_height * orig_depth;
-    if (_d3d_format == D3DFMT_A8) {
-      num_pixels *= 2;
+  if (_d3d_format == D3DFMT_A8 || (component_width != 1 && _d3d_format != D3DFMT_R32F)) {
+    size_t num_bytes = orig_width * orig_height * orig_depth;
+    if (_d3d_format == D3DFMT_A32B32G32R32F && source_format == D3DFMT_A32B32G32R32F) {
+      num_bytes *= 16;
+    }
+    else if (_d3d_format == D3DFMT_A8) {
+      num_bytes *= 2;
       source_format = D3DFMT_A8L8;
       source_row_byte_length *= 2;
       source_page_byte_length *= 2;
-    } else {
-      num_pixels *= num_color_channels;
     }
-    temp_buffer = new BYTE[num_pixels];
+    else {
+      num_bytes *= num_color_channels;
+    }
+
+    temp_buffer = new BYTE[num_bytes];
     if (!IS_VALID_PTR(temp_buffer)) {
       dxgsg9_cat.error()
         << "FillDDSurfaceTexturePixels couldnt alloc mem for temp pixbuf!\n";
@@ -2270,9 +2311,22 @@ fill_d3d_volume_texture_pixels(DXScreenData &scrn) {
         }
       }
 
-      pixels = (BYTE *)temp_buffer;
+      pixels = temp_buffer;
     }
-    else if (component_width != 1) {
+    else if (_d3d_format == D3DFMT_A32B32G32R32F && source_format == D3DFMT_A32B32G32R32F) {
+      // Swap red and blue components.
+      float *out_pixels = (float *)temp_buffer;
+      const float *source_pixels = (const float *)pixels;
+      size_t total_components = (size_t)orig_width * (size_t)orig_height * (size_t)orig_depth * 4;
+      for (int i = 0; i < total_components; i += 4) {
+        out_pixels[i] = source_pixels[i + 2];
+        out_pixels[i + 1] = source_pixels[i + 1];
+        out_pixels[i + 2] = source_pixels[i + 0];
+        out_pixels[i + 3] = source_pixels[i + 3];
+      }
+      pixels = temp_buffer;
+    }
+    else if (component_width != 1 && _d3d_format != D3DFMT_R32F) {
       // Convert from 16-bit per channel (or larger) format down to 8-bit per
       // channel.  This throws away precision in the original image, but dx8
       // doesn't support high-precision images anyway.
@@ -2285,7 +2339,7 @@ fill_d3d_volume_texture_pixels(DXScreenData &scrn) {
         temp_buffer[i] = *source_pixels;
         source_pixels += component_width;
       }
-      pixels = (BYTE *)temp_buffer;
+      pixels = temp_buffer;
     }
 
     // filtering may be done here if texture if targetsize != origsize
@@ -2409,6 +2463,20 @@ get_bits_per_pixel(Texture::Format format, int *alphbits) {
   case Texture::F_rgba32:
     *alphbits = 32;
     return 128;
+
+  case Texture::F_r16:
+    return 16;
+  case Texture::F_rg16:
+    return 16 * 2;
+  case Texture::F_rgb16:
+    return 16 * 3;
+
+  case Texture::F_r32:
+    return 32;
+  case Texture::F_rg32:
+    return 32 * 2;
+  case Texture::F_rgb32:
+    return 32 * 3;
 
   case Texture::F_srgb:
     return 24;

@@ -305,11 +305,12 @@ int FrameBufferProperties::
 get_buffer_mask() const {
   int mask = 0;
 
-  if (_property[FBP_back_buffers] > 0) {
-    mask = RenderBuffer::T_front | RenderBuffer::T_back;
-  } else {
-    mask = RenderBuffer::T_front;
-  }
+  //XXX rdb: some buffers only have a front buffer, some only a back buffer
+  //if (_property[FBP_back_buffers] > 0) {
+     mask = RenderBuffer::T_front | RenderBuffer::T_back;
+  //} else {
+  //  mask = RenderBuffer::T_front;
+  //}
   if (_property[FBP_depth_bits] > 0) {
     mask |= RenderBuffer::T_depth;
   }

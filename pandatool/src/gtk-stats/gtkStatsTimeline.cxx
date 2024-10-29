@@ -409,8 +409,8 @@ handle_button_press(int graph_x, int graph_y, bool double_click, int button) {
 
         {
           const GtkStatsMonitor::MenuDef *menu_def = GtkStatsGraph::_monitor->add_menu({
+            GtkStatsMonitor::CT_strip_chart,
             bar._thread_index, bar._collector_index,
-            GtkStatsMonitor::CT_strip_chart, false,
           });
 
           GtkWidget *menu_item = gtk_menu_item_new_with_label("Open Strip Chart");
@@ -422,8 +422,8 @@ handle_button_press(int graph_x, int graph_y, bool double_click, int button) {
 
         {
           const GtkStatsMonitor::MenuDef *menu_def = GtkStatsGraph::_monitor->add_menu({
-            bar._thread_index, bar._collector_index,
             GtkStatsMonitor::CT_flame_graph,
+            bar._thread_index, bar._collector_index, bar._frame_number,
           });
 
           GtkWidget *menu_item = gtk_menu_item_new_with_label("Open Flame Graph");
@@ -435,7 +435,7 @@ handle_button_press(int graph_x, int graph_y, bool double_click, int button) {
 
         {
           const GtkStatsMonitor::MenuDef *menu_def = GtkStatsGraph::_monitor->add_menu({
-            bar._thread_index, -1, GtkStatsMonitor::CT_piano_roll,
+            GtkStatsMonitor::CT_piano_roll, bar._thread_index, -1,
           });
 
           GtkWidget *menu_item = gtk_menu_item_new_with_label("Open Piano Roll");
@@ -452,8 +452,7 @@ handle_button_press(int graph_x, int graph_y, bool double_click, int button) {
 
         {
           const GtkStatsMonitor::MenuDef *menu_def = GtkStatsGraph::_monitor->add_menu({
-            -1, bar._collector_index,
-            GtkStatsMonitor::CT_choose_color,
+            GtkStatsMonitor::CT_choose_color, -1, bar._collector_index,
           });
 
           GtkWidget *menu_item = gtk_menu_item_new_with_label("Change Color...");
@@ -465,8 +464,7 @@ handle_button_press(int graph_x, int graph_y, bool double_click, int button) {
 
         {
           const GtkStatsMonitor::MenuDef *menu_def = GtkStatsGraph::_monitor->add_menu({
-            -1, bar._collector_index,
-            GtkStatsMonitor::CT_reset_color,
+            GtkStatsMonitor::CT_reset_color, -1, bar._collector_index,
           });
 
           GtkWidget *menu_item = gtk_menu_item_new_with_label("Reset Color");

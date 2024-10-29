@@ -25,12 +25,13 @@
  *
  */
 PStatFlameGraph::
-PStatFlameGraph(PStatMonitor *monitor,
-                int thread_index, int collector_index, int xsize, int ysize) :
+PStatFlameGraph(PStatMonitor *monitor, int thread_index, int collector_index,
+                int frame_number, int xsize, int ysize) :
   PStatGraph(monitor, xsize, ysize),
   _thread_index(thread_index),
   _collector_index(collector_index),
-  _orig_collector_index(collector_index)
+  _orig_collector_index(collector_index),
+  _frame_number(frame_number)
 {
   _average_mode = true;
   _average_cursor = 0;
@@ -73,11 +74,20 @@ update() {
     const PStatThreadData *thread_data =
       client_data->get_thread_data(_thread_index);
     if (!thread_data->is_empty()) {
-      int frame_number = thread_data->get_latest_frame_number();
-      if (frame_number != _current_frame) {
-        _current_frame = frame_number;
+      if (_frame_number >= 0) {
+        if (thread_data->has_frame(_frame_number)) {
+          if (_current_frame != _frame_number) {
+            _current_frame = _frame_number;
+            update_data();
+          }
+        }
+      } else {
+        int frame_number = thread_data->get_latest_frame_number();
+        if (frame_number != _current_frame) {
+          _current_frame = frame_number;
 
-        update_data();
+          update_data();
+        }
       }
     }
   }
@@ -118,6 +128,142 @@ set_collector_index(int collector_index) {
 }
 
 /**
+ * Changes the frame number shown by this flame graph.  This may force a redraw.
+ */
+void PStatFlameGraph::
+set_frame_number(int frame_number) {
+  if (_frame_number != frame_number) {
+    _frame_number = frame_number;
+    _current_frame = frame_number;
+    _title_unknown = true;
+    _stack.clear();
+    update_data();
+
+    if (_average_mode) {
+      _stack.update_averages(_average_cursor);
+      _time_width = _stack.get_net_value(true);
+      if (_time_width == 0.0) {
+        _time_width = 1.0 / pstats_target_frame_rate;
+      }
+      normal_guide_bars();
+    }
+  }
+}
+
+/**
+ * Sets the frame number to the oldest available frame.
+ */
+bool PStatFlameGraph::
+first_frame() {
+  const PStatClientData *client_data = _monitor->get_client_data();
+  if (client_data == nullptr) {
+    return false;
+  }
+
+  const PStatThreadData *thread_data = client_data->get_thread_data(_thread_index);
+  if (thread_data == nullptr || thread_data->is_empty()) {
+    return false;
+  }
+
+  int oldest = thread_data->get_oldest_frame_number();
+  if (_frame_number != oldest && thread_data->has_frame(oldest)) {
+    set_frame_number(oldest);
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Advances to the next available frame.  Returns true if the frame number was
+ * changed after a call to this method.
+ */
+bool PStatFlameGraph::
+next_frame() {
+  const PStatClientData *client_data = _monitor->get_client_data();
+  if (client_data == nullptr) {
+    return false;
+  }
+
+  const PStatThreadData *thread_data = client_data->get_thread_data(_thread_index);
+  if (thread_data == nullptr || thread_data->is_empty()) {
+    return false;
+  }
+
+  int latest = thread_data->get_latest_frame_number();
+  if (_frame_number < 0 || _frame_number > latest) {
+    set_frame_number(latest);
+    return true;
+  }
+
+  for (int i = _frame_number + 1; i <= latest; ++i) {
+    if (thread_data->has_frame(i)) {
+      set_frame_number(i);
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Reverts to the previous frame.  Returns true if the frame number was changed
+ * after a call to this method.
+ */
+bool PStatFlameGraph::
+prev_frame() {
+  const PStatClientData *client_data = _monitor->get_client_data();
+  if (client_data == nullptr) {
+    return false;
+  }
+
+  const PStatThreadData *thread_data = client_data->get_thread_data(_thread_index);
+  if (thread_data == nullptr || thread_data->is_empty()) {
+    return false;
+  }
+
+  int oldest = thread_data->get_oldest_frame_number();
+
+  int i;
+  if (_frame_number < 0) {
+    i = thread_data->get_latest_frame_number();
+  } else {
+    i = _frame_number - 1;
+  }
+  while (i >= oldest) {
+    if (thread_data->has_frame(i)) {
+      set_frame_number(i);
+      return true;
+    }
+    --i;
+  }
+
+  return false;
+}
+
+/**
+ * Sets the frame number to the latest available frame.
+ */
+bool PStatFlameGraph::
+last_frame() {
+  const PStatClientData *client_data = _monitor->get_client_data();
+  if (client_data == nullptr) {
+    return false;
+  }
+
+  const PStatThreadData *thread_data = client_data->get_thread_data(_thread_index);
+  if (thread_data == nullptr || thread_data->is_empty()) {
+    return false;
+  }
+
+  int latest = thread_data->get_latest_frame_number();
+  if (_frame_number != latest && thread_data->has_frame(latest)) {
+    set_frame_number(latest);
+    return true;
+  }
+  return false;
+}
+
+/**
  * Returns the text suitable for the title label on the top line.
  */
 std::string PStatFlameGraph::
@@ -148,6 +294,10 @@ get_title_text() {
   }
   else {
     _title_unknown = true;
+  }
+
+  if (_frame_number >= 0) {
+    text += " (frame " + format_string(_frame_number) + ")";
   }
 
   return text;

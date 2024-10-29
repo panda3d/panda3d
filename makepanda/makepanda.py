@@ -156,7 +156,7 @@ def usage(problem):
     print("  --everything      (enable every third-party lib)")
     print("  --directx-sdk=X   (specify version of DirectX SDK to use: jun2010, aug2009)")
     print("  --windows-sdk=X   (specify Windows SDK version, eg. 7.1, 8.1, 10 or 11.  Default is 8.1)")
-    print("  --msvc-version=X  (specify Visual C++ version, eg. 10, 11, 12, 14, 14.1, 14.2, 14.3.  Default is 14)")
+    print("  --msvc-version=X  (specify Visual C++ version, eg. 14.1, 14.2, 14.3.  Default is 14.1)")
     print("  --use-icl         (experimental setting to use an intel compiler instead of MSVC on Windows)")
     print("")
     print("The simplest way to compile panda is to just type:")
@@ -309,8 +309,8 @@ def parseopts(args):
 
     if GetTarget() == 'windows':
         if not MSVC_VERSION:
-            print("No MSVC version specified. Defaulting to 14 (Visual Studio 2015).")
-            MSVC_VERSION = (14, 0)
+            print("No MSVC version specified. Defaulting to 14.1 (Visual Studio 2017).")
+            MSVC_VERSION = (14, 1)
         else:
             try:
                 MSVC_VERSION = tuple(int(d) for d in MSVC_VERSION.split('.'))[:2]
@@ -319,12 +319,10 @@ def parseopts(args):
             except:
                 usage("Invalid setting for --msvc-version")
 
-        if MSVC_VERSION < (14, 0):
+        if MSVC_VERSION < (14, 1):
             warn_prefix = "%sERROR:%s " % (GetColor("red"), GetColor())
             print("=========================================================================")
-            print(warn_prefix + "Support for MSVC versions before 2015 has been discontinued.")
-            print(warn_prefix + "For more information, or any questions, please visit:")
-            print(warn_prefix + "  https://github.com/panda3d/panda3d/issues/288")
+            print(warn_prefix + "Support for MSVC versions before 2017 has been discontinued.")
             print("=========================================================================")
             sys.stdout.flush()
             time.sleep(1.0)
@@ -1313,7 +1311,7 @@ def CompileCxx(obj,src,opts):
 
     if (COMPILER=="GCC"):
         if (src.endswith(".c")): cmd = GetCC() +' -fPIC -c -o ' + obj
-        else:                    cmd = GetCXX()+' -std=gnu++11 -ftemplate-depth-70 -fPIC -c -o ' + obj
+        else:                    cmd = GetCXX()+' -std=gnu++14 -ftemplate-depth-70 -fPIC -c -o ' + obj
         for (opt, dir) in INCDIRECTORIES:
             if (opt=="ALWAYS") or (opt in opts): cmd += ' -I' + BracketNameWithQuotes(dir)
         for (opt, dir) in FRAMEWORKDIRECTORIES:
@@ -1897,7 +1895,6 @@ def CompileLink(dll, obj, opts):
         elif GetTarget() == 'emscripten':
             cmd += " -s WARN_ON_UNDEFINED_SYMBOLS=1"
             if GetOrigExt(dll) == ".exe":
-                cmd += " --memory-init-file 0"
                 cmd += " -s EXIT_RUNTIME=1"
 
         else:
@@ -2509,7 +2506,8 @@ def WriteConfigSettings():
         dtool_config["PYTHON_FRAMEWORK"] = 'Python'
         dtool_config["PHAVE_MALLOC_H"] = 'UNDEF'
         dtool_config["PHAVE_SYS_MALLOC_H"] = '1'
-        dtool_config["HAVE_OPENAL_FRAMEWORK"] = '1'
+        if not os.path.isdir(GetThirdpartyDir() + "openal"):
+            dtool_config["HAVE_OPENAL_FRAMEWORK"] = '1'
         dtool_config["HAVE_X11"] = 'UNDEF'  # We might have X11, but we don't need it.
         dtool_config["IS_LINUX"] = 'UNDEF'
         dtool_config["HAVE_VIDEO4LINUX"] = 'UNDEF'

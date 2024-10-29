@@ -29,9 +29,9 @@ const char * const WinStatsFlameGraph::_window_class_name = "flame";
  */
 WinStatsFlameGraph::
 WinStatsFlameGraph(WinStatsMonitor *monitor, int thread_index,
-                   int collector_index) :
+                   int collector_index, int frame_number) :
   PStatFlameGraph(monitor,
-                  thread_index, collector_index,
+                  thread_index, collector_index, frame_number,
                   monitor->get_pixel_scale() * default_flame_graph_width / 4,
                   monitor->get_pixel_scale() * default_flame_graph_height / 4),
   WinStatsGraph(monitor)
@@ -349,6 +349,7 @@ LONG WinStatsFlameGraph::
 window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   switch (msg) {
   case WM_LBUTTONDOWN:
+    SetFocus(_window);
     if (_potential_drag_mode == DM_new_guide_bar) {
       set_drag_mode(DM_new_guide_bar);
       SetCapture(_graph_window);
@@ -393,6 +394,31 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     }
     break;
 
+  case WM_KEYDOWN:
+    {
+      bool changed = false;
+      switch (wparam) {
+      case VK_LEFT:
+        changed = prev_frame();
+        break;
+      case VK_RIGHT:
+        changed = next_frame();
+        break;
+      case VK_HOME:
+        changed = first_frame();
+        break;
+      case VK_END:
+        changed = last_frame();
+        break;
+      }
+      if (changed) {
+        std::string window_title = get_title_text();
+        SetWindowText(_window, window_title.c_str());
+        return 0;
+      }
+    }
+    break;
+
   default:
     break;
   }
@@ -407,6 +433,7 @@ LONG WinStatsFlameGraph::
 graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   switch (msg) {
   case WM_LBUTTONDOWN:
+    SetFocus(_window);
     if (_potential_drag_mode == DM_guide_bar && _drag_guide_bar >= 0) {
       set_drag_mode(DM_guide_bar);
       int16_t x = LOWORD(lparam);
@@ -512,6 +539,19 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             AppendMenu(popup, MF_STRING, 105, "Reset Color");
             TrackPopupMenu(popup, TPM_LEFTBUTTON, point.x, point.y, 0, _window, nullptr);
           }
+        }
+      }
+      return 0;
+    }
+    break;
+
+  case WM_MOUSEHWHEEL:
+    {
+      int delta = GET_WHEEL_DELTA_WPARAM(wparam);
+      if (delta != 0) {
+        if (delta > 0 ? next_frame() : prev_frame()) {
+          std::string window_title = get_title_text();
+          SetWindowText(_window, window_title.c_str());
         }
       }
       return 0;
@@ -760,6 +800,8 @@ create_window() {
   // Ensure that the window is on top of the stack.
   SetWindowPos(_window, HWND_TOP, 0, 0, 0, 0,
                SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
+
+  SetFocus(_window);
 }
 
 /**
