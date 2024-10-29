@@ -19,13 +19,7 @@ from sysconfig import get_platform
 
 
 def get_abi_tag():
-    soabi = get_config_var('SOABI')
-    if soabi and soabi.startswith('cpython-'):
-        return 'cp' + soabi.split('-')[1]
-    elif soabi:
-        return soabi.replace('.', '_').replace('-', '_')
-
-    return 'cp%d%d' % (sys.version_info[:2])
+    return ('cp%d%d' % sys.version_info[:2]) + getattr(sys, 'abiflags', '')
 
 
 def is_exe_file(path):

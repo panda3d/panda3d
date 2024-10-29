@@ -3505,7 +3505,7 @@ def GetCurrentPythonVersionInfo():
         return
 
     return {
-        "version": SDK["PYTHONVERSION"][6:].rstrip('dmu'),
+        "version": SDK["PYTHONVERSION"][6:].rstrip('dmut'),
         "soabi": GetPythonABI(),
         "ext_suffix": GetExtensionSuffix(),
         "executable": sys.executable,
