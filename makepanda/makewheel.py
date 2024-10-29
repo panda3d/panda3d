@@ -23,7 +23,7 @@ def get_abi_tag():
     if hasattr(sys, 'abiflags'):
         return ver + sys.abiflags
 
-    gil_disabled = locations.get_config_var("Py_GIL_DISABLED")
+    gil_disabled = get_config_var("Py_GIL_DISABLED")
     if gil_disabled and int(gil_disabled):
         return ver + 't'
 
