@@ -11,8 +11,12 @@
  */
 
 #include "config_steamaudio.h"
+
 #include "steamAudioManager.h"
 #include "steamAudioSound.h"
+
+#include "steamDirectEffect.h"
+
 #include "dconfig.h"
 
 #if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_STEAM_AUDIO)
@@ -42,4 +46,6 @@ init_libsteamaudio() {
 
   SteamAudioManager::init_type();
   SteamAudioSound::init_type();
+
+  SteamDirectEffect::init_type()
 }

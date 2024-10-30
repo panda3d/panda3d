@@ -16,11 +16,13 @@
 #include "pandabase.h"
 #include "typedObject.h"
 
+#include "steamAudioManager.h"
 #include "steamAudioSound.h"
 #include "nodePath.h"
 #include "movieAudioCursor.h"
 #include "plist.h"//Don't know if I'll need these, but good idea to keep in hand
 #include "PTA_float"
+#include "nodePath.h"
 #include "steamAudioEffect.h"
 
 #include <phonon.h>
@@ -67,7 +69,7 @@ PUBLISHED:
     };
 
 protected:
-  virtual IPLAudioBuffer apply_effect(SteamAudioSound::SteamGlobalHolder* globals, IPLAudioBuffer inBuffer);
+  virtual IPLAudioBuffer apply_effect(SteamAudioSound::SteamGlobalHolder *globals, IPLAudioBuffer inBuffer);
 
   unsigned short _dist_atten;//IPL_DIRECTEFFECTFLAGS_APPLYDISTANCEATTENUATION
   float _dist_atten_amnt;

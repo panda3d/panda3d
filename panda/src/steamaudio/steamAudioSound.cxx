@@ -15,6 +15,8 @@
 
  // Panda Headers
 #include "throw_event.h"
+#include "audioSound.h"
+#include "nodePath.h"
 #include "steamAudioSound.h"
 #include "steamAudioManager.h"
 
@@ -36,6 +38,7 @@ TypeHandle SteamAudioSound::_type_handle;
 SteamAudioSound::
 SteamAudioSound(SteamAudioManager* manager,
   MovieAudio* movie,
+  NodePath source,
   bool positional,
   int mode) :
   AudioSound(positional),
@@ -63,7 +66,8 @@ SteamAudioSound(SteamAudioManager* manager,
   _paused(false),
   _cone_inner_angle(360.0f),
   _cone_outer_angle(360.0f),
-  _cone_outer_gain(0.0f)
+  _cone_outer_gain(0.0f),
+  _sourceNP(source)
 {
   _location[0] = 0.0f;
   _location[1] = 0.0f;
@@ -622,9 +626,27 @@ push_fresh_buffers() {
         iplAudioBufferAllocate(_manager->_steamContext, channels, samples, &inBuffer);
         iplAudioBufferDeinterleave(_manager->_steamContext, *fData, inBuffer);
         SteamAudioSound::SteamGlobalHolder globals(_manager->_audioSettings*, _manager->_steamContext*, channels, samples);//input variables
-        //Put call to effect application here<------------------------------------------------------
+
+        for (i = 0; i < _manager->_steam_effects.size; i++) {
+          SteamAudioEffect effect _manager->_steam_effects[i];
+          if (manager._isActive) {
+            IPLAudioBuffer outBuffer = manager.apply_effect(*globals, inBuffer);
+            swap(inBuffer, outBuffer);
+            iplAudioBufferFree(_manager->_steamContext, outBuffer);
+          }
+        }
+        for (i = 0; i < _steam_effects.size; i++) {
+          SteamAudioEffect effect _steam_effects[i];
+          if (manager._isActive) {
+            IPLAudioBuffer outBuffer = manager.apply_effect(*globals, inBuffer);
+            swap(inBuffer, outBuffer);
+            iplAudioBufferFree(_manager->_steamContext, outBuffer);
+          }
+        }
+
         iplAudioBufferInterleave(_manager->_steamContext, inBuffer, *fData);
         iplBufferFree(_manager->_steamContext, inBuffer);
+
         for (i = 0; i < data.size(); i++) {
           (int16_t*)data[i] = (int16_t)(float)fData[i];
         }
@@ -1083,11 +1105,11 @@ status() const {
 
 SteamAudioSound::SteamGlobalHolder
 ::SteamGlobalHolder(IPLAudioSettings audio_settings, IPLContext steam_context, int channels, int samples) :
-  _audio_settings = audio_settings,
-  _steam_context = steam_context,
-  _channels = channels,
-  _samples = samples,
-  source = _sourceNP
+  _audio_settings(audio_settings),
+  _steam_context(steam_context),
+  _channels(channels),
+  _samples(samples),
+  source(_sourceNP)
 {
     if (!_manager->_listenerNP == nullptr) {
       listener = _manager->_listenerNP;
@@ -1099,5 +1121,40 @@ SteamAudioSound::SteamGlobalHolder
 }
 
 /**
-*
+*returns the index of the newly-added steam audio effect.
 **/
+int SteamAudioSound::
+add_steam_audio_effect(SteamAudioEffect effect) {
+  _steam_effects.push_back(effect);
+  return _steam_effects.size - 1;
+}
+
+/**
+*Returns the index of a SteamAudioEffect, or -1 if not found.
+**/
+int SteamAudioSound::
+find_steam_audio_effect(SteamAudioEffect effect) {
+  auto i _steam_effects.find(_steam_effects.begin(), _steam_effects.end(), effect);
+  if (i != _steam_effects.end()) {
+    return i - _steam_effects.begin();
+  }
+  else {
+    return -1;
+  }
+
+}
+
+/**
+*Removes an effect from this object, then returns true if successful.
+**/
+void SteamAudioSound::
+remove_steam_audio_effect(int index) {
+  it = _steam_effects.find(_steam_effects.begin(), _steam_effects.end(), effect);
+  if (it != _steam_effects.end()) {
+    _steam_effects.erase(it);
+    return true;
+  }
+  else {
+    return false;
+  }
+}

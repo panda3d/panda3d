@@ -22,7 +22,7 @@
 #include "steamAudioManager.h"
 #include "steamAudioEffect.h"
 #include "nodePath.h"
-#include "pset.h"
+#include "pvector.h"
 
 #include <phonon.h>//Import steam audio
 
@@ -42,6 +42,7 @@ class EXPCL_OPENAL_AUDIO SteamAudioSound final : public OpenALAudioSound {
 public:
   SteamAudioSound(SteamAudioManager* manager,
     MovieAudio* movie,
+    NodePath source,
     bool positional,
     int mode);
 PUBLISHED:
@@ -220,21 +221,27 @@ private:
   PN_stdfloat _cone_outer_angle;
   PN_stdfloat _cone_outer_gain;
 
- private:
-   NodePath _sourceNP;
-   typedef phash_set<PT(SteamAudioEffect)> SAEffects;
-   SAEffects _steam_effects;
+private:
+  NodePath _sourceNP;
+  typedef pvector<PT(SteamAudioEffect)> SAEffects;
+  SAEffects _steam_effects;
 
-   class SteamGlobalHolder {
-   public:
-     SteamGlobalHolder(IPLAudioSettings audio_settings, IPLContext steam_context, int channels, int samples);
-     IPLAudioSettings _audio_settings;
-     IPLContext _steam_context;
-     int _channels;
-     int _samples;
-     NodePath listener;
-     NodePath source;
-   };
+  class SteamGlobalHolder {
+  public:
+    SteamGlobalHolder(IPLAudioSettings audio_settings, IPLContext steam_context, int channels, int samples);
+    IPLAudioSettings _audio_settings;
+    IPLContext _steam_context;
+    int _channels;
+    int _samples;
+    NodePath listener;
+    NodePath source;
+  };
+
+PUBLISHED:
+
+  int add_steam_audio_effect(SteamAudioEffect effect);
+  int find_steam_audio_effect(SteamAudioEffect effect);
+  void remove_steam_audio_effect(int index);
 
 public:
   static TypeHandle get_class_type() {

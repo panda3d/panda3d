@@ -28,6 +28,7 @@
 #include "plist.h"
 #include "pmap.h"
 #include "pset.h"
+#include "pvector.h"
 #include "movieAudioCursor.h"
 #include "reMutex.h"
 #include "nodePath.h"
@@ -58,8 +59,8 @@ PUBLISHED:
 
   virtual bool is_valid();
 
-  virtual PT(AudioSound) get_sound(const Filename&, bool positional = false, int mode = SM_stream);
-  virtual PT(AudioSound) get_sound(MovieAudio* sound, bool positional = false, int mode = SM_stream);
+  virtual PT(AudioSound) get_sound(const Filename&, NodePath source, bool positional = false, int mode = SM_stream);
+  virtual PT(AudioSound) get_sound(MovieAudio* sound, NodePath source, bool positional = false, int mode = SM_stream);
 
   virtual void uncache_sound(const Filename&);
   virtual void clear_cache();
@@ -222,14 +223,19 @@ private:
   ALfloat _velocity[3];
   ALfloat _forward_up[6];
 
-  private://SteamAudio related stuff:
-    static IPLContext _steamContext;
-    static IPLAudioSettings _steamAudioSettings;
+private://SteamAudio related stuff:
+  static IPLContext _steamContext;
+  static IPLAudioSettings _steamAudioSettings;
 
-    typedef phash_set<PT(SteamAudioEffect)> SAEffects;
-    SAEffects _steam_effects;
+  typedef pvector<PT(SteamAudioEffect)> SAEffects;
+  SAEffects _steam_effects;
 
-    NodePath _listenerNP;
+  NodePath _listenerNP;
+
+PUBLISHED:
+  int add_steam_audio_effect(SteamAudioEffect effect);
+  int find_steam_audio_effect(SteamAudioEffect effect);
+  void remove_steam_audio_effect(int index);
 
   // These are needed for Panda's Pointer System.  DO NOT ERASE!
 public:

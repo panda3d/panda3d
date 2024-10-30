@@ -28,7 +28,7 @@ TypeHandle SteamAudioManager::_type_handle;
 *
 **/
 SteamAudioEffect::SteamAudioEffect() :
-  _is_active = True
+  _is_active(true)
 {
 
 }
@@ -43,21 +43,24 @@ SteamAudioEffect::~SteamAudioEffect() {
 /**
 *Sets whether this effect has an impact on audiosounds it's applied to.
 **/
-void SteamAudioEffect::set_active(bool val) {
+void SteamAudioEffect::
+set_active(bool val) {
   _is_active = state;
 }
 
 /**
 *Retrieves the _is_active flag.
 **/
-bool SteamAudioEffect::get_active() {
+bool SteamAudioEffect::
+get_active() {
   return _is_active;
 }
 
 /**
 *returns a blank outBuffer. This shouldn't be called, though.
 **/
-SteamAudioEffect::apply_effect(SteamAudioSound::SteamGlobalHolder* globals, IPLAudioBuffer inBuffer) {
+virtual IPLAudioBuffer SteamAudioEffect::
+apply_effect(SteamAudioSound::SteamGlobalHolder *globals, IPLAudioBuffer inBuffer) {
   IPLAudioBuffer outBuffer;
   iplAudioBufferAllocate(globals->_steam_context, globals->_channels, globals->_samples, &outBuffer);//Be sure to deallocate this in SteamAudioSound
   return outBuffer;

@@ -500,13 +500,13 @@ get_sound_data(MovieAudio* movie, int mode) {
  * This is what creates a sound instance.
  */
 PT(AudioSound) SteamAudioManager::
-get_sound(MovieAudio* sound, bool positional, int mode) {
+get_sound(MovieAudio* sound, NodePath source, bool positional, int mode) {
   ReMutexHolder holder(_lock);
   if (!is_valid()) {
     return get_null_sound();
   }
   PT(SteamAudioSound) oas =
-    new SteamAudioSound(this, sound, positional, mode);
+    new SteamAudioSound(this, sound, source, positional, mode);
 
   if (!oas->_manager) {
     // The sound cleaned itself up immediately. It pretty clearly didn't like
@@ -523,7 +523,7 @@ get_sound(MovieAudio* sound, bool positional, int mode) {
  * This is what creates a sound instance.
  */
 PT(AudioSound) SteamAudioManager::
-get_sound(const Filename& file_name, bool positional, int mode) {
+get_sound(const Filename& file_name, NodePath source, bool positional, int mode) {
   ReMutexHolder holder(_lock);
   if (!is_valid()) {
     return get_null_sound();
@@ -541,7 +541,7 @@ get_sound(const Filename& file_name, bool positional, int mode) {
   PT(MovieAudio) mva = MovieAudio::get(path);
 
   PT(SteamAudioSound) oas =
-    new SteamAudioSound(this, mva, positional, mode);
+    new SteamAudioSound(this, mva, source, positional, mode);
 
   if (!oas->_manager) {
     // The sound cleaned itself up immediately. It pretty clearly didn't like
@@ -1226,4 +1226,45 @@ delete_buffer(ALuint buffer) {
 
   // If we got here, one of the breaks above happened, indicating an error.
   audio_error("failed to delete a buffer: " << alGetString(error));
+}
+
+//Steam Audio things
+
+/**
+*returns the index of the newly-added steam audio effect.
+**/
+int SteamAudioManager::
+add_steam_audio_effect(SteamAudioEffect effect) {
+  _steam_effects.push_back(effect);
+  return _steam_effects.size - 1;
+}
+
+/**
+*Returns the index of a SteamAudioEffect, or -1 if not found.
+**/
+int SteamAudioManager::
+find_steam_audio_effect(SteamAudioEffect effect) {
+  auto i _steam_effects.find(_steam_effects.begin(), _steam_effects.end(), effect);
+  if (i != _steam_effects.end()) {
+    return i - _steam_effects.begin();
+  }
+  else {
+    return -1;
+  }
+
+}
+
+/**
+*Removes an effect from this object, then returns true if successful.
+**/
+void SteamAudioManager::
+remove_steam_audio_effect(int index) {
+  it = _steam_effects.find(_steam_effects.begin(), _steam_effects.end(), effect);
+  if (it != _steam_effects.end()) {
+    _steam_effects.erase(it);
+    return true;
+  }
+  else {
+    return false;
+  }
 }
