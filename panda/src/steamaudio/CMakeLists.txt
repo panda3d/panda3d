@@ -21,7 +21,7 @@ if(HAVE_STEAMAUDIO)
 
   composite_sources(p3steam_audio P3OPENAL_SOURCES)
   add_library(p3steam_audio ${MODULE_TYPE} ${P3STEAMAUDIO_HEADERS} ${P3STEAMAUDIO_SOURCES})
-  set_target_properties(p3steam_audio PROPERTIES DEFINE_SYMBOL BUILDING_STEAM_AUDIO)
+  set_target_properties(p3steam_audio PROPERTIES DEFINE_SYMBOL BUILDING_PANDA_STEAMAUDIO)
   target_link_libraries(p3openal_audio panda)
 
   if(HAVE_OPENAL_FRAMEWORK)
