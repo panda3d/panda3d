@@ -2189,6 +2189,15 @@ def SdkLocatePython(prefer_thirdparty_python=False):
 
         SDK["PYTHON"] = sdkdir
         SDK["PYTHONEXEC"] = SDK["PYTHON"].replace('\\', '/') + "/python"
+
+        gil_disabled = locations.get_config_var("Py_GIL_DISABLED")
+        if gil_disabled and int(gil_disabled):
+            SDK["PYTHONEXEC"] += "3.13t"
+            abiflags = "t"
+            DefSymbol("PYTHON", "Py_GIL_DISABLED", "1")
+        else:
+            abiflags = ""
+
         if (GetOptimize() <= 2):
             SDK["PYTHONEXEC"] += "_d.exe"
         else:
@@ -2199,11 +2208,11 @@ def SdkLocatePython(prefer_thirdparty_python=False):
 
         # Determine which version it is by checking which dll is in the directory.
         if (GetOptimize() <= 2):
-            py_dlls = glob.glob(SDK["PYTHON"] + "/python[0-9][0-9]_d.dll") + \
-                      glob.glob(SDK["PYTHON"] + "/python[0-9][0-9][0-9]_d.dll")
+            py_dlls = glob.glob(SDK["PYTHON"] + "/python[0-9][0-9]" + abiflags + "_d.dll") + \
+                      glob.glob(SDK["PYTHON"] + "/python[0-9][0-9][0-9]" + abiflags + "_d.dll")
         else:
-            py_dlls = glob.glob(SDK["PYTHON"] + "/python[0-9][0-9].dll") + \
-                      glob.glob(SDK["PYTHON"] + "/python[0-9][0-9][0-9].dll")
+            py_dlls = glob.glob(SDK["PYTHON"] + "/python[0-9][0-9]" + abiflags + ".dll") + \
+                      glob.glob(SDK["PYTHON"] + "/python[0-9][0-9][0-9]" + abiflags + ".dll")
 
         if len(py_dlls) == 0:
             exit("Could not find the Python dll in %s." % (SDK["PYTHON"]))
@@ -2214,7 +2223,7 @@ def SdkLocatePython(prefer_thirdparty_python=False):
         py_dllver = py_dll.strip(".DHLNOPTY_dhlnopty")
         ver = py_dllver[0] + '.' + py_dllver[1:]
 
-        SDK["PYTHONVERSION"] = "python" + ver
+        SDK["PYTHONVERSION"] = "python" + ver + abiflags
         os.environ["PYTHONHOME"] = SDK["PYTHON"]
 
         running_ver = '%d.%d' % sys.version_info[:2]
