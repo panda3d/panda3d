@@ -590,7 +590,7 @@ do_python_task() {
         _retrieved_exception = false;
 
         if (task_cat.is_debug()) {
-          if (_exception != nullptr && Py_TYPE(_exception) == &PyType_Type) {
+          if (_exception != nullptr && Py_IS_TYPE(_exception, &PyType_Type)) {
             task_cat.debug()
               << *this << " received " << ((PyTypeObject *)_exception)->tp_name << " from coroutine.\n";
           } else {
@@ -741,7 +741,7 @@ do_python_task() {
   if (PyCFunction_Check(result)) {
     meth = ((PyCFunctionObject *)result)->m_ml;
 #if PY_MAJOR_VERSION >= 3
-  } else if (Py_TYPE(result) == &PyMethodDescr_Type) {
+  } else if (Py_IS_TYPE(result, &PyMethodDescr_Type)) {
 #else
   } else if (strcmp(Py_TYPE(result)->tp_name, "method_descriptor") == 0) {
 #endif

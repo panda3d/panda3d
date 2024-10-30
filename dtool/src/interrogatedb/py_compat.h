@@ -217,8 +217,12 @@ INLINE PyObject *_PyLong_Lshift(PyObject *a, size_t shiftby) {
 
 /* Python 3.9 */
 
+#if PY_VERSION_HEX < 0x030900A4 && !defined(Py_IS_TYPE)
+#  define Py_IS_TYPE(ob, type) (Py_TYPE((PyObject *)ob) == type)
+#endif
+
 #ifndef PyCFunction_CheckExact
-#  define PyCFunction_CheckExact(op) (Py_TYPE(op) == &PyCFunction_Type)
+#  define PyCFunction_CheckExact(op) (Py_IS_TYPE(op, &PyCFunction_Type))
 #endif
 
 #if PY_VERSION_HEX < 0x03090000
