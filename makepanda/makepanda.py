@@ -5796,7 +5796,7 @@ if (PkgSkip("PYTHON")==0 and PkgSkip("DIRECT")==0 and not RTDIST and not RUNTIME
   PyTargetAdd('p3dcparse.exe', input='dcparse_dcparse.obj')
   PyTargetAdd('p3dcparse.exe', input='libp3direct.dll')
   PyTargetAdd('p3dcparse.exe', input=COMMON_PANDA_LIBS)
-  PyTargetAdd('p3dcparse.exe', input='libp3pystub.lib')
+  #PyTargetAdd('p3dcparse.exe', input='libp3pystub.lib')
   PyTargetAdd('p3dcparse.exe', opts=['ADVAPI'])
 
 #
