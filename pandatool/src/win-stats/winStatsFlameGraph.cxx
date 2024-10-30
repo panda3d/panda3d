@@ -127,7 +127,21 @@ set_time_units(int unit_mask) {
  */
 void WinStatsFlameGraph::
 on_click_label(int collector_index) {
-  set_collector_index(collector_index);
+  if (collector_index != get_collector_index()) {
+    if (collector_index == -1) {
+      clear_history();
+      set_collector_index(-1);
+    } else {
+      push_collector_index(collector_index);
+    }
+
+    if (is_title_unknown()) {
+      std::string window_title = get_title_text();
+      if (!is_title_unknown()) {
+        SetWindowText(_window, window_title.c_str());
+      }
+    }
+  }
 }
 
 /**
@@ -155,22 +169,6 @@ on_leave_label(int collector_index) {
 
     if (!get_average_mode()) {
       PStatFlameGraph::force_redraw();
-    }
-  }
-}
-
-/**
- * Changes the collector represented by this flame graph.  This may force a
- * redraw.
- */
-void WinStatsFlameGraph::
-set_collector_index(int collector_index) {
-  PStatFlameGraph::set_collector_index(collector_index);
-
-  if (is_title_unknown()) {
-    std::string window_title = get_title_text();
-    if (!is_title_unknown()) {
-      SetWindowText(_window, window_title.c_str());
     }
   }
 }
@@ -373,7 +371,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       break;
 
     case 101:
-      set_collector_index(_popup_index);
+      on_click_label(_popup_index);
       return 0;
 
     case 102:
@@ -416,6 +414,26 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
         SetWindowText(_window, window_title.c_str());
         return 0;
       }
+    }
+    break;
+
+  case WM_SYSKEYDOWN:
+    if (((lparam >> 16) & KF_ALTDOWN) != 0 && wparam == VK_LEFT) {
+      if (pop_collector_index()) {
+        std::string window_title = get_title_text();
+        SetWindowText(_window, window_title.c_str());
+      }
+      return 0;
+    }
+    break;
+
+  case WM_APPCOMMAND:
+    if (GET_APPCOMMAND_LPARAM(lparam) == APPCOMMAND_BROWSER_BACKWARD) {
+      if (pop_collector_index()) {
+        std::string window_title = get_title_text();
+        SetWindowText(_window, window_title.c_str());
+      }
+      return TRUE;
     }
     break;
 
@@ -506,7 +524,7 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       // that collector.
       int16_t x = LOWORD(lparam);
       int16_t y = HIWORD(lparam);
-      set_collector_index(get_bar_collector(pixel_to_depth(y), x));
+      on_click_label(get_bar_collector(pixel_to_depth(y), x));
       return 0;
     }
     break;

@@ -98,6 +98,8 @@ update() {
 /**
  * Changes the collector represented by this flame graph.  This may force a
  * redraw.
+ *
+ * Leaves the history stack untouched.
  */
 void PStatFlameGraph::
 set_collector_index(int collector_index) {
@@ -125,6 +127,32 @@ set_collector_index(int collector_index) {
       normal_guide_bars();
     }
   }
+}
+
+/**
+ * Goes to a different collector, but remembers the previous collector.
+ */
+void PStatFlameGraph::
+push_collector_index(int collector_index) {
+  if (_collector_index != collector_index) {
+    _history.push_back(_collector_index);
+    set_collector_index(collector_index);
+  }
+}
+
+/**
+ * Goes to the previous visited collector.  Returns true if the history stack
+ * was non-empty.
+ */
+bool PStatFlameGraph::
+pop_collector_index() {
+  if (!_history.empty()) {
+    int collector_index = _history.back();
+    _history.pop_back();
+    set_collector_index(collector_index);
+    return true;
+  }
+  return false;
 }
 
 /**

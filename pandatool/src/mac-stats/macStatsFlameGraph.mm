@@ -177,11 +177,10 @@ void MacStatsFlameGraph::
 on_click_label(int collector_index) {
   int current = get_collector_index();
   if (collector_index != current) {
-    if (_back_stack.empty()) {
+    if (get_history_depth() == 0) {
       _graph_view_controller.backToolbarItemVisible = YES;
     }
-    _back_stack.push_back(current);
-    set_collector_index(collector_index);
+    push_collector_index(collector_index);
 
     std::string window_title = get_title_text();
     if (!is_title_unknown()) {
@@ -589,11 +588,12 @@ handle_button_press(int graph_x, int graph_y, bool double_click, int button) {
       if (collector_index >= 0) {
         on_click_label(collector_index);
       } else {
-        if (!_back_stack.empty()) {
-          _back_stack.clear();
+        if (get_history_depth() > 0) {
+          clear_history();
           _graph_view_controller.backToolbarItemVisible = NO;
         }
         set_collector_index(-1);
+
         std::string window_title = get_title_text();
         if (!is_title_unknown()) {
           _window.title = [NSString stringWithUTF8String:window_title.c_str()];
@@ -726,12 +726,8 @@ handle_draw_graph(CGContextRef ctx, NSRect rect) {
  */
 void MacStatsFlameGraph::
 handle_back() {
-  if (!_back_stack.empty()) {
-    int collector_index = _back_stack.back();
-    _back_stack.pop_back();
-    set_collector_index(collector_index);
-
-    if (_back_stack.empty()) {
+  if (pop_collector_index()) {
+    if (get_history_depth() == 0) {
       _graph_view_controller.backToolbarItemVisible = NO;
     }
 
