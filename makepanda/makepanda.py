@@ -1967,7 +1967,7 @@ def CompileLink(dll, obj, opts):
                 if "PYTHON" not in opts:
                     pythonv = SDK["PYTHONVERSION"].replace('.', '')
                     if optlevel <= 2:
-                        cmd += ' /NOD:{}d.lib'.format(pythonv)
+                        cmd += ' /NOD:{}_d.lib'.format(pythonv)
                     else:
                         cmd += ' /NOD:{}.lib'.format(pythonv)
 
