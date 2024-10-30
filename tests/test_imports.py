@@ -32,6 +32,9 @@ def test_imports_panda3d():
             module = basename.split('.', 1)[0]
             ext = basename[len(module):]
 
+            if module == 'dtoolconfig' or module == 'interrogatedb':
+                continue
+
             if ext in extensions:
                 importlib.import_module('panda3d.%s' % (module))
 

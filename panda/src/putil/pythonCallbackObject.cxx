@@ -87,7 +87,7 @@ get_function() {
  */
 PyObject *PythonCallbackObject::
 __reduce__() const {
-  return Py_BuildValue("O(O)", (PyObject *)&Dtool_PythonCallbackObject._PyType, _function);
+  return Py_BuildValue("O(O)", (PyObject *)Dtool_GetPyTypeObject(&Dtool_PythonCallbackObject), _function);
 }
 
 /**

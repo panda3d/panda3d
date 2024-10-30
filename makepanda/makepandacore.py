@@ -592,8 +592,8 @@ def GetInterrogateDir():
             return INTERROGATE_DIR
 
         dir = os.path.join(GetOutputDir(), "tmp", "interrogate")
-        if not os.path.isdir(os.path.join(dir, "panda3d_interrogate-0.3.0.dist-info")):
-            oscmd("\"%s\" -m pip install --force-reinstall --upgrade -t \"%s\" panda3d-interrogate==0.3.0" % (sys.executable, dir))
+        if not os.path.isdir(os.path.join(dir, "panda3d_interrogate-0.4.0.dist-info")):
+            oscmd("\"%s\" -m pip install --force-reinstall --upgrade -t \"%s\" panda3d-interrogate==0.4.0" % (sys.executable, dir))
 
         INTERROGATE_DIR = dir
 
@@ -2128,7 +2128,11 @@ def SdkLocatePython(prefer_thirdparty_python=False):
 
         gil_disabled = locations.get_config_var("Py_GIL_DISABLED")
         if gil_disabled and int(gil_disabled):
-            SDK["PYTHONEXEC"] += "3.13t"
+            SDK["PYTHONEXEC"] += "%d.%dt" % sys.version_info[:2]
+            abiflags = "t"
+            DefSymbol("PYTHON", "Py_GIL_DISABLED", "1")
+        else:
+            abiflags = ""
 
         if (GetOptimize() <= 2):
             SDK["PYTHONEXEC"] += "_d.exe"
@@ -2140,11 +2144,11 @@ def SdkLocatePython(prefer_thirdparty_python=False):
 
         # Determine which version it is by checking which dll is in the directory.
         if (GetOptimize() <= 2):
-            py_dlls = glob.glob(SDK["PYTHON"] + "/python[0-9][0-9]_d.dll") + \
-                      glob.glob(SDK["PYTHON"] + "/python[0-9][0-9][0-9]_d.dll")
+            py_dlls = glob.glob(SDK["PYTHON"] + "/python[0-9][0-9]" + abiflags + "_d.dll") + \
+                      glob.glob(SDK["PYTHON"] + "/python[0-9][0-9][0-9]" + abiflags + "_d.dll")
         else:
-            py_dlls = glob.glob(SDK["PYTHON"] + "/python[0-9][0-9].dll") + \
-                      glob.glob(SDK["PYTHON"] + "/python[0-9][0-9][0-9].dll")
+            py_dlls = glob.glob(SDK["PYTHON"] + "/python[0-9][0-9]" + abiflags + ".dll") + \
+                      glob.glob(SDK["PYTHON"] + "/python[0-9][0-9][0-9]" + abiflags + ".dll")
 
         if len(py_dlls) == 0:
             exit("Could not find the Python dll in %s." % (SDK["PYTHON"]))
@@ -2155,7 +2159,7 @@ def SdkLocatePython(prefer_thirdparty_python=False):
         py_dllver = py_dll.strip(".DHLNOPTY_dhlnopty")
         ver = py_dllver[0] + '.' + py_dllver[1:]
 
-        SDK["PYTHONVERSION"] = "python" + ver
+        SDK["PYTHONVERSION"] = "python" + ver + abiflags
         os.environ["PYTHONHOME"] = SDK["PYTHON"]
 
         running_ver = '%d.%d' % sys.version_info[:2]
@@ -3389,7 +3393,14 @@ def GetPythonABI():
         if soabi:
             return soabi
 
-    return 'cpython-%d%d' % (sys.version_info[:2])
+    soabi = 'cpython-%d%d' % (sys.version_info[:2])
+
+    if sys.version_info >= (3, 13):
+        gil_disabled = locations.get_config_var("Py_GIL_DISABLED")
+        if gil_disabled and int(gil_disabled):
+            return soabi + 't'
+
+    return soabi
 
 def CalcLocation(fn, ipath):
     if fn.startswith("panda3d/") and fn.endswith(".py"):

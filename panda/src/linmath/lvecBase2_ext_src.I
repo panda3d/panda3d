@@ -183,7 +183,7 @@ __setattr__(PyObject *self, const std::string &attr_name, PyObject *assign) {
 #endif
       } else {
         PyErr_Format(PyExc_ValueError, "'%.200s' object is not iterable",
-          assign->ob_type->tp_name);
+          Py_TYPE(assign)->tp_name);
       }
       return -1;
     }

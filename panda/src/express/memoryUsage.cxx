@@ -16,7 +16,6 @@
 #include "trueClock.h"
 #include "typedReferenceCount.h"
 #include "mutexImpl.h"
-#include "interrogate_request.h"
 
 #if defined(_MSC_VER) && defined(_DEBUG)
 #include <crtdbg.h>

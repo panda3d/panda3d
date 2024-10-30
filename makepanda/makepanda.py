@@ -357,6 +357,8 @@ os.environ["MAKEPANDA"] = os.path.abspath(sys.argv[0])
 if GetHost() == "darwin":
     if tuple(OSX_ARCHS) == ('arm64',):
         os.environ["MACOSX_DEPLOYMENT_TARGET"] = "11.0"
+    elif sys.version_info >= (3, 13):
+        os.environ["MACOSX_DEPLOYMENT_TARGET"] = "10.13"
     else:
         os.environ["MACOSX_DEPLOYMENT_TARGET"] = "10.9"
 
@@ -421,6 +423,8 @@ elif target == 'darwin':
 
     if arch_tag == 'arm64':
         PLATFORM = 'macosx-11.0-' + arch_tag
+    elif sys.version_info >= (3, 13):
+        PLATFORM = 'macosx-10.13-' + arch_tag
     else:
         PLATFORM = 'macosx-10.9-' + arch_tag
 
@@ -1334,6 +1338,8 @@ def CompileCxx(obj,src,opts):
 
             if tuple(OSX_ARCHS) == ('arm64',):
                 cmd += " -mmacosx-version-min=11.0"
+            elif sys.version_info >= (3, 13):
+                cmd += " -mmacosx-version-min=10.13"
             else:
                 cmd += " -mmacosx-version-min=10.9"
 
@@ -1724,7 +1730,7 @@ def CompileLink(dll, obj, opts):
                 if "PYTHON" not in opts:
                     pythonv = SDK["PYTHONVERSION"].replace('.', '')
                     if optlevel <= 2:
-                        cmd += ' /NOD:{}d.lib'.format(pythonv)
+                        cmd += ' /NOD:{}_d.lib'.format(pythonv)
                     else:
                         cmd += ' /NOD:{}.lib'.format(pythonv)
 
@@ -1871,6 +1877,8 @@ def CompileLink(dll, obj, opts):
 
             if tuple(OSX_ARCHS) == ('arm64',):
                 cmd += " -mmacosx-version-min=11.0"
+            elif sys.version_info >= (3, 13):
+                cmd += " -mmacosx-version-min=10.13"
             else:
                 cmd += " -mmacosx-version-min=10.9"
 
@@ -2774,7 +2782,8 @@ del_files = ['core.py', 'core.pyc', 'core.pyo',
              'direct.py', 'direct.pyc', 'direct.pyo',
              '_direct.pyd', '_direct.so',
              'dtoolconfig.pyd', 'dtoolconfig.so',
-             'net.pyd', 'net.so']
+             'net.pyd', 'net.so',
+             'interrogatedb.pyd', 'interrogatedb.so']
 
 for basename in del_files:
     path = os.path.join(GetOutputDir(), 'panda3d', basename)
@@ -3486,27 +3495,6 @@ TargetAdd('libp3dtoolconfig.dll', input='p3prc_composite1.obj')
 TargetAdd('libp3dtoolconfig.dll', input='p3prc_composite2.obj')
 TargetAdd('libp3dtoolconfig.dll', input='libp3dtool.dll')
 TargetAdd('libp3dtoolconfig.dll', opts=['ADVAPI', 'OPENSSL', 'WINGDI', 'WINUSER'])
-
-#
-# DIRECTORY: dtool/src/interrogatedb/
-#
-
-OPTS=['DIR:dtool/src/interrogatedb', 'BUILDING:INTERROGATEDB']
-TargetAdd('p3interrogatedb_composite1.obj', opts=OPTS, input='p3interrogatedb_composite1.cxx')
-TargetAdd('p3interrogatedb_composite2.obj', opts=OPTS, input='p3interrogatedb_composite2.cxx')
-TargetAdd('libp3interrogatedb.dll', input='p3interrogatedb_composite1.obj')
-TargetAdd('libp3interrogatedb.dll', input='p3interrogatedb_composite2.obj')
-TargetAdd('libp3interrogatedb.dll', input='libp3dtool.dll')
-TargetAdd('libp3interrogatedb.dll', input='libp3dtoolconfig.dll')
-
-# This used to be called dtoolconfig.pyd, but it just contains the interrogatedb
-# stuff, so it has been renamed appropriately.
-OPTS=['DIR:dtool/metalibs/dtoolconfig']
-PyTargetAdd('interrogatedb_pydtool.obj', opts=OPTS, input="pydtool.cxx")
-PyTargetAdd('interrogatedb.pyd', input='interrogatedb_pydtool.obj')
-PyTargetAdd('interrogatedb.pyd', input='libp3dtool.dll')
-PyTargetAdd('interrogatedb.pyd', input='libp3dtoolconfig.dll')
-PyTargetAdd('interrogatedb.pyd', input='libp3interrogatedb.dll')
 
 #
 # DIRECTORY: dtool/src/prckeys/
@@ -4224,7 +4212,6 @@ PyTargetAdd('core.pyd', input='p3display_ext_composite.obj')
 PyTargetAdd('core.pyd', input='p3collide_ext_composite.obj')
 
 PyTargetAdd('core.pyd', input='core_module.obj')
-PyTargetAdd('core.pyd', input='libp3interrogatedb.dll')
 PyTargetAdd('core.pyd', input=COMMON_PANDA_LIBS)
 PyTargetAdd('core.pyd', opts=['WINSOCK2'])
 
@@ -4264,7 +4251,6 @@ if not PkgSkip("VISION"):
     PyTargetAdd('vision.pyd', input='vision_module.obj')
     PyTargetAdd('vision.pyd', input='libp3vision_igate.obj')
     PyTargetAdd('vision.pyd', input='libp3vision.dll')
-    PyTargetAdd('vision.pyd', input='libp3interrogatedb.dll')
     PyTargetAdd('vision.pyd', input=COMMON_PANDA_LIBS)
 
 #
@@ -4296,7 +4282,6 @@ if not PkgSkip('SKEL'):
     PyTargetAdd('skel.pyd', input='skel_module.obj')
     PyTargetAdd('skel.pyd', input='libp3skel_igate.obj')
     PyTargetAdd('skel.pyd', input='libpandaskel.dll')
-    PyTargetAdd('skel.pyd', input='libp3interrogatedb.dll')
     PyTargetAdd('skel.pyd', input=COMMON_PANDA_LIBS)
 
 #
@@ -4333,7 +4318,6 @@ if not PkgSkip('PANDAFX'):
     PyTargetAdd('fx.pyd', input='fx_module.obj')
     PyTargetAdd('fx.pyd', input='libp3distort_igate.obj')
     PyTargetAdd('fx.pyd', input='libpandafx.dll')
-    PyTargetAdd('fx.pyd', input='libp3interrogatedb.dll')
     PyTargetAdd('fx.pyd', input=COMMON_PANDA_LIBS)
 
 #
@@ -4359,7 +4343,6 @@ if not PkgSkip("VRPN"):
     PyTargetAdd('vrpn.pyd', input='vrpn_module.obj')
     PyTargetAdd('vrpn.pyd', input='libp3vrpn_igate.obj')
     PyTargetAdd('vrpn.pyd', input='libp3vrpn.dll')
-    PyTargetAdd('vrpn.pyd', input='libp3interrogatedb.dll')
     PyTargetAdd('vrpn.pyd', input=COMMON_PANDA_LIBS)
 
 #
@@ -4589,7 +4572,6 @@ if not PkgSkip("EGG"):
     PyTargetAdd('egg.pyd', input='libp3egg_igate.obj')
     PyTargetAdd('egg.pyd', input='libp3egg2pg_igate.obj')
     PyTargetAdd('egg.pyd', input='libpandaegg.dll')
-    PyTargetAdd('egg.pyd', input='libp3interrogatedb.dll')
     PyTargetAdd('egg.pyd', input=COMMON_PANDA_LIBS)
 
 #
@@ -4789,7 +4771,6 @@ if not PkgSkip("ODE"):
     PyTargetAdd('ode.pyd', input='libpandaode_igate.obj')
     PyTargetAdd('ode.pyd', input='p3ode_ext_composite.obj')
     PyTargetAdd('ode.pyd', input='libpandaode.dll')
-    PyTargetAdd('ode.pyd', input='libp3interrogatedb.dll')
     PyTargetAdd('ode.pyd', input=COMMON_PANDA_LIBS)
     PyTargetAdd('ode.pyd', opts=['WINUSER', 'ODE'])
 
@@ -4825,7 +4806,6 @@ if not PkgSkip("BULLET"):
     PyTargetAdd('bullet.pyd', input='bullet_module.obj')
     PyTargetAdd('bullet.pyd', input='libpandabullet_igate.obj')
     PyTargetAdd('bullet.pyd', input='libpandabullet.dll')
-    PyTargetAdd('bullet.pyd', input='libp3interrogatedb.dll')
     PyTargetAdd('bullet.pyd', input=COMMON_PANDA_LIBS)
     PyTargetAdd('bullet.pyd', opts=['WINUSER', 'BULLET'])
 
@@ -4891,7 +4871,6 @@ if not PkgSkip("PANDAPHYSICS"):
     if not PkgSkip("PANDAPARTICLESYSTEM"):
         PyTargetAdd('physics.pyd', input='libp3particlesystem_igate.obj')
     PyTargetAdd('physics.pyd', input='libpandaphysics.dll')
-    PyTargetAdd('physics.pyd', input='libp3interrogatedb.dll')
     PyTargetAdd('physics.pyd', input=COMMON_PANDA_LIBS)
 
 #
@@ -5206,7 +5185,6 @@ if not PkgSkip("DIRECT"):
 
     PyTargetAdd('direct.pyd', input='direct_module.obj')
     PyTargetAdd('direct.pyd', input='libp3direct.dll')
-    PyTargetAdd('direct.pyd', input='libp3interrogatedb.dll')
     PyTargetAdd('direct.pyd', input=COMMON_PANDA_LIBS)
     PyTargetAdd('direct.pyd', opts=['WINUSER', 'WINGDI', 'WINSOCK2'])
 
@@ -5905,7 +5883,6 @@ if not PkgSkip("CONTRIB"):
     PyTargetAdd('ai.pyd', input='ai_module.obj')
     PyTargetAdd('ai.pyd', input='libpandaai_igate.obj')
     PyTargetAdd('ai.pyd', input='libpandaai.dll')
-    PyTargetAdd('ai.pyd', input='libp3interrogatedb.dll')
     PyTargetAdd('ai.pyd', input=COMMON_PANDA_LIBS)
 
 #
@@ -5926,7 +5903,6 @@ if not PkgSkip("CONTRIB") and not PkgSkip("PYTHON"):
     PyTargetAdd('_rplight.pyd', input='rplight_module.obj')
     PyTargetAdd('_rplight.pyd', input='libp3rplight_igate.obj')
     PyTargetAdd('_rplight.pyd', input='p3rplight_composite1.obj')
-    PyTargetAdd('_rplight.pyd', input='libp3interrogatedb.dll')
     PyTargetAdd('_rplight.pyd', input=COMMON_PANDA_LIBS)
 
 #
