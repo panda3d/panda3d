@@ -145,7 +145,6 @@ var READABLE
         File /nonfatal /r "${BUILT}\panda3d\direct${EXT_SUFFIX}"
         File /nonfatal /r "${BUILT}\panda3d\egg${EXT_SUFFIX}"
         File /nonfatal /r "${BUILT}\panda3d\fx${EXT_SUFFIX}"
-        File /nonfatal /r "${BUILT}\panda3d\interrogatedb${EXT_SUFFIX}"
         File /nonfatal /r "${BUILT}\panda3d\physics${EXT_SUFFIX}"
         File /nonfatal /r "${BUILT}\panda3d\_rplight${EXT_SUFFIX}"
         File /nonfatal /r "${BUILT}\panda3d\skel${EXT_SUFFIX}"
