@@ -2128,7 +2128,7 @@ def SdkLocatePython(prefer_thirdparty_python=False):
 
         gil_disabled = locations.get_config_var("Py_GIL_DISABLED")
         if gil_disabled and int(gil_disabled):
-            SDK["PYTHONEXEC"] += "3.13t"
+            SDK["PYTHONEXEC"] += "%d.%dt" % sys.version_info[:2]
             abiflags = "t"
             DefSymbol("PYTHON", "Py_GIL_DISABLED", "1")
         else:

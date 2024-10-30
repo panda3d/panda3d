@@ -396,12 +396,12 @@ jobs:
       if: runner.os != 'Windows'
       shell: bash
       run: |
-        python makepanda/makepanda.py --git-commit=${{github.sha}} --outputdir=built --everything --no-eigen --python-incdir="$pythonLocation/include" --python-libdir="$pythonLocation/lib" --verbose --threads=4 --windows-sdk=10
+        python makepanda/makepanda.py --git-commit=${{github.sha}} --outputdir=built --everything --no-eigen --python-incdir="$pythonLocation/include" --python-libdir="$pythonLocation/lib" --verbose --threads=4 --windows-sdk=10 --msvc-version=14.2
     - name: Test Python 3.13
       if: runner.os != 'Windows'
       shell: bash
       run: |
-        python -m pip install pytest setuptools
+        python -m pip install -r requirements-test.txt
         PYTHONPATH=built LD_LIBRARY_PATH=built/lib:$pythonLocation/lib DYLD_LIBRARY_PATH=built/lib python -m pytest
 
     - name: Set up Python 3.12
