@@ -227,13 +227,13 @@ private:
 
    class SteamGlobalHolder {
    public:
-     SteamGlobalHolder(IPLAudioSettings* audio_settings, IPLContext* steam_context, int channels, int samples);
-     IPLAudioSettings* _audio_settings;
-     IPLContext* _steam_context;
+     SteamGlobalHolder(IPLAudioSettings audio_settings, IPLContext steam_context, int channels, int samples);
+     IPLAudioSettings _audio_settings;
+     IPLContext _steam_context;
      int _channels;
      int _samples;
-     NodePath* listener;
-     NodePath* source;
+     NodePath listener;
+     NodePath source;
    };
 
 public:

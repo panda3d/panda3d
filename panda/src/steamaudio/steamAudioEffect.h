@@ -6,7 +6,7 @@
  * license.  You should have received a copy of this license along
  * with this source code in a file named "LICENSE."
  *
- * @file steamSpatialEffect.h
+ * @file steamAudioEffect.h
  * @author Jackson Sutherland
  */
 
@@ -36,7 +36,7 @@ PUBLISHED:
   void set_active(bool val);
   bool get_active();
 
-private:
+protected:
   virtual IPLAudioBuffer apply_effect(SteamAudioSound::SteamGlobalHolder* globals, IPLAudioBuffer inBuffer);
   bool _isActive;
 
