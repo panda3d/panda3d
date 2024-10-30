@@ -357,6 +357,8 @@ os.environ["MAKEPANDA"] = os.path.abspath(sys.argv[0])
 if GetHost() == "darwin":
     if tuple(OSX_ARCHS) == ('arm64',):
         os.environ["MACOSX_DEPLOYMENT_TARGET"] = "11.0"
+    elif sys.version_info >= (3, 13):
+        os.environ["MACOSX_DEPLOYMENT_TARGET"] = "10.13"
     else:
         os.environ["MACOSX_DEPLOYMENT_TARGET"] = "10.9"
 
@@ -421,6 +423,8 @@ elif target == 'darwin':
 
     if arch_tag == 'arm64':
         PLATFORM = 'macosx-11.0-' + arch_tag
+    elif sys.version_info >= (3, 13):
+        PLATFORM = 'macosx-10.13-' + arch_tag
     else:
         PLATFORM = 'macosx-10.9-' + arch_tag
 
@@ -1333,6 +1337,8 @@ def CompileCxx(obj,src,opts):
 
             if tuple(OSX_ARCHS) == ('arm64',):
                 cmd += " -mmacosx-version-min=11.0"
+            elif sys.version_info >= (3, 13):
+                cmd += " -mmacosx-version-min=10.13"
             else:
                 cmd += " -mmacosx-version-min=10.9"
 
@@ -1870,6 +1876,8 @@ def CompileLink(dll, obj, opts):
 
             if tuple(OSX_ARCHS) == ('arm64',):
                 cmd += " -mmacosx-version-min=11.0"
+            elif sys.version_info >= (3, 13):
+                cmd += " -mmacosx-version-min=10.13"
             else:
                 cmd += " -mmacosx-version-min=10.9"
 
