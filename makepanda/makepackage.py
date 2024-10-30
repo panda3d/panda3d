@@ -795,7 +795,7 @@ def MakeInstallerFreeBSD(version, python_versions=[], **kwargs):
         oscmd("rm -f %s/tmp/python_dep" % outputdir)
 
         if "PYTHONVERSION" in SDK:
-            pyver_nodot = SDK["PYTHONVERSION"][6:].rstrip('dmu').replace('.', '')
+            pyver_nodot = SDK["PYTHONVERSION"][6:].rstrip('dmut').replace('.', '')
         else:
             pyver_nodot = "%d%d" % (sys.version_info[:2])
 

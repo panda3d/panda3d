@@ -40,8 +40,6 @@ public:
   virtual void on_enter_label(int collector_index);
   virtual void on_leave_label(int collector_index);
 
-  void set_collector_index(int collector_index);
-
 protected:
   virtual void normal_guide_bars();
 

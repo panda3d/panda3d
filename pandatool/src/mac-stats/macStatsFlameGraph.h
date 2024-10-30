@@ -84,8 +84,6 @@ private:
   NSToolbarItem *_total_item;
 
   MacStatsChartMenuDelegate *_menu_delegate;
-
-  std::vector<int> _back_stack;
 };
 
 #endif
