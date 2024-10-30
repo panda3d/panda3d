@@ -72,7 +72,7 @@ collide(PyObject* arg, PyObject* callback) {
   nassertr(callback != nullptr, -1);
 
   if (!PyCallable_Check(callback)) {
-    PyErr_Format(PyExc_TypeError, "'%s' object is not callable", callback->ob_type->tp_name);
+    PyErr_Format(PyExc_TypeError, "'%s' object is not callable", Py_TYPE(callback)->tp_name);
     return -1;
 
   } else if (_this->get_id() == nullptr) {

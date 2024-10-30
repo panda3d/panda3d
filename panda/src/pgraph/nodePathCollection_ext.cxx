@@ -75,7 +75,7 @@ __reduce__(PyObject *self) const {
   // object whose constructor we should call (e.g.  this), and the arguments
   // necessary to reconstruct this object.
 
-  PyObject *this_class = (PyObject *)self->ob_type;
+  PyObject *this_class = (PyObject *)Py_TYPE(self);
   if (this_class == nullptr) {
     return nullptr;
   }

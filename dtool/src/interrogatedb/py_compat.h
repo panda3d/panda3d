@@ -65,7 +65,7 @@ typedef int Py_ssize_t;
 
 /* Python 2.6 */
 
-#ifndef Py_TYPE
+#if PY_VERSION_HEX < 0x02060000
 #  define Py_TYPE(ob) (((PyObject*)(ob))->ob_type)
 #endif
 
