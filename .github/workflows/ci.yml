@@ -387,6 +387,23 @@ jobs:
         rmdir panda3d-1.10.14
         (cd thirdparty/darwin-libs-a && rm -rf rocket)
 
+    - name: Set up Python 3.13
+      if: runner.os != 'Windows'
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.13'
+    - name: Build Python 3.13
+      if: runner.os != 'Windows'
+      shell: bash
+      run: |
+        python makepanda/makepanda.py --git-commit=${{github.sha}} --outputdir=built --everything --no-eigen --python-incdir="$pythonLocation/include" --python-libdir="$pythonLocation/lib" --verbose --threads=4 --windows-sdk=10
+    - name: Test Python 3.13
+      if: runner.os != 'Windows'
+      shell: bash
+      run: |
+        python -m pip install pytest setuptools
+        PYTHONPATH=built LD_LIBRARY_PATH=built/lib:$pythonLocation/lib DYLD_LIBRARY_PATH=built/lib python -m pytest
+
     - name: Set up Python 3.12
       uses: actions/setup-python@v5
       with:

@@ -65,7 +65,7 @@ typedef int Py_ssize_t;
 
 /* Python 2.6 */
 
-#ifndef Py_TYPE
+#if PY_VERSION_HEX < 0x02060000
 #  define Py_TYPE(ob) (((PyObject*)(ob))->ob_type)
 #endif
 
@@ -221,8 +221,12 @@ INLINE PyObject *_PyLong_Lshift(PyObject *a, size_t shiftby) {
 
 /* Python 3.9 */
 
+#if PY_VERSION_HEX < 0x030900A4 && !defined(Py_IS_TYPE)
+#  define Py_IS_TYPE(ob, type) (Py_TYPE((PyObject *)ob) == type)
+#endif
+
 #ifndef PyCFunction_CheckExact
-#  define PyCFunction_CheckExact(op) (Py_TYPE(op) == &PyCFunction_Type)
+#  define PyCFunction_CheckExact(op) (Py_IS_TYPE(op, &PyCFunction_Type))
 #endif
 
 #if PY_VERSION_HEX < 0x03090000
@@ -256,6 +260,28 @@ INLINE PyObject *PyObject_CallMethodOneArg(PyObject *obj, PyObject *name, PyObje
 
 INLINE int PyObject_GC_IsTracked(PyObject *obj) {
   return _PyObject_GC_IS_TRACKED(obj);
+}
+#endif
+
+/* Python 3.10 */
+
+#if PY_VERSION_HEX < 0x030A0000
+INLINE int PyModule_AddObjectRef(PyObject *module, const char *name, PyObject *value) {
+  int ret = PyModule_AddObject(module, name, value);
+  if (ret == 0) {
+    Py_INCREF(value);
+  }
+  return ret;
+}
+
+ALWAYS_INLINE PyObject *Py_NewRef(PyObject *obj) {
+  Py_INCREF(obj);
+  return obj;
+}
+
+ALWAYS_INLINE PyObject *Py_XNewRef(PyObject *obj) {
+  Py_XINCREF(obj);
+  return obj;
 }
 #endif
 

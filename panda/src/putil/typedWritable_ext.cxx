@@ -134,10 +134,10 @@ wrap_typed_writable(void *from_this, PyTypeObject *from_type) {
   nassertr(from_type != nullptr, nullptr);
 
   TypedWritableProxy *to_this;
-  if (from_type == &Dtool_TypedWritable._PyType) {
+  if (from_type == Dtool_GetPyTypeObject(&Dtool_TypedWritable)) {
     to_this = (TypedWritableProxy *)(TypedWritable *)from_this;
   }
-  else if (from_type == (PyTypeObject *)&Dtool_TypedObject._PyType) {
+  else if (from_type == Dtool_GetPyTypeObject(&Dtool_TypedObject)) {
     to_this = (TypedWritableProxy *)(TypedObject *)from_this;
   }
   else {

@@ -96,7 +96,7 @@ __init__(PyObject *self, PyObject *source) {
 
   // Now construct the internal list by copying the elements one-at-a-time
   // from Python.
-  PyObject *dict = DtoolInstance_TYPE(self)->_PyType.tp_dict;
+  PyObject *dict = Dtool_GetPyTypeObject(DtoolInstance_TYPE(self))->tp_dict;
   PyObject *push_back = PyDict_GetItemString(dict, "push_back");
   if (push_back == nullptr) {
     PyErr_BadArgument();

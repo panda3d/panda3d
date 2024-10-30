@@ -47,7 +47,7 @@ __init__(PyObject *path) {
     return;
   }
 
-  if (Py_TYPE(path) == &Dtool_Filename._PyType) {
+  if (Py_IS_TYPE(path, Dtool_GetPyTypeObject(&Dtool_Filename))) {
     // Copy constructor.
     *_this = *(Filename *)DtoolInstance_VOID_PTR(path);
     return;

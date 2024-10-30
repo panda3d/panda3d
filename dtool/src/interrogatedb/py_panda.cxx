@@ -321,7 +321,7 @@ static PyObject *Dtool_EnumType_New(PyTypeObject *subtype, PyObject *args, PyObj
                         subtype->tp_name);
   }
 
-  if (Py_TYPE(arg) == subtype) {
+  if (Py_IS_TYPE(arg, subtype)) {
     return Py_NewRef(arg);
   }
 
