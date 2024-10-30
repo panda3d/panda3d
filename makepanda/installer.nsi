@@ -114,6 +114,7 @@ var READABLE
 !insertmacro !defineifexist HAVE_ODE "${BUILT}\bin\libpandaode.dll"
 !insertmacro !defineifexist HAVE_SAMPLES "${SOURCE}\samples"
 !insertmacro !defineifexist HAVE_MAYA_PLUGINS "${BUILT}\plugins\*.mll"
+!insertmacro !defineifexist HAVE_STEAMAUDIO "${BUILT}\bin\libp3steam_audio.dll"
 
 !macro RemovePythonPath PYVER
     ReadRegStr $0 HKCU "Software\Python\PythonCore\${PYVER}\PythonPath\Panda3D" ""

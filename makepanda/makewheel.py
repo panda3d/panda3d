@@ -73,7 +73,7 @@ ABI_TAG = get_abi_tag()
 EXCLUDE_EXT = [".pyc", ".pyo", ".N", ".prebuilt", ".xcf", ".plist", ".vcproj", ".sln"]
 
 # Plug-ins to install.
-PLUGIN_LIBS = ["pandagl", "pandagles", "pandagles2", "pandadx9", "p3tinydisplay", "p3ptloader", "p3assimp", "p3ffmpeg", "p3openal_audio", "p3fmod_audio", "p3headlessgl"]
+PLUGIN_LIBS = ["pandagl", "pandagles", "pandagles2", "pandadx9", "p3tinydisplay", "p3ptloader", "p3assimp", "p3ffmpeg", "p3openal_audio", "p3fmod_audio", "p3headlessgl", "p3steam_audio"]
 
 # Libraries included in manylinux ABI that should be ignored.  See PEP 513/571/599.
 MANYLINUX_LIBS = [

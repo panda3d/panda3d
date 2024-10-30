@@ -855,6 +855,7 @@ if (COMPILER=="GCC"):
     if GetTarget() != 'emscripten':
         # Most of these are provided by emscripten or via emscripten-ports.
         SmartPkgEnable("OPENAL",   "openal",    ("openal"), "AL/al.h", framework = "OpenAL")
+        SmartPkgEnable("STEAMAUDIO",   "steamaudio",    ("steamaudio"), framework = "SteamAudio")
         SmartPkgEnable("EIGEN",    "eigen3",    (), ("Eigen/Dense",), target_pkg = 'ALWAYS')
         SmartPkgEnable("VORBIS",   "vorbisfile",("vorbisfile", "vorbis", "ogg"), ("ogg/ogg.h", "vorbis/vorbisfile.h"))
         SmartPkgEnable("BULLET",   "bullet", ("BulletSoftBody", "BulletDynamics", "BulletCollision", "LinearMath"), ("bullet", "bullet/btBulletDynamicsCommon.h"))
@@ -4395,6 +4396,17 @@ if PkgSkip("OPENAL") == 0:
     TargetAdd('libp3openal_audio.dll', input='openal_audio_openal_audio_composite1.obj')
     TargetAdd('libp3openal_audio.dll', input=COMMON_PANDA_LIBS)
     TargetAdd('libp3openal_audio.dll', opts=['MODULE', 'ADVAPI', 'WINUSER', 'WINMM', 'WINSHELL', 'WINOLE', 'OPENAL', 'OPENSLES'])
+
+#
+# DIRECTORY: panda/src/steamaudio/
+#
+if PkgSkip("STEAMAUDIO") == 0:
+    OPTS=['DIR:panda/src/steamaudio', 'BUILDING:STEAM_AUDIO', 'STEAM']
+    TargetAdd('steam_audio_steam_audio_composite1.obj', opts=OPTS, input='p3steamAudio_composite1.cxx')
+    TargetAdd('libp3steam_audio.dll', input='steam_audio_steam_audio_composite1.obj')
+    TargetAdd('libp3steam_audio.dll', input=COMMON_PANDA_LIBS)
+    TargetAdd('libp3steam_audio.dll', opts=['MODULE', 'ADVAPI', 'WINUSER', 'WINMM', 'WINSHELL', 'WINOLE', 'OPENAL', 'OPENSLES'])
+
 
 #
 # DIRECTORY: panda/src/downloadertools/
