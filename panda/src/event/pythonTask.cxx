@@ -300,13 +300,13 @@ __setattr__(PyObject *self, PyObject *attr, PyObject *v) {
   if (!PyUnicode_Check(attr)) {
     PyErr_Format(PyExc_TypeError,
                  "attribute name must be string, not '%.200s'",
-                 attr->ob_type->tp_name);
+                 Py_TYPE(attr)->tp_name);
     return -1;
   }
 
   PyObject *descr = _PyType_Lookup(Py_TYPE(self), attr);
   if (descr != nullptr) {
-    descrsetfunc f = descr->ob_type->tp_descr_set;
+    descrsetfunc f = Py_TYPE(descr)->tp_descr_set;
     if (f != nullptr) {
       return f(descr, self, v);
     }
@@ -469,7 +469,7 @@ cancel() {
 #endif
 
       // Shortcut for unextended AsyncFuture.
-      if (Py_TYPE(_fut_waiter) == (PyTypeObject *)&Dtool_AsyncFuture) {
+      if (Py_IS_TYPE(_fut_waiter, Dtool_GetPyTypeObject(&Dtool_AsyncFuture))) {
         AsyncFuture *fut = (AsyncFuture *)DtoolInstance_VOID_PTR(_fut_waiter);
         if (!fut->done()) {
           fut->cancel();
@@ -717,7 +717,7 @@ do_python_task() {
         _retrieved_exception = false;
 
         if (task_cat.is_debug()) {
-          if (_exception != nullptr && Py_TYPE(_exception) == &PyType_Type) {
+          if (_exception != nullptr && Py_IS_TYPE(_exception, &PyType_Type)) {
             task_cat.debug()
               << *this << " received " << ((PyTypeObject *)_exception)->tp_name << " from coroutine.\n";
           } else {
@@ -862,7 +862,7 @@ do_python_task() {
   PyMethodDef *meth = nullptr;
   if (PyCFunction_Check(result)) {
     meth = ((PyCFunctionObject *)result)->m_ml;
-  } else if (Py_TYPE(result) == &PyMethodDescr_Type) {
+  } else if (Py_IS_TYPE(result, &PyMethodDescr_Type)) {
     meth = ((PyMethodDescrObject *)result)->d_method;
   }
 

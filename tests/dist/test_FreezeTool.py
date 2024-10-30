@@ -103,5 +103,13 @@ def test_Freezer_generateRuntimeFromStub(tmp_path, use_console):
         # Not supported; see #1348
         return
 
-    output = subprocess.check_output(target)
+    env = None
+    if sys.platform == "win32":
+        env = dict(os.environ)
+        if not os.environ.get('PATH'):
+            env['PATH'] = bin_dir
+        else:
+            env['PATH'] = bin_dir + os.pathsep + os.environ['PATH']
+
+    output = subprocess.check_output(target, env=env)
     assert output.replace(b'\r\n', b'\n') == b'Module imported\nHello world\n'
