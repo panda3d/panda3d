@@ -82,6 +82,7 @@ PkgListSet(["PYTHON", "DIRECT",                        # Python support
   "EGL",                                               # OpenGL (ES) integration
   "EIGEN",                                             # Linear algebra acceleration
   "OPENAL", "FMODEX",                                  # Audio playback
+  "STEAMAUDIO",                                        # Audio spatialization/effects
   "VORBIS", "OPUS", "FFMPEG", "SWSCALE", "SWRESAMPLE", # Audio decoding
   "ODE", "BULLET", "PANDAPHYSICS",                     # Physics
   "SPEEDTREE",                                         # SpeedTree
@@ -735,6 +736,11 @@ if (COMPILER == "MSVC"):
     if (PkgSkip("OPENAL")==0):
         LibName("OPENAL", GetThirdpartyDir() + "openal/lib/OpenAL32.lib")
         if not os.path.isfile(GetThirdpartyDir() + "openal/bin/OpenAL32.dll"):
+            # Link OpenAL Soft statically.
+            DefSymbol("OPENAL", "AL_LIBTYPE_STATIC")
+    if (PkgSkip("STEAMAUDIO")==0):
+        LibName("STEAMAUDIO", GetThirdpartyDir() + "steamaudio\lib\windows-x86\phonon.lib")
+        if not os.path.isfile(GetThirdpartyDir() + "steamaudio\lib\windows-x86\phonon.dll"):
             # Link OpenAL Soft statically.
             DefSymbol("OPENAL", "AL_LIBTYPE_STATIC")
     if (PkgSkip("ODE")==0):
