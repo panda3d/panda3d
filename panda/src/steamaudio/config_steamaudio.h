@@ -15,7 +15,10 @@
 
 #include "pandabase.h"
 #include "notifyCategoryProxy.h"
+#include "dconfig.h"
+#include "audioManager.h"
 
+ConfigureDecl(config_steamaudio, EXPCL_OPENAL_AUDIO, EXPTP_OPENAL_AUDIO);
 NotifyCategoryDecl(steamaudio, EXPCL_STEAMAUDIO, EXPTP_STEAMAUDIO);
 
 extern EXPCL_STEAMAUDIO void init_libsteamaudio();

@@ -17,6 +17,7 @@
 
 #include "steamDirectEffect.h"
 
+#include "pandaSystem.h"
 #include "dconfig.h"
 
 #if !defined(CPPPARSER) && !defined(LINK_ALL_STATIC) && !defined(BUILDING_STEAM_AUDIO)

@@ -743,10 +743,8 @@ if (COMPILER == "MSVC"):
             # Link OpenAL Soft statically.
             DefSymbol("OPENAL", "AL_LIBTYPE_STATIC")
     if (PkgSkip("STEAMAUDIO")==0):
-        LibName("STEAMAUDIO", GetThirdpartyDir() + "steamaudio\lib\windows-x86\phonon.lib")
-        if not os.path.isfile(GetThirdpartyDir() + "steamaudio\lib\windows-x86\phonon.dll"):
-            # Link OpenAL Soft statically.
-            DefSymbol("OPENAL", "AL_LIBTYPE_STATIC")
+        LibName("STEAMAUDIO", GetThirdpartyDir() + "steamaudio/lib/windows-x64/phonon.lib")
+        IncDirectory("STEAMAUDIO", GetThirdpartyDir() + "steamaudio/include")
     if (PkgSkip("ODE")==0):
         LibName("ODE",      GetThirdpartyDir() + "ode/lib/ode_single.lib")
         DefSymbol("ODE",    "dSINGLE", "")
@@ -864,7 +862,7 @@ if (COMPILER=="GCC"):
 
     if GetTarget() != 'emscripten':
         # Most of these are provided by emscripten or via emscripten-ports.
-        SmartPkgEnable("OPENAL",   "openal",    ("openal"), "AL/al.h", framework = "OpenAL")
+        SmartPkgEnable("OPENAL",   "openal",    ("openal", "steamaudio"), "AL/al.h", framework = "OpenAL")
         SmartPkgEnable("STEAMAUDIO",   "steamaudio",    ("steamaudio"), framework = "SteamAudio")
         SmartPkgEnable("EIGEN",    "eigen3",    (), ("Eigen/Dense",), target_pkg = 'ALWAYS')
         SmartPkgEnable("VORBIS",   "vorbisfile",("vorbisfile", "vorbis", "ogg"), ("ogg/ogg.h", "vorbis/vorbisfile.h"))
