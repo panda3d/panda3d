@@ -117,7 +117,10 @@ def _model_to_bam(_build_cmd, srcpath, dstpath):
     writer = p3d.BamWriter(dout)
     writer.root_node = node
     writer.init()
-    writer.set_file_texture_mode(p3d.BamEnums.BTM_relative)
+    if _build_cmd.bam_embed_textures:
+        writer.set_file_texture_mode(p3d.BamEnums.BTM_rawdata)
+    else:
+        writer.set_file_texture_mode(p3d.BamEnums.BTM_relative)
     writer.write_object(node)
     writer.flush()
     writer = None
@@ -323,6 +326,7 @@ class build_apps(setuptools.Command):
         ]
         self.file_handlers = {}
         self.bam_model_extensions = []
+        self.bam_embed_textures = False
         self.exclude_dependencies = [
             # Windows
             'kernel32.dll', 'user32.dll', 'wsock32.dll', 'ws2_32.dll',
