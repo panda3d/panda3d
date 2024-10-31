@@ -96,7 +96,7 @@ PUBLISHED:
   MAKE_PROPERTY(file_version, get_file_version);
   MAKE_PROPERTY(file_endian, get_file_endian);
   MAKE_PROPERTY(file_stdfloat_double, get_file_stdfloat_double);
-  MAKE_PROPERTY(file_texture_mode, get_file_texture_mode);
+  MAKE_PROPERTY(file_texture_mode, get_file_texture_mode, set_file_texture_mode);
   MAKE_PROPERTY(root_node, get_root_node, set_root_node);
 
 public:
