@@ -75,6 +75,7 @@ def _model_to_bam(_build_cmd, srcpath, dstpath):
 
     src_fn = p3d.Filename.from_os_specific(srcpath)
     dst_fn = p3d.Filename.from_os_specific(dstpath)
+    dst_fn.set_binary()
 
     _register_python_loaders()
 
@@ -85,8 +86,30 @@ def _model_to_bam(_build_cmd, srcpath, dstpath):
     if not node:
         raise IOError('Failed to load model: %s' % (srcpath))
 
-    if not p3d.NodePath(node).write_bam_file(dst_fn):
-        raise IOError('Failed to write .bam file: %s' % (dstpath))
+    stream = p3d.OFileStream()
+    if not dst_fn.open_write(stream):
+        raise IOError('Failed to open .bam file for writing: %s' % (dstpath))
+
+    # We pass it the source filename here so that texture files are made
+    # relative to the original pathname and don't point from the destination
+    # back into the source directory.
+    dout = p3d.DatagramOutputFile()
+    if not dout.open(stream, src_fn) or not dout.write_header("pbj\0\n\r"):
+        raise IOError('Failed to write to .bam file: %s' % (dstpath))
+
+    writer = p3d.BamWriter(dout)
+    writer.root_node = node
+    writer.init()
+    if _build_cmd.bam_embed_textures:
+        writer.set_file_texture_mode(p3d.BamEnums.BTM_rawdata)
+    else:
+        writer.set_file_texture_mode(p3d.BamEnums.BTM_relative)
+    writer.write_object(node)
+    writer.flush()
+    writer = None
+    dout.close()
+    dout = None
+    stream.close()
 
 
 macosx_binary_magics = (
@@ -312,6 +335,7 @@ class build_apps(setuptools.Command):
         ]
         self.file_handlers = {}
         self.bam_model_extensions = ['.egg', '.gltf', '.glb']
+        self.bam_embed_textures = False
         self.exclude_dependencies = [
             # Windows
             'kernel32.dll', 'user32.dll', 'wsock32.dll', 'ws2_32.dll',
@@ -326,7 +350,8 @@ class build_apps(setuptools.Command):
 
             # manylinux1/linux
             'libdl.so.*', 'libstdc++.so.*', 'libm.so.*', 'libgcc_s.so.*',
-            'libpthread.so.*', 'libc.so.*', 'ld-linux-x86-64.so.*',
+            'libpthread.so.*', 'libc.so.*',
+            'ld-linux-x86-64.so.*', 'ld-linux-aarch64.so.*',
             'libgl.so.*', 'libx11.so.*', 'libncursesw.so.*', 'libz.so.*',
             'librt.so.*', 'libutil.so.*', 'libnsl.so.1', 'libXext.so.6',
             'libXrender.so.1', 'libICE.so.6', 'libSM.so.6', 'libEGL.so.1',
