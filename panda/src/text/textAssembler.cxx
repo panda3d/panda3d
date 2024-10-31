@@ -44,6 +44,10 @@ using std::max;
 using std::min;
 using std::wstring;
 
+enum ClusterFlags {
+  CF_small_caps = 0x200000,
+};
+
 // This is the factor by which CT_small scales the character down.
 static const PN_stdfloat small_accent_scale = 0.6f;
 
@@ -1531,7 +1535,20 @@ assemble_row(TextAssembler::TextRow &row,
     }
 
     if (graphic == nullptr && harfbuff != nullptr) {
-      hb_buffer_add(harfbuff, character, character);
+      unsigned int cluster = character;
+
+      if (properties->get_small_caps()) {
+        const UnicodeLatinMap::Entry *map_entry =
+          UnicodeLatinMap::look_up((char32_t)character);
+        if (map_entry != nullptr &&
+            map_entry->_toupper_character != (char32_t)character) {
+          character = map_entry->_toupper_character;
+
+          // Set a high bit on the cluster to flag this as needing a scale.
+          cluster |= CF_small_caps;
+        }
+      }
+      hb_buffer_add(harfbuff, character, cluster);
       continue;
     }
 #endif
@@ -1768,7 +1785,8 @@ shape_buffer(hb_buffer_t *buf, PlacedGlyphs &placed_glyphs, PN_stdfloat &xpos,
   hb_glyph_position_t *glyph_pos = hb_buffer_get_glyph_positions(buf, &glyph_count);
 
   for (unsigned int i = 0; i < glyph_count; ++i) {
-    int character = glyph_info[i].cluster;
+    unsigned int cluster = glyph_info[i].cluster;
+    int character = cluster & 0x1fffff;
     int glyph_index = glyph_info[i].codepoint;
 
     CPT(TextGlyph) glyph;
@@ -1807,6 +1825,12 @@ shape_buffer(hb_buffer_t *buf, PlacedGlyphs &placed_glyphs, PN_stdfloat &xpos,
     placement._ypos = properties.get_glyph_shift() + y_offset;
     placement._slant = properties.get_slant();
     placement._properties = &properties;
+
+    if (cluster & CF_small_caps) {
+      advance *= properties.get_small_caps_scale();
+      placement._scale *= properties.get_small_caps_scale();
+    }
+
     placed_glyphs.push_back(placement);
 
     xpos += advance;
