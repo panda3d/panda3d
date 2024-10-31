@@ -135,7 +135,7 @@ private:
   // Stores the PandaNode representing the root of the node hierarchy we are
   // currently writing, if any, for the purpose of writing NodePaths.  This is
   // a TypedWritable since PandaNode is defined in pgraph.
-  TypedWritable *_root_node;
+  TypedWritable *_root_node = nullptr;
 
   // This is the set of all TypeHandles already written.
   pset<int, int_hash> _types_written;
