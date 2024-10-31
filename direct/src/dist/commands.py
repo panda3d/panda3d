@@ -92,6 +92,7 @@ def _model_to_bam(_build_cmd, srcpath, dstpath):
 
     src_fn = p3d.Filename.from_os_specific(srcpath)
     dst_fn = p3d.Filename.from_os_specific(dstpath)
+    dst_fn.set_binary()
 
     _register_python_loaders()
 
@@ -102,8 +103,27 @@ def _model_to_bam(_build_cmd, srcpath, dstpath):
     if not node:
         raise IOError('Failed to load model: %s' % (srcpath))
 
-    if not p3d.NodePath(node).write_bam_file(dst_fn):
-        raise IOError('Failed to write .bam file: %s' % (dstpath))
+    stream = p3d.OFileStream()
+    if not dst_fn.open_write(stream):
+        raise IOError('Failed to open .bam file for writing: %s' % (dstpath))
+
+    # We pass it the source filename here so that texture files are made
+    # relative to the original pathname and don't point from the destination
+    # back into the source directory.
+    dout = p3d.DatagramOutputFile()
+    if not dout.open(stream, src_fn) or not dout.write_header("pbj\0\n\r"):
+        raise IOError('Failed to write to .bam file: %s' % (dstpath))
+
+    writer = p3d.BamWriter(dout)
+    writer.root_node = node
+    writer.init()
+    writer.set_file_texture_mode(p3d.BamEnums.BTM_relative)
+    writer.write_object(node)
+    writer.flush()
+    writer = None
+    dout.close()
+    dout = None
+    stream.close()
 
 
 def egg2bam(_build_cmd, srcpath, dstpath):
