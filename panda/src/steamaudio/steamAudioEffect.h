@@ -16,28 +16,27 @@
 #include "pandabase.h"
 #include "typedObject.h"
 
-#include "steamAudioSound.h"
 #include "nodePath.h"
 #include "movieAudioCursor.h"
 #include "plist.h"//Don't know if I'll need these, but good idea to keep in hand
 #include "pmap.h"
 #include "pset.h"
+#include "steamAudioSound.h"
 
 #include <phonon.h>
 
+class EXPCL_PANDA_STEAMAUDIO SteamAudioEffect : public TypedReferenceCount {
 
-class EXPCL_STEAMAUDIO SteamAudioEffect : public TypedObject {
-
-  friend class SteamAudioSound
+  friend class SteamAudioSound;
 PUBLISHED:
-  virtual SteamAudioEffect();
-  virtual ~SteamAudioEffect();
+  SteamAudioEffect();
+  ~SteamAudioEffect();
 
   void set_active(bool val);
   bool get_active();
 
 protected:
-  virtual IPLAudioBuffer apply_effect(SteamAudioSound::SteamGlobalHolder *globals, IPLAudioBuffer inBuffer);
+  virtual IPLAudioBuffer apply_effect(SteamAudioSound::SteamGlobalHolder* globals, IPLAudioBuffer inBuffer);
   bool _isActive;
 
 
@@ -56,6 +55,8 @@ public:
     init_type();
     return get_class_type();
   }
-}
+private:
+  static TypeHandle _type_handle;
+};
 
 #endif

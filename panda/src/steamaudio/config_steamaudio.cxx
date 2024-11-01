@@ -25,7 +25,7 @@
 #endif
 
 Configure(config_steamaudio);
-NotifyCategoryDef(steamaudio, "");
+NotifyCategoryDef(steamaudio, ":audio");
 
 ConfigureFn(config_steamaudio) {
   init_libsteamaudio();
@@ -48,5 +48,5 @@ init_libsteamaudio() {
   SteamAudioManager::init_type();
   SteamAudioSound::init_type();
 
-  SteamDirectEffect::init_type()
+  SteamDirectEffect::init_type();
 }

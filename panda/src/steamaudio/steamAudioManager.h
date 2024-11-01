@@ -33,6 +33,8 @@
 #include "reMutex.h"
 #include "nodePath.h"
 
+//#include "steamAudioEffect.h"
+
 #include <phonon.h>//Import steam audio
 
  // OSX uses the OpenAL framework
@@ -44,7 +46,10 @@
 #include <AL/alc.h>
 #endif
 
-class EXPCL_STEAMAUDIO SteamAudioManager final : public AudioManager {
+class SteamAudioSound;
+class SteamAudioEffect;
+
+class EXPCL_PANDA_STEAMAUDIO SteamAudioManager final : public AudioManager {
   class SteamSoundData;
 
   friend class SteamAudioSound;
@@ -59,8 +64,11 @@ PUBLISHED:
 
   virtual bool is_valid();
 
-  virtual PT(AudioSound) get_sound(const Filename&, NodePath source, bool positional = false, int mode = SM_stream);
-  virtual PT(AudioSound) get_sound(MovieAudio* sound, NodePath source, bool positional = false, int mode = SM_stream);
+  virtual PT(SteamAudioSound) get_sound(const Filename&, NodePath source, bool positional = false, int mode = SM_stream);
+  virtual PT(SteamAudioSound) get_sound(MovieAudio* sound, NodePath source, bool positional = false, int mode = SM_stream);
+
+  virtual PT(AudioSound) get_sound(const Filename&, bool positional = false, int mode = SM_stream);
+  virtual PT(AudioSound) get_sound(MovieAudio* sound, bool positional = false, int mode = SM_stream);
 
   virtual void uncache_sound(const Filename&);
   virtual void clear_cache();
@@ -129,12 +137,12 @@ private:
   bool can_use_audio(MovieAudioCursor* source);
   bool should_load_audio(MovieAudioCursor* source, int mode);
 
-  SoundData* get_sound_data(MovieAudio* source, int mode);
+  SteamSoundData* get_sound_data(MovieAudio* source, int mode);
 
   // Tell the manager that the sound dtor was called.
   void release_sound(SteamAudioSound* audioSound);
-  void increment_client_count(SoundData* sd);
-  void decrement_client_count(SoundData* sd);
+  void increment_client_count(SteamSoundData* sd);
+  void decrement_client_count(SteamSoundData* sd);
   void discard_excess_cache(int limit);
 
   void delete_buffer(ALuint buffer);
@@ -169,8 +177,8 @@ private:
 
   class SteamSoundData {
   public:
-    SoundData();
-    ~SoundData();
+    SteamSoundData();
+    ~SteamSoundData();
     SteamAudioManager* _manager;
     PT(MovieAudio)       _movie;
     ALuint               _sample;
@@ -183,7 +191,7 @@ private:
   };
 
 
-  typedef phash_map<std::string, SoundData*> SampleCache;
+  typedef phash_map<std::string, SteamSoundData*> SampleCache;
   SampleCache _sample_cache;
 
   typedef phash_set<PT(SteamAudioSound)> SoundsPlaying;

@@ -745,6 +745,7 @@ if (COMPILER == "MSVC"):
     if (PkgSkip("STEAMAUDIO")==0):
         LibName("STEAMAUDIO", GetThirdpartyDir() + "steamaudio/lib/windows-x64/phonon.lib")
         IncDirectory("STEAMAUDIO", GetThirdpartyDir() + "steamaudio/include")
+        #DefSymbol("STEAMAUDIO", "STEAMAUDIO_LIBTYPE_STATIC")
     if (PkgSkip("ODE")==0):
         LibName("ODE",      GetThirdpartyDir() + "ode/lib/ode_single.lib")
         DefSymbol("ODE",    "dSINGLE", "")
@@ -4391,11 +4392,12 @@ if PkgSkip("OPENAL") == 0:
 # DIRECTORY: panda/src/steamaudio/
 #
 if PkgSkip("STEAMAUDIO") == 0:
-    OPTS=['DIR:panda/src/steamaudio', 'BUILDING:STEAM_AUDIO', 'STEAM']
+    OPTS=['DIR:panda/src/steamaudio', 'BUILDING:STEAM_AUDIO', 'STEAMAUDIO', 'OPENAL']
     TargetAdd('steam_audio_steam_audio_composite1.obj', opts=OPTS, input='p3steamAudio_composite1.cxx')
     TargetAdd('libp3steam_audio.dll', input='steam_audio_steam_audio_composite1.obj')
     TargetAdd('libp3steam_audio.dll', input=COMMON_PANDA_LIBS)
-    TargetAdd('libp3steam_audio.dll', opts=['MODULE', 'ADVAPI', 'WINUSER', 'WINMM', 'WINSHELL', 'WINOLE', 'OPENAL', 'OPENSLES'])
+    #TargetAdd('libp3steam_audio.dll', ipath = GetThirdpartyDir() + "steamaudio/include")
+    TargetAdd('libp3steam_audio.dll', opts=['MODULE', 'ADVAPI', 'WINUSER', 'WINMM', 'WINSHELL', 'WINOLE', 'OPENAL', 'OPENSLES', 'STEAMAUDIO'])
 
 
 #

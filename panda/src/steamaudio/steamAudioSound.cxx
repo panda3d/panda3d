@@ -17,7 +17,6 @@
 #include "throw_event.h"
 #include "audioSound.h"
 #include "nodePath.h"
-#include "steamAudioSound.h"
 #include "steamAudioManager.h"
 
 TypeHandle SteamAudioSound::_type_handle;
@@ -619,7 +618,7 @@ push_fresh_buffers() {
       }
       if (_steam_effects > 0 || _manager->_steam_effects > 0) {//If we have any steam effects, we need to apply them.
         IPLfloat32 fData[8192];//we need to change 16ints to IPLfloats
-        for (i = 0; i < data.size(); i++) {
+        for (size_t i = 0; i < data.size(); i++) {
           fData[i] = (IPLfloat32)(float)int16_t*(data)[i];//get int16_t and cast to IPLfloat32
         }
         IPLAudioBuffer inBuffer;
@@ -627,19 +626,25 @@ push_fresh_buffers() {
         iplAudioBufferDeinterleave(_manager->_steamContext, *fData, inBuffer);
         SteamAudioSound::SteamGlobalHolder globals(_manager->_audioSettings*, _manager->_steamContext*, channels, samples);//input variables
 
-        for (i = 0; i < _manager->_steam_effects.size; i++) {
+        for (size_t i = 0; i < _manager->_steam_effects.size; i++) {
           SteamAudioEffect effect _manager->_steam_effects[i];
           if (manager._isActive) {
             IPLAudioBuffer outBuffer = manager.apply_effect(*globals, inBuffer);
-            swap(inBuffer, outBuffer);
+            IPLAudioBuffer temp = inBuffer;
+            inBuffer = outBuffer;
+            outBuffer = temp;
+            delete temp;
             iplAudioBufferFree(_manager->_steamContext, outBuffer);
           }
         }
-        for (i = 0; i < _steam_effects.size; i++) {
+        for (size_t i = 0; i < _steam_effects.size; i++) {
           SteamAudioEffect effect _steam_effects[i];
           if (manager._isActive) {
             IPLAudioBuffer outBuffer = manager.apply_effect(*globals, inBuffer);
-            swap(inBuffer, outBuffer);
+            IPLAudioBuffer temp = inBuffer;
+            inBuffer = outBuffer;
+            outBuffer = temp;
+            delete temp;
             iplAudioBufferFree(_manager->_steamContext, outBuffer);
           }
         }
@@ -647,7 +652,7 @@ push_fresh_buffers() {
         iplAudioBufferInterleave(_manager->_steamContext, inBuffer, *fData);
         iplBufferFree(_manager->_steamContext, inBuffer);
 
-        for (i = 0; i < data.size(); i++) {
+        for (size_t i = 0; i < data.size(); i++) {
           (int16_t*)data[i] = (int16_t)(float)fData[i];
         }
       }
@@ -1148,8 +1153,8 @@ find_steam_audio_effect(SteamAudioEffect effect) {
 *Removes an effect from this object, then returns true if successful.
 **/
 void SteamAudioSound::
-remove_steam_audio_effect(int index) {
-  it = _steam_effects.find(_steam_effects.begin(), _steam_effects.end(), effect);
+remove_steam_audio_effect(SteamAudioEffect effect) {
+  auto it = _steam_effects.find(_steam_effects.begin(), _steam_effects.end(), effect);
   if (it != _steam_effects.end()) {
     _steam_effects.erase(it);
     return true;

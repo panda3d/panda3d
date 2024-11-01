@@ -15,7 +15,7 @@
 #include "steamDirectEffect.h"
 #include "steamAudioManager.h"
 
-#include "PTA_float"
+#include "PTA_float.h"
 #include "nodePath.h"
 
 #include <phonon.h>

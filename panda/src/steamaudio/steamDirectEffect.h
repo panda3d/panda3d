@@ -16,60 +16,60 @@
 #include "pandabase.h"
 #include "typedObject.h"
 
-#include "steamAudioManager.h"
-#include "steamAudioSound.h"
 #include "nodePath.h"
 #include "movieAudioCursor.h"
 #include "plist.h"//Don't know if I'll need these, but good idea to keep in hand
-#include "PTA_float"
+#include "PTA_float.h"
 #include "nodePath.h"
 #include "steamAudioEffect.h"
 
 #include <phonon.h>
 
+class SteamAudioSound;
 
-class EXPCL_STEAMAUDIO SteamDirectEffect : public SteamAudioEffect {
+class EXPCL_PANDA_STEAMAUDIO SteamDirectEffect : public SteamAudioEffect {
 
-friend class SteamAudioSound
+  friend class SteamAudioSound;
+
 PUBLISHED:
-    SteamDirectEffect();
-    ~SteamDirectEffect();
+   SteamDirectEffect();
+  ~SteamDirectEffect();
 
-    void set_distance_attenuation(unsigned short state);
-    unsigned short get_distance_attenuation();
-    void set_distance_attenuation_amount(float val);
-    float get_distance_attenuation_ammount();
+  void set_distance_attenuation(unsigned short state);
+  unsigned short get_distance_attenuation();
+  void set_distance_attenuation_amount(float val);
+  float get_distance_attenuation_ammount();
 
-    void set_air_absorption(unsigned short state);
-    unsigned short get_air_absorption();
-    void set_air_eq(float val1, float val2, float val3);
-    PTA_float get_air_eq();
+  void set_air_absorption(unsigned short state);
+  unsigned short get_air_absorption();
+  void set_air_eq(float val1, float val2, float val3);
+  PTA_float get_air_eq();
 
-    void set_directivity(unsigned short state);
-    unsigned short get_directivity();
-    void configure_directivity(float directivity_amnt, float dipole_amnt, float dipole_pwr);
-    float get_directivity_amnt();
-    float get_dipole_amnt();
-    float get_dipole_pwr();
+  void set_directivity(unsigned short state);
+  unsigned short get_directivity();
+  void configure_directivity(float directivity_amnt, float dipole_amnt, float dipole_pwr);
+  float get_directivity_amnt();
+  float get_dipole_amnt();
+  float get_dipole_pwr();
 
-    void set_occlusion(unsigned short state);
-    unsigned short get_occlusion();
-    void set_occlusion_amount(float val);
-    float get_occlusion_ammount();
+  void set_occlusion(unsigned short state);
+  unsigned short get_occlusion();
+  void set_occlusion_amount(float val);
+  float get_occlusion_ammount();
 
-    void set_transmission(unsigned short state);
-    unsigned short get_transmission();
-    void set_transmission_eq(float val1, float val2, float val3);
-    PTA_float get_transmission_eq();
+  void set_transmission(unsigned short state);
+  unsigned short get_transmission();
+  void set_transmission_eq(float val1, float val2, float val3);
+  PTA_float get_transmission_eq();
 
-    enum val_calc_mode {
-      SAD_DISABLED,//don't use this sub-effect
-      SAD_GENERATE,//automatically generate values
-      SAD_USER//use user-provided values
-    };
+  enum val_calc_mode {
+    SAD_DISABLED,//don't use this sub-effect
+    SAD_GENERATE,//automatically generate values
+    SAD_USER//use user-provided values
+  };
 
 protected:
-  virtual IPLAudioBuffer apply_effect(SteamAudioSound::SteamGlobalHolder *globals, IPLAudioBuffer inBuffer);
+  virtual IPLAudioBuffer apply_effect(SteamAudioSound::SteamGlobalHolder* globals, IPLAudioBuffer inBuffer);
 
   unsigned short _dist_atten;//IPL_DIRECTEFFECTFLAGS_APPLYDISTANCEATTENUATION
   float _dist_atten_amnt;
@@ -109,6 +109,8 @@ public:
     init_type();
     return get_class_type();
   }
-}
+private:
+  static TypeHandle _type_handle;
+};
 
 #endif

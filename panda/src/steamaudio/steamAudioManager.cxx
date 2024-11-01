@@ -79,10 +79,10 @@ void alc_audio_errcheck(const char* context, ALCdevice* device) {
 /**
  * Factory Function
  */
-AudioManager* Create_SteamAudioManager() {
+/*AudioManager* Create_SteamAudioManager() {
   audio_debug("Create_SteamAudioManager()");
   return new SteamAudioManager;
-}
+}*/
 
 
 /**
@@ -211,7 +211,7 @@ SteamAudioManager() {
     iplContextCreate(&contextSettings, &_steamContext);
 
     //make audiosettings
-    _steamAudioSettings = new IPLAudioSettings{};
+    _steamAudioSettings = IPLAudioSettings{};
     _steamAudioSettings.samplingRate = 44100;//TODO:: make this dependant on a configvar
     _steamAudioSettings.frameSize = 8192;
   }
@@ -408,7 +408,7 @@ should_load_audio(MovieAudioCursor* source, int mode) {
  * When you are done with the SoundData, you need to decrement the client
  * count.
  */
-SteamAudioManager::SoundData* SteamAudioManager::
+SteamAudioManager::SteamSoundData* SteamAudioManager::
 get_sound_data(MovieAudio* movie, int mode) {
   ReMutexHolder holder(_lock);
   const Filename& path = movie->get_filename();
@@ -419,7 +419,7 @@ get_sound_data(MovieAudio* movie, int mode) {
     if (mode != SM_stream) {
       SampleCache::iterator lsmi = _sample_cache.find(path);
       if (lsmi != _sample_cache.end()) {
-        SoundData* sd = (*lsmi).second;
+        SteamSoundData* sd = (*lsmi).second;
         increment_client_count(sd);
         return sd;
       }
@@ -428,7 +428,7 @@ get_sound_data(MovieAudio* movie, int mode) {
     if (mode != SM_sample) {
       ExpirationQueue::iterator exqi;
       for (exqi = _expiring_streams.begin(); exqi != _expiring_streams.end(); exqi++) {
-        SoundData* sd = (SoundData*)(*exqi);
+        SteamSoundData* sd = (SteamSoundData*)(*exqi);
         if (sd->_movie->get_filename() == path) {
           increment_client_count(sd);
           return sd;
@@ -448,7 +448,7 @@ get_sound_data(MovieAudio* movie, int mode) {
     return nullptr;
   }
 
-  SoundData* sd = new SoundData();
+  SteamSoundData* sd = new SteamSoundData();
   sd->_client_count = 1;
   sd->_manager = this;
   sd->_movie = movie;
@@ -499,7 +499,7 @@ get_sound_data(MovieAudio* movie, int mode) {
 /**
  * This is what creates a sound instance.
  */
-PT(AudioSound) SteamAudioManager::
+PT(SteamAudioSound) SteamAudioManager::
 get_sound(MovieAudio* sound, NodePath source, bool positional, int mode) {
   ReMutexHolder holder(_lock);
   if (!is_valid()) {
@@ -519,10 +519,15 @@ get_sound(MovieAudio* sound, NodePath source, bool positional, int mode) {
   return res;
 }
 
+PT(AudioSound) SteamAudioManage::
+get_sound(MovieAudio* sound, NodePath source, bool positional, int mode) {
+  return (AudioSound*)get_sound(sound, this->_listenerNP, positional, mode);
+}
+
 /**
  * This is what creates a sound instance.
  */
-PT(AudioSound) SteamAudioManager::
+PT(SteamAudioSound) SteamAudioManager::
 get_sound(const Filename& file_name, NodePath source, bool positional, int mode) {
   ReMutexHolder holder(_lock);
   if (!is_valid()) {
@@ -554,6 +559,11 @@ get_sound(const Filename& file_name, NodePath source, bool positional, int mode)
   return res;
 }
 
+PT(AudioSound) SteamAudioManage::
+get_sound(const Filename& file_name, NodePath source, bool positional, int mode) {
+  return (AudioSound*)get_sound(file_name, this->_listenerNP, positional, mode);
+}
+
 /**
  * Deletes a sample from the expiration queues.  If the sound is actively in
  * use, then the sound cannot be deleted, and this function has no effect.
@@ -572,7 +582,7 @@ uncache_sound(const Filename& file_name) {
     sci = _sample_cache.find(file_name);
   }
   if (sci != _sample_cache.end()) {
-    SoundData* sd = (*sci).second;
+    SteamSoundData* sd = (*sci).second;
     if (sd->_client_count == 0) {
       _expiring_samples.erase(sd->_expire);
       _sample_cache.erase(sci);
@@ -582,7 +592,7 @@ uncache_sound(const Filename& file_name) {
 
   ExpirationQueue::iterator exqi;
   for (exqi = _expiring_streams.begin(); exqi != _expiring_streams.end();) {
-    SoundData* sd = (SoundData*)(*exqi);
+    SteamSoundData* sd = (SteamSoundData*)(*exqi);
     if (sd->_client_count == 0) {
       if (sd->_movie->get_filename() == path ||
         sd->_movie->get_filename() == file_name) {
@@ -1086,8 +1096,8 @@ cleanup() {
 /**
  *
  */
-SteamAudioManager::SoundData::
-SoundData() :
+SteamAudioManager::SteamSoundData::
+SteamSoundData() :
   _manager(nullptr),
   _sample(0),
   _stream(nullptr),
@@ -1101,8 +1111,8 @@ SoundData() :
 /**
  *
  */
-SteamAudioManager::SoundData::
-~SoundData() {
+SteamAudioManager::SteamSoundData::
+~SteamSoundData() {
   ReMutexHolder holder(SteamAudioManager::_lock);
   if (_sample != 0) {
     if (_manager->_is_valid) {
@@ -1118,7 +1128,7 @@ SteamAudioManager::SoundData::
  * use (ie, has a client) is removed entirely from the expiration queue.
  */
 void SteamAudioManager::
-increment_client_count(SoundData* sd) {
+increment_client_count(SteamSoundData* sd) {
   ReMutexHolder holder(_lock);
   sd->_client_count += 1;
   audio_debug("Incrementing: " << sd->_movie->get_filename().get_basename() << " " << sd->_client_count);
@@ -1138,7 +1148,7 @@ increment_client_count(SoundData* sd) {
  * queue reaches the cache limit, the first item on the queue is freed.
  */
 void SteamAudioManager::
-decrement_client_count(SoundData* sd) {
+decrement_client_count(SteamSoundData* sd) {
   ReMutexHolder holder(_lock);
   sd->_client_count -= 1;
   audio_debug("Decrementing: " << sd->_movie->get_filename().get_basename() << " " << sd->_client_count);
@@ -1167,7 +1177,7 @@ discard_excess_cache(int sample_limit) {
   int stream_limit = 5;
 
   while (((int)_expiring_samples.size()) > sample_limit) {
-    SoundData* sd = (SoundData*)(_expiring_samples.front());
+    SteamSoundData* sd = (SteamSoundData*)(_expiring_samples.front());
     nassertv(sd->_client_count == 0);
     nassertv(sd->_expire == _expiring_samples.begin());
     _expiring_samples.pop_front();
@@ -1177,7 +1187,7 @@ discard_excess_cache(int sample_limit) {
   }
 
   while (((int)_expiring_streams.size()) > stream_limit) {
-    SoundData* sd = (SoundData*)(_expiring_streams.front());
+    SteamSoundData* sd = (SteamSoundData*)(_expiring_streams.front());
     nassertv(sd->_client_count == 0);
     nassertv(sd->_expire == _expiring_streams.begin());
     _expiring_streams.pop_front();

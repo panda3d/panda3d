@@ -11,16 +11,15 @@
  * this file is based on openalAudioSound.h.
  */
 
-#ifndef OPENALAUDIOSOUND_H
-#define OPENALAUDIOSOUND_H
+#ifndef STEAMAUDIOSOUND_H
+#define STEAMAUDIOSOUND_H
 
 #include "pandabase.h"
 
+#include "steamAudioManager.h"
 #include "audioSound.h"
 #include "movieAudioCursor.h"
 #include "trueClock.h"
-#include "steamAudioManager.h"
-#include "steamAudioEffect.h"
 #include "nodePath.h"
 #include "pvector.h"
 
@@ -35,9 +34,14 @@
   #include <AL/alc.h>
 #endif
 
+class SteamAudioEffect;
+
 //IMPORTANT!! Since many functions we need to modify are not public, make sure no pointers to this class are given as AudioSound/OpenALAudioSound pointers!!
-class EXPCL_OPENAL_AUDIO SteamAudioSound final : public OpenALAudioSound {
+class EXPCL_PANDA_STEAMAUDIO SteamAudioSound final : public AudioSound {
   friend class SteamAudioManager;
+
+  friend class SteamAudioEffect;
+  friend class SteamDirectEffect;
 
 public:
   SteamAudioSound(SteamAudioManager* manager,
@@ -151,7 +155,7 @@ private:
 private:
 
   PT(MovieAudio) _movie;
-  SteamAudioManager::SteamSoundData* _sd;
+  SteamAudioManager::SteamSoundData *_sd;
 
   struct QueuedBuffer {
     ALuint _buffer;
