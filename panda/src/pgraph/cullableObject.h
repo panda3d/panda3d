@@ -24,7 +24,6 @@
 #include "geomNode.h"
 #include "cullTraverserData.h"
 #include "pStatCollector.h"
-#include "deletedChain.h"
 #include "graphicsStateGuardianBase.h"
 #include "sceneSetup.h"
 #include "lightMutex.h"
@@ -46,7 +45,10 @@ public:
                         CPT(TransformState) internal_transform);
 
   INLINE CullableObject(const CullableObject &copy);
+  INLINE CullableObject(CullableObject &&from) noexcept = default;
+
   INLINE void operator = (const CullableObject &copy);
+  INLINE CullableObject &operator = (CullableObject &&from) noexcept = default;
 
   bool munge_geom(GraphicsStateGuardianBase *gsg, GeomMunger *munger,
                   const CullTraverser *traverser, bool force);
@@ -64,8 +66,6 @@ public:
                             bool force, Thread *current_thread);
 
 public:
-  ALLOC_DELETED_CHAIN(CullableObject);
-
   void output(std::ostream &out) const;
 
 public:

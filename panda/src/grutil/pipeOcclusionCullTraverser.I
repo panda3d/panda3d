@@ -42,8 +42,8 @@ get_occlusion_mask() const {
  *
  */
 INLINE PipeOcclusionCullTraverser::PendingObject::
-PendingObject(CullableObject *object) :
-  _object(object)
+PendingObject(CullableObject &&object) :
+  _object(std::move(object))
 {
 }
 

@@ -16,6 +16,7 @@
  */
 INLINE CullResult::
 ~CullResult() {
+  delete_page(_page);
 }
 
 /**
@@ -30,6 +31,19 @@ get_bin(int bin_index) {
     return _bins[bin_index];
   }
   return make_new_bin(bin_index);
+}
+
+/**
+ * Allocates memory for a new CullableObject that is associated with this
+ * CullResult.
+ */
+INLINE CullableObject *CullResult::
+alloc_object(CullableObject &&object) {
+  AllocationPage *page = _page;
+  if (page->_size >= page->_capacity) {
+    page = new_page();
+  }
+  return new (page->_memory + sizeof(CullableObject) * (page->_size++)) CullableObject(std::move(object));
 }
 
 /**

@@ -37,7 +37,6 @@ public:
   INLINE CullBinStateSorted(const std::string &name,
                             GraphicsStateGuardianBase *gsg,
                             const PStatCollector &draw_region_pcollector);
-  virtual ~CullBinStateSorted();
 
   static CullBin *make_bin(const std::string &name,
                            GraphicsStateGuardianBase *gsg,

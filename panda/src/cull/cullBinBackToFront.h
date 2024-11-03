@@ -33,7 +33,6 @@ public:
   INLINE CullBinBackToFront(const std::string &name,
                             GraphicsStateGuardianBase *gsg,
                             const PStatCollector &draw_region_pcollector);
-  virtual ~CullBinBackToFront();
 
   static CullBin *make_bin(const std::string &name,
                            GraphicsStateGuardianBase *gsg,
