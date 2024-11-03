@@ -1020,10 +1020,9 @@ if (COMPILER=="GCC"):
             LinkFlag("PYTHON", "-s USE_BZIP2=1 -s USE_SQLITE3=1")
             if not PkgHasCustomLocation("PYTHON"):
                 python_libdir = GetThirdpartyDir() + "python/lib"
-                if os.path.isfile(python_libdir + "/libmpdec.a"):
-                    LibName("PYTHON", python_libdir + "/libmpdec.a")
-                if os.path.isfile(python_libdir + "/libexpat.a"):
-                    LibName("PYTHON", python_libdir + "/libexpat.a")
+                for lib in "libmpdec.a", "libexpat.a", "libHacl_Hash_SHA2.a":
+                    if os.path.isfile(python_libdir + "/" + lib):
+                        LibName("PYTHON", python_libdir + "/" + lib)
 
         if GetTarget() == "linux":
             LibName("PYTHON", "-lutil")
