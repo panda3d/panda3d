@@ -2167,29 +2167,55 @@ def SdkLocatePython(prefer_thirdparty_python=False):
             Warn("running makepanda with Python %s, but building Panda3D with Python %s." % (running_ver, ver))
 
     elif CrossCompiling() or (prefer_thirdparty_python and os.path.isdir(os.path.join(GetThirdpartyDir(), "python"))):
-        tp_python = os.path.join(GetThirdpartyDir(), "python")
+        if PkgHasCustomLocation("PYTHON"):
+            incdir = FindIncDirectory("PYTHON")
+            libdirs = FindLibDirectories("PYTHON")
+        else:
+            tp_python = os.path.join(GetThirdpartyDir(), "python")
+            incdir = tp_python + "/include"
+            libdirs = [tp_python + "/lib"]
+            bindir = tp_python + "/bin"
 
         if GetTarget() == 'darwin':
-            py_libs = glob.glob(tp_python + "/lib/libpython[0-9].[0-9].dylib") + \
-                      glob.glob(tp_python + "/lib/libpython[0-9].[0-9][0-9].dylib")
+            suffix = abiflags + '.dylib'
         else:
-            py_libs = glob.glob(tp_python + "/lib/libpython[0-9].[0-9].so") + \
-                      glob.glob(tp_python + "/lib/libpython[0-9].[0-9][0-9].so")
+            suffix = abiflags + '.so'
+
+        py_libs = []
+        py_static_libs = []
+        for libdir in libdirs:
+            py_libs += glob.glob(libdir + "/libpython[0-9].[0-9]" + suffix)
+            py_libs += glob.glob(libdir + "/libpython[0-9].[0-9][0-9]" + suffix)
+            py_static_libs += glob.glob(libdir + "/libpython[0-9].[0-9]" + abiflags + ".a")
+            py_static_libs += glob.glob(libdir + "/libpython[0-9].[0-9][0-9]" + abiflags + ".a")
+
+        # Prefer dynamic libs over static libs
+        py_libs += py_static_libs
 
         if len(py_libs) == 0:
-            py_libs = glob.glob(tp_python + "/lib/libpython[0-9].[0-9].a") + \
-                      glob.glob(tp_python + "/lib/libpython[0-9].[0-9][0-9].a")
+            exit("Could not find the Python library in %s." % (libdirs))
+        elif len(py_libs) == 1:
+            py_lib = os.path.basename(py_libs[0])
+            py_libver = py_lib.lstrip('.abdhilnopsty').rstrip('.abdhilnopsy')
+            bindir = os.path.dirname(os.path.dirname(py_libs[0])) + "/bin"
+        else:
+            # Does one match our version?
+            gil_disabled = locations.get_config_var("Py_GIL_DISABLED")
+            abiflags = 't' if gil_disabled and int(gil_disabled) else ''
+            our_libver = locations.get_python_version() + abiflags
 
-        if len(py_libs) == 0:
-            exit("Could not find the Python library in %s." % (tp_python))
-        elif len(py_libs) > 1:
-            exit("Found multiple Python libraries in %s." % (tp_python))
+            for py_lib_full in py_libs:
+                py_lib = os.path.basename(py_lib_full)
+                py_libver = py_lib.lstrip('.abdhilnopsty').rstrip('.abdhilnopsy')
+                if py_libver == our_libver:
+                    bindir = os.path.dirname(os.path.dirname(py_lib_full)) + "/bin"
+                    break
+            else:
+                exit("Found multiple Python libraries in %s, none matching current version." % (libdirs))
 
-        py_lib = os.path.basename(py_libs[0])
-        py_libver = py_lib.strip('.abdhilnopsty')
         SDK["PYTHONVERSION"] = "python" + py_libver
-        SDK["PYTHONEXEC"] = tp_python + "/bin/" + SDK["PYTHONVERSION"]
-        SDK["PYTHON"] = tp_python + "/include/" + SDK["PYTHONVERSION"]
+        SDK["PYTHONEXEC"] = bindir + "/" + SDK["PYTHONVERSION"]
+        SDK["PYTHON"] = incdir + "/" + SDK["PYTHONVERSION"]
 
     elif GetTarget() == 'darwin' and not PkgHasCustomLocation("PYTHON"):
         # On macOS, search for the Python framework directory matching the
@@ -2843,6 +2869,13 @@ def FindLibDirectory(opt):
     for mod, dir in LIBDIRECTORIES:
         if mod == opt:
             return os.path.abspath(dir)
+
+def FindLibDirectories(opt):
+    result = []
+    for mod, dir in LIBDIRECTORIES:
+        if mod == opt:
+            result.append(os.path.abspath(dir))
+    return result
 
 def FindOptDirectory(opt):
     # Find the common directory associated with this module
