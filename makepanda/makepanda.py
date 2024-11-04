@@ -267,11 +267,11 @@ def parseopts(args):
                         break
                     elif option == "--" + pkg.lower() + "-incdir":
                         PkgSetCustomLocation(pkg)
-                        IncDirectory(pkg, value)
+                        IncDirectory(pkg, os.path.expanduser(value))
                         break
                     elif option == "--" + pkg.lower() + "-libdir":
                         PkgSetCustomLocation(pkg)
-                        LibDirectory(pkg, value)
+                        LibDirectory(pkg, os.path.expanduser(value))
                         break
             if (option == "--everything" or option.startswith("--use-")
                 or option == "--nothing" or option.startswith("--no-")):
