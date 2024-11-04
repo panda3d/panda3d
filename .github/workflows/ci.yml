@@ -480,22 +480,59 @@ jobs:
 
   emscripten:
     if: "!contains(github.event.head_commit.message, '[skip ci]') && !contains(github.event.head_commit.message, '[ci skip]')"
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@v4
 
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install build-essential ninja-build bison flex
+        sudo apt-get install build-essential ninja-build bison flex nodejs python3-pip
 
     - name: Setup emsdk
       uses: mymindstorm/setup-emsdk@v14
       with:
-        version: 3.1.65
+        version: 3.1.70
         actions-cache-folder: 'emsdk-cache'
+
+    - name: Restore Python build cache
+      id: cache-emscripten-python-restore
+      uses: actions/cache/restore@v4
+      with:
+        path: ~/python
+        key: cache-emscripten-python-3.12.7
+
+    - name: Build Python 3.12
+      if: steps.cache-emscripten-python-restore.outputs.cache-hit != 'true'
+      run: |
+        wget https://www.python.org/ftp/python/3.12.7/Python-3.12.7.tar.xz
+        tar -xJf Python-3.12.7.tar.xz
+        (cd Python-3.12.7 && EM_CONFIG=$EMSDK/.emscripten python3 Tools/wasm/wasm_build.py emscripten-browser)
+        (cd Python-3.12.7/builddir/emscripten-browser && make install DESTDIR=~/python)
+        cp Python-3.12.7/builddir/emscripten-browser/Modules/_hacl/libHacl_Hash_SHA2.a ~/python/usr/local/lib
+        cp Python-3.12.7/builddir/emscripten-browser/Modules/_decimal/libmpdec/libmpdec.a ~/python/usr/local/lib
+        cp Python-3.12.7/builddir/emscripten-browser/Modules/expat/libexpat.a ~/python/usr/local/lib
+        rm -rf Python-3.12.7
+
+    - name: Save Python build cache
+      id: cache-emscripten-python-save
+      if: steps.cache-emscripten-python-restore.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v4
+      with:
+        path: ~/python
+        key: ${{ steps.cache-emscripten-python-restore.outputs.cache-primary-key }}
 
     - name: Build for Emscripten
       shell: bash
       run: |
-        python3 makepanda/makepanda.py --git-commit=${{github.sha}} --target emscripten --outputdir=built --everything --no-python --verbose --threads=4
+        python3 makepanda/makepanda.py --git-commit=${{github.sha}} --target emscripten --python-incdir=~/python/usr/local/include --python-libdir=~/python/usr/local/lib --static --everything --no-pandatool --no-deploytools --verbose --threads=4
+
+    - name: Install test dependencies
+      shell: bash
+      run: |
+        python3 -m pip install -t ~/python/usr/local/lib/python3.12/site-packages -r requirements-test.txt
+
+    - name: Test in node.js
+      shell: bash
+      run: |
+        PYTHONHOME=~/python/usr/local PYTHONPATH=built node built/bin/run_tests.js tests

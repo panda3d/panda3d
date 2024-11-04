@@ -3078,6 +3078,9 @@ def SetupBuildEnvironment(compiler):
 
     # If we're cross-compiling, no point in putting our output dirs on the path.
     if CrossCompiling():
+        if GetTarget() == 'emscripten' and not PkgSkip("PYTHON"):
+            AddToPathEnv("PYTHONPATH", GetOutputDir())
+            os.environ["PYTHONHOME"] = os.path.dirname(os.path.dirname(SDK["PYTHON"]))
         return
 
     # Add our output directories to the environment.

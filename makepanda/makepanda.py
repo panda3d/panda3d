@@ -5945,6 +5945,43 @@ if PkgSkip("PYTHON") == 0:
         PyTargetAdd('libdeploy-stubw.dll', opts=['DEPLOYSTUB', 'ANDROID'])
 
 #
+# Build the test runner for static builds
+#
+if GetLinkAllStatic():
+    if GetTarget() == 'emscripten':
+        LinkFlag('RUN_TESTS_FLAGS', '-s NODERAWFS')
+        LinkFlag('RUN_TESTS_FLAGS', '-s FORCE_FILESYSTEM -lnodefs.js')
+        LinkFlag('RUN_TESTS_FLAGS', '-s ASSERTIONS=2')
+        LinkFlag('RUN_TESTS_FLAGS', '-s ALLOW_MEMORY_GROWTH')
+        LinkFlag('RUN_TESTS_FLAGS', '-s INITIAL_HEAP=585302016')
+        LinkFlag('RUN_TESTS_FLAGS', '-s STACK_SIZE=1048576')
+        LinkFlag('RUN_TESTS_FLAGS', '--minify 0')
+
+    if not PkgSkip('DIRECT'):
+        DefSymbol('RUN_TESTS_FLAGS', 'HAVE_DIRECT')
+    if not PkgSkip('PANDAPHYSICS'):
+        DefSymbol('RUN_TESTS_FLAGS', 'HAVE_PHYSICS')
+    if not PkgSkip('EGG'):
+        DefSymbol('RUN_TESTS_FLAGS', 'HAVE_EGG')
+    if not PkgSkip('BULLET'):
+        DefSymbol('RUN_TESTS_FLAGS', 'HAVE_BULLET')
+
+    OPTS=['DIR:tests', 'PYTHON', 'RUN_TESTS_FLAGS']
+    PyTargetAdd('run_tests-main.obj', opts=OPTS, input='main.c')
+    PyTargetAdd('run_tests.exe', input='run_tests-main.obj')
+    PyTargetAdd('run_tests.exe', input='core.pyd')
+    if not PkgSkip('DIRECT'):
+        PyTargetAdd('run_tests.exe', input='direct.pyd')
+    if not PkgSkip('PANDAPHYSICS'):
+        PyTargetAdd('run_tests.exe', input='physics.pyd')
+    if not PkgSkip('EGG'):
+        PyTargetAdd('run_tests.exe', input='egg.pyd')
+    if not PkgSkip('BULLET'):
+        PyTargetAdd('run_tests.exe', input='bullet.pyd')
+    PyTargetAdd('run_tests.exe', input=COMMON_PANDA_LIBS)
+    PyTargetAdd('run_tests.exe', opts=['PYTHON', 'BULLET', 'RUN_TESTS_FLAGS'])
+
+#
 # Generate the models directory and samples directory
 #
 
@@ -6105,8 +6142,16 @@ finally:
 
 # Run the test suite.
 if RUNTESTS:
-    cmdstr = BracketNameWithQuotes(SDK["PYTHONEXEC"].replace('\\', '/'))
-    cmdstr += " -B -m pytest tests"
+    if GetLinkAllStatic():
+        runner = FindLocation("run_tests.exe", [])
+        if runner.endswith(".js"):
+            cmdstr = "node " + BracketNameWithQuotes(runner)
+        else:
+            cmdstr = BracketNameWithQuotes(runner)
+    else:
+        cmdstr = BracketNameWithQuotes(SDK["PYTHONEXEC"].replace('\\', '/'))
+        cmdstr += " -B -m pytest"
+    cmdstr += " tests"
     if GetVerbose():
         cmdstr += " --verbose"
     oscmd(cmdstr)

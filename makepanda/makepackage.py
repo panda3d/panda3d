@@ -125,6 +125,8 @@ MACOS_SCRIPT_POSTFIX = """\
 fi
 """
 
+EXCLUDE_BINARIES = ["deploy-stub", "deploy-stubw", "run_tests"]
+
 
 def MakeInstallerNSIS(version, file, title, installdir, compressor="lzma", **kwargs):
     outputdir = GetOutputDir()
@@ -404,7 +406,7 @@ def MakeInstallerLinux(version, debversion=None, rpmversion=None, rpmrelease=1,
 
         # Add the binaries in /usr/bin explicitly to the spec file
         for base in os.listdir(outputdir + "/bin"):
-            if not base.startswith("deploy-stub"):
+            if base not in EXCLUDE_BINARIES:
                 txt += "/usr/bin/%s\n" % (base)
 
         # Write out the spec file.
@@ -470,7 +472,7 @@ def MakeInstallerOSX(version, python_versions=[], installdir=None, **kwargs):
     oscmd("install -m 0644 doc/man/*.1 dstroot/tools/usr/local/share/man/man1/")
 
     for base in os.listdir(outputdir + "/bin"):
-        if not base.startswith("deploy-stub"):
+        if base not in EXCLUDE_BINARIES:
             binname = ("dstroot/tools/%s/bin/" % installdir) + base
             # OSX needs the -R argument to copy symbolic links correctly, it doesn't have -d. How weird.
             oscmd("cp -R " + outputdir + "/bin/" + base + " " + binname)
