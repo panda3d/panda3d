@@ -14,7 +14,7 @@ jobs:
         - ubuntu-bionic-standard-unity-makefile
         - ubuntu-bionic-coverage-ninja
         #- macos-coverage-unity-xcode
-        - macos-eigen-nometa-standard-makefile
+        - macos-nometa-standard-makefile
         - windows-standard-unity-msvc
         - windows-nopython-nometa-standard-msvc
 
@@ -49,7 +49,7 @@ jobs:
         #  python: YES
         #  eigen: NO
 
-        - profile: macos-eigen-nometa-standard-makefile
+        - profile: macos-nometa-standard-makefile
           os: macOS-13
           config: Standard
           unity: NO
@@ -57,7 +57,7 @@ jobs:
           compiler: Default
           metalibs: NO
           python: YES
-          eigen: YES
+          eigen: NO
 
         - profile: windows-standard-unity-msvc
           os: windows-2022
