@@ -3380,7 +3380,9 @@ def GetExtensionSuffix():
         else:
             return dllext + '.cp%d%d%s-win32.pyd' % (sys.version_info[0], sys.version_info[1], suffix)
     elif target == 'emscripten':
-        return '.so'
+        abi = GetPythonABI()
+        arch = GetTargetArch()
+        return '.{0}-{1}-emscripten.so'.format(abi, arch)
     elif CrossCompiling():
         return '.{0}.so'.format(GetPythonABI())
     else:
