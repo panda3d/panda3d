@@ -3677,7 +3677,7 @@ def TargetAdd(target, dummy=0, opts=[], input=[], dep=[], ipath=None, winrc=None
         t.inputs.append(fullinput)
         # Don't re-link a library or binary if just its dependency dlls have been altered.
         # This should work out fine in most cases, and often reduces recompilation time.
-        if os.path.splitext(x)[-1] not in SUFFIX_DLL:
+        if os.path.splitext(x)[-1] not in SUFFIX_DLL or (GetLinkAllStatic() and target.endswith(".exe")):
             t.deps[fullinput] = 1
             (base,suffix) = os.path.splitext(x)
             if SUFFIX_INC.count(suffix):
