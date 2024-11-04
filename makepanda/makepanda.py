@@ -560,6 +560,11 @@ if GetHost() == 'windows' and GetTarget() == 'windows':
 else:
     COMPILER = "GCC"
 
+# Ensure we've pip-installed interrogate if we need it before setting
+# PYTHONHOME, etc.
+if not PkgSkip("PYTHON"):
+    GetInterrogate()
+
 SetupBuildEnvironment(COMPILER)
 
 ########################################################################

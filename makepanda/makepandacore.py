@@ -2160,7 +2160,6 @@ def SdkLocatePython(prefer_thirdparty_python=False):
         ver = py_dllver[0] + '.' + py_dllver[1:]
 
         SDK["PYTHONVERSION"] = "python" + ver + abiflags
-        os.environ["PYTHONHOME"] = SDK["PYTHON"]
 
         running_ver = '%d.%d' % sys.version_info[:2]
         if ver != running_ver:
@@ -3090,6 +3089,7 @@ def SetupBuildEnvironment(compiler):
         # extension_native_helpers.py currently expects to find libpandaexpress on sys.path.
         AddToPathEnv("PYTHONPATH", os.path.join(builtdir, "bin"))
         AddToPathEnv("PATH", os.path.join(builtdir, "plugins"))
+        os.environ["PYTHONHOME"] = SDK["PYTHON"]
 
     # Now for the special (DY)LD_LIBRARY_PATH on Unix-esque systems.
     if GetHost() != 'windows':
