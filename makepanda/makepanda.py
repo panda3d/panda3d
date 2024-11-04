@@ -1018,11 +1018,14 @@ if (COMPILER=="GCC"):
             # Python may have been compiled with these requirements.
             # Is there a cleaner way to check this?
             LinkFlag("PYTHON", "-s USE_BZIP2=1 -s USE_SQLITE3=1")
-            if not PkgHasCustomLocation("PYTHON"):
+            if PkgHasCustomLocation("PYTHON"):
+                python_libdir = FindLibDirectory("PYTHON")
+            else:
                 python_libdir = GetThirdpartyDir() + "python/lib"
-                for lib in "libmpdec.a", "libexpat.a", "libHacl_Hash_SHA2.a":
-                    if os.path.isfile(python_libdir + "/" + lib):
-                        LibName("PYTHON", python_libdir + "/" + lib)
+
+            for lib in "libmpdec.a", "libexpat.a", "libHacl_Hash_SHA2.a":
+                if os.path.isfile(python_libdir + "/" + lib):
+                    LibName("PYTHON", python_libdir + "/" + lib)
 
         if GetTarget() == "linux":
             LibName("PYTHON", "-lutil")
