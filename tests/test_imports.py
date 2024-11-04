@@ -268,6 +268,7 @@ def test_imports_direct_net():
 
 
 def test_imports_tk():
+    pytest.importorskip('tkinter')
     Pmw = pytest.importorskip('Pmw')
 
     import direct.showbase.TkGlobal
