@@ -449,7 +449,7 @@ ns_set_environment_variable(const string &var, const string &value) {
 void ExecutionEnvironment::
 ns_shadow_environment_variable(const string &var, const string &value) {
   _variables[var] = value;
-  string putstr = var + "=" + value;
+  //string putstr = var + "=" + value;
 }
 
 /**
