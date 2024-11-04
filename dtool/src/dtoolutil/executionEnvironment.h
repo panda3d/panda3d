@@ -21,6 +21,13 @@
 
 #include <map>
 
+#if defined(__EMSCRIPTEN__) && !defined(CPPPARSER)
+class ExecutionEnvironment;
+
+extern "C" void EMSCRIPTEN_KEEPALIVE
+_set_env_var(ExecutionEnvironment *ptr, const char *var, const char *value);
+#endif
+
 /**
  * Encapsulates access to the environment variables and command-line arguments
  * at the time of execution.  This is encapsulated to support accessing these
@@ -89,6 +96,10 @@ private:
   std::string _dtool_name;
 
   static ExecutionEnvironment *_global_ptr;
+
+#ifdef __EMSCRIPTEN__
+  friend void ::_set_env_var(ExecutionEnvironment *ptr, const char *var, const char *value);
+#endif
 };
 
 #include "executionEnvironment.I"
