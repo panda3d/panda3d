@@ -11,7 +11,7 @@ jobs:
 
       matrix:
         profile:
-        - ubuntu-bionic-standard-unity-makefile
+        - ubuntu-bionic-double-standard-unity-makefile
         - ubuntu-bionic-coverage-ninja
         #- macos-coverage-unity-xcode
         - macos-nometa-standard-makefile
@@ -19,7 +19,7 @@ jobs:
         - windows-nopython-nometa-standard-msvc
 
         include:
-        - profile: ubuntu-bionic-standard-unity-makefile
+        - profile: ubuntu-bionic-double-standard-unity-makefile
           os: ubuntu-20.04
           config: Standard
           unity: YES
@@ -28,6 +28,7 @@ jobs:
           metalibs: YES
           python: YES
           eigen: NO
+          double: YES
 
         - profile: ubuntu-bionic-coverage-ninja
           os: ubuntu-20.04
@@ -38,6 +39,7 @@ jobs:
           metalibs: YES
           python: YES
           eigen: NO
+          double: NO
 
         #- profile: macos-coverage-unity-xcode
         #  os: macOS-13
@@ -48,6 +50,7 @@ jobs:
         #  metalibs: YES
         #  python: YES
         #  eigen: NO
+        #  double: NO
 
         - profile: macos-nometa-standard-makefile
           os: macOS-13
@@ -58,6 +61,7 @@ jobs:
           metalibs: NO
           python: YES
           eigen: NO
+          double: NO
 
         - profile: windows-standard-unity-msvc
           os: windows-2022
@@ -68,6 +72,7 @@ jobs:
           metalibs: YES
           python: YES
           eigen: NO
+          double: NO
 
         - profile: windows-nopython-nometa-standard-msvc
           os: windows-2022
@@ -78,6 +83,7 @@ jobs:
           metalibs: NO
           python: NO
           eigen: NO
+          double: NO
 
     runs-on: ${{ matrix.os }}
 
@@ -175,6 +181,7 @@ jobs:
         -D BUILD_METALIBS=${{ matrix.metalibs }}
         -D HAVE_PYTHON=${{ runner.os != 'Windows' && matrix.python || 'NO' }}
         -D HAVE_EIGEN=${{ matrix.eigen }}
+        -D STDFLOAT_DOUBLE=${{ matrix.double }}
         ..
 
     - name: Build (no Python)
@@ -416,15 +423,19 @@ jobs:
       uses: actions/setup-python@v5
       with:
         python-version: '3.12'
-    - name: Build Python 3.12
+    - name: Build Python 3.12 (double)
       shell: bash
       run: |
-        python makepanda/makepanda.py --git-commit=${{github.sha}} --outputdir=built --everything --no-eigen --python-incdir="$pythonLocation/include" --python-libdir="$pythonLocation/lib" --verbose --threads=4 --windows-sdk=10 --msvc-version=14.2
-    - name: Test Python 3.12
+        python makepanda/makepanda.py --override STDFLOAT_DOUBLE=1 --git-commit=${{github.sha}} --outputdir=built_dbl --everything --no-eigen --python-incdir="$pythonLocation/include" --python-libdir="$pythonLocation/lib" --verbose --threads=4 --windows-sdk=10 --msvc-version=14.2
+    - name: Test Python 3.12 (double)
       shell: bash
       run: |
         python -m pip install -r requirements-test.txt
-        PYTHONPATH=built LD_LIBRARY_PATH=built/lib:$pythonLocation/lib DYLD_LIBRARY_PATH=built/lib python -m pytest
+        PYTHONPATH=built_dbl LD_LIBRARY_PATH=built_dbl/lib:$pythonLocation/lib DYLD_LIBRARY_PATH=built_dbl/lib python -m pytest
+
+    - name: Make installer
+      run: |
+        python makepanda/makepackage.py --verbose --lzma
 
     - name: Set up Python 3.11
       uses: actions/setup-python@v5
