@@ -79,17 +79,6 @@ if(THIRDPARTY_DIRECTORY)
     set(CMAKE_FIND_FRAMEWORK LAST)
 
   elseif(WIN32)
-    if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-      file(GLOB _python_dirs "${THIRDPARTY_DIRECTORY}/win-python*-x64")
-    else()
-      file(GLOB _python_dirs "${THIRDPARTY_DIRECTORY}/win-python*")
-    endif()
-
-    list(REVERSE _python_dirs) # Descending order of version
-    if(NOT DEFINED Python_ROOT)
-      set(Python_ROOT "${_python_dirs}")
-    endif()
-
     set(BISON_ROOT "${THIRDPARTY_DIRECTORY}/win-util")
     set(FLEX_ROOT "${THIRDPARTY_DIRECTORY}/win-util")
 
@@ -210,6 +199,27 @@ if(DEFINED _PREV_WANT_PYTHON_VERSION
 
   unset(_PREV_PYTHON_VALUES CACHE)
 
+endif()
+
+# Look for Python in the thirdparty directory on Windows.
+if(WIN32 AND THIRDPARTY_DIRECTORY)
+  set(_python_dir_suffix "")
+  if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    set(_python_dir_suffix "-x64")
+  endif()
+
+  if(WANT_PYTHON_VERSION)
+    set(Python_ROOT_DIR "${THIRDPARTY_DIRECTORY}/win-python${WANT_PYTHON_VERSION}${_python_dir_suffix}")
+  else()
+    # CMake doesn't support NATURAL sorting until 3.18, so we sort the 3.1x
+    # versions separately from the prior versions.
+    file(GLOB _python_dirs "${THIRDPARTY_DIRECTORY}/win-python3.[0-9][0-9]${_python_dir_suffix}")
+    file(GLOB _python_dirs2 "${THIRDPARTY_DIRECTORY}/win-python3.[0-9]${_python_dir_suffix}")
+    list(SORT _python_dirs COMPARE FILE_BASENAME CASE INSENSITIVE ORDER DESCENDING)
+    list(SORT _python_dirs2 COMPARE FILE_BASENAME CASE INSENSITIVE ORDER DESCENDING)
+    list(APPEND _python_dirs ${_python_dirs2})
+    set(Python_ROOT_DIR "${_python_dirs}")
+  endif()
 endif()
 
 if(WANT_PYTHON_VERSION)
