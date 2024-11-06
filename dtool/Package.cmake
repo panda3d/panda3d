@@ -1,9 +1,54 @@
-set(_thirdparty_dir_default "${PROJECT_SOURCE_DIR}/thirdparty")
-if(NOT IS_DIRECTORY "${_thirdparty_dir_default}")
-  set(_thirdparty_dir_default "")
+set(_thirdparty_platform)
+
+if(APPLE)
+  set(_thirdparty_platform "darwin-libs-a")
+
+elseif(WIN32)
+  if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    set(_thirdparty_platform "win-libs-vc14-x64")
+  else()
+    set(_thirdparty_platform "win-libs-vc14")
+  endif()
+
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+  if(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
+    set(_thirdparty_platform "linux-libs-arm64")
+  elseif(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    set(_thirdparty_platform "linux-libs-x64")
+  else()
+    set(_thirdparty_platform "linux-libs-a")
+  endif()
+
+elseif(CMAKE_SYSTEM_NAME STREQUAL "FreeBSD")
+  if(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
+    set(_thirdparty_platform "freebsd-libs-arm64")
+  elseif(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    set(_thirdparty_platform "freebsd-libs-x64")
+  else()
+    set(_thirdparty_platform "freebsd-libs-a")
+  endif()
+
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Android")
+  set(_thirdparty_platform "android-libs-${CMAKE_ANDROID_ARCH}")
+
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
+  set(_thirdparty_platform "emscripten-libs")
+
+elseif(CMAKE_SYSTEM_NAME STREQUAL "WASI")
+  set(_thirdparty_platform "wasi-libs-${CMAKE_SYSTEM_PROCESSOR}")
+
 endif()
-if(CMAKE_SYSTEM_NAME STREQUAL "WASI")
-  set(_thirdparty_dir_default "")
+
+set(_thirdparty_dir_default "")
+if(_thirdparty_platform)
+  if(IS_DIRECTORY "${PROJECT_SOURCE_DIR}/thirdparty/${_thirdparty_platform}")
+    set(_thirdparty_dir_default "${PROJECT_SOURCE_DIR}/thirdparty")
+
+  else()
+    message(WARNING
+      "Ignoring thirdparty directory without ${_thirdparty_platform} subdirectory.")
+
+  endif()
 endif()
 
 set(THIRDPARTY_DIRECTORY "${_thirdparty_dir_default}" CACHE PATH
@@ -14,6 +59,11 @@ set(THIRDPARTY_DIRECTORY "${_thirdparty_dir_default}" CACHE PATH
 set(THIRDPARTY_DLLS)
 
 if(THIRDPARTY_DIRECTORY)
+  if(NOT _thirdparty_platform)
+    message(FATAL_ERROR
+      "You can't use THIRDPARTY_DIRECTORY on this platform. Unset it to continue.")
+  endif()
+
   # This policy is necessary for PackageName_ROOT variables to be respected
   if(POLICY CMP0074)
     cmake_policy(GET CMP0074 _policy_cmp0074)
@@ -24,21 +74,14 @@ if(THIRDPARTY_DIRECTORY)
       "Your version of CMake is too old; please upgrade or unset THIRDPARTY_DIRECTORY to continue.")
   endif()
 
-  # Dig up the actual "libs" directory
   if(APPLE)
-    set(_package_dir "${THIRDPARTY_DIRECTORY}/darwin-libs-a")
-
     # Make sure thirdparty has the first shot, not system frameworks
     set(CMAKE_FIND_FRAMEWORK LAST)
 
   elseif(WIN32)
     if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-      set(_package_dir "${THIRDPARTY_DIRECTORY}/win-libs-vc14-x64")
-
       file(GLOB _python_dirs "${THIRDPARTY_DIRECTORY}/win-python*-x64")
     else()
-      set(_package_dir "${THIRDPARTY_DIRECTORY}/win-libs-vc14")
-
       file(GLOB _python_dirs "${THIRDPARTY_DIRECTORY}/win-python*")
     endif()
 
@@ -49,37 +92,6 @@ if(THIRDPARTY_DIRECTORY)
 
     set(BISON_ROOT "${THIRDPARTY_DIRECTORY}/win-util")
     set(FLEX_ROOT "${THIRDPARTY_DIRECTORY}/win-util")
-
-  elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    if(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
-      set(_package_dir ${THIRDPARTY_DIRECTORY}/linux-libs-arm64)
-    elseif(CMAKE_SIZEOF_VOID_P EQUAL 8)
-      set(_package_dir ${THIRDPARTY_DIRECTORY}/linux-libs-x64)
-    else()
-      set(_package_dir ${THIRDPARTY_DIRECTORY}/linux-libs-a)
-    endif()
-
-  elseif(CMAKE_SYSTEM_NAME STREQUAL "FreeBSD")
-    if(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
-      set(_package_dir ${THIRDPARTY_DIRECTORY}/freebsd-libs-arm64)
-    elseif(CMAKE_SIZEOF_VOID_P EQUAL 8)
-      set(_package_dir ${THIRDPARTY_DIRECTORY}/freebsd-libs-x64)
-    else()
-      set(_package_dir ${THIRDPARTY_DIRECTORY}/freebsd-libs-a)
-    endif()
-
-  elseif(CMAKE_SYSTEM_NAME STREQUAL "Android")
-    set(_package_dir ${THIRDPARTY_DIRECTORY}/android-libs-${CMAKE_ANDROID_ARCH})
-
-  else()
-    message(FATAL_ERROR
-      "You can't use THIRDPARTY_DIRECTORY on this platform. Unset it to continue.")
-
-  endif()
-
-  if(NOT EXISTS "${_package_dir}")
-    message(FATAL_ERROR
-      "Either your THIRDPARTY_DIRECTORY path does not exist, or it is for the wrong platform.")
 
   endif()
 
@@ -133,7 +145,7 @@ if(THIRDPARTY_DIRECTORY)
     endif()
 
     # Set search path
-    set(${_Package}_ROOT "${_package_dir}/${_package}")
+    set(${_Package}_ROOT "${THIRDPARTY_DIRECTORY}/${_thirdparty_platform}/${_package}")
 
     # Set up copying DLLs, if necessary
     file(GLOB _dlls "${${_Package}_ROOT}/bin/*.dll")
