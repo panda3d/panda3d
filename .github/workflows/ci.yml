@@ -435,7 +435,7 @@ jobs:
 
     - name: Make installer
       run: |
-        python makepanda/makepackage.py --verbose --lzma
+        python makepanda/makepackage.py --verbose --lzma --outputdir=built_dbl
 
     - name: Set up Python 3.11
       uses: actions/setup-python@v5
