@@ -5950,7 +5950,6 @@ if PkgSkip("PYTHON") == 0:
 if GetLinkAllStatic():
     if GetTarget() == 'emscripten':
         LinkFlag('RUN_TESTS_FLAGS', '-s NODERAWFS')
-        LinkFlag('RUN_TESTS_FLAGS', '-s FORCE_FILESYSTEM -lnodefs.js')
         LinkFlag('RUN_TESTS_FLAGS', '-s ASSERTIONS=2')
         LinkFlag('RUN_TESTS_FLAGS', '-s ALLOW_MEMORY_GROWTH')
         LinkFlag('RUN_TESTS_FLAGS', '-s INITIAL_HEAP=585302016')
