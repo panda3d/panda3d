@@ -63,7 +63,7 @@ int main(int argc, char **argv) {
   home[0] = 0;
 
   EM_ASM({
-    if (process && process.env) {
+    if (typeof process === 'object' && typeof process.env === 'object') {
       var path = process.env.PYTHONPATH;
       var home = process.env.PYTHONHOME;
       if (path) {
