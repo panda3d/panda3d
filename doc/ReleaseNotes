@@ -1,3 +1,64 @@
+-----------------------  RELEASE 1.10.15  -----------------------
+
+This release adds support for Python 3.13, and fixes some significant bugs.
+Upgrading is highly recommended.
+
+Windowing
+* Fix regression related to fullscreen switching on Windows (#1594)
+* Fix issues related to fullscreen switching corner cases on macOS
+* Fix keyUp event being eaten when switching fullscreen modes on macOS
+* Support UTF-8 window titles on X11
+* Fix wrong error message on X11 if xf86dga extension is not found
+
+Rendering
+* Add "Khronos PBR Neutral" tone mapping operator to HDR filter (#1659)
+* OpenGL: Fix offscreen buffer clearing if back buffers are requested
+* DirectX 9: Fix crash on window event after window close
+* DirectX 9: Fix support for r32f and rgba32f textures
+* DirectX 9: Fix crash when copying inverted framebuffer to texture RAM
+* DirectX 9: Fix buffer crash if main window has no depth buffer
+
+Text
+* Fix handling of surrogate pairs in text on Windows (#1629)
+* Fix disabling text-native-antialias setting not working properly
+* Fix small-caps not working with text-use-harfbuzz enabled (#1666)
+* Show error instead of crash if glyph does not fit in page (#1626)
+* Update docstring for set_text_color() (#1621)
+
+GUI
+* Fix crash when PGEntry removes itself with background focus (#1650)
+* Fix `PGEntry::get_cursor_Y()`, which always returned 0.0 (#1633)
+* Now makes copies of mutable default values in DirectGUI constructor (#1587)
+
+Deployment
+* Fix wrong relative paths with bam_model_extensions (#1642)
+* Add bam_embed_textures option to embed textures in .bam files
+* Don't warn about missing ld-linux library on aarch64 Linux
+* build_apps dist hooks no longer import Panda3D (#1624)
+
+Miscellaneous
+* Fix major memory leak on M1/M2/M3 Macs
+* Fix seeking in OpenAL sounds not working on macOS in some cases (#1607)
+* Fix direct.stdpy.glob not finding files in VFS (#1675)
+* Improve printing of floating-point linmath objects (#1671)
+* Fix VFS mount points not being listed as directories (#1244)
+* Fix splits occurring in RopeNode geometry (#1325)
+* Fix DistancePhasedNode exception at module clean-up time
+* Fix magfilter on KW_mipmap in egg-palettize (#1631)
+* Fix creating LerpFunctionInterval from functools.partial (#1623)
+* Fix "no attribute notifier" in FSM.requestNext/Prev (#1644)
+* Fix file_texture_mode property on BamWriter being read-only
+* TransformState getters no longer return references to temporary (#1625)
+
+Build
+* Assorted build fixes for Python 3.13 and 3.13t
+* Fix assorted compiler warnings
+* Build fix for newer FFmpeg versions
+* Add --ignore option to test_wheel.py to allow ignoring tests
+* Update Eigen to 3.2.10 (fixes binder2nd error when building with C++17)
+* Fix non-determinism in Python bindings (#1651)
+* Fix preprocessor issues in interrogate (#1635)
+
 -----------------------  RELEASE 1.10.14  -----------------------
 
 This release adds support for Python 3.12 and furthermore contains significant
