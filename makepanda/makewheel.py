@@ -643,10 +643,20 @@ def makewheel(version, output_dir, platform=None):
     if platform is None:
         # Determine the platform from the build.
         platform_dat = os.path.join(output_dir, 'tmp', 'platform.dat')
+        cmake_cache = os.path.join(output_dir, 'CMakeCache.txt')
         if os.path.isfile(platform_dat):
+            # This is written by makepanda.
             platform = open(platform_dat, 'r').read().strip()
+        elif os.path.isfile(cmake_cache):
+            # This variable is written to the CMake cache by Package.cmake.
+            for line in open(cmake_cache, 'r').readlines():
+                if line.startswith('PYTHON_PLATFORM_TAG:STRING='):
+                    platform = line[27:].strip()
+                    break
+            if not platform:
+                raise Exception("Could not find PYTHON_PLATFORM_TAG in CMakeCache.txt, specify --platform manually.")
         else:
-            print("Could not find platform.dat in build directory")
+            print("Could not find platform.dat or CMakeCache.txt in build directory")
             platform = get_platform()
             if platform.startswith("linux-") and os.path.isdir("/opt/python"):
                 # Is this manylinux?

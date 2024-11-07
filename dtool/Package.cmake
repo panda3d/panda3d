@@ -341,6 +341,104 @@ if(HAVE_PYTHON)
   set(PYTHON_EXTENSION_SUFFIX "${_EXT_SUFFIX}" CACHE STRING
     "Suffix for Python binary extension modules.")
 
+  # Determine the platform to use for .whl files.
+  if(WIN32)
+    if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+      set(_platform "win-amd64")
+    else()
+      set(_platform "win32")
+    endif()
+
+  elseif(APPLE)
+    if(NOT CMAKE_OSX_ARCHITECTURES)
+      set(_arch_tag ${CMAKE_SYSTEM_PROCESSOR})
+
+    elseif("x86_64" IN_LIST CMAKE_OSX_ARCHITECTURES)
+      if("arm64" IN_LIST CMAKE_OSX_ARCHITECTURES)
+        set(_arch_tag "universal2")
+
+      elseif("i386" IN_LIST CMAKE_OSX_ARCHITECTURES AND
+             "ppc64" IN_LIST CMAKE_OSX_ARCHITECTURES AND
+             "ppc" IN_LIST CMAKE_OSX_ARCHITECTURES)
+        set(_arch_tag "universal")
+
+      elseif("i386" IN_LIST CMAKE_OSX_ARCHITECTURES AND
+             "ppc" IN_LIST CMAKE_OSX_ARCHITECTURES)
+        set(_arch_tag "fat32")
+
+      elseif("ppc64" IN_LIST CMAKE_OSX_ARCHITECTURES)
+        set(_arch_tag "fat64")
+
+      elseif("i386" IN_LIST CMAKE_OSX_ARCHITECTURES)
+        set(_arch_tag "intel")
+
+      else()
+        set(_arch_tag "x86_64")
+
+      endif()
+
+    elseif("i386" IN_LIST CMAKE_OSX_ARCHITECTURES AND
+           "ppc" IN_LIST CMAKE_OSX_ARCHITECTURES)
+      set(_arch_tag "fat")
+
+    else()
+      list(GET CMAKE_OSX_ARCHITECTURES 0 _arch_tag)
+
+    endif()
+
+    set(_target "${CMAKE_OSX_DEPLOYMENT_TARGET}")
+
+    if(_arch_tag STREQUAL "arm64" AND _target VERSION_LESS "11.0")
+      set(_target "11.0")
+
+    elseif(PYTHON_VERSION_STRING VERSION_GREATER_EQUAL "3.13" AND _target VERSION_LESS "10.13")
+      set(_target "10.13")
+
+    elseif(PYTHON_VERSION_STRING VERSION_GREATER_EQUAL "3.8" AND _target VERSION_LESS "10.9")
+      set(_target "10.9")
+
+    endif()
+
+    set(_platform "macosx-${_target}-${_arch_tag}")
+
+  elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    set(_platform "linux-${CMAKE_SYSTEM_PROCESSOR}")
+
+    if(IS_DIRECTORY "/opt/python")
+      # Sloppy detection for manylinux.
+      if(EXISTS "/lib64/libc-2.5.so" OR EXISTS "/lib/libc-2.5.so")
+        set(_platform "manylinux1-${CMAKE_SYSTEM_PROCESSOR}")
+
+      elseif(EXISTS "/lib64/libc-2.12.so" OR EXISTS "/lib/libc-2.12.so")
+        set(_platform "manylinux2010-${CMAKE_SYSTEM_PROCESSOR}")
+
+      elseif(EXISTS "/lib64/libc-2.17.so" OR EXISTS "/lib/libc-2.17.so")
+        set(_platform "manylinux2014-${CMAKE_SYSTEM_PROCESSOR}")
+
+      elseif(EXISTS "/lib/x86_64-linux-gnu/libc-2.24.so" OR EXISTS "/lib/i386-linux-gnu/libc-2.24.so")
+        set(_platform "manylinux_2_24-${CMAKE_SYSTEM_PROCESSOR}")
+
+      elseif(EXISTS "/etc/almalinux-release" AND EXISTS "/lib64/libc-2.28.so")
+        set(_platform "manylinux_2_28-${CMAKE_SYSTEM_PROCESSOR}")
+
+      endif()
+    endif()
+
+  elseif(CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
+    set(_platform "emscripten-${CMAKE_SYSTEM_PROCESSOR}")
+
+  else()
+    set(_platform "")
+
+  endif()
+
+  # This is being read out of the CMake cache by makewheel.py.
+  if(_platform)
+    set(PYTHON_PLATFORM_TAG "${_platform}" CACHE STRING "" FORCE)
+  else()
+    unset(PYTHON_PLATFORM_TAG CACHE)
+  endif()
+
 endif()
 
 if(NOT DEFINED _PREV_PYTHON_VALUES)
