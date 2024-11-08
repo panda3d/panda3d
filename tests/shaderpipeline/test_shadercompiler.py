@@ -3,7 +3,7 @@ from panda3d import core
 
 def test_shadercompiler_glsl_empty(compiler_glsl):
     assert not compiler_glsl.compile_now(
-        core.ShaderModule.Stage.vertex,
+        core.ShaderModule.Stage.VERTEX,
         core.StringStream(b''),
         'created-shader',
     )
@@ -18,12 +18,12 @@ def test_shadercompiler_glsl_simple(compiler_glsl):
     """
 
     module = compiler_glsl.compile_now(
-        core.ShaderModule.Stage.vertex,
+        core.ShaderModule.Stage.VERTEX,
         core.StringStream(code.encode('ascii')),
         'created-shader',
     )
     assert module
-    assert module.stage == core.ShaderModule.Stage.vertex
+    assert module.stage == core.ShaderModule.Stage.VERTEX
 
 
 def test_shadercompiler_glsl_invalid_version(compiler_glsl):
@@ -35,7 +35,7 @@ def test_shadercompiler_glsl_invalid_version(compiler_glsl):
     """
 
     assert not compiler_glsl.compile_now(
-        core.ShaderModule.Stage.vertex,
+        core.ShaderModule.Stage.VERTEX,
         core.StringStream(code.encode('ascii')),
         'created-shader',
     )
@@ -54,7 +54,7 @@ def test_shadercompiler_glsl150_bitcast(compiler_glsl):
     """
 
     assert not compiler_glsl.compile_now(
-        core.ShaderModule.Stage.vertex,
+        core.ShaderModule.Stage.VERTEX,
         core.StringStream(code.encode('ascii')),
         'created-shader',
     )
@@ -74,7 +74,7 @@ def test_shadercompiler_glsl150_bitcast_extension1(compiler_glsl):
     """
 
     assert compiler_glsl.compile_now(
-        core.ShaderModule.Stage.vertex,
+        core.ShaderModule.Stage.VERTEX,
         core.StringStream(code.encode('ascii')),
         'created-shader',
     )
@@ -94,7 +94,7 @@ def test_shadercompiler_glsl150_bitcast_extension2(compiler_glsl):
     """
 
     assert compiler_glsl.compile_now(
-        core.ShaderModule.Stage.vertex,
+        core.ShaderModule.Stage.VERTEX,
         core.StringStream(code.encode('ascii')),
         'created-shader',
     )
@@ -113,7 +113,7 @@ def test_shadercompiler_glsl330_bitcast(compiler_glsl):
     """
 
     assert compiler_glsl.compile_now(
-        core.ShaderModule.Stage.vertex,
+        core.ShaderModule.Stage.VERTEX,
         core.StringStream(code.encode('ascii')),
         'created-shader',
     )
@@ -131,7 +131,7 @@ def test_shadercompiler_glsl150_explicit_attrib_location(compiler_glsl):
     """
 
     assert not compiler_glsl.compile_now(
-        core.ShaderModule.Stage.vertex,
+        core.ShaderModule.Stage.VERTEX,
         core.StringStream(code.encode('ascii')),
         'created-shader',
     )
@@ -150,7 +150,7 @@ def test_shadercompiler_glsl150_explicit_attrib_location_extension(compiler_glsl
     """
 
     module = compiler_glsl.compile_now(
-        core.ShaderModule.Stage.vertex,
+        core.ShaderModule.Stage.VERTEX,
         core.StringStream(code.encode('ascii')),
         'created-shader',
     )
@@ -172,7 +172,7 @@ def test_shadercompiler_glsl330_explicit_attrib_location(compiler_glsl):
     """
 
     module = compiler_glsl.compile_now(
-        core.ShaderModule.Stage.vertex,
+        core.ShaderModule.Stage.VERTEX,
         core.StringStream(code.encode('ascii')),
         'created-shader',
     )
