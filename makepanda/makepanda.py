@@ -890,7 +890,7 @@ if (COMPILER=="GCC"):
     SmartPkgEnable("VRPN",      "",          ("vrpn", "quat"), ("vrpn", "quat.h", "vrpn/vrpn_Types.h"))
     SmartPkgEnable("OPUS",      "opusfile",  ("opusfile", "opus", "ogg"), ("ogg/ogg.h", "opus/opusfile.h", "opus"))
     SmartPkgEnable("JPEG",      "",          ("jpeg"), "jpeglib.h")
-    SmartPkgEnable("GLSLANG",   "",          ("MachineIndependent", "GenericCodeGen", "SPIRV", "OSDependent", "glslang-default-resource-limits"), "glslang/Public/ShaderLang.h", optional_libs=("OGLCompiler", "HLSL"))
+    SmartPkgEnable("GLSLANG",   "",          ("glslang", "MachineIndependent", "GenericCodeGen", "SPIRV", "OSDependent", "glslang-default-resource-limits"), "glslang/Public/ShaderLang.h", optional_libs=("OGLCompiler", "HLSL"))
     SmartPkgEnable("SPIRV-TOOLS", "",        ("SPIRV-Tools-opt", "SPIRV-Tools"), "spirv-tools/optimizer.hpp")
     SmartPkgEnable("SPIRV-CROSS-GLSL", "",   ("spirv-cross-core", "spirv-cross-glsl"), "spirv_cross/spirv_cross.hpp", thirdparty_dir="spirv-cross")
     SmartPkgEnable("SPIRV-CROSS-HLSL", "",   ("spirv-cross-core", "spirv-cross-hlsl"), "spirv_cross/spirv_cross.hpp", thirdparty_dir="spirv-cross")
