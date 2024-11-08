@@ -14,7 +14,7 @@ import tempfile
 from optparse import OptionParser
 
 
-def test_wheel(wheel, verbose=False):
+def test_wheel(wheel, verbose=False, ignores=[]):
     envdir = tempfile.mkdtemp(prefix="venv-")
     print("Setting up virtual environment in {0}".format(envdir))
     sys.stdout.flush()
@@ -61,6 +61,9 @@ def test_wheel(wheel, verbose=False):
     test_cmd = [python, "-m", "pytest", "tests"]
     if verbose:
         test_cmd.append("--verbose")
+    for ignore in ignores:
+        test_cmd.append("--ignore")
+        test_cmd.append(ignore)
 
     # Put the location of the python DLL on the path, for deploy-stub test
     # This is needed because venv does not install a copy of the python DLL
@@ -87,6 +90,7 @@ def test_wheel(wheel, verbose=False):
 if __name__ == "__main__":
     parser = OptionParser(usage="%prog [options] file...")
     parser.add_option('', '--verbose', dest = 'verbose', help = 'Enable verbose output', action = 'store_true', default = False)
+    parser.add_option('', '--ignore', dest = 'ignores', help = 'Ignores given test directory (may be repeated)', action = 'append', default = [])
     (options, args) = parser.parse_args()
 
     if not args:
@@ -94,4 +98,4 @@ if __name__ == "__main__":
         sys.exit(1)
 
     for arg in args:
-        test_wheel(arg, verbose=options.verbose)
+        test_wheel(arg, verbose=options.verbose, ignores=options.ignores)

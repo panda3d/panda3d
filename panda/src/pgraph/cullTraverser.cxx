@@ -259,15 +259,8 @@ draw_bounding_volume(const BoundingVolume *vol,
 
   if (bounds_viz != nullptr) {
     _geoms_pcollector.add_level(2);
-    CullableObject *outer_viz =
-      new CullableObject(bounds_viz, get_bounds_outer_viz_state(),
-                         internal_transform);
-    _cull_handler->record_object(outer_viz, this);
-
-    CullableObject *inner_viz =
-      new CullableObject(std::move(bounds_viz), get_bounds_inner_viz_state(),
-                         internal_transform);
-    _cull_handler->record_object(inner_viz, this);
+    _cull_handler->record_object(CullableObject(bounds_viz, get_bounds_outer_viz_state(), internal_transform), this);
+    _cull_handler->record_object(CullableObject(std::move(bounds_viz), get_bounds_inner_viz_state(), internal_transform), this);
   }
 }
 
@@ -309,11 +302,10 @@ show_bounds(CullTraverserData &data, bool tight) {
 
     if (bounds_viz != nullptr) {
       _geoms_pcollector.add_level(1);
-      CullableObject *outer_viz =
-        new CullableObject(std::move(bounds_viz), get_bounds_outer_viz_state(),
-                           internal_transform);
-      outer_viz->_instances = data._instances;
-      _cull_handler->record_object(outer_viz, this);
+      CullableObject outer_viz(std::move(bounds_viz), get_bounds_outer_viz_state(),
+                               internal_transform);
+      outer_viz._instances = data._instances;
+      _cull_handler->record_object(std::move(outer_viz), this);
     }
   } else if (data._instances == nullptr) {
     draw_bounding_volume(node->get_bounds(), internal_transform);

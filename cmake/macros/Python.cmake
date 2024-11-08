@@ -49,6 +49,7 @@ function(add_python_target target)
 
   add_library(${target} ${MODULE_TYPE} ${sources})
   target_link_libraries(${target} PKG::PYTHON)
+  target_include_directories(${target} PRIVATE "${PROJECT_SOURCE_DIR}/dtool/src/interrogatedb")
 
   if(BUILD_SHARED_LIBS)
     set(_outdir "${PANDA_OUTPUT_DIR}/${slash_namespace}")

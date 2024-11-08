@@ -858,6 +858,18 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     }
     break;
 
+  case WM_APPCOMMAND:
+    switch (GET_APPCOMMAND_LPARAM(lparam)) {
+    case APPCOMMAND_OPEN:
+      open_session();
+      return TRUE;
+
+    case APPCOMMAND_SAVE:
+      save_session();
+      return TRUE;
+    }
+    break;
+
   case WM_COMMAND:
     if (HIWORD(wparam) <= 1) {
       int menu_id = LOWORD(wparam);

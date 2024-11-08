@@ -74,7 +74,7 @@ PyObject *Extension<InternalName>::
 __reduce__() const {
   std::string name = _this->get_name();
   return Py_BuildValue("(N(s#))",
-    PyObject_GetAttrString((PyObject *)&Dtool_InternalName._PyType, "make"), name.c_str(), name.size());
+    PyObject_GetAttrString((PyObject *)Dtool_GetPyTypeObject(&Dtool_InternalName), "make"), name.c_str(), name.size());
 }
 
 #endif  // HAVE_PYTHON

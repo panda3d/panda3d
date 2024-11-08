@@ -25,7 +25,7 @@
 class MacStatsFlameGraph final : public PStatFlameGraph, public MacStatsGraph {
 public:
   MacStatsFlameGraph(MacStatsMonitor *monitor, int thread_index,
-                     int collector_index=-1);
+                     int collector_index=-1, int frame_number=-1);
   virtual ~MacStatsFlameGraph();
 
   virtual void new_collector(int collector_index);
@@ -60,11 +60,14 @@ protected:
   virtual std::string get_graph_tooltip(int mouse_x, int mouse_y) const;
   virtual DragMode consider_drag_start(int graph_x, int graph_y);
 
+  virtual bool handle_key(int graph_x, int graph_y, bool pressed,
+                          UniChar c, unsigned short key_code);
   virtual void handle_button_press(int graph_x, int graph_y,
-                                       bool double_click, int button);
+                                   bool double_click, int button);
   virtual void handle_button_release(int graph_x, int graph_y);
   virtual void handle_motion(int graph_x, int graph_y);
   virtual void handle_leave();
+  virtual void handle_wheel(int graph_x, int graph_y, double dx, double dy);
   virtual void handle_draw_graph(CGContextRef ctx, NSRect rect);
   virtual void handle_back();
 
@@ -81,8 +84,6 @@ private:
   NSToolbarItem *_total_item;
 
   MacStatsChartMenuDelegate *_menu_delegate;
-
-  std::vector<int> _back_stack;
 };
 
 #endif

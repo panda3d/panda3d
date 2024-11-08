@@ -1,4 +1,5 @@
 import pytest
+pytest.importorskip('tkinter')
 Pmw = pytest.importorskip('Pmw')
 from direct.tkpanels.ParticlePanel import ParticlePanel
 

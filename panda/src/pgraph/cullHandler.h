@@ -30,7 +30,7 @@ public:
   CullHandler();
   virtual ~CullHandler();
 
-  virtual void record_object(CullableObject *object,
+  virtual void record_object(CullableObject &&object,
                              const CullTraverser *traverser);
   virtual void end_traverse();
 

@@ -44,6 +44,10 @@ using std::max;
 using std::min;
 using std::wstring;
 
+enum ClusterFlags {
+  CF_small_caps = 0x200000,
+};
+
 // This is the factor by which CT_small scales the character down.
 static const PN_stdfloat small_accent_scale = 0.6f;
 
@@ -427,14 +431,14 @@ calc_r_c(int &r, int &c, int n) const {
     c = 0;
     int i = row._row_start;
     while (i < n - 1) {
-      if (_text_string[i]._character != text_soft_hyphen_key &&
-          _text_string[i]._character != text_soft_break_key) {
+      if (_text_string[i]._character != (char32_t)text_soft_hyphen_key &&
+          _text_string[i]._character != (char32_t)text_soft_break_key) {
         ++c;
       }
       ++i;
     }
-    if (_text_string[n - 1]._character != text_soft_hyphen_key &&
-        _text_string[n - 1]._character != text_soft_break_key) {
+    if (_text_string[n - 1]._character != (char32_t)text_soft_hyphen_key &&
+        _text_string[n - 1]._character != (char32_t)text_soft_break_key) {
       ++c;
       if (_text_string[n - 1]._character == '\n') {
         is_real_char = false;
@@ -478,8 +482,8 @@ calc_index(int r, int c) const {
       // we have to scan past them to get n precisely.
       int n = row._row_start;
       while (c > 0) {
-        if (_text_string[n]._character != text_soft_hyphen_key &&
-            _text_string[n]._character != text_soft_break_key) {
+        if (_text_string[n]._character != (char32_t)text_soft_hyphen_key &&
+            _text_string[n]._character != (char32_t)text_soft_break_key) {
           --c;
         }
         ++n;
@@ -798,13 +802,13 @@ scan_wtext(TextAssembler::TextString &output_string,
            const wstring::const_iterator &send,
            TextAssembler::ComputedProperties *current_cprops) {
   while (si != send) {
-    if ((*si) == text_push_properties_key) {
+    if ((*si) == (wchar_t)text_push_properties_key) {
       // This indicates a nested properties structure.  Pull off the name of
       // the TextProperties structure, which is everything until the next
       // text_push_properties_key.
       wstring wname;
       ++si;
-      while (si != send && (*si) != text_push_properties_key) {
+      while (si != send && (*si) != (wchar_t)text_push_properties_key) {
         wname += (*si);
         ++si;
       }
@@ -835,20 +839,20 @@ scan_wtext(TextAssembler::TextString &output_string,
         }
       }
 
-    } else if ((*si) == text_pop_properties_key) {
+    } else if ((*si) == (wchar_t)text_pop_properties_key) {
       // This indicates the undoing of a previous push_properties_key.  We
       // simply return to the previous level.
       ++si;
       return;
 
-    } else if ((*si) == text_embed_graphic_key) {
+    } else if ((*si) == (wchar_t)text_embed_graphic_key) {
       // This indicates an embedded graphic.  Pull off the name of the
       // TextGraphic structure, which is everything until the next
       // text_embed_graphic_key.
 
       wstring graphic_wname;
       ++si;
-      while (si != send && (*si) != text_embed_graphic_key) {
+      while (si != send && (*si) != (wchar_t)text_embed_graphic_key) {
         graphic_wname += (*si);
         ++si;
       }
@@ -980,7 +984,7 @@ wordwrap_text() {
       }
 
       if (isspacew(_text_string[q]._character) ||
-          _text_string[q]._character == text_soft_break_key) {
+          _text_string[q]._character == (char32_t)text_soft_break_key) {
         if (!last_was_space) {
           any_spaces = true;
           // We only care about logging whether there is a soft-hyphen
@@ -997,7 +1001,7 @@ wordwrap_text() {
 
       // A soft hyphen character is not printed, but marks a point at which we
       // might hyphenate a word if we need to.
-      if (_text_string[q]._character == text_soft_hyphen_key) {
+      if (_text_string[q]._character == (char32_t)text_soft_hyphen_key) {
         if (wordwrap_width > 0.0f) {
           // We only consider this as a possible hyphenation point if (a) it
           // is not the very first character, and (b) there is enough room for
@@ -1104,8 +1108,8 @@ wordwrap_text() {
     }
 
     for (size_t pi = p; pi < q; pi++) {
-      if (_text_string[pi]._character != text_soft_hyphen_key &&
-          _text_string[pi]._character != text_soft_break_key) {
+      if (_text_string[pi]._character != (char32_t)text_soft_hyphen_key &&
+          _text_string[pi]._character != (char32_t)text_soft_break_key) {
         _text_block.back()._string.push_back(_text_string[pi]);
       } else {
         _text_block.back()._got_soft_hyphens = true;
@@ -1538,7 +1542,20 @@ assemble_row(TextAssembler::TextRow &row,
     }
 
     if (graphic == nullptr && harfbuff != nullptr) {
-      hb_buffer_add(harfbuff, character, character);
+      unsigned int cluster = character;
+
+      if (properties->get_small_caps()) {
+        const UnicodeLatinMap::Entry *map_entry =
+          UnicodeLatinMap::look_up((char32_t)character);
+        if (map_entry != nullptr &&
+            map_entry->_toupper_character != (char32_t)character) {
+          character = map_entry->_toupper_character;
+
+          // Set a high bit on the cluster to flag this as needing a scale.
+          cluster |= CF_small_caps;
+        }
+      }
+      hb_buffer_add(harfbuff, character, cluster);
       continue;
     }
 #endif
@@ -1577,7 +1594,7 @@ assemble_row(TextAssembler::TextRow &row,
       xpos = (floor(xpos / tab_width) + 1.0f) * tab_width;
       prev_char = -1;
 
-    } else if (character == text_soft_hyphen_key) {
+    } else if (character == (char32_t)text_soft_hyphen_key) {
       // And so is the 'soft-hyphen' key character.
 
     } else if (graphic != nullptr) {
@@ -1810,7 +1827,8 @@ shape_buffer(hb_buffer_t *buf, PlacedGlyphs &placed_glyphs, PN_stdfloat &xpos,
   hb_glyph_position_t *glyph_pos = hb_buffer_get_glyph_positions(buf, &glyph_count);
 
   for (unsigned int i = 0; i < glyph_count; ++i) {
-    int character = glyph_info[i].cluster;
+    unsigned int cluster = glyph_info[i].cluster;
+    int character = cluster & 0x1fffff;
     int glyph_index = glyph_info[i].codepoint;
 
     CPT(TextGlyph) glyph;
@@ -1849,6 +1867,12 @@ shape_buffer(hb_buffer_t *buf, PlacedGlyphs &placed_glyphs, PN_stdfloat &xpos,
     placement._ypos = properties.get_glyph_shift() + y_offset;
     placement._slant = properties.get_slant();
     placement._properties = &properties;
+
+    if (cluster & CF_small_caps) {
+      advance *= properties.get_small_caps_scale();
+      placement._scale *= properties.get_small_caps_scale();
+    }
+
     placed_glyphs.push_back(placement);
 
     xpos += advance;

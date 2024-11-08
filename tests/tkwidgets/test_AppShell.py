@@ -1,4 +1,5 @@
 import pytest
+pytest.importorskip('tkinter')
 pytest.importorskip('Pmw')
 from direct.tkwidgets import AppShell
 

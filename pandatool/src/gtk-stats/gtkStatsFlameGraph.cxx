@@ -24,12 +24,15 @@ static const int default_flame_graph_height = 150;
  */
 GtkStatsFlameGraph::
 GtkStatsFlameGraph(GtkStatsMonitor *monitor, int thread_index,
-                   int collector_index) :
-  PStatFlameGraph(monitor, thread_index, collector_index, 0, 0),
+                   int collector_index, int frame_number) :
+  PStatFlameGraph(monitor, thread_index, collector_index, frame_number, 0, 0),
   GtkStatsGraph(monitor, false)
 {
   // Let's show the units on the guide bar labels.  There's room.
   set_guide_bar_units(get_guide_bar_units() | GBU_show_units);
+
+  std::string window_title = get_title_text();
+  gtk_window_set_title(GTK_WINDOW(_window), window_title.c_str());
 
   // Put some stuff on top of the graph.
   _top_hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -50,6 +53,13 @@ GtkStatsFlameGraph(GtkStatsMonitor *monitor, int thread_index,
   gtk_box_pack_start(GTK_BOX(_top_hbox), _average_check_box, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(_top_hbox), _scale_area, TRUE, TRUE, 0);
   gtk_box_pack_end(GTK_BOX(_top_hbox), _total_label, FALSE, FALSE, 0);
+
+  // Listen for mouse scroll and keyboard events.
+  gtk_widget_add_events(_window, GDK_SCROLL_MASK | GDK_KEY_PRESS_MASK);
+  g_signal_connect(G_OBJECT(_window), "scroll_event",
+                   G_CALLBACK(scroll_callback), this);
+  g_signal_connect(G_OBJECT(_window), "key_press_event",
+                   G_CALLBACK(key_press_callback), this);
 
   gtk_widget_set_size_request(_graph_window,
     default_flame_graph_width * monitor->get_resolution() / 96,
@@ -151,7 +161,7 @@ set_time_units(int unit_mask) {
  */
 void GtkStatsFlameGraph::
 on_click_label(int collector_index) {
-  set_collector_index(collector_index);
+  push_collector_index(collector_index);
 }
 
 /**
@@ -279,6 +289,15 @@ draw_bar(int depth, int from_x, int to_x, int collector_index, int parent_index)
           const PStatCollectorDef &parent_def = client_data->get_collector_def(def._parent_index);
           std::string long_name = parent_def._name + ":" + def._name;
           pango_layout_set_text(layout, long_name.c_str(), long_name.size());
+          if (pango_layout_is_ellipsized(layout)) {
+            // Nope, it's too long, go back.
+            pango_layout_set_text(layout, def._name.c_str(), def._name.size());
+          }
+        }
+        else if (collector_index == 0 && get_frame_number() >= 0) {
+          char text[32];
+          sprintf(text, "Frame %d", get_frame_number());
+          pango_layout_set_text(layout, text, -1);
           if (pango_layout_is_ellipsized(layout)) {
             // Nope, it's too long, go back.
             pango_layout_set_text(layout, def._name.c_str(), def._name.size());
@@ -421,7 +440,7 @@ handle_button_press(int graph_x, int graph_y, bool double_click, int button) {
             g_signal_connect(G_OBJECT(menu_item), "activate",
               G_CALLBACK(+[] (GtkWidget *widget, gpointer data) {
                 GtkStatsFlameGraph *self = (GtkStatsFlameGraph *)data;
-                self->set_collector_index(self->_popup_index);
+                self->push_collector_index(self->_popup_index);
               }),
               this);
           }
@@ -429,8 +448,7 @@ handle_button_press(int graph_x, int graph_y, bool double_click, int button) {
 
         {
           const GtkStatsMonitor::MenuDef *menu_def = GtkStatsGraph::_monitor->add_menu({
-            get_thread_index(), collector_index,
-            GtkStatsMonitor::CT_strip_chart, false,
+            GtkStatsMonitor::CT_strip_chart, get_thread_index(), collector_index,
           });
 
           GtkWidget *menu_item = gtk_menu_item_new_with_label("Open Strip Chart");
@@ -442,8 +460,7 @@ handle_button_press(int graph_x, int graph_y, bool double_click, int button) {
 
         {
           const GtkStatsMonitor::MenuDef *menu_def = GtkStatsGraph::_monitor->add_menu({
-            get_thread_index(), collector_index,
-            GtkStatsMonitor::CT_flame_graph,
+            GtkStatsMonitor::CT_flame_graph, get_thread_index(), collector_index,
           });
 
           GtkWidget *menu_item = gtk_menu_item_new_with_label("Open Flame Graph");
@@ -460,8 +477,7 @@ handle_button_press(int graph_x, int graph_y, bool double_click, int button) {
 
         {
           const GtkStatsMonitor::MenuDef *menu_def = GtkStatsGraph::_monitor->add_menu({
-            -1, collector_index,
-            GtkStatsMonitor::CT_choose_color,
+            GtkStatsMonitor::CT_choose_color, -1, collector_index,
           });
 
           GtkWidget *menu_item = gtk_menu_item_new_with_label("Change Color...");
@@ -473,8 +489,7 @@ handle_button_press(int graph_x, int graph_y, bool double_click, int button) {
 
         {
           const GtkStatsMonitor::MenuDef *menu_def = GtkStatsGraph::_monitor->add_menu({
-            -1, collector_index,
-            GtkStatsMonitor::CT_reset_color,
+            GtkStatsMonitor::CT_reset_color, -1, collector_index,
           });
 
           GtkWidget *menu_item = gtk_menu_item_new_with_label("Reset Color");
@@ -493,7 +508,13 @@ handle_button_press(int graph_x, int graph_y, bool double_click, int button) {
     else if (double_click && button == 1) {
       // Double-clicking on a color bar in the graph will zoom the graph into
       // that collector.
-      set_collector_index(collector_index);
+      if (collector_index >= 0) {
+        push_collector_index(collector_index);
+      } else {
+        // Double-clicking the background goes to the top.
+        clear_history();
+        set_collector_index(-1);
+      }
       return TRUE;
     }
   }
@@ -720,4 +741,74 @@ draw_callback(GtkWidget *widget, cairo_t *cr, gpointer data) {
   self->draw_guide_labels(cr);
 
   return TRUE;
+}
+
+/**
+ *
+ */
+gboolean GtkStatsFlameGraph::
+scroll_callback(GtkWidget *widget, GdkEventScroll *event, gpointer data) {
+  GtkStatsFlameGraph *self = (GtkStatsFlameGraph *)data;
+  bool changed = false;
+  switch (event->direction) {
+  case GDK_SCROLL_LEFT:
+    changed = self->prev_frame();
+    break;
+
+  case GDK_SCROLL_RIGHT:
+    changed = self->next_frame();
+    break;
+  }
+
+  if (changed) {
+    std::string window_title = self->get_title_text();
+    gtk_window_set_title(GTK_WINDOW(self->_window), window_title.c_str());
+    return TRUE;
+  } else {
+    return FALSE;
+  }
+}
+
+/**
+ *
+ */
+gboolean GtkStatsFlameGraph::
+key_press_callback(GtkWidget *widget, GdkEventKey *event, gpointer data) {
+  GtkStatsFlameGraph *self = (GtkStatsFlameGraph *)data;
+  bool changed = false;
+  switch (event->keyval) {
+  case GDK_KEY_Left:
+    if (event->state & GDK_MOD1_MASK) {
+      changed = self->pop_collector_index();
+    } else {
+      changed = self->prev_frame();
+    }
+    break;
+
+  case GDK_KEY_Right:
+    if ((event->state & GDK_MOD1_MASK) == 0) {
+      changed = self->next_frame();
+    }
+    break;
+
+  case GDK_KEY_Home:
+    if ((event->state & GDK_MOD1_MASK) == 0) {
+      changed = self->first_frame();
+    }
+    break;
+
+  case GDK_KEY_End:
+    if ((event->state & GDK_MOD1_MASK) == 0) {
+      changed = self->last_frame();
+    }
+    break;
+  }
+
+  if (changed) {
+    std::string window_title = self->get_title_text();
+    gtk_window_set_title(GTK_WINDOW(self->_window), window_title.c_str());
+    return TRUE;
+  } else {
+    return FALSE;
+  }
 }

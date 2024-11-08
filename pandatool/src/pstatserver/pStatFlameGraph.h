@@ -36,7 +36,7 @@ class PStatFrameData;
 class PStatFlameGraph : public PStatGraph {
 public:
   PStatFlameGraph(PStatMonitor *monitor,
-                  int thread_index, int collector_index,
+                  int thread_index, int collector_index, int frame_number,
                   int xsize, int ysize);
   virtual ~PStatFlameGraph();
 
@@ -45,6 +45,17 @@ public:
   INLINE int get_thread_index() const;
   INLINE int get_collector_index() const;
   void set_collector_index(int collector_index);
+  void push_collector_index(int collector_index);
+  bool pop_collector_index();
+  INLINE void clear_history();
+  INLINE size_t get_history_depth() const;
+
+  INLINE int get_frame_number() const;
+  void set_frame_number(int collector_index);
+  bool first_frame();
+  bool next_frame();
+  bool prev_frame();
+  bool last_frame();
 
   INLINE double get_horizontal_scale() const;
 
@@ -123,12 +134,15 @@ private:
   int _thread_index;
   int _collector_index;
   int _orig_collector_index;
+  int _frame_number;
   bool _average_mode;
   size_t _average_cursor;
 
   double _time_width;
   int _current_frame;
   bool _title_unknown;
+
+  std::vector<int> _history;
 };
 
 #include "pStatFlameGraph.I"

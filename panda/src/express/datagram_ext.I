@@ -47,7 +47,7 @@ __reduce__() const {
   }
 
   extern struct Dtool_PyTypedObject Dtool_Datagram;
-  PyObject *tp = (PyObject *)&Dtool_Datagram._PyType;
+  PyObject *tp = (PyObject *)Dtool_GetPyTypeObject(&Dtool_Datagram);
 
   PyObject *result = PyTuple_New(2);
   PyTuple_SET_ITEM(result, 0, Py_NewRef(tp));

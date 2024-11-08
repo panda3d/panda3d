@@ -46,7 +46,8 @@
 #define FLOATTYPE_REPR(v, str) do { \
   double v_copy = (v); \
   char *into_str = (str); \
-  if ((double)(long long)v_copy == v_copy) { \
+  if (v_copy < 1e16 && v_copy > -1e16 && \
+      (double)(long long)v_copy == v_copy) { \
     snprintf(into_str, 32, "%lld", (long long)v_copy); \
   } else { \
     pdtoa(v_copy, into_str); \

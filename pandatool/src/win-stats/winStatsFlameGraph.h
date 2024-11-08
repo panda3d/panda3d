@@ -28,7 +28,7 @@ class WinStatsLabel;
 class WinStatsFlameGraph : public PStatFlameGraph, public WinStatsGraph {
 public:
   WinStatsFlameGraph(WinStatsMonitor *monitor, int thread_index,
-                     int collector_index=-1);
+                     int collector_index=-1, int frame_number=-1);
   virtual ~WinStatsFlameGraph();
 
   virtual void new_data(int thread_index, int frame_number);
@@ -39,8 +39,6 @@ public:
   virtual void on_click_label(int collector_index);
   virtual void on_enter_label(int collector_index);
   virtual void on_leave_label(int collector_index);
-
-  void set_collector_index(int collector_index);
 
 protected:
   virtual void normal_guide_bars();

@@ -29,9 +29,9 @@ const char * const WinStatsFlameGraph::_window_class_name = "flame";
  */
 WinStatsFlameGraph::
 WinStatsFlameGraph(WinStatsMonitor *monitor, int thread_index,
-                   int collector_index) :
+                   int collector_index, int frame_number) :
   PStatFlameGraph(monitor,
-                  thread_index, collector_index,
+                  thread_index, collector_index, frame_number,
                   monitor->get_pixel_scale() * default_flame_graph_width / 4,
                   monitor->get_pixel_scale() * default_flame_graph_height / 4),
   WinStatsGraph(monitor)
@@ -127,7 +127,21 @@ set_time_units(int unit_mask) {
  */
 void WinStatsFlameGraph::
 on_click_label(int collector_index) {
-  set_collector_index(collector_index);
+  if (collector_index != get_collector_index()) {
+    if (collector_index == -1) {
+      clear_history();
+      set_collector_index(-1);
+    } else {
+      push_collector_index(collector_index);
+    }
+
+    if (is_title_unknown()) {
+      std::string window_title = get_title_text();
+      if (!is_title_unknown()) {
+        SetWindowText(_window, window_title.c_str());
+      }
+    }
+  }
 }
 
 /**
@@ -155,22 +169,6 @@ on_leave_label(int collector_index) {
 
     if (!get_average_mode()) {
       PStatFlameGraph::force_redraw();
-    }
-  }
-}
-
-/**
- * Changes the collector represented by this flame graph.  This may force a
- * redraw.
- */
-void WinStatsFlameGraph::
-set_collector_index(int collector_index) {
-  PStatFlameGraph::set_collector_index(collector_index);
-
-  if (is_title_unknown()) {
-    std::string window_title = get_title_text();
-    if (!is_title_unknown()) {
-      SetWindowText(_window, window_title.c_str());
     }
   }
 }
@@ -349,6 +347,7 @@ LONG WinStatsFlameGraph::
 window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   switch (msg) {
   case WM_LBUTTONDOWN:
+    SetFocus(_window);
     if (_potential_drag_mode == DM_new_guide_bar) {
       set_drag_mode(DM_new_guide_bar);
       SetCapture(_graph_window);
@@ -372,7 +371,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       break;
 
     case 101:
-      set_collector_index(_popup_index);
+      on_click_label(_popup_index);
       return 0;
 
     case 102:
@@ -393,6 +392,51 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     }
     break;
 
+  case WM_KEYDOWN:
+    {
+      bool changed = false;
+      switch (wparam) {
+      case VK_LEFT:
+        changed = prev_frame();
+        break;
+      case VK_RIGHT:
+        changed = next_frame();
+        break;
+      case VK_HOME:
+        changed = first_frame();
+        break;
+      case VK_END:
+        changed = last_frame();
+        break;
+      }
+      if (changed) {
+        std::string window_title = get_title_text();
+        SetWindowText(_window, window_title.c_str());
+        return 0;
+      }
+    }
+    break;
+
+  case WM_SYSKEYDOWN:
+    if (((lparam >> 16) & KF_ALTDOWN) != 0 && wparam == VK_LEFT) {
+      if (pop_collector_index()) {
+        std::string window_title = get_title_text();
+        SetWindowText(_window, window_title.c_str());
+      }
+      return 0;
+    }
+    break;
+
+  case WM_APPCOMMAND:
+    if (GET_APPCOMMAND_LPARAM(lparam) == APPCOMMAND_BROWSER_BACKWARD) {
+      if (pop_collector_index()) {
+        std::string window_title = get_title_text();
+        SetWindowText(_window, window_title.c_str());
+      }
+      return TRUE;
+    }
+    break;
+
   default:
     break;
   }
@@ -407,6 +451,7 @@ LONG WinStatsFlameGraph::
 graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   switch (msg) {
   case WM_LBUTTONDOWN:
+    SetFocus(_window);
     if (_potential_drag_mode == DM_guide_bar && _drag_guide_bar >= 0) {
       set_drag_mode(DM_guide_bar);
       int16_t x = LOWORD(lparam);
@@ -479,7 +524,7 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       // that collector.
       int16_t x = LOWORD(lparam);
       int16_t y = HIWORD(lparam);
-      set_collector_index(get_bar_collector(pixel_to_depth(y), x));
+      on_click_label(get_bar_collector(pixel_to_depth(y), x));
       return 0;
     }
     break;
@@ -512,6 +557,19 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             AppendMenu(popup, MF_STRING, 105, "Reset Color");
             TrackPopupMenu(popup, TPM_LEFTBUTTON, point.x, point.y, 0, _window, nullptr);
           }
+        }
+      }
+      return 0;
+    }
+    break;
+
+  case WM_MOUSEHWHEEL:
+    {
+      int delta = GET_WHEEL_DELTA_WPARAM(wparam);
+      if (delta != 0) {
+        if (delta > 0 ? next_frame() : prev_frame()) {
+          std::string window_title = get_title_text();
+          SetWindowText(_window, window_title.c_str());
         }
       }
       return 0;
@@ -760,6 +818,8 @@ create_window() {
   // Ensure that the window is on top of the stack.
   SetWindowPos(_window, HWND_TOP, 0, 0, 0, 0,
                SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
+
+  SetFocus(_window);
 }
 
 /**
