@@ -6,7 +6,7 @@ Stage = core.Shader.Stage
 
 def compile_and_get_caps(stage, code):
     registry = core.ShaderCompilerRegistry.get_global_ptr()
-    compiler = registry.get_compiler_from_language(Shader.SL_GLSL)
+    compiler = registry.get_compiler_for_language(Shader.SL_GLSL)
     stream = core.StringStream(code.encode('ascii'))
     module = compiler.compile_now(stage, stream, 'test-shader')
     assert module

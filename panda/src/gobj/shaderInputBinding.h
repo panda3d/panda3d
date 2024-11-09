@@ -33,7 +33,7 @@ protected:
   ShaderInputBinding() = default;
 
 public:
-  static ShaderInputBinding *make(ShaderEnums::ShaderLanguage language,
+  static ShaderInputBinding *make(ShaderEnums::SourceLanguage language,
                                   const InternalName *name, const ShaderType *type);
 
   template<class Callable>
@@ -71,11 +71,11 @@ public:
   // All the binders are defined in display, we provide this mechanism so that
   // we don't get a dependency on display here.
   typedef ShaderInputBinding *(*Binder)(const InternalName *name, const ShaderType *type);
-  static void register_binder(ShaderEnums::ShaderLanguage language, int sort, Binder binder);
+  static void register_binder(ShaderEnums::SourceLanguage language, int sort, Binder binder);
 
 private:
   struct BinderDef {
-    ShaderEnums::ShaderLanguage _lang;
+    ShaderEnums::SourceLanguage _lang;
     int _sort;
     Binder _func;
 

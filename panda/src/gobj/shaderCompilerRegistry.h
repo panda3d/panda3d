@@ -18,7 +18,7 @@
 
 #include "pvector.h"
 #include "pmap.h"
-#include "shader.h"
+#include "shaderEnums.h"
 
 class ShaderCompiler;
 
@@ -32,31 +32,34 @@ protected:
 public:
   ~ShaderCompilerRegistry();
 
+  using SourceLanguage = ShaderEnums::SourceLanguage;
+  using SourceLanguages = ShaderEnums::SourceLanguages;
+
   void register_compiler(ShaderCompiler *compiler);
-  void register_deferred_compiler(Shader::ShaderLanguage language, const std::string &library);
+  void register_deferred_compiler(SourceLanguage language, const std::string &library);
 
 PUBLISHED:
   int get_num_compilers() const;
   ShaderCompiler *get_compiler(int n) const;
   MAKE_SEQ(get_compilers, get_num_compilers, get_compiler);
   MAKE_SEQ_PROPERTY(compilers, get_num_compilers, get_compiler);
-  ShaderCompiler *get_compiler_from_language(Shader::ShaderLanguage language);
+  ShaderCompiler *get_compiler_for_language(SourceLanguage language);
 
   void write(std::ostream &out, int indent_level = 0) const;
 
   static ShaderCompilerRegistry *get_global_ptr();
 
 private:
-  void record_language(Shader::ShaderLanguage language, ShaderCompiler *compiler);
+  void record_language(SourceLanguage language, ShaderCompiler *compiler);
 
 private:
   typedef pvector<ShaderCompiler *> Compilers;
   Compilers _compilers;
 
-  typedef pmap<Shader::ShaderLanguage, ShaderCompiler *> Languages;
+  typedef pmap<SourceLanguage, ShaderCompiler *> Languages;
   Languages _languages;
 
-  typedef pmap<Shader::ShaderLanguage, std::string> DeferredCompilers;
+  typedef pmap<SourceLanguage, std::string> DeferredCompilers;
   DeferredCompilers _deferred_compilers;
 
   static ShaderCompilerRegistry *_global_ptr;

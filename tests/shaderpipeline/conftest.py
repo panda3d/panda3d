@@ -10,4 +10,4 @@ def registry():
 @pytest.fixture
 def compiler_glsl(registry):
     from panda3d.core import Shader
-    return registry.get_compiler_from_language(Shader.SL_GLSL)
+    return registry.get_compiler_for_language(Shader.SL_GLSL)

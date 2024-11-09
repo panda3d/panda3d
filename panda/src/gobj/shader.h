@@ -79,28 +79,28 @@ PUBLISHED:
   };
 
 PUBLISHED:
-  Shader(ShaderLanguage lang);
+  Shader(SourceLanguage lang);
 
-  static PT(Shader) load(const Filename &file, ShaderLanguage lang = SL_none);
-  static PT(Shader) make(std::string body, ShaderLanguage lang = SL_none);
-  static PT(Shader) load(ShaderLanguage lang,
+  static PT(Shader) load(const Filename &file, SourceLanguage lang = SL_none);
+  static PT(Shader) make(std::string body, SourceLanguage lang = SL_none);
+  static PT(Shader) load(SourceLanguage lang,
                          const Filename &vertex, const Filename &fragment,
                          const Filename &geometry = "",
                          const Filename &tess_control = "",
                          const Filename &tess_evaluation = "");
-  static PT(Shader) load_compute(ShaderLanguage lang, const Filename &fn);
-  static PT(Shader) make(ShaderLanguage lang,
+  static PT(Shader) load_compute(SourceLanguage lang, const Filename &fn);
+  static PT(Shader) make(SourceLanguage lang,
                          std::string vertex, std::string fragment,
                          std::string geometry = "",
                          std::string tess_control = "",
                          std::string tess_evaluation = "");
-  static PT(Shader) make_compute(ShaderLanguage lang, std::string body);
+  static PT(Shader) make_compute(SourceLanguage lang, std::string body);
 
   INLINE Filename get_filename(DeprecatedShaderType type = ST_none) const;
   INLINE void set_filename(DeprecatedShaderType type, const Filename &filename);
   INLINE const std::string &get_text(DeprecatedShaderType type = ST_none) const;
   INLINE bool get_error_flag() const;
-  INLINE ShaderLanguage get_language() const;
+  INLINE SourceLanguage get_language() const;
   INLINE uint64_t get_used_capabilities() const;
 
   INLINE bool has_fullpath() const;
@@ -297,7 +297,7 @@ public:
 protected:
   ShaderFile _filename;
   Filename _fullpath;
-  ShaderLanguage _language;
+  SourceLanguage _language;
 
   typedef pvector<Filename> Filenames;
 
@@ -337,7 +337,6 @@ public:
   bool bind_vertex_input(const InternalName *name, const ShaderType *type, int location);
 
   bool check_modified() const;
-  ShaderCompiler *get_compiler(ShaderLanguage lang) const;
 
   ~Shader();
 

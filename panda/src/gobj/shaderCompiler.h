@@ -21,8 +21,6 @@
 #include "shader.h"
 #include "shaderModule.h"
 
-typedef pvector<Shader::Shader::ShaderLanguage> ShaderLanguages;
-
 /**
  * This is the base class for objects to compile various types of shader code.
  */
@@ -35,7 +33,7 @@ public:
 
 PUBLISHED:
   virtual std::string get_name() const=0;
-  virtual ShaderLanguages get_languages() const=0;
+  virtual SourceLanguages get_languages() const=0;
   virtual PT(ShaderModule) compile_now(Stage stage, const Filename &path,
                                        BamCacheRecord *record = nullptr) const;
   virtual PT(ShaderModule) compile_now(Stage stage, std::istream &in,

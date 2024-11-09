@@ -34,13 +34,13 @@ PUBLISHED:
     COMPUTE,
   };
 
-  enum ShaderLanguage {
+  enum SourceLanguage {
     SL_none,
     SL_Cg,
     SL_GLSL,
     SL_HLSL,
-    SL_SPIR_V,
   };
+  typedef pvector<SourceLanguage> SourceLanguages;
 
   /**
    * Indicates which features are used by the shader, which can be used by the

@@ -57,7 +57,7 @@ register_compiler(ShaderCompiler *compiler) {
 
   _compilers.push_back(compiler);
 
-  ShaderLanguages langs = compiler->get_languages();
+  SourceLanguages langs = compiler->get_languages();
   for (auto langit = langs.begin(); langit != langs.end(); ++langit) {
     record_language(*langit, compiler);
   }
@@ -70,7 +70,7 @@ register_compiler(ShaderCompiler *compiler) {
  * register_compiler() when it initializes, thus making the language loadable.
  */
 void ShaderCompilerRegistry::
-register_deferred_compiler(Shader::ShaderLanguage language, const string &library) {
+register_deferred_compiler(SourceLanguage language, const string &library) {
   Languages::const_iterator li;
   li = _languages.find(language);
   if (li != _languages.end()) {
@@ -129,7 +129,7 @@ get_compiler(int n) const {
  * shader compilers.
  */
 ShaderCompiler *ShaderCompilerRegistry::
-get_compiler_from_language(Shader::ShaderLanguage language) {
+get_compiler_for_language(SourceLanguage language) {
   Languages::const_iterator li;
   li = _languages.find(language);
   if (li == _languages.end()) {
@@ -189,7 +189,7 @@ write(std::ostream &out, int indent_level) const {
       indent(out, std::max(30 - (int)name.length(), 0)) << " ";
 
       bool comma = false;
-      ShaderLanguages langs = compiler->get_languages();
+      SourceLanguages langs = compiler->get_languages();
       for (auto li = langs.begin(); li != langs.end(); ++li) {
         if (comma) {
           out << ",";
@@ -206,7 +206,7 @@ write(std::ostream &out, int indent_level) const {
     indent(out, indent_level) << "Also available:";
     DeferredCompilers::const_iterator di;
     for (di = _deferred_compilers.begin(); di != _deferred_compilers.end(); ++di) {
-        Shader::ShaderLanguage language = (*di).first;
+        SourceLanguage language = (*di).first;
       out << " ." << language;
     }
     out << "\n";
@@ -225,10 +225,10 @@ get_global_ptr() {
 }
 
 /**
- * Records a Shader::ShaderLanguage recognized by a shader compiler.
+ * Records a SourceLanguage recognized by a shader compiler.
  */
 void ShaderCompilerRegistry::
-record_language(Shader::ShaderLanguage language, ShaderCompiler *compiler) {
+record_language(SourceLanguage language, ShaderCompiler *compiler) {
   Languages::const_iterator li;
   li = _languages.find(language);
   if (li != _languages.end()) {

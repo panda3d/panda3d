@@ -49,7 +49,7 @@ static bool has_cg_header(const std::string &shader_text) {
  * Construct a Shader that will be filled in using fillin() or read() later.
  */
 Shader::
-Shader(ShaderLanguage lang) :
+Shader(SourceLanguage lang) :
   _error_flag(false),
   _language(lang),
   _cache_compiled_shader(false)
@@ -252,7 +252,8 @@ read(const ShaderFile &sfile, BamCacheRecord *record) {
     shader_cat.info()
       << "Compiling Cg shader: " << fn << "\n";
 
-    ShaderCompiler *compiler = get_compiler(SL_Cg);
+    ShaderCompilerRegistry *registry = ShaderCompilerRegistry::get_global_ptr();
+    ShaderCompiler *compiler = registry->get_compiler_for_language(SL_Cg);
     nassertr(compiler != nullptr, false);
 
     std::istringstream in(source);
@@ -387,7 +388,8 @@ load(const ShaderFile &sbody, BamCacheRecord *record) {
  */
 bool Shader::
 do_read_source(Stage stage, const Filename &fn, BamCacheRecord *record) {
-  ShaderCompiler *compiler = get_compiler(_language);
+  ShaderCompilerRegistry *registry = ShaderCompilerRegistry::get_global_ptr();
+  ShaderCompiler *compiler = registry->get_compiler_for_language(_language);
   nassertr(compiler != nullptr, false);
 
   PT(ShaderModule) module = compiler->compile_now(stage, fn, record);
@@ -418,7 +420,8 @@ do_read_source(Stage stage, const Filename &fn, BamCacheRecord *record) {
 bool Shader::
 do_read_source(ShaderModule::Stage stage, std::istream &in,
                const Filename &fullpath, BamCacheRecord *record) {
-  ShaderCompiler *compiler = get_compiler(_language);
+  ShaderCompilerRegistry *registry = ShaderCompilerRegistry::get_global_ptr();
+  ShaderCompiler *compiler = registry->get_compiler_for_language(_language);
   nassertr(compiler != nullptr, false);
 
   PT(ShaderModule) module = compiler->compile_now(stage, in, fullpath, record);
@@ -671,19 +674,10 @@ check_modified() const {
 }
 
 /**
- * Find a ShaderCompiler in the global registry that makes the supplied language
- */
-ShaderCompiler *Shader::
-get_compiler(ShaderLanguage lang) const {
-  ShaderCompilerRegistry *registry = ShaderCompilerRegistry::get_global_ptr();
-  return registry->get_compiler_from_language(lang);
-}
-
-/**
  * Loads the shader with the given filename.
  */
 PT(Shader) Shader::
-load(const Filename &file, ShaderLanguage lang) {
+load(const Filename &file, SourceLanguage lang) {
   ShaderFile sfile(file);
   ShaderTable::const_iterator i = _load_table.find(sfile);
   if (i != _load_table.end() && (lang == SL_none || lang == i->second->_language)) {
@@ -721,7 +715,7 @@ load(const Filename &file, ShaderLanguage lang) {
  * This variant of Shader::load loads all shader programs separately.
  */
 PT(Shader) Shader::
-load(ShaderLanguage lang, const Filename &vertex,
+load(SourceLanguage lang, const Filename &vertex,
      const Filename &fragment, const Filename &geometry,
      const Filename &tess_control, const Filename &tess_evaluation) {
   ShaderFile sfile(vertex, fragment, geometry, tess_control, tess_evaluation);
@@ -761,7 +755,7 @@ load(ShaderLanguage lang, const Filename &vertex,
  * Loads a compute shader.
  */
 PT(Shader) Shader::
-load_compute(ShaderLanguage lang, const Filename &fn) {
+load_compute(SourceLanguage lang, const Filename &fn) {
   if (lang != SL_GLSL) {
     shader_cat.error()
       << "Only GLSL compute shaders are currently supported.\n";
@@ -835,7 +829,7 @@ load_compute(ShaderLanguage lang, const Filename &fn) {
  * Loads the shader, using the string as shader body.
  */
 PT(Shader) Shader::
-make(string body, ShaderLanguage lang) {
+make(string body, SourceLanguage lang) {
   if (lang == SL_GLSL) {
     shader_cat.error()
       << "GLSL shaders must have separate shader bodies!\n";
@@ -893,7 +887,7 @@ make(string body, ShaderLanguage lang) {
  * Loads the shader, using the strings as shader bodies.
  */
 PT(Shader) Shader::
-make(ShaderLanguage lang, string vertex, string fragment, string geometry,
+make(SourceLanguage lang, string vertex, string fragment, string geometry,
      string tess_control, string tess_evaluation) {
   if (lang == SL_none) {
     shader_cat.error()
@@ -937,7 +931,7 @@ make(ShaderLanguage lang, string vertex, string fragment, string geometry,
  * Loads the compute shader from the given string.
  */
 PT(Shader) Shader::
-make_compute(ShaderLanguage lang, string body) {
+make_compute(SourceLanguage lang, string body) {
   if (lang != SL_GLSL) {
     shader_cat.error()
       << "Only GLSL compute shaders are currently supported.\n";
@@ -1340,7 +1334,7 @@ finalize(BamReader *manager) {
  */
 void Shader::
 fillin(DatagramIterator &scan, BamReader *manager) {
-  _language = (ShaderLanguage)scan.get_uint8();
+  _language = (SourceLanguage)scan.get_uint8();
   _debug_name = std::string();
   _module_mask = 0u;
   _modules.clear();

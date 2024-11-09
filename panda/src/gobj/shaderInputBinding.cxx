@@ -19,7 +19,7 @@ small_vector<ShaderInputBinding::BinderDef, 2> ShaderInputBinding::_binders;
  * Creates the appropriate binding for the input with the given name and type.
  */
 ShaderInputBinding *ShaderInputBinding::
-make(Shader::ShaderLanguage language,
+make(ShaderEnums::SourceLanguage language,
      const InternalName *name, const ShaderType *type) {
 
   for (const BinderDef &def : _binders) {
@@ -41,7 +41,7 @@ make(Shader::ShaderLanguage language,
 int ShaderInputBinding::
 get_state_dep() const {
   // Normally we respecify everything per frame.
-  return Shader::D_frame;
+  return ShaderEnums::D_frame;
 }
 
 /**
@@ -99,7 +99,7 @@ fetch_shader_buffer(const State &state, ResourceId resource_id) const {
  * Registers a factory function to create a binding.
  */
 void ShaderInputBinding::
-register_binder(ShaderEnums::ShaderLanguage language, int sort, Binder binder) {
+register_binder(ShaderEnums::SourceLanguage language, int sort, Binder binder) {
   _binders.push_back({language, sort, binder});
   std::sort(_binders.begin(), _binders.end());
 }
