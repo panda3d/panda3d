@@ -558,6 +558,20 @@ def test_glsl_caps_image_load_store():
     """) == Shader.C_image_load_store
 
 
+def test_glsl_caps_image_buffer():
+    assert compile_and_get_caps(Stage.FRAGMENT, """
+    #version 420
+
+    layout(rgba8) uniform readonly imageBuffer a;
+
+    out vec4 p3d_FragColor;
+
+    void main() {
+        p3d_FragColor = imageLoad(a, 0);
+    }
+    """) == Shader.C_image_load_store | Shader.C_texture_buffer
+
+
 def test_glsl_caps_image_atomic():
     assert compile_and_get_caps(Stage.FRAGMENT, """
     #version 420
@@ -603,7 +617,7 @@ def test_glsl_caps_texture_query_levels():
     """) == Shader.C_texture_query_levels
 
 
-def test_glsl_caps_texture_storage_buffer():
+def test_glsl_caps_storage_buffer():
     assert compile_and_get_caps(Stage.VERTEX, """
     #version 430
 

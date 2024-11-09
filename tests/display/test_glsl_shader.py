@@ -8,275 +8,20 @@ from _pytest.outcomes import Failed
 SHADERS_DIR = core.Filename.from_os_specific(os.path.dirname(__file__))
 
 
-# This is the template for the compute shader that is used by run_glsl_test.
-# It defines an assert() macro that writes failures to a buffer, indexed by
-# line number.
-# The reset() function serves to prevent the _triggered variable from being
-# optimized out in the case that the assertions are being optimized out.
-GLSL_COMPUTE_TEMPLATE = """#version {version}
-{extensions}
-
-layout(local_size_x = 1, local_size_y = 1) in;
-
-{preamble}
-
-layout(r8ui) uniform writeonly uimageBuffer _triggered;
-
-void _reset() {{
-    imageStore(_triggered, 0, uvec4(1));
-    memoryBarrier();
-}}
-
-void _assert(bool cond, int line) {{
-    if (!cond) {{
-        imageStore(_triggered, line, uvec4(1));
-    }}
-}}
-
-#define assert(cond) _assert(cond, __LINE__ - line_offset)
-
-void main() {{
-    _reset();
-    const int line_offset = __LINE__;
-{body}
-}}
-"""
-
-# This is a version that uses a vertex and fragment shader instead.  This is
-# slower to set up, but it works even when compute shaders are not supported.
-# The shader is rendered on a fullscreen triangle to a texture, where each
-# pixel represents one line of the code.  The assert writes the result to the
-# output color if the current fragment matches the line number of that assert.
-# The first pixel is used as a control, to check that the shader has run.
-GLSL_VERTEX_TEMPLATE = """#version {version}
-
-in vec4 p3d_Vertex;
-
-void main() {{
-    gl_Position = p3d_Vertex;
-}}
-"""
-
-GLSL_FRAGMENT_TEMPLATE = """#version {version}
-{extensions}
-
-{preamble}
-
-layout(location = 0) out vec4 p3d_FragColor;
-
-void _reset() {{
-    p3d_FragColor = vec4(0, 0, 0, 0);
-
-    if (int(gl_FragCoord.x) == 0) {{
-        p3d_FragColor = vec4(1, 1, 1, 1);
-    }}
-}}
-
-void _assert(bool cond, int line) {{
-    if (int(gl_FragCoord.x) == line) {{
-        p3d_FragColor = vec4(!cond, !cond, !cond, !cond);
-    }}
-}}
-
-#define assert(cond) _assert(cond, __LINE__ - line_offset)
-
-void main() {{
-    _reset();
-    const int line_offset = __LINE__;
-{body}
-}}
-"""
-
-
-def run_glsl_test(gsg, body, preamble="", inputs={}, version=420, exts=set(),
-                  state=core.RenderState.make_empty()):
-    """ Runs a GLSL test on the given GSG.  The given body is executed in the
-    main function and should call assert().  The preamble should contain all
-    of the shader inputs. """
-
-    if not gsg.supports_basic_shaders:
-        pytest.skip("shaders not supported")
-
-    use_compute = gsg.supports_compute_shaders and \
-                  gsg.supports_buffer_texture and \
-                  (gsg.supported_shader_capabilities & core.Shader.C_image_load_store) != 0
-
-    missing_exts = sorted(ext for ext in exts if not gsg.has_extension(ext))
-    if missing_exts:
-        pytest.skip("missing extensions: " + ' '.join(missing_exts))
-
-    if use_compute:
-        exts = exts | {'GL_ARB_compute_shader', 'GL_ARB_shader_image_load_store'}
-
-    extensions = ''
-    for ext in exts:
-        extensions += '#extension {ext} : require\n'.format(ext=ext)
-
-    __tracebackhide__ = True
-
-    preamble = preamble.strip()
-    body = body.rstrip().lstrip('\n')
-
-    if use_compute:
-        code = GLSL_COMPUTE_TEMPLATE.format(version=version, extensions=extensions, preamble=preamble, body=body)
-        shader = core.Shader.make_compute(core.Shader.SL_GLSL, code)
-    else:
-        vertex_code = GLSL_VERTEX_TEMPLATE.format(version=version, extensions=extensions, preamble=preamble, body=body)
-        code = GLSL_FRAGMENT_TEMPLATE.format(version=version, extensions=extensions, preamble=preamble, body=body)
-        shader = core.Shader.make(core.Shader.SL_GLSL, vertex_code, code)
-
-    if not shader:
-        pytest.fail("error compiling shader:\n" + code)
-
-    unsupported_caps = shader.get_used_capabilities() & ~gsg.supported_shader_capabilities
-    if unsupported_caps != 0:
-        stream = core.StringStream()
-        core.ShaderEnums.output_capabilities(stream, unsupported_caps)
-        pytest.skip("unsupported capabilities: " + stream.data.decode('ascii'))
-
-    num_lines = body.count('\n') + 1
-
-    # Create a buffer to hold the results of the assertion.  We use one texel
-    # per line of shader code, so we can show which lines triggered.
-    engine = gsg.get_engine()
-    result = core.Texture("")
-    if use_compute:
-        result.set_clear_color((0, 0, 0, 0))
-        result.setup_buffer_texture(num_lines + 1, core.Texture.T_unsigned_byte,
-                                    core.Texture.F_r8i, core.GeomEnums.UH_static)
-    else:
-        fbprops = core.FrameBufferProperties()
-        fbprops.force_hardware = True
-        fbprops.set_rgba_bits(8, 8, 8, 8)
-        fbprops.srgb_color = False
-
-        buffer = engine.make_output(
-            gsg.pipe,
-            'buffer',
-            0,
-            fbprops,
-            core.WindowProperties.size(core.Texture.up_to_power_2(num_lines + 1), 1),
-            core.GraphicsPipe.BF_refuse_window,
-            gsg
-        )
-        buffer.add_render_texture(result, core.GraphicsOutput.RTM_copy_ram, core.GraphicsOutput.RTP_color)
-        buffer.set_clear_color_active(True)
-        buffer.set_clear_color((0, 0, 0, 0))
-        engine.open_windows()
-
-    # Build up the shader inputs
-    attrib = core.ShaderAttrib.make(shader)
-    for name, value in inputs.items():
-        attrib = attrib.set_shader_input(name, value)
-    if use_compute:
-        attrib = attrib.set_shader_input('_triggered', result)
-    state = state.set_attrib(attrib)
-
-    # Run the shader.
-    if use_compute:
-        try:
-            engine.dispatch_compute((1, 1, 1), state, gsg)
-        except AssertionError as exc:
-            assert False, "Error executing compute shader:\n" + code
-    else:
-        scene = core.NodePath("root")
-        scene.set_attrib(core.DepthTestAttrib.make(core.RenderAttrib.M_always))
-
-        format = core.GeomVertexFormat.get_v3()
-        vdata = core.GeomVertexData("tri", format, core.Geom.UH_static)
-        vdata.unclean_set_num_rows(3)
-
-        vertex = core.GeomVertexWriter(vdata, "vertex")
-        vertex.set_data3(-1, -1, 0)
-        vertex.set_data3(3, -1, 0)
-        vertex.set_data3(-1, 3, 0)
-
-        tris = core.GeomTriangles(core.Geom.UH_static)
-        tris.add_next_vertices(3)
-
-        geom = core.Geom(vdata)
-        geom.add_primitive(tris)
-
-        gnode = core.GeomNode("tri")
-        gnode.add_geom(geom, state)
-        scene.attach_new_node(gnode)
-        scene.set_two_sided(True)
-
-        camera = scene.attach_new_node(core.Camera("camera"))
-        camera.node().get_lens(0).set_near_far(-10, 10)
-        camera.node().set_cull_bounds(core.OmniBoundingVolume())
-
-        region = buffer.make_display_region()
-        region.active = True
-        region.camera = camera
-
-        try:
-            engine.render_frame()
-        except AssertionError as exc:
-            assert False, "Error executing shader:\n" + code
-        finally:
-            engine.remove_window(buffer)
-
-    # Download the texture to check whether the assertion triggered.
-    if use_compute:
-        success = engine.extract_texture_data(result, gsg)
-        assert success
-
-    triggered = result.get_ram_image()
-    if use_compute:
-        triggered = tuple(triggered)
-    else:
-        triggered = tuple(memoryview(triggered).cast('I'))
-
-    if not triggered[0]:
-        pytest.fail("control check failed")
-
-    if any(triggered[1:]):
-        count = len(triggered) - triggered.count(0) - 1
-        lines = body.split('\n')
-        formatted = ''
-        for i, line in enumerate(lines):
-            if triggered[i + 1]:
-                formatted += '=>  ' + line + '\n'
-            else:
-                formatted += '    ' + line + '\n'
-        pytest.fail("{0} GLSL assertions triggered:\n{1}".format(count, formatted))
-
-
-def run_glsl_compile_check(gsg, vert_path, frag_path, expect_fail=False):
-    """Compile supplied GLSL shader paths and check for errors"""
-    shader = core.Shader.load(core.Shader.SL_GLSL, vert_path, frag_path)
-    if expect_fail:
-        assert shader is None
-        return
-
-    assert shader is not None
-
-    if not gsg.supports_glsl:
-        expect_fail = True
-
-    shader.prepare_now(gsg.prepared_objects, gsg)
-    assert shader.is_prepared(gsg.prepared_objects)
-    if expect_fail:
-        assert shader.get_error_flag()
-    else:
-        assert not shader.get_error_flag()
-
-
-def test_glsl_test(gsg):
+def test_glsl_test(env):
     "Test to make sure that the GLSL tests work correctly."
 
-    run_glsl_test(gsg, "assert(true);")
+    env.run_glsl("assert(true);")
 
 
-def test_glsl_test_fail(gsg):
+def test_glsl_test_fail(env):
     "Same as above, but making sure that the failure case works correctly."
 
     with pytest.raises(Failed):
-        run_glsl_test(gsg, "assert(false);")
+        env.run_glsl("assert(false);")
 
 
-def test_glsl_sampler(gsg):
+def test_glsl_sampler(env):
     tex1 = core.Texture("tex1-ubyte-rgba8")
     tex1.setup_1d_texture(1, core.Texture.T_unsigned_byte, core.Texture.F_rgba8)
     tex1.set_clear_color((0, 2 / 255.0, 1, 1))
@@ -299,10 +44,10 @@ def test_glsl_sampler(gsg):
     assert(texture(tex2, vec2(0, 0)) == vec4(1.0, 2.0, -3.14, 0.0));
     assert(texture(tex3, vec3(0, 0, 0)).r == 0.5);
     """
-    run_glsl_test(gsg, code, preamble, {'tex1': tex1, 'tex2': tex2, 'tex3': tex3})
+    env.run_glsl(code, preamble, {'tex1': tex1, 'tex2': tex2, 'tex3': tex3})
 
 
-def test_glsl_isampler(gsg):
+def test_glsl_isampler(env):
     from struct import pack
 
     tex1 = core.Texture("")
@@ -327,10 +72,10 @@ def test_glsl_isampler(gsg):
     assert(texelFetch(tex2, ivec2(0, 0), 0) == ivec4(4, 0, 0, 1));
     assert(texelFetch(tex3, ivec3(0, 0, 0), 0) == ivec4(5, 0, 0, 1));
     """
-    run_glsl_test(gsg, code, preamble, {'tex1': tex1, 'tex2': tex2, 'tex3': tex3})
+    env.run_glsl(code, preamble, {'tex1': tex1, 'tex2': tex2, 'tex3': tex3})
 
 
-def test_glsl_usampler(gsg):
+def test_glsl_usampler(env):
     from struct import pack
 
     tex1 = core.Texture("")
@@ -355,10 +100,10 @@ def test_glsl_usampler(gsg):
     assert(texelFetch(tex2, ivec2(0, 0), 0) == uvec4(4, 0, 0, 1));
     assert(texelFetch(tex3, ivec3(0, 0, 0), 0) == uvec4(5, 0, 0, 1));
     """
-    run_glsl_test(gsg, code, preamble, {'tex1': tex1, 'tex2': tex2, 'tex3': tex3})
+    env.run_glsl(code, preamble, {'tex1': tex1, 'tex2': tex2, 'tex3': tex3})
 
 
-def test_glsl_image(gsg):
+def test_glsl_image(env):
     tex1 = core.Texture("")
     tex1.setup_1d_texture(1, core.Texture.T_unsigned_byte, core.Texture.F_rgba8)
     tex1.set_clear_color((0, 2 / 255.0, 1, 1))
@@ -375,10 +120,10 @@ def test_glsl_image(gsg):
     assert(imageLoad(tex1, 0) == vec4(0, 2 / 255.0, 1, 1));
     assert(imageLoad(tex2, ivec2(0, 0)) == vec4(1.0, 2.0, -3.14, 0.0));
     """
-    run_glsl_test(gsg, code, preamble, {'tex1': tex1, 'tex2': tex2})
+    env.run_glsl(code, preamble, {'tex1': tex1, 'tex2': tex2})
 
 
-def test_glsl_iimage(gsg):
+def test_glsl_iimage(env):
     from struct import pack
 
     tex1 = core.Texture("")
@@ -403,10 +148,10 @@ def test_glsl_iimage(gsg):
     assert(imageLoad(tex2, ivec2(0, 0)) == ivec4(4, 0, 0, 1));
     assert(imageLoad(tex3, ivec3(0, 0, 0)) == ivec4(5, 0, 0, 1));
     """
-    run_glsl_test(gsg, code, preamble, {'tex1': tex1, 'tex2': tex2, 'tex3': tex3})
+    env.run_glsl(code, preamble, {'tex1': tex1, 'tex2': tex2, 'tex3': tex3})
 
 
-def test_glsl_uimage(gsg):
+def test_glsl_uimage(env):
     from struct import pack
 
     tex1 = core.Texture("")
@@ -431,10 +176,10 @@ def test_glsl_uimage(gsg):
     assert(imageLoad(tex2, ivec2(0, 0)) == uvec4(4, 0, 0, 1));
     assert(imageLoad(tex3, ivec3(0, 0, 0)) == uvec4(5, 0, 0, 1));
     """
-    run_glsl_test(gsg, code, preamble, {'tex1': tex1, 'tex2': tex2, 'tex3': tex3})
+    env.run_glsl(code, preamble, {'tex1': tex1, 'tex2': tex2, 'tex3': tex3})
 
 
-def test_glsl_ssbo(gsg):
+def test_glsl_ssbo(env):
     from struct import pack
     num1 = pack('<i', 1234567)
     num2 = pack('<i', -1234567)
@@ -460,12 +205,12 @@ def test_glsl_ssbo(gsg):
     assert(value1 == 1234567);
     assert(value2 == -1234567);
     """
-    run_glsl_test(gsg, code, preamble,
+    env.run_glsl(code, preamble,
                   {'buffer1': buffer1, 'buffer2': buffer2, 'buffer3': buffer3},
                   version=430)
 
 
-def test_glsl_ssbo_array(gsg):
+def test_glsl_ssbo_array(env):
     from struct import pack
     dummy = pack('<i', 999999)
     num1 = pack('<i', 1234567)
@@ -486,12 +231,12 @@ def test_glsl_ssbo_array(gsg):
     assert(test_ns[1][0].inside[0].value == 1234567);
     assert(test_ns[2][0].inside[0].value == -1234567);
     """
-    run_glsl_test(gsg, code, preamble,
+    env.run_glsl(code, preamble,
                   {'test[0][0]': unused, 'test[1][0]': buffer1, 'test[2][0]': buffer2},
                   version=430)
 
 
-def test_glsl_ssbo_runtime_length(gsg):
+def test_glsl_ssbo_runtime_length(env):
     from struct import pack
     nums = pack('<ii', 1234, 5678)
     ssbo = core.ShaderBuffer("ssbo", nums, core.GeomEnums.UH_static)
@@ -506,10 +251,10 @@ def test_glsl_ssbo_runtime_length(gsg):
     assert(values[0] == 1234);
     assert(values[1] == 5678);
     """
-    run_glsl_test(gsg, code, preamble, {'ssbo': ssbo}, version=430)
+    env.run_glsl(code, preamble, {'ssbo': ssbo}, version=430)
 
 
-def test_glsl_float(gsg):
+def test_glsl_float(env):
     inputs = dict(
         zero=0,
         a=1.23,
@@ -525,10 +270,10 @@ def test_glsl_float(gsg):
     assert(abs(a - 1.23) < 0.001);
     assert(abs(b - -829.123) < 0.001);
     """
-    run_glsl_test(gsg, code, preamble, inputs)
+    env.run_glsl(code, preamble, inputs)
 
 
-def test_glsl_int(gsg):
+def test_glsl_int(env):
     inputs = dict(
         zero=0,
         intmax=0x7fffffff,
@@ -544,10 +289,10 @@ def test_glsl_int(gsg):
     assert(intmax == 0x7fffffff);
     assert(intmin == -0x7fffffff);
     """
-    run_glsl_test(gsg, code, preamble, inputs)
+    env.run_glsl(code, preamble, inputs)
 
 
-def test_glsl_uint(gsg):
+def test_glsl_uint(env):
     #TODO: fix passing uints greater than intmax
     inputs = dict(
         zero=0,
@@ -561,11 +306,11 @@ def test_glsl_uint(gsg):
     assert(zero == 0u);
     assert(intmax == 0x7fffffffu);
     """
-    run_glsl_test(gsg, code, preamble, inputs)
+    env.run_glsl(code, preamble, inputs)
 
 
 #@pytest.mark.xfail(reason="https://github.com/KhronosGroup/SPIRV-Tools/issues/3387")
-def test_glsl_bool(gsg):
+def test_glsl_bool(env):
     flags = dict(
         flag1=False,
         flag2=0,
@@ -590,10 +335,10 @@ def test_glsl_bool(gsg):
     assert(flag5);
     assert(flag6);
     """
-    run_glsl_test(gsg, code, preamble, flags)
+    env.run_glsl(code, preamble, flags)
 
 
-def test_glsl_mat3(gsg):
+def test_glsl_mat3(env):
     param1 = core.LMatrix4f(core.LMatrix3f(1, 2, 3, 4, 5, 6, 7, 8, 9))
     param2 = core.LMatrix4d(core.LMatrix3d(10, 11, 12, 13, 14, 15, 16, 17, 18))
 
@@ -616,11 +361,11 @@ def test_glsl_mat3(gsg):
     assert(param3[1] == vec3(22, 23, 24));
     assert(param3[2] == vec3(25, 26, 27));
     """
-    run_glsl_test(gsg, code, preamble,
+    env.run_glsl(code, preamble,
         {'param1': param1, 'param2': param2, 'param3': param3})
 
 
-def test_glsl_mat4(gsg):
+def test_glsl_mat4(env):
     param1 = core.LMatrix4f(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)
     param2 = core.LMatrix4d(17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32)
 
@@ -650,11 +395,11 @@ def test_glsl_mat4(gsg):
     assert(param3[2] == vec4(41, 42, 43, 44));
     assert(param3[3] == vec4(45, 46, 47, 48));
     """
-    run_glsl_test(gsg, code, preamble,
+    env.run_glsl(code, preamble,
         {'param1': param1, 'param2': param2, 'param3': param3})
 
 
-def test_glsl_mat3x4(gsg):
+def test_glsl_mat3x4(env):
     param1 = core.LMatrix4f(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)
     param2 = core.LMatrix4d(17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32)
 
@@ -670,11 +415,11 @@ def test_glsl_mat3x4(gsg):
     assert(param2[1] == vec4(21, 22, 23, 24));
     assert(param2[2] == vec4(25, 26, 27, 28));
     """
-    run_glsl_test(gsg, code, preamble,
+    env.run_glsl(code, preamble,
         {'param1': param1, 'param2': param2})
 
 
-def test_glsl_mat4x3(gsg):
+def test_glsl_mat4x3(env):
     param1 = core.LMatrix4f(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)
     param2 = core.LMatrix4d(17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32)
 
@@ -693,11 +438,11 @@ def test_glsl_mat4x3(gsg):
     assert(param2[2] == vec3(25, 26, 27));
     assert(param2[3] == vec3(29, 30, 31));
     """
-    run_glsl_test(gsg, code, preamble,
+    env.run_glsl(code, preamble,
         {'param1': param1, 'param2': param2})
 
 
-def test_glsl_pta_int(gsg):
+def test_glsl_pta_int(env):
     pta = core.PTA_int((0, 1, 2, 3))
 
     preamble = """
@@ -709,10 +454,10 @@ def test_glsl_pta_int(gsg):
     assert(pta[2] == 2);
     assert(pta[3] == 3);
     """
-    run_glsl_test(gsg, code, preamble, {'pta': pta})
+    env.run_glsl(code, preamble, {'pta': pta})
 
 
-def test_glsl_pta_ivec4(gsg):
+def test_glsl_pta_ivec4(env):
     pta = core.PTA_LVecBase4i(((0, 1, 2, 3), (4, 5, 6, 7)))
 
     preamble = """
@@ -722,11 +467,11 @@ def test_glsl_pta_ivec4(gsg):
     assert(pta[0] == ivec4(0, 1, 2, 3));
     assert(pta[1] == ivec4(4, 5, 6, 7));
     """
-    run_glsl_test(gsg, code, preamble, {'pta': pta})
+    env.run_glsl(code, preamble, {'pta': pta})
 
 
 @pytest.mark.parametrize("type", (core.PTA_LVecBase3f, core.PTA_LVecBase3d, core.PTA_LVecBase3i))
-def test_glsl_pta_vec3(gsg, type):
+def test_glsl_pta_vec3(env, type):
     pta = type((
         (0, 1, 2),
         (3, 4, 5),
@@ -741,11 +486,11 @@ def test_glsl_pta_vec3(gsg, type):
     assert(pta[1] == vec3(3, 4, 5));
     assert(pta[2] == vec3(6, 7, 8));
     """
-    run_glsl_test(gsg, code, preamble, {'pta': pta})
+    env.run_glsl(code, preamble, {'pta': pta})
 
 
 @pytest.mark.parametrize("type", (core.PTA_LVecBase3f, core.PTA_LVecBase3d, core.PTA_LVecBase3i))
-def test_glsl_pta_dvec3(gsg, type):
+def test_glsl_pta_dvec3(env, type):
     pta = type((
         (0, 1, 2),
         (3, 4, 5),
@@ -760,11 +505,11 @@ def test_glsl_pta_dvec3(gsg, type):
     assert(pta[1] == vec3(3, 4, 5));
     assert(pta[2] == vec3(6, 7, 8));
     """
-    run_glsl_test(gsg, code, preamble, {'pta': pta})
+    env.run_glsl(code, preamble, {'pta': pta})
 
 
 @pytest.mark.parametrize("type", (core.PTA_LVecBase4f, core.PTA_LVecBase4d, core.PTA_LVecBase4i))
-def test_glsl_pta_vec4(gsg, type):
+def test_glsl_pta_vec4(env, type):
     pta = type((
         (0, 1, 2, 3),
         (4, 5, 6, 7),
@@ -779,11 +524,11 @@ def test_glsl_pta_vec4(gsg, type):
     assert(pta[1] == vec4(4, 5, 6, 7));
     assert(pta[2] == vec4(8, 9, 10, 11));
     """
-    run_glsl_test(gsg, code, preamble, {'pta': pta})
+    env.run_glsl(code, preamble, {'pta': pta})
 
 
 @pytest.mark.parametrize("type", (core.PTA_LVecBase4f, core.PTA_LVecBase4d, core.PTA_LVecBase4i))
-def test_glsl_pta_dvec4(gsg, type):
+def test_glsl_pta_dvec4(env, type):
     pta = type((
         (0, 1, 2, 3),
         (4, 5, 6, 7),
@@ -798,11 +543,11 @@ def test_glsl_pta_dvec4(gsg, type):
     assert(pta[1] == dvec4(4, 5, 6, 7));
     assert(pta[2] == dvec4(8, 9, 10, 11));
     """
-    run_glsl_test(gsg, code, preamble, {'pta': pta})
+    env.run_glsl(code, preamble, {'pta': pta})
 
 
 @pytest.mark.parametrize("type", (core.PTA_LMatrix3f, core.PTA_LMatrix3d))
-def test_glsl_pta_mat3(gsg, type):
+def test_glsl_pta_mat3(env, type):
     pta = type((
         (0, 1, 2, 3, 4, 5, 6, 7, 8),
         (9, 10, 11, 12, 13, 14, 15, 16, 17),
@@ -819,11 +564,11 @@ def test_glsl_pta_mat3(gsg, type):
     assert(pta[1][1] == vec3(12, 13, 14));
     assert(pta[1][2] == vec3(15, 16, 17));
     """
-    run_glsl_test(gsg, code, preamble, {'pta': pta})
+    env.run_glsl(code, preamble, {'pta': pta})
 
 
 @pytest.mark.parametrize("type", (core.PTA_LMatrix4f, core.PTA_LMatrix4d))
-def test_glsl_pta_mat4(gsg, type):
+def test_glsl_pta_mat4(env, type):
     pta = type((
         (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15),
         (16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31),
@@ -842,10 +587,10 @@ def test_glsl_pta_mat4(gsg, type):
     assert(pta[1][2] == vec4(24, 25, 26, 27));
     assert(pta[1][3] == vec4(28, 29, 30, 31));
     """
-    run_glsl_test(gsg, code, preamble, {'pta': pta})
+    env.run_glsl(code, preamble, {'pta': pta})
 
 
-def test_glsl_param_vec4(gsg):
+def test_glsl_param_vec4(env):
     param = core.ParamVecBase4((0, 1, 2, 3))
 
     preamble = """
@@ -857,10 +602,10 @@ def test_glsl_param_vec4(gsg):
     assert(param.z == 2.0);
     assert(param.w == 3.0);
     """
-    run_glsl_test(gsg, code, preamble, {'param': param})
+    env.run_glsl(code, preamble, {'param': param})
 
 
-def test_glsl_param_ivec4(gsg):
+def test_glsl_param_ivec4(env):
     param = core.ParamVecBase4i((0, 1, 2, 3))
 
     preamble = """
@@ -872,10 +617,10 @@ def test_glsl_param_ivec4(gsg):
     assert(param.z == 2);
     assert(param.w == 3);
     """
-    run_glsl_test(gsg, code, preamble, {'param': param})
+    env.run_glsl(code, preamble, {'param': param})
 
 
-def test_glsl_struct(gsg):
+def test_glsl_struct(env):
     preamble = """
     uniform struct TestStruct {
         vec3 a;
@@ -902,7 +647,7 @@ def test_glsl_struct(gsg):
     tex_f = core.Texture('f')
     tex_f.setup_2d_texture(1, 1, core.Texture.T_float, core.Texture.F_r32)
     tex_f.set_clear_color((14, 0, 0, 0))
-    run_glsl_test(gsg, code, preamble, {
+    env.run_glsl(code, preamble, {
         'test.unused': 0,
         'test.a': (1, 2, 3),
         'test.b': 4,
@@ -913,7 +658,7 @@ def test_glsl_struct(gsg):
     })
 
 
-def test_glsl_struct_nested(gsg):
+def test_glsl_struct_nested(env):
     preamble = """
     struct TestSubStruct1 {
         float a;
@@ -942,7 +687,7 @@ def test_glsl_struct_nested(gsg):
     tex_c_a = core.Texture()
     tex_c_a.setup_2d_texture(1, 1, core.Texture.T_float, core.Texture.F_r32)
     tex_c_a.set_clear_color((6, 0, 0, 0))
-    run_glsl_test(gsg, code, preamble, {
+    env.run_glsl(code, preamble, {
         'test.unused': 0,
         'test.a': (1, 2, 3),
         'test.b.a': 4,
@@ -954,7 +699,7 @@ def test_glsl_struct_nested(gsg):
     })
 
 
-def test_glsl_struct_array(gsg):
+def test_glsl_struct_array(env):
     preamble = """
     uniform struct TestStruct {
         vec3 a;
@@ -977,7 +722,7 @@ def test_glsl_struct_array(gsg):
     tex_1_b = core.Texture()
     tex_1_b.setup_2d_texture(1, 1, core.Texture.T_float, core.Texture.F_r32)
     tex_1_b.set_clear_color((9, 0, 0, 0))
-    run_glsl_test(gsg, code, preamble, {
+    env.run_glsl(code, preamble, {
         'test[0].unused': 0,
         'test[0].a': (1, 2, 3),
         'test[0].b': tex_0_b,
@@ -989,7 +734,7 @@ def test_glsl_struct_array(gsg):
     })
 
 
-def test_glsl_struct_pseudo_light(gsg):
+def test_glsl_struct_pseudo_light(env):
     # Something that looks like a named light source, but isn't one at all
     preamble = """
     struct FakeLightParameters {
@@ -1008,7 +753,7 @@ def test_glsl_struct_pseudo_light(gsg):
     assert(test.constantAttenuation == 12);
     assert(test.radius == 13);
     """
-    run_glsl_test(gsg, code, preamble, {
+    env.run_glsl(code, preamble, {
         'test.specular': (1, 2, 3, 4),
         'test.position': (5, 6, 7, 8),
         'test.attenuation': (9, 10, 11),
@@ -1017,7 +762,7 @@ def test_glsl_struct_pseudo_light(gsg):
     })
 
 
-def test_glsl_light(gsg):
+def test_glsl_light(env):
     preamble = """
     uniform struct p3d_LightSourceParameters {
         vec4 color;
@@ -1056,12 +801,12 @@ def test_glsl_light(gsg):
     plight.transform = core.TransformState.make_pos((9, 10, 11))
     plight.attenuation = (12, 13, 14)
 
-    run_glsl_test(gsg, code, preamble, {
+    env.run_glsl(code, preamble, {
         'plight': core.NodePath(plight),
     })
 
 
-def test_glsl_named_light_source(gsg):
+def test_glsl_named_light_source(env):
     spot = core.Spotlight("spot")
     spot.get_lens().set_fov(90, 90)
     spot.set_color((1, 2, 3, 4))
@@ -1078,10 +823,10 @@ def test_glsl_named_light_source(gsg):
     assert(spot.color == vec4(1, 2, 3, 4));
     assert(spot.specular == vec4(5, 6, 7, 8));
     """
-    run_glsl_test(gsg, code, preamble, {'spot': core.NodePath(spot)})
+    env.run_glsl(code, preamble, {'spot': core.NodePath(spot)})
 
 
-def test_glsl_state_light(gsg):
+def test_glsl_state_light(env):
     preamble = """
     uniform struct p3d_LightSourceParameters {
         vec4 color;
@@ -1147,10 +892,10 @@ def test_glsl_state_light(gsg):
     lattr = lattr.add_on_light(dlight_path)
     state = core.RenderState.make(lattr)
 
-    run_glsl_test(gsg, code, preamble, state=state)
+    env.run_glsl(code, preamble, state=state)
 
 
-def test_glsl_state_light_source(gsg):
+def test_glsl_state_light_source(env):
     spot = core.Spotlight("spot")
     spot.priority = 3
     spot.get_lens().set_fov(120, 120)
@@ -1252,10 +997,10 @@ def test_glsl_state_light_source(gsg):
     dire_path = node.attach_new_node(dire)
     node.set_light(dire_path)
 
-    run_glsl_test(gsg, code, preamble, state=node.get_state())
+    env.run_glsl(code, preamble, state=node.get_state())
 
 
-def test_glsl_state_material(gsg):
+def test_glsl_state_material(env):
     mat = core.Material("mat")
     mat.ambient = (1, 2, 3, 4)
     mat.diffuse = (5, 6, 7, 8)
@@ -1290,10 +1035,10 @@ def test_glsl_state_material(gsg):
     node = core.NodePath("state")
     node.set_material(mat)
 
-    run_glsl_test(gsg, code, preamble, state=node.get_state())
+    env.run_glsl(code, preamble, state=node.get_state())
 
 
-def test_glsl_state_material_pbr(gsg):
+def test_glsl_state_material_pbr(env):
     mat = core.Material("mat")
     mat.base_color = (1, 2, 3, 4)
     mat.emission = (9, 10, 11, 12)
@@ -1322,10 +1067,10 @@ def test_glsl_state_material_pbr(gsg):
     node = core.NodePath("state")
     node.set_material(mat)
 
-    run_glsl_test(gsg, code, preamble, state=node.get_state())
+    env.run_glsl(code, preamble, state=node.get_state())
 
 
-def test_glsl_state_fog(gsg):
+def test_glsl_state_fog(env):
     fog = core.Fog("fog")
     fog.color = (1, 2, 3, 4)
     fog.exp_density = 0.5
@@ -1352,10 +1097,10 @@ def test_glsl_state_fog(gsg):
     node = core.NodePath("state")
     node.set_fog(fog)
 
-    run_glsl_test(gsg, code, preamble, state=node.get_state())
+    env.run_glsl(code, preamble, state=node.get_state())
 
 
-def test_glsl_state_texture(gsg):
+def test_glsl_state_texture(env):
     def gen_texture(v):
         tex = core.Texture(f"tex{v}")
         tex.setup_2d_texture(1, 1, core.Texture.T_unsigned_byte, core.Texture.F_red)
@@ -1423,7 +1168,7 @@ def test_glsl_state_texture(gsg):
     assert(texture(p3d_Texture[6], coord).r == 1.0);
     """
 
-    run_glsl_test(gsg, code, preamble, state=np.get_state())
+    env.run_glsl(code, preamble, state=np.get_state())
 
     preamble = """
     uniform sampler2D p3d_TextureFF[5];
@@ -1452,10 +1197,10 @@ def test_glsl_state_texture(gsg):
     assert(all(lessThan(abs(texture(p3d_TextureHeight[1], coord) - vec4(127 / 255.0, 127 / 255.0, 1.0, 0.0)), vec4(0.004))));
     """
 
-    run_glsl_test(gsg, code, preamble, state=np.get_state())
+    env.run_glsl(code, preamble, state=np.get_state())
 
 
-def test_glsl_frame_number(gsg):
+def test_glsl_frame_number(env):
     clock = core.ClockObject.get_global_clock()
     old_frame_count = clock.get_frame_count()
     try:
@@ -1468,12 +1213,12 @@ def test_glsl_frame_number(gsg):
         assert(osg_FrameNumber == 123);
         """
 
-        run_glsl_test(gsg, code, preamble)
+        env.run_glsl(code, preamble)
     finally:
         clock.set_frame_count(old_frame_count)
 
 
-def test_glsl_write_extract_image_buffer(gsg):
+def test_glsl_write_extract_image_buffer(env):
     # Tests that we can write to a buffer texture on the GPU, and then extract
     # the data on the CPU.  We test two textures since there was in the past a
     # where it would only work correctly for one texture.
@@ -1500,58 +1245,69 @@ def test_glsl_write_extract_image_buffer(gsg):
     assert(imageLoad(tex2, 0).r == -456);
     """
 
-    run_glsl_test(gsg, code, preamble, {'tex1': tex1, 'tex2': tex2})
+    env.run_glsl(code, preamble, {'tex1': tex1, 'tex2': tex2})
 
-    engine = core.GraphicsEngine.get_global_ptr()
-    assert engine.extract_texture_data(tex1, gsg)
-    assert engine.extract_texture_data(tex2, gsg)
+    env.extract_texture_data(tex1)
+    env.extract_texture_data(tex2)
 
     assert struct.unpack('I', tex1.get_ram_image()) == (123,)
     assert struct.unpack('i', tex2.get_ram_image()) == (-456,)
 
 
-def test_glsl_compile_error(gsg):
+def test_glsl_compile_error():
     """Test getting compile errors from bad shaders"""
-    suffix = ''
-    if gsg.pipe.interface_name == "OpenGL" and \
-        (gsg.driver_shader_version_major, gsg.driver_shader_version_minor) < (1, 50):
-        suffix = '_legacy'
-    vert_path = core.Filename(SHADERS_DIR, 'glsl_bad' + suffix + '.vert')
-    frag_path = core.Filename(SHADERS_DIR, 'glsl_simple' + suffix + '.frag')
-    run_glsl_compile_check(gsg, vert_path, frag_path, expect_fail=True)
+    vert_path = core.Filename(SHADERS_DIR, 'glsl_bad.vert')
+    frag_path = core.Filename(SHADERS_DIR, 'glsl_simple.frag')
+    shader = core.Shader.load(core.Shader.SL_GLSL, vert_path, frag_path)
+    assert shader is None
 
 
-def test_glsl_from_file(gsg):
+def test_glsl_from_file():
     """Test compiling GLSL shaders from files"""
-    suffix = ''
-    if gsg.pipe.interface_name == "OpenGL" and \
-        (gsg.driver_shader_version_major, gsg.driver_shader_version_minor) < (1, 50):
-        suffix = '_legacy'
-    vert_path = core.Filename(SHADERS_DIR, 'glsl_simple' + suffix + '.vert')
-    frag_path = core.Filename(SHADERS_DIR, 'glsl_simple' + suffix + '.frag')
-    run_glsl_compile_check(gsg, vert_path, frag_path)
+    vert_path = core.Filename(SHADERS_DIR, 'glsl_simple.vert')
+    frag_path = core.Filename(SHADERS_DIR, 'glsl_simple.frag')
+    shader = core.Shader.load(core.Shader.SL_GLSL, vert_path, frag_path)
+    assert shader is not None
 
 
-def test_glsl_includes(gsg):
+def test_glsl_from_file_legacy():
+    """Test compiling GLSL shaders from files"""
+    vert_path = core.Filename(SHADERS_DIR, 'glsl_simple_legacy.vert')
+    frag_path = core.Filename(SHADERS_DIR, 'glsl_simple_legacy.frag')
+    shader = core.Shader.load(core.Shader.SL_GLSL, vert_path, frag_path)
+    assert shader is not None
+
+
+def test_glsl_includes():
     """Test preprocessing includes in GLSL shaders"""
-    suffix = ''
-    if gsg.pipe.interface_name == "OpenGL" and \
-        (gsg.driver_shader_version_major, gsg.driver_shader_version_minor) < (1, 50):
-        suffix = '_legacy'
-    vert_path = core.Filename(SHADERS_DIR, 'glsl_include' + suffix + '.vert')
-    frag_path = core.Filename(SHADERS_DIR, 'glsl_simple' + suffix + '.frag')
-    run_glsl_compile_check(gsg, vert_path, frag_path)
+    vert_path = core.Filename(SHADERS_DIR, 'glsl_include.vert')
+    frag_path = core.Filename(SHADERS_DIR, 'glsl_simple.frag')
+    shader = core.Shader.load(core.Shader.SL_GLSL, vert_path, frag_path)
+    assert shader is not None
 
 
-def test_glsl_includes_angle_nodir(gsg):
+def test_glsl_includes_legacy():
+    """Test preprocessing includes in GLSL shaders"""
+    vert_path = core.Filename(SHADERS_DIR, 'glsl_include_legacy.vert')
+    frag_path = core.Filename(SHADERS_DIR, 'glsl_simple_legacy.frag')
+    shader = core.Shader.load(core.Shader.SL_GLSL, vert_path, frag_path)
+    assert shader is not None
+
+
+def test_glsl_includes_angle_nodir():
     """Test preprocessing includes with angle includes without model-path"""
-    suffix = ''
-    if gsg.pipe.interface_name == "OpenGL" and \
-        (gsg.driver_shader_version_major, gsg.driver_shader_version_minor) < (1, 50):
-        suffix = '_legacy'
-    vert_path = core.Filename(SHADERS_DIR, 'glsl_include_angle' + suffix + '.vert')
-    frag_path = core.Filename(SHADERS_DIR, 'glsl_simple' + suffix + '.frag')
-    assert core.Shader.load(core.Shader.SL_GLSL, vert_path, frag_path) is None
+    vert_path = core.Filename(SHADERS_DIR, 'glsl_include_angle.vert')
+    frag_path = core.Filename(SHADERS_DIR, 'glsl_simple.frag')
+    shader = core.Shader.load(core.Shader.SL_GLSL, vert_path, frag_path)
+    assert shader is None
+
+
+def test_glsl_includes_angle_nodir_legacy():
+    """Test preprocessing includes with angle includes without model-path"""
+    vert_path = core.Filename(SHADERS_DIR, 'glsl_include_angle_legacy.vert')
+    frag_path = core.Filename(SHADERS_DIR, 'glsl_simple_legacy.frag')
+    shader = core.Shader.load(core.Shader.SL_GLSL, vert_path, frag_path)
+    assert shader is None
 
 
 @pytest.fixture
@@ -1562,12 +1318,17 @@ def with_current_dir_on_model_path():
     model_path.clear_local_value()
 
 
-def test_glsl_includes_angle_withdir(gsg, with_current_dir_on_model_path):
+def test_glsl_includes_angle_withdir(with_current_dir_on_model_path):
     """Test preprocessing includes with angle includes with model-path"""
-    suffix = ''
-    if gsg.pipe.interface_name == "OpenGL" and \
-        (gsg.driver_shader_version_major, gsg.driver_shader_version_minor) < (1, 50):
-        suffix = '_legacy'
-    vert_path = core.Filename(SHADERS_DIR, 'glsl_include_angle' + suffix + '.vert')
-    frag_path = core.Filename(SHADERS_DIR, 'glsl_simple' + suffix + '.frag')
-    run_glsl_compile_check(gsg, vert_path, frag_path)
+    vert_path = core.Filename(SHADERS_DIR, 'glsl_include_angle.vert')
+    frag_path = core.Filename(SHADERS_DIR, 'glsl_simple.frag')
+    shader = core.Shader.load(core.Shader.SL_GLSL, vert_path, frag_path)
+    assert shader is not None
+
+
+def test_glsl_includes_angle_withdir_legacy(with_current_dir_on_model_path):
+    """Test preprocessing includes with angle includes with model-path"""
+    vert_path = core.Filename(SHADERS_DIR, 'glsl_include_angle_legacy.vert')
+    frag_path = core.Filename(SHADERS_DIR, 'glsl_simple_legacy.frag')
+    shader = core.Shader.load(core.Shader.SL_GLSL, vert_path, frag_path)
+    assert shader is not None

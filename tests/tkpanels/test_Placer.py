@@ -5,7 +5,7 @@ from direct.showbase.ShowBase import ShowBase
 from direct.tkpanels.Placer import Placer
 
 
-def test_Placer(window, tk_toplevel):
+def test_Placer(tk_toplevel):
     base = ShowBase()
     base.start_direct()
     root = Pmw.initialise()
