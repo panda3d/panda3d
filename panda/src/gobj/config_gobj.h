@@ -91,7 +91,4 @@ extern EXPCL_PANDA_GOBJ ConfigVariableDouble async_load_delay;
 extern EXPCL_PANDA_GOBJ ConfigVariableInt lens_geom_segments;
 extern EXPCL_PANDA_GOBJ ConfigVariableBool stereo_lens_old_convergence;
 
-extern EXPCL_PANDA_GOBJ ConfigVariableBool glsl_preprocess;
-extern EXPCL_PANDA_GOBJ ConfigVariableInt glsl_include_recursion_limit;
-
 #endif

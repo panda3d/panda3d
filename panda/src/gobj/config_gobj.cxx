@@ -545,22 +545,6 @@ ConfigVariableBool stereo_lens_old_convergence
           "old, incorrect behavior, this may be set to 'true' to switch "
           "back to the old calculation."));
 
-ConfigVariableBool glsl_preprocess
-("glsl-preprocess", true,
- PRC_DESC("If this is enabled, Panda looks for lines starting with "
-          "#pragma include when loading a GLSL shader and processes "
-          "it appropriately.  This can be useful if you have code that "
-          "is shared between multiple shaders.  Set this to false if "
-          "you have no need for this feature or if you do your own "
-          "preprocessing of GLSL shaders."));
-
-ConfigVariableInt glsl_include_recursion_limit
-("glsl-include-recursion-limit", 10,
- PRC_DESC("This sets a limit on how many nested #pragma include "
-          "directives that Panda will follow when glsl-preprocess is "
-          "enabled.  This is used to prevent infinite recursion when "
-          "two shader files include each other."));
-
 ConfigureFn(config_gobj) {
   AnimateVerticesRequest::init_type();
   BufferContext::init_type();

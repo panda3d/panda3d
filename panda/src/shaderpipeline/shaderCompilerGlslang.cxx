@@ -205,18 +205,26 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
     }
   }
 
-  if (!is_cg && glsl_version < 310 && glsl_version != 150) {
-    if (glsl_version != 100 && glsl_version != 110 && glsl_version != 120 &&
-        glsl_version != 130 && glsl_version != 140 && glsl_version != 300) {
-      shader_cat.error()
-        << filename << " uses invalid GLSL version " << glsl_version << ".\n";
-      return nullptr;
+  bool use_legacy_pipeline = false;
+  if (!is_cg) {
+    if (glsl_force_legacy_pipeline) {
+      use_legacy_pipeline = true;
     }
+    else if (glsl_version < 310 && glsl_version != 150) {
+      if (glsl_version != 100 && glsl_version != 110 && glsl_version != 120 &&
+          glsl_version != 130 && glsl_version != 140 && glsl_version != 300) {
+        shader_cat.error()
+          << filename << " uses invalid GLSL version " << glsl_version << ".\n";
+        return nullptr;
+      }
+      use_legacy_pipeline = true;
+      shader_cat.warning()
+        << filename << " uses deprecated GLSL version " << glsl_version
+        << ".  Some features may not work.  Minimum supported version is 330 or 310 es.\n";
+    }
+  }
 
-    shader_cat.warning()
-      << filename << " uses deprecated GLSL version " << glsl_version
-      << ".  Some features may not work.  Minimum supported version is 330 or 310 es.\n";
-
+  if (use_legacy_pipeline) {
     // Fall back to GlslPreProc handler.  Cleaner way to do this?
     static ShaderCompilerGlslPreProc preprocessor;
 
