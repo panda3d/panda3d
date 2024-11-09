@@ -15,11 +15,9 @@
 #define CONFIG_SHADERPIPELINE_H
 
 #include "pandabase.h"
-#include "notifyCategoryProxy.h"
 #include "dconfig.h"
 
 ConfigureDecl(config_shaderpipeline, EXPCL_PANDA_SHADERPIPELINE, EXPTP_PANDA_SHADERPIPELINE);
-NotifyCategoryDecl(shaderpipeline, EXPCL_PANDA_SHADERPIPELINE, EXPTP_PANDA_SHADERPIPELINE);
 
 extern EXPCL_PANDA_PGRAPH void init_libshaderpipeline();
 

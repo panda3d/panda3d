@@ -272,7 +272,7 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, BamCacheRecord *reco
       switch (def._builtin) {
       case spv::BuiltInClipDistance:
         if ((_used_caps & C_clip_distance) == 0) {
-          shaderpipeline_cat.warning()
+          shader_cat.warning()
             << "Shader uses " << "ClipDistance"
             << ", but does not declare capability!\n";
 
@@ -282,7 +282,7 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, BamCacheRecord *reco
 
       case spv::BuiltInCullDistance:
         if ((_used_caps & C_cull_distance) == 0) {
-          shaderpipeline_cat.warning()
+          shader_cat.warning()
             << "Shader uses " << "CullDistance"
             << ", but does not declare capability!\n";
 

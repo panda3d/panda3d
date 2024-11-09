@@ -24,7 +24,6 @@
 
 
 ConfigureDef(config_shaderpipeline);
-NotifyCategoryDef(shaderpipeline, "");
 
 ConfigureFn(config_shaderpipeline) {
   init_libshaderpipeline();
