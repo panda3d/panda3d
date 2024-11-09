@@ -65,7 +65,7 @@ register_compiler(ShaderCompiler *compiler) {
 
 /**
  * Records a compiler associated with a particular language to be loaded in the
- * future.  The named library will be dynamically loaded the first time files
+ * future.  The named library will be dynamically loaded the first time shaders
  * of this language are loaded; presumably this library will call
  * register_compiler() when it initializes, thus making the language loadable.
  */
@@ -124,8 +124,9 @@ get_compiler(int n) const {
 }
 
 /**
- * Determines the compiler of the file based on the indicated language (without a
- * leading dot).  Returns NULL if the language matches no known file compilers.
+ * Determines the compiler of the shader based on the indicated language
+ * (without a leading dot).  Returns NULL if the language matches no known
+ * shader compilers.
  */
 ShaderCompiler *ShaderCompilerRegistry::
 get_compiler_from_language(Shader::ShaderLanguage language) {
@@ -145,7 +146,7 @@ get_compiler_from_language(Shader::ShaderLanguage language) {
       _deferred_compilers.erase(di);
 
       shader_cat->info()
-        << "loading file compiler module: " << name << std::endl;
+        << "loading shader compiler module: " << name << std::endl;
       void *tmp = load_dso(get_plugin_path().get_value(), dlname);
       if (tmp == nullptr) {
         shader_cat->warning()
@@ -154,7 +155,7 @@ get_compiler_from_language(Shader::ShaderLanguage language) {
         return nullptr;
       } else if (shader_cat.is_debug()) {
         shader_cat.debug()
-          << "done loading file compiler module: " << name << std::endl;
+          << "done loading shader compiler module: " << name << std::endl;
       }
 
       // Now try again to find the ShaderCompiler.
@@ -172,13 +173,13 @@ get_compiler_from_language(Shader::ShaderLanguage language) {
 }
 
 /**
- * Writes a list of supported file compilers to the indicated output stream, one
- * per line.
+ * Writes a list of supported shader compilers to the indicated output stream,
+ * one per line.
  */
 void ShaderCompilerRegistry::
 write(std::ostream &out, int indent_level) const {
   if (_compilers.empty()) {
-    indent(out, indent_level) << "(No file compilers are known).\n";
+    indent(out, indent_level) << "(No shader compilers are known).\n";
   } else {
     Compilers::const_iterator ti;
     for (ti = _compilers.begin(); ti != _compilers.end(); ++ti) {
