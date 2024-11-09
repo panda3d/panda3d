@@ -685,8 +685,6 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     needs_normal = false;
   }
 
-  bool lighting_enabled = (needs_normal && _c->lighting_enabled);
-
   for (i = 0; i < num_used_vertices; ++i) {
     GLVertex *v = &_vertices[i];
     const LVecBase4 &d = rvertex.get_data4();
@@ -723,12 +721,14 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
 
     v->color = _c->current_color;
 
-    if (lighting_enabled) {
-      const LVecBase3 &d = rnormal.get_data3();
-      _c->current_normal.v[0] = d[0];
-      _c->current_normal.v[1] = d[1];
-      _c->current_normal.v[2] = d[2];
-      _c->current_normal.v[3] = 0.0f;
+    if (_c->lighting_enabled) {
+      if (needs_normal) {
+        const LVecBase3 &d = rnormal.get_data3();
+        _c->current_normal.v[0] = d[0];
+        _c->current_normal.v[1] = d[1];
+        _c->current_normal.v[2] = d[2];
+        _c->current_normal.v[3] = 0.0f;
+      }
 
       gl_vertex_transform(_c, v);
       gl_shade_vertex(_c, v);
@@ -882,7 +882,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
 
   const ShadeModelAttrib *target_shade_model = DCAST(ShadeModelAttrib, _target_rs->get_attrib_def(ShadeModelAttrib::get_class_slot()));
   ShadeModelAttrib::Mode shade_model = target_shade_model->get_mode();
-  if (!needs_normal && !needs_color) {
+  if (!needs_color && !_c->lighting_enabled) {
     // With no per-vertex lighting, and no per-vertex colors, we might as well
     // use the flat shading model.
     shade_model = ShadeModelAttrib::M_flat;
