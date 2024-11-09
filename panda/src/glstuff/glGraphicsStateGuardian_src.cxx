@@ -2155,8 +2155,6 @@ reset() {
        get_extension_func("glGetShaderInfoLog");
     _glGetUniformLocation = (PFNGLGETUNIFORMLOCATIONPROC)
        get_extension_func("glGetUniformLocation");
-    _glGetUniformiv = (PFNGLGETUNIFORMIVPROC)
-       get_extension_func("glGetUniformiv");
     _glLinkProgram = (PFNGLLINKPROGRAMPROC)
        get_extension_func("glLinkProgram");
     _glShaderSource = (PFNGLSHADERSOURCEPROC_P)
@@ -2313,7 +2311,6 @@ reset() {
   _glGetShaderiv = glGetShaderiv;
   _glGetShaderInfoLog = glGetShaderInfoLog;
   _glGetUniformLocation = glGetUniformLocation;
-  _glGetUniformiv = glGetUniformiv;
   _glLinkProgram = glLinkProgram;
   _glShaderSource = (PFNGLSHADERSOURCEPROC_P) glShaderSource;
   _glUseProgram = glUseProgram;

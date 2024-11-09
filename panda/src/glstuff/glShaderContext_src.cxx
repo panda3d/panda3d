@@ -504,7 +504,7 @@ r_collect_uniforms(const Shader::Parameter &param, UniformBlock &block,
 
     // In OpenGL ES, we can't specify a binding index after the fact.
 #ifdef OPENGLES
-    _glgsg->_glGetUniformiv(_glsl_program, location, &unit._binding_index);
+    glGetUniformiv(_glsl_program, location, &unit._binding_index);
 #else
     _glgsg->_glUniform1i(location, (GLint)_image_units.size());
 #endif
