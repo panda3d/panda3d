@@ -2274,6 +2274,9 @@ ShaderKey() :
  */
 bool ShaderGenerator::ShaderKey::
 operator < (const ShaderKey &other) const {
+  if (_flags != other._flags) {
+    return _flags < other._flags;
+  }
   if (_texture_flags != other._texture_flags) {
     return _texture_flags < other._texture_flags;
   }
