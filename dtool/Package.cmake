@@ -893,3 +893,27 @@ package_option(VRPN
   are building Panda3D for a fixed VRPN-based VR installation.")
 
 package_status(VRPN "VRPN")
+
+
+#
+# ------------ Shader Pipeline ------------
+#
+
+find_package(glslang QUIET)
+
+package_option(glslang
+  DEFAULT ON
+  "Enables support for compiling GLSL and Cg shaders."
+  IMPORTED_AS glslang::glslang glslang::MachineIndependent glslang::glslang-default-resource-limits)
+
+package_status(glslang "glslang")
+
+
+find_package(SPIRV-Cross QUIET)
+
+package_option(SPIRV-Cross
+  DEFAULT ON
+  "Necessary to support shaders on older OpenGL drivers and DirectX 9."
+  FOUND_AS SPIRV_CROSS)
+
+package_status(SPIRV-Cross "spirv-cross")

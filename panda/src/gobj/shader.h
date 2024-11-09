@@ -40,7 +40,6 @@
 #include "shaderInputBinding.h"
 
 class BamCacheRecord;
-class ShaderModuleGlsl;
 class ShaderCompiler;
 class ShaderInputBinding;
 

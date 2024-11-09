@@ -22,7 +22,6 @@
 #include "config_putil.h"
 #include "bamCache.h"
 #include "string_utils.h"
-#include "shaderModuleGlsl.h"
 #include "shaderCompilerRegistry.h"
 #include "shaderCompiler.h"
 #include "shaderInputBinding.h"

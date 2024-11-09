@@ -48,7 +48,11 @@ set(P3GOBJ_HEADERS
   savedContext.I savedContext.h
   shader.I shader.h
   shaderBuffer.h shaderBuffer.I
+  shaderCompiler.h
+  shaderCompilerRegistry.h
   shaderContext.h shaderContext.I
+  shaderEnums.h
+  shaderInputBinding.h shaderInputBinding.I
   shaderModule.h shaderModule.I
   shaderType.h shaderType.I
   simpleAllocator.h simpleAllocator.I
@@ -129,7 +133,11 @@ set(P3GOBJ_SOURCES
   savedContext.cxx
   shader.cxx
   shaderBuffer.cxx
+  shaderCompiler.cxx
+  shaderCompilerRegistry.cxx
   shaderContext.cxx
+  shaderEnums.cxx
+  shaderInputBinding.cxx
   shaderModule.cxx
   shaderType.cxx
   simpleAllocator.cxx

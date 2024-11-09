@@ -13,7 +13,7 @@
 
 #include "shaderCompilerRegistry.h"
 #include "shaderCompiler.h"
-#include "config_shaderpipeline.h"
+#include "config_gobj.h"
 #include "config_putil.h"
 
 #include "load_dso.h"
@@ -47,8 +47,8 @@ void ShaderCompilerRegistry::
 register_compiler(ShaderCompiler *compiler) {
   // Make sure we haven't already registered this compiler.
   if (find(_compilers.begin(), _compilers.end(), compiler) != _compilers.end()) {
-    if (shaderpipeline_cat->is_debug()) {
-      shaderpipeline_cat->debug()
+    if (shader_cat->is_debug()) {
+      shader_cat.debug()
         << "Attempt to register ShaderCompiler " << compiler->get_name()
         << " (" << compiler->get_type() << ") more than once.\n";
     }
@@ -76,8 +76,8 @@ register_deferred_compiler(Shader::ShaderLanguage language, const string &librar
   if (li != _languages.end()) {
     // We already have a loader for this compiler; no need to register another
     // one.
-    if (shaderpipeline_cat->is_debug()) {
-      shaderpipeline_cat->debug()
+    if (shader_cat->is_debug()) {
+      shader_cat.debug()
         << "Attempt to register loader library " << library
         << " (" << language << ") when language is already known.\n";
     }
@@ -88,15 +88,15 @@ register_deferred_compiler(Shader::ShaderLanguage language, const string &librar
   di = _deferred_compilers.find(language);
   if (di != _deferred_compilers.end()) {
     if ((*di).second == library) {
-      if (shaderpipeline_cat->is_debug()) {
-        shaderpipeline_cat->debug()
+      if (shader_cat->is_debug()) {
+        shader_cat.debug()
           << "Attempt to register loader library " << library
           << " (" << language << ") more than once.\n";
       }
       return;
     } else {
-      if (shaderpipeline_cat->is_debug()) {
-        shaderpipeline_cat->debug()
+      if (shader_cat->is_debug()) {
+        shader_cat.debug()
           << "Multiple libraries registered that use the language "
           << language << "\n";
       }
@@ -144,16 +144,16 @@ get_compiler_from_language(Shader::ShaderLanguage language) {
       Filename dlname = Filename::dso_filename("lib" + name + ".so");
       _deferred_compilers.erase(di);
 
-      shaderpipeline_cat->info()
+      shader_cat->info()
         << "loading file compiler module: " << name << std::endl;
       void *tmp = load_dso(get_plugin_path().get_value(), dlname);
       if (tmp == nullptr) {
-        shaderpipeline_cat->warning()
+        shader_cat->warning()
           << "Unable to load " << dlname.to_os_specific() << ": "
           << load_dso_error() << std::endl;
         return nullptr;
-      } else if (shaderpipeline_cat.is_debug()) {
-        shaderpipeline_cat.debug()
+      } else if (shader_cat.is_debug()) {
+        shader_cat.debug()
           << "done loading file compiler module: " << name << std::endl;
       }
 
@@ -231,8 +231,8 @@ record_language(Shader::ShaderLanguage language, ShaderCompiler *compiler) {
   Languages::const_iterator li;
   li = _languages.find(language);
   if (li != _languages.end()) {
-    if (shaderpipeline_cat->is_debug()) {
-      shaderpipeline_cat->debug()
+    if (shader_cat->is_debug()) {
+      shader_cat.debug()
         << "Multiple ShaderCompilers registered that use the language "
         << language << "\n";
     }

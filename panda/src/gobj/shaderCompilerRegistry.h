@@ -25,7 +25,7 @@ class ShaderCompiler;
 /**
  * This class maintains the set of all known ShaderCompilers in the universe.
  */
-class EXPCL_PANDA_SHADERPIPELINE ShaderCompilerRegistry {
+class EXPCL_PANDA_GOBJ ShaderCompilerRegistry {
 protected:
   ShaderCompilerRegistry();
 

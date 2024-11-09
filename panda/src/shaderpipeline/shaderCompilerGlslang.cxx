@@ -12,9 +12,11 @@
  */
 
 #include "shaderCompilerGlslang.h"
+#include "config_putil.h"
 #include "config_shaderpipeline.h"
-#include "virtualFile.h"
 #include "shaderCompilerGlslPreProc.h"
+#include "virtualFile.h"
+#include "virtualFileSystem.h"
 
 #ifndef CPPPARSER
 #include <glslang/Public/ShaderLang.h>

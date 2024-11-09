@@ -26,7 +26,7 @@ typedef pvector<Shader::Shader::ShaderLanguage> ShaderLanguages;
 /**
  * This is the base class for objects to compile various types of shader code.
  */
-class EXPCL_PANDA_SHADERPIPELINE ShaderCompiler : public TypedObject, public ShaderEnums {
+class EXPCL_PANDA_GOBJ ShaderCompiler : public TypedObject, public ShaderEnums {
 protected:
   ShaderCompiler();
 

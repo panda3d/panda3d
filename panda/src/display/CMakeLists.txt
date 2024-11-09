@@ -28,6 +28,7 @@ set(P3DISPLAY_HEADERS
   windowProperties.I windowProperties.h
   renderBuffer.h
   screenshotRequest.I screenshotRequest.h
+  shaderInputBinding_impls.I shaderInputBinding_impls.h
   stereoDisplayRegion.I stereoDisplayRegion.h
   displaySearchParameters.h
   displayInformation.h
@@ -63,6 +64,7 @@ set(P3DISPLAY_SOURCES
   windowHandle.cxx
   windowProperties.cxx
   screenshotRequest.cxx
+  shaderInputBinding_impls.cxx
   stereoDisplayRegion.cxx
   subprocessWindow.cxx
   touchInfo.cxx
