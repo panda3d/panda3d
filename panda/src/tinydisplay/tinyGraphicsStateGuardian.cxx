@@ -1352,7 +1352,12 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
   int xo, yo, w, h;
   dr->get_region_pixels_i(xo, yo, w, h);
 
-  tex->setup_2d_texture(w, h, Texture::T_unsigned_byte, Texture::F_rgba);
+  Texture::Format format = Texture::F_rgba;
+  if (_current_properties->get_srgb_color()) {
+    format = Texture::F_srgb_alpha;
+  }
+
+  tex->setup_2d_texture(w, h, Texture::T_unsigned_byte, format);
 
   TextureContext *tc = tex->prepare_now(get_prepared_objects(), this);
   nassertr(tc != nullptr, false);
@@ -1412,6 +1417,9 @@ framebuffer_copy_to_ram(Texture *tex, int view, int z,
 
   Texture::ComponentType component_type = Texture::T_unsigned_byte;
   Texture::Format format = Texture::F_rgba;
+  if (_current_properties->get_srgb_color()) {
+    format = Texture::F_srgb_alpha;
+  }
 
   if (tex->get_x_size() != w || tex->get_y_size() != h ||
       tex->get_z_size() != z_size ||
