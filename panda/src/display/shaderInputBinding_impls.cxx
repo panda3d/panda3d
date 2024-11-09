@@ -12,6 +12,7 @@
  */
 
 #include "shaderInputBinding_impls.h"
+#include "graphicsStateGuardian.h"
 
 #include "clipPlaneAttrib.h"
 #include "colorAttrib.h"
@@ -25,6 +26,7 @@
 #include "pointLight.h"
 #include "sphereLight.h"
 
+using std::string;
 using State = ShaderInputBinding::State;
 
 static const LMatrix4 shadow_bias_mat(0.5f, 0.0f, 0.0f, 0.0f,

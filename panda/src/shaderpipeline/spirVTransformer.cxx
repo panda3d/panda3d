@@ -12,6 +12,7 @@
  */
 
 #include "spirVTransformer.h"
+#include "spirVTransformPass.h"
 
 /**
  * Constructs an instruction writer to operate on the given instruction stream.

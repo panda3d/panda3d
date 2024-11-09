@@ -13,7 +13,10 @@
 
 #include "shaderCompilerGlslPreProc.h"
 #include "shaderModuleGlsl.h"
+#include "config_putil.h"
 #include "config_shaderpipeline.h"
+#include "virtualFile.h"
+#include "virtualFileSystem.h"
 
 #include "dcast.h"
 
