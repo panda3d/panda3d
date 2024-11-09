@@ -42,13 +42,14 @@ public:
 
   static void r_count_locations_bindings(const ShaderType *type,
                                          GLint &num_locations,
-                                         GLint &num_ssbo_bindings);
+                                         GLint &num_ssbo_bindings,
+                                         GLint &num_image_bindings);
 
   void r_collect_uniforms(const Shader::Parameter &param, UniformBlock &block,
                           const ShaderType *type, const char *name,
                           const char *sym, int &location,
                           const SparseArray &active_locations,
-                          int &resource_index, int &ssbo_binding,
+                          int &resource_index, int &binding,
                           size_t offset = 0);
 
   void reflect_program(SparseArray &active_locations, LocationMap &locations, LocationMap &ssbo_bindings);
@@ -144,6 +145,9 @@ private:
     PT(ShaderInputBinding) _binding;
     ShaderInputBinding::ResourceId _resource_id;
     CLP(TextureContext) *_gtc = nullptr;
+#ifdef OPENGLES
+    GLint _binding_index;
+#endif
     ShaderType::Access _access;
     bool _written = false;
   };
@@ -171,7 +175,7 @@ private:
                      const LocationMap &locations, bool &remap_locations,
                      const LocationMap &ssbo_bindings);
   bool compile_and_link(const LocationMap &locations, bool &remap_locations,
-                        const LocationMap &ssbo_bindings);
+                        const LocationMap &bindings);
   void release_resources();
 
 public:

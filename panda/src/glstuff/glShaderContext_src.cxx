@@ -58,28 +58,42 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
   // Ignoring any locations that may have already been set, we assign a new
   // unique location to each parameter.
   LocationMap locations;
-  LocationMap ssbo_bindings;
+  LocationMap bindings;
   GLint next_location = 0;
   GLint next_ssbo_binding = 0;
+#ifdef OPENGLES
+  GLint next_image_binding = 0;
+#endif
   for (const Shader::Parameter &param : _shader->_parameters) {
     GLint num_locations = 0;
     GLint num_ssbo_bindings = 0;
-    r_count_locations_bindings(param._type, num_locations, num_ssbo_bindings);
+    GLint num_image_bindings = 0;
+    r_count_locations_bindings(param._type, num_locations, num_ssbo_bindings,
+                               num_image_bindings);
 
     if (num_locations > 0) {
       locations[param._name] = next_location;
       next_location += num_locations;
     }
     if (num_ssbo_bindings > 0) {
-      ssbo_bindings[param._name] = next_ssbo_binding;
+      bindings[param._name] = next_ssbo_binding;
       next_ssbo_binding += num_ssbo_bindings;
     }
+#ifdef OPENGLES
+    // For OpenGL ES, we can't specify the binding after the fact, so we
+    // have to specify the bindings up front.
+    if (num_image_bindings > 0) {
+      //TODO: what if there is a struct with mixed samplers and images?
+      bindings[param._name] = next_image_binding;
+      next_image_binding += num_image_bindings;
+    }
+#endif
   }
 
   // We compile and analyze the shader here, instead of in shader.cxx, to
   // avoid gobj getting a dependency on GL stuff.
   bool remap_locations = false;
-  if (!compile_and_link(locations, remap_locations, ssbo_bindings)) {
+  if (!compile_and_link(locations, remap_locations, bindings)) {
     release_resources();
     s->_error_flag = true;
     return;
@@ -93,9 +107,9 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
   SparseArray active_locations;
   if (_is_legacy) {
     locations.clear();
-    ssbo_bindings.clear();
+    bindings.clear();
 
-    reflect_program(active_locations, locations, ssbo_bindings);
+    reflect_program(active_locations, locations, bindings);
   }
   else if (!remap_locations) {
     // We still need to query which uniform locations are actually in use,
@@ -142,11 +156,11 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
       }
     }
 
-    int ssbo_binding = -1;
+    int binding = -1;
     {
-      auto it = ssbo_bindings.find(param._name);
-      if (it != ssbo_bindings.end()) {
-        ssbo_binding = it->second;
+      auto it = bindings.find(param._name);
+      if (it != bindings.end()) {
+        binding = it->second;
       }
     }
 
@@ -162,7 +176,7 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
     }
     r_collect_uniforms(param, block, param._type, name.c_str(), sym_buffer,
                        actual_location, active_locations, resource_index,
-                       ssbo_binding);
+                       binding);
 
     if (!block._matrices.empty() || !block._vectors.empty()) {
       _uniform_data_deps |= block._dep;
@@ -219,20 +233,22 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
  */
 void CLP(ShaderContext)::
 r_count_locations_bindings(const ShaderType *type,
-                           GLint &num_locations, GLint &num_ssbo_bindings) {
+                           GLint &num_locations, GLint &num_ssbo_bindings,
+                           GLint &num_image_bindings) {
 
   if (const ShaderType::Array *array_type = type->as_array()) {
-    GLint element_locs = 0, element_binds = 0;
-    r_count_locations_bindings(array_type->get_element_type(), element_locs, element_binds);
+    GLint element_locs = 0, element_ssbo_binds = 0, element_img_binds = 0;
+    r_count_locations_bindings(array_type->get_element_type(), element_locs, element_ssbo_binds, element_img_binds);
     num_locations += element_locs * array_type->get_num_elements();
-    num_ssbo_bindings += element_binds * array_type->get_num_elements();
+    num_ssbo_bindings += element_ssbo_binds * array_type->get_num_elements();
+    num_image_bindings += element_img_binds * array_type->get_num_elements();
     return;
   }
   if (const ShaderType::Struct *struct_type = type->as_struct()) {
     for (uint32_t i = 0; i < struct_type->get_num_members(); ++i) {
       const ShaderType::Struct::Member &member = struct_type->get_member(i);
 
-      r_count_locations_bindings(member.type, num_locations, num_ssbo_bindings);
+      r_count_locations_bindings(member.type, num_locations, num_ssbo_bindings, num_image_bindings);
     }
     return;
   }
@@ -246,9 +262,13 @@ r_count_locations_bindings(const ShaderType *type,
     return;
   }
 
-  if (type->as_sampled_image() != nullptr ||
-      type->as_image() != nullptr ||
-      type == ShaderType::void_type) {
+  if (type->as_image() != nullptr) {
+    ++num_locations;
+    ++num_image_bindings;
+    return;
+  }
+
+  if (type->as_sampled_image() != nullptr || type == ShaderType::void_type) {
     ++num_locations;
     return;
   }
@@ -269,7 +289,7 @@ void CLP(ShaderContext)::
 r_collect_uniforms(const Shader::Parameter &param, UniformBlock &block,
                    const ShaderType *type, const char *name, const char *sym,
                    int &cur_location, const SparseArray &active_locations,
-                   int &resource_index, int &ssbo_binding, size_t offset) {
+                   int &resource_index, int &cur_binding, size_t offset) {
 
   ShaderType::ScalarType scalar_type;
   uint32_t num_elements;
@@ -393,7 +413,7 @@ r_collect_uniforms(const Shader::Parameter &param, UniformBlock &block,
       sprintf(name_buffer, "%s[%u]", name, i);
       sprintf(sym_buffer, "%s[%u]", sym, i);
       r_collect_uniforms(param, block, element_type, name_buffer, sym_buffer,
-                         cur_location, active_locations, resource_index, ssbo_binding,
+                         cur_location, active_locations, resource_index, cur_binding,
                          offset);
       offset += stride;
     }
@@ -411,7 +431,7 @@ r_collect_uniforms(const Shader::Parameter &param, UniformBlock &block,
       // SPIRV-Cross names struct members _m0, _m1, etc. in declaration order.
       sprintf(sym_buffer, "%s._m%u", sym, i);
       r_collect_uniforms(param, block, member.type, qualname.c_str(), sym_buffer,
-                         cur_location, active_locations, resource_index, ssbo_binding,
+                         cur_location, active_locations, resource_index, cur_binding,
                          offset + member.offset);
     }
     return;
@@ -423,14 +443,14 @@ r_collect_uniforms(const Shader::Parameter &param, UniformBlock &block,
 
   if (type->as_storage_buffer() != nullptr) {
     // These are an exception, they do not have locations but bindings.
-    GLint binding = ssbo_binding;
+    GLint binding = cur_binding;
     if (binding < 0) {
       // We have to look this one up.
       GLuint index = _glgsg->_glGetProgramResourceIndex(_glsl_program, GL_SHADER_STORAGE_BLOCK, name);
       const GLenum props[] = {GL_BUFFER_BINDING};
       _glgsg->_glGetProgramResourceiv(_glsl_program, GL_SHADER_STORAGE_BLOCK, index, 1, props, 1, nullptr, &binding);
     } else {
-      ++ssbo_binding;
+      ++cur_binding;
     }
 
     if (GLCAT.is_debug()) {
@@ -442,7 +462,7 @@ r_collect_uniforms(const Shader::Parameter &param, UniformBlock &block,
     StorageBlock block;
     block._binding = param._binding;
     block._resource_id = param._binding->get_resource_id(resource_index++, type);
-    block._binding_index = binding++;
+    block._binding_index = binding;
     _storage_blocks.push_back(std::move(block));
     return;
   }
@@ -482,7 +502,12 @@ r_collect_uniforms(const Shader::Parameter &param, UniformBlock &block,
     unit._access = image->get_access();
     unit._written = false;
 
+    // In OpenGL ES, we can't specify a binding index after the fact.
+#ifdef OPENGLES
+    _glgsg->_glGetUniformiv(_glsl_program, location, &unit._binding_index);
+#else
     _glgsg->_glUniform1i(location, (GLint)_image_units.size());
+#endif
     _image_units.push_back(std::move(unit));
   }
   else if (type->as_resource()) {
@@ -1936,7 +1961,12 @@ disable_shader_texture_bindings() {
 #endif
     {
       for (int i = 0; i < num_image_units; ++i) {
-        _glgsg->_glBindImageTexture(i, 0, 0, GL_FALSE, 0, GL_READ_ONLY, GL_R8);
+#ifdef OPENGLES
+        GLint binding_index = _image_units[i]._binding_index;
+#else
+        GLint binding_index = i;
+#endif
+        _glgsg->_glBindImageTexture(binding_index, 0, 0, GL_FALSE, 0, GL_READ_ONLY, GL_R8);
       }
     }
 
@@ -1986,6 +2016,12 @@ update_shader_texture_bindings(ShaderContext *prev) {
     for (int i = 0; i < num_image_units; ++i) {
       ImageUnit &unit = _image_units[i];
 
+#ifdef OPENGLES
+      GLint binding_index = unit._binding_index;
+#else
+      GLint binding_index = i;
+#endif
+
       ShaderType::Access access = ShaderType::Access::READ_WRITE;
       int z = -1;
       int n = 0;
@@ -2014,7 +2050,7 @@ update_shader_texture_bindings(ShaderContext *prev) {
       }
 
       if (gl_tex == 0) {
-        _glgsg->_glBindImageTexture(i, 0, 0, GL_FALSE, 0, GL_READ_ONLY, GL_R8);
+        _glgsg->_glBindImageTexture(binding_index, 0, 0, GL_FALSE, 0, GL_READ_ONLY, GL_R8);
 
       } else {
         // TODO: automatically convert to sized type instead of plain GL_RGBA
@@ -2066,8 +2102,8 @@ update_shader_texture_bindings(ShaderContext *prev) {
           break;
         }
 
-        _glgsg->_glBindImageTexture(i, gl_tex, bind_level, layered, bind_layer,
-                                    gl_access, gtc->_internal_format);
+        _glgsg->_glBindImageTexture(binding_index, gl_tex, bind_level, layered,
+                                    bind_layer, gl_access, gtc->_internal_format);
       }
     }
   }
@@ -2336,7 +2372,7 @@ report_program_errors(GLuint program, bool fatal) {
 bool CLP(ShaderContext)::
 attach_shader(const ShaderModule *module, Shader::ModuleSpecConstants &consts,
               const LocationMap &locations, bool &remap_locations,
-              const LocationMap &ssbo_bindings) {
+              const LocationMap &bindings) {
   ShaderModule::Stage stage = module->get_stage();
 
   GLuint handle = 0;
@@ -2389,7 +2425,7 @@ attach_shader(const ShaderModule *module, Shader::ModuleSpecConstants &consts,
     ShaderModuleSpirV *spv = (ShaderModuleSpirV *)module;
 
     pmap<uint32_t, int> id_to_location;
-    pvector<uint32_t> ssbo_binding_ids;
+    pvector<uint32_t> binding_ids;
     for (size_t pi = 0; pi < module->get_num_parameters(); ++pi) {
       const ShaderModule::Variable &var = module->get_parameter(pi);
       {
@@ -2399,12 +2435,12 @@ attach_shader(const ShaderModule *module, Shader::ModuleSpecConstants &consts,
         }
       }
       {
-        auto it = ssbo_bindings.find(var.name);
-        if (it != ssbo_bindings.end()) {
-          if (it->second >= (int)ssbo_binding_ids.size()) {
-            ssbo_binding_ids.resize(it->second + 1, 0);
+        auto it = bindings.find(var.name);
+        if (it != bindings.end()) {
+          if (it->second >= (int)binding_ids.size()) {
+            binding_ids.resize(it->second + 1, 0);
           }
-          ssbo_binding_ids[it->second] = var.id;
+          binding_ids[it->second] = var.id;
         }
       }
     }
@@ -2434,8 +2470,8 @@ attach_shader(const ShaderModule *module, Shader::ModuleSpecConstants &consts,
           transformer.assign_procedural_names("p", id_to_location);
         }
       }
-      if (!ssbo_binding_ids.empty()) {
-        transformer.bind_descriptor_set(0, ssbo_binding_ids);
+      if (!binding_ids.empty()) {
+        transformer.bind_descriptor_set(0, binding_ids);
       }
 
       ShaderModuleSpirV::InstructionStream stream = transformer.get_result();
@@ -2472,7 +2508,7 @@ attach_shader(const ShaderModule *module, Shader::ModuleSpecConstants &consts,
 
       // We want to use explicit bindings for SSBOs, which requires 420 or
       // the 420pack extension.  Presumably we have it if we support SSBOs.
-      if (!ssbo_binding_ids.empty() && !options.es && options.version < 420) {
+      if (!binding_ids.empty() && !options.es && options.version < 420) {
         options.enable_420pack_extension = true;
       }
 
@@ -2596,8 +2632,8 @@ attach_shader(const ShaderModule *module, Shader::ModuleSpecConstants &consts,
       }
 
       // Add bindings for the shader storage buffers.
-      for (size_t binding = 0; binding < ssbo_binding_ids.size(); ++binding) {
-        uint32_t id = ssbo_binding_ids[binding];
+      for (size_t binding = 0; binding < binding_ids.size(); ++binding) {
+        uint32_t id = binding_ids[binding];
         if (id > 0) {
           compiler.set_decoration(id, spv::DecorationBinding, binding);
         }
@@ -2658,7 +2694,7 @@ attach_shader(const ShaderModule *module, Shader::ModuleSpecConstants &consts,
  */
 bool CLP(ShaderContext)::
 compile_and_link(const LocationMap &locations, bool &remap_locations,
-                 const LocationMap &ssbo_bindings) {
+                 const LocationMap &bindings) {
   _modules.clear();
   _glsl_program = _glgsg->_glCreateProgram();
   if (!_glsl_program) {
@@ -2697,7 +2733,7 @@ compile_and_link(const LocationMap &locations, bool &remap_locations,
   bool valid = true;
   for (Shader::LinkedModule &linked_module : _shader->_modules) {
     valid &= attach_shader(linked_module._module.get_read_pointer(), linked_module._consts,
-                           locations, remap_locations, ssbo_bindings);
+                           locations, remap_locations, bindings);
   }
 
   if (!valid) {
