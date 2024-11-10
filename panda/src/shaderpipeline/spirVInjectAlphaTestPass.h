@@ -18,6 +18,7 @@
 
 /**
  * Injects an alpha test before all return statements of fragment entry points.
+ * The alpha test is always performed on the output with location 0.
  */
 class EXPCL_PANDA_SHADERPIPELINE SpirVInjectAlphaTestPass final : public SpirVTransformPass {
 public:
@@ -33,7 +34,8 @@ public:
     M_always            // Always draw.
   };
 
-  SpirVInjectAlphaTestPass(Mode mode, int location = -1) : _mode(mode), _location(location) {}
+  SpirVInjectAlphaTestPass(Mode mode, int ref_location = -1) :
+    _mode(mode), _ref_location(ref_location) {}
 
   virtual bool transform_entry_point(spv::ExecutionModel model, uint32_t id, const char *name, const uint32_t *var_ids, uint16_t num_vars);
   virtual bool begin_function(Instruction op);
@@ -42,7 +44,7 @@ public:
 
 public:
   const Mode _mode;
-  const int _location;
+  const int _ref_location;
 
   uint32_t _alpha_ref_var_id = 0;
 
@@ -51,18 +53,6 @@ private:
 
   // For each entry point we access, the output variable to test.
   pmap<uint32_t, uint32_t> _entry_points;
-
-  // This stores the type IDs of all the types that (indirectly) contain the
-  // type we want to unpack.  For each affected struct, access chains (struct
-  // members only) leading to the hoisted type in question, as well as the
-  // type that the wrapped additional variables should have.
-  pmap<uint32_t, pvector<std::pair<const ShaderType *, AccessChain> > > _affected_types;
-  pset<uint32_t> _affected_pointer_types;
-
-public:
-  // For each access chain consisting only of struct members
-  // (prefixed by a variable id), map to the variable that has been hoisted
-  pmap<AccessChain, uint32_t> _hoisted_vars;
 };
 
 #endif

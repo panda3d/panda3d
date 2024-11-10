@@ -50,6 +50,8 @@ begin_function(Instruction op) {
  */
 bool SpirVInjectAlphaTestPass::
 transform_function_op(Instruction op) {
+  // There may be multiple returns.  Insert an alpha test before every return
+  // statement.
   if (_var_id != 0 &&
       (op.opcode == spv::OpReturn || op.opcode == spv::OpReturnValue)) {
 
@@ -61,6 +63,7 @@ transform_function_op(Instruction op) {
       return true;
 
     case M_never:
+      // Replace the OpReturn with an OpKill.
       op_kill();
       return false;
 
@@ -69,7 +72,7 @@ transform_function_op(Instruction op) {
       break;
 
     case M_equal:
-      opcode = spv::OpFOrdNotEqual;
+      opcode = spv::OpFUnordNotEqual;
       break;
 
     case M_less_equal:
@@ -95,8 +98,8 @@ transform_function_op(Instruction op) {
 
     if (_alpha_ref_var_id == 0) {
       _alpha_ref_var_id = define_variable(ShaderType::float_type, spv::StorageClassUniformConstant);
-      if (_location >= 0) {
-        decorate(_alpha_ref_var_id, spv::DecorationLocation, (uint32_t)_location);
+      if (_ref_location >= 0) {
+        decorate(_alpha_ref_var_id, spv::DecorationLocation, (uint32_t)_ref_location);
       }
     }
     uint32_t alpha = op_load(op_access_chain(_var_id, {define_int_constant(3)}));
