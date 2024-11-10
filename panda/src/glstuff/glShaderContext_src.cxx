@@ -43,6 +43,49 @@ using std::max;
 using std::min;
 using std::string;
 
+// Inject alpha test into generated shaders.
+class Compiler final : public spirv_cross::CompilerGLSL {
+public:
+  explicit Compiler(std::vector<uint32_t> spirv_,
+                    RenderAttrib::PandaCompareFunc alpha_test_mode)
+    : CompilerGLSL(std::move(spirv_)),
+      _alpha_test_mode(alpha_test_mode) {
+  }
+
+private:
+  virtual void emit_fixup() override {
+    switch (_alpha_test_mode) {
+    case RenderAttrib::M_never:
+      statement("discard;");
+      break;
+    case RenderAttrib::M_less:
+      statement("if (o0.a >= aref) discard;");
+      break;
+    case RenderAttrib::M_equal:
+      statement("if (o0.a != aref) discard;");
+      break;
+    case RenderAttrib::M_less_equal:
+      statement("if (o0.a > aref) discard;");
+      break;
+    case RenderAttrib::M_greater:
+      statement("if (o0.a <= aref) discard;");
+      break;
+    case RenderAttrib::M_not_equal:
+      statement("if (o0.a == aref) discard;");
+      break;
+    case RenderAttrib::M_greater_equal:
+      statement("if (o0.a < aref) discard;");
+      break;
+    case RenderAttrib::M_none:
+    case RenderAttrib::M_always:
+      break;
+    }
+    CompilerGLSL::emit_fixup();
+  }
+
+  RenderAttrib::PandaCompareFunc _alpha_test_mode;
+};
+
 TypeHandle CLP(ShaderContext)::_type_handle;
 
 /**
@@ -75,7 +118,7 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
     // alpha test mode that may be applied.  This doesn't apply to the legacy
     // pipeline since we can't modify shaders there.
     if (s->_module_mask & (1u << (uint32_t)Shader::Stage::FRAGMENT)) {
-      _inject_alpha_test = !glgsg->has_fixed_function_pipeline();
+      _inject_alpha_test = !s->_subsumes_alpha_test && !glgsg->has_fixed_function_pipeline();
     }
 
     // Ignoring any locations that may have already been set, we assign a new
@@ -2696,20 +2739,7 @@ create_shader(GLuint program, const ShaderModule *module,
         _emulate_float_attribs = true;
       }
 
-      uint32_t alpha_ref_var_id = 0;
-      ShaderModuleSpirV::InstructionStream stream;
-      if (stage == ShaderModule::Stage::FRAGMENT &&
-          alpha_test_mode != RenderAttrib::M_none) {
-        SpirVTransformer transformer(spv->_instructions);
-        {
-          SpirVInjectAlphaTestPass pass((SpirVInjectAlphaTestPass::Mode)alpha_test_mode);
-          transformer.run(pass);
-          alpha_ref_var_id = pass._alpha_ref_var_id;
-        }
-        stream = transformer.get_result();
-      } else {
-        stream = spv->_instructions;
-      }
+      ShaderModuleSpirV::InstructionStream stream = spv->_instructions;
 
       // It's really important that we don't have any member name decorations
       // if we're going to end up remapping the locations, because we rely on
@@ -2731,8 +2761,24 @@ create_shader(GLuint program, const ShaderModule *module,
         }
       }
 
-      spirv_cross::CompilerGLSL compiler(std::move(stream._words));
+      if (stage != ShaderModule::Stage::FRAGMENT) {
+        alpha_test_mode = RenderAttrib::M_none;
+      }
+
+      Compiler compiler(std::move(stream._words), alpha_test_mode);
       compiler.set_common_options(options);
+
+      if (alpha_test_mode != RenderAttrib::M_none &&
+          alpha_test_mode != RenderAttrib::M_always &&
+          alpha_test_mode != RenderAttrib::M_never) {
+        if ((!options.es && options.version < 430) ||
+            (options.es && options.version < 310)) {
+          compiler.add_header_line("uniform float aref;");
+          _remap_locations = true;
+        } else {
+          compiler.add_header_line("layout(location=0) uniform float aref;");
+        }
+      }
 
       // At this time, SPIRV-Cross doesn't always add these automatically.
       uint64_t used_caps = module->get_used_capabilities();
@@ -2778,11 +2824,7 @@ create_shader(GLuint program, const ShaderModule *module,
         spv::StorageClass sc = compiler.get_storage_class(id);
 
         char buf[1024];
-        if (id != 0 && id == alpha_ref_var_id) {
-          compiler.set_name(id, "aref");
-          compiler.set_decoration(id, spv::DecorationLocation, 0);
-        }
-        else if (sc == spv::StorageClassUniformConstant) {
+        if (sc == spv::StorageClassUniformConstant) {
           auto it = id_to_location.find(id);
           if (it != id_to_location.end()) {
             sprintf(buf, "p%u", it->second);
