@@ -154,6 +154,7 @@ PUBLISHED:
 PUBLISHED:
   // These methods are intended for use by low-level code, but they're also
   // handy enough to expose to high-level users.
+  INLINE RenderAttrib::PandaCompareFunc get_alpha_test_mode() const;
   INLINE int get_draw_order() const;
   INLINE int get_bin_index() const;
   int get_geom_rendering(int geom_rendering) const;
@@ -216,7 +217,7 @@ private:
   void release_new();
   void remove_cache_pointers();
 
-  void determine_bin_index();
+  void update_cached();
   void determine_cull_callback();
   void fill_default();
 
@@ -323,14 +324,14 @@ private:
   // This is redundant, but it is a useful cache.
   SlotMask _filled_slots;
 
-  // We cache the index to the associated CullBin, if there happens to be a
-  // CullBinAttrib in the state.
+  // We cache the some attribute properties directly here for fast lookup.
+  RenderAttrib::PandaCompareFunc _alpha_test_mode;
   int _bin_index;
   int _draw_order;
   size_t _hash;
 
   enum Flags {
-    F_checked_bin_index       = 0x000001,
+    F_computed_cache          = 0x000001,
     F_checked_cull_callback   = 0x000002,
     F_has_cull_callback       = 0x000004,
     F_is_destructing          = 0x000008,

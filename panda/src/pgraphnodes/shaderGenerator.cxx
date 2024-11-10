@@ -2070,6 +2070,8 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   PT(Shader) shader = Shader::make(text.str(), Shader::SL_Cg);
   nassertr(shader != nullptr, nullptr);
 
+  shader->_subsumes_alpha_test = true;
+
   reset_register_allocator();
 
   CPT(ShaderAttrib) attr = make_attrib(key, shader);

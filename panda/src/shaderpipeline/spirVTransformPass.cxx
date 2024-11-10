@@ -50,13 +50,17 @@ process_preamble(std::vector<uint32_t> &stream) {
       ++i;
 
       // Remove the deleted IDs from the entry point interface.
+      uint32_t interface_begin = i;
       while (i < op.nargs) {
         if (!is_deleted(op.args[i])) {
           new_args.push_back(op.args[i]);
         }
         ++i;
       }
-      add_debug(op.opcode, new_args.data(), new_args.size());
+
+      if (transform_entry_point((spv::ExecutionModel)op.args[0], op.args[1], (const char *)&new_args[2], &new_args[interface_begin], new_args.size() - interface_begin)) {
+        add_debug(op.opcode, new_args.data(), new_args.size());
+      }
     }
     else if (transform_debug_op(op)) {
       _new_preamble.insert(_new_preamble.end(), it._words, it.next()._words);
@@ -190,6 +194,15 @@ process_functions(std::vector<uint32_t> &stream) {
  */
 void SpirVTransformPass::
 preprocess() {
+}
+
+/**
+ * Transforms an OpEntryPoint.
+ * Return true to keep the instruction, false to omit it.
+ */
+bool SpirVTransformPass::
+transform_entry_point(spv::ExecutionModel model, uint32_t id, const char *name, const uint32_t *interface, uint16_t size) {
+  return true;
 }
 
 /**
@@ -1208,4 +1221,55 @@ op_composite_extract(uint32_t obj_id, std::initializer_list<uint32_t> chain) {
 
   mark_defined(id);
   return id;
+}
+
+/**
+ * Inserts a comparison op, taking two operands and returning a bool.
+ * At the moment, only works on scalars.
+ */
+uint32_t SpirVTransformPass::
+op_compare(spv::Op opcode, uint32_t obj1, uint32_t obj2) {
+  uint32_t type_id = define_type(ShaderType::bool_type);
+
+  uint32_t id = allocate_id();
+  _new_functions.insert(_new_functions.end(), {(5u << spv::WordCountShift) | opcode, type_id, id, obj1, obj2});
+
+  Definition &def = _db.modify_definition(id);
+  def._type_id = type_id;
+  def._type = ShaderType::bool_type;
+
+  mark_defined(id);
+  return id;
+}
+
+/**
+ * Inserts an OpKill.
+ */
+void SpirVTransformPass::
+op_kill() {
+  _new_functions.insert(_new_functions.end(), {(1u << spv::WordCountShift) | spv::OpKill});
+}
+
+/**
+ * Begins an "if" branch.
+ * The return value should be passed to branch_endif().
+ */
+uint32_t SpirVTransformPass::
+branch_if(uint32_t cond) {
+  uint32_t true_label = allocate_id();
+  uint32_t false_label = allocate_id();
+
+  _new_functions.insert(_new_functions.end(), {
+    (3 << spv::WordCountShift) | spv::OpSelectionMerge, false_label, (uint32_t)spv::SelectionControlMaskNone,
+    (4 << spv::WordCountShift) | spv::OpBranchConditional, cond, true_label, false_label,
+    (2 << spv::WordCountShift) | spv::OpLabel, true_label});
+  return false_label;
+}
+
+/**
+ * Ends an "if" branch.
+ */
+void SpirVTransformPass::
+branch_endif(uint32_t false_label) {
+  _new_functions.insert(_new_functions.end(), {(2u << spv::WordCountShift) | spv::OpLabel, false_label});
 }

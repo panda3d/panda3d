@@ -1,6 +1,7 @@
 #ifndef CPPPARSER
 #include "spirVFlattenStructPass.cxx"
 #include "spirVHoistStructResourcesPass.cxx"
+#include "spirVInjectAlphaTestPass.cxx"
 #include "spirVMakeBlockPass.cxx"
 #include "spirVRemoveUnusedVariablesPass.cxx"
 #include "spirVReplaceVariableTypePass.cxx"

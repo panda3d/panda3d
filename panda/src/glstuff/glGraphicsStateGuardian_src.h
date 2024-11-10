@@ -170,7 +170,9 @@ typedef void (APIENTRYP PFNGLLINKPROGRAMPROC) (GLuint program);
 typedef void (APIENTRYP PFNGLSHADERSOURCEPROC_P) (GLuint shader, GLsizei count, const GLchar* const *string, const GLint *length);
 typedef void (APIENTRYP PFNGLSPECIALIZESHADERARBPROC) (GLuint shader, const GLchar *, GLuint, const GLuint *, const GLuint *);
 typedef void (APIENTRYP PFNGLUSEPROGRAMPROC) (GLuint program);
+typedef void (APIENTRYP PFNGLUNIFORM1FPROC) (GLint location, GLfloat v0);
 typedef void (APIENTRYP PFNGLUNIFORM4FPROC) (GLint location, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3);
+typedef void (APIENTRYP PFNGLUNIFORM1DPROC) (GLint location, GLdouble v0);
 typedef void (APIENTRYP PFNGLUNIFORM4DPROC) (GLint location, GLdouble v0, GLdouble v1, GLdouble v2, GLdouble v3);
 typedef void (APIENTRYP PFNGLUNIFORM1IPROC) (GLint location, GLint v0);
 typedef void (APIENTRYP PFNGLUNIFORM1FVPROC) (GLint location, GLsizei count, const GLfloat *value);
@@ -717,11 +719,11 @@ protected:
   GLuint _vertex_attrib_divisors[32];
 
   PT(Shader) _current_shader;
-  ShaderContext *_current_shader_context;
+  CLP(ShaderContext) *_current_shader_context;
   PT(Shader) _vertex_array_shader;
-  ShaderContext *_vertex_array_shader_context;
+  CLP(ShaderContext) *_vertex_array_shader_context;
   PT(Shader) _texture_binding_shader;
-  ShaderContext *_texture_binding_shader_context;
+  CLP(ShaderContext) *_texture_binding_shader_context;
 
   PT(Shader) _default_shader;
 
@@ -1056,6 +1058,7 @@ public:
   PFNGLSHADERBINARYPROC _glShaderBinary;
   PFNGLSHADERSOURCEPROC_P _glShaderSource;
   PFNGLUSEPROGRAMPROC  _glUseProgram;
+  PFNGLUNIFORM1FPROC _glUniform1f;
   PFNGLUNIFORM4FPROC _glUniform4f;
   PFNGLUNIFORM1IPROC _glUniform1i;
   PFNGLUNIFORM1FVPROC _glUniform1fv;
@@ -1109,6 +1112,7 @@ public:
   PFNGLBINDIMAGETEXTUREPROC _glBindImageTexture;
 #endif  // !OPENGLES_1
 #ifndef OPENGLES
+  PFNGLUNIFORM1DPROC _glUniform1d;
   PFNGLUNIFORM4DPROC _glUniform4d;
   PFNGLUNIFORM1DVPROC _glUniform1dv;
   PFNGLUNIFORM2DVPROC _glUniform2dv;

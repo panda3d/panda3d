@@ -2161,6 +2161,8 @@ reset() {
        get_extension_func("glShaderSource");
     _glUseProgram = (PFNGLUSEPROGRAMPROC)
        get_extension_func("glUseProgram");
+    _glUniform1f = (PFNGLUNIFORM1FPROC)
+       get_extension_func("glUniform1f");
     _glUniform4f = (PFNGLUNIFORM4FPROC)
        get_extension_func("glUniform4f");
     _glUniform1i = (PFNGLUNIFORM1IPROC)
@@ -2254,6 +2256,8 @@ reset() {
     }
 
     if (is_at_least_gl_version(4, 0)) {
+      _glUniform1d = (PFNGLUNIFORM1DPROC)
+         get_extension_func("glUniform1d");
       _glUniform4d = (PFNGLUNIFORM4DPROC)
          get_extension_func("glUniform4d");
       _glUniform1dv = (PFNGLUNIFORM1DVPROC)
@@ -2314,6 +2318,7 @@ reset() {
   _glLinkProgram = glLinkProgram;
   _glShaderSource = (PFNGLSHADERSOURCEPROC_P) glShaderSource;
   _glUseProgram = glUseProgram;
+  _glUniform1f = glUniform1f;
   _glUniform4f = glUniform4f;
   _glUniform1i = glUniform1i;
   _glUniform1fv = glUniform1fv;
@@ -6940,7 +6945,7 @@ prepare_shader(Shader *se) {
 
 #ifndef OPENGLES_1
   push_group_marker(std::string("Prepare Shader ") + se->get_debug_name());
-  ShaderContext *result = new CLP(ShaderContext)(this, se);
+  CLP(ShaderContext) *result = new CLP(ShaderContext)(this, se);
   pop_group_marker();
 
   if (result->valid()) {
@@ -8615,18 +8620,26 @@ void CLP(GraphicsStateGuardian)::
 do_issue_shader() {
   PStatTimer timer(_draw_set_state_shader_pcollector);
 
-  ShaderContext *context = 0;
+  CLP(ShaderContext) *context = 0;
   Shader *shader = (Shader *)_target_shader->get_shader();
 
+  RenderAttrib::PandaCompareFunc alpha_test_mode = RenderAttrib::M_none;
+
   // If we don't have a shader, apply the default shader.
-  if (!has_fixed_function_pipeline() && !shader) {
-    shader = _default_shader;
-    nassertv(shader != nullptr);
+  if (!has_fixed_function_pipeline()) {
+    if (!shader) {
+      shader = _default_shader;
+      nassertv(shader != nullptr);
+    }
+
+    if (!_target_shader->get_flag(ShaderAttrib::F_subsume_alpha_test)) {
+      alpha_test_mode = _target_rs->get_alpha_test_mode();
+    }
   }
 
   if (shader) {
     if (_current_shader != shader) {
-      context = shader->prepare_now(get_prepared_objects(), this);
+      context = (CLP(ShaderContext) *)shader->prepare_now(get_prepared_objects(), this);
     } else {
       context = _current_shader_context;
     }
@@ -8638,7 +8651,7 @@ do_issue_shader() {
     shader = _default_shader;
     nassertv(shader != nullptr);
     if (_current_shader != shader) {
-      context = shader->prepare_now(get_prepared_objects(), this);
+      context = (CLP(ShaderContext) *)shader->prepare_now(get_prepared_objects(), this);
     } else {
       context = _current_shader_context;
     }
@@ -8659,7 +8672,7 @@ do_issue_shader() {
         // If it's a different type of shader, make sure to unbind the old.
         _current_shader_context->unbind();
       }
-      context->bind();
+      context->bind(alpha_test_mode);
       _current_shader = shader;
     }
 
@@ -12584,10 +12597,15 @@ set_state_and_transform(const RenderState *target,
     _state_mask.clear_bit(TextureAttrib::get_class_slot());
     _state_mask.set_bit(ShaderAttrib::get_class_slot());
   }
-  else if (!has_fixed_function_pipeline() && _current_shader == nullptr) { // In the case of OpenGL ES 2.x, we need to glUseShader before we draw anything.
-    do_issue_shader();
-    _state_mask.clear_bit(TextureAttrib::get_class_slot());
-    _state_mask.set_bit(ShaderAttrib::get_class_slot());
+  else if (!has_fixed_function_pipeline()) {
+    // If we don't have a fixed-function pipeline (eg. OpenGL ES 2.x) we need
+    // to bind a shader before drawing anything.  Also, the shader must
+    // implement the desired alpha test mode.
+    if (_current_shader == nullptr) {
+      do_issue_shader();
+      _state_mask.clear_bit(TextureAttrib::get_class_slot());
+      _state_mask.set_bit(ShaderAttrib::get_class_slot());
+    }
   }
 
   // Update all of the state that is bound to the shader program.

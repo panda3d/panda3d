@@ -317,15 +317,25 @@ get_invert_composition_cache_result(size_t n) const {
 }
 
 /**
+ * Returns the effective alpha testing mode.  This call will never return
+ * M_never, it normalizes that value to M_none.
+ */
+INLINE RenderAttrib::PandaCompareFunc RenderState::
+get_alpha_test_mode() const {
+  if ((_flags & F_computed_cache) == 0) {
+    ((RenderState *)this)->update_cached();
+  }
+  return _alpha_test_mode;
+}
+
+/**
  * Returns the draw order indicated by the CullBinAttrib, if any, associated
  * by this state (or 0 if there is no CullBinAttrib).  See get_bin_index().
  */
 INLINE int RenderState::
 get_draw_order() const {
-  if ((_flags & F_checked_bin_index) == 0) {
-    // We pretend this function is const, even though it transparently
-    // modifies the internal draw_order cache.
-    ((RenderState *)this)->determine_bin_index();
+  if ((_flags & F_computed_cache) == 0) {
+    ((RenderState *)this)->update_cached();
   }
   return _draw_order;
 }
@@ -338,10 +348,8 @@ get_draw_order() const {
  */
 INLINE int RenderState::
 get_bin_index() const {
-  if ((_flags & F_checked_bin_index) == 0) {
-    // We pretend this function is const, even though it transparently
-    // modifies the internal bin_index cache.
-    ((RenderState *)this)->determine_bin_index();
+  if ((_flags & F_computed_cache) == 0) {
+    ((RenderState *)this)->update_cached();
   }
   return _bin_index;
 }

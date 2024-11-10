@@ -33,6 +33,18 @@ private:
   struct UniformBlock;
   typedef pmap<const InternalName *, GLint> LocationMap;
 
+  struct UniformCall {
+    GLint _location;
+    GLuint _count;
+    void *_func;
+    size_t _offset;
+  };
+
+  struct UniformCalls {
+    pvector<UniformCall> _matrices;
+    pvector<UniformCall> _vectors;
+  };
+
 public:
   friend class CLP(GraphicsStateGuardian);
 
@@ -40,28 +52,32 @@ public:
   ~CLP(ShaderContext)();
   ALLOC_DELETED_CHAIN(CLP(ShaderContext));
 
+  bool valid(void) override;
+  void bind(RenderAttrib::PandaCompareFunc alpha_test_mode);
+  void unbind() override;
+
+  bool compile_for(RenderAttrib::PandaCompareFunc alpha_test_mode);
+
+private:
   static void r_count_locations_bindings(const ShaderType *type,
                                          GLint &num_locations,
                                          GLint &num_ssbo_bindings,
                                          GLint &num_image_bindings);
 
-  void r_collect_uniforms(const Shader::Parameter &param, UniformBlock &block,
+  void r_collect_uniforms(GLuint program,
+                          const Shader::Parameter &param, UniformCalls &calls,
                           const ShaderType *type, const char *name,
                           const char *sym, int &location,
                           const SparseArray &active_locations,
                           int &resource_index, int &binding,
                           size_t offset = 0);
 
-  void reflect_program(SparseArray &active_locations, LocationMap &locations, LocationMap &ssbo_bindings);
-  void reflect_attribute(int i, char *name_buf, GLsizei name_buflen);
-  void reflect_uniform_block(int i, const char *block_name,
+  void reflect_program(GLuint program, SparseArray &active_locations);
+  void reflect_attribute(GLuint program, int i, char *name_buf, GLsizei name_buflen);
+  void reflect_uniform_block(GLuint program, int i, const char *block_name,
                              char *name_buffer, GLsizei name_buflen);
   bool get_sampler_texture_type(int &out, GLenum param_type);
   const ShaderType *get_param_type(GLenum type);
-
-  bool valid(void) override;
-  void bind() override;
-  void unbind() override;
 
   INLINE void set_display_region(const DisplayRegion *display_region);
   void set_state_and_transform(const RenderState *state,
@@ -84,15 +100,18 @@ public:
   }
 
 private:
-  bool _validated;
-  GLuint _glsl_program;
+  bool _validated = false;
+  bool _inject_alpha_test = false;
+  GLuint _programs[RenderAttrib::M_always] {0u};
+  RenderAttrib::PandaCompareFunc _alpha_test_mode = RenderAttrib::M_none;
+  GLint _alpha_test_ref_locations[RenderAttrib::M_always];
+
+  // May exclude the fragment shader if _inject_alpha_test is set.
   struct Module {
-    const ShaderModule *_module;
+    Shader::Stage _stage;
     GLuint _handle;
-    bool _needs_compile;
   };
-  typedef small_vector<Module, 2> Modules;
-  Modules _modules;
+  small_vector<Module, 2> _modules;
   bool _is_legacy = false;
   bool _emulate_float_attribs = false;
 
@@ -119,15 +138,7 @@ private:
 
     // When UBOs are not used or supported, we use an array of glUniform
     // calls instead.
-    struct Call {
-      GLint _location;
-      GLuint _count;
-      void *_func;
-      size_t _offset;
-    };
-
-    pvector<Call> _matrices;
-    pvector<Call> _vectors;
+    small_vector<UniformCalls, 1> _calls;
   };
   pvector<UniformBlock> _uniform_blocks;
   int _uniform_data_deps = 0;
@@ -145,9 +156,6 @@ private:
     PT(ShaderInputBinding) _binding;
     ShaderInputBinding::ResourceId _resource_id;
     CLP(TextureContext) *_gtc = nullptr;
-#ifdef OPENGLES
-    GLint _binding_index;
-#endif
     ShaderType::Access _access;
     bool _written = false;
   };
@@ -156,6 +164,7 @@ private:
 
   BitMask32 _enabled_attribs;
   GLint _color_attrib_index;
+  uint32_t _bind_attrib_locations = 0;
 
   struct StorageBlock {
     PT(ShaderInputBinding) _binding;
@@ -164,18 +173,22 @@ private:
   };
   typedef pvector<StorageBlock> StorageBlocks;
   StorageBlocks _storage_blocks;
+  uint32_t _storage_block_bindings = 0;
 
   CLP(GraphicsStateGuardian) *_glgsg;
 
+  bool _remap_locations = false;
+  LocationMap _locations;
+  LocationMap _bindings;
+
   bool _uses_standard_vertex_arrays;
 
-  void report_shader_errors(const Module &module, bool fatal);
+  void report_shader_errors(GLuint handle, Shader::Stage stage, bool fatal);
   void report_program_errors(GLuint program, bool fatal);
-  bool attach_shader(const ShaderModule *module, Shader::ModuleSpecConstants &spec_consts,
-                     const LocationMap &locations, bool &remap_locations,
-                     const LocationMap &ssbo_bindings);
-  bool compile_and_link(const LocationMap &locations, bool &remap_locations,
-                        const LocationMap &bindings);
+  GLuint create_shader(GLuint program, const ShaderModule *module,
+                       const Shader::ModuleSpecConstants &spec_consts,
+                       RenderAttrib::PandaCompareFunc alpha_test_mode);
+  GLuint compile_and_link(RenderAttrib::PandaCompareFunc alpha_test_mode);
   void release_resources();
 
 public:

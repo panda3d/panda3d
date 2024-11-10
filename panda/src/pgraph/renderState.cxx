@@ -12,6 +12,7 @@
  */
 
 #include "renderState.h"
+#include "alphaTestAttrib.h"
 #include "transparencyAttrib.h"
 #include "cullBinAttrib.h"
 #include "cullBinManager.h"
@@ -1719,11 +1720,18 @@ remove_cache_pointers() {
  * This is the private implementation of get_bin_index() and get_draw_order().
  */
 void RenderState::
-determine_bin_index() {
+update_cached() {
   LightMutexHolder holder(_lock);
-  if ((_flags & F_checked_bin_index) != 0) {
+  if ((_flags & F_computed_cache) != 0) {
     // Someone else checked it first.
     return;
+  }
+
+  const AlphaTestAttrib *alpha_test;
+  if (get_attrib(alpha_test)) {
+    _alpha_test_mode = (RenderAttrib::PandaCompareFunc)((int)alpha_test->get_mode() & 7);
+  } else {
+    _alpha_test_mode = AlphaTestAttrib::M_none;
   }
 
   std::string bin_name;
@@ -1763,7 +1771,7 @@ determine_bin_index() {
       << "No bin named " << bin_name << "; creating default bin.\n";
     _bin_index = bin_manager->add_bin(bin_name, CullBinManager::BT_unsorted, 0);
   }
-  _flags |= F_checked_bin_index;
+  _flags |= F_computed_cache;
 }
 
 /**

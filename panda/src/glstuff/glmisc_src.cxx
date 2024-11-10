@@ -249,7 +249,11 @@ ConfigVariableBool gl_dump_compiled_shaders
             "into the current directory."));
 
 ConfigVariableBool gl_validate_shaders
+#ifdef NDEBUG
+  ("gl-validate-shaders", false,
+#else
   ("gl-validate-shaders", true,
+#endif
    PRC_DESC("Set this to true to enable glValidateShader the first time "
             "a shader is bound.  This may cause helpful information about "
             "shaders to be printed."));

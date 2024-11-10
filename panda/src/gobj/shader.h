@@ -294,6 +294,8 @@ public:
   uint32_t _module_mask = 0;
   uint64_t _used_caps = 0;
 
+  bool _subsumes_alpha_test = false;
+
 protected:
   ShaderFile _filename;
   Filename _fullpath;
