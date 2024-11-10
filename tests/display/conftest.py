@@ -579,7 +579,7 @@ def env(request):
         # disrupts the desktop as little as possible
         props.minimized = True
         props.foreground = False
-        props.z_order = WindowProperties.Z_bottom
+        props.z_order = core.WindowProperties.Z_bottom
         buffer = engine.make_output(
             pipe,
             'buffer',

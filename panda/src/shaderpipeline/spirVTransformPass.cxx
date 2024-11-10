@@ -201,7 +201,7 @@ preprocess() {
  * Return true to keep the instruction, false to omit it.
  */
 bool SpirVTransformPass::
-transform_entry_point(spv::ExecutionModel model, uint32_t id, const char *name, const uint32_t *interface, uint16_t size) {
+transform_entry_point(spv::ExecutionModel model, uint32_t id, const char *name, const uint32_t *var_ids, uint16_t num_vars) {
   return true;
 }
 

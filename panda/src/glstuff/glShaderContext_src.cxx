@@ -161,7 +161,7 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
   GLuint program = 0;
   if (!_inject_alpha_test) {
     program = _glgsg->_glCreateProgram();
-    _programs[0] = program;
+    _program = program;
   }
 
   // Compile all the modules now, except for the fragment module if we will be
@@ -208,14 +208,14 @@ valid() {
   if (_shader->get_error_flag()) {
     return false;
   }
-  return true;//(_glsl_program != 0);
+  return _program != 0 || _inject_alpha_test;
 }
 
 /**
  * This function is to be called to enable a new shader.  It also initializes
  * all of the shader's input parameters.
  */
-void CLP(ShaderContext)::
+bool CLP(ShaderContext)::
 bind(RenderAttrib::PandaCompareFunc alpha_test_mode) {
   /*if (!_validated) {
     _glgsg->_glValidateProgram(_glsl_program);
@@ -227,13 +227,17 @@ bind(RenderAttrib::PandaCompareFunc alpha_test_mode) {
     alpha_test_mode = RenderAttrib::M_none;
   }
 
-  GLuint program = _programs[alpha_test_mode];
+  GLuint program = _linked_programs[alpha_test_mode];
   if (program != 0) {
     if (!_shader->get_error_flag()) {
       _glgsg->_glUseProgram(program);
+    } else {
+      return false;
     }
   } else {
-    compile_for(alpha_test_mode);
+    if (!compile_for(alpha_test_mode)) {
+      return false;
+    }
   }
 
   _alpha_test_mode = alpha_test_mode;
@@ -245,6 +249,7 @@ bind(RenderAttrib::PandaCompareFunc alpha_test_mode) {
   }
 
   _glgsg->report_my_gl_errors();
+  return true;
 }
 
 /**
@@ -280,7 +285,7 @@ compile_for(RenderAttrib::PandaCompareFunc alpha_test_mode) {
     _shader->_error_flag = true;
     return false;
   }
-  _programs[alpha_test_mode] = program;
+  _linked_programs[alpha_test_mode] = program;
   _alpha_test_ref_locations[alpha_test_mode] = -1;
 
   // Bind the program, so that we can call glUniform1i for the textures.
@@ -965,10 +970,16 @@ reflect_program(GLuint program, SparseArray &active_locations) {
 
   struct StackItem {
     std::string name;
-    GLint loc;
-    GLint next_loc;
     int num_elements; // 0 means not an array
     ShaderType::Struct type;
+
+    const ShaderType *make_type() const {
+      const ShaderType *new_type = ShaderType::register_type(std::move(type));
+      if (num_elements > 0) {
+        new_type = ShaderType::register_type(ShaderType::Array(new_type, num_elements));
+      }
+      return new_type;
+    }
   };
 
   pdeque<StackItem> struct_stack;
@@ -999,45 +1010,28 @@ reflect_program(GLuint program, SparseArray &active_locations) {
       if (sizes[i] > struct_stack[i].num_elements) {
         struct_stack[i].num_elements = sizes[i];
       }
-      if (sizes[i] > 1) {
-        // Ignore all but the first struct element for determining the type.
-        skip = true;
-      }
       ++i;
-    }
-    if (skip) {
-      continue;
     }
 
     // Pop everything else from the end of the stack.
     while (i < struct_stack.size()) {
       StackItem item = std::move(struct_stack.back());
       struct_stack.pop_back();
-      const ShaderType *type = ShaderType::register_type(std::move(item.type));
-      if (item.num_elements > 0) {
-        type = ShaderType::register_type(ShaderType::Array(type, item.num_elements));
-      }
+      const ShaderType *type = item.make_type();
 
       if (struct_stack.empty()) {
-        // Add struct as top-level
+        // Don't record location, the driver may omit members of individual
+        // structs in a struct array, we'll re-query them later
         CPT(InternalName) name = InternalName::make(item.name);
-        _locations[name] = item.loc;
-        _shader->add_parameter(std::move(name), type, item.loc);
-      }
-      else if (struct_stack.back().num_elements <= 1) {
+        _shader->add_parameter(std::move(name), type);
+      } else {
         // Add as nested struct member
-        while (item.loc > struct_stack.back().next_loc) {
-          // Add a dummy member
-          struct_stack.back().type.add_member(ShaderType::void_type, "");
-          struct_stack.back().next_loc++;
-        }
-        struct_stack.back().type.add_member(type, item.name);
-        struct_stack.back().next_loc = item.next_loc;
+        struct_stack.back().type.merge_member_by_name(item.name, type);
       }
     }
     // Push the remaining parts (except the last) onto the stack.
     while (struct_stack.size() < parts.size() - 1) {
-      struct_stack.push_back({parts[struct_stack.size()], loc, loc, sizes[struct_stack.size()], {}});
+      struct_stack.push_back({parts[struct_stack.size()], sizes[struct_stack.size()], {}});
     }
 
     const ShaderType *type = get_param_type(param.type);
@@ -1046,50 +1040,38 @@ reflect_program(GLuint program, SparseArray &active_locations) {
     }
 
     if (struct_stack.empty()) {
-      // Add as top-level.
+      // Add as top-level.  Recording the location here saves a
+      // glGetUniformLocation call later on.
       assert(parts.size() == 1);
       CPT(InternalName) name = InternalName::make(parts[0]);
-      //_locations[name] = loc;
+      _locations[name] = loc;
       _shader->add_parameter(std::move(name), type, loc);
-    }
-    else if (struct_stack.back().num_elements <= 1) {
+    } else {
       // Add as struct member
       assert(parts.size() > 1);
-      while (loc > struct_stack.back().next_loc) {
-        // Add a dummy member
-        struct_stack.back().type.add_member(ShaderType::void_type, "");
-        struct_stack.back().next_loc++;
-      }
-      struct_stack.back().type.add_member(type, parts.back());
-      struct_stack.back().next_loc += param.size;
+      struct_stack.back().type.merge_member_by_name(parts.back(), type);
     }
   }
 
   while (!struct_stack.empty()) {
     StackItem item = std::move(struct_stack.back());
     struct_stack.pop_back();
-    const ShaderType *type = ShaderType::register_type(std::move(item.type));
-    if (item.num_elements > 0) {
-      type = ShaderType::register_type(ShaderType::Array(type, item.num_elements));
-    }
+    const ShaderType *type = item.make_type();
 
     if (struct_stack.empty()) {
-      // Add struct as top-level
+      // Add struct as top-level.
+      // Don't record location, the driver may omit members of individual
+      // structs in a struct array, we'll re-query them later
       CPT(InternalName) name = InternalName::make(item.name);
-      //_locations[name] = item.loc;
-      _shader->add_parameter(std::move(name), type, item.loc);
-    }
-    else if (struct_stack.back().num_elements <= 1) {
+      _shader->add_parameter(std::move(name), type);
+    } else {
       // Add as nested struct member
-      while (item.loc > struct_stack.back().next_loc) {
-        // Add a dummy member
-        struct_stack.back().type.add_member(ShaderType::void_type, "");
-        struct_stack.back().next_loc++;
-      }
-      struct_stack.back().type.add_member(type, item.name);
-      struct_stack.back().next_loc = item.next_loc;
+      struct_stack.back().type.merge_member_by_name(item.name, type);
     }
   }
+
+  _matrix_cache = pvector<LMatrix4>(_shader->_matrix_cache_desc.size(), LMatrix4::ident_mat());
+  _matrix_cache_deps = _shader->_matrix_cache_deps;
 }
 
 /**
@@ -1729,15 +1711,15 @@ release_resources() {
   if (!_glgsg) {
     return;
   }
-  if (_programs[0] != 0) {
-    _glgsg->_glDeleteProgram(_programs[0]);
-    _programs[0] = 0;
+  if (_program != 0) {
+    _glgsg->_glDeleteProgram(_program);
+    _program = 0;
   }
   if (_inject_alpha_test) {
-    for (int i = 1; i < RenderAttrib::M_always; ++i) {
-      if (_programs[i] != 0) {
-        _glgsg->_glDeleteProgram(_programs[i]);
-        _programs[i] = 0;
+    for (int i = 0; i < RenderAttrib::M_always; ++i) {
+      if (_linked_programs[i] != 0) {
+        _glgsg->_glDeleteProgram(_linked_programs[i]);
+        _linked_programs[i] = 0;
       }
     }
   }
@@ -2922,14 +2904,14 @@ create_shader(GLuint program, const ShaderModule *module,
  */
 GLuint CLP(ShaderContext)::
 compile_and_link(RenderAttrib::PandaCompareFunc alpha_test_mode) {
-  GLuint program;
-  if (_inject_alpha_test) {
-    program = _glgsg->_glCreateProgram();
-  } else {
-    program = _programs[0];
-  }
+  GLuint program = _program;
   if (program == 0) {
-    return 0;
+    program = _glgsg->_glCreateProgram();
+    if (UNLIKELY(program == 0)) {
+      GLCAT.error()
+        << "Failed to create program object\n";
+      return 0;
+    }
   }
 
   if (_glgsg->_use_object_labels) {

@@ -155,6 +155,19 @@ get_member(size_t i) const {
 }
 
 /**
+ * Returns true if this struct has a member with the given name.
+ */
+INLINE bool ShaderType::Struct::
+has_member(const std::string &name) const {
+  for (size_t i = 0; i < _members.size(); ++i) {
+    if (_members[i].name == name) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
  * Constructs an array type from a base type and number of elements.
  */
 INLINE ShaderType::Array::

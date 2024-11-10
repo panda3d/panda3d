@@ -53,7 +53,7 @@ public:
   ALLOC_DELETED_CHAIN(CLP(ShaderContext));
 
   bool valid(void);
-  void bind(RenderAttrib::PandaCompareFunc alpha_test_mode);
+  bool bind(RenderAttrib::PandaCompareFunc alpha_test_mode);
   void unbind();
 
   bool compile_for(RenderAttrib::PandaCompareFunc alpha_test_mode);
@@ -102,7 +102,8 @@ private:
 private:
   bool _validated = false;
   bool _inject_alpha_test = false;
-  GLuint _programs[RenderAttrib::M_always] {0u};
+  GLuint _program = 0;
+  GLuint _linked_programs[RenderAttrib::M_always] {0u};
   RenderAttrib::PandaCompareFunc _alpha_test_mode = RenderAttrib::M_none;
   GLint _alpha_test_ref_locations[RenderAttrib::M_always];
 

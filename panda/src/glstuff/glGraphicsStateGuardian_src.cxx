@@ -8672,14 +8672,19 @@ do_issue_shader() {
         // If it's a different type of shader, make sure to unbind the old.
         _current_shader_context->unbind();
       }
-      context->bind(alpha_test_mode);
+      if (!context->bind(alpha_test_mode)) {
+        shader = nullptr;
+        context = nullptr;
+      }
       _current_shader = shader;
     }
 
-    context->set_display_region(_current_display_region);
+    if (context != nullptr) {
+      context->set_display_region(_current_display_region);
 
-    // Bind the shader storage buffers.
-    context->update_shader_buffer_bindings(_current_shader_context);
+      // Bind the shader storage buffers.
+      context->update_shader_buffer_bindings(_current_shader_context);
+    }
     _current_shader_context = context;
   }
 

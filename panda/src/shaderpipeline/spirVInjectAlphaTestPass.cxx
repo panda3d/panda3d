@@ -18,10 +18,10 @@
  * Return true to keep the instruction, false to omit it.
  */
 bool SpirVInjectAlphaTestPass::
-transform_entry_point(spv::ExecutionModel model, uint32_t id, const char *name, const uint32_t *interface, uint16_t size) {
+transform_entry_point(spv::ExecutionModel model, uint32_t id, const char *name, const uint32_t *var_ids, uint16_t num_vars) {
   if (model == spv::ExecutionModelFragment) {
-    for (size_t i = 0; i < size; ++i) {
-      uint32_t var_id = interface[i];
+    for (size_t i = 0; i < num_vars; ++i) {
+      uint32_t var_id = var_ids[i];
       if (_db.get_definition(var_id)._location == 0) {
         _entry_points[id] = var_id;
         break;

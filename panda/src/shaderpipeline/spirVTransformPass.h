@@ -39,7 +39,7 @@ public:
   void process_functions(std::vector<uint32_t> &instructions);
 
   virtual void preprocess();
-  virtual bool transform_entry_point(spv::ExecutionModel model, uint32_t id, const char *name, const uint32_t *interface, uint16_t size);
+  virtual bool transform_entry_point(spv::ExecutionModel model, uint32_t id, const char *name, const uint32_t *var_ids, uint16_t num_vars);
   virtual bool transform_debug_op(Instruction op);
   virtual bool transform_annotation_op(Instruction op);
   virtual bool transform_definition_op(Instruction op);
