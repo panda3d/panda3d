@@ -52,9 +52,9 @@ public:
   ~CLP(ShaderContext)();
   ALLOC_DELETED_CHAIN(CLP(ShaderContext));
 
-  bool valid(void) override;
+  bool valid(void);
   void bind(RenderAttrib::PandaCompareFunc alpha_test_mode);
-  void unbind() override;
+  void unbind();
 
   bool compile_for(RenderAttrib::PandaCompareFunc alpha_test_mode);
 
@@ -83,19 +83,19 @@ private:
   void set_state_and_transform(const RenderState *state,
                                const TransformState *modelview_transform,
                                const TransformState *camera_transform,
-                               const TransformState *projection_transform) override;
+                               const TransformState *projection_transform);
 
-  void issue_parameters(int altered) override;
-  void disable_shader_vertex_arrays() override;
-  bool update_shader_vertex_arrays(ShaderContext *prev, bool force) override;
-  void disable_shader_texture_bindings() override;
-  void update_shader_texture_bindings(ShaderContext *prev) override;
-  void update_shader_buffer_bindings(ShaderContext *prev) override;
+  void issue_parameters(int altered);
+  void disable_shader_vertex_arrays();
+  bool update_shader_vertex_arrays(ShaderContext *prev, bool force);
+  void disable_shader_texture_bindings();
+  void update_shader_texture_bindings(ShaderContext *prev);
+  void update_shader_buffer_bindings(ShaderContext *prev);
 
-  bool uses_standard_vertex_arrays(void) override {
+  bool uses_standard_vertex_arrays(void) {
     return _uses_standard_vertex_arrays;
   }
-  bool uses_custom_vertex_arrays(void) override {
+  bool uses_custom_vertex_arrays(void) {
     return true;
   }
 
