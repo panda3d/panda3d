@@ -259,16 +259,22 @@ def test_glsl_float(env):
         zero=0,
         a=1.23,
         b=-829.123,
+        array=(1, 2, 3, 4),
     )
     preamble = """
     uniform float zero;
     uniform float a;
     uniform float b;
+    uniform float array[4];
     """
     code = """
     assert(zero == 0);
     assert(abs(a - 1.23) < 0.001);
     assert(abs(b - -829.123) < 0.001);
+    assert(array[0] == 1.0);
+    assert(array[1] == 2.0);
+    assert(array[2] == 3.0);
+    assert(array[3] == 4.0);
     """
     env.run_glsl(code, preamble, inputs)
 

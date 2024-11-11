@@ -502,7 +502,7 @@ for pipe in ALL_PIPES:
         ENVS |= frozenset(("dx9-cross", ))
 
 
-@pytest.fixture(scope="module", params=sorted(ENVS))
+@pytest.fixture(scope="session", params=sorted(ENVS))
 def env(request):
     config = {}
 
@@ -560,6 +560,7 @@ def env(request):
     engine = core.GraphicsEngine()
 
     fbprops = core.FrameBufferProperties()
+    fbprops.set_rgba_bits(8, 8, 8, 8)
     fbprops.force_hardware = True
 
     props = core.WindowProperties.size(32, 32)

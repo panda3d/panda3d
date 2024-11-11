@@ -6965,7 +6965,7 @@ void CLP(GraphicsStateGuardian)::
 release_shader(ShaderContext *sc) {
 #ifndef OPENGLES_1
   if (sc->is_of_type(CLP(ShaderContext)::get_class_type())) {
-    ((CLP(ShaderContext) *)sc)->release_resources();
+    ((CLP(ShaderContext) *)sc)->release_resources(this);
   }
 #endif
 
@@ -8672,7 +8672,7 @@ do_issue_shader() {
         // If it's a different type of shader, make sure to unbind the old.
         _current_shader_context->unbind();
       }
-      if (!context->bind(alpha_test_mode)) {
+      if (!context->bind(this, alpha_test_mode)) {
         shader = nullptr;
         context = nullptr;
       }

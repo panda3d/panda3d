@@ -167,11 +167,12 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
   // Compile all the modules now, except for the fragment module if we will be
   // generating a different fragment module per alpha test mode later.
   bool valid = true;
+  size_t mi = 0;
   for (Shader::LinkedModule &linked_module : _shader->_modules) {
     CPT(ShaderModule) module = linked_module._module.get_read_pointer();
 
     if (!_inject_alpha_test || module->get_stage() != Shader::Stage::FRAGMENT) {
-      GLuint handle = create_shader(program, module, linked_module._consts, RenderAttrib::M_none);
+      GLuint handle = create_shader(program, module, mi, linked_module._consts, RenderAttrib::M_none);
       if (handle != 0) {
         _modules.push_back({module->get_stage(), handle});
 
@@ -182,6 +183,8 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
         valid = false;
       }
     }
+
+    ++mi;
   }
 
   // Now compile the individual shaders, unless we loaded them as SPIR-V.
@@ -216,7 +219,9 @@ valid() {
  * all of the shader's input parameters.
  */
 bool CLP(ShaderContext)::
-bind(RenderAttrib::PandaCompareFunc alpha_test_mode) {
+bind(CLP(GraphicsStateGuardian) *glgsg,
+     RenderAttrib::PandaCompareFunc alpha_test_mode) {
+  _glgsg = glgsg;
   /*if (!_validated) {
     _glgsg->_glValidateProgram(_glsl_program);
     report_program_errors(_glsl_program, false);
@@ -281,7 +286,7 @@ compile_for(RenderAttrib::PandaCompareFunc alpha_test_mode) {
 
   GLuint program = compile_and_link(alpha_test_mode);
   if (program == 0) {
-    release_resources();
+    release_resources(_glgsg);
     _shader->_error_flag = true;
     return false;
   }
@@ -1707,30 +1712,27 @@ CLP(ShaderContext)::
  * Cg contexts).
  */
 void CLP(ShaderContext)::
-release_resources() {
-  if (!_glgsg) {
-    return;
-  }
+release_resources(CLP(GraphicsStateGuardian) *glgsg) {
   if (_program != 0) {
-    _glgsg->_glDeleteProgram(_program);
+    glgsg->_glDeleteProgram(_program);
     _program = 0;
   }
   if (_inject_alpha_test) {
     for (int i = 0; i < RenderAttrib::M_always; ++i) {
       if (_linked_programs[i] != 0) {
-        _glgsg->_glDeleteProgram(_linked_programs[i]);
+        glgsg->_glDeleteProgram(_linked_programs[i]);
         _linked_programs[i] = 0;
       }
     }
   }
 
   for (Module &module : _modules) {
-    _glgsg->_glDeleteShader(module._handle);
+    glgsg->_glDeleteShader(module._handle);
   }
 
   _modules.clear();
 
-  _glgsg->report_my_gl_errors();
+  glgsg->report_my_gl_errors();
 }
 
 /**
@@ -1774,7 +1776,7 @@ set_state_and_transform(const RenderState *target_rs,
            target_rs->get_alpha_test_mode() != _alpha_test_mode) {
     // Alpha test mode has changed, bind a different shader and respecify all
     // data.
-    bind(target_rs->get_alpha_test_mode());
+    bind(_glgsg, target_rs->get_alpha_test_mode());
     altered = _uniform_data_deps | Shader::D_alpha_test;
     _state_rs = target_rs;
   }
@@ -2570,7 +2572,7 @@ report_program_errors(GLuint program, bool fatal) {
  * The program argument only needs to be passed for fragment modules.
  */
 GLuint CLP(ShaderContext)::
-create_shader(GLuint program, const ShaderModule *module,
+create_shader(GLuint program, const ShaderModule *module, size_t mi,
               const Shader::ModuleSpecConstants &consts,
               RenderAttrib::PandaCompareFunc alpha_test_mode) {
   ShaderModule::Stage stage = module->get_stage();
@@ -2828,11 +2830,12 @@ create_shader(GLuint program, const ShaderModule *module,
             if (options.version < 330) {
               _bind_attrib_locations |= 1 << loc;
             }
+            sprintf(buf, "a%u", loc);
           } else {
             // For all other stages, it's just important that the names match,
             // so we assign the names based on the location and successive
             // numbering of the shaders.
-            sprintf(buf, "i%u_%u", (unsigned)_modules.size(), loc);
+            sprintf(buf, "i%u_%u", (unsigned int)mi, loc);
           }
           compiler.set_name(id, buf);
         }
@@ -2845,7 +2848,7 @@ create_shader(GLuint program, const ShaderModule *module,
             }
           } else {
             // Match the name of the next stage.
-            sprintf(buf, "i%u_%u", (unsigned)_modules.size() + 1u, loc);
+            sprintf(buf, "i%u_%u", (unsigned int)mi + 1u, loc);
           }
           compiler.set_name(id, buf);
         }
@@ -2949,11 +2952,12 @@ compile_and_link(RenderAttrib::PandaCompareFunc alpha_test_mode) {
       _glgsg->_glAttachShader(program, module._handle);
     }
 
+    size_t mi = 0;
     for (Shader::LinkedModule &linked_module : _shader->_modules) {
       CPT(ShaderModule) module = linked_module._module.get_read_pointer();
       if (module->get_stage() == Shader::Stage::FRAGMENT) {
         GLuint handle;
-        handle = create_shader(program, module, linked_module._consts, alpha_test_mode);
+        handle = create_shader(program, module, mi, linked_module._consts, alpha_test_mode);
         if (handle == 0) {
           _glgsg->_glDeleteProgram(program);
           return false;
@@ -2966,6 +2970,8 @@ compile_and_link(RenderAttrib::PandaCompareFunc alpha_test_mode) {
         _glgsg->_glDeleteShader(handle);
         break;
       }
+
+      ++mi;
     }
   }
 

@@ -53,7 +53,8 @@ public:
   ALLOC_DELETED_CHAIN(CLP(ShaderContext));
 
   bool valid(void);
-  bool bind(RenderAttrib::PandaCompareFunc alpha_test_mode);
+  bool bind(CLP(GraphicsStateGuardian) *glgsg,
+            RenderAttrib::PandaCompareFunc alpha_test_mode);
   void unbind();
 
   bool compile_for(RenderAttrib::PandaCompareFunc alpha_test_mode);
@@ -186,11 +187,11 @@ private:
 
   void report_shader_errors(GLuint handle, Shader::Stage stage, bool fatal);
   void report_program_errors(GLuint program, bool fatal);
-  GLuint create_shader(GLuint program, const ShaderModule *module,
+  GLuint create_shader(GLuint program, const ShaderModule *module, size_t mi,
                        const Shader::ModuleSpecConstants &spec_consts,
                        RenderAttrib::PandaCompareFunc alpha_test_mode);
   GLuint compile_and_link(RenderAttrib::PandaCompareFunc alpha_test_mode);
-  void release_resources();
+  void release_resources(CLP(GraphicsStateGuardian) *glgsg);
 
 public:
   static TypeHandle get_class_type() {

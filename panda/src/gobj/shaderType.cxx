@@ -944,6 +944,7 @@ bool ShaderType::Array::
 as_scalar_type(ScalarType &type, uint32_t &num_elements,
                uint32_t &num_rows, uint32_t &num_columns) const {
   if (_element_type != nullptr &&
+      _element_type->as_array() == nullptr &&
       _element_type->as_scalar_type(type, num_elements, num_rows, num_columns) &&
       num_elements == 1) {
     num_elements = _num_elements;
