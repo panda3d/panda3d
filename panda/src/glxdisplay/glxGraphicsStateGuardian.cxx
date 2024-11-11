@@ -78,6 +78,17 @@ glxGraphicsStateGuardian::
 }
 
 /**
+ * Attempts to make the context current on this thread without an associated
+ * window, if possible.  Returns false if that is not supported.
+ */
+bool glxGraphicsStateGuardian::
+make_current() const {
+  return _context != nullptr
+      && is_at_least_gl_version(3, 0)
+      && glXMakeCurrent(_display, None, _context);
+}
+
+/**
  * Gets the FrameBufferProperties to match the indicated visual.
  */
 void glxGraphicsStateGuardian::

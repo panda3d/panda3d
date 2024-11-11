@@ -115,6 +115,8 @@ PUBLISHED:
   INLINE const GraphicsThreadingModel &get_threading_model() const;
   MAKE_PROPERTY(pipe, get_pipe);
 
+  virtual bool make_current() const;
+
   INLINE bool is_hardware() const;
   virtual INLINE bool prefers_triangle_strips() const;
   virtual INLINE int get_max_vertices_per_array() const;

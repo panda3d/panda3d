@@ -304,6 +304,7 @@ class ShaderEnvironment:
         # Run the shader.
         if use_compute:
             try:
+                gsg.make_current()
                 engine.dispatch_compute((1, 1, 1), state, gsg)
             except AssertionError as exc:
                 assert False, "Error executing compute shader:\n" + code
@@ -573,7 +574,6 @@ def env(request):
         props,
         core.GraphicsPipe.BF_refuse_window
     )
-    engine.open_windows()
 
     if buffer is None:
         # Try making a window instead, putting it in the background so it
@@ -593,6 +593,7 @@ def env(request):
     if buffer is None:
         pytest.skip("GraphicsPipe cannot make offscreen buffers or windows")
 
+    engine.open_windows()
     gsg = buffer.gsg
 
     # Check if the environment is actually supported.

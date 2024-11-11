@@ -48,6 +48,8 @@ public:
 
   virtual ~eglGraphicsStateGuardian();
 
+  virtual bool make_current() const;
+
   virtual void reset();
 
   bool egl_is_at_least_version(int major_version, int minor_version) const;

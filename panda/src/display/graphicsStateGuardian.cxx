@@ -318,6 +318,15 @@ get_engine() const {
 }
 
 /**
+ * Attempts to make the context current on this thread without an associated
+ * window, if possible.  Returns false if that is not supported.
+ */
+bool GraphicsStateGuardian::
+make_current() const {
+  return false;
+}
+
+/**
  * Returns true if this particular GSG supports using the multisample bits to
  * provide antialiasing, and also supports M_multisample and
  * M_multisample_mask transparency modes.  If this is not true for a

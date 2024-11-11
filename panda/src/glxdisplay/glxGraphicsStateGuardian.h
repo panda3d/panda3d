@@ -88,6 +88,8 @@ public:
 
   virtual ~glxGraphicsStateGuardian();
 
+  virtual bool make_current() const;
+
   bool glx_is_at_least_version(int major_version, int minor_version) const;
 
   GLXContext _share_context;
