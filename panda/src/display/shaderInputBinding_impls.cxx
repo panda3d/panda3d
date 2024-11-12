@@ -1399,7 +1399,7 @@ ShaderLightStructBinding(const ShaderType *type, const InternalName *input) {
 int ShaderLightStructBinding::
 get_state_dep() const {
   int dep = Shader::D_frame |
-            Shader::get_matrix_deps(Shader::SM_world_to_view) |
+            Shader::get_matrix_deps(Shader::SM_world_to_apiview) |
             Shader::get_matrix_deps(Shader::SM_apiview_to_world);
   if (_input != nullptr) {
     return Shader::D_shader_inputs | dep;
@@ -1414,7 +1414,7 @@ get_state_dep() const {
  */
 void ShaderLightStructBinding::
 setup(Shader *shader) {
-  _world_to_view_mat_cache_index = shader->add_matrix_cache_item(Shader::SM_world_to_view, nullptr, Shader::get_matrix_deps(Shader::SM_world_to_view));
+  _world_to_apiview_mat_cache_index = shader->add_matrix_cache_item(Shader::SM_world_to_apiview, nullptr, Shader::get_matrix_deps(Shader::SM_world_to_apiview));
   _apiview_to_world_mat_cache_index = shader->add_matrix_cache_item(Shader::SM_apiview_to_world, nullptr, Shader::get_matrix_deps(Shader::SM_apiview_to_world));
 }
 
@@ -1502,7 +1502,7 @@ fetch_light(const State &state, const NodePath &np, void *into) const {
 
       CPT(TransformState) net_transform = np.get_net_transform();
       LMatrix4 mat = net_transform->get_mat() *
-        state.matrix_cache[_world_to_view_mat_cache_index];
+        state.matrix_cache[_world_to_apiview_mat_cache_index];
 
       LightLensNode *light;
       DCAST_INTO_V(light, node);
