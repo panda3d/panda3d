@@ -2347,6 +2347,7 @@ make_binding_glsl(const InternalName *name, const ShaderType *type) {
       }
       else if (matrix_name == "NormalMatrix") {
         // This is really the upper 3x3 of the ModelViewMatrixInverseTranspose.
+        transpose = !transpose;
         part[0] = inverse ? Shader::SM_model_to_apiview
                           : Shader::SM_apiview_to_model;
 
