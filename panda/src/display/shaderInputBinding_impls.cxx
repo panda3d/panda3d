@@ -2591,6 +2591,20 @@ make_binding_glsl(const InternalName *name, const ShaderType *type) {
 
       return make_light_ambient(member.type);
     }
+    if (pieces[1] == "NumLights") {
+      if (type != ShaderType::int_type) {
+        return report_parameter_error(name, type, "expected int");
+      }
+      return ShaderInputBinding::make_data(Shader::D_light,
+                                           [](const State &state, void *into, bool packed) {
+        size_t num_lights = 0;
+        const LightAttrib *target_light;
+        if (state.gsg->get_target_state()->get_attrib(target_light)) {
+          num_lights = target_light->get_num_non_ambient_lights();
+        }
+        *(int *)into = (int)num_lights;
+      });
+    }
     if (pieces[1] == "LightSource") {
       const ShaderType::Array *array = type->as_array();
       if (array == nullptr) {
