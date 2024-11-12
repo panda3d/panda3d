@@ -364,7 +364,7 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
     return nullptr;
   }
 
-  if (glsl_version < 400 && !postprocess_glsl(stream, glsl_version)) {
+  if (!is_cg && glsl_version < 400 && !postprocess_glsl(stream, glsl_version)) {
     return nullptr;
   }
 
