@@ -472,7 +472,9 @@ link() {
       auto result = parameters_by_name.insert({var.name, param});
       auto &it = result.first;
 
-      if (!result.second) {
+      if (result.second) {
+        parameters.push_back(&(it->second));
+      } else {
         // A variable by this name was already added by another stage.  Check
         // that it has the same type and location.
         Parameter &other = it->second;
@@ -490,8 +492,6 @@ link() {
           continue;
         }
       }
-
-      parameters.push_back(&(it->second));
     }
 
     for (const ShaderModule::SpecializationConstant &spec_const : module->_spec_constants) {
