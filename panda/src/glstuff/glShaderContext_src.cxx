@@ -1009,7 +1009,6 @@ reflect_program(GLuint program, SparseArray &active_locations) {
 
     // Count the number of parts in the name that match the current stack.
     size_t i = 0;
-    bool skip = false;
     while (i < struct_stack.size() && i < parts.size() - 1 &&
            struct_stack[i].name == parts[i]) {
       if (sizes[i] > struct_stack[i].num_elements) {
