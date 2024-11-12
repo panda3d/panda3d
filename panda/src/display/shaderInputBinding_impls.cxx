@@ -694,7 +694,7 @@ make_color_scale(const ShaderType *type) {
  *
  */
 static ShaderInputBinding *
-make_texture_stage(const ShaderType *type, size_t index) {
+make_texture_stage(const ShaderType *type, size_t index, CPT(InternalName) suffix = nullptr) {
   const ShaderType::SampledImage *sampled_image_type = type->as_sampled_image();
   if (sampled_image_type == nullptr) {
     return nullptr;
@@ -716,6 +716,10 @@ make_texture_stage(const ShaderType *type, size_t index) {
       view += stage->get_tex_view_offset();
 
       tex = texattrib->get_on_texture(stage);
+      if (!suffix.is_null()) {
+        tex = tex->load_related(suffix);
+      }
+
       if (tex->get_texture_type() != desired_type) {
         shader_cat.error()
           << "Texture " << *tex << " at stage " << stage
@@ -3334,8 +3338,11 @@ make_binding_cg(const InternalName *name, const ShaderType *type) {
 
   // Keywords to access textures.
   if (pieces[0] == "tex") {
+    CPT(InternalName) suffix;
     if (pieces.size() == 3) {
-      return report_parameter_error(name, type, "texture suffix feature is no longer supported");
+      suffix = InternalName::make(std::string("-") + pieces[2]);
+      shader_cat.warning()
+        << "Parameter " << *name << ": use of a texture suffix is deprecated.\n";
     }
     if (!expect_num_words(name, type, 2)) {
       return nullptr;
@@ -3343,7 +3350,7 @@ make_binding_cg(const InternalName *name, const ShaderType *type) {
     if (type->as_sampled_image() == nullptr) {
       return report_parameter_error(name, type, "expected sampler type");
     }
-    return make_texture_stage(type, atoi(pieces[1].c_str()));
+    return make_texture_stage(type, atoi(pieces[1].c_str()), std::move(suffix));
   }
 
   if (pieces[0] == "shadow") {
