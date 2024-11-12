@@ -136,6 +136,8 @@ public:
 
   void mark_used(uint32_t id);
 
+  void collect_nested_structs(pmap<uint32_t, const ShaderType::Struct *> &result, uint32_t id) const;
+
 private:
   Definitions _defs;
 

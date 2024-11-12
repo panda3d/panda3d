@@ -240,6 +240,12 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, BamCacheRecord *reco
             break;
           }
         }
+        else if (def._type->is_aggregate_type()) {
+          // Store all the uniform struct types while we have them, as a
+          // convenience for the GL back-end, which may need them.
+          db.collect_nested_structs(_uniform_struct_types, def._type_id);
+        }
+
         if (def.is_dynamically_indexed() &&
             (sampled_image_type != nullptr || def._type->contains_opaque_type())) {
           _used_caps |= C_dynamic_indexing;

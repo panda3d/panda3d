@@ -1236,3 +1236,27 @@ mark_used(uint32_t id) {
     nassertv(!_defs[id].is_variable());
   }
 }
+
+/**
+ * For a given type id, recursively collects all struct types nested therein
+ * and writes them to the given map.
+ */
+void SpirVResultDatabase::
+collect_nested_structs(pmap<uint32_t, const ShaderType::Struct *> &result, uint32_t id) const {
+  const Definition &type_def = get_definition(id);
+  if (type_def._type == nullptr) {
+    return;
+  }
+  const ShaderType::Struct *struct_type = type_def._type->as_struct();
+  if (struct_type != nullptr) {
+    result[id] = struct_type;
+  }
+  for (const MemberDefinition &def : type_def._members) {
+    if (def._type_id != 0) {
+      collect_nested_structs(result, def._type_id);
+    }
+  }
+  if (type_def._type_id != 0 && type_def._type_id != id) {
+    collect_nested_structs(result, type_def._type_id);
+  }
+}

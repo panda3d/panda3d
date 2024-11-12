@@ -13,9 +13,16 @@
 
 #include "shaderType.h"
 
-const char *texture_type_suffixes[] = {
+static const char *texture_type_suffixes[] = {
   "1D", "2D", "3D", "2DArray", "Cube", "Buffer", "CubeArray", "1DArray",
 };
+
+static const char *texture_type_signatures[] = {
+  "1", "2", "3", "A2", "C", "B", "AC", "A1",
+};
+
+static const char scalar_signatures[] = "?fdiub";
+static const char access_signatures[] = "nrwx";
 
 ShaderType::Registry *ShaderType::_registered_types = nullptr;
 TypeHandle ShaderType::_type_handle;
@@ -177,6 +184,14 @@ output(std::ostream &out) const {
 }
 
 /**
+ * Outputs a signature that compactly but uniquely identifies this type.
+ */
+void ShaderType::Void::
+output_signature(std::ostream &out) const {
+  out << 'V';
+}
+
+/**
  * Private implementation of compare_to, only called for types with the same
  * TypeHandle.
  */
@@ -235,6 +250,14 @@ replace_scalar_type(ScalarType a, ScalarType b) const {
 void ShaderType::Scalar::
 output(std::ostream &out) const {
   out << _scalar_type;
+}
+
+/**
+ * Outputs a signature that compactly but uniquely identifies this type.
+ */
+void ShaderType::Scalar::
+output_signature(std::ostream &out) const {
+  out << scalar_signatures[_scalar_type];
 }
 
 /**
@@ -366,6 +389,14 @@ output(std::ostream &out) const {
 }
 
 /**
+ * Outputs a signature that compactly but uniquely identifies this type.
+ */
+void ShaderType::Vector::
+output_signature(std::ostream &out) const {
+  out << scalar_signatures[_scalar_type] << _num_components;
+}
+
+/**
  * Private implementation of compare_to, only called for types with the same
  * TypeHandle.
  */
@@ -465,6 +496,14 @@ replace_scalar_type(ScalarType a, ScalarType b) const {
 void ShaderType::Matrix::
 output(std::ostream &out) const {
   out << _scalar_type << _num_rows << "x" << _num_columns;
+}
+
+/**
+ * Outputs a signature that compactly but uniquely identifies this type.
+ */
+void ShaderType::Matrix::
+output_signature(std::ostream &out) const {
+  out << scalar_signatures[_scalar_type] << _num_rows << _num_columns;
 }
 
 /**
@@ -770,6 +809,18 @@ output(std::ostream &out) const {
 }
 
 /**
+ * Outputs a signature that compactly but uniquely identifies this type.
+ */
+void ShaderType::Struct::
+output_signature(std::ostream &out) const {
+  out << 'S';
+  for (const Member &member : _members) {
+    member.type->output_signature(out);
+  }
+  out << '_';
+}
+
+/**
  * Private implementation of compare_to, only called for types with the same
  * TypeHandle.
  */
@@ -1020,6 +1071,16 @@ output(std::ostream &out) const {
 }
 
 /**
+ * Outputs a signature that compactly but uniquely identifies this type.
+ */
+void ShaderType::Array::
+output_signature(std::ostream &out) const {
+  _element_type->output_signature(out);
+  out << 'A';
+  out << _num_elements;
+}
+
+/**
  * Private implementation of compare_to, only called for types with the same
  * TypeHandle.
  */
@@ -1144,6 +1205,14 @@ output(std::ostream &out) const {
 }
 
 /**
+ * Outputs a signature that compactly but uniquely identifies this type.
+ */
+void ShaderType::Image::
+output_signature(std::ostream &out) const {
+  out << 'I' << scalar_signatures[_sampled_type] << texture_type_signatures[_texture_type] << access_signatures[(size_t)_access];
+}
+
+/**
  * Private implementation of compare_to, only called for types with the same
  * TypeHandle.
  */
@@ -1209,6 +1278,14 @@ output(std::ostream &out) const {
 }
 
 /**
+ * Outputs a signature that compactly but uniquely identifies this type.
+ */
+void ShaderType::Sampler::
+output_signature(std::ostream &out) const {
+  out << 's';
+}
+
+/**
  * Private implementation of compare_to, only called for types with the same
  * TypeHandle.
  */
@@ -1242,6 +1319,18 @@ output(std::ostream &out) const {
   if (_shadow) {
     out << "Shadow";
   }
+}
+
+/**
+ * Outputs a signature that compactly but uniquely identifies this type.
+ */
+void ShaderType::SampledImage::
+output_signature(std::ostream &out) const {
+  out << 't';
+  if (_shadow) {
+    out << 's';
+  }
+  out << texture_type_signatures[_texture_type];
 }
 
 /**
@@ -1326,6 +1415,16 @@ output(std::ostream &out) const {
   else if (_contained_type != nullptr) {
     out << ' ' << *_contained_type;
   }
+}
+
+/**
+ * Outputs a signature that compactly but uniquely identifies this type.
+ */
+void ShaderType::StorageBuffer::
+output_signature(std::ostream &out) const {
+  out << 'B';
+  _contained_type->output_signature(out);
+  out << access_signatures[(size_t)_access];
 }
 
 /**

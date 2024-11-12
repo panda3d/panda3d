@@ -636,8 +636,8 @@ r_collect_uniforms(GLuint program,
       std::string qualname(name);
       qualname += "." + member.name;
 
-      // SPIRV-Cross names struct members _m0, _m1, etc. in declaration order.
-      sprintf(sym_buffer, "%s._m%u", sym, i);
+      // We have named struct members m0, m1, etc. in declaration order.
+      sprintf(sym_buffer, "%s.m%u", sym, i);
       r_collect_uniforms(program, param, calls, member.type, qualname.c_str(), sym_buffer,
                          cur_location, active_locations, resource_index, cur_binding,
                          offset + member.offset);
@@ -2725,26 +2725,6 @@ create_shader(GLuint program, const ShaderModule *module, size_t mi,
 
       ShaderModuleSpirV::InstructionStream stream = spv->_instructions;
 
-      // It's really important that we don't have any member name decorations
-      // if we're going to end up remapping the locations, because we rely on
-      // spirv-cross generating the standard _m0, _m2, etc. names.
-      if ((!options.es && options.version < 430) ||
-          (options.es && options.version < 310)) {
-        ShaderModuleSpirV::InstructionIterator it = stream.begin();
-        while (it != stream.end()) {
-          ShaderModuleSpirV::Instruction op = *it;
-          if (op.opcode == spv::OpMemberName) {
-            it = stream.erase(it);
-            continue;
-          }
-          else if (op.opcode == spv::OpFunction || op.is_annotation()) {
-            // There are no more debug instructions after this point.
-            break;
-          }
-          ++it;
-        }
-      }
-
       if (stage != ShaderModule::Stage::FRAGMENT) {
         alpha_test_mode = RenderAttrib::M_none;
       }
@@ -2811,9 +2791,10 @@ create_shader(GLuint program, const ShaderModule *module, size_t mi,
         if (sc == spv::StorageClassUniformConstant) {
           auto it = id_to_location.find(id);
           if (it != id_to_location.end()) {
-            sprintf(buf, "p%u", it->second);
+            int location = it->second;
+            sprintf(buf, "p%u", location);
             compiler.set_name(id, buf);
-            compiler.set_decoration(id, spv::DecorationLocation, it->second);
+            compiler.set_decoration(id, spv::DecorationLocation, location);
 
             // Older versions of OpenGL (ES) do not support explicit uniform
             // locations, and we need to query the locations later.
@@ -2851,6 +2832,23 @@ create_shader(GLuint program, const ShaderModule *module, size_t mi,
             sprintf(buf, "i%u_%u", (unsigned int)mi + 1u, loc);
           }
           compiler.set_name(id, buf);
+        }
+      }
+
+      // For all uniform constant structs, we need to ensure we have procedural
+      // names like _m0, _m1, _m2, etc.  Furthermore, we need to assign each
+      // struct a name that is guaranteed to be the same between stages, since
+      // some drivers will complain if the struct name is different for the
+      // same uniform between different stages.
+      for (auto &item : spv->_uniform_struct_types) {
+        std::ostringstream str;
+        item.second->output_signature(str);
+        compiler.set_name(item.first, str.str());
+
+        char buf[32];
+        for (size_t i = 0; i < item.second->get_num_members(); ++i) {
+          sprintf(buf, "m%d", (int)i);
+          compiler.set_member_name(item.first, i, buf);
         }
       }
 
