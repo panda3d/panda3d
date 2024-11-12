@@ -364,8 +364,7 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
     return nullptr;
   }
 
-  // Special validation for features in GLSL 330 that are not in GLSL 150.
-  if (glsl_version == 150 && !postprocess_glsl150(stream)) {
+  if (glsl_version < 400 && !postprocess_glsl(stream, glsl_version)) {
     return nullptr;
   }
 
@@ -700,21 +699,24 @@ preprocess_glsl(vector_uchar &code, int &glsl_version, const Filename &source_fi
  * available in GLSL 330 but not in GLSL 150.
  */
 bool ShaderCompilerGlslang::
-postprocess_glsl150(ShaderModuleSpirV::InstructionStream &stream) {
+postprocess_glsl(ShaderModuleSpirV::InstructionStream &stream, int version) {
   bool has_bit_encoding = false;
+  bool has_gpu_shader5 = false;
   bool has_explicit_location = false;
 
   for (ShaderModuleSpirV::Instruction op : stream) {
     if (op.opcode == spv::OpSource) {
       // Set this back to 150.
       if (op.nargs >= 2) {
-        op.args[1] = 150;
+        op.args[1] = version;
       }
     }
     else if (op.opcode == spv::OpSourceExtension) {
-      if (strcmp((const char *)op.args, "GL_ARB_shader_bit_encoding") == 0 ||
-          strcmp((const char *)op.args, "GL_ARB_gpu_shader5") == 0) {
+      if (strcmp((const char *)op.args, "GL_ARB_shader_bit_encoding") == 0) {
         has_bit_encoding = true;
+      }
+      else if (strcmp((const char *)op.args, "GL_ARB_gpu_shader5") == 0) {
+        has_gpu_shader5 = true;
       }
       else if (strcmp((const char *)op.args, "GL_ARB_explicit_attrib_location") == 0) {
         has_explicit_location = true;
@@ -722,17 +724,24 @@ postprocess_glsl150(ShaderModuleSpirV::InstructionStream &stream) {
     }
     else if (op.opcode == spv::OpDecorate && op.nargs >= 2 &&
              (spv::Decoration)op.args[1] == spv::DecorationLocation &&
-             !has_explicit_location) {
+             !has_explicit_location && version < 330) {
       shader_cat.error()
         << "Explicit location assignments require #version 330 or "
            "#extension GL_ARB_explicit_attrib_location\n";
       return false;
     }
-    else if (op.opcode == spv::OpBitcast && !has_bit_encoding) {
+    else if (op.opcode == spv::OpBitcast && !has_bit_encoding && !has_gpu_shader5 && version < 330) {
       shader_cat.error()
         << "floatBitsToInt, floatBitsToUint, intBitsToFloat, uintBitsToFloat"
            " require #version 330 or #extension GL_ARB_shader_bit_encoding.\n";
       return false;
+    }
+    else if (op.opcode == spv::OpLoopMerge && version < 400 && !has_gpu_shader5) {
+      // If DontUnroll wasn't specified, and GLSL 330 is used, then we prefer
+      // unrolling the loop so we don't get dynamic indexing.
+      if ((op.args[2] & (spv::LoopControlUnrollMask | spv::LoopControlDontUnrollMask)) == 0) {
+        op.args[2] |= spv::LoopControlUnrollMask;
+      }
     }
   }
 
@@ -768,6 +777,12 @@ postprocess_cg(ShaderModuleSpirV::InstructionStream &stream) {
       // to allow the use of any format, so wipe this field.
       if (op.args[6] == 1) {
         op.args[7] = spv::ImageFormatUnknown;
+      }
+      break;
+
+    case spv::OpLoopMerge:
+      if ((op.args[2] & (spv::LoopControlUnrollMask | spv::LoopControlDontUnrollMask)) == 0) {
+        op.args[2] |= spv::LoopControlUnrollMask;
       }
       break;
 

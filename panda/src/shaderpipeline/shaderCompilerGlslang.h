@@ -39,7 +39,8 @@ private:
                               const Filename &source_filename,
                               pset<Filename> &once_files,
                               BamCacheRecord *record = nullptr);
-  static bool postprocess_glsl150(ShaderModuleSpirV::InstructionStream &stream);
+  static bool postprocess_glsl(ShaderModuleSpirV::InstructionStream &stream,
+                               int version);
   static bool postprocess_cg(ShaderModuleSpirV::InstructionStream &stream);
 
 public:

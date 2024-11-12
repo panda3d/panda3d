@@ -531,6 +531,71 @@ def test_glsl_caps_dynamic_indexing():
     }
     """) == 0
 
+    # Such a simple loop MUST be unrolled!
+    assert compile_and_get_caps(Stage.FRAGMENT, """
+    #version 330
+
+    #define COUNT 3
+    struct LightSource {
+      sampler2D shadowMap;
+    };
+    uniform LightSource source[COUNT];
+
+    out vec4 p3d_FragColor;
+
+    void main() {
+        vec4 result = vec4(0);
+        for (int i = 0; i < COUNT; ++i) {
+            result += texture(source[i].shadowMap, vec2(0.0));
+        }
+        p3d_FragColor = result;
+    }
+    """) == 0
+
+    # This one need not be unrolled.
+    assert compile_and_get_caps(Stage.FRAGMENT, """
+    #version 400
+
+    #define COUNT 3
+    struct LightSource {
+      sampler2D shadowMap;
+    };
+    uniform LightSource source[COUNT];
+
+    out vec4 p3d_FragColor;
+
+    void main() {
+        vec4 result = vec4(0);
+        for (int i = 0; i < COUNT; ++i) {
+            result += texture(source[i].shadowMap, vec2(0.0));
+        }
+        p3d_FragColor = result;
+    }
+    """) == Shader.C_dynamic_indexing
+
+    # This one need not be unrolled either.
+    assert compile_and_get_caps(Stage.FRAGMENT, """
+    #version 330
+
+    #extension GL_ARB_gpu_shader5 : require
+
+    #define COUNT 3
+    struct LightSource {
+      sampler2D shadowMap;
+    };
+    uniform LightSource source[COUNT];
+
+    out vec4 p3d_FragColor;
+
+    void main() {
+        vec4 result = vec4(0);
+        for (int i = 0; i < COUNT; ++i) {
+            result += texture(source[i].shadowMap, vec2(0.0));
+        }
+        p3d_FragColor = result;
+    }
+    """) == Shader.C_dynamic_indexing
+
 
 def test_glsl_caps_atomic_counters():
     assert compile_and_get_caps(Stage.VERTEX, """
