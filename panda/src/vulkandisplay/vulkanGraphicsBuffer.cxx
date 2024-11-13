@@ -428,8 +428,6 @@ setup_render_pass() {
       << "Creating render pass for VulkanGraphicsBuffer " << this << "\n";
   }
 
-  nassertr(vkgsg->_frame_data == nullptr, false);
-
   // Check if we are planning on doing anything with the depth/color output.
   BitMask32 transfer_planes = 0;
   {
