@@ -2642,10 +2642,8 @@ set_state_and_transform(const RenderState *state,
 
   const TextureAttrib *target_texture;
   state->get_attrib_def(target_texture);
-  if (true || first_set != 1 || shader_changed ||
+  if (first_set != 1 || shader_changed ||
       target_texture != _state_rs->get_attrib_def(TextureAttrib::get_class_slot())) {
-    //FIXME: there is still a bug here, removing the "true" above causes some
-    // glitches
     if (get_attrib_descriptor_set(descriptor_sets[DS_texture_attrib],
                                   sc->_tattr_descriptor_set_layout,
                                   target_texture)) {
@@ -3016,6 +3014,12 @@ begin_scene() {
 void VulkanGraphicsStateGuardian::
 end_scene() {
   GraphicsStateGuardian::end_scene();
+
+  // The end_scene() upcall above clears the _state_rs, forcing us to respecify
+  // the state.  We accomplish this by setting the shader to null, which causes
+  // set_state_and_transform to respecify all relevant state.
+  _current_shader = nullptr;
+  _current_sc = nullptr;
 }
 
 /**
