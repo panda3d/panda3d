@@ -136,6 +136,9 @@ public:
                            bool force);
   virtual void end_draw_primitives();
 
+  virtual GraphicsOutput *make_shadow_buffer(LightLensNode *light, Texture *tex,
+                                             GraphicsOutput *host);
+
   virtual bool framebuffer_copy_to_texture(Texture *tex, int view, int z,
                                            const DisplayRegion *dr,
                                            const RenderBuffer &rb);

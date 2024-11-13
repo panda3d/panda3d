@@ -34,6 +34,7 @@
 #include "transparencyAttrib.h"
 
 #include "lightLensNode.h"
+#include "pointLight.h"
 #include "paramTexture.h"
 
 static const std::string default_vshader =
@@ -3450,6 +3451,36 @@ draw_points(const GeomPrimitivePipelineReader *reader, bool force) {
 void VulkanGraphicsStateGuardian::
 end_draw_primitives() {
   GraphicsStateGuardian::end_draw_primitives();
+}
+
+/**
+ * Creates a depth buffer for shadow mapping.  A derived GSG can override this
+ * if it knows that a particular buffer type works best for shadow rendering.
+ */
+GraphicsOutput *VulkanGraphicsStateGuardian::
+make_shadow_buffer(LightLensNode *light, Texture *tex, GraphicsOutput *host) {
+  // We override this to circumvent the fact that GraphicsEngine::make_output
+  // can only be called from the app thread.
+  bool is_point = light->is_of_type(PointLight::get_class_type());
+
+  // Determine the properties for creating the depth buffer.
+  FrameBufferProperties fbp;
+  fbp.set_depth_bits(32);
+
+  WindowProperties props = WindowProperties::size(light->get_shadow_buffer_size());
+  int flags = GraphicsPipe::BF_refuse_window;
+  if (is_point) {
+    flags |= GraphicsPipe::BF_size_square;
+  }
+
+  if (host != nullptr) {
+    host = host->get_host();
+  }
+
+  VulkanGraphicsBuffer *sbuffer = new VulkanGraphicsBuffer(get_engine(), get_pipe(), light->get_name(), fbp, props, flags, this, host);
+  sbuffer->add_render_texture(tex, GraphicsOutput::RTM_bind_or_copy, GraphicsOutput::RTP_depth);
+  get_engine()->add_window(sbuffer, light->get_shadow_buffer_sort());
+  return sbuffer;
 }
 
 /**
