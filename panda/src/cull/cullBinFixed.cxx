@@ -24,18 +24,6 @@
 TypeHandle CullBinFixed::_type_handle;
 
 /**
- *
- */
-CullBinFixed::
-~CullBinFixed() {
-  Objects::iterator oi;
-  for (oi = _objects.begin(); oi != _objects.end(); ++oi) {
-    CullableObject *object = (*oi)._object;
-    delete object;
-  }
-}
-
-/**
  * Factory constructor for passing to the CullBinManager.
  */
 CullBin *CullBinFixed::

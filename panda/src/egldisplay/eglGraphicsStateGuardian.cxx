@@ -53,6 +53,27 @@ eglGraphicsStateGuardian::
 }
 
 /**
+ * Attempts to make the context current on this thread without an associated
+ * window, if possible.  Returns false if that is not supported.
+ */
+bool eglGraphicsStateGuardian::
+make_current() const {
+  if (_context == (EGLContext)nullptr) {
+    return false;
+  }
+#ifdef OPENGLES
+  if (!has_extension("GL_OES_surfaceless_context")) {
+    return false;
+  }
+#else
+  if (!is_at_least_gl_version(3, 0)) {
+    return false;
+  }
+#endif
+  return eglMakeCurrent(_egl_display, EGL_NO_SURFACE, EGL_NO_SURFACE, _context);
+}
+
+/**
  * Gets the FrameBufferProperties to match the indicated config.
  */
 void eglGraphicsStateGuardian::

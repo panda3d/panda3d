@@ -11,15 +11,15 @@ jobs:
 
       matrix:
         profile:
-        - ubuntu-bionic-standard-unity-makefile
+        - ubuntu-bionic-double-standard-unity-makefile
         - ubuntu-bionic-coverage-ninja
-        - macos-eigen-coverage-unity-xcode
+        #- macos-coverage-unity-xcode
         - macos-nometa-standard-makefile
         - windows-standard-unity-msvc
         - windows-nopython-nometa-standard-msvc
 
         include:
-        - profile: ubuntu-bionic-standard-unity-makefile
+        - profile: ubuntu-bionic-double-standard-unity-makefile
           os: ubuntu-20.04
           config: Standard
           unity: YES
@@ -28,6 +28,7 @@ jobs:
           metalibs: YES
           python: YES
           eigen: NO
+          double: YES
 
         - profile: ubuntu-bionic-coverage-ninja
           os: ubuntu-20.04
@@ -38,19 +39,21 @@ jobs:
           metalibs: YES
           python: YES
           eigen: NO
+          double: NO
 
-        - profile: macos-eigen-coverage-unity-xcode
-          os: macOS-12
-          config: Coverage
-          unity: YES
-          generator: Xcode
-          compiler: Default
-          metalibs: YES
-          python: YES
-          eigen: YES
+        #- profile: macos-coverage-unity-xcode
+        #  os: macOS-13
+        #  config: Coverage
+        #  unity: YES
+        #  generator: Xcode
+        #  compiler: Default
+        #  metalibs: YES
+        #  python: YES
+        #  eigen: NO
+        #  double: NO
 
         - profile: macos-nometa-standard-makefile
-          os: macOS-12
+          os: macOS-13
           config: Standard
           unity: NO
           generator: Unix Makefiles
@@ -58,6 +61,7 @@ jobs:
           metalibs: NO
           python: YES
           eigen: NO
+          double: NO
 
         - profile: windows-standard-unity-msvc
           os: windows-2022
@@ -68,6 +72,7 @@ jobs:
           metalibs: YES
           python: YES
           eigen: NO
+          double: NO
 
         - profile: windows-nopython-nometa-standard-msvc
           os: windows-2022
@@ -78,11 +83,12 @@ jobs:
           metalibs: NO
           python: NO
           eigen: NO
+          double: NO
 
     runs-on: ${{ matrix.os }}
 
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 10
 
@@ -92,15 +98,19 @@ jobs:
     - name: Install dependencies (macOS)
       if: runner.os == 'macOS'
       run: |
-        curl -O https://www.panda3d.org/download/panda3d-1.10.14/panda3d-1.10.14-tools-mac.tar.gz
-        tar -xf panda3d-1.10.14-tools-mac.tar.gz
-        mv panda3d-1.10.14/thirdparty thirdparty
-        rmdir panda3d-1.10.14
+        curl -O https://www.panda3d.org/download/panda3d-1.10.15/panda3d-1.10.15-tools-mac.tar.gz
+        tar -xf panda3d-1.10.15-tools-mac.tar.gz
+        mv panda3d-1.10.15/thirdparty thirdparty
+        rmdir panda3d-1.10.15
 
         # Temporary hack so that pzip can run, since we are about to remove Cg anyway.
         install_name_tool -id "$(pwd)/thirdparty/darwin-libs-a/nvidiacg/lib/libCg.dylib" thirdparty/darwin-libs-a/nvidiacg/lib/libCg.dylib
 
         brew install ccache
+
+    - name: Set up XCode (macOS)
+      if: runner.os == 'macOS'
+      run: sudo xcode-select -s /Applications/Xcode_14.3.1.app/Contents/Developer
 
     - name: Install dependencies (Ubuntu)
       if: startsWith(matrix.os, 'ubuntu')
@@ -117,24 +127,24 @@ jobs:
 
     - name: Cache dependencies (Windows)
       if: runner.os == 'Windows'
-      uses: actions/cache@v1
+      uses: actions/cache@v4
       with:
         path: thirdparty
-        key: ci-cmake-${{ runner.OS }}-thirdparty-v1.10.14-r1
+        key: ci-cmake-${{ runner.OS }}-thirdparty-v1.10.15-r1
     - name: Install dependencies (Windows)
       if: runner.os == 'Windows'
       shell: powershell
       run: |
         if (!(Test-Path thirdparty/win-libs-vc14-x64)) {
           $wc = New-Object System.Net.WebClient
-          $wc.DownloadFile("https://www.panda3d.org/download/panda3d-1.10.14/panda3d-1.10.14-tools-win64.zip", "thirdparty-tools.zip")
+          $wc.DownloadFile("https://www.panda3d.org/download/panda3d-1.10.15/panda3d-1.10.15-tools-win64.zip", "thirdparty-tools.zip")
           Expand-Archive -Path thirdparty-tools.zip
-          Move-Item -Path thirdparty-tools/panda3d-1.10.14/thirdparty -Destination .
+          Move-Item -Path thirdparty-tools/panda3d-1.10.15/thirdparty -Destination .
         }
 
     - name: ccache (non-Windows)
       if: runner.os != 'Windows'
-      uses: actions/cache@v1
+      uses: actions/cache@v4
       with:
         path: ccache
         key: ci-cmake-ccache-${{ matrix.profile }}
@@ -171,6 +181,7 @@ jobs:
         -D BUILD_METALIBS=${{ matrix.metalibs }}
         -D HAVE_PYTHON=${{ runner.os != 'Windows' && matrix.python || 'NO' }}
         -D HAVE_EIGEN=${{ matrix.eigen }}
+        -D STDFLOAT_DOUBLE=${{ matrix.double }}
         ..
 
     - name: Build (no Python)
@@ -182,7 +193,7 @@ jobs:
 
     - name: Setup Python (Python 3.8)
       if: contains(matrix.python, 'YES')
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: '3.8'
     - name: Configure (Python 3.8)
@@ -214,7 +225,7 @@ jobs:
 
     - name: Setup Python (Python 3.9)
       if: contains(matrix.python, 'YES')
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: '3.9'
     - name: Configure (Python 3.9)
@@ -246,7 +257,7 @@ jobs:
 
     - name: Setup Python (Python 3.10)
       if: contains(matrix.python, 'YES')
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: '3.10'
     - name: Configure (Python 3.10)
@@ -278,7 +289,7 @@ jobs:
 
     - name: Setup Python (Python 3.11)
       if: contains(matrix.python, 'YES')
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: '3.11'
     - name: Configure (Python 3.11)
@@ -310,7 +321,7 @@ jobs:
 
     - name: Setup Python (Python 3.12)
       if: contains(matrix.python, 'YES')
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: '3.12'
     - name: Configure (Python 3.12)
@@ -361,10 +372,10 @@ jobs:
     if: "!contains(github.event.head_commit.message, '[skip ci]') && !contains(github.event.head_commit.message, '[ci skip]')"
     strategy:
       matrix:
-        os: [ubuntu-20.04, windows-2019, macOS-12]
+        os: [ubuntu-20.04, windows-2019, macOS-13]
     runs-on: ${{ matrix.os }}
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v4
     - name: Install dependencies (Ubuntu)
       if: matrix.os == 'ubuntu-20.04'
       run: |
@@ -375,40 +386,62 @@ jobs:
       shell: powershell
       run: |
         $wc = New-Object System.Net.WebClient
-        $wc.DownloadFile("https://www.panda3d.org/download/panda3d-1.10.14/panda3d-1.10.14-tools-win64.zip", "thirdparty-tools.zip")
+        $wc.DownloadFile("https://www.panda3d.org/download/panda3d-1.10.15/panda3d-1.10.15-tools-win64.zip", "thirdparty-tools.zip")
         Expand-Archive -Path thirdparty-tools.zip
-        Move-Item -Path thirdparty-tools/panda3d-1.10.14/thirdparty -Destination .
+        Move-Item -Path thirdparty-tools/panda3d-1.10.15/thirdparty -Destination .
     - name: Get thirdparty packages (macOS)
       if: runner.os == 'macOS'
       run: |
-        curl -O https://www.panda3d.org/download/panda3d-1.10.14/panda3d-1.10.14-tools-mac.tar.gz
-        tar -xf panda3d-1.10.14-tools-mac.tar.gz
-        mv panda3d-1.10.14/thirdparty thirdparty
-        rmdir panda3d-1.10.14
+        curl -O https://www.panda3d.org/download/panda3d-1.10.15/panda3d-1.10.15-tools-mac.tar.gz
+        tar -xf panda3d-1.10.15-tools-mac.tar.gz
+        mv panda3d-1.10.15/thirdparty thirdparty
+        rmdir panda3d-1.10.15
         (cd thirdparty/darwin-libs-a && rm -rf rocket)
 
-    - name: Set up Python 3.12
-      uses: actions/setup-python@v4
+    - name: Set up XCode (macOS)
+      if: runner.os == 'macOS'
+      run: sudo xcode-select -s /Applications/Xcode_14.3.1.app/Contents/Developer
+
+    - name: Set up Python 3.13
+      uses: actions/setup-python@v5
       with:
-        python-version: '3.12'
-    - name: Build Python 3.12
+        python-version: '3.13'
+    - name: Build Python 3.13
       shell: bash
       run: |
-        python makepanda/makepanda.py --git-commit=${{github.sha}} --outputdir=built --everything --no-eigen --python-incdir="$pythonLocation/include" --python-libdir="$pythonLocation/lib" --verbose --threads=4 --windows-sdk=10
-    - name: Test Python 3.12
+        python makepanda/makepanda.py --git-commit=${{github.sha}} --outputdir=built --everything --no-eigen --python-incdir="$pythonLocation/include" --python-libdir="$pythonLocation/lib" --verbose --threads=4 --windows-sdk=10 --msvc-version=14.2
+    - name: Test Python 3.13
       shell: bash
       run: |
         python -m pip install -r requirements-test.txt
         PYTHONPATH=built LD_LIBRARY_PATH=built/lib:$pythonLocation/lib DYLD_LIBRARY_PATH=built/lib python -m pytest
 
+    - name: Set up Python 3.12
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+    - name: Build Python 3.12 (double)
+      shell: bash
+      run: |
+        python makepanda/makepanda.py --override STDFLOAT_DOUBLE=1 --git-commit=${{github.sha}} --outputdir=built_dbl --everything --no-eigen --python-incdir="$pythonLocation/include" --python-libdir="$pythonLocation/lib" --verbose --threads=4 --windows-sdk=10 --msvc-version=14.2
+    - name: Test Python 3.12 (double)
+      shell: bash
+      run: |
+        python -m pip install -r requirements-test.txt
+        PYTHONPATH=built_dbl LD_LIBRARY_PATH=built_dbl/lib:$pythonLocation/lib DYLD_LIBRARY_PATH=built_dbl/lib python -m pytest
+
+    - name: Make installer
+      run: |
+        python makepanda/makepackage.py --verbose --lzma --outputdir=built_dbl
+
     - name: Set up Python 3.11
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: '3.11'
     - name: Build Python 3.11
       shell: bash
       run: |
-        python makepanda/makepanda.py --git-commit=${{github.sha}} --outputdir=built --everything --no-eigen --python-incdir="$pythonLocation/include" --python-libdir="$pythonLocation/lib" --verbose --threads=4 --windows-sdk=10
+        python makepanda/makepanda.py --git-commit=${{github.sha}} --outputdir=built --everything --no-eigen --python-incdir="$pythonLocation/include" --python-libdir="$pythonLocation/lib" --verbose --threads=4 --windows-sdk=10 --msvc-version=14.2
     - name: Test Python 3.11
       shell: bash
       run: |
@@ -416,13 +449,13 @@ jobs:
         PYTHONPATH=built LD_LIBRARY_PATH=built/lib:$pythonLocation/lib DYLD_LIBRARY_PATH=built/lib python -m pytest
 
     - name: Set up Python 3.10
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: '3.10'
     - name: Build Python 3.10
       shell: bash
       run: |
-        python makepanda/makepanda.py --git-commit=${{github.sha}} --outputdir=built --everything --no-eigen --python-incdir="$pythonLocation/include" --python-libdir="$pythonLocation/lib" --verbose --threads=4 --windows-sdk=10
+        python makepanda/makepanda.py --git-commit=${{github.sha}} --outputdir=built --everything --no-eigen --python-incdir="$pythonLocation/include" --python-libdir="$pythonLocation/lib" --verbose --threads=4 --windows-sdk=10 --msvc-version=14.2
     - name: Test Python 3.10
       shell: bash
       run: |
@@ -430,13 +463,13 @@ jobs:
         PYTHONPATH=built LD_LIBRARY_PATH=built/lib:$pythonLocation/lib DYLD_LIBRARY_PATH=built/lib python -m pytest
 
     - name: Set up Python 3.9
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: '3.9'
     - name: Build Python 3.9
       shell: bash
       run: |
-        python makepanda/makepanda.py --git-commit=${{github.sha}} --outputdir=built --everything --no-eigen --python-incdir="$pythonLocation/include" --python-libdir="$pythonLocation/lib" --verbose --threads=4 --windows-sdk=10
+        python makepanda/makepanda.py --git-commit=${{github.sha}} --outputdir=built --everything --no-eigen --python-incdir="$pythonLocation/include" --python-libdir="$pythonLocation/lib" --verbose --threads=4 --windows-sdk=10 --msvc-version=14.2
     - name: Test Python 3.9
       shell: bash
       run: |
@@ -444,13 +477,13 @@ jobs:
         PYTHONPATH=built LD_LIBRARY_PATH=built/lib:$pythonLocation/lib DYLD_LIBRARY_PATH=built/lib python -m pytest
 
     - name: Set up Python 3.8
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: '3.8'
     - name: Build Python 3.8
       shell: bash
       run: |
-        python makepanda/makepanda.py --git-commit=${{github.sha}} --outputdir=built --everything --no-eigen --python-incdir="$pythonLocation/include" --python-libdir="$pythonLocation/lib" --verbose --threads=4 --windows-sdk=10
+        python makepanda/makepanda.py --git-commit=${{github.sha}} --outputdir=built --everything --no-eigen --python-incdir="$pythonLocation/include" --python-libdir="$pythonLocation/lib" --verbose --threads=4 --windows-sdk=10 --msvc-version=14.2
     - name: Test Python 3.8
       shell: bash
       run: |
@@ -463,22 +496,59 @@ jobs:
 
   emscripten:
     if: "!contains(github.event.head_commit.message, '[skip ci]') && !contains(github.event.head_commit.message, '[ci skip]')"
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v4
 
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install build-essential ninja-build bison flex
+        sudo apt-get install build-essential ninja-build bison flex nodejs python3-pip
 
     - name: Setup emsdk
       uses: mymindstorm/setup-emsdk@v14
       with:
-        version: 3.1.51
+        version: 3.1.70
         actions-cache-folder: 'emsdk-cache'
+
+    - name: Restore Python build cache
+      id: cache-emscripten-python-restore
+      uses: actions/cache/restore@v4
+      with:
+        path: ~/python
+        key: cache-emscripten-python-3.12.7
+
+    - name: Build Python 3.12
+      if: steps.cache-emscripten-python-restore.outputs.cache-hit != 'true'
+      run: |
+        wget https://www.python.org/ftp/python/3.12.7/Python-3.12.7.tar.xz
+        tar -xJf Python-3.12.7.tar.xz
+        (cd Python-3.12.7 && EM_CONFIG=$EMSDK/.emscripten python3 Tools/wasm/wasm_build.py emscripten-browser)
+        (cd Python-3.12.7/builddir/emscripten-browser && make install DESTDIR=~/python)
+        cp Python-3.12.7/builddir/emscripten-browser/Modules/_hacl/libHacl_Hash_SHA2.a ~/python/usr/local/lib
+        cp Python-3.12.7/builddir/emscripten-browser/Modules/_decimal/libmpdec/libmpdec.a ~/python/usr/local/lib
+        cp Python-3.12.7/builddir/emscripten-browser/Modules/expat/libexpat.a ~/python/usr/local/lib
+        rm -rf Python-3.12.7
+
+    - name: Save Python build cache
+      id: cache-emscripten-python-save
+      if: steps.cache-emscripten-python-restore.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v4
+      with:
+        path: ~/python
+        key: ${{ steps.cache-emscripten-python-restore.outputs.cache-primary-key }}
 
     - name: Build for Emscripten
       shell: bash
       run: |
-        python3 makepanda/makepanda.py --git-commit=${{github.sha}} --target emscripten --outputdir=built --everything --no-python --verbose --threads=4
+        python3 makepanda/makepanda.py --git-commit=${{github.sha}} --target emscripten --python-incdir=~/python/usr/local/include --python-libdir=~/python/usr/local/lib --static --everything --no-pandatool --no-deploytools --verbose --threads=4
+
+    - name: Install test dependencies
+      shell: bash
+      run: |
+        python3 -m pip install -t ~/python/usr/local/lib/python3.12/site-packages -r requirements-test.txt
+
+    - name: Test in node.js
+      shell: bash
+      run: |
+        PYTHONHOME=~/python/usr/local PYTHONPATH=built node built/bin/run_tests.js tests

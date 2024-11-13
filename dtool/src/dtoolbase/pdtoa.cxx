@@ -32,6 +32,8 @@ THE SOFTWARE.
 #include <intrin.h>
 #include <float.h>
 #define copysign _copysign
+
+#pragma float_control(precise, on, push)
 #endif
 
 #define UINT64_C2(h, l) ((static_cast<uint64_t>(h) << 32) | static_cast<uint64_t>(l))
@@ -586,3 +588,7 @@ void pftoa(float value, char *buffer) {
     }
   }
 }
+
+#ifdef _MSC_VER
+#pragma float_control(pop)
+#endif

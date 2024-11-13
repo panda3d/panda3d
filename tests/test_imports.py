@@ -18,7 +18,7 @@ def test_imports_panda3d():
         if mod.startswith('panda3d.'):
             importlib.import_module(mod)
 
-    if panda3d.__spec__.origin != 'frozen':
+    if hasattr(panda3d, '__file__') and panda3d.__spec__.origin != 'frozen':
         dir = os.path.dirname(panda3d.__file__)
 
         # Iterate over the things in the panda3d package that look like modules.
@@ -32,12 +32,18 @@ def test_imports_panda3d():
             module = basename.split('.', 1)[0]
             ext = basename[len(module):]
 
+            if module == 'dtoolconfig' or module == 'interrogatedb':
+                continue
+
             if ext in extensions:
                 importlib.import_module('panda3d.%s' % (module))
 
 
 def test_imports_panda3d_net():
     from panda3d import core
+    if not hasattr(core, 'ConnectionWriter'):
+        pytest.skip("Build without HAVE_NET")
+
     from panda3d import net
     assert core.ConnectionWriter == net.ConnectionWriter
     assert core.ConnectionWriter.__module__ == 'panda3d.net'
@@ -265,6 +271,7 @@ def test_imports_direct_net():
 
 
 def test_imports_tk():
+    pytest.importorskip('tkinter')
     Pmw = pytest.importorskip('Pmw')
 
     import direct.showbase.TkGlobal

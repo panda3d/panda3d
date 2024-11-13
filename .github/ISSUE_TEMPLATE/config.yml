@@ -1,0 +1,12 @@
+contact_links:
+  - name: Community forums
+    url: https://discourse.panda3d.org/
+    about: Please visit the community forums for technical support and other questions.
+
+  - name: Documentation bugs
+    url: https://github.com/panda3d/panda3d-docs/issues
+    about: Problems with the online documentation should be reported on the panda3d-docs issue tracker, not here.
+
+  - name: Discord server
+    url: https://discord.gg/UyepRMm
+    about: Get real-time help with questions about Panda3D or discuss ideas with the developers on our Discord server.

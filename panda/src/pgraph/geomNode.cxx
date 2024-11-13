@@ -538,10 +538,9 @@ add_for_draw(CullTraverser *trav, CullTraverserData &data) {
     if (!geom->is_empty()) {
       CPT(RenderState) state = data._state->compose(geoms.get_geom_state(0));
       if (!state->has_cull_callback() || state->cull_callback(trav, data)) {
-        CullableObject *object =
-          new CullableObject(std::move(geom), std::move(state), std::move(internal_transform));
-        object->_instances = data._instances;
-        trav->get_cull_handler()->record_object(object, trav);
+        CullableObject object(std::move(geom), std::move(state), std::move(internal_transform));
+        object._instances = data._instances;
+        trav->get_cull_handler()->record_object(std::move(object), trav);
       }
     }
   }
@@ -562,10 +561,9 @@ add_for_draw(CullTraverser *trav, CullTraverserData &data) {
       if (data._instances != nullptr) {
         // Draw each individual instance.  We don't bother culling each
         // individual Geom for each instance; that is probably way too slow.
-        CullableObject *object =
-          new CullableObject(std::move(geom), std::move(state), internal_transform);
-        object->_instances = data._instances;
-        trav->get_cull_handler()->record_object(object, trav);
+        CullableObject object(std::move(geom), std::move(state), internal_transform);
+        object._instances = data._instances;
+        trav->get_cull_handler()->record_object(std::move(object), trav);
         continue;
       }
 
@@ -588,9 +586,8 @@ add_for_draw(CullTraverser *trav, CullTraverserData &data) {
         }
       }
 
-      CullableObject *object =
-        new CullableObject(std::move(geom), std::move(state), internal_transform);
-      trav->get_cull_handler()->record_object(object, trav);
+      trav->get_cull_handler()->record_object(CullableObject(
+        std::move(geom), std::move(state), internal_transform), trav);
     }
   }
 }

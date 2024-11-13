@@ -24,6 +24,7 @@
 #include "geomTrifans.h"
 #include "geomLines.h"
 #include "geomLinestrips.h"
+#include "geomPatches.h"
 #include "geomPoints.h"
 #include "geomVertexReader.h"
 #include "graphicsWindow.h"
@@ -1755,7 +1756,7 @@ reset() {
       Shader::C_vertex_texture |
       Shader::C_point_coord;
 
-  if (is_at_least_gles_version(3, 0)) {
+  if (is_at_least_gles_version(3, 0) && _glsl_version >= 300) {
     _supported_shader_caps |=
       Shader::C_standard_derivatives |
       Shader::C_shadow_samplers |
@@ -1802,7 +1803,7 @@ reset() {
     }
   }
 
-  if (is_at_least_gles_version(3, 1)) {
+  if (is_at_least_gles_version(3, 1) && _glsl_version >= 310) {
     _supported_shader_caps |=
       Shader::C_texture_gather_red |
       Shader::C_texture_gather_any |
@@ -1829,7 +1830,7 @@ reset() {
     }
   }
 
-  if (is_at_least_gles_version(3, 2)) {
+  if (is_at_least_gles_version(3, 2) && _glsl_version >= 320) {
     _supported_shader_caps |=
       Shader::C_texture_buffer |
       Shader::C_geometry_shader |
@@ -1928,7 +1929,7 @@ reset() {
     if (_glsl_version >= 140 || has_extension("GL_ARB_draw_instanced")) {
       _supported_shader_caps |= Shader::C_instance_id;
     }
-    if (_glsl_version >= 140 || has_extension("GL_ARB_texture_buffer_object")) {
+    if (_glsl_version >= 140 || has_extension("GL_EXT_texture_buffer_object")) {
       _supported_shader_caps |= Shader::C_texture_buffer;
     }
 
@@ -1965,7 +1966,7 @@ reset() {
       if (has_extension("GL_ARB_texture_gather")) {
         _supported_shader_caps |= Shader::C_texture_gather_red;
       }
-      if (has_extension("GL_ARB_gpu_shader_fp64")) {
+      if (_glsl_version >= 150 && has_extension("GL_ARB_gpu_shader_fp64")) {
         _supported_shader_caps |= Shader::C_double;
       }
       if (has_extension("GL_ARB_gpu_shader5")) {
@@ -1993,7 +1994,8 @@ reset() {
       if (has_extension("GL_ARB_shader_atomic_counters")) {
         _supported_shader_caps |= Shader::C_atomic_counters;
       }
-      if (has_extension("GL_ARB_shader_image_load_store")) {
+      // We require 330 here as minimum due to a spirv-cross bug.
+      if (_glsl_version >= 330 && has_extension("GL_ARB_shader_image_load_store")) {
         _supported_shader_caps |=
           Shader::C_image_load_store |
           Shader::C_image_atomic;
@@ -2014,7 +2016,8 @@ reset() {
       if (has_extension("GL_ARB_texture_query_levels")) {
         _supported_shader_caps |= Shader::C_texture_query_levels;
       }
-      if (has_extension("GL_ARB_shader_storage_buffer_object")) {
+      if (_glsl_version >= 150 &&
+          has_extension("GL_ARB_shader_storage_buffer_object")) {
         _supported_shader_caps |= Shader::C_storage_buffer;
       }
       if (has_extension("GL_ARB_compute_shader")) {
@@ -2158,6 +2161,8 @@ reset() {
        get_extension_func("glShaderSource");
     _glUseProgram = (PFNGLUSEPROGRAMPROC)
        get_extension_func("glUseProgram");
+    _glUniform1f = (PFNGLUNIFORM1FPROC)
+       get_extension_func("glUniform1f");
     _glUniform4f = (PFNGLUNIFORM4FPROC)
        get_extension_func("glUniform4f");
     _glUniform1i = (PFNGLUNIFORM1IPROC)
@@ -2251,6 +2256,8 @@ reset() {
     }
 
     if (is_at_least_gl_version(4, 0)) {
+      _glUniform1d = (PFNGLUNIFORM1DPROC)
+         get_extension_func("glUniform1d");
       _glUniform4d = (PFNGLUNIFORM4DPROC)
          get_extension_func("glUniform4d");
       _glUniform1dv = (PFNGLUNIFORM1DVPROC)
@@ -2311,6 +2318,7 @@ reset() {
   _glLinkProgram = glLinkProgram;
   _glShaderSource = (PFNGLSHADERSOURCEPROC_P) glShaderSource;
   _glUseProgram = glUseProgram;
+  _glUniform1f = glUniform1f;
   _glUniform4f = glUniform4f;
   _glUniform1i = glUniform1i;
   _glUniform1fv = glUniform1fv;
@@ -5941,7 +5949,7 @@ draw_patches(const GeomPrimitivePipelineReader *reader, bool force) {
   }
 
 #ifndef OPENGLES
-  _glPatchParameteri(GL_PATCH_VERTICES, reader->get_object()->get_num_vertices_per_primitive());
+  _glPatchParameteri(GL_PATCH_VERTICES, ((const GeomPatches *)reader->get_object())->get_num_vertices_per_primitive());
 
 #ifdef SUPPORT_IMMEDIATE_MODE
   if (_use_sender) {
@@ -6937,7 +6945,7 @@ prepare_shader(Shader *se) {
 
 #ifndef OPENGLES_1
   push_group_marker(std::string("Prepare Shader ") + se->get_debug_name());
-  ShaderContext *result = new CLP(ShaderContext)(this, se);
+  CLP(ShaderContext) *result = new CLP(ShaderContext)(this, se);
   pop_group_marker();
 
   if (result->valid()) {
@@ -6957,7 +6965,7 @@ void CLP(GraphicsStateGuardian)::
 release_shader(ShaderContext *sc) {
 #ifndef OPENGLES_1
   if (sc->is_of_type(CLP(ShaderContext)::get_class_type())) {
-    ((CLP(ShaderContext) *)sc)->release_resources();
+    ((CLP(ShaderContext) *)sc)->release_resources(this);
   }
 #endif
 
@@ -8612,18 +8620,26 @@ void CLP(GraphicsStateGuardian)::
 do_issue_shader() {
   PStatTimer timer(_draw_set_state_shader_pcollector);
 
-  ShaderContext *context = 0;
+  CLP(ShaderContext) *context = 0;
   Shader *shader = (Shader *)_target_shader->get_shader();
 
+  RenderAttrib::PandaCompareFunc alpha_test_mode = RenderAttrib::M_none;
+
   // If we don't have a shader, apply the default shader.
-  if (!has_fixed_function_pipeline() && !shader) {
-    shader = _default_shader;
-    nassertv(shader != nullptr);
+  if (!has_fixed_function_pipeline()) {
+    if (!shader) {
+      shader = _default_shader;
+      nassertv(shader != nullptr);
+    }
+
+    if (!_target_shader->get_flag(ShaderAttrib::F_subsume_alpha_test)) {
+      alpha_test_mode = _target_rs->get_alpha_test_mode();
+    }
   }
 
   if (shader) {
     if (_current_shader != shader) {
-      context = shader->prepare_now(get_prepared_objects(), this);
+      context = (CLP(ShaderContext) *)shader->prepare_now(get_prepared_objects(), this);
     } else {
       context = _current_shader_context;
     }
@@ -8635,7 +8651,7 @@ do_issue_shader() {
     shader = _default_shader;
     nassertv(shader != nullptr);
     if (_current_shader != shader) {
-      context = shader->prepare_now(get_prepared_objects(), this);
+      context = (CLP(ShaderContext) *)shader->prepare_now(get_prepared_objects(), this);
     } else {
       context = _current_shader_context;
     }
@@ -8656,14 +8672,19 @@ do_issue_shader() {
         // If it's a different type of shader, make sure to unbind the old.
         _current_shader_context->unbind();
       }
-      context->bind();
+      if (!context->bind(this, alpha_test_mode)) {
+        shader = nullptr;
+        context = nullptr;
+      }
       _current_shader = shader;
     }
 
-    context->set_display_region(_current_display_region);
+    if (context != nullptr) {
+      context->set_display_region(_current_display_region);
 
-    // Bind the shader storage buffers.
-    context->update_shader_buffer_bindings(_current_shader_context);
+      // Bind the shader storage buffers.
+      context->update_shader_buffer_bindings(_current_shader_context);
+    }
     _current_shader_context = context;
   }
 
@@ -9863,15 +9884,25 @@ query_glsl_version() {
 #endif
 
   if (gl_force_glsl_version.get_num_words() > 0 && gl_force_glsl_version > 0) {
-    _glsl_version = gl_force_glsl_version;
-
-    if (GLCAT.is_debug()) {
-      GLCAT.debug()
-        << "Forced GLSL "
+    int requested_version = gl_force_glsl_version;
+    if (requested_version > _glsl_version) {
+      GLCAT.warning()
+        << "Cannot force GLSL "
 #ifdef OPENGLES
            "ES "
 #endif
-           "version: " << _glsl_version << "\n";
+           "version higher than supported version " << _glsl_version << "\n";
+    } else {
+      _glsl_version = requested_version;
+
+      if (GLCAT.is_debug()) {
+        GLCAT.debug()
+          << "Forced GLSL "
+#ifdef OPENGLES
+             "ES "
+#endif
+             "version: " << _glsl_version << "\n";
+      }
     }
   } else {
     if (GLCAT.is_debug()) {
@@ -12571,10 +12602,15 @@ set_state_and_transform(const RenderState *target,
     _state_mask.clear_bit(TextureAttrib::get_class_slot());
     _state_mask.set_bit(ShaderAttrib::get_class_slot());
   }
-  else if (!has_fixed_function_pipeline() && _current_shader == nullptr) { // In the case of OpenGL ES 2.x, we need to glUseShader before we draw anything.
-    do_issue_shader();
-    _state_mask.clear_bit(TextureAttrib::get_class_slot());
-    _state_mask.set_bit(ShaderAttrib::get_class_slot());
+  else if (!has_fixed_function_pipeline()) {
+    // If we don't have a fixed-function pipeline (eg. OpenGL ES 2.x) we need
+    // to bind a shader before drawing anything.  Also, the shader must
+    // implement the desired alpha test mode.
+    if (_current_shader == nullptr) {
+      do_issue_shader();
+      _state_mask.clear_bit(TextureAttrib::get_class_slot());
+      _state_mask.set_bit(ShaderAttrib::get_class_slot());
+    }
   }
 
   // Update all of the state that is bound to the shader program.
@@ -15878,8 +15914,23 @@ extract_texture_image(PTA_uchar &image, size_t &page_size,
                       Texture::ComponentType type,
                       Texture::CompressionMode compression, int n) {
 #ifdef OPENGLES  // Extracting texture data unsupported in OpenGL ES.
-  nassert_raise("OpenGL ES does not support extracting texture data");
-  return false;
+#ifndef OPENGLES_1
+  if (target == GL_TEXTURE_BUFFER && _glMapBufferRange != nullptr) {
+    // In the case of a buffer texture, we need to get it from the buffer.
+    image = PTA_uchar::empty_array(tex->get_expected_ram_mipmap_view_size(n));
+    void *data = _glMapBufferRange(GL_TEXTURE_BUFFER, 0, image.size(), GL_MAP_READ_BIT);
+    if (data == nullptr) {
+      return false;
+    }
+    memcpy(image.p(), data, image.size());
+    _glUnmapBuffer(GL_TEXTURE_BUFFER);
+    return true;
+  } else
+#endif
+  {
+    nassert_raise("OpenGL ES does not support extracting texture data");
+    return false;
+  }
 #else
 
   // Make sure the GL driver does not align textures, otherwise we get corrupt
@@ -15922,12 +15973,10 @@ extract_texture_image(PTA_uchar &image, size_t &page_size,
       }
     }
 
-#ifndef OPENGLES_1
   } else if (target == GL_TEXTURE_BUFFER) {
     // In the case of a buffer texture, we need to get it from the buffer.
     image = PTA_uchar::empty_array(tex->get_expected_ram_mipmap_view_size(n));
     _glGetBufferSubData(target, 0, image.size(), image.p());
-#endif
 
   } else if (compression == Texture::CM_off) {
     // An uncompressed 1-d, 2-d, or 3-d texture.

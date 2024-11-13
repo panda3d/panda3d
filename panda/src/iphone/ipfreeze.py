@@ -66,7 +66,7 @@ if __name__ == '__main__':
     libs = ''
     libs += ' -framework Foundation -framework UIKit'
     if link_all_static:
-        libs += ' -lframework -lputil -lcollide -lpgraph -lchan -ltext -lpnmimage -lpnmimagetypes -levent -leffects -lgobj -ldisplay -lmathutil -lexpress -ldgraph -ldevice -ltform -llinmath -lpstatclient -lpanda -lglstuff -lrecorder -lpgui -lchar -lpipeline -lpandabase -llerp -lgsgbase -ldownloader -lparametrics -lpgraphnodes -lcull -lgrutil -lnet -lmovies -lnativenet -laudio -linterrogatedb -ldconfig -ldtoolutil -ldtoolbase -lprc -liphonedisplay -lpandaexpress -lpanda'
+        libs += ' -lframework -lputil -lcollide -lpgraph -lchan -ltext -lpnmimage -lpnmimagetypes -levent -leffects -lgobj -ldisplay -lmathutil -lexpress -ldgraph -ldevice -ltform -llinmath -lpstatclient -lpanda -lglstuff -lrecorder -lpgui -lchar -lpipeline -lpandabase -llerp -lgsgbase -ldownloader -lparametrics -lpgraphnodes -lcull -lgrutil -lnet -lmovies -lnativenet -laudio -ldconfig -ldtoolutil -ldtoolbase -lprc -liphonedisplay -lpandaexpress -lpanda'
         libs += ' -lphysics -lparticlesystem -lpandaphysics'
         libs += ' -ldistort -leffects -lpandafx'
         libs += ' -ldirectbase -ldcparser -ldeadrec -ldistributed -lhttp -lshowbase -linterval -lmotiontrail -ldirect'

@@ -12,6 +12,7 @@
  */
 
 #include "spirVTransformer.h"
+#include "spirVTransformPass.h"
 
 /**
  * Constructs an instruction writer to operate on the given instruction stream.
@@ -136,11 +137,11 @@ get_result() const {
 }
 
 /**
- * Assigns location decorations to all input, output and uniform variables that
- * do not have a location decoration yet.
+ * Assigns location decorations to all input and output variables that do not
+ * have a location decoration yet.  Does not touch uniform constants.
  */
 void SpirVTransformer::
-assign_locations(ShaderModule::Stage stage) {
+assign_interface_locations(ShaderModule::Stage stage) {
   // Determine which locations have already been assigned.
   bool has_unassigned_locations = false;
   BitArray input_locations;
@@ -153,8 +154,7 @@ assign_locations(ShaderModule::Stage stage) {
       if (!def.has_location()) {
         if (!def.is_builtin() &&
             (def._storage_class == spv::StorageClassInput ||
-             def._storage_class == spv::StorageClassOutput ||
-             def._storage_class == spv::StorageClassUniformConstant)) {
+             def._storage_class == spv::StorageClassOutput)) {
           // A non-built-in variable definition without a location.
           has_unassigned_locations = true;
         }
@@ -165,9 +165,6 @@ assign_locations(ShaderModule::Stage stage) {
       else if (def._storage_class == spv::StorageClassOutput) {
         output_locations.set_range(def._location, def._type ? def._type->get_num_interface_locations() : 1);
       }
-      /*else if (def._storage_class == spv::StorageClassUniformConstant) {
-        uniform_locations.set_range(def._location, def._type ? def._type->get_num_parameter_locations() : 1);
-      }*/
     }
   }
 
@@ -213,17 +210,6 @@ assign_locations(ShaderModule::Stage stage) {
 
         sc_str = "output";
       }
-      /*else if (def._storage_class == spv::StorageClassUniformConstant) {
-        num_locations = def._type->get_num_parameter_locations();
-        if (num_locations == 0) {
-          continue;
-        }
-
-        location = uniform_locations.find_off_range(num_locations);
-        uniform_locations.set_range(location, num_locations);
-
-        sc_str = "uniform";
-      }*/
       else {
         continue;
       }

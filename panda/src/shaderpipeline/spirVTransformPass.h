@@ -39,6 +39,7 @@ public:
   void process_functions(std::vector<uint32_t> &instructions);
 
   virtual void preprocess();
+  virtual bool transform_entry_point(spv::ExecutionModel model, uint32_t id, const char *name, const uint32_t *var_ids, uint16_t num_vars);
   virtual bool transform_debug_op(Instruction op);
   virtual bool transform_annotation_op(Instruction op);
   virtual bool transform_definition_op(Instruction op);
@@ -76,6 +77,7 @@ public:
   uint32_t define_int_constant(int32_t constant);
   uint32_t define_null_constant(const ShaderType *type);
   uint32_t define_constant(const ShaderType *type, uint32_t constant);
+  uint32_t define_spec_constant(const ShaderType *type, uint32_t def_value);
 
   /**
    * Helper class for storing a chain of member or array accesses.
@@ -128,6 +130,13 @@ protected:
   uint32_t op_vector_shuffle(uint32_t vec1, uint32_t vec2, const pvector<uint32_t> &components);
   uint32_t op_composite_construct(const ShaderType *type, const pvector<uint32_t> &constituents);
   uint32_t op_composite_extract(uint32_t obj_id, std::initializer_list<uint32_t>);
+  uint32_t op_compare(spv::Op opcode, uint32_t obj1, uint32_t obj2);
+  void op_kill();
+
+  uint32_t branch_if(uint32_t cond);
+  void branch_endif(uint32_t label);
+
+  uint32_t error_expected(uint32_t id, const char *msg) const;
 
   // The module is split into sections to make it easier to add instructions
   // to other sections while we are iterating.

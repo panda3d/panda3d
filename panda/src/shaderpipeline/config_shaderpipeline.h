@@ -15,11 +15,15 @@
 #define CONFIG_SHADERPIPELINE_H
 
 #include "pandabase.h"
-#include "notifyCategoryProxy.h"
+#include "configVariableBool.h"
+#include "configVariableInt.h"
 #include "dconfig.h"
 
 ConfigureDecl(config_shaderpipeline, EXPCL_PANDA_SHADERPIPELINE, EXPTP_PANDA_SHADERPIPELINE);
-NotifyCategoryDecl(shaderpipeline, EXPCL_PANDA_SHADERPIPELINE, EXPTP_PANDA_SHADERPIPELINE);
+
+extern ConfigVariableBool glsl_preprocess;
+extern ConfigVariableBool glsl_force_legacy_pipeline;
+extern ConfigVariableInt glsl_include_recursion_limit;
 
 extern EXPCL_PANDA_PGRAPH void init_libshaderpipeline();
 

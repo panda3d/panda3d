@@ -144,8 +144,7 @@ def test_node_subclass_gc():
     with gc_disabled():
         node = NodeSubclass('test_node_subclass_gc1')
 
-        assert len(gc.get_objects()) == 1
-        assert gc.get_objects()[0] == node
+        assert node in gc.get_objects()
 
         node = None
 

@@ -13,7 +13,10 @@
 
 #include "shaderCompilerGlslPreProc.h"
 #include "shaderModuleGlsl.h"
+#include "config_putil.h"
 #include "config_shaderpipeline.h"
+#include "virtualFile.h"
+#include "virtualFileSystem.h"
 
 #include "dcast.h"
 
@@ -64,9 +67,9 @@ get_name() const {
 /**
  *
  */
-ShaderLanguages ShaderCompilerGlslPreProc::
+ShaderCompiler::SourceLanguages ShaderCompilerGlslPreProc::
 get_languages() const {
-  //return ShaderLanguages();
+  //return SourceLanguages();
   return {
     Shader::SL_GLSL
   };

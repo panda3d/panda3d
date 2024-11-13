@@ -148,7 +148,7 @@ set(P3EXPRESS_IGATEEXT
 composite_sources(p3express P3EXPRESS_SOURCES)
 add_component_library(p3express SYMBOL BUILDING_PANDA_EXPRESS
   ${P3EXPRESS_SOURCES} ${P3EXPRESS_HEADERS})
-target_link_libraries(p3express p3pandabase p3interrogatedb p3prc p3dtool
+target_link_libraries(p3express p3pandabase p3dconfig p3prc p3dtool
   PKG::ZLIB PKG::OPENSSL)
 target_interrogate(p3express ALL EXTENSIONS ${P3EXPRESS_IGATEEXT})
 

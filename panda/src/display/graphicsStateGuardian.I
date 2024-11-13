@@ -601,6 +601,7 @@ get_supports_compute_shaders() const {
 
 /**
  * Returns true if this particular GSG supports GLSL shaders.
+ * @deprecated This is now irrelevant, use get_supports_basic_shaders instead.
  */
 INLINE bool GraphicsStateGuardian::
 get_supports_glsl() const {
@@ -609,6 +610,7 @@ get_supports_glsl() const {
 
 /**
  * Returns true if this particular GSG supports HLSL shaders.
+ * @deprecated This is now irrelevant, use get_supports_basic_shaders instead.
  */
 INLINE bool GraphicsStateGuardian::
 get_supports_hlsl() const {

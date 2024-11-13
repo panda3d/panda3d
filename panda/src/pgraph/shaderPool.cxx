@@ -71,7 +71,7 @@ ns_load_shader(const Filename &orig_filename) {
   gobj_cat.info()
     << "Loading shader " << filename << "\n";
 
-  Shader::ShaderLanguage lang = Shader::SL_none;
+  Shader::SourceLanguage lang = Shader::SL_none;
 
   // Do some guesswork to see if we can figure out the shader language from
   // the file extension.  This is really just guesswork - there are no

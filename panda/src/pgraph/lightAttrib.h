@@ -167,7 +167,7 @@ public:
     RenderAttrib::init_type();
     register_type(_type_handle, "LightAttrib",
                   RenderAttrib::get_class_type());
-    _attrib_slot = register_slot(_type_handle, 20, new LightAttrib);
+    _attrib_slot = register_slot(_type_handle, 40, new LightAttrib);
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

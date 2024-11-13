@@ -75,6 +75,7 @@ def _model_to_bam(_build_cmd, srcpath, dstpath):
 
     src_fn = p3d.Filename.from_os_specific(srcpath)
     dst_fn = p3d.Filename.from_os_specific(dstpath)
+    dst_fn.set_binary()
 
     _register_python_loaders()
 
@@ -85,8 +86,30 @@ def _model_to_bam(_build_cmd, srcpath, dstpath):
     if not node:
         raise IOError('Failed to load model: %s' % (srcpath))
 
-    if not p3d.NodePath(node).write_bam_file(dst_fn):
-        raise IOError('Failed to write .bam file: %s' % (dstpath))
+    stream = p3d.OFileStream()
+    if not dst_fn.open_write(stream):
+        raise IOError('Failed to open .bam file for writing: %s' % (dstpath))
+
+    # We pass it the source filename here so that texture files are made
+    # relative to the original pathname and don't point from the destination
+    # back into the source directory.
+    dout = p3d.DatagramOutputFile()
+    if not dout.open(stream, src_fn) or not dout.write_header("pbj\0\n\r"):
+        raise IOError('Failed to write to .bam file: %s' % (dstpath))
+
+    writer = p3d.BamWriter(dout)
+    writer.root_node = node
+    writer.init()
+    if _build_cmd.bam_embed_textures:
+        writer.set_file_texture_mode(p3d.BamEnums.BTM_rawdata)
+    else:
+        writer.set_file_texture_mode(p3d.BamEnums.BTM_relative)
+    writer.write_object(node)
+    writer.flush()
+    writer = None
+    dout.close()
+    dout = None
+    stream.close()
 
 
 macosx_binary_magics = (
@@ -289,6 +312,11 @@ class build_apps(setuptools.Command):
             'macosx_10_9_x86_64',
             'win_amd64',
         ]
+
+        if sys.version_info >= (3, 13):
+            # This version of Python is only available for 10.13+.
+            self.platforms[1] = 'macosx_10_13_x86_64'
+
         self.plugins = []
         self.embed_prc_data = True
         self.extra_prc_files = []
@@ -307,6 +335,7 @@ class build_apps(setuptools.Command):
         ]
         self.file_handlers = {}
         self.bam_model_extensions = ['.egg', '.gltf', '.glb']
+        self.bam_embed_textures = False
         self.exclude_dependencies = [
             # Windows
             'kernel32.dll', 'user32.dll', 'wsock32.dll', 'ws2_32.dll',
@@ -321,7 +350,8 @@ class build_apps(setuptools.Command):
 
             # manylinux1/linux
             'libdl.so.*', 'libstdc++.so.*', 'libm.so.*', 'libgcc_s.so.*',
-            'libpthread.so.*', 'libc.so.*', 'ld-linux-x86-64.so.*',
+            'libpthread.so.*', 'libc.so.*',
+            'ld-linux-x86-64.so.*', 'ld-linux-aarch64.so.*',
             'libgl.so.*', 'libx11.so.*', 'libncursesw.so.*', 'libz.so.*',
             'librt.so.*', 'libutil.so.*', 'libnsl.so.1', 'libXext.so.6',
             'libXrender.so.1', 'libICE.so.6', 'libSM.so.6', 'libEGL.so.1',
@@ -646,14 +676,20 @@ class build_apps(setuptools.Command):
             subprocess.check_call([sys.executable, '-m', 'pip'] + pip_args)
         except:
             # Display a more helpful message for these common issues.
-            if platform.startswith('manylinux2010_') and sys.version_info >= (3, 11):
+            if platform.startswith('macosx_10_9_') and sys.version_info >= (3, 13):
+                new_platform = platform.replace('macosx_10_9_', 'macosx_10_13_')
+                self.announce('This error likely occurs because {} is not a supported target as of Python 3.13.\nChange the target platform to {} instead.'.format(platform, new_platform), distutils.log.ERROR)
+            elif platform.startswith('manylinux2010_') and sys.version_info >= (3, 11):
                 new_platform = platform.replace('manylinux2010_', 'manylinux2014_')
                 self.announce('This error likely occurs because {} is not a supported target as of Python 3.11.\nChange the target platform to {} instead.'.format(platform, new_platform), distutils.log.ERROR)
             elif platform.startswith('manylinux1_') and sys.version_info >= (3, 10):
                 new_platform = platform.replace('manylinux1_', 'manylinux2014_')
                 self.announce('This error likely occurs because {} is not a supported target as of Python 3.10.\nChange the target platform to {} instead.'.format(platform, new_platform), distutils.log.ERROR)
             elif platform.startswith('macosx_10_6_') and sys.version_info >= (3, 8):
-                new_platform = platform.replace('macosx_10_6_', 'macosx_10_9_')
+                if sys.version_info >= (3, 13):
+                    new_platform = platform.replace('macosx_10_6_', 'macosx_10_13_')
+                else:
+                    new_platform = platform.replace('macosx_10_6_', 'macosx_10_9_')
                 self.announce('This error likely occurs because {} is not a supported target as of Python 3.8.\nChange the target platform to {} instead.'.format(platform, new_platform), distutils.log.ERROR)
             raise
 

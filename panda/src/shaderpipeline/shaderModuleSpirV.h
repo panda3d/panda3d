@@ -46,7 +46,6 @@ public:
 
   virtual bool link_inputs(const ShaderModule *previous, pmap<int, int> &remap) const override;
   virtual void remap_input_locations(const pmap<int, int> &remap) override;
-  virtual void remap_parameter_locations(const pmap<int, int> &remap) override;
 
   virtual std::string get_ir() const override;
 
@@ -123,6 +122,8 @@ public:
   };
 
   InstructionStream _instructions;
+
+  pmap<uint32_t, const ShaderType::Struct *> _uniform_struct_types;
 
 private:
   void remap_locations(spv::StorageClass storage_class, const pmap<int, int> &locations);

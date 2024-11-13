@@ -19,6 +19,6 @@
  * This is called as each Geom is discovered by the CullTraverser.
  */
 void BinCullHandler::
-record_object(CullableObject *object, const CullTraverser *traverser) {
-  _cull_result->add_object(object, traverser);
+record_object(CullableObject &&object, const CullTraverser *traverser) {
+  _cull_result->add_object(std::move(object), traverser);
 }

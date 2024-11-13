@@ -78,6 +78,66 @@ clear() {
 }
 
 /**
+ * Writes a simple description of this definition to the output stream.
+ */
+void SpirVResultDatabase::Definition::
+output(std::ostream &out) const {
+  switch (_dtype) {
+  case SpirVResultDatabase::DT_none:
+    out << "undefined";
+    break;
+
+  case SpirVResultDatabase::DT_type:
+    if (_type != nullptr) {
+      out << "type " << *_type;
+    } else {
+      out << "unknown type";
+    }
+    break;
+
+  case SpirVResultDatabase::DT_pointer_type:
+    out << "pointer to " << _type_id;
+    break;
+
+  case SpirVResultDatabase::DT_variable:
+    out << "variable of type " << _type_id;
+    break;
+
+  case SpirVResultDatabase::DT_constant:
+    if (is_null_constant()) {
+      out << "null constant of type " << _type_id;
+    } else {
+      out << "constant " << _constant;
+    }
+    break;
+
+  case SpirVResultDatabase::DT_ext_inst:
+    out << "ext inst";
+    break;
+
+  case SpirVResultDatabase::DT_function_parameter:
+    out << "function parameter";
+    break;
+
+  case SpirVResultDatabase::DT_function:
+    out << "function";
+    break;
+
+  case SpirVResultDatabase::DT_temporary:
+    out << "temporary";
+    break;
+
+  case SpirVResultDatabase::DT_spec_constant:
+    out << "spec constant";
+    break;
+
+  default:
+    out << "invalid";
+    break;
+  }
+}
+
+/**
  * Finds the definition with the given name.
  */
 uint32_t SpirVResultDatabase::
@@ -1234,5 +1294,29 @@ mark_used(uint32_t id) {
   } else {
     // Variables must define an origin (even if it is just itself)
     nassertv(!_defs[id].is_variable());
+  }
+}
+
+/**
+ * For a given type id, recursively collects all struct types nested therein
+ * and writes them to the given map.
+ */
+void SpirVResultDatabase::
+collect_nested_structs(pmap<uint32_t, const ShaderType::Struct *> &result, uint32_t id) const {
+  const Definition &type_def = get_definition(id);
+  if (type_def._type == nullptr) {
+    return;
+  }
+  const ShaderType::Struct *struct_type = type_def._type->as_struct();
+  if (struct_type != nullptr) {
+    result[id] = struct_type;
+  }
+  for (const MemberDefinition &def : type_def._members) {
+    if (def._type_id != 0) {
+      collect_nested_structs(result, def._type_id);
+    }
+  }
+  if (type_def._type_id != 0 && type_def._type_id != id) {
+    collect_nested_structs(result, type_def._type_id);
   }
 }

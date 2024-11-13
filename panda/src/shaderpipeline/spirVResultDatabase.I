@@ -125,3 +125,11 @@ INLINE bool SpirVResultDatabase::Definition::
 has_location() const {
   return _location >= 0;
 }
+
+/**
+ * Returns true if the given id exists.
+ */
+INLINE bool SpirVResultDatabase::
+has_definition(uint32_t id) const {
+  return id < _defs.size() && _defs[id]._dtype != DT_none;
+}

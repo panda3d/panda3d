@@ -7,6 +7,8 @@
 #include "savedContext.cxx"
 #include "shader.cxx"
 #include "shaderBuffer.cxx"
+#include "shaderCompiler.cxx"
+#include "shaderCompilerRegistry.cxx"
 #include "shaderContext.cxx"
 #include "shaderEnums.cxx"
 #include "shaderInputBinding.cxx"

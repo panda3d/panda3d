@@ -180,7 +180,7 @@ protected:
   CPT(InternalName) _input;
   size_t _count;
   size_t _stride;
-  size_t _world_to_view_mat_cache_index;
+  size_t _world_to_apiview_mat_cache_index;
   size_t _apiview_to_world_mat_cache_index;
   bool _cube_shadow_map = false;
   int _color_offset = -1;

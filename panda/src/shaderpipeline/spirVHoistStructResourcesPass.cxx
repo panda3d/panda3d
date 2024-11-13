@@ -66,9 +66,15 @@ transform_definition_op(Instruction op) {
           delete_struct_member(type_id, i - 1);
           changed = true;
         }
+        else if (def._members[i - 1]._builtin != spv::BuiltInMax) {
+          // Leave built-in members untouched--we never add this to the struct
+          // type definition in Panda3D.
+          new_args.push_back(op.args[i]);
+          continue;
+        }
         else {
-          const ShaderType::Struct::Member &member = struct_type->get_member(i - 1);
-          new_struct.add_member(member.type, member.name, member.offset);
+          const MemberDefinition &member_def = def._members[i - 1];
+          new_struct.add_member(resolve_type(member_def._type_id), member_def._name, member_def._offset);
           new_args.push_back(op.args[i]);
         }
       }

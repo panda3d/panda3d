@@ -33,10 +33,17 @@ __init__(PyObject *path) {
   Py_ssize_t length;
 
   if (PyUnicode_CheckExact(path)) {
-    wchar_t *data;
-    data = PyUnicode_AsWideCharString(path, &length);
-    (*_this) = wstring(data, length);
-    PyMem_Free(data);
+    if (Filename::get_filesystem_encoding() == TextEncoder::E_utf8) {
+      const char *data = PyUnicode_AsUTF8AndSize(path, &length);
+      if (data != nullptr) {
+        (*_this) = string(data, length);
+      }
+    } else {
+      wchar_t *data;
+      data = PyUnicode_AsWideCharString(path, &length);
+      (*_this) = wstring(data, length);
+      PyMem_Free(data);
+    }
     return;
   }
 
@@ -47,7 +54,7 @@ __init__(PyObject *path) {
     return;
   }
 
-  if (Py_TYPE(path) == &Dtool_Filename._PyType) {
+  if (Py_IS_TYPE(path, Dtool_GetPyTypeObject(&Dtool_Filename))) {
     // Copy constructor.
     *_this = *(Filename *)DtoolInstance_VOID_PTR(path);
     return;
@@ -67,10 +74,17 @@ __init__(PyObject *path) {
   }
 
   if (PyUnicode_CheckExact(path_str)) {
-    wchar_t *data;
-    data = PyUnicode_AsWideCharString(path_str, &length);
-    (*_this) = Filename::from_os_specific_w(wstring(data, length));
-    PyMem_Free(data);
+    if (Filename::get_filesystem_encoding() == TextEncoder::E_utf8) {
+      const char *data = PyUnicode_AsUTF8AndSize(path_str, &length);
+      if (data != nullptr) {
+        (*_this) = Filename::from_os_specific(string(data, length));
+      }
+    } else {
+      wchar_t *data;
+      data = PyUnicode_AsWideCharString(path_str, &length);
+      (*_this) = Filename::from_os_specific_w(wstring(data, length));
+      PyMem_Free(data);
+    }
 
   } else if (PyBytes_CheckExact(path_str)) {
     char *data;

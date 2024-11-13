@@ -34,13 +34,13 @@ PUBLISHED:
     COMPUTE,
   };
 
-  enum ShaderLanguage {
+  enum SourceLanguage {
     SL_none,
     SL_Cg,
     SL_GLSL,
     SL_HLSL,
-    SL_SPIR_V,
   };
+  typedef pvector<SourceLanguage> SourceLanguages;
 
   /**
    * Indicates which features are used by the shader, which can be used by the
@@ -156,7 +156,8 @@ PUBLISHED:
     D_texture        = 0x08000,
     D_tex_gen        = 0x10000,
     D_render_mode    = 0x20000,
-    D_state = D_color | D_colorscale | D_material | D_shader_inputs | D_fog | D_light | D_clip_planes | D_tex_matrix | D_texture | D_tex_gen | D_render_mode,
+    D_alpha_test     = 0x40000,
+    D_state = D_color | D_colorscale | D_material | D_shader_inputs | D_fog | D_light | D_clip_planes | D_tex_matrix | D_texture | D_tex_gen | D_render_mode | D_alpha_test,
   };
 
   enum StateMatrix {

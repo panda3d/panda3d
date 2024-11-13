@@ -13,9 +13,16 @@
 
 #include "shaderType.h"
 
-const char *texture_type_suffixes[] = {
+static const char *texture_type_suffixes[] = {
   "1D", "2D", "3D", "2DArray", "Cube", "Buffer", "CubeArray", "1DArray",
 };
+
+static const char *texture_type_signatures[] = {
+  "1", "2", "3", "A2", "C", "B", "AC", "A1",
+};
+
+static const char scalar_signatures[] = "?fdiub";
+static const char access_signatures[] = "nrwx";
 
 ShaderType::Registry *ShaderType::_registered_types = nullptr;
 TypeHandle ShaderType::_type_handle;
@@ -58,6 +65,14 @@ unwrap_array(const ShaderType *&element_type, uint32_t &num_elements) const {
 const ShaderType *ShaderType::
 replace_type(const ShaderType *a, const ShaderType *b) const {
   return (this == a) ? b : this;
+}
+
+/**
+ * Returns a new type that can contain both this type and the other type.
+ */
+const ShaderType *ShaderType::
+merge(const ShaderType *other) const {
+  return (this == other) ? this : nullptr;
 }
 
 /**
@@ -169,6 +184,14 @@ output(std::ostream &out) const {
 }
 
 /**
+ * Outputs a signature that compactly but uniquely identifies this type.
+ */
+void ShaderType::Void::
+output_signature(std::ostream &out) const {
+  out << 'V';
+}
+
+/**
  * Private implementation of compare_to, only called for types with the same
  * TypeHandle.
  */
@@ -227,6 +250,14 @@ replace_scalar_type(ScalarType a, ScalarType b) const {
 void ShaderType::Scalar::
 output(std::ostream &out) const {
   out << _scalar_type;
+}
+
+/**
+ * Outputs a signature that compactly but uniquely identifies this type.
+ */
+void ShaderType::Scalar::
+output_signature(std::ostream &out) const {
+  out << scalar_signatures[_scalar_type];
 }
 
 /**
@@ -317,6 +348,30 @@ replace_scalar_type(ScalarType a, ScalarType b) const {
 }
 
 /**
+ * Returns a new type that can contain both this type and the other type.
+ */
+const ShaderType *ShaderType::Vector::
+merge(const ShaderType *other) const {
+  if (this == other) {
+    return this;
+  }
+  const ShaderType::Vector *other_vec = other->as_vector();
+  if (other_vec == nullptr) {
+    return nullptr;
+  }
+
+  if (_scalar_type != other_vec->_scalar_type) {
+    return nullptr;
+  }
+
+  if (other_vec->_num_components > _num_components) {
+    return other;
+  } else {
+    return this;
+  }
+}
+
+/**
  * Returns the number of in/out locations taken up by in/out variables having
  * this type.
  */
@@ -331,6 +386,14 @@ get_num_interface_locations() const {
 void ShaderType::Vector::
 output(std::ostream &out) const {
   out << _scalar_type << _num_components;
+}
+
+/**
+ * Outputs a signature that compactly but uniquely identifies this type.
+ */
+void ShaderType::Vector::
+output_signature(std::ostream &out) const {
+  out << scalar_signatures[_scalar_type] << _num_components;
 }
 
 /**
@@ -433,6 +496,14 @@ replace_scalar_type(ScalarType a, ScalarType b) const {
 void ShaderType::Matrix::
 output(std::ostream &out) const {
   out << _scalar_type << _num_rows << "x" << _num_columns;
+}
+
+/**
+ * Outputs a signature that compactly but uniquely identifies this type.
+ */
+void ShaderType::Matrix::
+output_signature(std::ostream &out) const {
+  out << scalar_signatures[_scalar_type] << _num_rows << _num_columns;
 }
 
 /**
@@ -543,6 +614,52 @@ add_member(const ShaderType *type, std::string name, uint32_t offset) {
 }
 
 /**
+ * If a member with the given name already exists, merges the types.
+ * Otherwise, simply adds it.
+ */
+void ShaderType::Struct::
+merge_member_by_name(std::string name, const ShaderType *type) {
+  bool found = false;
+  uint32_t min_offset = 0;
+
+  for (Member &member : _members) {
+    if (found) {
+      if (member.offset > min_offset) {
+        member.offset = min_offset;
+        uint32_t alignment = type->get_align_bytes();
+        if (alignment > 0) {
+          member.offset += alignment - ((member.offset + (alignment - 1)) % alignment) - 1;
+        }
+      } else {
+        return;
+      }
+    }
+    else if (member.name == name) {
+      if (member.type == type) {
+        return;
+      }
+      const ShaderType *merged_type = member.type->merge(type);
+      if (merged_type == type) {
+        return;
+      }
+      uint32_t new_size = merged_type->get_size_bytes();
+      uint32_t alignment = merged_type->get_align_bytes();
+      if (alignment > 0) {
+        member.offset += alignment - ((member.offset + (alignment - 1)) % alignment) - 1;
+      }
+      member.type = merged_type;
+      // Shift the rest down.
+      min_offset = member.offset + new_size;
+      found = true;
+    }
+  }
+
+  if (!found) {
+    add_member(type, name);
+  }
+}
+
+/**
  * Returns true if this type is or contains any opaque type.
  */
 bool ShaderType::Struct::
@@ -622,6 +739,61 @@ replace_type(const ShaderType *a, const ShaderType *b) const {
 }
 
 /**
+ * Returns a new type that can contain both this type and the other type.
+ */
+const ShaderType *ShaderType::Struct::
+merge(const ShaderType *other) const {
+  if (this == other) {
+    return this;
+  }
+  const ShaderType::Struct *other_struct = other->as_struct();
+  if (other_struct == nullptr) {
+    return nullptr;
+  }
+  const auto &other_members = other_struct->_members;
+
+  ShaderType::Struct new_type;
+  size_t ti = 0;
+  size_t oi = 0;
+  while (ti < _members.size() && oi < other_members.size()) {
+    const Member &this_member = _members[ti];
+    const Member &other_member = other_members[oi];
+
+    if (this_member.name == other_member.name) {
+      const ShaderType *merged = this_member.type->merge(other_member.type);
+      if (merged == nullptr) {
+        return nullptr;
+      }
+      new_type.add_member(merged, this_member.name);
+      ++ti;
+      ++oi;
+      continue;
+    }
+
+    if (!has_member(other_member.name)) {
+      new_type.add_member(other_member.type, other_member.name);
+      ++oi;
+    } else {
+      new_type.add_member(this_member.type, this_member.name);
+      ++ti;
+    }
+  }
+
+  while (ti < _members.size()) {
+    const Member &this_member = _members[ti];
+    new_type.merge_member_by_name(this_member.name, this_member.type);
+    ++ti;
+  }
+  while (oi < other_members.size()) {
+    const Member &other_member = other_members[oi];
+    new_type.merge_member_by_name(other_member.name, other_member.type);
+    ++oi;
+  }
+
+  return ShaderType::register_type(std::move(new_type));
+}
+
+/**
  *
  */
 void ShaderType::Struct::
@@ -634,6 +806,18 @@ output(std::ostream &out) const {
     out << member.name << "; ";
   }
   out << '}';
+}
+
+/**
+ * Outputs a signature that compactly but uniquely identifies this type.
+ */
+void ShaderType::Struct::
+output_signature(std::ostream &out) const {
+  out << 'S';
+  for (const Member &member : _members) {
+    member.type->output_signature(out);
+  }
+  out << '_';
 }
 
 /**
@@ -698,19 +882,6 @@ get_num_interface_locations() const {
   int total = 0;
   for (const Member &member : _members) {
     total += member.type->get_num_interface_locations();
-  }
-  return total;
-}
-
-/**
- * Returns the number of uniform locations taken up by uniform variables having
- * this type.
- */
-int ShaderType::Struct::
-get_num_parameter_locations() const {
-  int total = 0;
-  for (const Member &member : _members) {
-    total += member.type->get_num_parameter_locations();
   }
   return total;
 }
@@ -824,6 +995,7 @@ bool ShaderType::Array::
 as_scalar_type(ScalarType &type, uint32_t &num_elements,
                uint32_t &num_rows, uint32_t &num_columns) const {
   if (_element_type != nullptr &&
+      _element_type->as_array() == nullptr &&
       _element_type->as_scalar_type(type, num_elements, num_rows, num_columns) &&
       num_elements == 1) {
     num_elements = _num_elements;
@@ -863,6 +1035,30 @@ replace_type(const ShaderType *a, const ShaderType *b) const {
 }
 
 /**
+ * Returns a new type that can contain both this type and the other type.
+ */
+const ShaderType *ShaderType::Array::
+merge(const ShaderType *other) const {
+  if (this == other) {
+    return this;
+  }
+  const ShaderType::Array *other_array = other->as_array();
+  if (other_array == nullptr) {
+    return nullptr;
+  }
+
+  if (other_array->_element_type == _element_type) {
+    return (other_array->_num_elements > _num_elements) ? other_array : this;
+  }
+
+  const ShaderType *merged = _element_type->merge(other_array->_element_type);
+  if (merged == nullptr) {
+    return nullptr;
+  }
+  return ShaderType::register_type(ShaderType::Array(merged, std::max(_num_elements, other_array->_num_elements)));
+}
+
+/**
  *
  */
 void ShaderType::Array::
@@ -872,6 +1068,16 @@ output(std::ostream &out) const {
     out << _num_elements;
   }
   out << ']';
+}
+
+/**
+ * Outputs a signature that compactly but uniquely identifies this type.
+ */
+void ShaderType::Array::
+output_signature(std::ostream &out) const {
+  _element_type->output_signature(out);
+  out << 'A';
+  out << _num_elements;
 }
 
 /**
@@ -927,15 +1133,6 @@ get_size_bytes() const {
 int ShaderType::Array::
 get_num_interface_locations() const {
   return _element_type->get_num_interface_locations() * _num_elements;
-}
-
-/**
- * Returns the number of uniform locations taken up by uniform variables having
- * this type.
- */
-int ShaderType::Array::
-get_num_parameter_locations() const {
-  return _element_type->get_num_parameter_locations() * _num_elements;
 }
 
 /**
@@ -1008,6 +1205,14 @@ output(std::ostream &out) const {
 }
 
 /**
+ * Outputs a signature that compactly but uniquely identifies this type.
+ */
+void ShaderType::Image::
+output_signature(std::ostream &out) const {
+  out << 'I' << scalar_signatures[_sampled_type] << texture_type_signatures[_texture_type] << access_signatures[(size_t)_access];
+}
+
+/**
  * Private implementation of compare_to, only called for types with the same
  * TypeHandle.
  */
@@ -1073,6 +1278,14 @@ output(std::ostream &out) const {
 }
 
 /**
+ * Outputs a signature that compactly but uniquely identifies this type.
+ */
+void ShaderType::Sampler::
+output_signature(std::ostream &out) const {
+  out << 's';
+}
+
+/**
  * Private implementation of compare_to, only called for types with the same
  * TypeHandle.
  */
@@ -1106,6 +1319,18 @@ output(std::ostream &out) const {
   if (_shadow) {
     out << "Shadow";
   }
+}
+
+/**
+ * Outputs a signature that compactly but uniquely identifies this type.
+ */
+void ShaderType::SampledImage::
+output_signature(std::ostream &out) const {
+  out << 't';
+  if (_shadow) {
+    out << 's';
+  }
+  out << texture_type_signatures[_texture_type];
 }
 
 /**
@@ -1190,6 +1415,16 @@ output(std::ostream &out) const {
   else if (_contained_type != nullptr) {
     out << ' ' << *_contained_type;
   }
+}
+
+/**
+ * Outputs a signature that compactly but uniquely identifies this type.
+ */
+void ShaderType::StorageBuffer::
+output_signature(std::ostream &out) const {
+  out << 'B';
+  _contained_type->output_signature(out);
+  out << access_signatures[(size_t)_access];
 }
 
 /**

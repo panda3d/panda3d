@@ -413,6 +413,13 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     close();
     break;
 
+  case WM_APPCOMMAND:
+    if (GET_APPCOMMAND_LPARAM(lparam) == APPCOMMAND_CLOSE) {
+      close();
+      return TRUE;
+    }
+    break;
+
   case WM_GETMINMAXINFO:
     {
       WINDOWINFO winfo;

@@ -12,6 +12,7 @@
  */
 
 #include "shaderInputBinding_impls.h"
+#include "graphicsStateGuardian.h"
 
 #include "clipPlaneAttrib.h"
 #include "colorAttrib.h"
@@ -25,6 +26,7 @@
 #include "pointLight.h"
 #include "sphereLight.h"
 
+using std::string;
 using State = ShaderInputBinding::State;
 
 static const LMatrix4 shadow_bias_mat(0.5f, 0.0f, 0.0f, 0.0f,
@@ -244,7 +246,9 @@ check_light_struct_member(const string &name, const ShaderType *type) {
   uint32_t num_rows = 1;
   uint32_t min_cols = 3;
   uint32_t max_cols = 4;
-  if (name == "color") {
+  if (name.empty()) {
+    return type == ShaderType::void_type;
+  } else if (name == "color") {
   } else if (name == "specular") {
   } else if (name == "ambient") {
   } else if (name == "diffuse") {
@@ -700,7 +704,7 @@ make_color_scale(const ShaderType *type) {
  *
  */
 static ShaderInputBinding *
-make_texture_stage(const ShaderType *type, size_t index) {
+make_texture_stage(const ShaderType *type, size_t index, CPT(InternalName) suffix = nullptr) {
   const ShaderType::SampledImage *sampled_image_type = type->as_sampled_image();
   if (sampled_image_type == nullptr) {
     return nullptr;
@@ -722,6 +726,10 @@ make_texture_stage(const ShaderType *type, size_t index) {
       view += stage->get_tex_view_offset();
 
       tex = texattrib->get_on_texture(stage);
+      if (!suffix.is_null()) {
+        tex = tex->load_related(suffix);
+      }
+
       if (tex->get_texture_type() != desired_type) {
         shader_cat.error()
           << "Texture " << *tex << " at stage " << stage
@@ -796,6 +804,9 @@ make_fog(const ShaderType *type) {
   bool success = true;
   for (size_t i = 0; i < struct_type->get_num_members(); ++i) {
     const ShaderType::Struct::Member &member = struct_type->get_member(i);
+    if (member.type == ShaderType::void_type) {
+      continue;
+    }
 
     CPT(InternalName) fqname = InternalName::make(member.name);
     if (member.name == "color") {
@@ -876,6 +887,9 @@ make_material(const ShaderType *type) {
   bool success = true;
   for (size_t i = 0; i < struct_type->get_num_members(); ++i) {
     const ShaderType::Struct::Member &member = struct_type->get_member(i);
+    if (member.type == ShaderType::void_type) {
+      continue;
+    }
 
     CPT(InternalName) fqname = InternalName::make(member.name);
     if (member.name == "baseColor") {
@@ -1337,6 +1351,9 @@ ShaderLightStructBinding(const ShaderType *type, const InternalName *input) {
 
   for (size_t i = 0; i < struct_type->get_num_members(); ++i) {
     const ShaderType::Struct::Member &member = struct_type->get_member(i);
+    if (member.type == ShaderType::void_type) {
+      continue;
+    }
 
     PT(InternalName) fqname = InternalName::make("light")->append(member.name);
     if (member.name == "color") {
@@ -1402,7 +1419,7 @@ ShaderLightStructBinding(const ShaderType *type, const InternalName *input) {
 int ShaderLightStructBinding::
 get_state_dep() const {
   int dep = Shader::D_frame |
-            Shader::get_matrix_deps(Shader::SM_world_to_view) |
+            Shader::get_matrix_deps(Shader::SM_world_to_apiview) |
             Shader::get_matrix_deps(Shader::SM_apiview_to_world);
   if (_input != nullptr) {
     return Shader::D_shader_inputs | dep;
@@ -1417,7 +1434,7 @@ get_state_dep() const {
  */
 void ShaderLightStructBinding::
 setup(Shader *shader) {
-  _world_to_view_mat_cache_index = shader->add_matrix_cache_item(Shader::SM_world_to_view, nullptr, Shader::get_matrix_deps(Shader::SM_world_to_view));
+  _world_to_apiview_mat_cache_index = shader->add_matrix_cache_item(Shader::SM_world_to_apiview, nullptr, Shader::get_matrix_deps(Shader::SM_world_to_apiview));
   _apiview_to_world_mat_cache_index = shader->add_matrix_cache_item(Shader::SM_apiview_to_world, nullptr, Shader::get_matrix_deps(Shader::SM_apiview_to_world));
 }
 
@@ -1505,7 +1522,7 @@ fetch_light(const State &state, const NodePath &np, void *into) const {
 
       CPT(TransformState) net_transform = np.get_net_transform();
       LMatrix4 mat = net_transform->get_mat() *
-        state.matrix_cache[_world_to_view_mat_cache_index];
+        state.matrix_cache[_world_to_apiview_mat_cache_index];
 
       LightLensNode *light;
       DCAST_INTO_V(light, node);
@@ -1822,7 +1839,7 @@ int ShaderBufferBinding::
 get_state_dep() const {
   // We don't specify D_frame, because we don't (yet) support updating shader
   // buffers from the CPU.
-  return Shader::D_frame | Shader::D_shader_inputs;
+  return Shader::D_shader_inputs;
 }
 
 /**
@@ -2350,6 +2367,7 @@ make_binding_glsl(const InternalName *name, const ShaderType *type) {
       }
       else if (matrix_name == "NormalMatrix") {
         // This is really the upper 3x3 of the ModelViewMatrixInverseTranspose.
+        transpose = !transpose;
         part[0] = inverse ? Shader::SM_model_to_apiview
                           : Shader::SM_apiview_to_model;
 
@@ -2593,6 +2611,20 @@ make_binding_glsl(const InternalName *name, const ShaderType *type) {
       }
 
       return make_light_ambient(member.type);
+    }
+    if (pieces[1] == "NumLights") {
+      if (type != ShaderType::int_type) {
+        return report_parameter_error(name, type, "expected int");
+      }
+      return ShaderInputBinding::make_data(Shader::D_light,
+                                           [](const State &state, void *into, bool packed) {
+        size_t num_lights = 0;
+        const LightAttrib *target_light;
+        if (state.gsg->get_target_state()->get_attrib(target_light)) {
+          num_lights = target_light->get_num_non_ambient_lights();
+        }
+        *(int *)into = (int)num_lights;
+      });
     }
     if (pieces[1] == "LightSource") {
       const ShaderType::Array *array = type->as_array();
@@ -3341,8 +3373,11 @@ make_binding_cg(const InternalName *name, const ShaderType *type) {
 
   // Keywords to access textures.
   if (pieces[0] == "tex") {
+    CPT(InternalName) suffix;
     if (pieces.size() == 3) {
-      return report_parameter_error(name, type, "texture suffix feature is no longer supported");
+      suffix = InternalName::make(std::string("-") + pieces[2]);
+      shader_cat.warning()
+        << "Parameter " << *name << ": use of a texture suffix is deprecated.\n";
     }
     if (!expect_num_words(name, type, 2)) {
       return nullptr;
@@ -3350,7 +3385,7 @@ make_binding_cg(const InternalName *name, const ShaderType *type) {
     if (type->as_sampled_image() == nullptr) {
       return report_parameter_error(name, type, "expected sampler type");
     }
-    return make_texture_stage(type, atoi(pieces[1].c_str()));
+    return make_texture_stage(type, atoi(pieces[1].c_str()), std::move(suffix));
   }
 
   if (pieces[0] == "shadow") {

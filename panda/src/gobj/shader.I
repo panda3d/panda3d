@@ -134,7 +134,7 @@ get_error_flag() const {
 /**
  * Returns the shader language in which this shader was written.
  */
-INLINE Shader::ShaderLanguage Shader::
+INLINE Shader::SourceLanguage Shader::
 get_language() const {
   return _language;
 }

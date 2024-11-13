@@ -29,7 +29,9 @@ get_type_id(uint32_t id) const {
 INLINE uint32_t SpirVTransformPass::
 unwrap_pointer_type(uint32_t id) const {
   const Definition &def = _db.get_definition(id);
-  nassertr(def.is_pointer_type(), 0);
+  if (!def.is_pointer_type()) {
+    return error_expected(id, "a pointer type");
+  }
   uint32_t type_id = def._type_id;
   nassertr(is_defined(id), type_id);
   return type_id;
@@ -42,7 +44,9 @@ unwrap_pointer_type(uint32_t id) const {
 INLINE uint32_t SpirVTransformPass::
 resolve_constant(uint32_t id) const {
   const Definition &def = _db.get_definition(id);
-  nassertr(def.is_constant(), 0);
+  if (!def.is_constant()) {
+    return error_expected(id, "a constant");
+  }
   uint32_t constant = def._constant;
   nassertr(is_defined(id), constant);
   return constant;
@@ -55,7 +59,11 @@ resolve_constant(uint32_t id) const {
 INLINE const ShaderType *SpirVTransformPass::
 resolve_type(uint32_t id) const {
   const Definition &def = _db.get_definition(id);
-  nassertr(def.is_type() && !def.is_pointer_type(), 0);
+  if (!def.is_type() || def.is_pointer_type()) {
+    error_expected(id, "a non-pointer type");
+    return nullptr;
+  }
+  nassertr(def.is_type() && !def.is_pointer_type(), nullptr);
   nassertr(is_defined(id), def._type);
   return def._type;
 }
@@ -67,7 +75,10 @@ resolve_type(uint32_t id) const {
 INLINE const ShaderType *SpirVTransformPass::
 resolve_pointer_type(uint32_t id) const {
   const Definition &def = _db.get_definition(id);
-  nassertr(def.is_pointer_type(), 0);
+  if (!def.is_pointer_type()) {
+    error_expected(id, "a pointer type");
+    return nullptr;
+  }
   nassertr(is_defined(id), def._type);
   return def._type;
 }
@@ -116,7 +127,7 @@ INLINE void SpirVTransformPass::
 decorate(uint32_t id, spv::Decoration decoration) {
   nassertv(decoration != spv::DecorationLocation);
   _new_annotations.insert(_new_annotations.end(),
-    {spv::OpDecorate | (3 << spv::WordCountShift), id, decoration});
+    {spv::OpDecorate | (3 << spv::WordCountShift), id, (uint32_t)decoration});
 }
 
 /**
@@ -125,7 +136,7 @@ decorate(uint32_t id, spv::Decoration decoration) {
 INLINE void SpirVTransformPass::
 decorate(uint32_t id, spv::Decoration decoration, uint32_t value) {
   _new_annotations.insert(_new_annotations.end(),
-    {spv::OpDecorate | (4 << spv::WordCountShift), id, decoration, value});
+    {spv::OpDecorate | (4 << spv::WordCountShift), id, (uint32_t)decoration, value});
 
   if (decoration == spv::DecorationLocation) {
     _db.modify_definition(id)._location = (int)value;

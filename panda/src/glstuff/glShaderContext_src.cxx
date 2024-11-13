@@ -18,6 +18,7 @@
 
 #include "pStatGPUTimer.h"
 
+#include "alphaTestAttrib.h"
 #include "colorAttrib.h"
 #include "colorScaleAttrib.h"
 #include "materialAttrib.h"
@@ -31,6 +32,7 @@
 #include "shaderModuleSpirV.h"
 #include "sparseArray.h"
 #include "spirVTransformer.h"
+#include "spirVInjectAlphaTestPass.h"
 
 #define SPIRV_CROSS_EXCEPTIONS_TO_ASSERTIONS
 #include <spirv_cross/spirv_glsl.hpp>
@@ -41,6 +43,49 @@ using std::max;
 using std::min;
 using std::string;
 
+// Inject alpha test into generated shaders.
+class Compiler final : public spirv_cross::CompilerGLSL {
+public:
+  explicit Compiler(std::vector<uint32_t> spirv_,
+                    RenderAttrib::PandaCompareFunc alpha_test_mode)
+    : CompilerGLSL(std::move(spirv_)),
+      _alpha_test_mode(alpha_test_mode) {
+  }
+
+private:
+  virtual void emit_fixup() override {
+    switch (_alpha_test_mode) {
+    case RenderAttrib::M_never:
+      statement("discard;");
+      break;
+    case RenderAttrib::M_less:
+      statement("if (o0.a >= aref) discard;");
+      break;
+    case RenderAttrib::M_equal:
+      statement("if (o0.a != aref) discard;");
+      break;
+    case RenderAttrib::M_less_equal:
+      statement("if (o0.a > aref) discard;");
+      break;
+    case RenderAttrib::M_greater:
+      statement("if (o0.a <= aref) discard;");
+      break;
+    case RenderAttrib::M_not_equal:
+      statement("if (o0.a == aref) discard;");
+      break;
+    case RenderAttrib::M_greater_equal:
+      statement("if (o0.a < aref) discard;");
+      break;
+    case RenderAttrib::M_none:
+    case RenderAttrib::M_always:
+      break;
+    }
+    CompilerGLSL::emit_fixup();
+  }
+
+  RenderAttrib::PandaCompareFunc _alpha_test_mode;
+};
+
 TypeHandle CLP(ShaderContext)::_type_handle;
 
 /**
@@ -49,104 +94,286 @@ TypeHandle CLP(ShaderContext)::_type_handle;
 CLP(ShaderContext)::
 CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext(s) {
   _glgsg = glgsg;
-  _glsl_program = 0;
   _uses_standard_vertex_arrays = false;
   _enabled_attribs.clear();
   _color_attrib_index = -1;
   _validated = !gl_validate_shaders;
+  _is_legacy = s->_modules[0]._module.get_read_pointer()->is_of_type(ShaderModuleGlsl::get_class_type());
 
-  // Ignoring any locations that may have already been set, we assign a new
-  // unique location to each parameter.
-  LocationMap locations;
-  LocationMap ssbo_bindings;
-  GLint next_location = 0;
-  GLint next_ssbo_binding = 0;
-  for (const Shader::Parameter &param : _shader->_parameters) {
-    GLint num_locations = 0;
-    GLint num_ssbo_bindings = 0;
-    r_count_locations_bindings(param._type, num_locations, num_ssbo_bindings);
+  _matrix_cache = pvector<LMatrix4>(s->_matrix_cache_desc.size(), LMatrix4::ident_mat());
+  _matrix_cache_deps = s->_matrix_cache_deps;
 
-    if (num_locations > 0) {
-      locations[param._name] = next_location;
-      next_location += num_locations;
-    }
-    if (num_ssbo_bindings > 0) {
-      ssbo_bindings[param._name] = next_ssbo_binding;
-      next_ssbo_binding += num_ssbo_bindings;
+  _scratch_space_size = 16;
+
+  // Do we have a p3d_Color attribute?
+  for (Shader::ShaderVarSpec &spec : s->_var_spec) {
+    if (spec._name == InternalName::get_color()) {
+      _color_attrib_index = spec._id._location;
+      break;
     }
   }
 
-  // We compile and analyze the shader here, instead of in shader.cxx, to
-  // avoid gobj getting a dependency on GL stuff.
-  bool remap_locations = false;
-  if (!compile_and_link(locations, remap_locations, ssbo_bindings)) {
-    release_resources();
-    s->_error_flag = true;
-    return;
+  if (!_is_legacy) {
+    // We may need to generate a different program for each different possible
+    // alpha test mode that may be applied.  This doesn't apply to the legacy
+    // pipeline since we can't modify shaders there.
+    if (s->_module_mask & (1u << (uint32_t)Shader::Stage::FRAGMENT)) {
+      _inject_alpha_test = !s->_subsumes_alpha_test && !glgsg->has_fixed_function_pipeline();
+    }
+
+    // Ignoring any locations that may have already been set, we assign a new
+    // unique location to each parameter.
+    // We can't specify any locations or bindings up front for legacy shaders,
+    // in part because we don't know the parameters until after we compiled it.
+    // We reserve location 0 for the alpha test ref.
+    GLint next_location = (GLint)_inject_alpha_test;
+    GLint next_ssbo_binding = 0;
+#ifdef OPENGLES
+    GLint next_image_binding = 0;
+#endif
+    for (const Shader::Parameter &param : _shader->_parameters) {
+      GLint num_locations = 0;
+      GLint num_ssbo_bindings = 0;
+      GLint num_image_bindings = 0;
+      r_count_locations_bindings(param._type, num_locations, num_ssbo_bindings,
+                                 num_image_bindings);
+
+      if (num_locations > 0) {
+        _locations[param._name] = next_location;
+        next_location += num_locations;
+      }
+      if (num_ssbo_bindings > 0) {
+        _bindings[param._name] = next_ssbo_binding;
+        next_ssbo_binding += num_ssbo_bindings;
+      }
+#ifdef OPENGLES
+      // For OpenGL ES, we can't specify image bindings after the fact, so we
+      // have to specify them up front.
+      if (num_image_bindings > 0) {
+        //TODO: what if there is a struct with mixed samplers and images?
+        _bindings[param._name] = next_image_binding;
+        next_image_binding += num_image_bindings;
+      }
+#endif
+    }
   }
+
+  GLuint program = 0;
+  if (!_inject_alpha_test) {
+    program = _glgsg->_glCreateProgram();
+    _program = program;
+  }
+
+  // Compile all the modules now, except for the fragment module if we will be
+  // generating a different fragment module per alpha test mode later.
+  bool valid = true;
+  size_t mi = 0;
+  for (Shader::LinkedModule &linked_module : _shader->_modules) {
+    CPT(ShaderModule) module = linked_module._module.get_read_pointer();
+
+    if (!_inject_alpha_test || module->get_stage() != Shader::Stage::FRAGMENT) {
+      GLuint handle = create_shader(program, module, mi, linked_module._consts, RenderAttrib::M_none);
+      if (handle != 0) {
+        _modules.push_back({module->get_stage(), handle});
+
+        if (program != 0) {
+          _glgsg->_glAttachShader(program, handle);
+        }
+      } else {
+        valid = false;
+      }
+    }
+
+    ++mi;
+  }
+
+  // Now compile the individual shaders, unless we loaded them as SPIR-V.
+  // NVIDIA drivers seem to cope better when we compile them all in one go.
+  if (_is_legacy || !_glgsg->_supports_spir_v) {
+    for (Module &module : _modules) {
+      _glgsg->_glCompileShader(module._handle);
+    }
+  }
+
+  if (!valid) {
+    _shader->_error_flag = true;
+  }
+}
+
+/**
+ * Returns true if the shader is "valid", ie, if the compilation was
+ * successful.  The compilation could fail if there is a syntax error in the
+ * shader, or if the current video card isn't shader-capable, or if no shader
+ * languages are compiled into panda.
+ */
+bool CLP(ShaderContext)::
+valid() {
+  if (_shader->get_error_flag()) {
+    return false;
+  }
+  return _program != 0 || _inject_alpha_test;
+}
+
+/**
+ * This function is to be called to enable a new shader.  It also initializes
+ * all of the shader's input parameters.
+ */
+bool CLP(ShaderContext)::
+bind(CLP(GraphicsStateGuardian) *glgsg,
+     RenderAttrib::PandaCompareFunc alpha_test_mode) {
+  _glgsg = glgsg;
+  /*if (!_validated) {
+    _glgsg->_glValidateProgram(_glsl_program);
+    report_program_errors(_glsl_program, false);
+    _validated = true;
+  }*/
+
+  if (!_inject_alpha_test) {
+    alpha_test_mode = RenderAttrib::M_none;
+  }
+
+  GLuint program = _linked_programs[alpha_test_mode];
+  if (program != 0) {
+    if (!_shader->get_error_flag()) {
+      _glgsg->_glUseProgram(program);
+    } else {
+      return false;
+    }
+  } else {
+    if (!compile_for(alpha_test_mode)) {
+      return false;
+    }
+  }
+
+  _alpha_test_mode = alpha_test_mode;
+
+  if (GLCAT.is_spam()) {
+    GLCAT.spam() << "glUseProgram(" << program << "): "
+                 << _shader->get_filename() << " with alpha test "
+                 << alpha_test_mode << "\n";
+  }
+
+  _glgsg->report_my_gl_errors();
+  return true;
+}
+
+/**
+ * This function disables a currently-bound shader.
+ */
+void CLP(ShaderContext)::
+unbind() {
+  if (GLCAT.is_spam()) {
+    GLCAT.spam() << "glUseProgram(0)\n";
+  }
+
+  _glgsg->_glUseProgram(0);
+  _glgsg->report_my_gl_errors();
+}
+
+/**
+ * Compiles the shader for the given alpha test mode.  Also binds it if there
+ * were no errors.
+ */
+bool CLP(ShaderContext)::
+compile_for(RenderAttrib::PandaCompareFunc alpha_test_mode) {
+  nassertr(alpha_test_mode < RenderAttrib::M_always, false);
+
+  if (GLCAT.is_debug()) {
+    GLCAT.debug()
+      << "Compiling shader " << _shader->get_filename()
+      << " with alpha test mode " << alpha_test_mode << "\n";
+  }
+
+  GLuint program = compile_and_link(alpha_test_mode);
+  if (program == 0) {
+    release_resources(_glgsg);
+    _shader->_error_flag = true;
+    return false;
+  }
+  _linked_programs[alpha_test_mode] = program;
+  _alpha_test_ref_locations[alpha_test_mode] = -1;
 
   // Bind the program, so that we can call glUniform1i for the textures.
-  _glgsg->_glUseProgram(_glsl_program);
+  _glgsg->_glUseProgram(program);
 
   // If this is a legacy GLSL shader, we don't have the parameter definitions
   // yet, so we need to perform reflection on the shader.
   SparseArray active_locations;
   if (_is_legacy) {
-    locations.clear();
-    ssbo_bindings.clear();
-
-    reflect_program(active_locations, locations, ssbo_bindings);
+    nassertr(alpha_test_mode == RenderAttrib::M_none, false);
+    reflect_program(program, active_locations);
   }
-  else if (!remap_locations) {
+  else if (!_remap_locations) {
     // We still need to query which uniform locations are actually in use,
     // because the GL driver may have optimized some out.
     GLint num_active_uniforms = 0;
-    glgsg->_glGetProgramInterfaceiv(_glsl_program, GL_UNIFORM, GL_ACTIVE_RESOURCES, &num_active_uniforms);
+    _glgsg->_glGetProgramInterfaceiv(program, GL_UNIFORM, GL_ACTIVE_RESOURCES, &num_active_uniforms);
 
     for (GLint i = 0; i < num_active_uniforms; ++i) {
       GLenum props[2] = {GL_LOCATION, GL_ARRAY_SIZE};
       GLint values[2];
-      glgsg->_glGetProgramResourceiv(_glsl_program, GL_UNIFORM, i, 2, props, 2, nullptr, values);
+      _glgsg->_glGetProgramResourceiv(program, GL_UNIFORM, i, 2, props, 2, nullptr, values);
       GLint location = values[0];
       if (location >= 0) {
         GLint array_size = values[1];
         active_locations.set_range(location, array_size);
       }
     }
+
+    // We reserved location 0 for the alpha test reference value.
+    if (alpha_test_mode != RenderAttrib::M_none && active_locations.get_bit(0) && _inject_alpha_test) {
+      _alpha_test_ref_locations[alpha_test_mode] = 0;
+    }
+  }
+  else if (alpha_test_mode != RenderAttrib::M_none && _inject_alpha_test) {
+    // We couldn't map the alpha ref to 0, ask the driver for the location.
+    _alpha_test_ref_locations[alpha_test_mode] = _glgsg->_glGetUniformLocation(program, "aref");
+
+    if (GLCAT.is_debug()) {
+      GLCAT.debug()
+        << "Injected alpha test reference is bound to location "
+        << _alpha_test_ref_locations[alpha_test_mode] << "\n";
+    }
   }
 
-  _matrix_cache = pvector<LMatrix4>(s->_matrix_cache_desc.size(), LMatrix4::ident_mat());
-  _matrix_cache_deps = s->_matrix_cache_deps;
-
-  _scratch_space_size = 16;
-  for (const Shader::Parameter &param : s->_parameters) {
+  for (const Shader::Parameter &param : _shader->_parameters) {
     if (param._binding == nullptr) {
       continue;
     }
 
-    UniformBlock block;
-    block._dep = param._binding->get_state_dep();
-    block._bindings.push_back({param._binding, 0});
+    int block_index = -1;
+    for (size_t i = 0; i < _uniform_blocks.size(); ++i) {
+      if (_uniform_blocks[i]._bindings[0]._binding == param._binding) {
+        block_index = (int)i;
+        break;
+      }
+    }
+
+    UniformBlock new_block;
+    UniformBlock &block = block_index >= 0 ? _uniform_blocks[block_index] : new_block;
 
     // We chose a location earlier, but if remap_locations was set to true,
     // we have to map this to the actual location chosen by the driver.
     int chosen_location = -1;
     int actual_location = -1;
     {
-      auto it = locations.find(param._name);
-      if (it != locations.end()) {
+      auto it = _locations.find(param._name);
+      if (it != _locations.end()) {
         chosen_location = it->second;
-        if (!remap_locations) {
+        if (!_remap_locations) {
           actual_location = it->second;
         }
       }
     }
 
-    int ssbo_binding = -1;
+    // This could be an image binding or an SSBO binding, but an SSBO can't be
+    // in a struct and an image can't be in an SSBO, so we're fine with only
+    // using a single counter.
+    int binding = -1;
     {
-      auto it = ssbo_bindings.find(param._name);
-      if (it != ssbo_bindings.end()) {
-        ssbo_binding = it->second;
+      auto it = _bindings.find(param._name);
+      if (it != _bindings.end()) {
+        binding = it->second;
       }
     }
 
@@ -157,14 +384,23 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
     std::string name = param._name->get_name();
     char sym_buffer[16];
     sym_buffer[0] = 0;
-    if (remap_locations && chosen_location >= 0) {
+    if (_remap_locations && chosen_location >= 0) {
       sprintf(sym_buffer, "p%d", chosen_location);
     }
-    r_collect_uniforms(param, block, param._type, name.c_str(), sym_buffer,
-                       actual_location, active_locations, resource_index,
-                       ssbo_binding);
 
-    if (!block._matrices.empty() || !block._vectors.empty()) {
+    if (alpha_test_mode >= block._calls.size()) {
+      block._calls.resize(alpha_test_mode + 1);
+    }
+
+    UniformCalls &calls = block._calls[alpha_test_mode];
+    r_collect_uniforms(program, param, calls, param._type, name.c_str(), sym_buffer,
+                       actual_location, active_locations, resource_index,
+                       binding);
+
+    if (block_index < 0 && (!calls._matrices.empty() || !calls._vectors.empty())) {
+      block._dep = param._binding->get_state_dep();
+      block._bindings.push_back({param._binding, 0});
+
       _uniform_data_deps |= block._dep;
       _uniform_blocks.push_back(std::move(block));
 
@@ -193,23 +429,8 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
     _image_units.resize((size_t)_glgsg->_max_image_units);
   }
 
-  // Do we have a p3d_Color attribute?
-  for (auto it = s->_var_spec.begin(); it != s->_var_spec.end(); ++it) {
-    Shader::ShaderVarSpec &spec = *it;
-    if (spec._name == InternalName::get_color()) {
-      _color_attrib_index = spec._id._location;
-      break;
-    }
-  }
-
-  _glgsg->report_my_gl_errors();
-
-  // Restore the active shader.
-  if (_glgsg->_current_shader_context == nullptr) {
-    _glgsg->_glUseProgram(0);
-  } else {
-    _glgsg->_current_shader_context->bind();
-  }
+  //_glgsg->report_my_gl_errors();
+  return true;
 }
 
 /**
@@ -219,20 +440,22 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
  */
 void CLP(ShaderContext)::
 r_count_locations_bindings(const ShaderType *type,
-                           GLint &num_locations, GLint &num_ssbo_bindings) {
+                           GLint &num_locations, GLint &num_ssbo_bindings,
+                           GLint &num_image_bindings) {
 
   if (const ShaderType::Array *array_type = type->as_array()) {
-    GLint element_locs = 0, element_binds = 0;
-    r_count_locations_bindings(array_type->get_element_type(), element_locs, element_binds);
+    GLint element_locs = 0, element_ssbo_binds = 0, element_img_binds = 0;
+    r_count_locations_bindings(array_type->get_element_type(), element_locs, element_ssbo_binds, element_img_binds);
     num_locations += element_locs * array_type->get_num_elements();
-    num_ssbo_bindings += element_binds * array_type->get_num_elements();
+    num_ssbo_bindings += element_ssbo_binds * array_type->get_num_elements();
+    num_image_bindings += element_img_binds * array_type->get_num_elements();
     return;
   }
   if (const ShaderType::Struct *struct_type = type->as_struct()) {
     for (uint32_t i = 0; i < struct_type->get_num_members(); ++i) {
       const ShaderType::Struct::Member &member = struct_type->get_member(i);
 
-      r_count_locations_bindings(member.type, num_locations, num_ssbo_bindings);
+      r_count_locations_bindings(member.type, num_locations, num_ssbo_bindings, num_image_bindings);
     }
     return;
   }
@@ -246,8 +469,13 @@ r_count_locations_bindings(const ShaderType *type,
     return;
   }
 
-  if (type->as_sampled_image() != nullptr ||
-      type->as_image() != nullptr) {
+  if (type->as_image() != nullptr) {
+    ++num_locations;
+    ++num_image_bindings;
+    return;
+  }
+
+  if (type->as_sampled_image() != nullptr || type == ShaderType::void_type) {
     ++num_locations;
     return;
   }
@@ -265,10 +493,11 @@ r_count_locations_bindings(const ShaderType *type,
  * Also finds all resources and adds them to the respective arrays.
  */
 void CLP(ShaderContext)::
-r_collect_uniforms(const Shader::Parameter &param, UniformBlock &block,
+r_collect_uniforms(GLuint program,
+                   const Shader::Parameter &param, UniformCalls &calls,
                    const ShaderType *type, const char *name, const char *sym,
                    int &cur_location, const SparseArray &active_locations,
-                   int &resource_index, int &ssbo_binding, size_t offset) {
+                   int &resource_index, int &cur_binding, size_t offset) {
 
   ShaderType::ScalarType scalar_type;
   uint32_t num_elements;
@@ -277,7 +506,7 @@ r_collect_uniforms(const Shader::Parameter &param, UniformBlock &block,
   if (type->as_scalar_type(scalar_type, num_elements, num_rows, num_cols)) {
     int location = cur_location;
     if (location < 0) {
-      location = _glgsg->_glGetUniformLocation(_glsl_program, _is_legacy ? name : sym);
+      location = _glgsg->_glGetUniformLocation(program, _is_legacy ? name : sym);
       if (location < 0) {
         return;
       }
@@ -293,7 +522,7 @@ r_collect_uniforms(const Shader::Parameter &param, UniformBlock &block,
         << " is bound to location " << location << "\n";
     }
 
-    UniformBlock::Call call;
+    UniformCall call;
     call._location = location;
     call._count = num_elements;
     call._offset = offset;
@@ -312,7 +541,7 @@ r_collect_uniforms(const Shader::Parameter &param, UniformBlock &block,
           call._func = (void *)_glgsg->_glUniformMatrix4fv;
         }
       }
-      block._matrices.push_back(std::move(call));
+      calls._matrices.push_back(std::move(call));
     } else {
       switch (scalar_type) {
       case ShaderType::ST_float:
@@ -377,7 +606,7 @@ r_collect_uniforms(const Shader::Parameter &param, UniformBlock &block,
         }
         break;
       }
-      block._vectors.push_back(std::move(call));
+      calls._vectors.push_back(std::move(call));
     }
     return;
   }
@@ -391,8 +620,8 @@ r_collect_uniforms(const Shader::Parameter &param, UniformBlock &block,
     for (uint32_t i = 0; i < array_type->get_num_elements(); ++i) {
       sprintf(name_buffer, "%s[%u]", name, i);
       sprintf(sym_buffer, "%s[%u]", sym, i);
-      r_collect_uniforms(param, block, element_type, name_buffer, sym_buffer,
-                         cur_location, active_locations, resource_index, ssbo_binding,
+      r_collect_uniforms(program, param, calls, element_type, name_buffer, sym_buffer,
+                         cur_location, active_locations, resource_index, cur_binding,
                          offset);
       offset += stride;
     }
@@ -407,44 +636,51 @@ r_collect_uniforms(const Shader::Parameter &param, UniformBlock &block,
       std::string qualname(name);
       qualname += "." + member.name;
 
-      // SPIRV-Cross names struct members _m0, _m1, etc. in declaration order.
-      sprintf(sym_buffer, "%s._m%u", sym, i);
-      r_collect_uniforms(param, block, member.type, qualname.c_str(), sym_buffer,
-                         cur_location, active_locations, resource_index, ssbo_binding,
+      // We have named struct members m0, m1, etc. in declaration order.
+      sprintf(sym_buffer, "%s.m%u", sym, i);
+      r_collect_uniforms(program, param, calls, member.type, qualname.c_str(), sym_buffer,
+                         cur_location, active_locations, resource_index, cur_binding,
                          offset + member.offset);
     }
     return;
   }
+  if (type == ShaderType::void_type) {
+    // We use this as a placeholder to advance the location by one.
+    ++cur_location;
+  }
 
   if (type->as_storage_buffer() != nullptr) {
     // These are an exception, they do not have locations but bindings.
-    GLint binding = ssbo_binding;
+    GLint binding = cur_binding;
     if (binding < 0) {
       // We have to look this one up.
-      GLuint index = _glgsg->_glGetProgramResourceIndex(_glsl_program, GL_SHADER_STORAGE_BLOCK, name);
+      GLuint index = _glgsg->_glGetProgramResourceIndex(program, GL_SHADER_STORAGE_BLOCK, name);
       const GLenum props[] = {GL_BUFFER_BINDING};
-      _glgsg->_glGetProgramResourceiv(_glsl_program, GL_SHADER_STORAGE_BLOCK, index, 1, props, 1, nullptr, &binding);
+      _glgsg->_glGetProgramResourceiv(program, GL_SHADER_STORAGE_BLOCK, index, 1, props, 1, nullptr, &binding);
     } else {
-      ++ssbo_binding;
+      ++cur_binding;
     }
 
-    if (GLCAT.is_debug()) {
-      GLCAT.debug()
-        << "Storage block " << name << " with type " << *type
-        << " is bound at binding " << binding << "\n";
-    }
+    if ((_storage_block_bindings & (1 << binding)) == 0) {
+      if (GLCAT.is_debug()) {
+        GLCAT.debug()
+          << "Storage block " << name << " with type " << *type
+          << " is bound at binding " << binding << "\n";
+      }
 
-    StorageBlock block;
-    block._binding = param._binding;
-    block._resource_id = param._binding->get_resource_id(resource_index++, type);
-    block._binding_index = binding++;
-    _storage_blocks.push_back(std::move(block));
+      StorageBlock block;
+      block._binding = param._binding;
+      block._resource_id = param._binding->get_resource_id(resource_index++, type);
+      block._binding_index = binding;
+      _storage_blocks.push_back(std::move(block));
+      _storage_block_bindings |= (1 << binding);
+    }
     return;
   }
 
   int location = cur_location;
   if (location < 0) {
-    location = _glgsg->_glGetUniformLocation(_glsl_program, _is_legacy ? name : sym);
+    location = _glgsg->_glGetUniformLocation(program, _is_legacy ? name : sym);
     if (location < 0) {
       return;
     }
@@ -467,18 +703,65 @@ r_collect_uniforms(const Shader::Parameter &param, UniformBlock &block,
     unit._resource_id = param._binding->get_resource_id(resource_index++, type);
     unit._target = _glgsg->get_texture_target(sampler->get_texture_type());
 
-    _glgsg->_glUniform1i(location, (GLint)_texture_units.size());
-    _texture_units.push_back(std::move(unit));
+    // Check if we already have a unit with these properties.  If so, we alias
+    // the binding.  This will also prevent duplicating texture units when the
+    // shader is compiled multiple times, for different alpha test modes.
+    GLint binding = -1;
+    for (size_t i = 0; i < _texture_units.size(); ++i) {
+      const TextureUnit &other_unit = _texture_units[i];
+      if (other_unit._binding == unit._binding &&
+          other_unit._resource_id == unit._resource_id &&
+          other_unit._target == unit._target) {
+        binding = (GLint)i;
+        break;
+      }
+    }
+
+    if (binding < 0) {
+      binding = (GLint)_texture_units.size();
+      _texture_units.push_back(std::move(unit));
+    }
+    _glgsg->_glUniform1i(location, binding);
   }
   else if (const ShaderType::Image *image = type->as_image()) {
+    // In OpenGL ES, we can't specify a binding index after the fact.
+    // We try to specify it up front, but if we couldn't, we have to rely on
+    // the driver (or the user) providing a unique one.
+    GLint binding = -1;
+#ifdef OPENGLES
+    glGetUniformiv(program, location, &binding);
+    if (binding < 0) {
+      return;
+    }
+    if ((size_t)binding >= _image_units.size()) {
+      _image_units.resize(binding + 1);
+    }
+    ImageUnit &unit = _image_units[binding];
+#else
     ImageUnit unit;
+#endif
     unit._binding = param._binding;
     unit._resource_id = param._binding->get_resource_id(resource_index++, type);
     unit._access = image->get_access();
     unit._written = false;
 
-    _glgsg->_glUniform1i(location, (GLint)_image_units.size());
-    _image_units.push_back(std::move(unit));
+#ifndef OPENGLES
+    // See note above in the SampledImage case.
+    for (size_t i = 0; i < _image_units.size(); ++i) {
+      const ImageUnit &other_unit = _image_units[i];
+      if (other_unit._binding == unit._binding &&
+          other_unit._resource_id == unit._resource_id &&
+          other_unit._access == unit._access) {
+        binding = (GLint)i;
+        break;
+      }
+    }
+    if (binding < 0) {
+      binding = (GLint)_image_units.size();
+      _image_units.push_back(std::move(unit));
+    }
+    _glgsg->_glUniform1i(location, binding);
+#endif
   }
   else if (type->as_resource()) {
     resource_index++;
@@ -493,41 +776,41 @@ r_collect_uniforms(const Shader::Parameter &param, UniformBlock &block,
  * will have to be queried later.
  */
 void CLP(ShaderContext)::
-reflect_program(SparseArray &active_locations, LocationMap &locations, LocationMap &ssbo_bindings) {
+reflect_program(GLuint program, SparseArray &active_locations) {
   // Process the vertex attributes first.
   GLint param_count = 0;
   GLint name_buflen = 0;
-  _glgsg->_glGetProgramiv(_glsl_program, GL_ACTIVE_ATTRIBUTES, &param_count);
-  _glgsg->_glGetProgramiv(_glsl_program, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &name_buflen);
+  _glgsg->_glGetProgramiv(program, GL_ACTIVE_ATTRIBUTES, &param_count);
+  _glgsg->_glGetProgramiv(program, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &name_buflen);
   name_buflen = max(64, name_buflen);
   char *name_buffer = (char *)alloca(name_buflen);
 
   _shader->_var_spec.clear();
   for (int i = 0; i < param_count; ++i) {
-    reflect_attribute(i, name_buffer, name_buflen);
+    reflect_attribute(program, i, name_buffer, name_buflen);
   }
 
   /*if (gl_fixed_vertex_attrib_locations) {
     // Relink the shader for glBindAttribLocation to take effect.
-    _glgsg->_glLinkProgram(_glsl_program);
+    _glgsg->_glLinkProgram(program);
   }*/
 
   // Create a buffer the size of the longest uniform name.  Note that Intel HD
   // drivers report values that are too low.
   name_buflen = 0;
-  _glgsg->_glGetProgramiv(_glsl_program, GL_ACTIVE_UNIFORM_MAX_LENGTH, &name_buflen);
+  _glgsg->_glGetProgramiv(program, GL_ACTIVE_UNIFORM_MAX_LENGTH, &name_buflen);
   name_buflen = max(64, name_buflen);
   name_buffer = (char *)alloca(name_buflen);
 
   // Get the used uniform blocks.
   if (_glgsg->_supports_uniform_buffers) {
     GLint block_count = 0, block_maxlength = 0;
-    _glgsg->_glGetProgramiv(_glsl_program, GL_ACTIVE_UNIFORM_BLOCKS, &block_count);
+    _glgsg->_glGetProgramiv(program, GL_ACTIVE_UNIFORM_BLOCKS, &block_count);
 
     // Intel HD drivers report GL_INVALID_ENUM here.  They reportedly fixed
     // it, but I don't know in which driver version the fix is.
     if (_glgsg->_gl_vendor != "Intel") {
-      _glgsg->_glGetProgramiv(_glsl_program, GL_ACTIVE_UNIFORM_BLOCK_MAX_NAME_LENGTH, &block_maxlength);
+      _glgsg->_glGetProgramiv(program, GL_ACTIVE_UNIFORM_BLOCK_MAX_NAME_LENGTH, &block_maxlength);
       block_maxlength = max(64, block_maxlength);
     } else {
       block_maxlength = 1024;
@@ -537,9 +820,9 @@ reflect_program(SparseArray &active_locations, LocationMap &locations, LocationM
 
     for (int i = 0; i < block_count; ++i) {
       block_name_cstr[0] = 0;
-      _glgsg->_glGetActiveUniformBlockName(_glsl_program, i, block_maxlength, nullptr, block_name_cstr);
+      _glgsg->_glGetActiveUniformBlockName(program, i, block_maxlength, nullptr, block_name_cstr);
 
-      reflect_uniform_block(i, block_name_cstr, name_buffer, name_buflen);
+      reflect_uniform_block(program, i, block_name_cstr, name_buffer, name_buflen);
     }
   }
 
@@ -550,8 +833,8 @@ reflect_program(SparseArray &active_locations, LocationMap &locations, LocationM
   if (_glgsg->_supports_shader_buffers) {
     GLint block_count = 0, block_maxlength = 0;
 
-    _glgsg->_glGetProgramInterfaceiv(_glsl_program, GL_SHADER_STORAGE_BLOCK, GL_ACTIVE_RESOURCES, &block_count);
-    _glgsg->_glGetProgramInterfaceiv(_glsl_program, GL_SHADER_STORAGE_BLOCK, GL_MAX_NAME_LENGTH, &block_maxlength);
+    _glgsg->_glGetProgramInterfaceiv(program, GL_SHADER_STORAGE_BLOCK, GL_ACTIVE_RESOURCES, &block_count);
+    _glgsg->_glGetProgramInterfaceiv(program, GL_SHADER_STORAGE_BLOCK, GL_MAX_NAME_LENGTH, &block_maxlength);
 
     block_maxlength = max(64, block_maxlength);
     char *block_name_cstr = (char *)alloca(block_maxlength);
@@ -570,17 +853,17 @@ reflect_program(SparseArray &active_locations, LocationMap &locations, LocationM
 
     for (int i = 0; i < block_count; ++i) {
       block_name_cstr[0] = 0;
-      _glgsg->_glGetProgramResourceName(_glsl_program, GL_SHADER_STORAGE_BLOCK, i, block_maxlength, nullptr, block_name_cstr);
+      _glgsg->_glGetProgramResourceName(program, GL_SHADER_STORAGE_BLOCK, i, block_maxlength, nullptr, block_name_cstr);
 
       const GLenum props[] = {GL_BUFFER_BINDING, GL_BUFFER_DATA_SIZE};
       GLint values[2];
-      _glgsg->_glGetProgramResourceiv(_glsl_program, GL_SHADER_STORAGE_BLOCK, i, 2, props, 2, nullptr, values);
+      _glgsg->_glGetProgramResourceiv(program, GL_SHADER_STORAGE_BLOCK, i, 2, props, 2, nullptr, values);
 
 #ifndef OPENGLES
       if (bindings.get_bit(values[0])) {
         // Binding index already in use, assign a different one.
         values[0] = bindings.get_lowest_off_bit();
-        _glgsg->_glShaderStorageBlockBinding(_glsl_program, i, values[0]);
+        _glgsg->_glShaderStorageBlockBinding(program, i, values[0]);
       }
       bindings.set_bit(values[0]);
 #endif
@@ -617,7 +900,7 @@ reflect_program(SparseArray &active_locations, LocationMap &locations, LocationM
         // Simple case.  We can already jot down the binding, so we don't have
         // to query it later.
         CPT(InternalName) name = InternalName::make(std::string(block_name_cstr));
-        ssbo_bindings[name] = values[0];
+        _bindings[name] = values[0];
         ssbos[std::move(name)];
       }
     }
@@ -642,7 +925,7 @@ reflect_program(SparseArray &active_locations, LocationMap &locations, LocationM
   // Analyze the uniforms.  All the structs and arrays thereof are unrolled,
   // so we need to spend some effort to work out the original structures.
   param_count = 0;
-  _glgsg->_glGetProgramiv(_glsl_program, GL_ACTIVE_UNIFORMS, &param_count);
+  _glgsg->_glGetProgramiv(program, GL_ACTIVE_UNIFORMS, &param_count);
 
   // First gather the uniforms and sort them by location.
   struct Uniform {
@@ -657,8 +940,8 @@ reflect_program(SparseArray &active_locations, LocationMap &locations, LocationM
     GLint param_size;
     GLenum param_type;
     name_buffer[0] = 0;
-    _glgsg->_glGetActiveUniform(_glsl_program, i, name_buflen, nullptr, &param_size, &param_type, name_buffer);
-    GLint loc = _glgsg->_glGetUniformLocation(_glsl_program, name_buffer);
+    _glgsg->_glGetActiveUniform(program, i, name_buflen, nullptr, &param_size, &param_type, name_buffer);
+    GLint loc = _glgsg->_glGetUniformLocation(program, name_buffer);
 
     /*if (GLCAT.is_debug()) {
       GLCAT.debug()
@@ -692,9 +975,16 @@ reflect_program(SparseArray &active_locations, LocationMap &locations, LocationM
 
   struct StackItem {
     std::string name;
-    GLint loc;
     int num_elements; // 0 means not an array
     ShaderType::Struct type;
+
+    const ShaderType *make_type() const {
+      const ShaderType *new_type = ShaderType::register_type(std::move(type));
+      if (num_elements > 0) {
+        new_type = ShaderType::register_type(ShaderType::Array(new_type, num_elements));
+      }
+      return new_type;
+    }
   };
 
   pdeque<StackItem> struct_stack;
@@ -717,48 +1007,35 @@ reflect_program(SparseArray &active_locations, LocationMap &locations, LocationM
       }
     }
 
+    // Count the number of parts in the name that match the current stack.
     size_t i = 0;
-    bool skip = false;
     while (i < struct_stack.size() && i < parts.size() - 1 &&
            struct_stack[i].name == parts[i]) {
       if (sizes[i] > struct_stack[i].num_elements) {
         struct_stack[i].num_elements = sizes[i];
       }
-      if (sizes[i] > 1) {
-        // Ignore all but the first struct element for determining the type.
-        skip = true;
-      }
       ++i;
     }
-    if (skip) {
-      continue;
-    }
 
+    // Pop everything else from the end of the stack.
     while (i < struct_stack.size()) {
       StackItem item = std::move(struct_stack.back());
       struct_stack.pop_back();
-      const ShaderType *type = ShaderType::register_type(std::move(item.type));
-      if (item.num_elements > 0) {
-        type = ShaderType::register_type(ShaderType::Array(type, item.num_elements));
-      }
+      const ShaderType *type = item.make_type();
 
       if (struct_stack.empty()) {
-        // Add struct as top-level
+        // Don't record location, the driver may omit members of individual
+        // structs in a struct array, we'll re-query them later
         CPT(InternalName) name = InternalName::make(item.name);
-        locations[name] = item.loc;
-        _shader->add_parameter(std::move(name), type, item.loc);
-      }
-      else if (struct_stack.back().num_elements <= 1) {
+        _shader->add_parameter(std::move(name), type);
+      } else {
         // Add as nested struct member
-        while (item.loc > struct_stack.back().loc + struct_stack.back().type.get_num_parameter_locations()) {
-          // Add a dummy member
-          struct_stack.back().type.add_member(ShaderType::void_type, "");
-        }
-        struct_stack.back().type.add_member(type, item.name);
+        struct_stack.back().type.merge_member_by_name(item.name, type);
       }
     }
+    // Push the remaining parts (except the last) onto the stack.
     while (struct_stack.size() < parts.size() - 1) {
-      struct_stack.push_back({parts[struct_stack.size()], loc, sizes[struct_stack.size()], {}});
+      struct_stack.push_back({parts[struct_stack.size()], sizes[struct_stack.size()], {}});
     }
 
     const ShaderType *type = get_param_type(param.type);
@@ -767,46 +1044,38 @@ reflect_program(SparseArray &active_locations, LocationMap &locations, LocationM
     }
 
     if (struct_stack.empty()) {
-      // Add as top-level.
+      // Add as top-level.  Recording the location here saves a
+      // glGetUniformLocation call later on.
       assert(parts.size() == 1);
       CPT(InternalName) name = InternalName::make(parts[0]);
-      locations[name] = loc;
+      _locations[name] = loc;
       _shader->add_parameter(std::move(name), type, loc);
-    }
-    else if (struct_stack.back().num_elements <= 1) {
+    } else {
       // Add as struct member
       assert(parts.size() > 1);
-      while (loc > struct_stack.back().loc + struct_stack.back().type.get_num_parameter_locations()) {
-        // Add a dummy member
-        struct_stack.back().type.add_member(ShaderType::void_type, "");
-      }
-      struct_stack.back().type.add_member(type, parts.back());
+      struct_stack.back().type.merge_member_by_name(parts.back(), type);
     }
   }
 
   while (!struct_stack.empty()) {
     StackItem item = std::move(struct_stack.back());
     struct_stack.pop_back();
-    const ShaderType *type = ShaderType::register_type(std::move(item.type));
-    if (item.num_elements > 0) {
-      type = ShaderType::register_type(ShaderType::Array(type, item.num_elements));
-    }
+    const ShaderType *type = item.make_type();
 
     if (struct_stack.empty()) {
-      // Add struct as top-level
+      // Add struct as top-level.
+      // Don't record location, the driver may omit members of individual
+      // structs in a struct array, we'll re-query them later
       CPT(InternalName) name = InternalName::make(item.name);
-      locations[name] = item.loc;
-      _shader->add_parameter(std::move(name), type, item.loc);
-    }
-    else if (struct_stack.back().num_elements <= 1) {
+      _shader->add_parameter(std::move(name), type);
+    } else {
       // Add as nested struct member
-      while (item.loc > struct_stack.back().loc + struct_stack.back().type.get_num_parameter_locations()) {
-        // Add a dummy member
-        struct_stack.back().type.add_member(ShaderType::void_type, "");
-      }
-      struct_stack.back().type.add_member(type, item.name);
+      struct_stack.back().type.merge_member_by_name(item.name, type);
     }
   }
+
+  _matrix_cache = pvector<LMatrix4>(_shader->_matrix_cache_desc.size(), LMatrix4::ident_mat());
+  _matrix_cache_deps = _shader->_matrix_cache_deps;
 }
 
 /**
@@ -814,17 +1083,17 @@ reflect_program(SparseArray &active_locations, LocationMap &locations, LocationM
  * remember.
  */
 void CLP(ShaderContext)::
-reflect_attribute(int i, char *name_buffer, GLsizei name_buflen) {
+reflect_attribute(GLuint program, int i, char *name_buffer, GLsizei name_buflen) {
   GLint param_size;
   GLenum param_type;
 
   // Get the name, size, and type of this attribute.
   name_buffer[0] = 0;
-  _glgsg->_glGetActiveAttrib(_glsl_program, i, name_buflen, nullptr,
+  _glgsg->_glGetActiveAttrib(program, i, name_buflen, nullptr,
                              &param_size, &param_type, name_buffer);
 
   // Get the attrib location.
-  GLint p = _glgsg->_glGetAttribLocation(_glsl_program, name_buffer);
+  GLint p = _glgsg->_glGetAttribLocation(program, name_buffer);
 
   if (GLCAT.is_debug()) {
     GLCAT.debug()
@@ -856,13 +1125,13 @@ reflect_attribute(int i, char *name_buffer, GLsizei name_buflen) {
  * Analyzes the uniform block and stores its format.
  */
 void CLP(ShaderContext)::
-reflect_uniform_block(int i, const char *name, char *name_buffer, GLsizei name_buflen) {
+reflect_uniform_block(GLuint program, int i, const char *name, char *name_buffer, GLsizei name_buflen) {
  // GLint offset = 0;
 
   GLint data_size = 0;
   GLint param_count = 0;
-  _glgsg->_glGetActiveUniformBlockiv(_glsl_program, i, GL_UNIFORM_BLOCK_DATA_SIZE, &data_size);
-  _glgsg->_glGetActiveUniformBlockiv(_glsl_program, i, GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS, &param_count);
+  _glgsg->_glGetActiveUniformBlockiv(program, i, GL_UNIFORM_BLOCK_DATA_SIZE, &data_size);
+  _glgsg->_glGetActiveUniformBlockiv(program, i, GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS, &param_count);
 
   if (param_count <= 0) {
     return;
@@ -873,21 +1142,21 @@ reflect_uniform_block(int i, const char *name, char *name_buffer, GLsizei name_b
 
   // Get an array containing the indices of all the uniforms in this block.
   GLuint *indices = (GLuint *)alloca(param_count * sizeof(GLint));
-  _glgsg->_glGetActiveUniformBlockiv(_glsl_program, i, GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES, (GLint *)indices);
+  _glgsg->_glGetActiveUniformBlockiv(program, i, GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES, (GLint *)indices);
 
   // Acquire information about the way the uniforms in this block are packed.
   GLint *offsets = (GLint *)alloca(param_count * sizeof(GLint));
   GLint *mstrides = (GLint *)alloca(param_count * sizeof(GLint));
   GLint *astrides = (GLint *)alloca(param_count * sizeof(GLint));
-  _glgsg->_glGetActiveUniformsiv(_glsl_program, param_count, indices, GL_UNIFORM_OFFSET, offsets);
-  _glgsg->_glGetActiveUniformsiv(_glsl_program, param_count, indices, GL_UNIFORM_MATRIX_STRIDE, mstrides);
-  _glgsg->_glGetActiveUniformsiv(_glsl_program, param_count, indices, GL_UNIFORM_ARRAY_STRIDE, astrides);
+  _glgsg->_glGetActiveUniformsiv(program, param_count, indices, GL_UNIFORM_OFFSET, offsets);
+  _glgsg->_glGetActiveUniformsiv(program, param_count, indices, GL_UNIFORM_MATRIX_STRIDE, mstrides);
+  _glgsg->_glGetActiveUniformsiv(program, param_count, indices, GL_UNIFORM_ARRAY_STRIDE, astrides);
 
   for (int ui = 0; ui < param_count; ++ui) {
     name_buffer[0] = 0;
     GLint param_size;
     GLenum param_type;
-    _glgsg->_glGetActiveUniform(_glsl_program, indices[ui], name_buflen, nullptr, &param_size, &param_type, name_buffer);
+    _glgsg->_glGetActiveUniform(program, indices[ui], name_buflen, nullptr, &param_size, &param_type, name_buffer);
 
     // Strip off [0] suffix that some drivers append to arrays.
     size_t size = strlen(name_buffer);
@@ -1442,76 +1711,27 @@ CLP(ShaderContext)::
  * Cg contexts).
  */
 void CLP(ShaderContext)::
-release_resources() {
-  if (!_glgsg) {
-    return;
+release_resources(CLP(GraphicsStateGuardian) *glgsg) {
+  if (_program != 0) {
+    glgsg->_glDeleteProgram(_program);
+    _program = 0;
   }
-  if (_glsl_program != 0) {
-    for (Module &module : _modules) {
-      _glgsg->_glDetachShader(_glsl_program, module._handle);
+  if (_inject_alpha_test) {
+    for (int i = 0; i < RenderAttrib::M_always; ++i) {
+      if (_linked_programs[i] != 0) {
+        glgsg->_glDeleteProgram(_linked_programs[i]);
+        _linked_programs[i] = 0;
+      }
     }
-    _glgsg->_glDeleteProgram(_glsl_program);
-    _glsl_program = 0;
   }
 
   for (Module &module : _modules) {
-    _glgsg->_glDeleteShader(module._handle);
+    glgsg->_glDeleteShader(module._handle);
   }
 
   _modules.clear();
 
-  _glgsg->report_my_gl_errors();
-}
-
-/**
- * Returns true if the shader is "valid", ie, if the compilation was
- * successful.  The compilation could fail if there is a syntax error in the
- * shader, or if the current video card isn't shader-capable, or if no shader
- * languages are compiled into panda.
- */
-bool CLP(ShaderContext)::
-valid() {
-  if (_shader->get_error_flag()) {
-    return false;
-  }
-  return (_glsl_program != 0);
-}
-
-/**
- * This function is to be called to enable a new shader.  It also initializes
- * all of the shader's input parameters.
- */
-void CLP(ShaderContext)::
-bind() {
-  if (!_validated) {
-    _glgsg->_glValidateProgram(_glsl_program);
-    report_program_errors(_glsl_program, false);
-    _validated = true;
-  }
-
-  if (!_shader->get_error_flag()) {
-    _glgsg->_glUseProgram(_glsl_program);
-  }
-
-  if (GLCAT.is_spam()) {
-    GLCAT.spam() << "glUseProgram(" << _glsl_program << "): "
-                 << _shader->get_filename() << "\n";
-  }
-
-  _glgsg->report_my_gl_errors();
-}
-
-/**
- * This function disables a currently-bound shader.
- */
-void CLP(ShaderContext)::
-unbind() {
-  if (GLCAT.is_spam()) {
-    GLCAT.spam() << "glUseProgram(0)\n";
-  }
-
-  _glgsg->_glUseProgram(0);
-  _glgsg->report_my_gl_errors();
+  glgsg->report_my_gl_errors();
 }
 
 /**
@@ -1548,8 +1768,25 @@ set_state_and_transform(const RenderState *target_rs,
     _state_rs = target_rs;
     target_rs->get_attrib_def(_color_attrib);
   }
-  else if (state_rs != target_rs) {
+  else if (state_rs == target_rs) {
+    // State is the same from last time.
+  }
+  else if (_inject_alpha_test &&
+           target_rs->get_alpha_test_mode() != _alpha_test_mode) {
+    // Alpha test mode has changed, bind a different shader and respecify all
+    // data.
+    bind(_glgsg, target_rs->get_alpha_test_mode());
+    altered = _uniform_data_deps | Shader::D_alpha_test;
+    _state_rs = target_rs;
+  }
+  else {
     // The state has changed since last time.
+    if (_inject_alpha_test) {
+      if (state_rs->get_attrib(AlphaTestAttrib::get_class_slot()) !=
+          target_rs->get_attrib(AlphaTestAttrib::get_class_slot())) {
+        altered |= Shader::D_alpha_test;
+      }
+    }
     if (_color_attrib != target_rs->get_attrib(ColorAttrib::get_class_slot())) {
       altered |= Shader::D_color;
       target_rs->get_attrib_def(_color_attrib);
@@ -1649,13 +1886,23 @@ issue_parameters(int altered) {
         binding._binding->fetch_data(state, scratch + binding._offset, true);
       }
 
-      for (const UniformBlock::Call &call : block._matrices) {
+      const UniformCalls &calls = block._calls[_alpha_test_mode];
+      for (const UniformCall &call : calls._matrices) {
         ((PFNGLUNIFORMMATRIX4FVPROC)call._func)(call._location, call._count, GL_FALSE, (const GLfloat *)(scratch + call._offset));
       }
 
-      for (const UniformBlock::Call &call : block._vectors) {
+      for (const UniformCall &call : calls._vectors) {
         ((PFNGLUNIFORM4FVPROC)call._func)(call._location, call._count, (const GLfloat *)(scratch + call._offset));
       }
+    }
+  }
+
+  if (altered & Shader::D_alpha_test) {
+    GLint aref_loc = _alpha_test_ref_locations[_alpha_test_mode];
+    if (aref_loc >= 0) {
+      const AlphaTestAttrib *alpha_test;
+      _state_rs->get_attrib_def(alpha_test);
+      _glgsg->_glUniform1f(aref_loc, alpha_test->get_reference_alpha());
     }
   }
 
@@ -1667,12 +1914,11 @@ issue_parameters(int altered) {
  */
 void CLP(ShaderContext)::
 disable_shader_vertex_arrays() {
-  if (_glsl_program == 0) {
-    return;
-  }
+  //if (_glsl_program == 0) {
+  //  return;
+  //}
 
-  for (size_t i = 0; i < _shader->_var_spec.size(); ++i) {
-    const Shader::ShaderVarSpec &bind = _shader->_var_spec[i];
+  for (const Shader::ShaderVarSpec &bind : _shader->_var_spec) {
     GLint p = bind._id._location;
 
     for (int i = 0; i < bind._elements; ++i) {
@@ -1690,9 +1936,9 @@ disable_shader_vertex_arrays() {
  */
 bool CLP(ShaderContext)::
 update_shader_vertex_arrays(ShaderContext *prev, bool force) {
-  if (_glsl_program == 0) {
-    return true;
-  }
+  //if (_glsl_program == 0) {
+  //  return true;
+  //}
 
   // Get the active ColorAttrib.  We'll need it to determine how to apply
   // vertex colors.
@@ -1883,9 +2129,9 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
  */
 void CLP(ShaderContext)::
 disable_shader_texture_bindings() {
-  if (_glsl_program == 0) {
-    return;
-  }
+  //if (_glsl_program == 0) {
+  //  return;
+  //}
 
   DO_PSTATS_STUFF(_glgsg->_texture_state_pcollector.add_level(1));
 
@@ -1952,9 +2198,9 @@ void CLP(ShaderContext)::
 update_shader_texture_bindings(ShaderContext *prev) {
   // if (prev) { prev->disable_shader_texture_bindings(); }
 
-  if (_glsl_program == 0) {
-    return;
-  }
+  //if (_glsl_program == 0) {
+  //  return;
+  //}
 
 #ifndef OPENGLES
   GLbitfield barriers = 0;
@@ -1970,6 +2216,10 @@ update_shader_texture_bindings(ShaderContext *prev) {
   if (num_image_units > 0) {
     for (int i = 0; i < num_image_units; ++i) {
       ImageUnit &unit = _image_units[i];
+      if (unit._binding == nullptr) {
+        // There may be gaps in the binding set.
+        continue;
+      }
 
       ShaderType::Access access = ShaderType::Access::READ_WRITE;
       int z = -1;
@@ -2051,8 +2301,8 @@ update_shader_texture_bindings(ShaderContext *prev) {
           break;
         }
 
-        _glgsg->_glBindImageTexture(i, gl_tex, bind_level, layered, bind_layer,
-                                    gl_access, gtc->_internal_format);
+        _glgsg->_glBindImageTexture(i, gl_tex, bind_level, layered,
+                                    bind_layer, gl_access, gtc->_internal_format);
       }
     }
   }
@@ -2183,29 +2433,30 @@ update_shader_buffer_bindings(ShaderContext *prev) {
  * This subroutine prints the infolog for a shader.
  */
 void CLP(ShaderContext)::
-report_shader_errors(const Module &module, bool fatal) {
+report_shader_errors(GLuint handle, Shader::Stage stage, bool fatal) {
   char *info_log;
   GLint length = 0;
   GLint num_chars  = 0;
 
-  _glgsg->_glGetShaderiv(module._handle, GL_INFO_LOG_LENGTH, &length);
+  _glgsg->_glGetShaderiv(handle, GL_INFO_LOG_LENGTH, &length);
 
   if (length <= 1) {
     return;
   }
 
   info_log = (char *) alloca(length);
-  _glgsg->_glGetShaderInfoLog(module._handle, length, &num_chars, info_log);
+  _glgsg->_glGetShaderInfoLog(handle, length, &num_chars, info_log);
   if (strcmp(info_log, "Success.\n") == 0 ||
       strcmp(info_log, "No errors.\n") == 0) {
     return;
   }
 
-  if (!module._module->is_of_type(ShaderModuleGlsl::get_class_type())) {
+  CPT(ShaderModule) module = _shader->get_module(stage);
+  if (!module->is_of_type(ShaderModuleGlsl::get_class_type())) {
     GLCAT.error(false) << info_log;
     return;
   }
-  const ShaderModuleGlsl *glsl_module = (const ShaderModuleGlsl *)module._module;
+  const ShaderModuleGlsl *glsl_module = (const ShaderModuleGlsl *)module.p();
 
   // Parse the errors so that we can substitute in actual file locations
   // instead of source indices.
@@ -2316,12 +2567,13 @@ report_program_errors(GLuint program, bool fatal) {
 }
 
 /**
- * Compiles the given ShaderModuleGlsl and attaches it to the program.
+ * Compiles the given ShaderModule, returning the handle.
+ * The program argument only needs to be passed for fragment modules.
  */
-bool CLP(ShaderContext)::
-attach_shader(const ShaderModule *module, Shader::ModuleSpecConstants &consts,
-              const LocationMap &locations, bool &remap_locations,
-              const LocationMap &ssbo_bindings) {
+GLuint CLP(ShaderContext)::
+create_shader(GLuint program, const ShaderModule *module, size_t mi,
+              const Shader::ModuleSpecConstants &consts,
+              RenderAttrib::PandaCompareFunc alpha_test_mode) {
   ShaderModule::Stage stage = module->get_stage();
 
   GLuint handle = 0;
@@ -2361,7 +2613,7 @@ attach_shader(const ShaderModule *module, Shader::ModuleSpecConstants &consts,
     GLCAT.error()
       << "Could not create a GLSL " << stage << " shader.\n";
     _glgsg->report_my_gl_errors();
-    return false;
+    return 0;
   }
 
   if (_glgsg->_use_object_labels) {
@@ -2369,27 +2621,26 @@ attach_shader(const ShaderModule *module, Shader::ModuleSpecConstants &consts,
     _glgsg->_glObjectLabel(GL_SHADER, handle, name.size(), name.data());
   }
 
-  bool needs_compile = false;
   if (module->is_of_type(ShaderModuleSpirV::get_class_type())) {
     ShaderModuleSpirV *spv = (ShaderModuleSpirV *)module;
 
     pmap<uint32_t, int> id_to_location;
-    pvector<uint32_t> ssbo_binding_ids;
-    for (size_t pi = 0; pi < module->get_num_parameters(); ++pi) {
-      const ShaderModule::Variable &var = module->get_parameter(pi);
+    pvector<uint32_t> binding_ids;
+    for (size_t pi = 0; pi < spv->get_num_parameters(); ++pi) {
+      const ShaderModule::Variable &var = spv->get_parameter(pi);
       {
-        auto it = locations.find(var.name);
-        if (it != locations.end()) {
+        auto it = _locations.find(var.name);
+        if (it != _locations.end()) {
           id_to_location[var.id] = it->second;
         }
       }
       {
-        auto it = ssbo_bindings.find(var.name);
-        if (it != ssbo_bindings.end()) {
-          if (it->second >= (int)ssbo_binding_ids.size()) {
-            ssbo_binding_ids.resize(it->second + 1, 0);
+        auto it = _bindings.find(var.name);
+        if (it != _bindings.end()) {
+          if (it->second >= (int)binding_ids.size()) {
+            binding_ids.resize(it->second + 1, 0);
           }
-          ssbo_binding_ids[it->second] = var.id;
+          binding_ids[it->second] = var.id;
         }
       }
     }
@@ -2399,8 +2650,8 @@ attach_shader(const ShaderModule *module, Shader::ModuleSpecConstants &consts,
       // Load a SPIR-V binary.
       if (GLCAT.is_debug()) {
         GLCAT.debug()
-          << "Attaching SPIR-V " << stage << " shader binary "
-          << module->get_source_filename() << "\n";
+          << "Compiling SPIR-V " << stage << " shader binary "
+          << spv->get_source_filename() << "\n";
       }
 
       // Make a transformer so we can do some transformations such as assigning
@@ -2419,8 +2670,14 @@ attach_shader(const ShaderModule *module, Shader::ModuleSpecConstants &consts,
           transformer.assign_procedural_names("p", id_to_location);
         }
       }
-      if (!ssbo_binding_ids.empty()) {
-        transformer.bind_descriptor_set(0, ssbo_binding_ids);
+      if (!binding_ids.empty()) {
+        transformer.bind_descriptor_set(0, binding_ids);
+      }
+
+      if (stage == ShaderModule::Stage::FRAGMENT &&
+          alpha_test_mode != RenderAttrib::M_none) {
+        // Assign location 0 to the alpha ref value.
+        transformer.run(SpirVInjectAlphaTestPass((SpirVInjectAlphaTestPass::Mode)alpha_test_mode, 0));
       }
 
       ShaderModuleSpirV::InstructionStream stream = transformer.get_result();
@@ -2439,7 +2696,7 @@ attach_shader(const ShaderModule *module, Shader::ModuleSpecConstants &consts,
       if (GLCAT.is_debug()) {
         GLCAT.debug()
           << "Transpiling SPIR-V " << stage << " shader "
-          << module->get_source_filename() << "\n";
+          << spv->get_source_filename() << "\n";
       }
 
       spirv_cross::CompilerGLSL::Options options;
@@ -2457,7 +2714,7 @@ attach_shader(const ShaderModule *module, Shader::ModuleSpecConstants &consts,
 
       // We want to use explicit bindings for SSBOs, which requires 420 or
       // the 420pack extension.  Presumably we have it if we support SSBOs.
-      if (!ssbo_binding_ids.empty() && !options.es && options.version < 420) {
+      if (!binding_ids.empty() && !options.es && options.version < 420) {
         options.enable_420pack_extension = true;
       }
 
@@ -2467,28 +2724,24 @@ attach_shader(const ShaderModule *module, Shader::ModuleSpecConstants &consts,
 
       ShaderModuleSpirV::InstructionStream stream = spv->_instructions;
 
-      // It's really important that we don't have any member name decorations
-      // if we're going to end up remapping the locations, because we rely on
-      // spirv-cross generating the standard _m0, _m2, etc. names.
-      if ((!options.es && options.version < 430) ||
-          (options.es && options.version < 310)) {
-        ShaderModuleSpirV::InstructionIterator it = stream.begin();
-        while (it != stream.end()) {
-          ShaderModuleSpirV::Instruction op = *it;
-          if (op.opcode == spv::OpMemberName) {
-            it = stream.erase(it);
-            continue;
-          }
-          else if (op.opcode == spv::OpFunction || op.is_annotation()) {
-            // There are no more debug instructions after this point.
-            break;
-          }
-          ++it;
-        }
+      if (stage != ShaderModule::Stage::FRAGMENT) {
+        alpha_test_mode = RenderAttrib::M_none;
       }
 
-      spirv_cross::CompilerGLSL compiler(std::move(stream._words));
+      Compiler compiler(std::move(stream._words), alpha_test_mode);
       compiler.set_common_options(options);
+
+      if (alpha_test_mode != RenderAttrib::M_none &&
+          alpha_test_mode != RenderAttrib::M_always &&
+          alpha_test_mode != RenderAttrib::M_never) {
+        if ((!options.es && options.version < 430) ||
+            (options.es && options.version < 310)) {
+          compiler.add_header_line("uniform float aref;");
+          _remap_locations = true;
+        } else {
+          compiler.add_header_line("layout(location=0) uniform float aref;");
+        }
+      }
 
       // At this time, SPIRV-Cross doesn't always add these automatically.
       uint64_t used_caps = module->get_used_capabilities();
@@ -2537,15 +2790,16 @@ attach_shader(const ShaderModule *module, Shader::ModuleSpecConstants &consts,
         if (sc == spv::StorageClassUniformConstant) {
           auto it = id_to_location.find(id);
           if (it != id_to_location.end()) {
-            sprintf(buf, "p%u", it->second);
+            int location = it->second;
+            sprintf(buf, "p%u", location);
             compiler.set_name(id, buf);
-            compiler.set_decoration(id, spv::DecorationLocation, it->second);
+            compiler.set_decoration(id, spv::DecorationLocation, location);
 
             // Older versions of OpenGL (ES) do not support explicit uniform
             // locations, and we need to query the locations later.
             if ((!options.es && options.version < 430) ||
                 (options.es && options.version < 310)) {
-              remap_locations = true;
+              _remap_locations = true;
             }
           }
         }
@@ -2553,15 +2807,15 @@ attach_shader(const ShaderModule *module, Shader::ModuleSpecConstants &consts,
           if (stage == ShaderModule::Stage::VERTEX) {
             // Explicit attrib locations were added in GLSL 3.30, but we can
             // override the binding in older versions using the API.
-            sprintf(buf, "a%u", loc);
             if (options.version < 330) {
-              _glgsg->_glBindAttribLocation(_glsl_program, loc, buf);
+              _bind_attrib_locations |= 1 << loc;
             }
+            sprintf(buf, "a%u", loc);
           } else {
             // For all other stages, it's just important that the names match,
             // so we assign the names based on the location and successive
             // numbering of the shaders.
-            sprintf(buf, "i%u_%u", (unsigned)_modules.size(), loc);
+            sprintf(buf, "i%u_%u", (unsigned int)mi, loc);
           }
           compiler.set_name(id, buf);
         }
@@ -2570,19 +2824,36 @@ attach_shader(const ShaderModule *module, Shader::ModuleSpecConstants &consts,
             // Output of the last stage, same story as above.
             sprintf(buf, "o%u", loc);
             if (options.version < 330) {
-              _glgsg->_glBindFragDataLocation(_glsl_program, loc, buf);
+              _glgsg->_glBindFragDataLocation(program, loc, buf);
             }
           } else {
             // Match the name of the next stage.
-            sprintf(buf, "i%u_%u", (unsigned)_modules.size() + 1u, loc);
+            sprintf(buf, "i%u_%u", (unsigned int)mi + 1u, loc);
           }
           compiler.set_name(id, buf);
         }
       }
 
+      // For all uniform constant structs, we need to ensure we have procedural
+      // names like _m0, _m1, _m2, etc.  Furthermore, we need to assign each
+      // struct a name that is guaranteed to be the same between stages, since
+      // some drivers will complain if the struct name is different for the
+      // same uniform between different stages.
+      for (auto &item : spv->_uniform_struct_types) {
+        std::ostringstream str;
+        item.second->output_signature(str);
+        compiler.set_name(item.first, str.str());
+
+        char buf[32];
+        for (size_t i = 0; i < item.second->get_num_members(); ++i) {
+          sprintf(buf, "m%d", (int)i);
+          compiler.set_member_name(item.first, i, buf);
+        }
+      }
+
       // Add bindings for the shader storage buffers.
-      for (size_t binding = 0; binding < ssbo_binding_ids.size(); ++binding) {
-        uint32_t id = ssbo_binding_ids[binding];
+      for (size_t binding = 0; binding < binding_ids.size(); ++binding) {
+        uint32_t id = binding_ids[binding];
         if (id > 0) {
           compiler.set_decoration(id, spv::DecorationBinding, binding);
         }
@@ -2601,68 +2872,61 @@ attach_shader(const ShaderModule *module, Shader::ModuleSpecConstants &consts,
 
       const char *text_str = text.c_str();
       _glgsg->_glShaderSource(handle, 1, &text_str, nullptr);
-      needs_compile = true;
     }
   }
   else if (module->is_of_type(ShaderModuleGlsl::get_class_type())) {
     // Legacy preprocessed GLSL.
+    ShaderModuleGlsl *glsl_module = (ShaderModuleGlsl *)module;
     if (GLCAT.is_debug()) {
       GLCAT.debug()
         << "Compiling GLSL " << stage << " shader "
-        << module->get_source_filename() << "\n";
+        << glsl_module->get_source_filename() << "\n";
     }
 
-    ShaderModuleGlsl *glsl_module = (ShaderModuleGlsl *)module;
     std::string text = glsl_module->get_ir();
     const char *text_str = text.c_str();
     _glgsg->_glShaderSource(handle, 1, &text_str, nullptr);
-
-    needs_compile = true;
-    _is_legacy = true;
-  } else {
+  }
+  else {
     GLCAT.error()
       << "Unsupported shader module type " << module->get_type() << "!\n";
-    return false;
+    return 0;
   }
 
-  // Don't check compile status yet, which would force the compile to complete
-  // synchronously.
-  _glgsg->_glAttachShader(_glsl_program, handle);
-
-  Module moddef = {module, handle, needs_compile};
-  _modules.push_back(std::move(moddef));
-
-  return true;
+  return handle;
 }
 
 /**
  * This subroutine compiles a GLSL shader.  The given locations and SSBO
  * bindings will be assigned.  If that is not possible, it will instead
  * generate names for the uniforms based on the given locations, and
- * remap_locations will be set to true.
+ * _remap_locations will be set to true.
  */
-bool CLP(ShaderContext)::
-compile_and_link(const LocationMap &locations, bool &remap_locations,
-                 const LocationMap &ssbo_bindings) {
-  _modules.clear();
-  _glsl_program = _glgsg->_glCreateProgram();
-  if (!_glsl_program) {
-    return false;
+GLuint CLP(ShaderContext)::
+compile_and_link(RenderAttrib::PandaCompareFunc alpha_test_mode) {
+  GLuint program = _program;
+  if (program == 0) {
+    program = _glgsg->_glCreateProgram();
+    if (UNLIKELY(program == 0)) {
+      GLCAT.error()
+        << "Failed to create program object\n";
+      return 0;
+    }
   }
 
   if (_glgsg->_use_object_labels) {
     const std::string &name = _shader->get_debug_name();
-    _glgsg->_glObjectLabel(GL_PROGRAM, _glsl_program, name.size(), name.data());
+    _glgsg->_glObjectLabel(GL_PROGRAM, program, name.size(), name.data());
   }
 
   // Do we have a compiled program?  Try to load that.
-  unsigned int format;
+/*  unsigned int format;
   string binary;
   if (_shader->get_compiled(format, binary)) {
-    _glgsg->_glProgramBinary(_glsl_program, format, binary.data(), binary.size());
+    _glgsg->_glProgramBinary(program, format, binary.data(), binary.size());
 
     GLint status;
-    _glgsg->_glGetProgramiv(_glsl_program, GL_LINK_STATUS, &status);
+    _glgsg->_glGetProgramiv(program, GL_LINK_STATUS, &status);
     if (status == GL_TRUE) {
       // Hooray, the precompiled shader worked.
       if (GLCAT.is_debug()) {
@@ -2677,54 +2941,72 @@ compile_and_link(const LocationMap &locations, bool &remap_locations,
       GLCAT.debug() << "Failure loading precompiled binary for GLSL shader "
                     << _shader->get_filename() << "\n";
     }
-  }
+  }*/
 
-  bool valid = true;
-  for (Shader::LinkedModule &linked_module : _shader->_modules) {
-    valid &= attach_shader(linked_module._module.get_read_pointer(), linked_module._consts,
-                           locations, remap_locations, ssbo_bindings);
-  }
+  // We may have to compile a new fragment shader for this alpha test mode.
+  if (_inject_alpha_test) {
+    for (Module &module : _modules) {
+      _glgsg->_glAttachShader(program, module._handle);
+    }
 
-  if (!valid) {
-    return false;
-  }
+    size_t mi = 0;
+    for (Shader::LinkedModule &linked_module : _shader->_modules) {
+      CPT(ShaderModule) module = linked_module._module.get_read_pointer();
+      if (module->get_stage() == Shader::Stage::FRAGMENT) {
+        GLuint handle;
+        handle = create_shader(program, module, mi, linked_module._consts, alpha_test_mode);
+        if (handle == 0) {
+          _glgsg->_glDeleteProgram(program);
+          return false;
+        }
 
-  // Now compile the individual shaders.  NVIDIA drivers seem to cope better
-  // when we compile them all in one go.
-  for (Module &module : _modules) {
-    if (module._needs_compile) {
-      _glgsg->_glCompileShader(module._handle);
-      module._needs_compile = false;
+        if (!_glgsg->_supports_spir_v) {
+          _glgsg->_glCompileShader(handle);
+        }
+        _glgsg->_glAttachShader(program, handle);
+        _glgsg->_glDeleteShader(handle);
+        break;
+      }
+
+      ++mi;
     }
   }
 
-  // There might be warnings, so report those.  GLSLShaders::const_iterator
-  // it; for (it = _modules.begin(); it != _modules.end(); ++it) {
-  // report_shader_errors(*it); }
-
-  // Under OpenGL's compatibility profile, we have to make sure that we bind
-  // something to attribute 0.  Make sure that this is the position array.
-  _glgsg->_glBindAttribLocation(_glsl_program, 0, "p3d_Vertex");
-  _glgsg->_glBindAttribLocation(_glsl_program, 0, "vertex");
-
-  // While we're at it, let's also map these to fixed locations.  These
-  // attributes were historically fixed to these locations, so it might help a
-  // buggy driver.
-  _glgsg->_glBindAttribLocation(_glsl_program, 2, "p3d_Normal");
-  _glgsg->_glBindAttribLocation(_glsl_program, 3, "p3d_Color");
-
-  if (gl_fixed_vertex_attrib_locations) {
-    _glgsg->_glBindAttribLocation(_glsl_program, 1, "transform_weight");
-    _glgsg->_glBindAttribLocation(_glsl_program, 2, "normal");
-    _glgsg->_glBindAttribLocation(_glsl_program, 3, "color");
-    _glgsg->_glBindAttribLocation(_glsl_program, 7, "transform_index");
-    _glgsg->_glBindAttribLocation(_glsl_program, 8, "p3d_MultiTexCoord0");
-    _glgsg->_glBindAttribLocation(_glsl_program, 8, "texcoord");
+  if (_bind_attrib_locations != 0) {
+    char buf[32];
+    for (unsigned int loc = 0; loc < 32; ++loc) {
+      if (_bind_attrib_locations & (1 << loc)) {
+        sprintf(buf, "a%u", loc);
+        _glgsg->_glBindAttribLocation(program, loc, buf);
+      }
+    }
   }
 
-  // Also bind the p3d_FragData array to the first index always.
-  if (_glgsg->_glBindFragDataLocation != nullptr) {
-    _glgsg->_glBindFragDataLocation(_glsl_program, 0, "p3d_FragData");
+  if (_is_legacy) {
+    // Under OpenGL's compatibility profile, we have to make sure that we bind
+    // something to attribute 0.  Make sure that this is the position array.
+    _glgsg->_glBindAttribLocation(program, 0, "p3d_Vertex");
+    _glgsg->_glBindAttribLocation(program, 0, "vertex");
+
+    // While we're at it, let's also map these to fixed locations.  These
+    // attributes were historically fixed to these locations, so it might help a
+    // buggy driver.
+    _glgsg->_glBindAttribLocation(program, 2, "p3d_Normal");
+    _glgsg->_glBindAttribLocation(program, 3, "p3d_Color");
+
+    if (gl_fixed_vertex_attrib_locations) {
+      _glgsg->_glBindAttribLocation(program, 1, "transform_weight");
+      _glgsg->_glBindAttribLocation(program, 2, "normal");
+      _glgsg->_glBindAttribLocation(program, 3, "color");
+      _glgsg->_glBindAttribLocation(program, 7, "transform_index");
+      _glgsg->_glBindAttribLocation(program, 8, "p3d_MultiTexCoord0");
+      _glgsg->_glBindAttribLocation(program, 8, "texcoord");
+    }
+
+    // Also bind the p3d_FragData array to the first index always.
+    if (_glgsg->_glBindFragDataLocation != nullptr) {
+      _glgsg->_glBindFragDataLocation(program, 0, "p3d_FragData");
+    }
   }
 
   // If we requested to retrieve the shader, we should indicate that before
@@ -2740,7 +3022,7 @@ compile_and_link(const LocationMap &locations, bool &remap_locations,
     }
 #endif
 
-    _glgsg->_glProgramParameteri(_glsl_program, GL_PROGRAM_BINARY_RETRIEVABLE_HINT, GL_TRUE);
+    _glgsg->_glProgramParameteri(program, GL_PROGRAM_BINARY_RETRIEVABLE_HINT, GL_TRUE);
   }
 #endif  // !__EMSCRIPTEN__
 
@@ -2749,27 +3031,29 @@ compile_and_link(const LocationMap &locations, bool &remap_locations,
       << "Linking shader " << _shader->get_filename() << "\n";
   }
 
-  _glgsg->_glLinkProgram(_glsl_program);
+  _glgsg->_glLinkProgram(program);
 
   // Query the link status.  This will cause the application to wait for the
   // link to be finished.
   GLint status = GL_FALSE;
-  _glgsg->_glGetProgramiv(_glsl_program, GL_LINK_STATUS, &status);
+  _glgsg->_glGetProgramiv(program, GL_LINK_STATUS, &status);
   if (status != GL_TRUE) {
     // The link failed.  Is it because one of the shaders failed to compile?
+    GLCAT.error()
+      << "Failed to link shader " << _shader->get_filename() << ":\n";
+
     bool any_failed = false;
     for (Module &module : _modules) {
       _glgsg->_glGetShaderiv(module._handle, GL_COMPILE_STATUS, &status);
 
       if (status != GL_TRUE) {
-        GLCAT.error()
-          << "An error occurred while compiling shader module "
-          << module._module->get_source_filename() << ":\n";
-        report_shader_errors(module, true);
+        GLCAT.error(false)
+          << "Failed to compile stage " << module._stage << ":\n";
+        report_shader_errors(module._handle, module._stage, true);
         any_failed = true;
       } else {
         // Report any warnings.
-        report_shader_errors(module, false);
+        report_shader_errors(module._handle, module._stage, false);
       }
 
       // Delete the shader, we don't need it any more.
@@ -2780,28 +3064,26 @@ compile_and_link(const LocationMap &locations, bool &remap_locations,
     if (any_failed) {
       // One or more of the shaders failed to compile, which would explain the
       // link failure.  We know enough.
-      return false;
+      return 0;
     }
 
-    GLCAT.error() << "An error occurred while linking shader "
-                  << _shader->get_filename() << "\n";
-    report_program_errors(_glsl_program, true);
-    return false;
+    report_program_errors(program, true);
+    return 0;
   }
 
   // Report any warnings.
-  report_program_errors(_glsl_program, false);
+  report_program_errors(program, false);
 
 #ifndef __EMSCRIPTEN__
   if (retrieve_binary) {
     GLint length = 0;
-    _glgsg->_glGetProgramiv(_glsl_program, GL_PROGRAM_BINARY_LENGTH, &length);
+    _glgsg->_glGetProgramiv(program, GL_PROGRAM_BINARY_LENGTH, &length);
     length += 2;
 
     char *binary = (char *)alloca(length);
     GLenum format;
     GLsizei num_bytes = 0;
-    _glgsg->_glGetProgramBinary(_glsl_program, length, &num_bytes, &format, (void*)binary);
+    _glgsg->_glGetProgramBinary(program, length, &num_bytes, &format, (void*)binary);
 
     _shader->set_compiled(format, binary, num_bytes);
 
@@ -2826,7 +3108,7 @@ compile_and_link(const LocationMap &locations, bool &remap_locations,
 #endif  // !__EMSCRIPTEN__
 
   _glgsg->report_my_gl_errors();
-  return valid;
+  return program;
 }
 
 #endif  // OPENGLES_1

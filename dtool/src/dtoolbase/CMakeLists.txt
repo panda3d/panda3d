@@ -24,6 +24,7 @@ set(P3DTOOLBASE_HEADERS
   deletedChain.h deletedChain.I
   dtoolbase.h dtoolbase_cc.h dtoolsymbols.h
   dtool_platform.h
+  extension.h
   fakestringstream.h
   indent.I indent.h
   memoryBase.h

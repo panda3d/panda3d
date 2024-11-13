@@ -156,7 +156,7 @@ def usage(problem):
     print("  --everything      (enable every third-party lib)")
     print("  --directx-sdk=X   (specify version of DirectX SDK to use: jun2010, aug2009)")
     print("  --windows-sdk=X   (specify Windows SDK version, eg. 7.1, 8.1, 10 or 11.  Default is 8.1)")
-    print("  --msvc-version=X  (specify Visual C++ version, eg. 10, 11, 12, 14, 14.1, 14.2, 14.3.  Default is 14)")
+    print("  --msvc-version=X  (specify Visual C++ version, eg. 14.1, 14.2, 14.3.  Default is 14.1)")
     print("  --use-icl         (experimental setting to use an intel compiler instead of MSVC on Windows)")
     print("")
     print("The simplest way to compile panda is to just type:")
@@ -280,11 +280,11 @@ def parseopts(args):
                         break
                     elif option == "--" + pkg.lower() + "-incdir":
                         PkgSetCustomLocation(pkg)
-                        IncDirectory(pkg, value)
+                        IncDirectory(pkg, os.path.expanduser(value))
                         break
                     elif option == "--" + pkg.lower() + "-libdir":
                         PkgSetCustomLocation(pkg)
-                        LibDirectory(pkg, value)
+                        LibDirectory(pkg, os.path.expanduser(value))
                         break
             if (option == "--everything" or option.startswith("--use-")
                 or option == "--nothing" or option.startswith("--no-")):
@@ -322,8 +322,8 @@ def parseopts(args):
 
     if GetTarget() == 'windows':
         if not MSVC_VERSION:
-            print("No MSVC version specified. Defaulting to 14 (Visual Studio 2015).")
-            MSVC_VERSION = (14, 0)
+            print("No MSVC version specified. Defaulting to 14.1 (Visual Studio 2017).")
+            MSVC_VERSION = (14, 1)
         else:
             try:
                 MSVC_VERSION = tuple(int(d) for d in MSVC_VERSION.split('.'))[:2]
@@ -332,12 +332,10 @@ def parseopts(args):
             except:
                 usage("Invalid setting for --msvc-version")
 
-        if MSVC_VERSION < (14, 0):
+        if MSVC_VERSION < (14, 1):
             warn_prefix = "%sERROR:%s " % (GetColor("red"), GetColor())
             print("=========================================================================")
-            print(warn_prefix + "Support for MSVC versions before 2015 has been discontinued.")
-            print(warn_prefix + "For more information, or any questions, please visit:")
-            print(warn_prefix + "  https://github.com/panda3d/panda3d/issues/288")
+            print(warn_prefix + "Support for MSVC versions before 2017 has been discontinued.")
             print("=========================================================================")
             sys.stdout.flush()
             time.sleep(1.0)
@@ -436,6 +434,8 @@ elif target == 'darwin':
 
     if arch_tag == 'arm64':
         PLATFORM = 'macosx-11.0-' + arch_tag
+    elif sys.version_info >= (3, 13):
+        PLATFORM = 'macosx-10.13-' + arch_tag
     else:
         PLATFORM = 'macosx-10.9-' + arch_tag
 
@@ -573,6 +573,11 @@ if GetHost() == 'windows' and GetTarget() == 'windows':
     SdkLocateVisualStudio(MSVC_VERSION)
 else:
     COMPILER = "GCC"
+
+# Ensure we've pip-installed interrogate if we need it before setting
+# PYTHONHOME, etc.
+if not PkgSkip("PYTHON"):
+    GetInterrogate()
 
 SetupBuildEnvironment(COMPILER)
 
@@ -890,7 +895,7 @@ if (COMPILER=="GCC"):
     SmartPkgEnable("VRPN",      "",          ("vrpn", "quat"), ("vrpn", "quat.h", "vrpn/vrpn_Types.h"))
     SmartPkgEnable("OPUS",      "opusfile",  ("opusfile", "opus", "ogg"), ("ogg/ogg.h", "opus/opusfile.h", "opus"))
     SmartPkgEnable("JPEG",      "",          ("jpeg"), "jpeglib.h")
-    SmartPkgEnable("GLSLANG",   "",          ("MachineIndependent", "GenericCodeGen", "SPIRV", "OSDependent", "glslang-default-resource-limits"), "glslang/Public/ShaderLang.h")
+    SmartPkgEnable("GLSLANG",   "",          ("glslang", "MachineIndependent", "GenericCodeGen", "SPIRV", "OSDependent", "glslang-default-resource-limits"), "glslang/Public/ShaderLang.h", optional_libs=("OGLCompiler", "HLSL"))
     SmartPkgEnable("SPIRV-TOOLS", "",        ("SPIRV-Tools-opt", "SPIRV-Tools"), "spirv-tools/optimizer.hpp")
     SmartPkgEnable("SPIRV-CROSS-GLSL", "",   ("spirv-cross-core", "spirv-cross-glsl"), "spirv_cross/spirv_cross.hpp", thirdparty_dir="spirv-cross")
     SmartPkgEnable("SPIRV-CROSS-HLSL", "",   ("spirv-cross-core", "spirv-cross-hlsl"), "spirv_cross/spirv_cross.hpp", thirdparty_dir="spirv-cross")
@@ -1086,12 +1091,14 @@ if (COMPILER=="GCC"):
             # Python may have been compiled with these requirements.
             # Is there a cleaner way to check this?
             LinkFlag("PYTHON", "-s USE_BZIP2=1 -s USE_SQLITE3=1")
-            if not PkgHasCustomLocation("PYTHON"):
+            if PkgHasCustomLocation("PYTHON"):
+                python_libdir = FindLibDirectory("PYTHON")
+            else:
                 python_libdir = GetThirdpartyDir() + "python/lib"
-                if os.path.isfile(python_libdir + "/libmpdec.a"):
-                    LibName("PYTHON", python_libdir + "/libmpdec.a")
-                if os.path.isfile(python_libdir + "/libexpat.a"):
-                    LibName("PYTHON", python_libdir + "/libexpat.a")
+
+            for lib in "libmpdec.a", "libexpat.a", "libHacl_Hash_SHA2.a":
+                if os.path.isfile(python_libdir + "/" + lib):
+                    LibName("PYTHON", python_libdir + "/" + lib)
 
         if GetTarget() == "linux":
             LibName("PYTHON", "-lutil")
@@ -1378,7 +1385,7 @@ def CompileCxx(obj,src,opts):
 
     if (COMPILER=="GCC"):
         if (src.endswith(".c")): cmd = GetCC() +' -fPIC -c -o ' + obj
-        else:                    cmd = GetCXX()+' -std=gnu++11 -ftemplate-depth-70 -fPIC -c -o ' + obj
+        else:                    cmd = GetCXX()+' -std=gnu++14 -ftemplate-depth-70 -fPIC -c -o ' + obj
         for (opt, dir) in INCDIRECTORIES:
             if (opt=="ALWAYS") or (opt in opts): cmd += ' -I' + BracketNameWithQuotes(dir)
         for (opt, dir) in FRAMEWORKDIRECTORIES:
@@ -1790,7 +1797,7 @@ def CompileLink(dll, obj, opts):
                 if "PYTHON" not in opts:
                     pythonv = SDK["PYTHONVERSION"].replace('.', '')
                     if optlevel <= 2:
-                        cmd += ' /NOD:{}d.lib'.format(pythonv)
+                        cmd += ' /NOD:{}_d.lib'.format(pythonv)
                     else:
                         cmd += ' /NOD:{}.lib'.format(pythonv)
 
@@ -1937,6 +1944,8 @@ def CompileLink(dll, obj, opts):
 
             if tuple(OSX_ARCHS) == ('arm64',):
                 cmd += " -mmacosx-version-min=11.0"
+            elif sys.version_info >= (3, 13) and 'PYTHON' in opts:
+                cmd += " -mmacosx-version-min=10.13"
             else:
                 cmd += " -mmacosx-version-min=10.9"
 
@@ -1962,7 +1971,6 @@ def CompileLink(dll, obj, opts):
         elif GetTarget() == 'emscripten':
             cmd += " -s WARN_ON_UNDEFINED_SYMBOLS=1"
             if GetOrigExt(dll) == ".exe":
-                cmd += " --memory-init-file 0"
                 cmd += " -s EXIT_RUNTIME=1"
 
         else:
@@ -2566,7 +2574,8 @@ def WriteConfigSettings():
         dtool_config["PYTHON_FRAMEWORK"] = 'Python'
         dtool_config["PHAVE_MALLOC_H"] = 'UNDEF'
         dtool_config["PHAVE_SYS_MALLOC_H"] = '1'
-        dtool_config["HAVE_OPENAL_FRAMEWORK"] = '1'
+        if not os.path.isdir(GetThirdpartyDir() + "openal"):
+            dtool_config["HAVE_OPENAL_FRAMEWORK"] = '1'
         dtool_config["HAVE_X11"] = 'UNDEF'  # We might have X11, but we don't need it.
         dtool_config["IS_LINUX"] = 'UNDEF'
         dtool_config["HAVE_VIDEO4LINUX"] = 'UNDEF'
@@ -2825,7 +2834,8 @@ del_files = ['core.py', 'core.pyc', 'core.pyo',
              'direct.py', 'direct.pyc', 'direct.pyo',
              '_direct.pyd', '_direct.so',
              'dtoolconfig.pyd', 'dtoolconfig.so',
-             'net.pyd', 'net.so']
+             'net.pyd', 'net.so',
+             'interrogatedb.pyd', 'interrogatedb.so']
 
 for basename in del_files:
     path = os.path.join(GetOutputDir(), 'panda3d', basename)
@@ -3551,27 +3561,6 @@ TargetAdd('libp3dtoolconfig.dll', input='libp3dtool.dll')
 TargetAdd('libp3dtoolconfig.dll', opts=['ADVAPI', 'OPENSSL', 'WINGDI', 'WINUSER'])
 
 #
-# DIRECTORY: dtool/src/interrogatedb/
-#
-
-OPTS=['DIR:dtool/src/interrogatedb', 'BUILDING:INTERROGATEDB']
-TargetAdd('p3interrogatedb_composite1.obj', opts=OPTS, input='p3interrogatedb_composite1.cxx')
-TargetAdd('p3interrogatedb_composite2.obj', opts=OPTS, input='p3interrogatedb_composite2.cxx')
-TargetAdd('libp3interrogatedb.dll', input='p3interrogatedb_composite1.obj')
-TargetAdd('libp3interrogatedb.dll', input='p3interrogatedb_composite2.obj')
-TargetAdd('libp3interrogatedb.dll', input='libp3dtool.dll')
-TargetAdd('libp3interrogatedb.dll', input='libp3dtoolconfig.dll')
-
-# This used to be called dtoolconfig.pyd, but it just contains the interrogatedb
-# stuff, so it has been renamed appropriately.
-OPTS=['DIR:dtool/metalibs/dtoolconfig']
-PyTargetAdd('interrogatedb_pydtool.obj', opts=OPTS, input="pydtool.cxx")
-PyTargetAdd('interrogatedb.pyd', input='interrogatedb_pydtool.obj')
-PyTargetAdd('interrogatedb.pyd', input='libp3dtool.dll')
-PyTargetAdd('interrogatedb.pyd', input='libp3dtoolconfig.dll')
-PyTargetAdd('interrogatedb.pyd', input='libp3interrogatedb.dll')
-
-#
 # DIRECTORY: dtool/src/prckeys/
 #
 
@@ -3958,10 +3947,10 @@ cg_preamble = WriteEmbeddedStringFile('cg_preamble', inputs=[
 ])
 TargetAdd('p3shaderpipeline_cg_preamble.obj', opts=OPTS, input=cg_preamble)
 
-OPTS=['DIR:panda/src/shaderpipeline']
-IGATEFILES=GetDirectoryContents('panda/src/shaderpipeline', ["*.h", "*_composite*.cxx"])
-TargetAdd('libp3shaderpipeline.in', opts=OPTS, input=IGATEFILES)
-TargetAdd('libp3shaderpipeline.in', opts=['IMOD:panda3d.core', 'ILIB:libp3shaderpipeline', 'SRCDIR:panda/src/shaderpipeline'])
+#OPTS=['DIR:panda/src/shaderpipeline', 'SPIRV-TOOLS']
+#IGATEFILES=GetDirectoryContents('panda/src/shaderpipeline', ["*.h", "*_composite*.cxx"])
+#TargetAdd('libp3shaderpipeline.in', opts=OPTS, input=IGATEFILES)
+#TargetAdd('libp3shaderpipeline.in', opts=['IMOD:panda3d.core', 'ILIB:libp3shaderpipeline', 'SRCDIR:panda/src/shaderpipeline'])
 
 #
 # DIRECTORY: panda/src/chan/
@@ -4220,7 +4209,7 @@ PyTargetAdd('core_module.obj', input='libp3recorder.in')
 PyTargetAdd('core_module.obj', input='libp3pgraphnodes.in')
 PyTargetAdd('core_module.obj', input='libp3pgraph.in')
 PyTargetAdd('core_module.obj', input='libp3cull.in')
-PyTargetAdd('core_module.obj', input='libp3shaderpipeline.in')
+#PyTargetAdd('core_module.obj', input='libp3shaderpipeline.in')
 PyTargetAdd('core_module.obj', input='libp3grutil.in')
 PyTargetAdd('core_module.obj', input='libp3chan.in')
 PyTargetAdd('core_module.obj', input='libp3pstatclient.in')
@@ -4268,7 +4257,7 @@ PyTargetAdd('core.pyd', input='libp3recorder_igate.obj')
 PyTargetAdd('core.pyd', input='libp3pgraphnodes_igate.obj')
 PyTargetAdd('core.pyd', input='libp3pgraph_igate.obj')
 PyTargetAdd('core.pyd', input='libp3movies_igate.obj')
-PyTargetAdd('core.pyd', input='libp3shaderpipeline_igate.obj')
+#PyTargetAdd('core.pyd', input='libp3shaderpipeline_igate.obj')
 PyTargetAdd('core.pyd', input='libp3grutil_igate.obj')
 PyTargetAdd('core.pyd', input='libp3chan_igate.obj')
 PyTargetAdd('core.pyd', input='libp3pstatclient_igate.obj')
@@ -4310,7 +4299,6 @@ PyTargetAdd('core.pyd', input='p3display_ext_composite.obj')
 PyTargetAdd('core.pyd', input='p3collide_ext_composite.obj')
 
 PyTargetAdd('core.pyd', input='core_module.obj')
-PyTargetAdd('core.pyd', input='libp3interrogatedb.dll')
 PyTargetAdd('core.pyd', input=COMMON_PANDA_LIBS)
 PyTargetAdd('core.pyd', opts=['WINSOCK2'])
 
@@ -4350,7 +4338,6 @@ if not PkgSkip("VISION"):
     PyTargetAdd('vision.pyd', input='vision_module.obj')
     PyTargetAdd('vision.pyd', input='libp3vision_igate.obj')
     PyTargetAdd('vision.pyd', input='libp3vision.dll')
-    PyTargetAdd('vision.pyd', input='libp3interrogatedb.dll')
     PyTargetAdd('vision.pyd', input=COMMON_PANDA_LIBS)
 
 #
@@ -4382,7 +4369,6 @@ if not PkgSkip('SKEL'):
     PyTargetAdd('skel.pyd', input='skel_module.obj')
     PyTargetAdd('skel.pyd', input='libp3skel_igate.obj')
     PyTargetAdd('skel.pyd', input='libpandaskel.dll')
-    PyTargetAdd('skel.pyd', input='libp3interrogatedb.dll')
     PyTargetAdd('skel.pyd', input=COMMON_PANDA_LIBS)
 
 #
@@ -4419,7 +4405,6 @@ if not PkgSkip('PANDAFX'):
     PyTargetAdd('fx.pyd', input='fx_module.obj')
     PyTargetAdd('fx.pyd', input='libp3distort_igate.obj')
     PyTargetAdd('fx.pyd', input='libpandafx.dll')
-    PyTargetAdd('fx.pyd', input='libp3interrogatedb.dll')
     PyTargetAdd('fx.pyd', input=COMMON_PANDA_LIBS)
 
 #
@@ -4445,7 +4430,6 @@ if not PkgSkip("VRPN"):
     PyTargetAdd('vrpn.pyd', input='vrpn_module.obj')
     PyTargetAdd('vrpn.pyd', input='libp3vrpn_igate.obj')
     PyTargetAdd('vrpn.pyd', input='libp3vrpn.dll')
-    PyTargetAdd('vrpn.pyd', input='libp3interrogatedb.dll')
     PyTargetAdd('vrpn.pyd', input=COMMON_PANDA_LIBS)
 
 #
@@ -4540,7 +4524,7 @@ if GetTarget() == 'windows':
 #
 
 if GetTarget() == 'windows' and not PkgSkip("DX9"):
-    OPTS=['DIR:panda/src/dxgsg9', 'BUILDING:PANDADX', 'DX9', 'SPIRV-CROSS-HLSL']
+    OPTS=['DIR:panda/src/dxgsg9', 'BUILDING:PANDADX', 'DX9', 'SPIRV-CROSS-HLSL', 'SPIRV-TOOLS']
     TargetAdd('p3dxgsg9_dxGraphicsStateGuardian9.obj', opts=OPTS, input='dxGraphicsStateGuardian9.cxx')
     TargetAdd('p3dxgsg9_composite1.obj', opts=OPTS, input='p3dxgsg9_composite1.cxx')
     OPTS=['DIR:panda/metalibs/pandadx9', 'BUILDING:PANDADX', 'DX9']
@@ -4613,7 +4597,7 @@ TargetAdd('libp3framework.dll', opts=['ADVAPI'])
 #
 
 if not PkgSkip("GL"):
-    OPTS=['DIR:panda/src/glgsg', 'DIR:panda/src/glstuff', 'BUILDING:PANDAGL', 'GL', 'SPIRV-CROSS-GLSL']
+    OPTS=['DIR:panda/src/glgsg', 'DIR:panda/src/glstuff', 'BUILDING:PANDAGL', 'GL', 'SPIRV-CROSS-GLSL', 'SPIRV-TOOLS']
     TargetAdd('p3glgsg_config_glgsg.obj', opts=OPTS, input='config_glgsg.cxx')
     TargetAdd('p3glgsg_glgsg.obj', opts=OPTS, input='glgsg.cxx')
 
@@ -4631,7 +4615,7 @@ if not PkgSkip("GLES"):
 #
 
 if not PkgSkip("GLES2"):
-    OPTS=['DIR:panda/src/gles2gsg', 'DIR:panda/src/glstuff', 'BUILDING:PANDAGLES2', 'GLES2', 'SPIRV-CROSS-GLSL']
+    OPTS=['DIR:panda/src/gles2gsg', 'DIR:panda/src/glstuff', 'BUILDING:PANDAGLES2', 'GLES2', 'SPIRV-CROSS-GLSL', 'SPIRV-TOOLS']
     TargetAdd('p3gles2gsg_config_gles2gsg.obj', opts=OPTS, input='config_gles2gsg.cxx')
     TargetAdd('p3gles2gsg_gles2gsg.obj', opts=OPTS, input='gles2gsg.cxx')
 
@@ -4664,7 +4648,6 @@ if not PkgSkip("EGG"):
     PyTargetAdd('egg.pyd', input='libp3egg_igate.obj')
     PyTargetAdd('egg.pyd', input='libp3egg2pg_igate.obj')
     PyTargetAdd('egg.pyd', input='libpandaegg.dll')
-    PyTargetAdd('egg.pyd', input='libp3interrogatedb.dll')
     PyTargetAdd('egg.pyd', input=COMMON_PANDA_LIBS)
 
 #
@@ -4883,7 +4866,6 @@ if not PkgSkip("ODE"):
     PyTargetAdd('ode.pyd', input='libpandaode_igate.obj')
     PyTargetAdd('ode.pyd', input='p3ode_ext_composite.obj')
     PyTargetAdd('ode.pyd', input='libpandaode.dll')
-    PyTargetAdd('ode.pyd', input='libp3interrogatedb.dll')
     PyTargetAdd('ode.pyd', input=COMMON_PANDA_LIBS)
     PyTargetAdd('ode.pyd', opts=['WINUSER', 'ODE'])
 
@@ -4919,7 +4901,6 @@ if not PkgSkip("BULLET"):
     PyTargetAdd('bullet.pyd', input='bullet_module.obj')
     PyTargetAdd('bullet.pyd', input='libpandabullet_igate.obj')
     PyTargetAdd('bullet.pyd', input='libpandabullet.dll')
-    PyTargetAdd('bullet.pyd', input='libp3interrogatedb.dll')
     PyTargetAdd('bullet.pyd', input=COMMON_PANDA_LIBS)
     PyTargetAdd('bullet.pyd', opts=['WINUSER', 'BULLET'])
 
@@ -4985,7 +4966,6 @@ if not PkgSkip("PANDAPHYSICS"):
     if not PkgSkip("PANDAPARTICLESYSTEM"):
         PyTargetAdd('physics.pyd', input='libp3particlesystem_igate.obj')
     PyTargetAdd('physics.pyd', input='libpandaphysics.dll')
-    PyTargetAdd('physics.pyd', input='libp3interrogatedb.dll')
     PyTargetAdd('physics.pyd', input=COMMON_PANDA_LIBS)
 
 #
@@ -5300,7 +5280,6 @@ if not PkgSkip("DIRECT"):
 
     PyTargetAdd('direct.pyd', input='direct_module.obj')
     PyTargetAdd('direct.pyd', input='libp3direct.dll')
-    PyTargetAdd('direct.pyd', input='libp3interrogatedb.dll')
     PyTargetAdd('direct.pyd', input=COMMON_PANDA_LIBS)
     PyTargetAdd('direct.pyd', opts=['WINUSER', 'WINGDI', 'WINSOCK2'])
 
@@ -5999,7 +5978,6 @@ if not PkgSkip("CONTRIB"):
     PyTargetAdd('ai.pyd', input='ai_module.obj')
     PyTargetAdd('ai.pyd', input='libpandaai_igate.obj')
     PyTargetAdd('ai.pyd', input='libpandaai.dll')
-    PyTargetAdd('ai.pyd', input='libp3interrogatedb.dll')
     PyTargetAdd('ai.pyd', input=COMMON_PANDA_LIBS)
 
 #
@@ -6020,7 +5998,6 @@ if not PkgSkip("CONTRIB") and not PkgSkip("PYTHON"):
     PyTargetAdd('_rplight.pyd', input='rplight_module.obj')
     PyTargetAdd('_rplight.pyd', input='libp3rplight_igate.obj')
     PyTargetAdd('_rplight.pyd', input='p3rplight_composite1.obj')
-    PyTargetAdd('_rplight.pyd', input='libp3interrogatedb.dll')
     PyTargetAdd('_rplight.pyd', input=COMMON_PANDA_LIBS)
 
 #
@@ -6070,6 +6047,42 @@ if PkgSkip("PYTHON") == 0:
         PyTargetAdd('libdeploy-stubw.dll', input=COMMON_PANDA_LIBS)
         PyTargetAdd('libdeploy-stubw.dll', input='libp3android.dll')
         PyTargetAdd('libdeploy-stubw.dll', opts=['DEPLOYSTUB', 'ANDROID'])
+
+#
+# Build the test runner for static builds
+#
+if GetLinkAllStatic():
+    if GetTarget() == 'emscripten':
+        LinkFlag('RUN_TESTS_FLAGS', '-s NODERAWFS')
+        LinkFlag('RUN_TESTS_FLAGS', '-s ASSERTIONS=2')
+        LinkFlag('RUN_TESTS_FLAGS', '-s ALLOW_MEMORY_GROWTH')
+        LinkFlag('RUN_TESTS_FLAGS', '-s INITIAL_HEAP=585302016')
+        LinkFlag('RUN_TESTS_FLAGS', '-s STACK_SIZE=1048576')
+        LinkFlag('RUN_TESTS_FLAGS', '--minify 0')
+
+    if not PkgSkip('DIRECT'):
+        DefSymbol('RUN_TESTS_FLAGS', 'HAVE_DIRECT')
+    if not PkgSkip('PANDAPHYSICS'):
+        DefSymbol('RUN_TESTS_FLAGS', 'HAVE_PHYSICS')
+    if not PkgSkip('EGG'):
+        DefSymbol('RUN_TESTS_FLAGS', 'HAVE_EGG')
+    if not PkgSkip('BULLET'):
+        DefSymbol('RUN_TESTS_FLAGS', 'HAVE_BULLET')
+
+    OPTS=['DIR:tests', 'PYTHON', 'RUN_TESTS_FLAGS']
+    PyTargetAdd('run_tests-main.obj', opts=OPTS, input='main.c')
+    PyTargetAdd('run_tests.exe', input='run_tests-main.obj')
+    PyTargetAdd('run_tests.exe', input='core.pyd')
+    if not PkgSkip('DIRECT'):
+        PyTargetAdd('run_tests.exe', input='direct.pyd')
+    if not PkgSkip('PANDAPHYSICS'):
+        PyTargetAdd('run_tests.exe', input='physics.pyd')
+    if not PkgSkip('EGG'):
+        PyTargetAdd('run_tests.exe', input='egg.pyd')
+    if not PkgSkip('BULLET'):
+        PyTargetAdd('run_tests.exe', input='bullet.pyd')
+    PyTargetAdd('run_tests.exe', input=COMMON_PANDA_LIBS)
+    PyTargetAdd('run_tests.exe', opts=['PYTHON', 'BULLET', 'RUN_TESTS_FLAGS'])
 
 #
 # Generate the models directory and samples directory
@@ -6232,8 +6245,16 @@ finally:
 
 # Run the test suite.
 if RUNTESTS:
-    cmdstr = BracketNameWithQuotes(SDK["PYTHONEXEC"].replace('\\', '/'))
-    cmdstr += " -B -m pytest tests"
+    if GetLinkAllStatic():
+        runner = FindLocation("run_tests.exe", [])
+        if runner.endswith(".js"):
+            cmdstr = "node " + BracketNameWithQuotes(runner)
+        else:
+            cmdstr = BracketNameWithQuotes(runner)
+    else:
+        cmdstr = BracketNameWithQuotes(SDK["PYTHONEXEC"].replace('\\', '/'))
+        cmdstr += " -B -m pytest"
+    cmdstr += " tests"
     if GetVerbose():
         cmdstr += " --verbose"
     oscmd(cmdstr)

@@ -109,10 +109,13 @@ public:
     const MemberDefinition &get_member(uint32_t i) const;
     MemberDefinition &modify_member(uint32_t i);
     void clear();
+
+    void output(std::ostream &out) const;
   };
   typedef pdeque<Definition> Definitions;
 
   uint32_t find_definition(const std::string &name) const;
+  INLINE bool has_definition(uint32_t id) const;
   const Definition &get_definition(uint32_t id) const;
   Definition &modify_definition(uint32_t id);
 
@@ -135,6 +138,8 @@ public:
   void record_spec_constant(uint32_t id, uint32_t type_id);
 
   void mark_used(uint32_t id);
+
+  void collect_nested_structs(pmap<uint32_t, const ShaderType::Struct *> &result, uint32_t id) const;
 
 private:
   Definitions _defs;

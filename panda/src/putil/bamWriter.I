@@ -96,6 +96,9 @@ get_file_texture_mode() const {
  * Changes the BamTextureMode preference for the Bam file currently being
  * written.  Texture objects written to this Bam file will be encoded
  * according to the specified mode.
+ *
+ * This should be called after the call to init(), or it will be overwritten
+ * with the default mode in the config file.
  */
 INLINE void BamWriter::
 set_file_texture_mode(BamTextureMode file_texture_mode) {

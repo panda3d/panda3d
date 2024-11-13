@@ -85,7 +85,7 @@ static TypedWritable *factory_callback(const FactoryParams &params){
       Py_DECREF(result);
     }
     else if (DtoolInstance_TYPE(result) == &Dtool_TypedWritable &&
-             Py_TYPE(result) != &Dtool_TypedWritable._PyType) {
+             !Py_IS_TYPE(result, Dtool_GetPyTypeObject(&Dtool_TypedWritable))) {
       // It is a custom subclass of TypedWritable, so we have to keep it
       // alive, and decrement it in finalize(), see typedWritable_ext.cxx.
       manager->register_finalize(ptr);

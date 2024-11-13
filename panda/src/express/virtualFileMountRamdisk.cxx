@@ -30,6 +30,7 @@ TypeHandle VirtualFileMountRamdisk::Directory::_type_handle;
  */
 VirtualFileMountRamdisk::
 VirtualFileMountRamdisk() : _root("") {
+  _root.local_object();
 }
 
 /**
@@ -477,6 +478,10 @@ PT(VirtualFileMountRamdisk::FileBase) VirtualFileMountRamdisk::Directory::
 do_find_file(const string &filename) const {
   size_t slash = filename.find('/');
   if (slash == string::npos) {
+    if (filename.empty()) {
+      return (FileBase *)this;
+    }
+
     // Search for a file within the local directory.
     FileBase tfile(filename);
     tfile.local_object();

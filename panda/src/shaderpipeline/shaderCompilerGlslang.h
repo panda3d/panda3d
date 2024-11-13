@@ -28,7 +28,7 @@ public:
   ShaderCompilerGlslang();
 
   virtual std::string get_name() const override;
-  virtual ShaderLanguages get_languages() const override;
+  virtual SourceLanguages get_languages() const override;
   virtual PT(ShaderModule) compile_now(Stage stage, std::istream &in,
                                        const Filename &fullpath,
                                        BamCacheRecord *record = nullptr) const override;
@@ -39,7 +39,8 @@ private:
                               const Filename &source_filename,
                               pset<Filename> &once_files,
                               BamCacheRecord *record = nullptr);
-  static bool postprocess_glsl150(ShaderModuleSpirV::InstructionStream &stream);
+  static bool postprocess_glsl(ShaderModuleSpirV::InstructionStream &stream,
+                               int version);
   static bool postprocess_cg(ShaderModuleSpirV::InstructionStream &stream);
 
 public:

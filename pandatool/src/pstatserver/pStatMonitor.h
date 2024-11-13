@@ -104,7 +104,7 @@ public:
 
   virtual PStatGraph *open_timeline();
   virtual PStatGraph *open_strip_chart(int thread_index, int collector_index, bool show_level);
-  virtual PStatGraph *open_flame_graph(int thread_index, int collector_index = -1);
+  virtual PStatGraph *open_flame_graph(int thread_index, int collector_index = -1, int frame_number = -1);
   virtual PStatGraph *open_piano_roll(int thread_index);
 
   void write_datagram(Datagram &dg) const;

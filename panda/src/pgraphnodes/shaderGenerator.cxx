@@ -2070,6 +2070,8 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   PT(Shader) shader = Shader::make(text.str(), Shader::SL_Cg);
   nassertr(shader != nullptr, nullptr);
 
+  shader->_subsumes_alpha_test = true;
+
   reset_register_allocator();
 
   CPT(ShaderAttrib) attr = make_attrib(key, shader);
@@ -2274,6 +2276,9 @@ ShaderKey() :
  */
 bool ShaderGenerator::ShaderKey::
 operator < (const ShaderKey &other) const {
+  if (_flags != other._flags) {
+    return _flags < other._flags;
+  }
   if (_texture_flags != other._texture_flags) {
     return _texture_flags < other._texture_flags;
   }

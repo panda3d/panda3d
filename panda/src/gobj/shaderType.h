@@ -34,11 +34,11 @@ public:
   virtual int compare_to_impl(const ShaderType &other) const=0;
 
   virtual void output(std::ostream &out) const=0;
+  virtual void output_signature(std::ostream &out) const=0;
 
   virtual uint32_t get_align_bytes() const { return 1; }
   virtual uint32_t get_size_bytes() const { return 0; }
   virtual int get_num_interface_locations() const { return 1; }
-  virtual int get_num_parameter_locations() const { return 1; }
   virtual int get_num_resources() const { return 0; }
 
   enum ScalarType {
@@ -100,6 +100,7 @@ public:
                               uint32_t &num_columns) const { return false; }
   virtual const ShaderType *replace_scalar_type(ScalarType a, ScalarType b) const { return this; }
   virtual const ShaderType *replace_type(const ShaderType *a, const ShaderType *b) const;
+  virtual const ShaderType *merge(const ShaderType *other) const;
 
   INLINE static constexpr uint32_t get_scalar_size_bytes(ScalarType scalar_type);
 
@@ -156,6 +157,7 @@ INLINE std::ostream &operator << (std::ostream &out, const ShaderType &stype) {
 class EXPCL_PANDA_GOBJ ShaderType::Void final : public ShaderType {
 public:
   virtual void output(std::ostream &out) const override;
+  virtual void output_signature(std::ostream &out) const override;
 
 private:
   virtual int compare_to_impl(const ShaderType &other) const override;
@@ -193,6 +195,7 @@ public:
   const Scalar *as_scalar() const override { return this; }
 
   virtual void output(std::ostream &out) const override;
+  virtual void output_signature(std::ostream &out) const override;
 
 private:
   virtual int compare_to_impl(const ShaderType &other) const override;
@@ -235,12 +238,14 @@ public:
   virtual bool as_scalar_type(ScalarType &type, uint32_t &num_elements,
                               uint32_t &num_rows, uint32_t &num_columns) const override;
   virtual const ShaderType *replace_scalar_type(ScalarType a, ScalarType b) const override;
+  virtual const ShaderType *merge(const ShaderType *other) const override;
 
   virtual int get_num_interface_locations() const override;
 
   const Vector *as_vector() const override { return this; }
 
   virtual void output(std::ostream &out) const override;
+  virtual void output_signature(std::ostream &out) const override;
 
 private:
   virtual int compare_to_impl(const ShaderType &other) const override;
@@ -290,6 +295,7 @@ public:
   const Matrix *as_matrix() const override { return this; }
 
   virtual void output(std::ostream &out) const override;
+  virtual void output_signature(std::ostream &out) const override;
 
 private:
   virtual int compare_to_impl(const ShaderType &other) const override;
@@ -328,16 +334,19 @@ public:
 
   INLINE size_t get_num_members() const;
   INLINE const Member &get_member(size_t i) const;
+  INLINE bool has_member(const std::string &name) const;
   void add_member(const ShaderType *type, std::string name);
   void add_member(const ShaderType *type, std::string name, uint32_t offset);
 
+  void merge_member_by_name(std::string name, const ShaderType *type);
+
   virtual void output(std::ostream &out) const override;
+  virtual void output_signature(std::ostream &out) const override;
   virtual int compare_to_impl(const ShaderType &other) const override;
 
   virtual uint32_t get_align_bytes() const override;
   virtual uint32_t get_size_bytes() const override;
   virtual int get_num_interface_locations() const override;
-  virtual int get_num_parameter_locations() const override;
   virtual int get_num_resources() const override;
 
   bool is_aggregate_type() const override { return true; }
@@ -345,6 +354,7 @@ public:
   virtual bool contains_scalar_type(ScalarType type) const override;
   virtual const ShaderType *replace_scalar_type(ScalarType a, ScalarType b) const override;
   virtual const ShaderType *replace_type(const ShaderType *a, const ShaderType *b) const override;
+  virtual const ShaderType *merge(const ShaderType *other) const override;
   const Struct *as_struct() const override { return this; }
 
 PUBLISHED:
@@ -396,15 +406,16 @@ public:
                               uint32_t &num_rows, uint32_t &num_columns) const override;
   virtual const ShaderType *replace_scalar_type(ScalarType a, ScalarType b) const override;
   virtual const ShaderType *replace_type(const ShaderType *a, const ShaderType *b) const override;
+  virtual const ShaderType *merge(const ShaderType *other) const override;
 
   virtual void output(std::ostream &out) const override;
+  virtual void output_signature(std::ostream &out) const override;
   virtual int compare_to_impl(const ShaderType &other) const override;
 
   uint32_t get_stride_bytes() const;
   virtual uint32_t get_align_bytes() const override;
   virtual uint32_t get_size_bytes() const override;
   virtual int get_num_interface_locations() const override;
-  virtual int get_num_parameter_locations() const override;
   virtual int get_num_resources() const override;
 
   bool is_aggregate_type() const override { return true; }
@@ -462,6 +473,7 @@ public:
   INLINE bool is_writable() const;
 
   virtual void output(std::ostream &out) const override;
+  virtual void output_signature(std::ostream &out) const override;
   virtual int compare_to_impl(const ShaderType &other) const override;
 
   virtual bool contains_scalar_type(ScalarType type) const override;
@@ -506,6 +518,7 @@ private:
 
 public:
   virtual void output(std::ostream &out) const override;
+  virtual void output_signature(std::ostream &out) const override;
   virtual int compare_to_impl(const ShaderType &other) const override;
 
   const Sampler *as_sampler() const override { return this; }
@@ -540,6 +553,7 @@ public:
   INLINE bool is_shadow() const;
 
   virtual void output(std::ostream &out) const override;
+  virtual void output_signature(std::ostream &out) const override;
   virtual int compare_to_impl(const ShaderType &other) const override;
 
   virtual bool contains_scalar_type(ScalarType type) const override;
@@ -581,6 +595,7 @@ public:
   INLINE Access get_access() const;
 
   virtual void output(std::ostream &out) const override;
+  virtual void output_signature(std::ostream &out) const override;
   virtual int compare_to_impl(const ShaderType &other) const override;
 
   virtual bool contains_scalar_type(ScalarType type) const override;

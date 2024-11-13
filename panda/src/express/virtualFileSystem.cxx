@@ -1206,7 +1206,7 @@ scan_mount_points(vector_string &names, const Filename &path) const {
           mount_point[prefix.length()] == '/') {
         // This mount point is below the indicated path.  Is it only one
         // directory below?
-        string basename = mount_point.substr(prefix.length());
+        string basename = mount_point.substr(prefix.length() + 1);
         if (basename.find('/') == string::npos) {
           // No embedded slashes, so it's only one directory below.
           names.push_back(basename);
