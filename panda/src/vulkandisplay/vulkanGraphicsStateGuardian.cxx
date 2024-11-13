@@ -2068,12 +2068,7 @@ release_shader(ShaderContext *context) {
 
   // According to the Vulkan spec, it is safe to delete a shader module even
   // if pipelines using it are still in use, so let's do it now.
-  for (size_t i = 0; i <= (size_t)Shader::Stage::COMPUTE; ++i) {
-    if (sc->_modules[i] != VK_NULL_HANDLE) {
-      vkDestroyShaderModule(_device, sc->_modules[i], nullptr);
-      sc->_modules[i] = VK_NULL_HANDLE;
-    }
-  }
+  sc->destroy_modules(_device);
 
   // Destroy the pipeline states that use these modules.
   //TODO: is this safe?
@@ -3891,6 +3886,7 @@ make_pipeline(VulkanShaderContext *sc,
       << " color_write_mask=" << key._color_write_mask
       << " logic_op=" << key._logic_op
       << " transparency_mode=" << key._transparency_mode
+      << " alpha_test_attrib=" << key._alpha_test_attrib
       << "\n";
   }
 
@@ -3907,6 +3903,31 @@ make_pipeline(VulkanShaderContext *sc,
   };
   uint32_t num_stages = 0;
 
+  VkSpecializationInfo fragment_spec_info;
+  VkSpecializationMapEntry fragment_spec_map_entry;
+  float alpha_test_ref;
+
+  RenderAttrib::PandaCompareFunc alpha_test_mode = RenderAttrib::M_none;
+  if (key._alpha_test_attrib != nullptr) {
+    alpha_test_mode = key._alpha_test_attrib->get_mode();
+    if (alpha_test_mode != RenderAttrib::M_never) {
+      alpha_test_ref = key._alpha_test_attrib->get_reference_alpha();
+    } else {
+      // Rather than create special case code for the rare case of M_never, we
+      // instead turn it into a equal test with NaN.
+      alpha_test_ref = make_nan((float)0);
+    }
+
+    fragment_spec_info.mapEntryCount = 1;
+    fragment_spec_info.pMapEntries = &fragment_spec_map_entry;
+    fragment_spec_info.dataSize = 4;
+    fragment_spec_info.pData = &alpha_test_ref;
+
+    fragment_spec_map_entry.constantID = 0;
+    fragment_spec_map_entry.offset = 0;
+    fragment_spec_map_entry.size = 4;
+  }
+
   for (size_t i = 0; i <= (size_t)Shader::Stage::COMPUTE; ++i) {
     if (sc->_modules[i] != VK_NULL_HANDLE) {
       VkPipelineShaderStageCreateInfo &stage = stages[num_stages++];
@@ -3914,9 +3935,14 @@ make_pipeline(VulkanShaderContext *sc,
       stage.pNext = nullptr;
       stage.flags = 0;
       stage.stage = stage_flags[i];
-      stage.module = sc->_modules[i];
-      stage.pName = "main";
       stage.pSpecializationInfo = nullptr;
+      if (i == (size_t)Shader::Stage::FRAGMENT && alpha_test_mode != RenderAttrib::M_none) {
+        stage.module = sc->get_fragment_module(_device, alpha_test_mode);
+        stage.pSpecializationInfo = &fragment_spec_info;
+      } else {
+        stage.module = sc->get_module((Shader::Stage)i);
+      }
+      stage.pName = "main";
     }
   }
 

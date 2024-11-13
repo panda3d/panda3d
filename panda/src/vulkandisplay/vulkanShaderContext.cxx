@@ -17,6 +17,7 @@
 #include "spirVTransformer.h"
 #include "spirVConvertBoolToIntPass.h"
 #include "spirVHoistStructResourcesPass.h"
+#include "spirVInjectAlphaTestPass.h"
 #include "spirVMakeBlockPass.h"
 #include "spirVRemoveUnusedVariablesPass.h"
 
@@ -24,6 +25,26 @@ static PStatCollector _update_tattr_descriptor_set_pcollector("Draw:Update Descr
 static PStatCollector _update_sattr_descriptor_set_pcollector("Draw:Update Descriptor Sets:ShaderAttrib");
 
 TypeHandle VulkanShaderContext::_type_handle;
+
+/**
+ *
+ */
+void VulkanShaderContext::
+destroy_modules(VkDevice device) {
+  for (size_t i = 0; i <= (size_t)Shader::Stage::COMPUTE; ++i) {
+    if (_modules[i] != VK_NULL_HANDLE) {
+      vkDestroyShaderModule(device, _modules[i], nullptr);
+      _modules[i] = VK_NULL_HANDLE;
+    }
+  }
+
+  for (size_t i = 0; i < sizeof(_alpha_test_modules) / sizeof(VkShaderModule); ++i) {
+    if (_alpha_test_modules[i] != VK_NULL_HANDLE) {
+      vkDestroyShaderModule(device, _alpha_test_modules[i], nullptr);
+      _alpha_test_modules[i] = VK_NULL_HANDLE;
+    }
+  }
+}
 
 /**
  * Creates the shader modules.
@@ -156,9 +177,7 @@ create_modules(VkDevice device, const ShaderType::Struct *push_constant_block_ty
 
     const ShaderModuleSpirV *spv_module = (const ShaderModuleSpirV *)module.p();
     SpirVTransformer transformer(spv_module->_instructions);
-
-    // These are not used in Vulkan, and the validation layers trip over them.
-    transformer.strip_uniform_locations();
+    transformer.change_to_vulkan_conventions();
 
     // Determine the ids making up the inputs for the descriptor sets.
     pvector<uint32_t> tattr_set_ids(tattr_set_params.size(), 0u);
@@ -206,7 +225,10 @@ create_modules(VkDevice device, const ShaderType::Struct *push_constant_block_ty
             chain._var_id = spv_module->get_parameter(index).id;
             auto it = hoist_pass._hoisted_vars.find(chain);
             if (it != hoist_pass._hoisted_vars.end()) {
-              tattr_set_ids[i] = it->second;
+              // Check if it hasn't been removed due to being unused.
+              if (transformer.get_db().has_definition(it->second)) {
+                tattr_set_ids[i] = it->second;
+              }
             }
           }
         }
@@ -219,7 +241,10 @@ create_modules(VkDevice device, const ShaderType::Struct *push_constant_block_ty
             chain._var_id = spv_module->get_parameter(index).id;
             auto it = hoist_pass._hoisted_vars.find(chain);
             if (it != hoist_pass._hoisted_vars.end()) {
-              sattr_set_ids[i] = it->second;
+              // Check if it hasn't been removed due to being unused.
+              if (transformer.get_db().has_definition(it->second)) {
+                sattr_set_ids[i] = it->second;
+              }
             }
           }
         }
@@ -263,30 +288,7 @@ create_modules(VkDevice device, const ShaderType::Struct *push_constant_block_ty
       transformer.bind_descriptor_set(VulkanGraphicsStateGuardian::DS_shader_attrib, sattr_set_ids);
     }
 
-    // Change OpenGL conventions to Vulkan conventions.
     ShaderModuleSpirV::InstructionStream instructions = transformer.get_result();
-    for (ShaderModuleSpirV::Instruction op : instructions) {
-      if (op.opcode == spv::OpExecutionMode) {
-        if (op.nargs >= 2 && (spv::ExecutionMode)op.args[1] == spv::ExecutionModeOriginLowerLeft) {
-          op.args[1] = spv::ExecutionModeOriginUpperLeft;
-        }
-      }
-      else if (op.opcode == spv::OpDecorate) {
-        if (op.nargs >= 3 && op.args[1] == spv::DecorationBuiltIn) {
-          switch ((spv::BuiltIn)op.args[2]) {
-          case spv::BuiltInVertexId:
-            op.args[2] = spv::BuiltInVertexIndex;
-            break;
-          case spv::BuiltInInstanceId:
-            op.args[2] = spv::BuiltInInstanceIndex;
-            break;
-          default:
-            break;
-          }
-        }
-      }
-    }
-
 #ifndef NDEBUG
     if (!instructions.validate(SPV_ENV_VULKAN_1_0)) {
       success = false;
@@ -304,8 +306,19 @@ create_modules(VkDevice device, const ShaderType::Struct *push_constant_block_ty
     VkResult err;
     err = vkCreateShaderModule(device, &module_info, nullptr, &_modules[(size_t)spv_module->get_stage()]);
     if (err) {
-      vulkan_error(err, "Failed to create shader modules");
+      vulkan_error(err, "Failed to create shader module");
       success = false;
+    }
+
+    if (spv_module->get_stage() == Shader::Stage::FRAGMENT) {
+      // Set us up to easily create versions of the shader for various alpha
+      // testing modes.
+      SpirVInjectAlphaTestPass pass(SpirVInjectAlphaTestPass::M_greater, 0, true);
+      transformer.run(pass);
+      if (pass._compare_op_offset != 0) {
+        _alpha_test_code = transformer.get_result();
+        _alpha_test_compare_op_offset = pass._compare_op_offset;
+      }
     }
   }
 
@@ -319,6 +332,64 @@ create_modules(VkDevice device, const ShaderType::Struct *push_constant_block_ty
   }
 
   return success;
+}
+
+/**
+ * Returns the module for the given stage, or VK_NULL_HANDLE.
+ */
+VkShaderModule VulkanShaderContext::
+get_fragment_module(VkDevice device, RenderAttrib::PandaCompareFunc alpha_test_mode) {
+  if (alpha_test_mode == RenderAttrib::M_none ||
+      alpha_test_mode == RenderAttrib::M_always ||
+      _alpha_test_compare_op_offset == 0) {
+    return _modules[(size_t)Shader::Stage::FRAGMENT];
+  }
+
+  size_t i = alpha_test_mode - RenderAttrib::M_never;
+  VkShaderModule module = _alpha_test_modules[i];
+  if (module != VK_NULL_HANDLE) {
+    return module;
+  }
+
+  if (vulkandisplay_cat.is_debug()) {
+    vulkandisplay_cat.debug()
+      << "Modifying module for shader " << _shader->get_filename() << " for "
+         "alpha test mode " << alpha_test_mode << "\n";
+  }
+
+  // Creating a special case for handling M_never isn't worth it, because it's
+  // pretty much a useless mode, so we instead only pass it if it compares as
+  // equal to NaN, which nothing ever will.
+  static const uint32_t opcodes[] {
+    (5u << spv::WordCountShift) | spv::OpFUnordNotEqual, // M_never
+    (5u << spv::WordCountShift) | spv::OpFOrdGreaterThanEqual, // M_less
+    (5u << spv::WordCountShift) | spv::OpFUnordNotEqual, // M_equal
+    (5u << spv::WordCountShift) | spv::OpFOrdGreaterThan, // M_less_equal
+    (5u << spv::WordCountShift) | spv::OpFOrdLessThanEqual, // M_greater
+    (5u << spv::WordCountShift) | spv::OpFOrdEqual, // M_not_equal
+    (5u << spv::WordCountShift) | spv::OpFOrdLessThan, // M_greater_equal
+  };
+
+  uint32_t *code = (uint32_t *)_alpha_test_code.get_data();
+  nassertr(code[_alpha_test_compare_op_offset] == ((5u << spv::WordCountShift) | spv::OpFOrdLessThanEqual), VK_NULL_HANDLE);
+  code[_alpha_test_compare_op_offset] = opcodes[i];
+
+  VkShaderModuleCreateInfo module_info;
+  module_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+  module_info.pNext = nullptr;
+  module_info.flags = 0;
+  module_info.codeSize = _alpha_test_code.get_data_size() * 4;
+  module_info.pCode = code;
+
+  VkResult err;
+  err = vkCreateShaderModule(device, &module_info, nullptr, &module);
+  if (err) {
+    vulkan_error(err, "Failed to create shader module with injected alpha test");
+    return VK_NULL_HANDLE;
+  }
+
+  _alpha_test_modules[i] = module;
+  return module;
 }
 
 /**
@@ -866,6 +937,13 @@ get_pipeline(VulkanGraphicsStateGuardian *gsg, const RenderState *state,
     const TransparencyAttrib *transp;
     state->get_attrib_def(transp);
     key._transparency_mode = transp->get_mode();
+  }
+
+  if (state->get_alpha_test_mode() != RenderAttrib::M_none &&
+      state->get_alpha_test_mode() != RenderAttrib::M_always) {
+    const AlphaTestAttrib *alpha_test;
+    state->get_attrib_def(alpha_test);
+    key._alpha_test_attrib = alpha_test;
   }
 
   PipelineMap::const_iterator it;

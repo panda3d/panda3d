@@ -394,3 +394,61 @@ bind_descriptor_set(uint32_t set, const pvector<uint32_t> &ids) {
     }
   }
 }
+
+/**
+ * Change OpenGL conventions to Vulkan conventions, including stripping uniform
+ * locations.
+ */
+void SpirVTransformer::
+change_to_vulkan_conventions() {
+  auto it = _preamble.begin() + 5;
+  while (it != _preamble.end()) {
+    spv::Op opcode = (spv::Op)(*it & spv::OpCodeMask);
+    uint32_t wcount = *it >> spv::WordCountShift;
+    nassertd(wcount > 0) break;
+
+    if (opcode == spv::OpExecutionMode && wcount >= 3 &&
+        (spv::ExecutionMode)*(it + 2) == spv::ExecutionModeOriginLowerLeft) {
+      *(it + 2) = spv::ExecutionModeOriginUpperLeft;
+      break;
+    }
+
+    std::advance(it, wcount);
+  }
+
+  it = _annotations.begin();
+  while (it != _annotations.end()) {
+    spv::Op opcode = (spv::Op)(*it & spv::OpCodeMask);
+    uint32_t wcount = *it >> spv::WordCountShift;
+    nassertd(wcount > 0) break;
+
+    if (opcode == spv::OpDecorate && wcount >= 3) {
+      spv::Decoration decoration = (spv::Decoration)*(it + 2);
+
+      if (decoration == spv::DecorationLocation) {
+        Definition &def = _db.modify_definition(*(it + 1));
+        if (def._storage_class == spv::StorageClassUniformConstant) {
+          it = _annotations.erase(it, it + wcount);
+          def._location = -1;
+          continue;
+        }
+      }
+      else if (decoration == spv::DecorationBuiltIn) {
+        spv::BuiltIn &builtin = (spv::BuiltIn &)*(it + 3);
+
+        switch (builtin) {
+        case spv::BuiltInVertexId:
+          builtin = spv::BuiltInVertexIndex;
+          break;
+        case spv::BuiltInInstanceId:
+          builtin = spv::BuiltInInstanceIndex;
+          break;
+        default:
+          break;
+        }
+      }
+    }
+
+    std::advance(it, wcount);
+  }
+}

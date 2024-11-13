@@ -24,6 +24,7 @@
 #include "depthWriteAttrib.h"
 #include "logicOpAttrib.h"
 #include "colorBlendAttrib.h"
+#include "alphaTestAttrib.h"
 #include "transparencyAttrib.h"
 
 #include "small_vector.h"
@@ -45,7 +46,11 @@ public:
 
   ALLOC_DELETED_CHAIN(VulkanShaderContext);
 
+  void destroy_modules(VkDevice device);
   bool create_modules(VkDevice device, const ShaderType::Struct *push_constant_block_type);
+
+  INLINE VkShaderModule get_module(Shader::Stage module) const;
+  VkShaderModule get_fragment_module(VkDevice device, RenderAttrib::PandaCompareFunc alpha_test_mode);
 
   const ShaderType *r_extract_resources(const Shader::Parameter &param, const AccessChain &chain,
                                         pmap<AccessChain, Descriptor> &descriptors,
@@ -95,11 +100,17 @@ public:
     LogicOpAttrib::Operation _logic_op;
     CPT(ColorBlendAttrib) _color_blend_attrib;
     TransparencyAttrib::Mode _transparency_mode;
+    CPT(AlphaTestAttrib) _alpha_test_attrib;
   };
 
 private:
   VkPipelineBindPoint _bind_point = VK_PIPELINE_BIND_POINT_GRAPHICS;
   VkShaderModule _modules[(size_t)Shader::Stage::COMPUTE + 1];
+
+  VkShaderModule _alpha_test_modules[RenderAttrib::M_always - RenderAttrib::M_never] = {};
+  ShaderModuleSpirV::InstructionStream _alpha_test_code;
+  uint32_t _alpha_test_compare_op_offset = 0;
+
   VkDescriptorSetLayout _tattr_descriptor_set_layout = VK_NULL_HANDLE;
   VkDescriptorSetLayout _sattr_descriptor_set_layout = VK_NULL_HANDLE;
   VkDescriptorSetLayout _dynamic_uniform_descriptor_set_layout = VK_NULL_HANDLE;

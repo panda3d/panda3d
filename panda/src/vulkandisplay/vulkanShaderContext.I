@@ -33,6 +33,14 @@ INLINE VulkanShaderContext::
 }
 
 /**
+ * Returns the module for the given stage, or VK_NULL_HANDLE.
+ */
+INLINE VkShaderModule VulkanShaderContext::
+get_module(Shader::Stage stage) const {
+  return _modules[(size_t)stage];
+}
+
+/**
  * Returns true if these two PipelineKey objects are identical.
  */
 INLINE bool VulkanShaderContext::PipelineKey::
@@ -49,7 +57,8 @@ operator ==(const PipelineKey &other) const {
       && _color_write_mask == other._color_write_mask
       && _logic_op == other._logic_op
       && _color_blend_attrib == other._color_blend_attrib
-      && _transparency_mode == other._transparency_mode;
+      && _transparency_mode == other._transparency_mode
+      && _alpha_test_attrib == other._alpha_test_attrib;
 }
 
 /**
@@ -95,6 +104,9 @@ operator < (const PipelineKey &other) const {
   }
   if (_transparency_mode != other._transparency_mode) {
     return _transparency_mode < other._transparency_mode;
+  }
+  if (_alpha_test_attrib != other._alpha_test_attrib) {
+    return _alpha_test_attrib < other._alpha_test_attrib;
   }
   return 0;
 }

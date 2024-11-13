@@ -49,6 +49,8 @@ public:
   void strip_bindings();
   void bind_descriptor_set(uint32_t set, const pvector<uint32_t> &ids);
 
+  void change_to_vulkan_conventions();
+
 private:
   // Stores the module split into the different sections for easier
   // concurrent modification of the various sections.
