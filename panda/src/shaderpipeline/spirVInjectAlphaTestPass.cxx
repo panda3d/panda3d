@@ -97,15 +97,25 @@ transform_function_op(Instruction op) {
     }
 
     if (_alpha_ref_var_id == 0) {
-      _alpha_ref_var_id = define_variable(ShaderType::float_type, spv::StorageClassUniformConstant);
-      if (_ref_location >= 0) {
-        decorate(_alpha_ref_var_id, spv::DecorationLocation, (uint32_t)_ref_location);
+      if (_spec_constant) {
+        _alpha_ref_var_id = define_spec_constant(ShaderType::float_type, 0);
+        if (_ref_location >= 0) {
+          decorate(_alpha_ref_var_id, spv::DecorationSpecId, (uint32_t)_ref_location);
+        }
+      } else {
+        _alpha_ref_var_id = define_variable(ShaderType::float_type, spv::StorageClassUniformConstant);
+        if (_ref_location >= 0) {
+          decorate(_alpha_ref_var_id, spv::DecorationLocation, (uint32_t)_ref_location);
+        }
       }
     }
     uint32_t alpha = op_load(op_access_chain(_var_id, {define_int_constant(3)}));
-    uint32_t ref = op_load(_alpha_ref_var_id);
+    uint32_t ref = _spec_constant ? _alpha_ref_var_id : op_load(_alpha_ref_var_id);
 
-    uint32_t branch = branch_if(op_compare(opcode, alpha, ref));
+    _compare_op_offset = _new_functions.size();
+    uint32_t cond = op_compare(opcode, alpha, ref);
+
+    uint32_t branch = branch_if(cond);
       op_kill();
     branch_endif(branch);
   }
@@ -120,4 +130,14 @@ transform_function_op(Instruction op) {
 void SpirVInjectAlphaTestPass::
 end_function(uint32_t function_id) {
   _var_id = 0;
+}
+
+/**
+ * Called after all instructions have been read, this does any post-processing
+ * needed (such as updating the result database to reflect the transformations,
+ * adding names/decorations, etc.)
+ */
+void SpirVInjectAlphaTestPass::
+postprocess() {
+  _compare_op_offset += _new_preamble.size() + _new_annotations.size() + _new_definitions.size();
 }

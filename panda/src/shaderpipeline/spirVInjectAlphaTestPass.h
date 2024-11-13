@@ -34,19 +34,22 @@ public:
     M_always            // Always draw.
   };
 
-  SpirVInjectAlphaTestPass(Mode mode, int ref_location = -1) :
-    _mode(mode), _ref_location(ref_location) {}
+  SpirVInjectAlphaTestPass(Mode mode, int ref_location = -1, bool spec_constant = false) :
+    _mode(mode), _ref_location(ref_location), _spec_constant(spec_constant) {}
 
   virtual bool transform_entry_point(spv::ExecutionModel model, uint32_t id, const char *name, const uint32_t *var_ids, uint16_t num_vars);
   virtual bool begin_function(Instruction op);
   virtual bool transform_function_op(Instruction op);
   virtual void end_function(uint32_t function_id);
+  virtual void postprocess();
 
 public:
   const Mode _mode;
   const int _ref_location;
+  const bool _spec_constant;
 
   uint32_t _alpha_ref_var_id = 0;
+  uint32_t _compare_op_offset = 0;
 
 private:
   uint32_t _var_id = 0;

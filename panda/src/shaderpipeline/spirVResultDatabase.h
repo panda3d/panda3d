@@ -109,10 +109,13 @@ public:
     const MemberDefinition &get_member(uint32_t i) const;
     MemberDefinition &modify_member(uint32_t i);
     void clear();
+
+    void output(std::ostream &out) const;
   };
   typedef pdeque<Definition> Definitions;
 
   uint32_t find_definition(const std::string &name) const;
+  INLINE bool has_definition(uint32_t id) const;
   const Definition &get_definition(uint32_t id) const;
   Definition &modify_definition(uint32_t id);
 

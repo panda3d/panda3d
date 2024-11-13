@@ -78,6 +78,66 @@ clear() {
 }
 
 /**
+ * Writes a simple description of this definition to the output stream.
+ */
+void SpirVResultDatabase::Definition::
+output(std::ostream &out) const {
+  switch (_dtype) {
+  case SpirVResultDatabase::DT_none:
+    out << "undefined";
+    break;
+
+  case SpirVResultDatabase::DT_type:
+    if (_type != nullptr) {
+      out << "type " << *_type;
+    } else {
+      out << "unknown type";
+    }
+    break;
+
+  case SpirVResultDatabase::DT_pointer_type:
+    out << "pointer to " << _type_id;
+    break;
+
+  case SpirVResultDatabase::DT_variable:
+    out << "variable of type " << _type_id;
+    break;
+
+  case SpirVResultDatabase::DT_constant:
+    if (is_null_constant()) {
+      out << "null constant of type " << _type_id;
+    } else {
+      out << "constant " << _constant;
+    }
+    break;
+
+  case SpirVResultDatabase::DT_ext_inst:
+    out << "ext inst";
+    break;
+
+  case SpirVResultDatabase::DT_function_parameter:
+    out << "function parameter";
+    break;
+
+  case SpirVResultDatabase::DT_function:
+    out << "function";
+    break;
+
+  case SpirVResultDatabase::DT_temporary:
+    out << "temporary";
+    break;
+
+  case SpirVResultDatabase::DT_spec_constant:
+    out << "spec constant";
+    break;
+
+  default:
+    out << "invalid";
+    break;
+  }
+}
+
+/**
  * Finds the definition with the given name.
  */
 uint32_t SpirVResultDatabase::

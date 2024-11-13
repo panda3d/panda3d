@@ -272,7 +272,7 @@ protected:
  */
 class EXPCL_PANDA_DISPLAY ShaderDataBinding : public ShaderInputBinding {
 public:
-  INLINE ShaderDataBinding(CPT_InternalName input, size_t num_elements,
+  INLINE ShaderDataBinding(const InternalName *input, size_t num_elements,
                            size_t num_rows, size_t num_cols);
 
   virtual int get_state_dep() const override;

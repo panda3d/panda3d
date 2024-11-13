@@ -956,6 +956,25 @@ define_constant(const ShaderType *type, uint32_t constant) {
 }
 
 /**
+ * Defines a new spec constant.  Follow up with a call to decorate() to set the
+ * SpecId.
+ */
+uint32_t SpirVTransformPass::
+define_spec_constant(const ShaderType *type, uint32_t def_value) {
+  uint32_t type_id = define_type(type);
+
+  uint32_t id = allocate_id();
+  if (type == ShaderType::bool_type) {
+    add_definition(def_value ? spv::OpSpecConstantTrue : spv::OpSpecConstantFalse, {type_id, id});
+  } else {
+    add_definition(spv::OpSpecConstant, {type_id, id, def_value});
+  }
+
+  _db.record_spec_constant(id, type_id);
+  return id;
+}
+
+/**
  * Makes sure that the given type has all its structure members correctly laid
  * out using offsets and strides.
  */
@@ -1272,4 +1291,20 @@ branch_if(uint32_t cond) {
 void SpirVTransformPass::
 branch_endif(uint32_t false_label) {
   _new_functions.insert(_new_functions.end(), {(2u << spv::WordCountShift) | spv::OpLabel, false_label});
+}
+
+/**
+ * Issues an error about the given id.  Returns 0.
+ */
+uint32_t SpirVTransformPass::
+error_expected(uint32_t id, const char *msg) const {
+  std::ostringstream str;
+  str << id << " (";
+
+  const Definition &def = _db.get_definition(id);
+  def.output(str);
+
+  str << ") was expected to be " << msg << "\n";
+  nassert_raise(str.str());
+  return 0u;
 }

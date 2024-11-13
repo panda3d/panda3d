@@ -77,6 +77,7 @@ public:
   uint32_t define_int_constant(int32_t constant);
   uint32_t define_null_constant(const ShaderType *type);
   uint32_t define_constant(const ShaderType *type, uint32_t constant);
+  uint32_t define_spec_constant(const ShaderType *type, uint32_t def_value);
 
   /**
    * Helper class for storing a chain of member or array accesses.
@@ -134,6 +135,8 @@ protected:
 
   uint32_t branch_if(uint32_t cond);
   void branch_endif(uint32_t label);
+
+  uint32_t error_expected(uint32_t id, const char *msg) const;
 
   // The module is split into sections to make it easier to add instructions
   // to other sections while we are iterating.
