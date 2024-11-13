@@ -87,7 +87,7 @@ set_shader(const Shader *s, int priority) const {
   result->_shader_priority = priority;
   result->_auto_shader = false;
   result->_has_shader = true;
-  if (s->_subsumes_alpha_test) {
+  if (s != nullptr && s->_subsumes_alpha_test) {
     result->_flags |= ShaderAttrib::F_subsume_alpha_test;
   }
   return return_new(result);
