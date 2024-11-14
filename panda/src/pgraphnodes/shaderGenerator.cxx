@@ -40,6 +40,7 @@
 #include "directionalLight.h"
 #include "renderModeAttrib.h"
 #include "rescaleNormalAttrib.h"
+#include "colorWriteAttrib.h"
 #include "pointLight.h"
 #include "sphereLight.h"
 #include "spotlight.h"
@@ -443,6 +444,22 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
     have_alpha_blend = true;
   }
 
+  // Are we writing to the color channel at all?
+  bool have_color_write = false;
+  const ColorWriteAttrib *color_write;
+  rs->get_attrib_def(color_write);
+  if (color_write->get_channels() != ColorWriteAttrib::C_off) {
+    have_color_write = true;
+  } else {
+    key._flags |= ShaderKey::F_disable_color_write;
+
+    // Subsume alpha test so we can eliminate the color output
+    if (have_alpha_test) {
+      key._flags |= (alpha_test->get_mode() & 0x7) << ShaderKey::F_ALPHA_TEST_SHIFT;
+      key._alpha_test_ref = alpha_test->get_reference_alpha();
+    }
+  }
+
   if (have_alpha_blend || have_alpha_test) {
     key._flags |= ShaderKey::F_calc_primary_alpha;
   }
@@ -456,7 +473,7 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
     if (have_alpha_blend) {
       key._flags |= ShaderKey::F_disable_alpha_write;
     }
-    else {
+    else if (have_color_write) {
       key._flags |= ShaderKey::F_out_alpha_glow;
       if (have_alpha_test) {
         // Subsume the alpha test in our shader.
@@ -537,7 +554,7 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
         }
       }
 
-      if (shader_attrib->auto_shadow_on()) {
+      if (have_color_write && shader_attrib->auto_shadow_on()) {
         if (llnode->is_shadow_caster()) {
           light_flags |= ShaderKey::LF_has_shadows;
 
@@ -790,7 +807,7 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
     }
   }
 
-  if (shader_attrib->auto_ramp_on()) {
+  if (have_color_write && shader_attrib->auto_ramp_on()) {
     const LightRampAttrib *light_ramp;
     if (rs->get_attrib(light_ramp)) {
       key._light_ramp_mode = light_ramp->get_mode();
@@ -811,7 +828,7 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
 
   // Check for fog.
   const FogAttrib *fog;
-  if (rs->get_attrib(fog) && !fog->is_off()) {
+  if (have_color_write && rs->get_attrib(fog) && !fog->is_off()) {
     key._flags |= ((int)fog->get_fog()->get_mode() + 1) << ShaderKey::F_FOG_MODE_SHIFT;
   }
 
@@ -1392,7 +1409,9 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   if (key._flags & (ShaderKey::F_out_aux_normal | ShaderKey::F_out_aux_glow)) {
     text << "\t out float4 o_aux : COLOR1,\n";
   }
-  text << "\t out float4 o_color : COLOR0,\n";
+  if ((key._flags & ShaderKey::F_disable_color_write) == 0) {
+    text << "\t out float4 o_color : COLOR0,\n";
+  }
 
   if (need_color) {
     if (key._flags & ShaderKey::F_vertex_color) {
@@ -2052,7 +2071,9 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
 
   // The multiply is a workaround for a radeon driver bug.  It's annoying as
   // heck, since it produces an extra instruction.
-  text << "\t o_color = result * 1.000001;\n";
+  if ((key._flags & ShaderKey::F_disable_color_write) == 0) {
+    text << "\t o_color = result * 1.000001;\n";
+  }
   if ((key._flags & ShaderKey::F_ALPHA_TEST_MASK) != 0) {
     text << "\t // Shader subsumes normal alpha test.\n";
   }
@@ -2070,7 +2091,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   PT(Shader) shader = Shader::make(text.str(), Shader::SL_Cg);
   nassertr(shader != nullptr, nullptr);
 
-  shader->_subsumes_alpha_test = true;
+  shader->_subsumes_alpha_test = (key._flags & ShaderKey::F_ALPHA_TEST_MASK) != 0;
 
   reset_register_allocator();
 

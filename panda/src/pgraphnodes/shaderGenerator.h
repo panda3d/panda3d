@@ -122,6 +122,7 @@ protected:
       F_ALPHA_TEST_MASK       = 0x07000000,
 
       F_use_shadow_filter     = 0x08000000,
+      F_disable_color_write   = 0x10000000,
     };
 
     enum TextureFlags {
