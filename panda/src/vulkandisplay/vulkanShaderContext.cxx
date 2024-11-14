@@ -68,6 +68,7 @@ create_modules(VkDevice device, const ShaderType::Struct *push_constant_block_ty
   // Abuse the var id field in the access chain to store the parameter index.
   // Later we replace it with the id, because the id is unique per-module.
   pvector<AccessChain> tattr_set_params;
+  pvector<AccessChain> lattr_set_params;
   pvector<AccessChain> sattr_set_params;
 
   ShaderType::Struct shader_input_block_struct;
@@ -86,13 +87,21 @@ create_modules(VkDevice device, const ShaderType::Struct *push_constant_block_ty
     const ShaderType *remaining_type = r_extract_resources(param, chain, descriptors, param._type, num_resources);
 
     if (num_resources > 0) {
-      if (param._binding->get_state_dep() & Shader::D_texture) {
+      int state_dep = param._binding->get_state_dep();
+      if (state_dep & Shader::D_texture) {
         for (auto &item : descriptors) {
           tattr_set_params.push_back(item.first);
           _tattr_descriptors.push_back(std::move(item.second));
         }
         _num_tattr_descriptor_elements += num_resources;
-      } else {
+      }
+      else if (state_dep & Shader::D_light) {
+        for (auto &item : descriptors) {
+          lattr_set_params.push_back(item.first);
+        }
+        _uses_lattr_descriptors = true;
+      }
+      else {
         for (auto &item : descriptors) {
           sattr_set_params.push_back(item.first);
           _sattr_descriptors.push_back(std::move(item.second));
@@ -195,6 +204,20 @@ create_modules(VkDevice device, const ShaderType::Struct *push_constant_block_ty
         tattr_set_ids[i] = spv_module->get_parameter(index).id;
       }
     }
+    pvector<uint32_t> lattr_set_ids(lattr_set_params.size(), 0u);
+    for (size_t i = 0; i < lattr_set_params.size(); ++i) {
+      const AccessChain &chain = lattr_set_params[i];
+      int index = spv_module->find_parameter(_shader->_parameters[chain._var_id]._name);
+      if (index < 0) {
+        continue;
+      }
+      if (chain.size() > 0) {
+        // In a struct, need to hoist.
+        needs_hoist = true;
+      } else {
+        lattr_set_ids[i] = spv_module->get_parameter(index).id;
+      }
+    }
     pvector<uint32_t> sattr_set_ids(sattr_set_params.size(), 0u);
     for (size_t i = 0; i < sattr_set_params.size(); ++i) {
       const AccessChain &chain = sattr_set_params[i];
@@ -228,6 +251,22 @@ create_modules(VkDevice device, const ShaderType::Struct *push_constant_block_ty
               // Check if it hasn't been removed due to being unused.
               if (transformer.get_db().has_definition(it->second)) {
                 tattr_set_ids[i] = it->second;
+              }
+            }
+          }
+        }
+      }
+      for (size_t i = 0; i < lattr_set_params.size(); ++i) {
+        AccessChain chain = lattr_set_params[i];
+        if (chain.size() > 0) {
+          int index = spv_module->find_parameter(_shader->_parameters[chain._var_id]._name);
+          if (index > 0) {
+            chain._var_id = spv_module->get_parameter(index).id;
+            auto it = hoist_pass._hoisted_vars.find(chain);
+            if (it != hoist_pass._hoisted_vars.end()) {
+              // Check if it hasn't been removed due to being unused.
+              if (transformer.get_db().has_definition(it->second)) {
+                lattr_set_ids[i] = it->second;
               }
             }
           }
@@ -279,6 +318,9 @@ create_modules(VkDevice device, const ShaderType::Struct *push_constant_block_ty
     if (!tattr_set_ids.empty()) {
       transformer.bind_descriptor_set(VulkanGraphicsStateGuardian::DS_texture_attrib, tattr_set_ids);
     }
+    if (!lattr_set_ids.empty()) {
+      transformer.bind_descriptor_set(VulkanGraphicsStateGuardian::DS_light_attrib, lattr_set_ids);
+    }
     if (!sattr_set_ids.empty()) {
       if (_shader_input_block._size > 0) {
         // Make room for the uniform buffer binding.
@@ -310,7 +352,8 @@ create_modules(VkDevice device, const ShaderType::Struct *push_constant_block_ty
       success = false;
     }
 
-    if (spv_module->get_stage() == Shader::Stage::FRAGMENT) {
+    if (spv_module->get_stage() == Shader::Stage::FRAGMENT &&
+        !_shader->_subsumes_alpha_test) {
       // Set us up to easily create versions of the shader for various alpha
       // testing modes.
       SpirVInjectAlphaTestPass pass(SpirVInjectAlphaTestPass::M_greater, 0, true);
@@ -662,8 +705,8 @@ fetch_descriptor(VulkanGraphicsStateGuardian *gsg, const Descriptor &desc,
 
       VkDescriptorImageInfo &image_info = *image_infos++;
       image_info.sampler = sc->_sampler;
-      image_info.imageView = tc->get_image_view(view);
-      image_info.imageLayout = tc->_layout;
+      image_info.imageView = tc ? tc->get_image_view(view) : VK_NULL_HANDLE;
+      image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
     }
     break;
 
@@ -682,7 +725,7 @@ fetch_descriptor(VulkanGraphicsStateGuardian *gsg, const Descriptor &desc,
                             VK_ACCESS_SHADER_READ_BIT);
 
       VkBufferView &texel_buffer_view = *texel_buffer_views++;
-      texel_buffer_view = tc->get_buffer_view(view);
+      texel_buffer_view = tc ? tc->get_buffer_view(view) : VK_NULL_HANDLE;
     }
     break;
 
@@ -716,12 +759,12 @@ fetch_descriptor(VulkanGraphicsStateGuardian *gsg, const Descriptor &desc,
       int view = gsg->get_current_tex_view_offset();
       if (desc._type == VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER) {
         VkBufferView &texel_buffer_view = *texel_buffer_views++;
-        texel_buffer_view = tc->get_buffer_view(view);
+        texel_buffer_view = tc ? tc->get_buffer_view(view) : VK_NULL_HANDLE;
       } else {
         VkDescriptorImageInfo &image_info = *image_infos++;
         image_info.sampler = VK_NULL_HANDLE;
-        image_info.imageView = tc->get_image_view(view);
-        image_info.imageLayout = tc->_layout;
+        image_info.imageView = tc ? tc->get_image_view(view) : VK_NULL_HANDLE;
+        image_info.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
       }
     }
     break;

@@ -147,8 +147,8 @@ VulkanGraphicsPipe() : _max_allocation_size(0) {
   app_info.engineVersion = PANDA_NUMERIC_VERSION;
   app_info.apiVersion = VK_API_VERSION_1_0;
 
-  if (inst_version >= VK_MAKE_VERSION(1, 1, 0)) {
-    app_info.apiVersion = VK_MAKE_VERSION(1, 1, 0);
+  if (inst_version >= VK_MAKE_VERSION(1, 3, 0)) {
+    app_info.apiVersion = VK_MAKE_VERSION(1, 3, 0);
   }
 
   VkInstanceCreateInfo inst_info;
@@ -310,6 +310,15 @@ VulkanGraphicsPipe() : _max_allocation_size(0) {
   if (pVkGetPhysicalDeviceFeatures2 != nullptr) {
     VkPhysicalDeviceFeatures2 features2 = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2};
 
+    VkPhysicalDeviceDynamicRenderingFeatures dr_features = {
+      VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES,
+      features2.pNext,
+    };
+    if (_gpu_properties.apiVersion >= VK_MAKE_VERSION(1, 3, 0) ||
+        has_device_extension(VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME)) {
+      features2.pNext = &dr_features;
+    }
+
     VkPhysicalDeviceCustomBorderColorFeaturesEXT cbc_features = {
       VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUSTOM_BORDER_COLOR_FEATURES_EXT,
       features2.pNext,
@@ -353,6 +362,7 @@ VulkanGraphicsPipe() : _max_allocation_size(0) {
 
     pVkGetPhysicalDeviceFeatures2(_gpu, &features2);
     _gpu_features = features2.features;
+    _gpu_supports_dynamic_rendering = dr_features.dynamicRendering;
     _gpu_supports_custom_border_colors = cbc_features.customBorderColors
                                       && cbc_features.customBorderColorWithoutFormat;
     _gpu_supports_null_descriptor = ro2_features.nullDescriptor;
@@ -364,6 +374,7 @@ VulkanGraphicsPipe() : _max_allocation_size(0) {
   }
   else {
     vkGetPhysicalDeviceFeatures(_gpu, &_gpu_features);
+    _gpu_supports_dynamic_rendering = false;
     _gpu_supports_custom_border_colors = false;
     _gpu_supports_null_descriptor = false;
     _gpu_supports_vertex_attrib_divisor = false;

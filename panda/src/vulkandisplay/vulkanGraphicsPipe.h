@@ -74,6 +74,7 @@ public:
   VkPhysicalDevice _gpu;
   VkPhysicalDeviceFeatures _gpu_features;
   VkPhysicalDeviceProperties _gpu_properties;
+  bool _gpu_supports_dynamic_rendering = false;
   bool _gpu_supports_custom_border_colors = false;
   bool _gpu_supports_null_descriptor = false;
   bool _gpu_supports_vertex_attrib_divisor = false;

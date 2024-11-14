@@ -136,6 +136,22 @@ reset() {
   enabled_features.features.textureCompressionBC = features.textureCompressionBC;
   enabled_features.features.shaderFloat64 = features.shaderFloat64;
 
+  VkPhysicalDeviceDynamicRenderingFeatures dr_features = {
+    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES,
+    enabled_features.pNext,
+  };
+  if (pipe->_gpu_supports_dynamic_rendering) {
+    dr_features.dynamicRendering = VK_TRUE;
+    enabled_features.pNext = &dr_features;
+
+    if (pipe->_gpu_properties.apiVersion < VK_MAKE_VERSION(1, 3, 0)) {
+      extensions.push_back(VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME);
+    }
+    _supports_dynamic_rendering = true;
+  } else {
+    _supports_dynamic_rendering = false;
+  }
+
   VkPhysicalDeviceCustomBorderColorFeaturesEXT cbc_features = {
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CUSTOM_BORDER_COLOR_FEATURES_EXT,
     enabled_features.pNext,
@@ -293,6 +309,11 @@ reset() {
   _vkCmdDrawIndexed = (PFN_vkCmdDrawIndexed)vkGetDeviceProcAddr(_device, "vkCmdDrawIndexed");
   _vkCmdPushConstants = (PFN_vkCmdPushConstants)vkGetDeviceProcAddr(_device, "vkCmdPushConstants");
   _vkUpdateDescriptorSets = (PFN_vkUpdateDescriptorSets)vkGetDeviceProcAddr(_device, "vkUpdateDescriptorSets");
+
+  if (_supports_dynamic_rendering) {
+    _vkCmdBeginRendering = (PFN_vkCmdBeginRendering)vkGetDeviceProcAddr(_device, "vkCmdBeginRendering");
+    _vkCmdEndRendering = (PFN_vkCmdEndRendering)vkGetDeviceProcAddr(_device, "vkCmdEndRendering");
+  }
 
   if (_supports_extended_dynamic_state2) {
     _vkCmdSetPrimitiveTopologyEXT = (PFN_vkCmdSetPrimitiveTopologyEXT)vkGetDeviceProcAddr(_device, "vkCmdSetPrimitiveTopologyEXT");
@@ -463,6 +484,21 @@ reset() {
       &_lattr_descriptor_set_layout);
     if (err) {
       vulkan_error(err, "Failed to create descriptor set layout for LightAttrib");
+      return;
+    }
+  }
+
+  // Make a descriptor set that we apply when there are no lights.
+  {
+    VkDescriptorSetAllocateInfo alloc_info;
+    alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    alloc_info.pNext = nullptr;
+    alloc_info.descriptorPool = _descriptor_pool;
+    alloc_info.descriptorSetCount = 1;
+    alloc_info.pSetLayouts = &_lattr_descriptor_set_layout;
+    VkResult err = vkAllocateDescriptorSets(_device, &alloc_info, &_empty_lattr_descriptor_set);
+    if (err) {
+      vulkan_error(err, "Failed to allocate descriptor set for empty light attribute");
       return;
     }
   }
@@ -936,6 +972,12 @@ use_texture(Texture *texture, VkImageLayout layout,
 
   VulkanTextureContext *tc;
   DCAST_INTO_R(tc, texture->prepare_now(_prepared_objects, this), nullptr);
+
+  if (_fb_color_tc == tc || _fb_depth_tc == tc) {
+    vulkandisplay_cat.warning()
+      << "Attempt to use framebuffer texture " << *texture << " during render!\n";
+    return nullptr;
+  }
 
   // We only update the texture the first time it is used in a frame.
   // Otherwise, we would have to invalidate the descriptor sets.
@@ -2640,12 +2682,17 @@ set_state_and_transform(const RenderState *state,
 
   uint32_t first_set = 0;
   const LightAttrib *target_light;
-  state->get_attrib_def(target_light);
+  state->get_attrib(target_light);
   if (shader_changed ||
-      target_light != _state_rs->get_attrib_def(LightAttrib::get_class_slot())) {
-    if (get_attrib_descriptor_set(descriptor_sets[DS_light_attrib],
-                                  _lattr_descriptor_set_layout,
-                                  target_light)) {
+      target_light != _state_rs->get_attrib(LightAttrib::get_class_slot())) {
+    if (!sc->_uses_lattr_descriptors ||
+        target_light == nullptr ||
+        target_light->is_identity()) {
+      descriptor_sets[DS_light_attrib] = _empty_lattr_descriptor_set;
+    }
+    else if (get_attrib_descriptor_set(descriptor_sets[DS_light_attrib],
+                                      _lattr_descriptor_set_layout,
+                                      target_light)) {
       // The first time this set is bound in this frame, we update it.  Once we
       // use it in a command buffer, we can't update it again anyway.
       update_lattr_descriptor_set(descriptor_sets[DS_light_attrib], target_light);
@@ -4579,6 +4626,18 @@ make_pipeline(VulkanShaderContext *sc,
   pipeline_info.basePipelineHandle = VK_NULL_HANDLE;
   pipeline_info.basePipelineIndex = 0;
 
+  VkPipelineRenderingCreateInfo render_info;
+  if (_render_pass == VK_NULL_HANDLE) {
+    pipeline_info.pNext = &render_info;
+    render_info.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
+    render_info.pNext = nullptr;
+    render_info.viewMask = 0;
+    render_info.colorAttachmentCount = fb_config._color_formats.size();
+    render_info.pColorAttachmentFormats = fb_config._color_formats.data();
+    render_info.depthAttachmentFormat = fb_config._depth_format;
+    render_info.stencilAttachmentFormat = fb_config._stencil_format;
+  }
+
   VkResult err;
   VkPipeline pipeline;
   err = vkCreateGraphicsPipelines(_device, _pipeline_cache, 1, &pipeline_info, nullptr, &pipeline);
@@ -4748,8 +4807,8 @@ update_lattr_descriptor_set(VkDescriptorSet ds, const LightAttrib *attr) {
 
     VkDescriptorImageInfo &image_info = image_infos[i];
     image_info.sampler = VK_NULL_HANDLE;
-    image_info.imageView = tc->get_image_view(0);
-    image_info.imageLayout = tc->_layout;
+    image_info.imageView = tc ? tc->get_image_view(0) : VK_NULL_HANDLE;
+    image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
     VkWriteDescriptorSet &write = writes[i];
     write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;

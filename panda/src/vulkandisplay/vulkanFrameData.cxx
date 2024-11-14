@@ -142,6 +142,11 @@ end_transfer_cmd() {
         barrier.offset = 0;
         barrier.size = VK_WHOLE_SIZE;
       }
+
+      tc->_initial_src_access_mask = 0;
+      tc->_initial_dst_access_mask = 0;
+      tc->_initial_src_layout = VK_IMAGE_LAYOUT_UNDEFINED;
+      tc->_initial_dst_layout = VK_IMAGE_LAYOUT_UNDEFINED;
     }
     vkCmdPipelineBarrier(_transfer_cmd, _initial_barrier_src_stage_mask,
                          _initial_barrier_dst_stage_mask, 0,

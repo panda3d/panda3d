@@ -89,7 +89,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
       << "Drawing " << this << ": exposed.\n";
   }
 
-  /*if (mode != FM_render) {
+  /*if (mode == FM_refresh) {
     return true;
   }*/
 
@@ -103,10 +103,10 @@ begin_frame(FrameMode mode, Thread *current_thread) {
       _image_available = VK_NULL_HANDLE;
     }
     destroy_swapchain();
-    if (_render_pass != VK_NULL_HANDLE) {
+    /*if (_render_pass != VK_NULL_HANDLE) {
       vkDestroyRenderPass(vkgsg->_device, _render_pass, nullptr);
       _render_pass = VK_NULL_HANDLE;
-    }
+    }*/
     vkgsg->reset_if_new();
   }
 
@@ -114,14 +114,14 @@ begin_frame(FrameMode mode, Thread *current_thread) {
     return false;
   }
 
-  if (_current_clear_mask != _clear_mask || _render_pass == VK_NULL_HANDLE) {
+  /*if (_current_clear_mask != _clear_mask || _render_pass == VK_NULL_HANDLE) {
     // The clear flags have changed.  Recreate the render pass.  Note that the
     // clear flags don't factor into render pass compatibility, so we don't
     // need to recreate the framebuffer.
     if (!setup_render_pass()) {
       return false;
     }
-  }
+  }*/
 
   if (_swapchain_size != _size) {
     // Uh-oh, the window must have resized.  Recreate the swapchain.
@@ -143,7 +143,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 
   copy_async_screenshot();
 
-  if (mode != FM_render) {
+  if (mode == FM_refresh) {
     return true;
   }
 
@@ -174,7 +174,89 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   // transition the swapchain images into the valid state for rendering into.
   VkCommandBuffer cmd = frame_data._cmd;
 
-  VkClearValue clears[2];
+  VkRenderingInfo render_info = {VK_STRUCTURE_TYPE_RENDERING_INFO};
+  render_info.layerCount = 1;
+  render_info.renderArea.extent.width = _swapchain_size[0];
+  render_info.renderArea.extent.height = _swapchain_size[1];
+  render_info.colorAttachmentCount = 1;
+
+  VkRenderingAttachmentInfo color_attachment = {VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
+  color_attachment.imageView = color_tc->get_image_view(0);
+  color_attachment.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+  render_info.pColorAttachments = &color_attachment;
+
+  if (get_clear_color_active()) {
+    LColor clear_color = get_clear_color();
+    color_attachment.clearValue.color.float32[0] = clear_color[0];
+    color_attachment.clearValue.color.float32[1] = clear_color[1];
+    color_attachment.clearValue.color.float32[2] = clear_color[2];
+    color_attachment.clearValue.color.float32[3] = clear_color[3];
+    color_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+  } else {
+    color_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+  }
+  color_attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+
+  if (color_tc->_layout != color_attachment.imageLayout ||
+      (color_tc->_write_stage_mask & ~VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT) != 0 ||
+      (color_tc->_read_stage_mask & ~VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT) != 0) {
+    frame_data.add_initial_barrier(color_tc,
+      color_attachment.imageLayout,
+      VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+      VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
+  }
+
+  VkRenderingAttachmentInfo depth_attachment = {VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
+  VkRenderingAttachmentInfo stencil_attachment = {VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
+  if (_depth_stencil_tc != nullptr) {
+    nassertr(!_depth_stencil_tc->is_used_this_frame(frame_data), false);
+    _depth_stencil_tc->mark_used_this_frame(frame_data);
+
+    if (_depth_stencil_aspect_mask & VK_IMAGE_ASPECT_DEPTH_BIT) {
+      render_info.pDepthAttachment = &depth_attachment;
+
+      if (get_clear_depth_active()) {
+        depth_attachment.clearValue.depthStencil.depth = get_clear_depth();
+        depth_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+      } else {
+        depth_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+      }
+      depth_attachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+      depth_attachment.imageView = _depth_stencil_tc->get_image_view(0);
+      depth_attachment.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+    }
+
+    if (_depth_stencil_aspect_mask & VK_IMAGE_ASPECT_STENCIL_BIT) {
+      render_info.pStencilAttachment = &stencil_attachment;
+
+      if (get_clear_stencil_active()) {
+        stencil_attachment.clearValue.depthStencil.stencil = get_clear_stencil();
+        stencil_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+      } else {
+        stencil_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+      }
+      stencil_attachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+      stencil_attachment.imageView = _depth_stencil_tc->get_image_view(0);
+      stencil_attachment.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+    }
+
+    if (_depth_stencil_tc->_layout != VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL ||
+        (_depth_stencil_tc->_write_stage_mask & ~VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT) != 0 ||
+        (_depth_stencil_tc->_read_stage_mask & ~VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT) != 0) {
+      frame_data.add_initial_barrier(_depth_stencil_tc,
+        VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+        VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
+        VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT);
+    }
+  }
+
+  vkgsg->_vkCmdBeginRendering(cmd, &render_info);
+  vkgsg->_fb_color_tc = color_tc;
+  vkgsg->_fb_depth_tc = _depth_stencil_tc;
+  vkgsg->_fb_config = _fb_config_id;
+  return true;
+
+  /*VkClearValue clears[2];
 
   VkRenderPassBeginInfo begin_info;
   begin_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -261,7 +343,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   vkgsg->_fb_color_tc = color_tc;
   vkgsg->_fb_depth_tc = _depth_stencil_tc;
   vkgsg->_fb_config = _fb_config_id;
-  return true;
+  return true;*/
 }
 
 /**
@@ -281,17 +363,18 @@ end_frame(FrameMode mode, Thread *current_thread) {
   SwapBuffer &buffer = _swap_buffers[_image_index];
 
   VkSemaphore signal_done = VK_NULL_HANDLE;
-  if (mode == FM_render) {
-    vkCmdEndRenderPass(cmd);
+  if (mode != FM_refresh) {
+    vkgsg->_vkCmdEndRendering(cmd);
+/*    vkCmdEndRenderPass(cmd);
     vkgsg->_render_pass = VK_NULL_HANDLE;
 
     // The driver implicitly transitioned this to the final layout.
-    buffer._tc->_layout = _final_layout;
+    buffer._tc->_layout = _final_layout;*/
     buffer._tc->mark_written(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
                              VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
 
     if (_depth_stencil_tc != nullptr) {
-      _depth_stencil_tc->_layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+      //_depth_stencil_tc->_layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
       _depth_stencil_tc->mark_written(
         VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
         VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT);
@@ -465,10 +548,10 @@ close_window() {
     vkQueueWaitIdle(vkgsg->_queue);
     destroy_swapchain();
 
-    if (_render_pass != VK_NULL_HANDLE) {
+    /*if (_render_pass != VK_NULL_HANDLE) {
       vkDestroyRenderPass(vkgsg->_device, _render_pass, nullptr);
       _render_pass = VK_NULL_HANDLE;
-    }
+    }*/
 
     _gsg.clear();
   }
@@ -651,6 +734,8 @@ open_window() {
  */
 bool VulkanGraphicsWindow::
 setup_render_pass() {
+  return true;
+
   VulkanGraphicsStateGuardian *vkgsg;
   DCAST_INTO_R(vkgsg, _gsg, false);
 
@@ -835,7 +920,7 @@ destroy_swapchain() {
   // Destroy the resources held for each link in the swap chain.
   for (SwapBuffer &buffer : _swap_buffers) {
     // Destroy the framebuffers that use the swapchain images.
-    vkDestroyFramebuffer(device, buffer._framebuffer, nullptr);
+    //vkDestroyFramebuffer(device, buffer._framebuffer, nullptr);
     buffer._tc->_image = VK_NULL_HANDLE;
     buffer._tc->destroy_now(device);
     delete buffer._tc;
@@ -879,7 +964,7 @@ create_swapchain() {
 
   if (vulkandisplay_cat.is_debug()) {
     vulkandisplay_cat.debug()
-      << "Creating swap chain and framebuffers for VulkanGraphicsWindow " << this << "\n";
+      << "Creating swap chain for VulkanGraphicsWindow " << this << "\n";
   }
 
   // Get the surface capabilities to make sure we make a compatible swapchain.
@@ -1099,7 +1184,7 @@ create_swapchain() {
   }
 
   // Now finally create a framebuffer for each link in the swap chain.
-  VkImageView attach_views[3];
+  /*VkImageView attach_views[3];
   uint32_t num_views = 1;
 
   if (ms_color_view != VK_NULL_HANDLE) {
@@ -1120,11 +1205,11 @@ create_swapchain() {
   fb_info.pAttachments = attach_views;
   fb_info.width = swapchain_info.imageExtent.width;
   fb_info.height = swapchain_info.imageExtent.height;
-  fb_info.layers = 1;
+  fb_info.layers = 1;*/
 
   for (uint32_t i = 0; i < num_images; ++i) {
     SwapBuffer &buffer = _swap_buffers[i];
-    if (_ms_color_tc != nullptr) {
+    /*if (_ms_color_tc != nullptr) {
       attach_views[num_views - 1] = buffer._tc->get_image_view(0);
     } else {
       attach_views[0] = buffer._tc->get_image_view(0);
@@ -1133,7 +1218,7 @@ create_swapchain() {
     if (err) {
       vulkan_error(err, "Failed to create framebuffer");
       return false;
-    }
+    }*/
 
     // Don't start rendering until the image has been acquired.
     buffer._tc->mark_written(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0);

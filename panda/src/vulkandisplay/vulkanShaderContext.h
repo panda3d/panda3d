@@ -157,6 +157,8 @@ private:
   pvector<Descriptor> _sattr_descriptors;
   size_t _num_sattr_descriptor_elements = 0;
 
+  bool _uses_lattr_descriptors = false;
+
   VkDescriptorSet _uniform_descriptor_set = VK_NULL_HANDLE;
   VkBuffer _uniform_buffer = VK_NULL_HANDLE;
   uint32_t _dynamic_uniform_offset = 0;

@@ -144,7 +144,84 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   VulkanFrameData &frame_data = vkgsg->get_frame_data();
   VkCommandBuffer cmd = frame_data._cmd;
 
-  VkClearValue *clears = (VkClearValue *)
+  VkRenderingAttachmentInfo *color_attachments = (VkRenderingAttachmentInfo *)
+    alloca(_attachments.size() * sizeof(VkRenderingAttachmentInfo));
+  VkRenderingAttachmentInfo depth_attachment;
+  //VkRenderingAttachmentInfo stencil_attachment;
+
+  VkRenderingInfo render_info = {VK_STRUCTURE_TYPE_RENDERING_INFO};
+  render_info.layerCount = 1;
+  render_info.renderArea.extent.width = _framebuffer_size[0];
+  render_info.renderArea.extent.height = _framebuffer_size[1];
+  render_info.colorAttachmentCount = 0;
+  render_info.pColorAttachments = color_attachments;
+
+  for (size_t i = 0; i < _attachments.size(); ++i) {
+    Attachment &attach = _attachments[i];
+    nassertr(!attach._tc->is_used_this_frame(frame_data), false);
+    attach._tc->mark_used_this_frame(frame_data);
+
+    VkImageLayout layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    VkAccessFlags write_access_mask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    VkAccessFlags read_access_mask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
+    VkPipelineStageFlags stage_mask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+
+    if (attach._plane == RTP_stencil || attach._plane == RTP_depth ||
+        attach._plane == RTP_depth_stencil) {
+      depth_attachment = {VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
+      render_info.pDepthAttachment = &depth_attachment;
+      vkgsg->_fb_depth_tc = attach._tc;
+
+      layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+      stage_mask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT
+                 | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+      write_access_mask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+      read_access_mask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
+
+      if (get_clear_depth_active()) {
+        depth_attachment.clearValue.depthStencil.depth = get_clear_depth();
+        depth_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+      } else {
+        depth_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+      }
+      depth_attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+      depth_attachment.imageView = attach._tc->get_image_view(0);
+      depth_attachment.imageLayout = layout;
+    }
+    else if (attach._plane == RTP_color) {
+      VkRenderingAttachmentInfo &color_attachment =
+        color_attachments[render_info.colorAttachmentCount++];
+      color_attachment = {VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
+      vkgsg->_fb_color_tc = attach._tc;
+
+      if (get_clear_active(attach._plane)) {
+        LColor clear_color = get_clear_value(attach._plane);
+        color_attachment.clearValue.color.float32[0] = clear_color[0];
+        color_attachment.clearValue.color.float32[1] = clear_color[1];
+        color_attachment.clearValue.color.float32[2] = clear_color[2];
+        color_attachment.clearValue.color.float32[3] = clear_color[3];
+        color_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+      } else {
+        color_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+      }
+      color_attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+      color_attachment.imageView = attach._tc->get_image_view(0);
+      color_attachment.imageLayout = layout;
+    }
+
+    if (attach._tc->_layout != layout ||
+        (attach._tc->_write_stage_mask & ~stage_mask) != 0 ||
+        (attach._tc->_read_stage_mask & ~stage_mask) != 0) {
+      frame_data.add_initial_barrier(attach._tc,
+        layout, stage_mask, read_access_mask | write_access_mask);
+    }
+  }
+
+  vkgsg->_vkCmdBeginRendering(cmd, &render_info);
+  vkgsg->_fb_config = _fb_config_id;
+  return true;
+
+  /*VkClearValue *clears = (VkClearValue *)
     alloca(sizeof(VkClearValue) * _attachments.size());
 
   VkRenderPassBeginInfo begin_info;
@@ -205,7 +282,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 
   vkCmdBeginRenderPass(cmd, &begin_info, VK_SUBPASS_CONTENTS_INLINE);
   vkgsg->_render_pass = _render_pass;
-  vkgsg->_fb_config = _fb_config_id;
+  vkgsg->_fb_config = _fb_config_id;*/
 
   return true;
 }
@@ -225,7 +302,8 @@ end_frame(FrameMode mode, Thread *current_thread) {
     VkCommandBuffer cmd = vkgsg->_frame_data->_cmd;
     nassertv(cmd != VK_NULL_HANDLE);
 
-    vkCmdEndRenderPass(cmd);
+    vkgsg->_vkCmdEndRendering(cmd);
+    /*vkCmdEndRenderPass(cmd);
     vkgsg->_render_pass = VK_NULL_HANDLE;
 
     // The driver implicitly transitioned this to the final layout.
@@ -234,7 +312,7 @@ end_frame(FrameMode mode, Thread *current_thread) {
 
       // This seems to squelch a validation warning, not sure about this yet
       attach._tc->_write_stage_mask |= VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-    }
+    }*/
 
     // Now we can do copy-to-texture, now that the render pass has ended.
     copy_to_textures();
@@ -332,6 +410,8 @@ open_buffer() {
  */
 bool VulkanGraphicsBuffer::
 setup_render_pass() {
+  return true;
+
   VulkanGraphicsStateGuardian *vkgsg;
   DCAST_INTO_R(vkgsg, _gsg, false);
 
@@ -531,14 +611,14 @@ destroy_framebuffer() {
   }
   _attachments.clear();
 
-  if (_framebuffer != VK_NULL_HANDLE) {
+  /*if (_framebuffer != VK_NULL_HANDLE) {
     if (vkgsg->_last_frame_data != nullptr) {
       vkgsg->_last_frame_data->_pending_destroy_framebuffers.push_back(_framebuffer);
     } else {
       vkDestroyFramebuffer(device, _framebuffer, nullptr);
     }
     _framebuffer = VK_NULL_HANDLE;
-  }
+  }*/
 
   _is_valid = false;
 }
@@ -552,8 +632,6 @@ create_framebuffer(CDReader &cdata) {
   VulkanGraphicsStateGuardian *vkgsg;
   DCAST_INTO_R(vkpipe, _pipe, false);
   DCAST_INTO_R(vkgsg, _gsg, false);
-  VkDevice device = vkgsg->_device;
-  VkResult err;
 
   PT(Texture) color_texture;
   PT(Texture) depth_texture;
@@ -579,6 +657,10 @@ create_framebuffer(CDReader &cdata) {
     }
   }
 
+  /*
+  VkDevice device = vkgsg->_device;
+  VkResult err;
+
   uint32_t num_attachments = _attachments.size();
   VkImageView *attach_views = (VkImageView *)alloca(sizeof(VkImageView) * num_attachments);
 
@@ -601,7 +683,7 @@ create_framebuffer(CDReader &cdata) {
   if (err) {
     vulkan_error(err, "Failed to create framebuffer");
     return false;
-  }
+  }*/
 
   _framebuffer_size = _size;
   _is_valid = true;

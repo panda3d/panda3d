@@ -281,6 +281,7 @@ private:
   // The others are shader-dependent and stored in VulkanShaderContext.
   VkSampler _shadow_sampler;
   VkDescriptorSetLayout _lattr_descriptor_set_layout;
+  VkDescriptorSet _empty_lattr_descriptor_set;
 
   // Keep track of all the individual allocations.
   Mutex _allocator_lock;
@@ -298,6 +299,7 @@ private:
   uint64_t _last_finished_frame = 0;
 
   // Feature checks.
+  bool _supports_dynamic_rendering = false;
   bool _supports_custom_border_colors = false;
   bool _supports_vertex_attrib_divisor = false;
   bool _supports_vertex_attrib_zero_divisor = false;
@@ -305,11 +307,13 @@ private:
   bool _supports_extended_dynamic_state2_patch_control_points = false;
 
   // Function pointers.
+  PFN_vkCmdBeginRendering _vkCmdBeginRendering;
   PFN_vkCmdBindIndexBuffer _vkCmdBindIndexBuffer;
   PFN_vkCmdBindPipeline _vkCmdBindPipeline;
   PFN_vkCmdBindVertexBuffers _vkCmdBindVertexBuffers;
   PFN_vkCmdDraw _vkCmdDraw;
   PFN_vkCmdDrawIndexed _vkCmdDrawIndexed;
+  PFN_vkCmdEndRendering _vkCmdEndRendering;
   PFN_vkCmdPushConstants _vkCmdPushConstants;
   PFN_vkCmdSetPatchControlPointsEXT _vkCmdSetPatchControlPointsEXT;
   PFN_vkCmdSetPrimitiveRestartEnableEXT _vkCmdSetPrimitiveRestartEnableEXT;
