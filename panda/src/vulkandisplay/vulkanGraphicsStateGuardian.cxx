@@ -462,23 +462,24 @@ reset() {
       return;
     }
 
-    VkDescriptorSetLayoutBinding shadow_bindings[num_shadow_maps];
-
-    for (uint32_t i = 0; i < num_shadow_maps; ++i) {
-      VkDescriptorSetLayoutBinding &binding = shadow_bindings[i];
-      binding.binding = i;
-      binding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-      binding.descriptorCount = 1;
-      binding.stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS;
-      binding.pImmutableSamplers = &_shadow_sampler;
+    VkSampler immutable_samplers[num_shadow_maps];
+    for (size_t i = 0; i < num_shadow_maps; ++i) {
+      immutable_samplers[i] = _shadow_sampler;
     }
+
+    VkDescriptorSetLayoutBinding binding;
+    binding.binding = 0;
+    binding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    binding.descriptorCount = num_shadow_maps;
+    binding.stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS;
+    binding.pImmutableSamplers = immutable_samplers;
 
     VkDescriptorSetLayoutCreateInfo set_info;
     set_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
     set_info.pNext = nullptr;
     set_info.flags = 0;
-    set_info.bindingCount = num_shadow_maps;
-    set_info.pBindings = shadow_bindings;
+    set_info.bindingCount = 1;
+    set_info.pBindings = &binding;
 
     err = vkCreateDescriptorSetLayout(_device, &set_info, nullptr,
       &_lattr_descriptor_set_layout);
@@ -2687,7 +2688,7 @@ set_state_and_transform(const RenderState *state,
       target_light != _state_rs->get_attrib(LightAttrib::get_class_slot())) {
     if (!sc->_uses_lattr_descriptors ||
         target_light == nullptr ||
-        target_light->is_identity()) {
+        target_light->get_num_on_lights() == 0) {
       descriptor_sets[DS_light_attrib] = _empty_lattr_descriptor_set;
     }
     else if (get_attrib_descriptor_set(descriptor_sets[DS_light_attrib],
@@ -4759,12 +4760,23 @@ update_lattr_descriptor_set(VkDescriptorSet ds, const LightAttrib *attr) {
   PStatTimer timer(_update_lattr_descriptor_set_pcollector);
 
   const size_t num_shadow_maps = 8;
-  VkWriteDescriptorSet *writes = (VkWriteDescriptorSet *)alloca(num_shadow_maps * sizeof(VkWriteDescriptorSet));
   VkDescriptorImageInfo *image_infos = (VkDescriptorImageInfo *)alloca(num_shadow_maps * sizeof(VkDescriptorImageInfo));
+
+  VkWriteDescriptorSet write;
+  write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+  write.pNext = nullptr;
+  write.dstSet = ds;
+  write.dstBinding = 0;
+  write.dstArrayElement = 0;
+  write.descriptorCount = num_shadow_maps;
+  write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+  write.pImageInfo = image_infos;
+  write.pBufferInfo = nullptr;
+  write.pTexelBufferView = nullptr;
 
   size_t num_lights = attr->get_num_non_ambient_lights();
 
-  PT(Texture) dummy = get_dummy_shadow_map(Texture::TT_2d_texture);
+  PT(Texture) dummy = get_dummy_shadow_map(false);
 
   for (size_t i = 0; i < num_shadow_maps; ++i) {
     PT(Texture) texture;
@@ -4805,25 +4817,20 @@ update_lattr_descriptor_set(VkDescriptorSet ds, const LightAttrib *attr) {
     tc = use_texture(texture, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
                      stage_flags, VK_ACCESS_SHADER_READ_BIT);
 
+    if (tc == nullptr) {
+      // We can't bind this because we're currently rendering into it.
+      texture = dummy;
+      tc = use_texture(texture, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                       stage_flags, VK_ACCESS_SHADER_READ_BIT);
+    }
+
     VkDescriptorImageInfo &image_info = image_infos[i];
     image_info.sampler = VK_NULL_HANDLE;
     image_info.imageView = tc ? tc->get_image_view(0) : VK_NULL_HANDLE;
     image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-
-    VkWriteDescriptorSet &write = writes[i];
-    write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    write.pNext = nullptr;
-    write.dstSet = ds;
-    write.dstBinding = i;
-    write.dstArrayElement = 0;
-    write.descriptorCount = 1;
-    write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    write.pImageInfo = &image_info;
-    write.pBufferInfo = nullptr;
-    write.pTexelBufferView = nullptr;
   }
 
-  _vkUpdateDescriptorSets(_device, num_shadow_maps, writes, 0, nullptr);
+  _vkUpdateDescriptorSets(_device, 1, &write, 0, nullptr);
   return true;
 }
 
