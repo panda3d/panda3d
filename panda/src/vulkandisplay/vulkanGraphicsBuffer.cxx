@@ -46,8 +46,7 @@ VulkanGraphicsBuffer::
  */
 bool VulkanGraphicsBuffer::
 get_supports_render_texture() const {
-  //TODO: add render-to-texture support.
-  return false;
+  return true;
 }
 
 /**
@@ -115,13 +114,15 @@ begin_frame(FrameMode mode, Thread *current_thread) {
     }
   }
 
-  if (_framebuffer_size != _size) {
-    // Uh-oh, the window must have resized.  Recreate the framebuffer.
-    // Before destroying the old, make sure the queue is no longer rendering
-    // anything to it.
-    destroy_framebuffer();
-    if (!create_framebuffer()) {
-      return false;
+  {
+    CDReader cdata(_cycler);
+    if (cdata->_textures_seq != _last_textures_seq ||
+        _framebuffer_size != _size) {
+      // The buffer was resized or the attachments were changed.
+      destroy_framebuffer();
+      if (!create_framebuffer(cdata)) {
+        return false;
+      }
     }
   }
 
@@ -204,7 +205,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 
   vkCmdBeginRenderPass(cmd, &begin_info, VK_SUBPASS_CONTENTS_INLINE);
   vkgsg->_render_pass = _render_pass;
-  vkgsg->_fb_ms_count = VK_SAMPLE_COUNT_1_BIT;
+  vkgsg->_fb_config = _fb_config_id;
 
   return true;
 }
@@ -305,101 +306,12 @@ open_buffer() {
     return false;
   }
 
-  // Choose a suitable color format.  Sorted in order of preferability,
-  // preferring lower bpps over higher bpps, and preferring formats that pack
-  // bits in fewer channels (because if the user only requests red bits, they
-  // probably would prefer to maximize the amount of red bits rather than to
-  // have bits in other channels that they don't end up using)
-  static const struct {
-    int rgb, r, g, b, a;
-    bool has_float;
-    VkFormat format;
-  } formats[] = {
-    { 8,  8,  0,  0,  0, false, VK_FORMAT_R8_UNORM},
-    {16,  8,  8,  0,  0, false, VK_FORMAT_R8G8_UNORM},
-    {16,  5,  6,  5,  0, false, VK_FORMAT_R5G6B5_UNORM_PACK16},
-    {15,  5,  5,  5,  1, false, VK_FORMAT_A1R5G5B5_UNORM_PACK16},
-    {16, 16,  0,  0,  0,  true, VK_FORMAT_R16_SFLOAT},
-    {24,  8,  8,  8,  8, false, VK_FORMAT_B8G8R8A8_UNORM},
-    {32, 16, 16,  0,  0, false, VK_FORMAT_R16G16_SFLOAT},
-    {30, 10, 10, 10,  2, false, VK_FORMAT_A2B10G10R10_UNORM_PACK32},
-    {48, 16, 16, 16, 16,  true, VK_FORMAT_R16G16B16A16_SFLOAT},
-    {32, 32,  0,  0,  0,  true, VK_FORMAT_R32_SFLOAT},
-    {64, 32, 32,  0,  0,  true, VK_FORMAT_R32G32_SFLOAT},
-    {96, 32, 32, 32, 32,  true, VK_FORMAT_R32G32B32A32_SFLOAT},
-    {0}
-  };
+  _fb_config_id = vkgsg->choose_fb_config(_fb_config, _fb_properties);
 
-  _color_format = VK_FORMAT_UNDEFINED;
-
-  if (_fb_properties.get_srgb_color()) {
-    // This the only sRGB format.  Deal with it.
-    _color_format = VK_FORMAT_B8G8R8A8_SRGB;
-    _fb_properties.set_rgba_bits(8, 8, 8, 8);
-    _fb_properties.set_float_color(false);
-
-  } else if (_fb_properties.get_rgb_color() ||
-             _fb_properties.get_color_bits() > 0) {
-    for (int i = 0; formats[i].r; ++i) {
-      if (formats[i].r >= _fb_properties.get_red_bits() &&
-          formats[i].g >= _fb_properties.get_green_bits() &&
-          formats[i].b >= _fb_properties.get_blue_bits() &&
-          formats[i].a >= _fb_properties.get_alpha_bits() &&
-          formats[i].rgb >= _fb_properties.get_color_bits() &&
-          formats[i].has_float >= _fb_properties.get_float_color()) {
-
-        // This format meets the requirements.
-        _color_format = formats[i].format;
-        _fb_properties.set_rgba_bits(formats[i].r, formats[i].g,
-                                     formats[i].b, formats[i].a);
-        break;
-      }
-    }
-  }
-
-  // Choose a suitable depth/stencil format that satisfies the requirements.
-  VkFormatProperties fmt_props;
-  bool request_depth32 = _fb_properties.get_depth_bits() > 24 ||
-                         _fb_properties.get_float_depth();
-
-  if (_fb_properties.get_depth_bits() > 0 && _fb_properties.get_stencil_bits() > 0) {
-    // Vulkan requires support for at least of one of these two formats.
-    vkGetPhysicalDeviceFormatProperties(vkpipe->_gpu, VK_FORMAT_D32_SFLOAT_S8_UINT, &fmt_props);
-    bool supports_depth32 = (fmt_props.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT) != 0;
-    vkGetPhysicalDeviceFormatProperties(vkpipe->_gpu, VK_FORMAT_D24_UNORM_S8_UINT, &fmt_props);
-    bool supports_depth24 = (fmt_props.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT) != 0;
-
-    if ((supports_depth32 && request_depth32) || !supports_depth24) {
-      _depth_stencil_format = VK_FORMAT_D32_SFLOAT_S8_UINT;
-      _fb_properties.set_depth_bits(32);
-    } else {
-      _depth_stencil_format = VK_FORMAT_D24_UNORM_S8_UINT;
-      _fb_properties.set_depth_bits(24);
-    }
-    _fb_properties.set_stencil_bits(8);
-
+  if (_fb_properties.get_stencil_bits() > 0) {
     _depth_stencil_plane = RTP_depth_stencil;
-
-  } else if (_fb_properties.get_depth_bits() > 0) {
-    // Vulkan requires support for at least of one of these two formats.
-    vkGetPhysicalDeviceFormatProperties(vkpipe->_gpu, VK_FORMAT_D32_SFLOAT, &fmt_props);
-    bool supports_depth32 = (fmt_props.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT) != 0;
-    vkGetPhysicalDeviceFormatProperties(vkpipe->_gpu, VK_FORMAT_X8_D24_UNORM_PACK32, &fmt_props);
-    bool supports_depth24 = (fmt_props.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT) != 0;
-
-    if ((supports_depth32 && request_depth32) || !supports_depth24) {
-      _depth_stencil_format = VK_FORMAT_D32_SFLOAT;
-      _fb_properties.set_depth_bits(32);
-    } else {
-      _depth_stencil_format = VK_FORMAT_X8_D24_UNORM_PACK32;
-      _fb_properties.set_depth_bits(24);
-    }
-
-    _depth_stencil_plane = RTP_depth;
-
   } else {
-    _depth_stencil_format = VK_FORMAT_UNDEFINED;
-    _depth_stencil_plane = RTP_depth_stencil;
+    _depth_stencil_plane = RTP_depth;
   }
 
   if (_creation_flags & GraphicsPipe::BF_size_track_host) {
@@ -408,7 +320,7 @@ open_buffer() {
     _size = host->get_size();
   }
 
-  return setup_render_pass() && create_framebuffer();
+  return setup_render_pass();
 }
 
 /**
@@ -461,10 +373,11 @@ setup_render_pass() {
   dependency.dstAccessMask = 0;
   dependency.dependencyFlags = 0;
 
-  if (_color_format != VK_FORMAT_UNDEFINED) {
+  bool have_color_reference = false;
+  if (!_fb_config._color_formats.empty()) {
     VkAttachmentDescription &attach = attachments[ai];
     attach.flags = 0;
-    attach.format = _color_format;
+    attach.format = _fb_config._color_formats[0];
     attach.samples = VK_SAMPLE_COUNT_1_BIT;
     attach.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
     attach.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
@@ -491,12 +404,14 @@ setup_render_pass() {
                                 VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
     color_reference.attachment = ai++;
+    have_color_reference = true;
   }
 
-  if (_depth_stencil_format != VK_FORMAT_UNDEFINED) {
+  bool have_depth_reference = false;
+  if (_fb_config._depth_format != VK_FORMAT_UNDEFINED) {
     VkAttachmentDescription &attach = attachments[ai];
     attach.flags = 0;
-    attach.format = _depth_stencil_format;
+    attach.format = _fb_config._depth_format;
     attach.samples = VK_SAMPLE_COUNT_1_BIT;
     attach.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
     attach.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
@@ -528,6 +443,7 @@ setup_render_pass() {
     dependency.dstAccessMask |= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
 
     depth_reference.attachment = ai++;
+    have_depth_reference = true;
   }
 
   if (dependency.srcStageMask == 0) {
@@ -539,10 +455,10 @@ setup_render_pass() {
   subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
   subpass.inputAttachmentCount = 0;
   subpass.pInputAttachments = nullptr;
-  subpass.colorAttachmentCount = _color_format ? 1 : 0;
-  subpass.pColorAttachments = &color_reference;
+  subpass.colorAttachmentCount = have_color_reference ? 1 : 0;
+  subpass.pColorAttachments = have_color_reference ? &color_reference : nullptr;
   subpass.pResolveAttachments = nullptr;
-  subpass.pDepthStencilAttachment = _depth_stencil_format ? &depth_reference : nullptr;
+  subpass.pDepthStencilAttachment = have_depth_reference ? &depth_reference : nullptr;
   subpass.preserveAttachmentCount = 0;
   subpass.pPreserveAttachments = nullptr;
 
@@ -609,7 +525,9 @@ destroy_framebuffer() {
     } else {
       attach._tc->destroy_now(device);
     }
-    delete attach._tc;
+    if (attach._texture.is_null()) {
+      delete attach._tc;
+    }
   }
   _attachments.clear();
 
@@ -629,7 +547,7 @@ destroy_framebuffer() {
  * Creates or recreates the framebuffer.
  */
 bool VulkanGraphicsBuffer::
-create_framebuffer() {
+create_framebuffer(CDReader &cdata) {
   VulkanGraphicsPipe *vkpipe;
   VulkanGraphicsStateGuardian *vkgsg;
   DCAST_INTO_R(vkpipe, _pipe, false);
@@ -637,9 +555,28 @@ create_framebuffer() {
   VkDevice device = vkgsg->_device;
   VkResult err;
 
-  if (!create_attachment(RTP_color, _color_format) ||
-      !create_attachment(_depth_stencil_plane, _depth_stencil_format)) {
-    return false;
+  PT(Texture) color_texture;
+  PT(Texture) depth_texture;
+  for (const RenderTexture &rt : cdata->_textures) {
+    if (rt._rtm_mode == RTM_bind_or_copy || rt._rtm_mode == RTM_bind_layered) {
+      if (rt._plane == RTP_color) {
+        color_texture = rt._texture;
+      }
+      if (rt._plane == RTP_depth || rt._plane == RTP_depth_stencil) {
+        depth_texture = rt._texture;
+      }
+    }
+  }
+
+  if (!_fb_config._color_formats.empty()) {
+    if (!create_attachment(RTP_color, _fb_config._color_formats[0], color_texture)) {
+      return false;
+    }
+  }
+  if (_fb_config._depth_format != VK_FORMAT_UNDEFINED) {
+    if (!create_attachment(_depth_stencil_plane, _fb_config._depth_format, depth_texture)) {
+      return false;
+    }
   }
 
   uint32_t num_attachments = _attachments.size();
@@ -668,6 +605,7 @@ create_framebuffer() {
 
   _framebuffer_size = _size;
   _is_valid = true;
+  _last_textures_seq = cdata->_textures_seq;
   return true;
 }
 
@@ -676,7 +614,7 @@ create_framebuffer() {
  * @return Returns true on success.
  */
 bool VulkanGraphicsBuffer::
-create_attachment(RenderTexturePlane plane, VkFormat format) {
+create_attachment(RenderTexturePlane plane, VkFormat format, Texture *texture) {
   if (format == VK_FORMAT_UNDEFINED) {
     return true;
   }
@@ -693,66 +631,93 @@ create_attachment(RenderTexturePlane plane, VkFormat format) {
   extent.height = _size[1];
   extent.depth = 1;
 
-  VkImageUsageFlags usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
-  if (plane == RTP_depth || plane == RTP_stencil || plane == RTP_depth_stencil) {
-    usage |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-  } else {
-    usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+  VulkanTextureContext *tc;
+  if (texture != nullptr) {
+    Texture::Format tex_format;
+    Texture::ComponentType tex_component_type;
+    nassertr_always(vkgsg->lookup_image_format(format, tex_format, tex_component_type), false);
+
+    texture->set_format(tex_format);
+    texture->set_component_type(tex_component_type);
+    texture->set_render_to_texture(true);
+
+    DCAST_INTO_R(tc, texture->prepare_now(vkgsg->get_prepared_objects(), vkgsg), false);
+
+    if (tc->needs_recreation()) {
+      if (vkgsg->_frame_data != nullptr) {
+        tc->release(*vkgsg->_frame_data);
+      } else {
+        tc->release(*vkgsg->_last_frame_data);
+      }
+      if (!vkgsg->create_texture(tc)) {
+        return false;
+      }
+      tc->mark_loaded();
+    }
+  }
+  else {
+    VkImageUsageFlags usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+    if (plane == RTP_depth || plane == RTP_stencil || plane == RTP_depth_stencil) {
+      usage |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+    } else {
+      usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+    }
+
+    tc = new VulkanTextureContext(vkgsg->get_prepared_objects());
+    if (!vkgsg->create_image(tc, VK_IMAGE_TYPE_2D, format, extent, 1, 1,
+                             VK_SAMPLE_COUNT_1_BIT, usage)) {
+      delete tc;
+      return false;
+    }
+
+    VkImageViewCreateInfo view_info;
+    view_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+    view_info.pNext = nullptr;
+    view_info.flags = 0;
+    view_info.image = tc->_image;
+    view_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
+    view_info.format = tc->_format;
+    view_info.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+    view_info.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+    view_info.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+    view_info.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+    view_info.subresourceRange.baseMipLevel = 0;
+    view_info.subresourceRange.levelCount = 1;
+    view_info.subresourceRange.baseArrayLayer = 0;
+    view_info.subresourceRange.layerCount = 1;
+
+    switch (plane) {
+    default:
+      view_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+      break;
+
+    case RTP_depth:
+      view_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+      break;
+
+    case RTP_stencil:
+      view_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_STENCIL_BIT;
+      break;
+
+    case RTP_depth_stencil:
+      view_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+      //                                      | VK_IMAGE_ASPECT_STENCIL_BIT;
+      break;
+    }
+    tc->_aspect_mask = view_info.subresourceRange.aspectMask;
+
+    VkImageView image_view;
+    VkResult err;
+    err = vkCreateImageView(device, &view_info, nullptr, &image_view);
+    if (err) {
+      vulkan_error(err, "Failed to create image view for attachment");
+      delete tc;
+      return false;
+    }
+
+    tc->_image_views.push_back(image_view);
   }
 
-  VulkanTextureContext *tc = new VulkanTextureContext(vkgsg->get_prepared_objects());
-  if (!vkgsg->create_image(tc, VK_IMAGE_TYPE_2D, format, extent, 1, 1,
-                           VK_SAMPLE_COUNT_1_BIT, usage)) {
-    delete tc;
-    return false;
-  }
-
-  VkImageViewCreateInfo view_info;
-  view_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-  view_info.pNext = nullptr;
-  view_info.flags = 0;
-  view_info.image = tc->_image;
-  view_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
-  view_info.format = tc->_format;
-  view_info.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-  view_info.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-  view_info.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-  view_info.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-  view_info.subresourceRange.baseMipLevel = 0;
-  view_info.subresourceRange.levelCount = 1;
-  view_info.subresourceRange.baseArrayLayer = 0;
-  view_info.subresourceRange.layerCount = 1;
-
-  switch (plane) {
-  default:
-    view_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-    break;
-
-  case RTP_depth:
-    view_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-    break;
-
-  case RTP_stencil:
-    view_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_STENCIL_BIT;
-    break;
-
-  case RTP_depth_stencil:
-    view_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-    //                                      | VK_IMAGE_ASPECT_STENCIL_BIT;
-    break;
-  }
-  tc->_aspect_mask = view_info.subresourceRange.aspectMask;
-
-  VkImageView image_view;
-  VkResult err;
-  err = vkCreateImageView(device, &view_info, nullptr, &image_view);
-  if (err) {
-    vulkan_error(err, "Failed to create image view for attachment");
-    delete tc;
-    return false;
-  }
-
-  tc->_image_views.push_back(image_view);
-  _attachments.push_back({tc, plane});
+  _attachments.push_back({texture, tc, plane});
   return true;
 }

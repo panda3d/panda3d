@@ -260,7 +260,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   vkgsg->_render_pass = _render_pass;
   vkgsg->_fb_color_tc = color_tc;
   vkgsg->_fb_depth_tc = _depth_stencil_tc;
-  vkgsg->_fb_ms_count = _ms_count;
+  vkgsg->_fb_config = _fb_config_id;
   return true;
 }
 
@@ -540,27 +540,6 @@ open_window() {
     return false;
   }
 
-  // Choose a sample count.
-  if (_fb_properties.get_multisamples() > 1) {
-    const VkPhysicalDeviceLimits &limits = vkpipe->_gpu_properties.limits;
-
-    VkSampleCountFlags supported = limits.framebufferColorSampleCounts;
-    if (_fb_properties.get_depth_bits() > 0) {
-      supported &= limits.framebufferDepthSampleCounts;
-    }
-    if (_fb_properties.get_stencil_bits() > 0) {
-      supported &= limits.framebufferStencilSampleCounts;
-    }
-
-    // Round up requested bits to next power of two, and flood down.
-    VkSampleCountFlags accepted = ::flood_bits_down((uint32_t)(_fb_properties.get_multisamples() - 1) << 1u);
-
-    // Select the highest overlapping bit.
-    _ms_count = (VkSampleCountFlagBits)(1u << ::get_highest_on_bit(accepted & supported));
-  } else {
-    _ms_count = VK_SAMPLE_COUNT_1_BIT;
-  }
-
   // Make sure we have a GSG, which manages a VkDevice.
   VulkanGraphicsStateGuardian *vkgsg;
   uint32_t queue_family_index = 0;
@@ -610,13 +589,8 @@ open_window() {
   // If the format list includes just one entry of VK_FORMAT_UNDEFINED, the
   // surface has no preferred format.  Otherwise, at least one supported
   // format will be returned.
-  //TODO: add more logic for picking a suitable format.
   if (num_formats == 1 && formats[0].format == VK_FORMAT_UNDEFINED) {
-    if (_fb_properties.get_srgb_color()) {
-      _surface_format.format = VK_FORMAT_B8G8R8A8_SRGB;
-    } else {
-      _surface_format.format = VK_FORMAT_B8G8R8A8_UNORM;
-    }
+    _surface_format.format = VK_FORMAT_UNDEFINED;
     _surface_format.colorSpace = VK_COLORSPACE_SRGB_NONLINEAR_KHR;
   }
   else {
@@ -644,54 +618,19 @@ open_window() {
       }
     }
   }
+  _fb_config_id = vkgsg->choose_fb_config(_fb_config, _fb_properties,
+                                          _surface_format.format);
 
-  // Choose a suitable depth/stencil format that satisfies the requirements.
-  VkFormatProperties fmt_props;
-  bool request_depth32 = _fb_properties.get_depth_bits() > 24 ||
-                         _fb_properties.get_float_depth();
-
-  if (_fb_properties.get_depth_bits() > 0 && _fb_properties.get_stencil_bits() > 0) {
-    // Vulkan requires support for at least of one of these two formats.
-    vkGetPhysicalDeviceFormatProperties(vkpipe->_gpu, VK_FORMAT_D32_SFLOAT_S8_UINT, &fmt_props);
-    bool supports_depth32 = (fmt_props.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT) != 0;
-    vkGetPhysicalDeviceFormatProperties(vkpipe->_gpu, VK_FORMAT_D24_UNORM_S8_UINT, &fmt_props);
-    bool supports_depth24 = (fmt_props.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT) != 0;
-
-    if ((supports_depth32 && request_depth32) || !supports_depth24) {
-      _depth_stencil_format = VK_FORMAT_D32_SFLOAT_S8_UINT;
-      _fb_properties.set_depth_bits(32);
-    } else {
-      _depth_stencil_format = VK_FORMAT_D24_UNORM_S8_UINT;
-      _fb_properties.set_depth_bits(24);
-    }
-    _fb_properties.set_stencil_bits(8);
-
+  if (_fb_properties.get_stencil_bits() > 0) {
     _depth_stencil_aspect_mask = VK_IMAGE_ASPECT_DEPTH_BIT |
                                  VK_IMAGE_ASPECT_STENCIL_BIT;
-
-  } else if (_fb_properties.get_depth_bits() > 0) {
-    // Vulkan requires support for at least of one of these two formats.
-    vkGetPhysicalDeviceFormatProperties(vkpipe->_gpu, VK_FORMAT_D32_SFLOAT, &fmt_props);
-    bool supports_depth32 = (fmt_props.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT) != 0;
-    vkGetPhysicalDeviceFormatProperties(vkpipe->_gpu, VK_FORMAT_X8_D24_UNORM_PACK32, &fmt_props);
-    bool supports_depth24 = (fmt_props.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT) != 0;
-
-    if ((supports_depth32 && request_depth32) || !supports_depth24) {
-      _depth_stencil_format = VK_FORMAT_D32_SFLOAT;
-      _fb_properties.set_depth_bits(32);
-    } else {
-      _depth_stencil_format = VK_FORMAT_X8_D24_UNORM_PACK32;
-      _fb_properties.set_depth_bits(24);
-    }
-
+  }
+  else if (_fb_properties.get_depth_bits() > 0) {
     _depth_stencil_aspect_mask = VK_IMAGE_ASPECT_DEPTH_BIT;
-
-  } else {
-    _depth_stencil_format = VK_FORMAT_UNDEFINED;
+  }
+  else {
     _depth_stencil_aspect_mask = 0;
   }
-
-  _fb_properties.set_multisamples(_ms_count);
 
   // Don't create the swapchain yet if we haven't yet gotten the configure
   // notify event, since we don't know the final size yet.
@@ -757,7 +696,7 @@ setup_render_pass() {
   VkAttachmentDescription attachments[3];
   attachments[0].flags = 0;
   attachments[0].format = _surface_format.format;
-  attachments[0].samples = _ms_count;
+  attachments[0].samples = _fb_config._sample_count;
   attachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
   attachments[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
   attachments[0].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -765,7 +704,7 @@ setup_render_pass() {
   attachments[0].initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
   attachments[0].finalLayout = _final_layout;
 
-  if (_ms_count > VK_SAMPLE_COUNT_1_BIT) {
+  if (_fb_config._sample_count > VK_SAMPLE_COUNT_1_BIT) {
     // If multisampling, we don't present this, but resolve it.
     attachments[0].finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
   }
@@ -792,10 +731,10 @@ setup_render_pass() {
   dependency.dependencyFlags = 0;
 
   size_t i = 1;
-  if (_depth_stencil_format) {
+  if (_fb_config._depth_format) {
     attachments[i].flags = 0;
-    attachments[i].format = _depth_stencil_format;
-    attachments[i].samples = _ms_count;
+    attachments[i].format = _fb_config._depth_format;
+    attachments[i].samples = _fb_config._sample_count;
     attachments[i].loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
     attachments[i].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
     attachments[i].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -828,7 +767,7 @@ setup_render_pass() {
   }
 
   // Also create an attachment reference for the resolve target.
-  if (_ms_count > VK_SAMPLE_COUNT_1_BIT) {
+  if (_fb_config._sample_count > VK_SAMPLE_COUNT_1_BIT) {
     attachments[i].flags = 0;
     attachments[i].format = _surface_format.format;
     attachments[i].samples = VK_SAMPLE_COUNT_1_BIT;
@@ -1077,12 +1016,12 @@ create_swapchain() {
   // Now create a depth image.
   _depth_stencil_tc = nullptr;
   VkImageView depth_stencil_view = VK_NULL_HANDLE;
-  if (_depth_stencil_format != VK_FORMAT_UNDEFINED) {
+  if (_fb_config._depth_format != VK_FORMAT_UNDEFINED) {
     _depth_stencil_tc = new VulkanTextureContext(pgo);
     _depth_stencil_tc->_aspect_mask = _depth_stencil_aspect_mask;
 
     if (!vkgsg->create_image(_depth_stencil_tc, VK_IMAGE_TYPE_2D,
-                             _depth_stencil_format, extent, 1, 1, _ms_count,
+                             _fb_config._depth_format, extent, 1, 1, _fb_config._sample_count,
                              VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)) {
       delete _depth_stencil_tc;
       _depth_stencil_tc = nullptr;
@@ -1095,7 +1034,7 @@ create_swapchain() {
     view_info.flags = 0;
     view_info.image = _depth_stencil_tc->_image;
     view_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
-    view_info.format = _depth_stencil_format;
+    view_info.format = _fb_config._depth_format;
     view_info.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
     view_info.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
     view_info.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
@@ -1122,11 +1061,11 @@ create_swapchain() {
   // Create a multisample color image.
   _ms_color_tc = nullptr;
   VkImageView ms_color_view = VK_NULL_HANDLE;
-  if (_ms_count != VK_SAMPLE_COUNT_1_BIT) {
+  if (_fb_config._sample_count != VK_SAMPLE_COUNT_1_BIT) {
     _ms_color_tc = new VulkanTextureContext(pgo);
     if (!vkgsg->create_image(_ms_color_tc, VK_IMAGE_TYPE_2D,
                              swapchain_info.imageFormat, extent, 1, 1,
-                             _ms_count, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)) {
+                             _fb_config._sample_count, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)) {
       delete _ms_color_tc;
       _ms_color_tc = nullptr;
       return false;

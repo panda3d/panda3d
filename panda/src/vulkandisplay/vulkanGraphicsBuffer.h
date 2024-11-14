@@ -16,6 +16,7 @@
 
 #include "config_vulkandisplay.h"
 #include "graphicsBuffer.h"
+#include "vulkanGraphicsStateGuardian.h"
 
 class VulkanTextureContext;
 
@@ -46,9 +47,10 @@ protected:
   bool setup_render_pass();
 
   void destroy_framebuffer();
-  bool create_framebuffer();
+  bool create_framebuffer(CDReader &cdata);
 
-  bool create_attachment(RenderTexturePlane plane, VkFormat format);
+  bool create_attachment(RenderTexturePlane plane, VkFormat format,
+                         Texture *texture = nullptr);
 
 private:
   VkRenderPass _render_pass;
@@ -56,11 +58,14 @@ private:
   LVecBase2i _framebuffer_size;
   int _current_clear_mask;
 
-  VkFormat _color_format;
-  VkFormat _depth_stencil_format;
+  VulkanGraphicsStateGuardian::FbConfig _fb_config;
+  uint32_t _fb_config_id;
   RenderTexturePlane _depth_stencil_plane;
 
+  UpdateSeq _last_textures_seq;
+
   struct Attachment {
+    PT(Texture) _texture;
     VulkanTextureContext *_tc;
     RenderTexturePlane _plane;
   };

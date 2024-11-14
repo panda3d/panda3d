@@ -1091,13 +1091,24 @@ create_texture(VulkanTextureContext *tc) {
   VkFormatProperties fmt_props;
   vkGetPhysicalDeviceFormatProperties(vkpipe->_gpu, format, &fmt_props);
 
+  Texture::Format tex_format = texture->get_format();
+  bool is_depth = (tex_format == Texture::F_depth_stencil
+                || tex_format == Texture::F_depth_component
+                || tex_format == Texture::F_depth_component16
+                || tex_format == Texture::F_depth_component24
+                || tex_format == Texture::F_depth_component32);
+
   bool supported;
   if (is_buffer) {
-    supported = (fmt_props.bufferFeatures & VK_FORMAT_FEATURE_UNIFORM_TEXEL_BUFFER_BIT) != 0
-             && (fmt_props.bufferFeatures & VK_FORMAT_FEATURE_STORAGE_TEXEL_BUFFER_BIT) != 0;
+    supported = (fmt_props.bufferFeatures & VK_FORMAT_FEATURE_UNIFORM_TEXEL_BUFFER_BIT) != 0;
+    if (!is_depth && supported) {
+      supported = (fmt_props.bufferFeatures & VK_FORMAT_FEATURE_STORAGE_TEXEL_BUFFER_BIT) != 0;
+    }
   } else {
-    supported = (fmt_props.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT) != 0
-             && (fmt_props.optimalTilingFeatures & VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT) != 0;
+    supported = (fmt_props.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT) != 0;
+    if (!is_depth && supported) {
+      supported = (fmt_props.optimalTilingFeatures & VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT) != 0;
+    }
   }
 
   bool pack_bgr8 = false;
@@ -1165,11 +1176,21 @@ create_texture(VulkanTextureContext *tc) {
     vkGetPhysicalDeviceFormatProperties(vkpipe->_gpu, format, &fmt_props);
   }
 
+  bool render_to_texture = false;
   if (!is_buffer) {
     // Image texture.  Is the size supported for this format?
     VkImageUsageFlags usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
     if (fmt_props.optimalTilingFeatures & VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT) {
       usage |= VK_IMAGE_USAGE_STORAGE_BIT;
+    }
+
+    render_to_texture = texture->get_render_to_texture();
+    if (render_to_texture) {
+      if (is_depth) {
+        usage |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+      } else {
+        usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+      }
     }
 
     VkImageFormatProperties img_props;
@@ -1260,13 +1281,9 @@ create_texture(VulkanTextureContext *tc) {
     tc->_mipmap_end = mipmap_end;
     tc->_generate_mipmaps = generate_mipmaps;
     tc->_pack_bgr8 = pack_bgr8;
+    tc->_supports_render_to_texture = render_to_texture;
 
-    Texture::Format tex_format = texture->get_format();
-    if (tex_format == Texture::F_depth_stencil ||
-        tex_format == Texture::F_depth_component ||
-        tex_format == Texture::F_depth_component16 ||
-        tex_format == Texture::F_depth_component24 ||
-        tex_format == Texture::F_depth_component32) {
+    if (is_depth) {
       tc->_aspect_mask = VK_IMAGE_ASPECT_DEPTH_BIT;
     } else {
       tc->_aspect_mask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -1452,6 +1469,7 @@ create_texture(VulkanTextureContext *tc) {
     tc->_block = std::move(block);
     tc->_pack_bgr8 = pack_bgr8;
     tc->_swap_bgra8 = swap_bgra8;
+    tc->_supports_render_to_texture = render_to_texture;
   }
 
   // We can't upload it at this point because the texture lock is currently
@@ -3328,7 +3346,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
       return false;
     }
 
-    VkPipeline pipeline = _current_sc->get_pipeline(this, _state_rs, data_reader->get_format(), topology, 0, _fb_ms_count);
+    VkPipeline pipeline = _current_sc->get_pipeline(this, _state_rs, data_reader->get_format(), topology, 0, _fb_config);
     nassertr(pipeline != VK_NULL_HANDLE, false);
     _vkCmdBindPipeline(_frame_data->_cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
   } else {
@@ -3394,7 +3412,7 @@ draw_patches(const GeomPrimitivePipelineReader *reader, bool force) {
   } else {
     // Bind a pipeline which has both the topology and number of patch control
     // points baked in.
-    VkPipeline pipeline = _current_sc->get_pipeline(this, _state_rs, _format, VK_PRIMITIVE_TOPOLOGY_PATCH_LIST, patch_control_points, _fb_ms_count);
+    VkPipeline pipeline = _current_sc->get_pipeline(this, _state_rs, _format, VK_PRIMITIVE_TOPOLOGY_PATCH_LIST, patch_control_points, _fb_config);
     nassertr(pipeline != VK_NULL_HANDLE, false);
     _vkCmdBindPipeline(_frame_data->_cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
   }
@@ -3733,7 +3751,7 @@ do_draw_primitive_with_topology(const GeomPrimitivePipelineReader *reader,
     _vkCmdSetPrimitiveTopologyEXT(_frame_data->_cmd, topology);
     _vkCmdSetPrimitiveRestartEnableEXT(_frame_data->_cmd, primitive_restart_enable && reader->is_indexed());
   } else {
-    VkPipeline pipeline = _current_sc->get_pipeline(this, _state_rs, _format, topology, 0, _fb_ms_count);
+    VkPipeline pipeline = _current_sc->get_pipeline(this, _state_rs, _format, topology, 0, _fb_config);
     nassertr(pipeline != VK_NULL_HANDLE, false);
     _vkCmdBindPipeline(_frame_data->_cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
   }
@@ -3895,6 +3913,143 @@ create_semaphore() {
 }
 
 /**
+ * Chooses a framebuffer configuration.
+ */
+uint32_t VulkanGraphicsStateGuardian::
+choose_fb_config(FbConfig &out, FrameBufferProperties &props,
+                 VkFormat preferred_format) {
+  VulkanGraphicsPipe *vkpipe;
+  DCAST_INTO_R(vkpipe, get_pipe(), 0);
+
+  static const struct {
+    int rgb, r, g, b, a;
+    bool has_float;
+    VkFormat format;
+  } formats[] = {
+    { 8,  8,  0,  0,  0, false, VK_FORMAT_R8_UNORM},
+    {16,  8,  8,  0,  0, false, VK_FORMAT_R8G8_UNORM},
+    {16,  5,  6,  5,  0, false, VK_FORMAT_R5G6B5_UNORM_PACK16},
+    {15,  5,  5,  5,  1, false, VK_FORMAT_A1R5G5B5_UNORM_PACK16},
+    {16, 16,  0,  0,  0,  true, VK_FORMAT_R16_SFLOAT},
+    {24,  8,  8,  8,  8, false, VK_FORMAT_B8G8R8A8_UNORM},
+    {32, 16, 16,  0,  0, false, VK_FORMAT_R16G16_SFLOAT},
+    {30, 10, 10, 10,  2, false, VK_FORMAT_A2B10G10R10_UNORM_PACK32},
+    {48, 16, 16, 16, 16,  true, VK_FORMAT_R16G16B16A16_SFLOAT},
+    {32, 32,  0,  0,  0,  true, VK_FORMAT_R32_SFLOAT},
+    {64, 32, 32,  0,  0,  true, VK_FORMAT_R32G32_SFLOAT},
+    {96, 32, 32, 32, 32,  true, VK_FORMAT_R32G32B32A32_SFLOAT},
+    {0}
+  };
+
+  if (preferred_format != VK_FORMAT_UNDEFINED) {
+    // Caller's responsibility to modify props.
+    out._color_formats.push_back(preferred_format);
+  }
+  else if (props.get_srgb_color()) {
+    // This the only sRGB format.  Deal with it.
+    out._color_formats.push_back(VK_FORMAT_B8G8R8A8_SRGB);
+    props.set_rgba_bits(8, 8, 8, 8);
+    props.set_float_color(false);
+  }
+  else if (props.get_rgb_color() || props.get_color_bits() > 0) {
+    for (int i = 0; formats[i].r; ++i) {
+      if (formats[i].r >= props.get_red_bits() &&
+          formats[i].g >= props.get_green_bits() &&
+          formats[i].b >= props.get_blue_bits() &&
+          formats[i].a >= props.get_alpha_bits() &&
+          formats[i].rgb >= props.get_color_bits() &&
+          formats[i].has_float >= props.get_float_color()) {
+
+        // This format meets the requirements.
+        out._color_formats.push_back(VK_FORMAT_B8G8R8A8_SRGB);
+        props.set_rgba_bits(formats[i].r, formats[i].g,
+                            formats[i].b, formats[i].a);
+        break;
+      }
+    }
+  }
+
+  // Choose a suitable depth/stencil format that satisfies the requirements.
+  VkFormatProperties fmt_props;
+  bool request_depth32 = props.get_depth_bits() > 24 ||
+                         props.get_float_depth();
+
+  if (props.get_depth_bits() > 0 && props.get_stencil_bits() > 0) {
+    // Vulkan requires support for at least of one of these two formats.
+    vkGetPhysicalDeviceFormatProperties(vkpipe->_gpu, VK_FORMAT_D32_SFLOAT_S8_UINT, &fmt_props);
+    bool supports_depth32 = (fmt_props.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT) != 0;
+    vkGetPhysicalDeviceFormatProperties(vkpipe->_gpu, VK_FORMAT_D24_UNORM_S8_UINT, &fmt_props);
+    bool supports_depth24 = (fmt_props.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT) != 0;
+
+    if ((supports_depth32 && request_depth32) || !supports_depth24) {
+      out._depth_format = VK_FORMAT_D32_SFLOAT_S8_UINT;
+      props.set_depth_bits(32);
+    } else {
+      out._depth_format = VK_FORMAT_D24_UNORM_S8_UINT;
+      props.set_depth_bits(24);
+    }
+    props.set_stencil_bits(8);
+  }
+  else if (props.get_depth_bits() > 0) {
+    // Vulkan requires support for at least of one of these two formats.
+    vkGetPhysicalDeviceFormatProperties(vkpipe->_gpu, VK_FORMAT_D32_SFLOAT, &fmt_props);
+    bool supports_depth32 = (fmt_props.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT) != 0;
+    vkGetPhysicalDeviceFormatProperties(vkpipe->_gpu, VK_FORMAT_X8_D24_UNORM_PACK32, &fmt_props);
+    bool supports_depth24 = (fmt_props.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT) != 0;
+
+    if ((supports_depth32 && request_depth32) || !supports_depth24) {
+      out._depth_format = VK_FORMAT_D32_SFLOAT;
+      props.set_depth_bits(32);
+    } else {
+      out._depth_format = VK_FORMAT_X8_D24_UNORM_PACK32;
+      props.set_depth_bits(24);
+    }
+  }
+  else {
+    out._depth_format = VK_FORMAT_UNDEFINED;
+  }
+
+  // Choose a sample count.
+  if (props.get_multisamples() > 1) {
+    const VkPhysicalDeviceLimits &limits = vkpipe->_gpu_properties.limits;
+
+    VkSampleCountFlags supported = limits.framebufferColorSampleCounts;
+    if (props.get_depth_bits() > 0) {
+      supported &= limits.framebufferDepthSampleCounts;
+    }
+    if (props.get_stencil_bits() > 0) {
+      supported &= limits.framebufferStencilSampleCounts;
+    }
+
+    // Round up requested bits to next power of two, and flood down.
+    VkSampleCountFlags accepted = ::flood_bits_down((uint32_t)(props.get_multisamples() - 1) << 1u);
+
+    // Select the highest overlapping bit.
+    out._sample_count = (VkSampleCountFlagBits)(1u << ::get_highest_on_bit(accepted & supported));
+  } else {
+    out._sample_count = VK_SAMPLE_COUNT_1_BIT;
+  }
+  props.set_multisamples(out._sample_count);
+
+  // Make a unique identifier for this fb config, for easy hashing.
+  uint32_t id = 0;
+  while (id < _fb_configs.size()) {
+    if (out == _fb_configs[id]) {
+      break;
+    }
+    ++id;
+  }
+  if (id == _fb_configs.size()) {
+    _fb_configs.push_back(out);
+  }
+  if (vulkandisplay_cat.is_debug()) {
+    vulkandisplay_cat.debug()
+      << "Framebuffer config " << id << ": " << props << "\n";
+  }
+  return id;
+}
+
+/**
  * Creates a VkPipeline for the given RenderState+GeomVertexFormat combination.
  */
 VkPipeline VulkanGraphicsStateGuardian::
@@ -3907,7 +4062,7 @@ make_pipeline(VulkanShaderContext *sc,
       << " format=" << key._format
       << " topology=" << key._topology
       << " patch_control_points=" << key._patch_control_points
-      << " multisamples=" << key._multisamples
+      << " fb_config=" << key._fb_config
       << " color_type=" << key._color_type
       << " render_mode_attrib=" << key._render_mode_attrib
       << " cull_face_mode=" << key._cull_face_mode
@@ -3920,6 +4075,8 @@ make_pipeline(VulkanShaderContext *sc,
       << " alpha_test_attrib=" << key._alpha_test_attrib
       << "\n";
   }
+
+  FbConfig fb_config = _fb_configs[key._fb_config];
 
   PStatTimer timer(_make_pipeline_pcollector);
 
@@ -3939,7 +4096,7 @@ make_pipeline(VulkanShaderContext *sc,
   float alpha_test_ref;
 
   RenderAttrib::PandaCompareFunc alpha_test_mode = RenderAttrib::M_none;
-  if (key._alpha_test_attrib != nullptr) {
+  if (key._alpha_test_attrib != nullptr && !fb_config._color_formats.empty()) {
     alpha_test_mode = key._alpha_test_attrib->get_mode();
     if (alpha_test_mode != RenderAttrib::M_never) {
       alpha_test_ref = key._alpha_test_attrib->get_reference_alpha();
@@ -4255,7 +4412,7 @@ make_pipeline(VulkanShaderContext *sc,
   ms_info.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
   ms_info.pNext = nullptr;
   ms_info.flags = 0;
-  ms_info.rasterizationSamples = key._multisamples;
+  ms_info.rasterizationSamples = fb_config._sample_count;
   ms_info.sampleShadingEnable = VK_FALSE;
   ms_info.minSampleShading = 0.0;
   ms_info.pSampleMask = nullptr;

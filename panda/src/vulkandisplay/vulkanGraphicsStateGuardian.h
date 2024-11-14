@@ -21,6 +21,7 @@
 #include "circularAllocator.h"
 
 class VulkanBufferContext;
+class VulkanGraphicsPipe;
 class VulkanIndexBufferContext;
 class VulkanSamplerContext;
 class VulkanShaderContext;
@@ -166,6 +167,10 @@ public:
 
   VkSemaphore create_semaphore();
 
+  struct FbConfig;
+  uint32_t choose_fb_config(FbConfig &out, FrameBufferProperties &props,
+                            VkFormat preferred_format = VK_FORMAT_UNDEFINED);
+
   VkPipeline make_pipeline(VulkanShaderContext *sc,
                            const VulkanShaderContext::PipelineKey &key);
   VkPipeline make_compute_pipeline(VulkanShaderContext *sc);
@@ -206,6 +211,28 @@ public:
   uint32_t _graphics_queue_family_index;
   PT(Texture) _white_texture;
 
+  struct FbConfig {
+    small_vector<VkFormat, 1> _color_formats;
+    VkFormat _depth_format = VK_FORMAT_UNDEFINED;
+    VkFormat _stencil_format = VK_FORMAT_UNDEFINED;
+    VkSampleCountFlagBits _sample_count = VK_SAMPLE_COUNT_1_BIT;
+
+    bool operator == (const FbConfig &other) const {
+      if (_color_formats.size() != other._color_formats.size() ||
+          _depth_format != other._depth_format ||
+          _stencil_format != other._stencil_format ||
+          _sample_count != other._sample_count) {
+        return false;
+      }
+      for (size_t i = 0; i < _color_formats.size(); ++i) {
+        if (_color_formats[i] != other._color_formats[i]) {
+          return false;
+        }
+      }
+      return true;
+    }
+  };
+
 private:
   VkQueue _queue = VK_NULL_HANDLE;
   VkQueue _dma_queue = VK_NULL_HANDLE;
@@ -242,7 +269,8 @@ private:
   VkRenderPass _render_pass = VK_NULL_HANDLE;
   VulkanTextureContext *_fb_color_tc = nullptr;
   VulkanTextureContext *_fb_depth_tc = nullptr;
-  VkSampleCountFlagBits _fb_ms_count = VK_SAMPLE_COUNT_1_BIT;
+  uint32_t _fb_config = 0;
+  pvector<FbConfig> _fb_configs;
 
   // Static "null" vertex buffer if nullDescriptor is not supported.
   VkBuffer _null_vertex_buffer = VK_NULL_HANDLE;

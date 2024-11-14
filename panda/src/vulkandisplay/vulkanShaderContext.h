@@ -75,7 +75,7 @@ public:
                           const GeomVertexFormat *format,
                           VkPrimitiveTopology topology,
                           uint32_t patch_control_points,
-                          VkSampleCountFlagBits multisamples);
+                          uint32_t fb_config);
   VkPipeline get_compute_pipeline(VulkanGraphicsStateGuardian *gsg);
 
   /**
@@ -89,7 +89,7 @@ public:
     CPT(GeomVertexFormat) _format;
     VkPrimitiveTopology _topology;
     uint32_t _patch_control_points;
-    VkSampleCountFlagBits _multisamples;
+    uint32_t _fb_config;
 
     ColorAttrib::Type _color_type;
     CPT(RenderModeAttrib) _render_mode_attrib;

@@ -61,6 +61,7 @@ public:
   bool _generate_mipmaps = false;
   bool _pack_bgr8 = false;
   bool _swap_bgra8 = false;
+  bool _supports_render_to_texture = false;
 
   // Depending on whether it's a buffer texture or image texture, either the
   // image and image view or buffer and buffer view will be set.

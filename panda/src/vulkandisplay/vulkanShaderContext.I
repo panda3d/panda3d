@@ -48,7 +48,7 @@ operator ==(const PipelineKey &other) const {
   return _format == other._format
       && _topology == other._topology
       && _patch_control_points == other._patch_control_points
-      && _multisamples == other._multisamples
+      && _fb_config == other._fb_config
       && _color_type == other._color_type
       && _render_mode_attrib == other._render_mode_attrib
       && _cull_face_mode == other._cull_face_mode
@@ -75,8 +75,8 @@ operator < (const PipelineKey &other) const {
   if (_patch_control_points != other._patch_control_points) {
     return _patch_control_points < other._patch_control_points;
   }
-  if (_multisamples != other._multisamples) {
-    return _multisamples < other._multisamples;
+  if (_fb_config != other._fb_config) {
+    return _fb_config < other._fb_config;
   }
   if (_color_type != other._color_type) {
     return _color_type < other._color_type;

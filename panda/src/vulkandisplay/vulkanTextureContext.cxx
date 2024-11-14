@@ -23,6 +23,10 @@ TypeHandle VulkanTextureContext::_type_handle;
 bool VulkanTextureContext::
 needs_recreation() const {
   Texture *tex = get_texture();
+  if (tex->get_render_to_texture() && !_supports_render_to_texture) {
+    return true;
+  }
+
   int num_views = tex->get_num_views();
 
   VkExtent3D extent;

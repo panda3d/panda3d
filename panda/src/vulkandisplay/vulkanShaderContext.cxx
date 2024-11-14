@@ -891,12 +891,12 @@ update_dynamic_uniforms(VulkanGraphicsStateGuardian *gsg, int altered) {
 VkPipeline VulkanShaderContext::
 get_pipeline(VulkanGraphicsStateGuardian *gsg, const RenderState *state,
              const GeomVertexFormat *format, VkPrimitiveTopology topology,
-             uint32_t patch_control_points, VkSampleCountFlagBits multisamples) {
+             uint32_t patch_control_points, uint32_t fb_config) {
   PipelineKey key;
   key._format = format;
   key._topology = topology;
   key._patch_control_points = patch_control_points;
-  key._multisamples = multisamples;
+  key._fb_config = fb_config;
 
   const ColorAttrib *color_attr;
   state->get_attrib_def(color_attr);

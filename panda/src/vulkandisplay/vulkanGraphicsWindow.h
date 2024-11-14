@@ -15,6 +15,7 @@
 #define VULKANGRAPHICSWINDOW_H
 
 #include "config_vulkandisplay.h"
+#include "vulkanGraphicsStateGuardian.h"
 
 #ifdef _WIN32
 #include "winGraphicsWindow.h"
@@ -75,6 +76,8 @@ private:
 
   LVecBase2i _swapchain_size;
   VkSurfaceFormatKHR _surface_format;
+  VulkanGraphicsStateGuardian::FbConfig _fb_config;
+  uint32_t _fb_config_id;
 
   struct SwapBuffer {
     VulkanTextureContext *_tc;
@@ -87,10 +90,7 @@ private:
   VkImageLayout _final_layout;
 
   VulkanTextureContext *_ms_color_tc = nullptr;
-  VkSampleCountFlagBits _ms_count = VK_SAMPLE_COUNT_1_BIT;
-
   VulkanTextureContext *_depth_stencil_tc = nullptr;
-  VkFormat _depth_stencil_format;
   VkImageAspectFlags _depth_stencil_aspect_mask;
 
 public:
