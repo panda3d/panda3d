@@ -1368,6 +1368,11 @@ adjust_z_order() {
 void WinGraphicsWindow::
 adjust_z_order(WindowProperties::ZOrder last_z_order,
                WindowProperties::ZOrder this_z_order) {
+  // Prevent calling this recursively.
+  if (_in_adjust_z_order) {
+    return;
+  }
+
   HWND order;
   bool do_change = false;
 
@@ -1397,8 +1402,10 @@ adjust_z_order(WindowProperties::ZOrder last_z_order,
     break;
   }
   if (do_change) {
+    _in_adjust_z_order = true;
     BOOL result = SetWindowPos(_hWnd, order, 0,0,0,0,
                                SWP_NOMOVE | SWP_NOSENDCHANGING | SWP_NOSIZE);
+    _in_adjust_z_order = false;
     if (!result) {
       windisplay_cat.warning()
         << "SetWindowPos failed.\n";
@@ -1690,7 +1697,9 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     if (_hWnd != nullptr) {
       handle_reshape();
     }
-    adjust_z_order();
+    if (!_in_adjust_z_order) {
+      adjust_z_order();
+    }
     return 0;
 
   case WM_PAINT:
