@@ -312,6 +312,7 @@ def test_glsl_caps_texture_query_size():
 
 
 def test_glsl_caps_sampler_cube_shadow():
+    # Can be emulated, so does not get the cap for now
     assert compile_and_get_caps(Stage.FRAGMENT, """
     #version 330
 
@@ -320,7 +321,7 @@ def test_glsl_caps_sampler_cube_shadow():
     void main() {
         gl_FragColor = vec4(texture(a, vec4(0.0)), 0.0, 0.0, 1.0);
     }
-    """) == Shader.C_shadow_samplers | Shader.C_sampler_cube_shadow
+    """) == Shader.C_shadow_samplers# | Shader.C_sampler_cube_shadow
 
 
 def test_glsl_caps_vertex_id():

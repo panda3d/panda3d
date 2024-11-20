@@ -2800,7 +2800,7 @@ create_shader(GLuint program, const ShaderModule *module, size_t mi,
         _emulated_caps |= emulate_caps;
 
         SpirVTransformer transformer(spv->_instructions);
-        SpirVEmulateTextureQueriesPass pass;
+        SpirVEmulateTextureQueriesPass pass(emulate_caps);
         transformer.run(pass);
         size_var_ids = std::move(pass._size_var_ids);
         stream = transformer.get_result();

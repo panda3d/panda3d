@@ -12,6 +12,7 @@
  */
 
 #include "spirVTransformPass.h"
+#include "pbitops.h"
 
 /**
  *
@@ -1334,6 +1335,41 @@ op_convert(ShaderType::ScalarType new_scalar_type, uint32_t value) {
   //if (value_def._flags & SpirVResultDatabase::DF_constant_expression) {
   //  def._flags |= SpirVResultDatabase::DF_constant_expression;
   //}
+
+  mark_defined(id);
+  return id;
+}
+
+/**
+ * Inserts an OpImageSampleExplicitLod or OpImageSampleImplicitLod, depending
+ * on whether a Lod is included.
+ */
+uint32_t SpirVTransformPass::
+op_image_sample(uint32_t image, uint32_t coord, uint32_t operands, const uint32_t *ids) {
+  uint32_t id = allocate_id();
+
+  const ShaderType::SampledImage *sampled_image = resolve_type(get_type_id(image))->as_sampled_image();
+  nassertr(sampled_image != nullptr, 0u);
+
+  const ShaderType *type = ShaderType::register_type(ShaderType::Vector(sampled_image->get_sampled_type(), 4));
+  uint32_t type_id = define_type(type);
+
+  spv::Op opcode;
+  if (operands & spv::ImageOperandsLodMask) {
+    opcode = spv::OpImageSampleExplicitLod;
+  } else {
+    opcode = spv::OpImageSampleImplicitLod;
+  }
+
+  uint32_t num_ids = ids != nullptr ? ::count_bits_in_word(operands) : 0u;
+  _new_functions.insert(_new_functions.end(), {((num_ids + 6u) << spv::WordCountShift) | opcode, type_id, id, image, coord, operands});
+  if (num_ids > 0) {
+    _new_functions.insert(_new_functions.end(), ids, ids + num_ids);
+  }
+
+  Definition &def = _db.modify_definition(id);
+  def._type_id = type_id;
+  def._type = type;
 
   mark_defined(id);
   return id;

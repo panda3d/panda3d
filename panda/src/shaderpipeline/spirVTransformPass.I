@@ -157,6 +157,19 @@ decorate(uint32_t id, spv::Decoration decoration, uint32_t value) {
 }
 
 /**
+ * Defines a new constant of type float.
+ */
+INLINE uint32_t SpirVTransformPass::
+define_float_constant(float constant) {
+  union {
+    float f;
+    uint32_t ui;
+  } u;
+  u.f = constant;
+  return define_constant(ShaderType::float_type, u.ui);
+}
+
+/**
  * Returns true if the given id has already been defined during this pass.
  */
 INLINE bool SpirVTransformPass::

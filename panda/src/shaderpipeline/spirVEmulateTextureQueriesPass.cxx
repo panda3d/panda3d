@@ -19,12 +19,22 @@
 bool SpirVEmulateTextureQueriesPass::
 transform_definition_op(Instruction op) {
   switch (op.opcode) {
+  case spv::OpTypeImage:
+    if (_emulate_caps & Shader::C_sampler_cube_shadow) {
+      if (op.args[2] == spv::DimCube && op.args[3] > 0) {
+        op.args[3] = 0;
+      }
+    }
+    break;
+
   case spv::OpVariable:
     if (op.nargs >= 3) {
-      uint32_t var_id = op.args[1];
-      const Definition &var_def = _db.get_definition(var_id);
-      if (var_def._flags & SpirVResultDatabase::DF_queried_image_size_levels) {
-        _access_chains.insert({var_id, AccessChain(var_id)});
+      if (_emulate_caps & (Shader::C_image_query_size | Shader::C_texture_query_size | Shader::C_texture_query_levels)) {
+        uint32_t var_id = op.args[1];
+        const Definition &var_def = _db.get_definition(var_id);
+        if (var_def._flags & SpirVResultDatabase::DF_queried_image_size_levels) {
+          _access_chains.insert({var_id, AccessChain(var_id)});
+        }
       }
       return true;
     }
@@ -89,10 +99,40 @@ transform_function_op(Instruction op) {
     }
     break;
 
+  case spv::OpImageSampleDrefImplicitLod:
+  case spv::OpImageSampleDrefExplicitLod:
+    if (_emulate_caps & Shader::C_sampler_cube_shadow) {
+      if (_float_one_id == 0) {
+        _float_one_id = define_float_constant(1.0f);
+      }
+      if (_float_zero_id == 0) {
+        _float_zero_id = define_float_constant(0.0f);
+      }
+
+      uint32_t sample = op_image_sample(op.args[2], op.args[3], op.nargs >= 6 ? op.args[5] : 0u, op.args + 6);
+      uint32_t depth = op_composite_extract(sample, {0});
+      uint32_t cmp = op_compare(spv::OpFOrdGreaterThan, depth, op.args[4]);
+      push_id(op.args[1]);
+      op_select(cmp, _float_one_id, _float_zero_id);
+      return false;
+    }
+    break;
+
   case spv::OpImageQuerySize:
   case spv::OpImageQuerySizeLod:
+    if ((_emulate_caps & (Shader::C_texture_query_size | Shader::C_image_query_size)) == 0) {
+      return true;
+    }
+    // fall through
+
   case spv::OpImageQueryLevels:
     if (op.nargs >= 3) {
+      if (op.opcode == spv::OpImageQueryLevels) {
+        if ((_emulate_caps & Shader::C_texture_query_levels) == 0) {
+          return true;
+        }
+      }
+
       auto acit = _access_chains.find(op.args[2]);
       if (acit == _access_chains.end()) {
         return true;

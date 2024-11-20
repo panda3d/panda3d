@@ -17,17 +17,23 @@
 #include "spirVTransformPass.h"
 
 /**
- * Emulates textureSize, imageSize and textureQueryLevels ops.
+ * Emulates textureSize, imageSize and textureQueryLevels ops, as well as depth
+ * comparison samples of a cube map texture.
  */
 class EXPCL_PANDA_SHADERPIPELINE SpirVEmulateTextureQueriesPass final : public SpirVTransformPass {
 public:
-  SpirVEmulateTextureQueriesPass() = default;
+  SpirVEmulateTextureQueriesPass(uint64_t emulate_caps) :
+    _emulate_caps(emulate_caps) {}
 
   virtual bool transform_definition_op(Instruction op);
   virtual bool transform_function_op(Instruction op);
 
 private:
+  const uint64_t _emulate_caps;
+
   pmap<uint32_t, AccessChain> _access_chains;
+  uint32_t _float_one_id = 0;
+  uint32_t _float_zero_id = 0;
 
 public:
   // access chain to size var id

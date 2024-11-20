@@ -471,7 +471,7 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, BamCacheRecord *reco
           const ShaderType::SampledImage *sampler = sampler_def._type->as_sampled_image();
           if (sampler != nullptr &&
               sampler->get_texture_type() == Texture::TT_cube_map) {
-            _used_caps |= C_sampler_cube_shadow;
+            _emulatable_caps |= C_sampler_cube_shadow;
           }
         }
       }
