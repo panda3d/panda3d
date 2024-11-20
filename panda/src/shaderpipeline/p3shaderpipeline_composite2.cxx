@@ -1,4 +1,5 @@
 #ifndef CPPPARSER
+#include "spirVEmulateTextureQueriesPass.cxx"
 #include "spirVFlattenStructPass.cxx"
 #include "spirVHoistStructResourcesPass.cxx"
 #include "spirVInjectAlphaTestPass.cxx"

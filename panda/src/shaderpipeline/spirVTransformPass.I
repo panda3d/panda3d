@@ -96,7 +96,20 @@ get_id_bound() const {
  */
 INLINE uint32_t SpirVTransformPass::
 allocate_id() {
+  uint32_t next_id = _next_id;
+  if (next_id != 0) {
+    _next_id = 0;
+    return next_id;
+  }
   return _new_preamble[3]++;
+}
+
+/**
+ * Sets the next id that should be returned by allocate_id().
+ */
+INLINE void SpirVTransformPass::
+push_id(uint32_t id) {
+  _next_id = id;
 }
 
 /**

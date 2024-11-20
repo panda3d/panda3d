@@ -2010,11 +2010,13 @@ reset() {
         Shader::C_compute_shader;
     }
     else {
-      if (has_extension("GL_ARB_shader_image_size")) {
-        _supported_shader_caps |= Shader::C_image_query_size;
-      }
-      if (has_extension("GL_ARB_texture_query_levels")) {
-        _supported_shader_caps |= Shader::C_texture_query_levels;
+      if (_glsl_version >= 130) {
+        if (has_extension("GL_ARB_shader_image_size")) {
+          _supported_shader_caps |= Shader::C_image_query_size;
+        }
+        if (has_extension("GL_ARB_texture_query_levels")) {
+          _supported_shader_caps |= Shader::C_texture_query_levels;
+        }
       }
       if (_glsl_version >= 150 &&
           has_extension("GL_ARB_shader_storage_buffer_object")) {

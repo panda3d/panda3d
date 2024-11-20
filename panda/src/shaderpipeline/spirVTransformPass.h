@@ -57,6 +57,7 @@ public:
 
   INLINE uint32_t get_id_bound() const;
   INLINE uint32_t allocate_id();
+  INLINE void push_id(uint32_t id);
 
   void set_name(uint32_t id, const std::string &name);
   void set_member_name(uint32_t type_id, uint32_t member_index, const std::string &name);
@@ -131,6 +132,7 @@ protected:
   uint32_t op_composite_construct(const ShaderType *type, const pvector<uint32_t> &constituents);
   uint32_t op_composite_extract(uint32_t obj_id, std::initializer_list<uint32_t>);
   uint32_t op_compare(spv::Op opcode, uint32_t obj1, uint32_t obj2);
+  uint32_t op_convert(ShaderType::ScalarType to_scalar_type, uint32_t value);
   void op_kill();
 
   uint32_t branch_if(uint32_t cond);
@@ -145,6 +147,8 @@ protected:
   std::vector<uint32_t> _new_definitions;
   std::vector<uint32_t> _new_functions;
   uint32_t _current_function_id = 0;
+
+  uint32_t _next_id = 0;
 
   // Keeps track of what has been defined and deleted during this pass.
   BitArray _defined;

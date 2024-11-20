@@ -47,6 +47,75 @@ def test_glsl_sampler(env):
     env.run_glsl(code, preamble, {'tex1': tex1, 'tex2': tex2, 'tex3': tex3})
 
 
+def test_glsl_texture_size(env):
+    tex1_0 = core.Texture("tex1-0-1d")
+    tex1_0.setup_1d_texture(128, core.Texture.T_unsigned_byte, core.Texture.F_rgba8)
+
+    tex1_1 = core.Texture("tex1-1-1d")
+    tex1_1.setup_1d_texture(256, core.Texture.T_unsigned_byte, core.Texture.F_rgba8)
+
+    tex2 = core.Texture("tex2-2d")
+    tex2.setup_2d_texture(64, 32, core.Texture.T_unsigned_byte, core.Texture.F_rgba8)
+
+    tex3 = core.Texture("tex3-cube")
+    tex3.setup_cube_map(16, core.Texture.T_unsigned_byte, core.Texture.F_rgba8)
+
+    tex4 = core.Texture("tex4-3d")
+    tex4.setup_3d_texture(8, 4, 2, core.Texture.T_unsigned_byte, core.Texture.F_rgba8)
+
+    preamble = """
+    uniform sampler1D tex1[2];
+    uniform sampler2D tex2;
+    uniform samplerCube tex3;
+    uniform sampler3D tex4;
+    """
+    code = """
+    assert(textureSize(tex1[0], 0) == 128);
+    assert(textureSize(tex1[1], 0) == 256);
+    assert(textureSize(tex2, 0) == ivec2(64, 32));
+    assert(textureSize(tex3, 0) == ivec2(16, 16));
+    assert(textureSize(tex4, 0) == ivec3(8, 4, 2));
+    """
+    env.run_glsl(code, preamble, {'tex1[0]': tex1_0, 'tex1[1]': tex1_1, 'tex2': tex2, 'tex3': tex3, 'tex4': tex4})
+
+
+def test_glsl_texture_query_levels(env):
+    tex1_0 = core.Texture("tex1-0-1d")
+    tex1_0.setup_1d_texture(128, core.Texture.T_unsigned_byte, core.Texture.F_rgba8)
+    tex1_0.set_minfilter(core.SamplerState.FT_linear_mipmap_linear)
+
+    tex1_1 = core.Texture("tex1-1-1d")
+    tex1_1.setup_1d_texture(256, core.Texture.T_unsigned_byte, core.Texture.F_rgba8)
+    tex1_1.set_minfilter(core.SamplerState.FT_nearest)
+
+    tex2 = core.Texture("tex2-2d")
+    tex2.setup_2d_texture(64, 32, core.Texture.T_unsigned_byte, core.Texture.F_rgba8)
+    tex2.set_minfilter(core.SamplerState.FT_linear_mipmap_linear)
+
+    tex3 = core.Texture("tex3-cube")
+    tex3.setup_cube_map(16, core.Texture.T_unsigned_byte, core.Texture.F_rgba8)
+    tex3.set_minfilter(core.SamplerState.FT_linear_mipmap_linear)
+
+    tex4 = core.Texture("tex4-3d")
+    tex4.setup_3d_texture(8, 4, 2, core.Texture.T_unsigned_byte, core.Texture.F_rgba8)
+    tex4.set_minfilter(core.SamplerState.FT_linear_mipmap_linear)
+
+    preamble = """
+    uniform sampler1D tex1[2];
+    uniform sampler2D tex2;
+    uniform samplerCube tex3;
+    uniform sampler3D tex4;
+    """
+    code = """
+    assert(textureQueryLevels(tex1[1]) == 1);
+    assert(textureQueryLevels(tex1[0]) == 8);
+    assert(textureQueryLevels(tex2) == 7);
+    assert(textureQueryLevels(tex3) == 5);
+    assert(textureQueryLevels(tex4) == 4);
+    """
+    env.run_glsl(code, preamble, {'tex1[0]': tex1_0, 'tex1[1]': tex1_1, 'tex2': tex2, 'tex3': tex3, 'tex4': tex4}, version=430)
+
+
 def test_glsl_isampler(env):
     from struct import pack
 
@@ -177,6 +246,38 @@ def test_glsl_uimage(env):
     assert(imageLoad(tex3, ivec3(0, 0, 0)) == uvec4(5, 0, 0, 1));
     """
     env.run_glsl(code, preamble, {'tex1': tex1, 'tex2': tex2, 'tex3': tex3})
+
+
+def test_glsl_image_size(env):
+    tex1_0 = core.Texture("tex1-0-1d")
+    tex1_0.setup_1d_texture(128, core.Texture.T_unsigned_byte, core.Texture.F_rgba8)
+
+    tex1_1 = core.Texture("tex1-1-1d")
+    tex1_1.setup_1d_texture(256, core.Texture.T_unsigned_byte, core.Texture.F_rgba8)
+
+    tex2 = core.Texture("tex2-2d")
+    tex2.setup_2d_texture(64, 32, core.Texture.T_unsigned_byte, core.Texture.F_rgba8)
+
+    tex3 = core.Texture("tex3-cube")
+    tex3.setup_cube_map(16, core.Texture.T_unsigned_byte, core.Texture.F_rgba8)
+
+    tex4 = core.Texture("tex4-3d")
+    tex4.setup_3d_texture(8, 4, 2, core.Texture.T_unsigned_byte, core.Texture.F_rgba8)
+
+    preamble = """
+    uniform writeonly image1D tex1[2];
+    uniform writeonly image2D tex2;
+    uniform writeonly imageCube tex3;
+    uniform writeonly image3D tex4;
+    """
+    code = """
+    assert(imageSize(tex1[0]) == 128);
+    assert(imageSize(tex1[1]) == 256);
+    assert(imageSize(tex2) == ivec2(64, 32));
+    assert(imageSize(tex3) == ivec2(16, 16));
+    assert(imageSize(tex4) == ivec3(8, 4, 2));
+    """
+    env.run_glsl(code, preamble, {'tex1[0]': tex1_0, 'tex1[1]': tex1_1, 'tex2': tex2, 'tex3': tex3, 'tex4': tex4}, version=430)
 
 
 def test_glsl_ssbo(env):

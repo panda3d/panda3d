@@ -33,6 +33,7 @@
 #include "sparseArray.h"
 #include "spirVTransformer.h"
 #include "spirVInjectAlphaTestPass.h"
+#include "spirVEmulateTextureQueriesPass.h"
 
 #define SPIRV_CROSS_EXCEPTIONS_TO_ASSERTIONS
 #include <spirv_cross/spirv_glsl.hpp>
@@ -393,9 +394,9 @@ compile_for(RenderAttrib::PandaCompareFunc alpha_test_mode) {
     }
 
     UniformCalls &calls = block._calls[alpha_test_mode];
-    r_collect_uniforms(program, param, calls, param._type, name.c_str(), sym_buffer,
-                       actual_location, active_locations, resource_index,
-                       binding);
+    r_collect_uniforms(alpha_test_mode, param, calls, param._type, name.c_str(),
+                       sym_buffer, actual_location, active_locations,
+                       resource_index, binding);
 
     if (block_index < 0 && (!calls._matrices.empty() || !calls._vectors.empty())) {
       block._dep = param._binding->get_state_dep();
@@ -493,11 +494,13 @@ r_count_locations_bindings(const ShaderType *type,
  * Also finds all resources and adds them to the respective arrays.
  */
 void CLP(ShaderContext)::
-r_collect_uniforms(GLuint program,
+r_collect_uniforms(RenderAttrib::PandaCompareFunc alpha_test_mode,
                    const Shader::Parameter &param, UniformCalls &calls,
                    const ShaderType *type, const char *name, const char *sym,
                    int &cur_location, const SparseArray &active_locations,
                    int &resource_index, int &cur_binding, size_t offset) {
+
+  GLuint program = _linked_programs[alpha_test_mode];
 
   ShaderType::ScalarType scalar_type;
   uint32_t num_elements;
@@ -620,7 +623,7 @@ r_collect_uniforms(GLuint program,
     for (uint32_t i = 0; i < array_type->get_num_elements(); ++i) {
       sprintf(name_buffer, "%s[%u]", name, i);
       sprintf(sym_buffer, "%s[%u]", sym, i);
-      r_collect_uniforms(program, param, calls, element_type, name_buffer, sym_buffer,
+      r_collect_uniforms(alpha_test_mode, param, calls, element_type, name_buffer, sym_buffer,
                          cur_location, active_locations, resource_index, cur_binding,
                          offset);
       offset += stride;
@@ -638,7 +641,7 @@ r_collect_uniforms(GLuint program,
 
       // We have named struct members m0, m1, etc. in declaration order.
       sprintf(sym_buffer, "%s.m%u", sym, i);
-      r_collect_uniforms(program, param, calls, member.type, qualname.c_str(), sym_buffer,
+      r_collect_uniforms(alpha_test_mode, param, calls, member.type, qualname.c_str(), sym_buffer,
                          cur_location, active_locations, resource_index, cur_binding,
                          offset + member.offset);
     }
@@ -681,14 +684,33 @@ r_collect_uniforms(GLuint program,
   int location = cur_location;
   if (location < 0) {
     location = _glgsg->_glGetUniformLocation(program, _is_legacy ? name : sym);
-    if (location < 0) {
-      return;
-    }
   } else {
     ++cur_location;
     if (!active_locations.get_bit(location)) {
-      return;
+      location = -1;
     }
+  }
+  int size_location = -1;
+  if (_emulated_caps & (Shader::C_image_query_size | Shader::C_texture_query_size | Shader::C_texture_query_levels)) {
+    // Do we have a separate size input?
+    size_t sym_len = strlen(sym);
+    char *size_name_buffer = (char *)alloca(sym_len + 3);
+    char *p = size_name_buffer;
+    for (size_t i = 0; i < sym_len; ++i) {
+      if (sym[i] == '[' || sym[i] == '.') {
+        *p++ = '_';
+      }
+      else if (sym[i] != 'm' && sym[i] != ']') {
+        *p++ = sym[i];
+      }
+    }
+    *p++ = '_';
+    *p++ = 's';
+    *p = '\0';
+    size_location = _glgsg->_glGetUniformLocation(program, size_name_buffer);
+  }
+  if (location < 0 && size_location < 0) {
+    return;
   }
 
   if (GLCAT.is_debug()) {
@@ -703,16 +725,27 @@ r_collect_uniforms(GLuint program,
     unit._resource_id = param._binding->get_resource_id(resource_index++, type);
     unit._target = _glgsg->get_texture_target(sampler->get_texture_type());
 
+    for (int i = 0; i < RenderAttrib::M_always; ++i) {
+      unit._size_loc[i] = -1;
+    }
+
+    if (size_location >= 0) {
+      unit._size_loc[alpha_test_mode] = size_location;
+    }
+
     // Check if we already have a unit with these properties.  If so, we alias
     // the binding.  This will also prevent duplicating texture units when the
     // shader is compiled multiple times, for different alpha test modes.
     GLint binding = -1;
     for (size_t i = 0; i < _texture_units.size(); ++i) {
-      const TextureUnit &other_unit = _texture_units[i];
+      TextureUnit &other_unit = _texture_units[i];
       if (other_unit._binding == unit._binding &&
           other_unit._resource_id == unit._resource_id &&
           other_unit._target == unit._target) {
         binding = (GLint)i;
+        if (unit._size_loc[alpha_test_mode] >= 0) {
+          other_unit._size_loc[alpha_test_mode] = unit._size_loc[alpha_test_mode];
+        }
         break;
       }
     }
@@ -721,7 +754,9 @@ r_collect_uniforms(GLuint program,
       binding = (GLint)_texture_units.size();
       _texture_units.push_back(std::move(unit));
     }
-    _glgsg->_glUniform1i(location, binding);
+    if (location >= 0) {
+      _glgsg->_glUniform1i(location, binding);
+    }
   }
   else if (const ShaderType::Image *image = type->as_image()) {
     // In OpenGL ES, we can't specify a binding index after the fact.
@@ -729,6 +764,12 @@ r_collect_uniforms(GLuint program,
     // the driver (or the user) providing a unique one.
     GLint binding = -1;
 #ifdef OPENGLES
+    if (location < 0) {
+      // There's an edge case here if we use imageSize without any other
+      // accesses to the image, and the image itself is optimized out.
+      // I don't think it's very realistic, so I haven't bothered with it.
+      return;
+    }
     glGetUniformiv(program, location, &binding);
     if (binding < 0) {
       return;
@@ -745,14 +786,25 @@ r_collect_uniforms(GLuint program,
     unit._access = image->get_access();
     unit._written = false;
 
+    for (int i = 0; i < RenderAttrib::M_always; ++i) {
+      unit._size_loc[i] = -1;
+    }
+
+    if (size_location >= 0) {
+      unit._size_loc[alpha_test_mode] = size_location;
+    }
+
 #ifndef OPENGLES
     // See note above in the SampledImage case.
     for (size_t i = 0; i < _image_units.size(); ++i) {
-      const ImageUnit &other_unit = _image_units[i];
+      ImageUnit &other_unit = _image_units[i];
       if (other_unit._binding == unit._binding &&
           other_unit._resource_id == unit._resource_id &&
           other_unit._access == unit._access) {
         binding = (GLint)i;
+        if (unit._size_loc[alpha_test_mode] >= 0) {
+          other_unit._size_loc[alpha_test_mode] = unit._size_loc[alpha_test_mode];
+        }
         break;
       }
     }
@@ -760,7 +812,9 @@ r_collect_uniforms(GLuint program,
       binding = (GLint)_image_units.size();
       _image_units.push_back(std::move(unit));
     }
-    _glgsg->_glUniform1i(location, binding);
+    if (location >= 0) {
+      _glgsg->_glUniform1i(location, binding);
+    }
 #endif
   }
   else if (type->as_resource()) {
@@ -2303,6 +2357,13 @@ update_shader_texture_bindings(ShaderContext *prev) {
 
         _glgsg->_glBindImageTexture(i, gl_tex, bind_level, layered,
                                     bind_layer, gl_access, gtc->_internal_format);
+
+        // Update the size variable, if we have one.
+        GLint size_loc = unit._size_loc[_alpha_test_mode];
+        if (size_loc != -1) {
+          _glgsg->_glUniform4f(size_loc, (GLfloat)gtc->_width, (GLfloat)gtc->_height,
+                                         (GLfloat)gtc->_depth, (GLfloat)gtc->_num_levels);
+        }
       }
     }
   }
@@ -2395,6 +2456,13 @@ update_shader_texture_bindings(ShaderContext *prev) {
       }
       _glgsg->apply_texture(gtc, view);
       _glgsg->apply_sampler(i, sampler, gtc, view);
+    }
+
+    // Update the size variable, if we have one.
+    GLint size_loc = unit._size_loc[_alpha_test_mode];
+    if (size_loc != -1) {
+      _glgsg->_glUniform4f(size_loc, (GLfloat)gtc->_width, (GLfloat)gtc->_height,
+                                     (GLfloat)gtc->_depth, (GLfloat)gtc->_num_levels);
     }
   }
 
@@ -2724,6 +2792,20 @@ create_shader(GLuint program, const ShaderModule *module, size_t mi,
 
       ShaderModuleSpirV::InstructionStream stream = spv->_instructions;
 
+      // Do we need to emulate certain caps, like texture queries?
+      pmap<SpirVTransformPass::AccessChain, uint32_t> size_var_ids;
+      uint64_t supported_caps = _glgsg->get_supported_shader_capabilities();
+      uint64_t emulate_caps = spv->_emulatable_caps & ~supported_caps;
+      if (emulate_caps != 0u) {
+        _emulated_caps |= emulate_caps;
+
+        SpirVTransformer transformer(spv->_instructions);
+        SpirVEmulateTextureQueriesPass pass;
+        transformer.run(pass);
+        size_var_ids = std::move(pass._size_var_ids);
+        stream = transformer.get_result();
+      }
+
       if (stage != ShaderModule::Stage::FRAGMENT) {
         alpha_test_mode = RenderAttrib::M_none;
       }
@@ -2782,11 +2864,11 @@ create_shader(GLuint program, const ShaderModule *module, size_t mi,
       // Assign names based on locations.  This is important to make sure that
       // uniforms shared between shader stages have the same name, or the
       // compiler may start to complain about overlapping locations.
+      char buf[1024];
       for (spirv_cross::VariableID id : compiler.get_active_interface_variables()) {
         uint32_t loc = compiler.get_decoration(id, spv::DecorationLocation);
         spv::StorageClass sc = compiler.get_storage_class(id);
 
-        char buf[1024];
         if (sc == spv::StorageClassUniformConstant) {
           auto it = id_to_location.find(id);
           if (it != id_to_location.end()) {
@@ -2834,6 +2916,20 @@ create_shader(GLuint program, const ShaderModule *module, size_t mi,
         }
       }
 
+      for (auto &item : size_var_ids) {
+        const SpirVTransformPass::AccessChain &chain = item.first;
+        auto it = id_to_location.find(chain._var_id);
+        if (it != id_to_location.end()) {
+          int location = it->second;
+          size_t size = sprintf(buf, "p%u", location);
+          for (size_t i = 0; i < chain.size(); ++i) {
+            size += sprintf(buf + size, "_%d", chain[i]);
+          }
+          strcpy(buf + size, "_s");
+          compiler.set_name(item.second, buf);
+        }
+      }
+
       // For all uniform constant structs, we need to ensure we have procedural
       // names like _m0, _m1, _m2, etc.  Furthermore, we need to assign each
       // struct a name that is guaranteed to be the same between stages, since
@@ -2844,7 +2940,6 @@ create_shader(GLuint program, const ShaderModule *module, size_t mi,
         item.second->output_signature(str);
         compiler.set_name(item.first, str.str());
 
-        char buf[32];
         for (size_t i = 0; i < item.second->get_num_members(); ++i) {
           sprintf(buf, "m%d", (int)i);
           compiler.set_member_name(item.first, i, buf);

@@ -65,7 +65,7 @@ private:
                                          GLint &num_ssbo_bindings,
                                          GLint &num_image_bindings);
 
-  void r_collect_uniforms(GLuint program,
+  void r_collect_uniforms(RenderAttrib::PandaCompareFunc alpha_test_mode,
                           const Shader::Parameter &param, UniformCalls &calls,
                           const ShaderType *type, const char *name,
                           const char *sym, int &location,
@@ -150,6 +150,7 @@ private:
     PT(ShaderInputBinding) _binding;
     ShaderInputBinding::ResourceId _resource_id;
     GLenum _target;
+    GLint _size_loc[RenderAttrib::M_always];
   };
   typedef pvector<TextureUnit> TextureUnits;
   TextureUnits _texture_units;
@@ -160,6 +161,7 @@ private:
     CLP(TextureContext) *_gtc = nullptr;
     ShaderType::Access _access;
     bool _written = false;
+    GLint _size_loc[RenderAttrib::M_always];
   };
   typedef pvector<ImageUnit> ImageUnits;
   ImageUnits _image_units;
@@ -178,6 +180,7 @@ private:
   uint32_t _storage_block_bindings = 0;
 
   CLP(GraphicsStateGuardian) *_glgsg;
+  uint64_t _emulated_caps = 0u;
 
   bool _remap_locations = false;
   LocationMap _locations;

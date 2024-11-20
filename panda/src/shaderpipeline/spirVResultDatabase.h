@@ -21,6 +21,7 @@ private:
     DT_spec_constant,
   };
 
+public:
   enum DefinitionFlags {
     DF_used = 1,
 
@@ -50,9 +51,15 @@ private:
     DF_relaxed_precision = 1024,
 
     DF_null_constant = 2048,
+
+    // Set for temporaries if the original origin was a sampled image, even
+    // if we extracted the image using OpImage.
+    DF_sampled_image = 4096,
+
+    // Set for variables if the size/levels of an image therein was queried.
+    DF_queried_image_size_levels = 8192,
   };
 
-public:
   /**
    * Used by below Definition struct to hold member info.
    */
@@ -95,6 +102,7 @@ public:
     INLINE bool is_variable() const;
     INLINE bool is_function_parameter() const;
     INLINE bool is_constant() const;
+    INLINE bool is_constant(uint32_t value) const;
     INLINE bool is_null_constant() const;
     INLINE bool is_spec_constant() const;
     INLINE bool is_function() const;
@@ -102,6 +110,7 @@ public:
 
     INLINE bool is_used() const;
     INLINE bool is_dref_sampled() const;
+    INLINE bool is_constant_expression() const;
     INLINE bool is_dynamically_indexed() const;
     INLINE bool is_builtin() const;
     INLINE bool has_location() const;
@@ -134,7 +143,7 @@ public:
   void record_constant(uint32_t id, uint32_t type_id, const uint32_t *words, uint32_t nwords);
   void record_ext_inst_import(uint32_t id, const char *import);
   void record_function(uint32_t id, uint32_t type_id);
-  void record_temporary(uint32_t id, uint32_t type_id, uint32_t from_id, uint32_t function_id);
+  void record_temporary(uint32_t id, uint32_t type_id, uint32_t from_id, uint32_t function_id, bool propagate_constexpr=false);
   void record_spec_constant(uint32_t id, uint32_t type_id);
 
   void mark_used(uint32_t id);
