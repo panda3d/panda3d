@@ -146,6 +146,7 @@ public:
   void record_temporary(uint32_t id, uint32_t type_id, uint32_t from_id, uint32_t function_id, bool propagate_constexpr=false);
   void record_spec_constant(uint32_t id, uint32_t type_id);
 
+  void set_origin(uint32_t id, uint32_t other);
   void mark_used(uint32_t id);
 
   void collect_nested_structs(pmap<uint32_t, const ShaderType::Struct *> &result, uint32_t id) const;

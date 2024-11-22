@@ -165,7 +165,7 @@ public:
 
   virtual void fetch_data(const State &state, void *into, bool packed) const override;
 
-  virtual ResourceId get_resource_id(int index, const ShaderType *type) const;
+  virtual ResourceId get_resource_id(int index) const;
   virtual PT(Texture) fetch_texture(const State &state,
                                     ResourceId index,
                                     SamplerState &sampler, int &view) const;
@@ -211,7 +211,7 @@ public:
 
   virtual int get_state_dep() const override;
 
-  virtual ResourceId get_resource_id(int index, const ShaderType *type) const;
+  virtual ResourceId get_resource_id(int index) const;
   virtual PT(Texture) fetch_texture(const State &state,
                                     ResourceId resource_id,
                                     SamplerState &sampler, int &view) const;
@@ -233,7 +233,7 @@ public:
 
   virtual int get_state_dep() const override;
 
-  virtual ResourceId get_resource_id(int index, const ShaderType *type) const;
+  virtual ResourceId get_resource_id(int index) const;
   virtual PT(Texture) fetch_texture(const State &state,
                                     ResourceId resource_id,
                                     SamplerState &sampler, int &view) const;
@@ -257,7 +257,7 @@ public:
 
   virtual int get_state_dep() const override;
 
-  virtual ResourceId get_resource_id(int index, const ShaderType *type) const;
+  virtual ResourceId get_resource_id(int index) const;
   virtual PT(ShaderBuffer) fetch_shader_buffer(const State &state,
                                                ResourceId resource_id) const;
 
@@ -338,7 +338,7 @@ public:
 
   virtual void fetch_data(const State &state, void *into, bool packed) const override;
 
-  virtual ResourceId get_resource_id(int index, const ShaderType *type) const;
+  virtual ResourceId get_resource_id(int index) const;
   virtual PT(Texture) fetch_texture(const State &state,
                                     ResourceId index,
                                     SamplerState &sampler, int &view) const;

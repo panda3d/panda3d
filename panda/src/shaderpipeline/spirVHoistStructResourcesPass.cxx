@@ -310,6 +310,7 @@ transform_function_op(Instruction op) {
         // the base id to our variable.
         new_args[2] = new_var_id;
         add_instruction(op.opcode, new_args.data(), new_args.size());
+        _db.set_origin(new_args[1], new_args[2]);
         return false;
       }
 
@@ -457,6 +458,8 @@ transform_function_op(Instruction op) {
     // people actually do this, we can add support.
     nassertr(!_affected_types.count(op.args[0]), false);
     nassertr(!is_deleted(op.args[2]), false);
+
+    _db.set_origin(op.args[1], op.args[2]);
     mark_used(op.args[2]);
     break;
 
@@ -471,6 +474,29 @@ transform_function_op(Instruction op) {
     if (is_deleted(op.args[2])) {
       delete_id(op.args[1]);
       return false;
+    }
+    break;
+
+  case spv::OpImage:
+    {
+      Definition &def = _db.modify_definition(op.args[1]);
+      def._origin_id = _db.get_definition(op.args[2])._origin_id;
+      def._flags |= SpirVResultDatabase::DF_sampled_image;
+    }
+    break;
+
+  case spv::OpSampledImage:
+    _db.set_origin(op.args[1], op.args[2]);
+    break;
+
+  case spv::OpImageQuerySizeLod:
+  case spv::OpImageQuerySize:
+  case spv::OpImageQueryLevels:
+    {
+      uint32_t var_id = _db.get_definition(op.args[2])._origin_id;
+      if (var_id != 0) {
+        _db.modify_definition(var_id)._flags |= SpirVResultDatabase::DF_queried_image_size_levels;
+      }
     }
     break;
 

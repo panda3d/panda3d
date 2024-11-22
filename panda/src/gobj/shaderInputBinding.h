@@ -57,7 +57,7 @@ public:
                           bool packed = false) const;
 
   typedef uintptr_t ResourceId;
-  virtual ResourceId get_resource_id(int index, const ShaderType *type) const;
+  virtual ResourceId get_resource_id(int index) const;
   virtual PT(Texture) fetch_texture(const State &state,
                                     ResourceId resource_id,
                                     SamplerState &sampler, int &view) const;

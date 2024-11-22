@@ -1017,6 +1017,10 @@ create_texture(DXScreenData &scrn) {
       << "\n";
   }
 
+  _width = target_width;
+  _height = target_height;
+  _depth = target_depth;
+
   for (int view = 0; view < num_views; ++view) {
     IDirect3DBaseTexture9 *d3d_texture = nullptr;
     IDirect3DTexture9 *d3d_2d_texture;
@@ -1138,6 +1142,10 @@ create_simple_texture(DXScreenData &scrn) {
   DWORD mip_level_count = 1;
   DWORD usage = 0;
   D3DPOOL pool = D3DPOOL_MANAGED;
+
+  _width = target_width;
+  _height = target_height;
+  _depth = 1;
 
   int data_size = target_width * target_height * 4;
 

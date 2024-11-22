@@ -1658,7 +1658,7 @@ fetch_from_input(const ShaderAttrib *target_shader, void *into) const {
  * nth resource, which is of the given type.
  */
 ShaderInputBinding::ResourceId ShaderLightStructBinding::
-get_resource_id(int index, const ShaderType *type) const {
+get_resource_id(int index) const {
   if (_input != nullptr) {
     nassertr(index == 0, 0);
   }
@@ -1714,7 +1714,7 @@ get_state_dep() const {
  * nth resource, which is of the given type.
  */
 ShaderInputBinding::ResourceId ShaderTextureStagesBinding::
-get_resource_id(int index, const ShaderType *type) const {
+get_resource_id(int index) const {
   return index;
 }
 
@@ -1767,7 +1767,7 @@ get_state_dep() const {
  * nth resource, which is of the given type.
  */
 ShaderInputBinding::ResourceId ShaderTextureBinding::
-get_resource_id(int index, const ShaderType *type) const {
+get_resource_id(int index) const {
   return (ResourceId)_input.p();
 }
 
@@ -1827,7 +1827,7 @@ get_state_dep() const {
  * nth resource, which is of the given type.
  */
 ShaderInputBinding::ResourceId ShaderBufferBinding::
-get_resource_id(int index, const ShaderType *type) const {
+get_resource_id(int index) const {
   return (ResourceId)_input.p();
 }
 
@@ -2192,7 +2192,7 @@ fetch_data(const State &state, void *into, bool packed) const {
  * nth resource, which is of the given type.
  */
 ShaderInputBinding::ResourceId ShaderAggregateBinding::
-get_resource_id(int index, const ShaderType *type) const {
+get_resource_id(int index) const {
   nassertr(index >= 0 && (size_t)index < _resources.size(), 0);
   return (ResourceId)_resources[index].p();
 }

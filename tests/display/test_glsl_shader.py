@@ -75,6 +75,9 @@ def test_glsl_texture_size(env):
     assert(textureSize(tex2, 0) == ivec2(64, 32));
     assert(textureSize(tex3, 0) == ivec2(16, 16));
     assert(textureSize(tex4, 0) == ivec3(8, 4, 2));
+
+    // dummy sample this texture so it doesn't get optimized out
+    assert(texture(tex1[0], 0) != vec4(2, 2, 2, 2));
     """
     env.run_glsl(code, preamble, {'tex1[0]': tex1_0, 'tex1[1]': tex1_1, 'tex2': tex2, 'tex3': tex3, 'tex4': tex4})
 

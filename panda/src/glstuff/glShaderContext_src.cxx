@@ -673,7 +673,7 @@ r_collect_uniforms(RenderAttrib::PandaCompareFunc alpha_test_mode,
 
       StorageBlock block;
       block._binding = param._binding;
-      block._resource_id = param._binding->get_resource_id(resource_index++, type);
+      block._resource_id = param._binding->get_resource_id(resource_index++);
       block._binding_index = binding;
       _storage_blocks.push_back(std::move(block));
       _storage_block_bindings |= (1 << binding);
@@ -722,7 +722,7 @@ r_collect_uniforms(RenderAttrib::PandaCompareFunc alpha_test_mode,
   if (const ShaderType::SampledImage *sampler = type->as_sampled_image()) {
     TextureUnit unit;
     unit._binding = param._binding;
-    unit._resource_id = param._binding->get_resource_id(resource_index++, type);
+    unit._resource_id = param._binding->get_resource_id(resource_index++);
     unit._target = _glgsg->get_texture_target(sampler->get_texture_type());
 
     for (int i = 0; i < RenderAttrib::M_always; ++i) {
@@ -782,7 +782,7 @@ r_collect_uniforms(RenderAttrib::PandaCompareFunc alpha_test_mode,
     ImageUnit unit;
 #endif
     unit._binding = param._binding;
-    unit._resource_id = param._binding->get_resource_id(resource_index++, type);
+    unit._resource_id = param._binding->get_resource_id(resource_index++);
     unit._access = image->get_access();
     unit._written = false;
 
@@ -2916,6 +2916,7 @@ create_shader(GLuint program, const ShaderModule *module, size_t mi,
         }
       }
 
+      // Assign names to emulated texture/image size variables.
       for (auto &item : size_var_ids) {
         const SpirVTransformPass::AccessChain &chain = item.first;
         auto it = id_to_location.find(chain._var_id);

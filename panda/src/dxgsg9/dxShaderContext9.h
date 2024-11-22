@@ -88,6 +88,8 @@ private:
     UINT unit;
     PT(ShaderInputBinding) binding;
     uint64_t resource_id;
+    int size_vreg = -1;
+    int size_freg = -1;
   };
   pvector<TextureRegister> _textures;
 

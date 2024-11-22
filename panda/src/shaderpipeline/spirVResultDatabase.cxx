@@ -1290,6 +1290,14 @@ record_spec_constant(uint32_t id, uint32_t type_id) {
 }
 
 /**
+ * Changes the origin of an existing id.
+ */
+void SpirVResultDatabase::
+set_origin(uint32_t id, uint32_t other) {
+  modify_definition(id)._origin_id = get_definition(other)._origin_id;
+}
+
+/**
  * Called for a variable, or any id whose value (indirectly) originates from a
  * variable, to mark the variable and any types used thereby as "used".
  */
