@@ -40,10 +40,9 @@ CullHandler::
  * expected to delete it later.
  */
 void CullHandler::
-record_object(CullableObject *object, const CullTraverser *traverser) {
-  nout << *object->_geom << " " << *object->_internal_transform << " "
-       << *object->_state << "\n";
-  delete object;
+record_object(CullableObject &&object, const CullTraverser *traverser) {
+  nout << *object._geom << " " << *object._internal_transform << " "
+       << *object._state << "\n";
 }
 
 /**

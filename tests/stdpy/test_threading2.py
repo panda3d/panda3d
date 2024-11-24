@@ -1,8 +1,11 @@
+import sys
 from collections import deque
 from panda3d import core
 from direct.stdpy import threading2
+import pytest
 
 
+@pytest.mark.skipif(sys.platform == "emscripten", reason="No threading")
 def test_threading2():
     class BoundedQueue(threading2._Verbose):
 

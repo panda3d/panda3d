@@ -329,10 +329,8 @@ render_thread(CullTraverser *trav, CullTraverserData &data,
     state = state->add_attrib(ColorAttrib::make_vertex());
   }
 
-  CullableObject *object =
-    new CullableObject(geom, state,
-                       data.get_internal_transform(trav));
-  trav->get_cull_handler()->record_object(object, trav);
+  trav->get_cull_handler()->record_object(CullableObject(
+    std::move(geom), std::move(state), data.get_internal_transform(trav)), trav);
 }
 
 /**
@@ -375,10 +373,8 @@ render_tape(CullTraverser *trav, CullTraverserData &data,
     state = state->add_attrib(ColorAttrib::make_vertex());
   }
 
-  CullableObject *object =
-    new CullableObject(geom, state,
-                       data.get_internal_transform(trav));
-  trav->get_cull_handler()->record_object(object, trav);
+  trav->get_cull_handler()->record_object(CullableObject(
+    std::move(geom), std::move(state), data.get_internal_transform(trav)), trav);
 }
 
 /**
@@ -428,10 +424,8 @@ render_billboard(CullTraverser *trav, CullTraverserData &data,
     state = state->add_attrib(ColorAttrib::make_vertex());
   }
 
-  CullableObject *object =
-    new CullableObject(geom, state,
-                       data.get_internal_transform(trav));
-  trav->get_cull_handler()->record_object(object, trav);
+  trav->get_cull_handler()->record_object(CullableObject(
+    std::move(geom), std::move(state), data.get_internal_transform(trav)), trav);
 }
 
 /**
@@ -489,10 +483,8 @@ render_tube(CullTraverser *trav, CullTraverserData &data,
     state = state->add_attrib(ColorAttrib::make_vertex());
   }
 
-  CullableObject *object =
-    new CullableObject(geom, state,
-                       data.get_internal_transform(trav));
-  trav->get_cull_handler()->record_object(object, trav);
+  trav->get_cull_handler()->record_object(CullableObject(
+    std::move(geom), std::move(state), data.get_internal_transform(trav)), trav);
 }
 
 /**
@@ -523,8 +515,16 @@ get_connected_segments(RopeNode::CurveSegments &curve_segments,
     LPoint3 point;
     result->eval_segment_point(segment, 0.0f, point);
 
+    // We need a bit more relaxed threshold to prevent breaks between
+    // segments, see GitHub issue #1325.
+#ifdef STDFLOAT_DOUBLE
+    static const double threshold = 1.0e-8;
+#else
+    static const float threshold = 1.0e-4f;
+#endif
+
     if (curve_segment == nullptr ||
-        !point.almost_equal(last_point)) {
+        !point.almost_equal(last_point, threshold)) {
       // If the first point of this segment is different from the last point
       // of the previous segment, end the previous segment and begin a new
       // one.

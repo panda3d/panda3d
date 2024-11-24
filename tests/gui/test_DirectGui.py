@@ -8,7 +8,7 @@ from direct.gui.DirectGui import DirectButton, DirectDialog, DirectEntry, Direct
 def test_DirectGui(base):
     # EXAMPLE CODE
     # Load a model
-    smiley = base.loader.loadModel('models/misc/smiley')
+    smiley = base.loader.loadModel('models/misc/smiley.egg')
 
     # Here we specify the button's command
     def dummyCmd(index):

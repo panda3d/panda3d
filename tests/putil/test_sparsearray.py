@@ -251,6 +251,35 @@ def test_sparse_array_nonzero():
     assert sa
 
 
+def test_sparse_array_lowest_bit():
+    sa = core.SparseArray()
+    assert sa.get_lowest_off_bit() == 0
+    assert sa.get_lowest_on_bit() == -1
+
+    sa.invert_in_place()
+    assert sa.get_lowest_off_bit() == -1
+    assert sa.get_lowest_on_bit() == 0
+
+    sa = core.SparseArray()
+    sa.set_bit(0)
+    sa.set_bit(1)
+    assert sa.get_lowest_off_bit() == 2
+    assert sa.get_lowest_on_bit() == 0
+
+    sa.invert_in_place()
+    assert sa.get_lowest_off_bit() == 0
+    assert sa.get_lowest_on_bit() == 2
+
+    sa = core.SparseArray()
+    sa.set_bit(2)
+    assert sa.get_lowest_off_bit() == 0
+    assert sa.get_lowest_on_bit() == 2
+
+    sa.invert_in_place()
+    assert sa.get_lowest_off_bit() == 2
+    assert sa.get_lowest_on_bit() == 0
+
+
 def test_sparse_array_getstate():
     sa = core.SparseArray()
     assert sa.__getstate__() == ()

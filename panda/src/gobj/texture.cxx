@@ -10183,13 +10183,15 @@ do_write_datagram_header(CData *cdata, BamWriter *manager, Datagram &me, bool &h
         << "Texture file " << cdata->_fullpath
         << " found as " << filename << "\n";
     }
-    if (!has_bam_dir || !alpha_filename.make_relative_to(bam_dir, true)) {
-      alpha_filename.find_on_searchpath(get_model_path());
-    }
-    if (gobj_cat.is_debug()) {
-      gobj_cat.debug()
-        << "Alpha image " << cdata->_alpha_fullpath
-        << " found as " << alpha_filename << "\n";
+    if (!alpha_filename.empty()) {
+      if (!has_bam_dir || !alpha_filename.make_relative_to(bam_dir, true)) {
+        alpha_filename.find_on_searchpath(get_model_path());
+      }
+      if (gobj_cat.is_debug()) {
+        gobj_cat.debug()
+          << "Alpha image " << cdata->_alpha_fullpath
+          << " found as " << alpha_filename << "\n";
+      }
     }
     break;
 

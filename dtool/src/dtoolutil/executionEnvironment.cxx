@@ -72,7 +72,7 @@ extern char **environ;
 // read environment variables at static init time.  In this case, we must read
 // all of the environment variables directly and cache them locally.
 
-#ifndef STATIC_INIT_GETENV
+#if !defined(STATIC_INIT_GETENV) || defined(__EMSCRIPTEN__)
 #define PREREAD_ENVIRONMENT
 #endif
 
@@ -122,6 +122,13 @@ static const char *const libp3dtool_filenames[] = {
 #endif
 };
 #endif /* !LINK_ALL_STATIC */
+
+#if defined(__EMSCRIPTEN__) && !defined(CPPPARSER)
+extern "C" void EMSCRIPTEN_KEEPALIVE
+_set_env_var(ExecutionEnvironment *ptr, const char *var, const char *value) {
+  ptr->_variables[std::string(var)] = std::string(value);
+}
+#endif
 
 // Linux with GNU libc does have global argvargc variables, but we can't
 // safely access them at stat init time--at least, not in libc5. (It does seem
@@ -449,7 +456,7 @@ ns_set_environment_variable(const string &var, const string &value) {
 void ExecutionEnvironment::
 ns_shadow_environment_variable(const string &var, const string &value) {
   _variables[var] = value;
-  string putstr = var + "=" + value;
+  //string putstr = var + "=" + value;
 }
 
 /**
@@ -577,7 +584,17 @@ read_environment_variables() {
     }
   }
 #elif defined(__EMSCRIPTEN__)
-  // Emscripten has no environment vars.  Don't even try.
+  // We only have environment variables if we're running in node.js.
+#ifndef CPPPARSER
+  EM_ASM({
+    if (typeof process === 'object' && typeof process.env === 'object') {
+      for (var variable in process.env) {
+        __set_env_var($0, stringToUTF8OnStack(variable),
+                          stringToUTF8OnStack(process.env[variable]));
+      }
+    }
+  }, this);
+#endif
 
 #elif defined(HAVE_PROC_SELF_ENVIRON)
   // In some cases, we may have a file called procselfenviron that may be read

@@ -268,11 +268,11 @@ def parseopts(args):
                         break
                     elif option == "--" + pkg.lower() + "-incdir":
                         PkgSetCustomLocation(pkg)
-                        IncDirectory(pkg, value)
+                        IncDirectory(pkg, os.path.expanduser(value))
                         break
                     elif option == "--" + pkg.lower() + "-libdir":
                         PkgSetCustomLocation(pkg)
-                        LibDirectory(pkg, value)
+                        LibDirectory(pkg, os.path.expanduser(value))
                         break
             if (option == "--everything" or option.startswith("--use-")
                 or option == "--nothing" or option.startswith("--no-")):
@@ -358,8 +358,6 @@ os.environ["MAKEPANDA"] = os.path.abspath(sys.argv[0])
 if GetHost() == "darwin":
     if tuple(OSX_ARCHS) == ('arm64',):
         os.environ["MACOSX_DEPLOYMENT_TARGET"] = "11.0"
-    elif sys.version_info >= (3, 13):
-        os.environ["MACOSX_DEPLOYMENT_TARGET"] = "10.13"
     else:
         os.environ["MACOSX_DEPLOYMENT_TARGET"] = "10.9"
 
@@ -562,6 +560,11 @@ if GetHost() == 'windows' and GetTarget() == 'windows':
     SdkLocateVisualStudio(MSVC_VERSION)
 else:
     COMPILER = "GCC"
+
+# Ensure we've pip-installed interrogate if we need it before setting
+# PYTHONHOME, etc.
+if not PkgSkip("PYTHON"):
+    GetInterrogate()
 
 SetupBuildEnvironment(COMPILER)
 
@@ -1026,12 +1029,14 @@ if (COMPILER=="GCC"):
             # Python may have been compiled with these requirements.
             # Is there a cleaner way to check this?
             LinkFlag("PYTHON", "-s USE_BZIP2=1 -s USE_SQLITE3=1")
-            if not PkgHasCustomLocation("PYTHON"):
+            if PkgHasCustomLocation("PYTHON"):
+                python_libdir = FindLibDirectory("PYTHON")
+            else:
                 python_libdir = GetThirdpartyDir() + "python/lib"
-                if os.path.isfile(python_libdir + "/libmpdec.a"):
-                    LibName("PYTHON", python_libdir + "/libmpdec.a")
-                if os.path.isfile(python_libdir + "/libexpat.a"):
-                    LibName("PYTHON", python_libdir + "/libexpat.a")
+
+            for lib in "libmpdec.a", "libexpat.a", "libHacl_Hash_SHA2.a":
+                if os.path.isfile(python_libdir + "/" + lib):
+                    LibName("PYTHON", python_libdir + "/" + lib)
 
         if GetTarget() == "linux":
             LibName("PYTHON", "-lutil")
@@ -1343,8 +1348,6 @@ def CompileCxx(obj,src,opts):
 
             if tuple(OSX_ARCHS) == ('arm64',):
                 cmd += " -mmacosx-version-min=11.0"
-            elif sys.version_info >= (3, 13):
-                cmd += " -mmacosx-version-min=10.13"
             else:
                 cmd += " -mmacosx-version-min=10.9"
 
@@ -1882,7 +1885,7 @@ def CompileLink(dll, obj, opts):
 
             if tuple(OSX_ARCHS) == ('arm64',):
                 cmd += " -mmacosx-version-min=11.0"
-            elif sys.version_info >= (3, 13):
+            elif sys.version_info >= (3, 13) and 'PYTHON' in opts:
                 cmd += " -mmacosx-version-min=10.13"
             else:
                 cmd += " -mmacosx-version-min=10.9"
@@ -5963,6 +5966,42 @@ if PkgSkip("PYTHON") == 0:
         PyTargetAdd('libdeploy-stubw.dll', opts=['DEPLOYSTUB', 'ANDROID'])
 
 #
+# Build the test runner for static builds
+#
+if GetLinkAllStatic():
+    if GetTarget() == 'emscripten':
+        LinkFlag('RUN_TESTS_FLAGS', '-s NODERAWFS')
+        LinkFlag('RUN_TESTS_FLAGS', '-s ASSERTIONS=2')
+        LinkFlag('RUN_TESTS_FLAGS', '-s ALLOW_MEMORY_GROWTH')
+        LinkFlag('RUN_TESTS_FLAGS', '-s INITIAL_HEAP=585302016')
+        LinkFlag('RUN_TESTS_FLAGS', '-s STACK_SIZE=1048576')
+        LinkFlag('RUN_TESTS_FLAGS', '--minify 0')
+
+    if not PkgSkip('DIRECT'):
+        DefSymbol('RUN_TESTS_FLAGS', 'HAVE_DIRECT')
+    if not PkgSkip('PANDAPHYSICS'):
+        DefSymbol('RUN_TESTS_FLAGS', 'HAVE_PHYSICS')
+    if not PkgSkip('EGG'):
+        DefSymbol('RUN_TESTS_FLAGS', 'HAVE_EGG')
+    if not PkgSkip('BULLET'):
+        DefSymbol('RUN_TESTS_FLAGS', 'HAVE_BULLET')
+
+    OPTS=['DIR:tests', 'PYTHON', 'RUN_TESTS_FLAGS']
+    PyTargetAdd('run_tests-main.obj', opts=OPTS, input='main.c')
+    PyTargetAdd('run_tests.exe', input='run_tests-main.obj')
+    PyTargetAdd('run_tests.exe', input='core.pyd')
+    if not PkgSkip('DIRECT'):
+        PyTargetAdd('run_tests.exe', input='direct.pyd')
+    if not PkgSkip('PANDAPHYSICS'):
+        PyTargetAdd('run_tests.exe', input='physics.pyd')
+    if not PkgSkip('EGG'):
+        PyTargetAdd('run_tests.exe', input='egg.pyd')
+    if not PkgSkip('BULLET'):
+        PyTargetAdd('run_tests.exe', input='bullet.pyd')
+    PyTargetAdd('run_tests.exe', input=COMMON_PANDA_LIBS)
+    PyTargetAdd('run_tests.exe', opts=['PYTHON', 'BULLET', 'RUN_TESTS_FLAGS'])
+
+#
 # Generate the models directory and samples directory
 #
 
@@ -6123,8 +6162,16 @@ finally:
 
 # Run the test suite.
 if RUNTESTS:
-    cmdstr = BracketNameWithQuotes(SDK["PYTHONEXEC"].replace('\\', '/'))
-    cmdstr += " -B -m pytest tests"
+    if GetLinkAllStatic():
+        runner = FindLocation("run_tests.exe", [])
+        if runner.endswith(".js"):
+            cmdstr = "node " + BracketNameWithQuotes(runner)
+        else:
+            cmdstr = BracketNameWithQuotes(runner)
+    else:
+        cmdstr = BracketNameWithQuotes(SDK["PYTHONEXEC"].replace('\\', '/'))
+        cmdstr += " -B -m pytest"
+    cmdstr += " tests"
     if GetVerbose():
         cmdstr += " --verbose"
     oscmd(cmdstr)

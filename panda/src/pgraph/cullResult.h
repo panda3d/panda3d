@@ -45,6 +45,7 @@ class EXPCL_PANDA_PGRAPH CullResult : public ReferenceCount {
 public:
   CullResult(GraphicsStateGuardianBase *gsg,
              const PStatCollector &draw_region_pcollector);
+  CullResult(const CullResult &copy) = delete;
   INLINE ~CullResult();
 
 PUBLISHED:
@@ -52,7 +53,7 @@ PUBLISHED:
 
   INLINE CullBin *get_bin(int bin_index);
 
-  void add_object(CullableObject *object, const CullTraverser *traverser);
+  void add_object(CullableObject &&object, const CullTraverser *traverser);
   void finish_cull(SceneSetup *scene_setup, Thread *current_thread);
   void draw(Thread *current_thread);
 
@@ -63,6 +64,11 @@ public:
 
 private:
   CullBin *make_new_bin(int bin_index);
+
+  struct AllocationPage;
+  AllocationPage *new_page();
+  void delete_page(AllocationPage *page);
+  INLINE CullableObject *alloc_object(CullableObject &&object);
 
   INLINE void check_flash_bin(CPT(RenderState) &state, CullBinManager *bin_manager, int bin_index);
   INLINE void check_flash_transparency(CPT(RenderState) &state, const LColor &color);
@@ -87,6 +93,16 @@ private:
   Bins _bins;
 
   bool _show_transparency = false;
+
+  // Arena allocator for CullableObjects.
+  struct AllocationPage {
+    AllocationPage *_next = nullptr;
+    static const size_t _capacity = 64;
+    size_t _size = 0;
+    alignas(CullableObject) unsigned char _memory[sizeof(CullableObject) * _capacity];
+  };
+  AllocationPage *_page;
+  AllocationPage _first_page;
 
 public:
   static TypeHandle get_class_type() {

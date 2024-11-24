@@ -106,7 +106,7 @@ def test_nodepath_transform_composition():
     leg1 = node2.get_transform().compose(node3.get_transform())
     leg2 = node1.get_transform().compose(node3.get_transform())
     relative_transform = leg1.get_inverse().compose(leg2)
-    assert np1.get_transform(np2) == relative_transform
+    assert np1.get_transform(np2).compare_to(relative_transform, True) == 0
 
 
 def test_nodepath_comparison():

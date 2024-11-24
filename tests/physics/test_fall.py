@@ -23,7 +23,7 @@ class FallTest(NodePath):
         #self.setPos(avatarNodePath, Vec3(0))
         #self.setHpr(avatarNodePath, Vec3(0))
 
-        avatarNodePath = base.loader.loadModel("models/misc/smiley")
+        avatarNodePath = base.loader.loadModel("models/misc/smiley.egg")
         assert not avatarNodePath.isEmpty()
 
         # camLL = base.render.find("**/camLL")
