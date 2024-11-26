@@ -181,16 +181,14 @@ process_events() {
   GraphicsWindow::process_events();
 
   // Read all pending events.
-  int looper_id;
-  int events;
-  struct android_poll_source* source;
+  struct android_poll_source *source;
 
-  // Loop until all events are read.
-  while ((looper_id = ALooper_pollAll(0, nullptr, &events, (void**)&source)) >= 0) {
-    // Process this event.
-    if (source != nullptr) {
-      source->process(_app, source);
-    }
+  auto result = ALooper_pollOnce(0, nullptr, nullptr, (void **)&source);
+  nassertv(result != ALOOPER_POLL_ERROR);
+
+  // Process this event.
+  if (source != nullptr) {
+    source->process(_app, source);
   }
 }
 

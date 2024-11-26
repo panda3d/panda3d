@@ -297,11 +297,10 @@ void android_main(struct android_app *app) {
 
     // We still need to keep an event loop going until Android gives us leave
     // to end the process.
-    int looper_id;
-    int events;
-    struct android_poll_source *source;
-    while ((looper_id = ALooper_pollAll(-1, nullptr, &events, (void**)&source)) >= 0) {
-      // Process this event, but intercept application command events.
+    while (!app->destroyRequested) {
+      int looper_id;
+      struct android_poll_source *source;
+      auto result = ALooper_pollOnce(-1, &looper_id, nullptr, (void **)&source);
       if (looper_id == LOOPER_ID_MAIN) {
         int8_t cmd = android_app_read_cmd(app);
         android_app_pre_exec_cmd(app, cmd);
