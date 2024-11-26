@@ -188,11 +188,26 @@ FrozenImporter.get_data = get_data
 """
 
 SITE_PY_ANDROID = """
+# Define this first, before we import anything that might import an extension
+# module.
 import sys, os
+from importlib import _bootstrap, _bootstrap_external
+
+class AndroidExtensionFinder:
+    @classmethod
+    def find_spec(cls, fullname, path=None, target=None):
+        soname = 'libpy.' + fullname + '.so'
+        path = os.path.join(sys.platlibdir, soname)
+
+        if os.path.exists(path):
+            loader = _bootstrap_external.ExtensionFileLoader(fullname, path)
+            return _bootstrap.ModuleSpec(fullname, loader, origin=path)
+
+
+sys.meta_path.append(AndroidExtensionFinder)
+
+
 from _frozen_importlib import _imp, FrozenImporter
-from importlib import _bootstrap_external
-from importlib.abc import Loader, MetaPathFinder
-from importlib.machinery import ModuleSpec
 from io import RawIOBase, TextIOWrapper
 
 from android_log import write as android_log_write
@@ -242,8 +257,9 @@ class AndroidLogStream:
     def writable(self):
         return True
 
-sys.stdout = AndroidLogStream(2, 'Python')
-sys.stderr = AndroidLogStream(3, 'Python')
+if sys.version_info < (3, 13):
+    sys.stdout = AndroidLogStream(4, 'python.stdout')
+    sys.stderr = AndroidLogStream(5, 'python.stderr')
 
 
 # Alter FrozenImporter to give a __file__ property to frozen modules.
@@ -262,20 +278,6 @@ def get_data(path):
 
 FrozenImporter.find_spec = find_spec
 FrozenImporter.get_data = get_data
-
-
-class AndroidExtensionFinder(MetaPathFinder):
-    @classmethod
-    def find_spec(cls, fullname, path=None, target=None):
-        soname = 'libpy.' + fullname + '.so'
-        path = os.path.join(os.path.dirname(sys.executable), soname)
-
-        if os.path.exists(path):
-            loader = _bootstrap_external.ExtensionFileLoader(fullname, path)
-            return ModuleSpec(fullname, loader, origin=path)
-
-
-sys.meta_path.append(AndroidExtensionFinder)
 """
 
 

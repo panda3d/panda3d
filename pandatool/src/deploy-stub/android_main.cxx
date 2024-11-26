@@ -161,8 +161,6 @@ void android_main(struct android_app *app) {
     std::string dtool_name = std::string(libdir) + "/libp3dtool.so";
     ExecutionEnvironment::set_dtool_name(dtool_name);
     android_cat.info() << "Path to dtool: " << dtool_name << "\n";
-
-    env->ReleaseStringUTFChars(libdir_jstr, libdir);
   }
 
   // Get the path to the APK.
@@ -184,6 +182,7 @@ void android_main(struct android_app *app) {
 
   // Map the blob to memory
   void *blob = map_blob(lib_path, (off_t)blobinfo.blob_offset, (size_t)blobinfo.blob_size);
+  env->ReleaseStringUTFChars(lib_path_jstr, lib_path);
   assert(blob != NULL);
 
   assert(blobinfo.num_pointers <= MAX_NUM_POINTERS);
@@ -242,14 +241,16 @@ void android_main(struct android_app *app) {
   preconfig.utf8_mode = 1;
   PyStatus status = Py_PreInitialize(&preconfig);
   if (PyStatus_Exception(status)) {
-      Py_ExitStatusException(status);
-      return;
+    env->ReleaseStringUTFChars(libdir_jstr, libdir);
+    Py_ExitStatusException(status);
+    return;
   }
 
   // Register the android_log module.
   if (PyImport_AppendInittab("android_log", &PyInit_android_log) < 0) {
     android_cat.error()
       << "Failed to register android_log module.\n";
+    env->ReleaseStringUTFChars(libdir_jstr, libdir);
     return;
   }
 
@@ -259,8 +260,8 @@ void android_main(struct android_app *app) {
   config.buffered_stdio = 0;
   config.configure_c_stdio = 0;
   config.write_bytecode = 0;
-  PyConfig_SetBytesString(&config, &config.executable, lib_path);
-  env->ReleaseStringUTFChars(lib_path_jstr, lib_path);
+  PyConfig_SetBytesString(&config, &config.platlibdir, libdir);
+  env->ReleaseStringUTFChars(libdir_jstr, libdir);
 
   status = Py_InitializeFromConfig(&config);
   PyConfig_Clear(&config);
