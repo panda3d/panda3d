@@ -677,6 +677,7 @@ def makewheel(version, output_dir, platform=None):
         or platform.startswith('win_') \
         or platform.startswith('cygwin_')
     is_macosx = platform.startswith('macosx_')
+    is_android = platform.startswith('android_')
 
     # Global filepaths
     panda3d_dir = join(output_dir, "panda3d")
@@ -747,6 +748,9 @@ def makewheel(version, output_dir, platform=None):
     elif is_macosx:
         pylib_name = 'libpython{0}.{1}{2}.dylib'.format(sys.version_info[0], sys.version_info[1], suffix)
         pylib_path = os.path.join(get_config_var('LIBDIR'), pylib_name)
+    elif is_android and CrossCompiling():
+        pylib_name = 'libpython{0}.{1}{2}.so'.format(sys.version_info[0], sys.version_info[1], suffix)
+        pylib_path = os.path.join(GetThirdpartyDir(), 'python', 'lib', pylib_name)
     else:
         pylib_name = get_config_var('LDLIBRARY')
         pylib_arch = get_config_var('MULTIARCH')
