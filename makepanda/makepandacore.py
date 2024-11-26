@@ -2615,6 +2615,8 @@ def SdkLocateAndroid():
     # We need to redistribute the C++ standard library.
     stdlibc = os.path.join(ndk_root, 'sources', 'cxx-stl', 'llvm-libc++')
     stl_lib = os.path.join(stdlibc, 'libs', abi, 'libc++_shared.so')
+    if not os.path.isfile(stl_lib):
+        stl_lib = os.path.join(prebuilt_dir, 'sysroot', 'usr', 'lib', ANDROID_TRIPLE.rstrip('0123456789'), 'libc++_shared.so')
     CopyFile(os.path.join(GetOutputDir(), 'lib', 'libc++_shared.so'), stl_lib)
 
     # The Android support library polyfills C++ features not available in the

@@ -2078,7 +2078,8 @@ def CompileJava(target, src, opts):
     if optlevel >= 4:
         cmd += "-debug:none "
 
-    cmd += "-cp " + GetOutputDir() + "/classes "
+    classpath = BracketNameWithQuotes(SDK["ANDROID_JAR"] + ":" + GetOutputDir() + "/classes")
+    cmd += "-cp " + classpath + " "
     cmd += "-d " + GetOutputDir() + "/classes "
     cmd += BracketNameWithQuotes(src)
     oscmd(cmd)
@@ -4916,11 +4917,13 @@ if GetTarget() == 'android':
     TargetAdd('org/panda3d/android/NativeIStream.class', opts=OPTS, input='NativeIStream.java')
     TargetAdd('org/panda3d/android/NativeOStream.class', opts=OPTS, input='NativeOStream.java')
     TargetAdd('org/panda3d/android/PandaActivity.class', opts=OPTS, input='PandaActivity.java')
+    TargetAdd('org/panda3d/android/PandaActivity$1.class', opts=OPTS+['DEPENDENCYONLY'], input='PandaActivity.java')
     TargetAdd('org/panda3d/android/PythonActivity.class', opts=OPTS, input='PythonActivity.java')
 
     TargetAdd('classes.dex', input='org/panda3d/android/NativeIStream.class')
     TargetAdd('classes.dex', input='org/panda3d/android/NativeOStream.class')
     TargetAdd('classes.dex', input='org/panda3d/android/PandaActivity.class')
+    TargetAdd('classes.dex', input='org/panda3d/android/PandaActivity$1.class')
     TargetAdd('classes.dex', input='org/panda3d/android/PythonActivity.class')
 
     TargetAdd('p3android_composite1.obj', opts=OPTS, input='p3android_composite1.cxx')

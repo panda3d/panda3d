@@ -866,7 +866,7 @@ def MakeInstallerAndroid(version, **kwargs):
         shutil.copy(source, target)
 
         # Walk through the library dependencies.
-        handle = subprocess.Popen(['readelf', '--dynamic', target], stdout=subprocess.PIPE)
+        handle = subprocess.Popen(['llvm-readelf', '--dynamic', target], stdout=subprocess.PIPE)
         for line in handle.communicate()[0].splitlines():
             # The line will look something like:
             # 0x0000000000000001 (NEEDED)             Shared library: [libpanda.so]
