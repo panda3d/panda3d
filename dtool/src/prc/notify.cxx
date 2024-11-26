@@ -467,12 +467,12 @@ config_initialized() {
 
   Notify *ptr = Notify::ptr();
 
-  for (int i = 0; i <= NS_fatal; ++i) {
+  for (int severity = 0; severity <= NS_fatal; ++severity) {
     int priority = ANDROID_LOG_UNKNOWN;
     if (severity != NS_unspecified) {
-      priority = i + 1;
+      priority = severity + 1;
     }
-    ptr->_log_streams[i] = new AndroidLogStream(priority);
+    ptr->_log_streams[severity] = new AndroidLogStream(priority);
   }
 
 #elif defined(__EMSCRIPTEN__)
