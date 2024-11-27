@@ -296,6 +296,7 @@ class build_apps(setuptools.Command):
         self.application_id = None
         self.android_abis = None
         self.android_debuggable = False
+        self.android_app_category = None
         self.android_version_code = 1
         self.android_min_sdk_version = 21
         self.android_max_sdk_version = None
@@ -784,10 +785,29 @@ class build_apps(setuptools.Command):
         version = self.distribution.get_version()
         classifiers = self.distribution.get_classifiers()
 
-        is_game = False
-        for classifier in classifiers:
-            if classifier == 'Topic :: Games/Entertainment' or classifier.startswith('Topic :: Games/Entertainment ::'):
-                is_game = True
+        # If we have no app category, determine it based on the classifiers.
+        category = self.android_app_category
+        if not category:
+            for classifier in classifiers:
+                classifier = tuple(classifier.split(' :: '))
+                if len(classifier) < 2 or classifier[0] != 'Topic':
+                    continue
+
+                if classifier[:2] == ('Topic', 'Games/Entertainment'):
+                    category = 'game'
+                    break
+                elif classifier[:3] == ('Topic', 'Multimedia', 'Audio'):
+                    category = 'audio'
+                elif classifier[:4] == ('Topic', 'Multimedia', 'Graphics', 'Editors'):
+                    category = 'image'
+                elif classifier[:2] == ('Topic', 'Communications', 'Usenet News'):
+                    category = 'news'
+                elif classifier[:2] == ('Topic', 'Office/Business'):
+                    category = 'productivity'
+                elif classifier[:3] == ('Topic', 'Communications', 'Chat'):
+                    category = 'social'
+                elif classifier[:3] == ('Topic', 'Multimedia', 'Video'):
+                    category = 'video'
 
         manifest = ET.Element('manifest')
         manifest.set('xmlns:android', 'http://schemas.android.com/apk/res/android')
@@ -818,9 +838,13 @@ class build_apps(setuptools.Command):
 
         application = ET.SubElement(manifest, 'application')
         application.set('android:label', name)
-        application.set('android:isGame', ('false', 'true')[is_game])
+        if category == 'game':
+            application.set('android:isGame', 'true')
+        if category:
+            application.set('android:appCategory', category)
         application.set('android:debuggable', ('false', 'true')[self.android_debuggable])
         application.set('android:extractNativeLibs', 'true')
+        application.set('android:hardwareAccelerated', 'true')
 
         app_icon = self.icon_objects.get('*', self.icon_objects.get(self.macos_main_app))
         if app_icon:
@@ -831,8 +855,10 @@ class build_apps(setuptools.Command):
             activity.set('android:name', 'org.panda3d.android.PythonActivity')
             activity.set('android:label', appname)
             activity.set('android:theme', '@android:style/Theme.NoTitleBar')
+            activity.set('android:alwaysRetainTaskState', 'true')
             activity.set('android:configChanges', 'layoutDirection|locale|grammaticalGender|fontScale|fontWeightAdjustment|orientation|uiMode|screenLayout|screenSize|smallestScreenSize|keyboard|keyboardHidden|navigation')
             activity.set('android:launchMode', 'singleInstance')
+            activity.set('android:preferMinimalPostProcessing', 'true')
 
             act_icon = self.icon_objects.get(appname)
             if act_icon and act_icon is not app_icon:
