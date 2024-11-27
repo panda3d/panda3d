@@ -332,4 +332,6 @@ void android_main(struct android_app *app) {
 
   // Detach the thread before exiting.
   activity->vm->DetachCurrentThread();
+
+  _exit(0);
 }
