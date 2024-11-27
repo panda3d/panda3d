@@ -519,6 +519,18 @@ class build_apps(setuptools.Command):
         tmp.update(self.package_data_dirs)
         self.package_data_dirs = tmp
 
+        if 'android' in self.platforms:
+            assert self.application_id, \
+                'Must have a valid application_id when targeting Android!'
+
+            parts = self.application_id.split('.')
+            assert len(parts) >= 2, \
+                'application_id must contain at least one \'.\' separator!'
+
+            for part in parts:
+                assert part.isidentifier(), \
+                    'Each part of application_id must be a valid identifier!'
+
         # Default to all supported ABIs (for the given Android version).
         if self.android_max_sdk_version and self.android_max_sdk_version < 21:
             assert self.android_max_sdk_version >= 19, \
