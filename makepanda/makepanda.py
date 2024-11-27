@@ -2072,7 +2072,16 @@ def CompileJava(target, src, opts):
     if GetHost() == 'android':
         cmd = "ecj "
     else:
-        cmd = "javac -bootclasspath " + BracketNameWithQuotes(SDK["ANDROID_JAR"]) + " "
+        cmd = "javac "
+        home = os.environ.get('JAVA_HOME')
+        if home:
+            javac_path = os.path.join(home, 'bin', 'javac')
+            if GetHost() == 'windows':
+                javac_path += '.exe'
+            if os.path.isfile(javac_path):
+                cmd = BracketNameWithQuotes(javac_path) + " "
+
+        cmd += "-Xlint:deprecation "
 
     optlevel = GetOptimizeOption(opts)
     if optlevel >= 4:
