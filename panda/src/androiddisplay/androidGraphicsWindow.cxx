@@ -435,14 +435,15 @@ ns_handle_command(int32_t command) {
     case APP_CMD_WINDOW_RESIZED:
       properties.set_size(ANativeWindow_getWidth(_app->window),
                           ANativeWindow_getHeight(_app->window));
+      system_changed_properties(properties);
       break;
     case APP_CMD_WINDOW_REDRAW_NEEDED:
       break;
     case APP_CMD_CONTENT_RECT_CHANGED:
-      properties.set_origin(_app->contentRect.left, _app->contentRect.top);
+      /*properties.set_origin(_app->contentRect.left, _app->contentRect.top);
       properties.set_size(_app->contentRect.right - _app->contentRect.left,
                           _app->contentRect.bottom - _app->contentRect.top);
-      system_changed_properties(properties);
+      system_changed_properties(properties);*/
       break;
     case APP_CMD_GAINED_FOCUS:
       properties.set_foreground(true);

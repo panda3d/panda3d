@@ -866,7 +866,7 @@ class build_apps(setuptools.Command):
             activity = ET.SubElement(application, 'activity')
             activity.set('android:name', 'org.panda3d.android.PythonActivity')
             activity.set('android:label', appname)
-            activity.set('android:theme', '@android:style/Theme.NoTitleBar')
+            activity.set('android:theme', '@android:style/Theme.NoTitleBar.Fullscreen')
             activity.set('android:alwaysRetainTaskState', 'true')
             activity.set('android:configChanges', 'layoutDirection|locale|grammaticalGender|fontScale|fontWeightAdjustment|orientation|uiMode|screenLayout|screenSize|smallestScreenSize|keyboard|keyboardHidden|navigation')
             activity.set('android:launchMode', 'singleInstance')
