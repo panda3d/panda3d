@@ -70,6 +70,7 @@ protected:
 
   bool _merge_externals;
   bool _noexist;
+  bool _no_object_types;
   bool _allow_errors;
 };
 
