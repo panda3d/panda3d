@@ -27,17 +27,28 @@ def addTitle(text):
 class World(DirectObject):
 
     def __init__(self):
+        
+        base.setBackgroundColor(0, 0, 0.2, 1)
+
+        base.camLens.setNearFar(1.0, 10000)
+        base.camLens.setFov(75)
+        base.disableMouse()
+        
+        self.check_support()
+        self.add_instructions()
+        self.load_objects()
+        self.setup_hotkeys()
+        self.setup_light_and_shadow()
+        
+    def check_support(self):
         # Preliminary capabilities check.
-
+        
         if not base.win.getGsg().getSupportsBasicShaders():
-            self.t = addTitle(
-                "Shadow Demo: Video driver reports that shaders are not supported.")
-            return
+            raise ValueError("Shadow Demo: Video driver reports that shaders are not supported.")
         if not base.win.getGsg().getSupportsDepthTexture():
-            self.t = addTitle(
-                "Shadow Demo: Video driver reports that depth textures are not supported.")
-            return
-
+            raise ValueError("Shadow Demo: Video driver reports that depth textures are not supported.")
+            
+    def add_instructions(self):
         self.inst_p = addInstructions(0.06, 'P : stop/start the Panda Rotation')
         self.inst_w = addInstructions(0.12, 'W : stop/start the Walk Cycle')
         self.inst_t = addInstructions(0.18, 'T : stop/start the Teapot')
@@ -46,12 +57,9 @@ class World(DirectObject):
         self.inst_u = addInstructions(0.36, 'U : toggle updating the shadow map')
         self.inst_x = addInstructions(0.42, 'Left/Right Arrow : switch camera angles')
 
-        base.setBackgroundColor(0, 0, 0.2, 1)
-
-        base.camLens.setNearFar(1.0, 10000)
-        base.camLens.setFov(75)
-        base.disableMouse()
-
+        
+        
+    def load_objects(self):
         # Load the scene.
         floorTex = loader.loadTexture('maps/envir-ground.jpg')
 
@@ -82,7 +90,8 @@ class World(DirectObject):
         self.teapot.setPos(0, -20, 10)
         self.teapotMovement = self.teapot.hprInterval(50, LPoint3(0, 360, 360))
         self.teapotMovement.loop()
-
+    
+    def setup_hotkeys(self):
         self.accept('escape', sys.exit)
 
         self.accept("arrow_left", self.incrementCameraPosition, [-1])
@@ -94,7 +103,8 @@ class World(DirectObject):
         self.accept("u", self.toggleUpdateShadowMap)
         self.accept("l", self.incrementLightPosition, [1])
         self.accept("o", base.oobe)
-
+    
+    def setup_light_and_shadow(self):
         self.light = render.attachNewNode(Spotlight("Spot"))
         self.light.node().setScene(render)
         self.light.node().setShadowCaster(True)
