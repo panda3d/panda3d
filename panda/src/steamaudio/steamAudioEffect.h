@@ -25,7 +25,7 @@
 
 #include <phonon.h>
 
-class EXPCL_PANDA_STEAMAUDIO SteamAudioEffect : public TypedReferenceCount {
+class EXPCL_STEAM_AUDIO SteamAudioEffect : public TypedReferenceCount {
 
   friend class SteamAudioSound;
 PUBLISHED:

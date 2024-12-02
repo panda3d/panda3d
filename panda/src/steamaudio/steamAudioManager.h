@@ -49,7 +49,7 @@
 class SteamAudioSound;
 class SteamAudioEffect;
 
-class EXPCL_PANDA_STEAMAUDIO SteamAudioManager final : public AudioManager {
+class EXPCL_STEAM_AUDIO SteamAudioManager final : public AudioManager {
   class SteamSoundData;
 
   friend class SteamAudioSound;
@@ -232,8 +232,8 @@ private:
   ALfloat _forward_up[6];
 
 private://SteamAudio related stuff:
-  static IPLContext _steamContext;
-  static IPLAudioSettings _steamAudioSettings;
+  static IPLContext* _steamContext;
+  static IPLAudioSettings* _steamAudioSettings;
 
   typedef pvector<PT(SteamAudioEffect)> SAEffects;
   SAEffects _steam_effects;
@@ -243,7 +243,7 @@ private://SteamAudio related stuff:
 PUBLISHED:
   int add_steam_audio_effect(SteamAudioEffect effect);
   int find_steam_audio_effect(SteamAudioEffect effect);
-  void remove_steam_audio_effect(int index);
+  bool remove_steam_audio_effect(int index);
 
   // These are needed for Panda's Pointer System.  DO NOT ERASE!
 public:

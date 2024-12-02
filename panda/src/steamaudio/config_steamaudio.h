@@ -18,9 +18,9 @@
 #include "dconfig.h"
 #include "audioManager.h"
 
-ConfigureDecl(config_steamaudio, EXPCL_PANDA_STEAMAUDIO, EXPTP_PANDA_STEAMAUDIO);
-NotifyCategoryDecl(steamaudio, EXPCL_PANDA_STEAMAUDIO, EXPTP_PANDA_STEAMAUDIO);
+ConfigureDecl(config_steamaudio, EXPCL_STEAM_AUDIO, EXPTP_STEAM_AUDIO);
+NotifyCategoryDecl(steamaudio, EXPCL_STEAM_AUDIO, EXPTP_STEAM_AUDIO);
 
-extern "C" EXPCL_PANDA_STEAMAUDIO void init_libsteamaudio();
+extern "C" EXPCL_STEAM_AUDIO void init_libsteamaudio();
 
 #endif

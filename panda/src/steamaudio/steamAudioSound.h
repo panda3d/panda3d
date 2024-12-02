@@ -37,7 +37,7 @@
 class SteamAudioEffect;
 
 //IMPORTANT!! Since many functions we need to modify are not public, make sure no pointers to this class are given as AudioSound/OpenALAudioSound pointers!!
-class EXPCL_PANDA_STEAMAUDIO SteamAudioSound final : public AudioSound {
+class EXPCL_STEAM_AUDIO SteamAudioSound final : public AudioSound {
   friend class SteamAudioManager;
 
   friend class SteamAudioEffect;
@@ -232,9 +232,9 @@ private:
 
   class SteamGlobalHolder {
   public:
-    SteamGlobalHolder(IPLAudioSettings audio_settings, IPLContext steam_context, int channels, int samples);
-    IPLAudioSettings _audio_settings;
-    IPLContext _steam_context;
+    SteamGlobalHolder(IPLAudioSettings* audio_settings, IPLContext* steam_context, int channels, int samples);
+    IPLAudioSettings* _audio_settings;
+    IPLContext* _steam_context;
     int _channels;
     int _samples;
     NodePath listener;
@@ -245,7 +245,7 @@ PUBLISHED:
 
   int add_steam_audio_effect(SteamAudioEffect effect);
   int find_steam_audio_effect(SteamAudioEffect effect);
-  void remove_steam_audio_effect(int index);
+  bool remove_steam_audio_effect(int index);
 
 public:
   static TypeHandle get_class_type() {

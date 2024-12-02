@@ -69,13 +69,13 @@ apply_effect(SteamAudioSound::SteamGlobalHolder *globals, IPLAudioBuffer inBuffe
   context = globals->_steam_context;
 
   IPLAudioBuffer outBuffer;
-  iplAudioBufferAllocate(globals->_steam_context, globals->_channels, globals->_samples, &outBuffer);//Be sure to deallocate this in SteamAudioSound
+  iplAudioBufferAllocate(globals->*_steam_context, globals->_channels, globals->_samples, &outBuffer);//Be sure to deallocate this in SteamAudioSound
 
   IPLDirectEffectSettings effectSettings{};
   effectSettings.numChannels = globals->_channels;
 
   IPLDirectEffect effect = nullptr;
-  iplDirectEffectCreate(globals->_steam_context, &(globals->_audio_settings), &effectSettings, &effect);
+  iplDirectEffectCreate(globals->*_steam_context, globals->_steamAudioSettings, &effectSettings, &effect);
 
   IPLDirectEffectParams params{};
 

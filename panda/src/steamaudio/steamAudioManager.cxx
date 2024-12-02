@@ -56,10 +56,10 @@ SteamAudioManager::SourceCache* SteamAudioManager::_al_sources = nullptr;
 
 
 //Steam Audio Variables
-IPLContext SteamAudioManager::_steamContext = nullptr;
-IPLAudioSettings SteamAudioManager::_steamAudioSettings = nullptr
+IPLContext* SteamAudioManager::_steamContext = nullptr;
+IPLAudioSettings* SteamAudioManager::_steamAudioSettings = nullptr;
 
-NodePath SteamAudioManager::_listenerNP = nullptr;
+//NodePath SteamAudioManager::_listenerNP = nullptr;
 
 // Central dispatcher for audio errors.
 void al_audio_errcheck(const char* context) {
@@ -208,12 +208,12 @@ SteamAudioManager() {
   if (_steamContext == nullptr) {//we haven't made a context yet
     IPLContextSettings contextSettings{};
     contextSettings.version = STEAMAUDIO_VERSION;
-    iplContextCreate(&contextSettings, &_steamContext);
+    iplContextCreate(&contextSettings, _steamContext);
 
     //make audiosettings
-    _steamAudioSettings = IPLAudioSettings{};
-    _steamAudioSettings.samplingRate = 44100;//TODO:: make this dependant on a configvar
-    _steamAudioSettings.frameSize = 8192;
+    _steamAudioSettings = &IPLAudioSettings{};
+    _steamAudioSettings->samplingRate = 44100;//TODO:: make this dependant on a configvar
+    _steamAudioSettings->frameSize = 8192;
   }
 }
 
@@ -519,8 +519,8 @@ get_sound(MovieAudio* sound, NodePath source, bool positional, int mode) {
   return res;
 }
 
-PT(AudioSound) SteamAudioManage::
-get_sound(MovieAudio* sound, NodePath source, bool positional, int mode) {
+PT(AudioSound) SteamAudioManager::
+get_sound(MovieAudio* sound, bool positional, int mode) {
   return (AudioSound*)get_sound(sound, this->_listenerNP, positional, mode);
 }
 
@@ -559,8 +559,8 @@ get_sound(const Filename& file_name, NodePath source, bool positional, int mode)
   return res;
 }
 
-PT(AudioSound) SteamAudioManage::
-get_sound(const Filename& file_name, NodePath source, bool positional, int mode) {
+PT(AudioSound) SteamAudioManager::
+get_sound(const Filename& file_name, bool positional, int mode) {
   return (AudioSound*)get_sound(file_name, this->_listenerNP, positional, mode);
 }
 
@@ -1238,15 +1238,16 @@ delete_buffer(ALuint buffer) {
   audio_error("failed to delete a buffer: " << alGetString(error));
 }
 
-//Steam Audio things
+//Steam Audio functions
 
 /**
 *returns the index of the newly-added steam audio effect.
 **/
 int SteamAudioManager::
 add_steam_audio_effect(SteamAudioEffect effect) {
-  _steam_effects.push_back(effect);
-  return _steam_effects.size - 1;
+  _steam_effects.push_back(&effect);
+  pvector<PT(SteamAudioEffect)>::iterator i = std::find(_steam_effects.begin(), _steam_effects.end(), &effect);
+  return i - _steam_effects.begin();
 }
 
 /**
@@ -1254,7 +1255,7 @@ add_steam_audio_effect(SteamAudioEffect effect) {
 **/
 int SteamAudioManager::
 find_steam_audio_effect(SteamAudioEffect effect) {
-  auto i _steam_effects.find(_steam_effects.begin(), _steam_effects.end(), effect);
+  auto i = std::find(_steam_effects.begin(), _steam_effects.end(), &effect);
   if (i != _steam_effects.end()) {
     return i - _steam_effects.begin();
   }
@@ -1267,10 +1268,22 @@ find_steam_audio_effect(SteamAudioEffect effect) {
 /**
 *Removes an effect from this object, then returns true if successful.
 **/
-void SteamAudioManager::
+bool SteamAudioManager::
 remove_steam_audio_effect(int index) {
-  it = _steam_effects.find(_steam_effects.begin(), _steam_effects.end(), effect);
-  if (it != _steam_effects.end()) {
+  if (!_steam_effects.empty()) {
+    _steam_effects.erase(_steam_effects.begin() + index);
+    return true;
+  }
+  else {
+    return false;
+  }
+}
+
+/**
+bool SteamAudioManager::
+remove_steam_audio_effect(SteamAudioEffect effect) {
+  auto it = std::find(_steam_effects.begin(), _steam_effects.end(), effect);
+  if (!_steam_effects.empty()) {
     _steam_effects.erase(it);
     return true;
   }
@@ -1278,3 +1291,4 @@ remove_steam_audio_effect(int index) {
     return false;
   }
 }
+**/

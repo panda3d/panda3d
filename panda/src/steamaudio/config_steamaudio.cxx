@@ -24,7 +24,7 @@
 #error Buildsystem error: BUILDING_STEAM_AUDIO not defined
 #endif
 
-Configure(config_steamaudio);
+ConfigureDef(config_steamaudio);
 NotifyCategoryDef(steamaudio, ":audio");
 
 ConfigureFn(config_steamaudio) {
@@ -49,4 +49,8 @@ init_libsteamaudio() {
   SteamAudioSound::init_type();
 
   SteamDirectEffect::init_type();
+
+  PandaSystem* ps = PandaSystem::get_global_ptr();
+  ps->add_system("SteamAudio");
+  //TODO:: Do we need to set this as a subsystem of Audio?
 }

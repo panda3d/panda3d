@@ -27,7 +27,7 @@
 
 class SteamAudioSound;
 
-class EXPCL_PANDA_STEAMAUDIO SteamDirectEffect : public SteamAudioEffect {
+class EXPCL_STEAM_AUDIO SteamDirectEffect : public SteamAudioEffect {
 
   friend class SteamAudioSound;
 
