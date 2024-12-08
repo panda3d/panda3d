@@ -38,7 +38,7 @@ PUBLISHED:
   void set_distance_attenuation(unsigned short state);
   unsigned short get_distance_attenuation();
   void set_distance_attenuation_amount(float val);
-  float get_distance_attenuation_ammount();
+  float get_distance_attenuation_amount();
 
   void set_air_absorption(unsigned short state);
   unsigned short get_air_absorption();
@@ -90,6 +90,8 @@ protected:
 
   unsigned short _transmission;//IPL_DIRECTEFFECTFLAGS_APPLYTRANSMISSION
   float _trans_amnt[3];
+
+  void sa_coordinate_transform(float x1, float y1, float z1, IPLVector3& vals);
 
   //TODO:: allow users to set different models for the sub-effects.
   //TODO:: allow this class to use a scene to run spatial simulations.

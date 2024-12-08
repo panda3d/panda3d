@@ -619,35 +619,35 @@ push_fresh_buffers() {
       if (_steam_effects.size() > 0 || _manager->_steam_effects.size() > 0) {//If we have any steam effects, we need to apply them.
         IPLfloat32 fData[8192];//we need to change 16ints to IPLfloats
         for (size_t i = 0; i < 65535; i++) {//loop over every data point. good thing data length is constant
-          fData[i] = (IPLfloat32)(float)int16_t*(data)[i];//get int16_t and cast to IPLfloat32//TODO:: fix the conversion
+          fData[i] = (IPLfloat32)(int16_t)data[i];//get int16_t and cast to IPLfloat32//TODO:: fix the conversion
         }
         IPLAudioBuffer inBuffer;
-        iplAudioBufferAllocate(_manager->&_steamContext, channels, samples, &inBuffer);
-        iplAudioBufferDeinterleave(_manager->&_steamContext, *fData, inBuffer);
-        SteamAudioSound::SteamGlobalHolder globals(_manager->*_steamAudioSettings, _manager->*_steamContext, channels, samples);//input variables
+        iplAudioBufferAllocate(*_manager->_steamContext, channels, samples, &inBuffer);
+        iplAudioBufferDeinterleave(*_manager->_steamContext, fData, &inBuffer);
+        SteamAudioSound::SteamGlobalHolder globals(_manager->_steamAudioSettings, _manager->_steamContext, channels, samples, _sourceNP);//input variables
 
         for (size_t i = 0; i < _manager->_steam_effects.size(); i++) {
-          SteamAudioEffect effect = _manager->*_steam_effects[i];
+          SteamAudioEffect effect = *_manager->_steam_effects[i];
           if (effect._isActive) {
             IPLAudioBuffer outBuffer = effect.apply_effect(&globals, inBuffer);
             std::swap(inBuffer, outBuffer);
-            iplAudioBufferFree(_manager->_steamContext, outBuffer);
+            iplAudioBufferFree(*_manager->_steamContext, &outBuffer);
           }
         }
         for (size_t i = 0; i < _steam_effects.size(); i++) {
-          SteamAudioEffect effect = _steam_effects[i];
+          SteamAudioEffect effect = *_steam_effects[i];
           if (effect._isActive) {
             IPLAudioBuffer outBuffer = effect.apply_effect(&globals, inBuffer);
             std::swap(inBuffer, outBuffer);
-            iplAudioBufferFree(_manager->*_steamContext, outBuffer);
+            iplAudioBufferFree(*(_manager->_steamContext), &outBuffer);
           }
         }
 
-        iplAudioBufferInterleave(_manager->*_steamContext, inBuffer, *fData);
-        iplAudioBufferFree(_manager->_steamContext, inBuffer);
+        iplAudioBufferInterleave(*(_manager->_steamContext), &inBuffer, fData);
+        iplAudioBufferFree(*_manager->_steamContext, &inBuffer);
 
-        for (size_t i = 0; i < data.size(); i++) {
-          (int16_t*)data[i] = *(int16_t)(float)fData[i];
+        for (size_t i = 0; i < (sizeof(data) / sizeof(data[0])); i++) {
+          data[i] = (int16_t)fData[i];
         }
       }
       ALuint buffer = make_buffer(samples, channels, rate, data);
@@ -1103,16 +1103,15 @@ status() const {
 //Steam Audio Functions Below::
 
 SteamAudioSound::SteamGlobalHolder
-::SteamGlobalHolder(IPLAudioSettings* audio_settings, IPLContext* steam_context, int channels, int samples) :
+::SteamGlobalHolder(IPLAudioSettings* audio_settings, IPLContext* steam_context, int channels, int samples, NodePath _source) :
   _audio_settings(audio_settings),
   _steam_context(steam_context),
   _channels(channels),
   _samples(samples)
-  //delete this line
 {
-    source = SteamAudioSound::_sourceNP
-    if (!(SteamAudioSound::_manager->_listenerNP == nullptr)) {
-      listener = SteamAudioSound::_manager->_listenerNP;
+    source = _source;
+    if (!(_manager->_listenerNP != nullptr)) {
+      listener = _manager->_listenerNP;
     }
     else {
       listener = source;
@@ -1125,7 +1124,7 @@ SteamAudioSound::SteamGlobalHolder
 **/
 int SteamAudioSound::
 add_steam_audio_effect(SteamAudioEffect effect) {
-  _steam_effects.push_back(*effect);
+  _steam_effects.push_back(&effect);
   return _steam_effects.size() - 1;
 }
 

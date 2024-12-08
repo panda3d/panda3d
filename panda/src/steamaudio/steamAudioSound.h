@@ -232,7 +232,7 @@ private:
 
   class SteamGlobalHolder {
   public:
-    SteamGlobalHolder(IPLAudioSettings* audio_settings, IPLContext* steam_context, int channels, int samples);
+    SteamGlobalHolder(IPLAudioSettings* audio_settings, IPLContext* steam_context, int channels, int samples, NodePath _source);
     IPLAudioSettings* _audio_settings;
     IPLContext* _steam_context;
     int _channels;

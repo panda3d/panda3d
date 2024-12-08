@@ -17,7 +17,7 @@
 
 #include <phonon.h>
 
-TypeHandle SteamAudioManager::_type_handle;
+TypeHandle SteamAudioEffect::_type_handle;
 
 //vars
 
@@ -28,7 +28,7 @@ TypeHandle SteamAudioManager::_type_handle;
 *
 **/
 SteamAudioEffect::SteamAudioEffect() :
-  _is_active(true)
+  _isActive(true)
 {
 
 }
@@ -45,7 +45,7 @@ SteamAudioEffect::~SteamAudioEffect() {
 **/
 void SteamAudioEffect::
 set_active(bool val) {
-  _is_active = state;
+  _isActive = val;
 }
 
 /**
@@ -53,15 +53,15 @@ set_active(bool val) {
 **/
 bool SteamAudioEffect::
 get_active() {
-  return _is_active;
+  return _isActive;
 }
 
 /**
 *returns a blank outBuffer. This shouldn't be called, though.
 **/
-virtual IPLAudioBuffer SteamAudioEffect::
+IPLAudioBuffer SteamAudioEffect::
 apply_effect(SteamAudioSound::SteamGlobalHolder *globals, IPLAudioBuffer inBuffer) {
   IPLAudioBuffer outBuffer;
-  iplAudioBufferAllocate(globals->_steam_context, globals->_channels, globals->_samples, &outBuffer);//Be sure to deallocate this in SteamAudioSound
+  iplAudioBufferAllocate(*globals->_steam_context, globals->_channels, globals->_samples, &outBuffer);//Be sure to deallocate this in SteamAudioSound
   return outBuffer;
 }
