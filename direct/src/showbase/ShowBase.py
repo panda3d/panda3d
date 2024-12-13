@@ -679,7 +679,7 @@ class ShowBase(DirectObject.DirectObject):
         complete.
         """
 
-        if Thread.getCurrentThread() != Thread.getMainThread():
+        if sys.platform != "android" and Thread.getCurrentThread() != Thread.getMainThread():
             task = taskMgr.add(self.destroy, extraArgs=[])
             task.wait()
             return
@@ -3439,7 +3439,7 @@ class ShowBase(DirectObject.DirectObject):
         This method must be called from the main thread, otherwise an error is
         thrown.
         """
-        if Thread.getCurrentThread() != Thread.getMainThread():
+        if Thread.getCurrentThread() != Thread.getMainThread() and sys.platform != "android":
             self.notify.error("run() must be called from the main thread.")
             return
 

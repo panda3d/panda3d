@@ -75,6 +75,7 @@ void android_main(struct android_app* app) {
     << "New native activity started on " << *current_thread << "\n";
 
   // Were we given an optional location to write the stdout/stderr streams?
+  bool owns_stdout = false;
   methodID = env->GetMethodID(activity_class, "getIntentOutputUri", "()Ljava/lang/String;");
   jstring joutput_uri = (jstring) env->CallObjectMethod(activity->clazz, methodID);
   if (joutput_uri != nullptr) {
@@ -92,6 +93,7 @@ void android_main(struct android_app* app) {
 
           dup2(fd, 1);
           dup2(fd, 2);
+          owns_stdout = true;
         } else {
           android_cat.error()
             << "Failed to open output path " << path << "\n";
@@ -109,6 +111,7 @@ void android_main(struct android_app* app) {
             << spec.get_server_and_port() << "\n";
           dup2(fd, 1);
           dup2(fd, 2);
+          owns_stdout = true;
         } else {
           android_cat.error()
             << "Failed to open output socket "
@@ -267,11 +270,10 @@ void android_main(struct android_app* app) {
 
     // We still need to keep an event loop going until Android gives us leave
     // to end the process.
-    int looper_id;
-    int events;
-    struct android_poll_source *source;
-    while ((looper_id = ALooper_pollAll(-1, nullptr, &events, (void**)&source)) >= 0) {
-      // Process this event, but intercept application command events.
+    while (!app->destroyRequested) {
+      int looper_id;
+      struct android_poll_source *source;
+      auto result = ALooper_pollOnce(-1, &looper_id, nullptr, (void **)&source);
       if (looper_id == LOOPER_ID_MAIN) {
         int8_t cmd = android_app_read_cmd(app);
         android_app_pre_exec_cmd(app, cmd);
@@ -300,8 +302,10 @@ void android_main(struct android_app* app) {
     env->ReleaseStringUTFChars(filename, filename_str);
   }
 
-  close(1);
-  close(2);
+  if (owns_stdout) {
+    close(1);
+    close(2);
+  }
 
   // Detach the thread before exiting.
   activity->vm->DetachCurrentThread();

@@ -19,7 +19,7 @@ ThreadPosixImpl(Thread *parent_obj) :
   _parent_obj(parent_obj)
 {
   _joinable = false;
-  _detached = false;
+  _detached = true;
   _status = S_new;
 #ifdef ANDROID
   _jni_env = nullptr;

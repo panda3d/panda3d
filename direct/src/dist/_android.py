@@ -50,7 +50,7 @@ def flag_resource(id, **values):
         bitmask = 0
         flags = attrib.value.split('|')
         for flag in flags:
-            bitmask = values[flag]
+            bitmask |= values[flag]
         attrib.compiled_item.prim.int_hexadecimal_value = bitmask
     return compile
 
@@ -168,10 +168,11 @@ ANDROID_ATTRIBUTES = {
     'allowSingleTap': bool_resource(0x1010259),
     'allowTaskReparenting': bool_resource(0x1010204),
     'alwaysRetainTaskState': bool_resource(0x1010203),
+    'appCategory': enum_resource(0x01010545, "game", "audio", "video", "image", "social", "news", "maps", "productivity", "accessibility"),
     'clearTaskOnLaunch': bool_resource(0x1010015),
+    'configChanges': flag_resource(0x0101001f, mcc=0x0001, mnc=0x0002, locale=0x0004, touchscreen=0x0008, keyboard=0x0010, keyboardHidden=0x0020, navigation=0x0040, orientation=0x0080, screenLayout=0x0100, uiMode=0x0200, screenSize=0x0400, smallestScreenSize=0x0800, layoutDirection=0x2000, colorMode=0x4000, grammaticalGender=0x8000, fontScale=0x40000000, fontWeightAdjustment=0x10000000),
     'debuggable': bool_resource(0x0101000f),
     'documentLaunchMode': enum_resource(0x1010445, "none", "intoExisting", "always", "never"),
-    'configChanges': flag_resource(0x0101001f, mcc=0x0001, mnc=0x0002, locale=0x0004, touchscreen=0x0008, keyboard=0x0010, keyboardHidden=0x0020, navigation=0x0040, orientation=0x0080, screenLayout=0x0100, uiMode=0x0200, screenSize=0x0400, smallestScreenSize=0x0800, layoutDirection=0x2000, fontScale=0x40000000),
     'enabled': bool_resource(0x101000e),
     'excludeFromRecents': bool_resource(0x1010017),
     'exported': bool_resource(0x1010010),
@@ -179,6 +180,7 @@ ANDROID_ATTRIBUTES = {
     'finishOnTaskLaunch': bool_resource(0x1010014),
     'fullBackupContent': bool_resource(0x10104eb),
     'glEsVersion': int_resource(0x1010281),
+    'hardwareAccelerated': bool_resource(0x10102d3),
     'hasCode': bool_resource(0x101000c),
     'host': str_resource(0x1010028),
     'icon': ref_resource(0x1010002),
@@ -194,8 +196,9 @@ ANDROID_ATTRIBUTES = {
     'name': str_resource(0x1010003),
     'noHistory': bool_resource(0x101022d),
     'pathPattern': str_resource(0x101002c),
-    'resizeableActivity': bool_resource(0x10104f6),
+    'preferMinimalPostProcessing': bool_resource(0x101060c),
     'required': bool_resource(0x101028e),
+    'resizeableActivity': bool_resource(0x10104f6),
     'scheme': str_resource(0x1010027),
     'screenOrientation': enum_resource(0x101001e, 'landscape', 'portrait', 'user', 'behind', 'sensor', 'nosensor', 'sensorLandscape', 'sensorPortrait', 'reverseLandscape', 'reversePortrait', 'fullSensor', 'userLandscape', 'userPortrait', 'fullUser', 'locked'),
     'stateNotNeeded': bool_resource(0x1010016),
