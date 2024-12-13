@@ -1653,11 +1653,11 @@ compile_parameter(ShaderArgInfo &p, int *arg_dim) {
       (!cp_errchk_parameter_uniform(p))) {
     return false;
   }
-  bool k_prefix  = false;
+  //bool k_prefix  = false;
 
   // solve backward compatibility issue
   if (pieces[0] == "k") {
-    k_prefix = true;
+    //k_prefix = true;
     basename = basename.substr(2);
   }
 

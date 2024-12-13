@@ -161,8 +161,6 @@ void android_main(struct android_app *app) {
     std::string dtool_name = std::string(libdir) + "/libp3dtool.so";
     ExecutionEnvironment::set_dtool_name(dtool_name);
     android_cat.info() << "Path to dtool: " << dtool_name << "\n";
-
-    env->ReleaseStringUTFChars(libdir_jstr, libdir);
   }
 
   // Get the path to the APK.
@@ -184,6 +182,7 @@ void android_main(struct android_app *app) {
 
   // Map the blob to memory
   void *blob = map_blob(lib_path, (off_t)blobinfo.blob_offset, (size_t)blobinfo.blob_size);
+  env->ReleaseStringUTFChars(lib_path_jstr, lib_path);
   assert(blob != NULL);
 
   assert(blobinfo.num_pointers <= MAX_NUM_POINTERS);
@@ -242,14 +241,16 @@ void android_main(struct android_app *app) {
   preconfig.utf8_mode = 1;
   PyStatus status = Py_PreInitialize(&preconfig);
   if (PyStatus_Exception(status)) {
-      Py_ExitStatusException(status);
-      return;
+    env->ReleaseStringUTFChars(libdir_jstr, libdir);
+    Py_ExitStatusException(status);
+    return;
   }
 
   // Register the android_log module.
   if (PyImport_AppendInittab("android_log", &PyInit_android_log) < 0) {
     android_cat.error()
       << "Failed to register android_log module.\n";
+    env->ReleaseStringUTFChars(libdir_jstr, libdir);
     return;
   }
 
@@ -259,8 +260,8 @@ void android_main(struct android_app *app) {
   config.buffered_stdio = 0;
   config.configure_c_stdio = 0;
   config.write_bytecode = 0;
-  PyConfig_SetBytesString(&config, &config.executable, lib_path);
-  env->ReleaseStringUTFChars(lib_path_jstr, lib_path);
+  PyConfig_SetBytesString(&config, &config.platlibdir, libdir);
+  env->ReleaseStringUTFChars(libdir_jstr, libdir);
 
   status = Py_InitializeFromConfig(&config);
   PyConfig_Clear(&config);
@@ -297,11 +298,10 @@ void android_main(struct android_app *app) {
 
     // We still need to keep an event loop going until Android gives us leave
     // to end the process.
-    int looper_id;
-    int events;
-    struct android_poll_source *source;
-    while ((looper_id = ALooper_pollAll(-1, nullptr, &events, (void**)&source)) >= 0) {
-      // Process this event, but intercept application command events.
+    while (!app->destroyRequested) {
+      int looper_id;
+      struct android_poll_source *source;
+      auto result = ALooper_pollOnce(-1, &looper_id, nullptr, (void **)&source);
       if (looper_id == LOOPER_ID_MAIN) {
         int8_t cmd = android_app_read_cmd(app);
         android_app_pre_exec_cmd(app, cmd);
@@ -332,4 +332,6 @@ void android_main(struct android_app *app) {
 
   // Detach the thread before exiting.
   activity->vm->DetachCurrentThread();
+
+  _exit(0);
 }

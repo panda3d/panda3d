@@ -419,6 +419,7 @@ rebuild_bitplanes() {
   Texture *attach[RTP_COUNT];
   memset(attach, 0, sizeof(Texture *) * RTP_COUNT);
   _texture_contexts.clear();
+  _textures.clear();
 
   // Sort the textures list into appropriate slots.
   {
@@ -792,6 +793,8 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
     default:
       _fb_properties.setup_color_texture(tex);
     }
+
+    _textures.push_back(tex);
 
     TextureContext *tc = tex->prepare_now(glgsg->get_prepared_objects(), glgsg);
     nassertv(tc != nullptr);

@@ -128,6 +128,10 @@ protected:
   typedef pvector<CLP(TextureContext)*> TextureContexts;
   TextureContexts _texture_contexts;
 
+  // List of textures we need to keep a reference to.
+  typedef pvector<PT(Texture)> Textures;
+  Textures _textures;
+
   // The cube map face we are currently drawing to or have just finished
   // drawing to, or -1 if we are not drawing to a cube map.
   int _bound_tex_page;
