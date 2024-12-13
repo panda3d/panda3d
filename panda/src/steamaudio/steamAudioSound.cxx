@@ -624,7 +624,7 @@ push_fresh_buffers() {
         IPLAudioBuffer inBuffer;
         iplAudioBufferAllocate(*_manager->_steamContext, channels, samples, &inBuffer);
         iplAudioBufferDeinterleave(*_manager->_steamContext, fData, &inBuffer);
-        SteamAudioSound::SteamGlobalHolder globals(_manager->_steamAudioSettings, _manager->_steamContext, channels, samples, _sourceNP);//input variables
+        SteamAudioSound::SteamGlobalHolder globals(_manager->_steamAudioSettings, _manager->_steamContext, channels, samples, _sourceNP, &_manager->_listenerNP);//input variables
 
         for (size_t i = 0; i < _manager->_steam_effects.size(); i++) {
           SteamAudioEffect effect = *_manager->_steam_effects[i];
@@ -1103,15 +1103,15 @@ status() const {
 //Steam Audio Functions Below::
 
 SteamAudioSound::SteamGlobalHolder
-::SteamGlobalHolder(IPLAudioSettings* audio_settings, IPLContext* steam_context, int channels, int samples, NodePath _source) :
+::SteamGlobalHolder(IPLAudioSettings* audio_settings, IPLContext* steam_context, int channels, int samples, NodePath _source, NodePath* _listener):
   _audio_settings(audio_settings),
   _steam_context(steam_context),
   _channels(channels),
   _samples(samples)
 {
     source = _source;
-    if (!(_manager->_listenerNP != nullptr)) {
-      listener = _manager->_listenerNP;
+    if (_listener != nullptr) {
+      listener = *_listener;
     }
     else {
       listener = source;
