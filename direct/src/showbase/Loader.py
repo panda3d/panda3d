@@ -134,13 +134,15 @@ class Loader(DirectObject):
 
         self.hook = "async_loader_%s" % (Loader.loaderIndex)
         Loader.loaderIndex += 1
-        self.accept(self.hook, self.__gotAsyncObject)
 
     def destroy(self):
         self.ignore(self.hook)
         self.loader.stopThreads()
         del self.base
-        del self.loader
+
+    def _init_base(self, base):
+        self.base = base
+        self.accept(self.hook, self.__gotAsyncObject)
 
     @classmethod
     def _loadPythonFileTypes(cls):

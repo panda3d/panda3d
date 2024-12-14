@@ -437,7 +437,7 @@ class ShowBase(DirectObject.DirectObject):
 
         #: `.Loader.Loader` object.
         self.loader = ShowBaseGlobal.loader
-        self.loader.base = self
+        self.loader._init_base(self)
         self.graphicsEngine.setDefaultLoader(self.loader.loader)
 
         #: The global event manager, as imported from `.EventManagerGlobal`.
