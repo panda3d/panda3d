@@ -29,7 +29,7 @@ get_owner() const {
   PyObject *strong_ref;
   int result = 0;
   if (owner != nullptr) {
-    PyWeakref_GetRef(owner, &strong_ref);
+    result = PyWeakref_GetRef(owner, &strong_ref);
   }
   if (result > 0) {
     return strong_ref;
