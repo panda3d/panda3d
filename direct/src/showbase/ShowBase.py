@@ -436,9 +436,9 @@ class ShowBase(DirectObject.DirectObject):
         self.useTrackball()
 
         #: `.Loader.Loader` object.
-        self.loader = Loader.Loader(self)
+        self.loader = ShowBaseGlobal.loader
+        self.loader.base = self
         self.graphicsEngine.setDefaultLoader(self.loader.loader)
-        ShowBaseGlobal.loader = self.loader
 
         #: The global event manager, as imported from `.EventManagerGlobal`.
         self.eventMgr = eventMgr

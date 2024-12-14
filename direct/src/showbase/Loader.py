@@ -126,7 +126,7 @@ class Loader(DirectObject):
                 yield await req
 
     # special methods
-    def __init__(self, base):
+    def __init__(self, base=None):
         self.base = base
         self.loader = PandaLoader.getGlobalPtr()
 
@@ -135,8 +135,6 @@ class Loader(DirectObject):
         self.hook = "async_loader_%s" % (Loader.loaderIndex)
         Loader.loaderIndex += 1
         self.accept(self.hook, self.__gotAsyncObject)
-
-        self._loadPythonFileTypes()
 
     def destroy(self):
         self.ignore(self.hook)
@@ -229,6 +227,10 @@ class Loader(DirectObject):
         """
 
         assert Loader.notify.debug("Loading model: %s" % (modelPath,))
+
+        if not self._loadedPythonFileTypes:
+            self._loadPythonFileTypes()
+
         if loaderOptions is None:
             loaderOptions = LoaderOptions()
         else:
@@ -415,6 +417,9 @@ class Loader(DirectObject):
         filename path.  Returns true on success, false on failure.  If
         a callback is used, the model is saved asynchronously, and the
         true/false status is passed to the callback function. """
+
+        if not self._loadedPythonFileTypes:
+            self._loadPythonFileTypes()
 
         if loaderOptions is None:
             loaderOptions = LoaderOptions()
