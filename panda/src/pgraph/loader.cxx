@@ -392,13 +392,17 @@ try_load_file(const Filename &pathname, const LoaderOptions &options,
     sgr.premunge(result, RenderState::make_empty());
   }
 
-  if (allow_ram_cache && result->is_of_type(ModelRoot::get_class_type())) {
-    // Store the loaded model in the RAM cache, and make sure we return a
-    // copy so that this node can be modified independently from the RAM
-    // cached version.
-    ModelPool::add_model(pathname, DCAST(ModelRoot, result.p()));
-    if ((options.get_flags() & LoaderOptions::LF_allow_instance) == 0) {
-      result = NodePath(result).copy_to(NodePath()).node();
+  if (result->is_of_type(ModelRoot::get_class_type())) {
+    ((ModelRoot *)result.p())->set_fullpath(pathname);
+
+    if (allow_ram_cache) {
+      // Store the loaded model in the RAM cache, and make sure we return a
+      // copy so that this node can be modified independently from the RAM
+      // cached version.
+      ModelPool::add_model(pathname, DCAST(ModelRoot, result.p()));
+      if ((options.get_flags() & LoaderOptions::LF_allow_instance) == 0) {
+        result = NodePath(result).copy_to(NodePath()).node();
+      }
     }
   }
 
