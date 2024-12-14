@@ -30,7 +30,7 @@ class SteamAudioEffect;
 */
 class EXPCL_STEAM_AUDIO SteamMovieAudio : public MovieAudio {
 PUBLISHED:
-  explicit SteamMovieAudio(const std::string& name = "Empyt SteamMovieAudio", MovieAudio& audio_source);
+  explicit SteamMovieAudio(const std::string& name = "Empty SteamMovieAudio", MovieAudio& audio_source, NodePath* source, NodePath* listener);
   virtual ~SteamMovieAudio();
   virtual PT(MovieAudioCursor) open();
 
@@ -45,14 +45,26 @@ PUBLISHED:
 
 private:
 
-  static IPLContext* _steamContext;
+  static PT(IPLContext) _steamContext;
 
   typedef pvector<PT(SteamAudioEffect)> SAEffects;
   SAEffects _steam_effects;
 
-  MovieAudio* _audio_source;  
+  PT(MovieAudio) _audio_source;
+
+  PT(NodePath) _listenerNP;
+  PT(NodePath) _sourceNP;
+
+  void sa_coordinate_transform(float x1, float y1, float z1, IPLVector3& vals);
 
   friend class SteamMovieAudioCursor;
+
+public:
+
+  void get_listener_position(IPLVector3& vals);
+  void get_source_position(IPLVector3& vals);
+  void get_source_coordinates(IPLCoordinateSpace3& vals);
+  void get_Listener_coordinates(IPLCoordinateSpace3& vals);
 
 public:
   static TypeHandle get_class_type() {

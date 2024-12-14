@@ -29,13 +29,8 @@ class SteamMovieAudio;
 class EXPCL_STEAM_AUDIO SteamMovieAudioCursor : public MovieAudioCursor {
 
 PUBLISHED:
-  SteamMovieAudioCursor(SteamMovieAudio* src, NodePath& source, NodePath& listener);
+  SteamMovieAudioCursor(SteamMovieAudio* src);
   virtual ~SteamMovieAudioCursor();
-
-  void read_samples(int n, Datagram* dg);
-  vector_uchar read_samples(int n);
-
-  //virtual void seek(double offset);
 
 public:
   int read_samples(int n, int16_t* data);
@@ -43,19 +38,17 @@ public:
 private:
   class SteamGlobalHolder {
   public:
-    SteamGlobalHolder(IPLAudioSettings* audio_settings, IPLContext* steam_context, int channels, int samples, NodePath _source, NodePath* _listener);
+    SteamGlobalHolder(IPLAudioSettings* audio_settings, IPLContext* steam_context, int channels, int samples, SteamMovieAudio* _source);
     IPLAudioSettings* _audio_settings;
     IPLContext* _steam_context;
     int _channels;
     int _samples;
-    NodePath listener;
-    NodePath source;
+    PT(SteamMovieAudio) source;
   };
 
-  NodePath _listenerNP;
-  NodePath _sourceNP;
-
   IPLAudioSettings* _steamAudioSettings;
+
+  PT(MovieAudioCursor) _source_cursor;
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

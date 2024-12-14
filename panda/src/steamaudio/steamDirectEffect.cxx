@@ -64,17 +64,6 @@ SteamDirectEffect::
 ~SteamDirectEffect() {}
 
 /**
-*Converts from panda3d's coordinate system to steam audio's.
-**/
-void SteamDirectEffect::
-sa_coordinate_transform(float x1, float y1, float z1, IPLVector3& vals)
-{
-  vals.x = x1;
-  vals.y = z1;
-  vals.z = -y1;
-}
-
-/**
 *returns a blank outBuffer. This shouldn't be called, though.
 **/
 IPLAudioBuffer SteamDirectEffect::
@@ -93,10 +82,10 @@ apply_effect(SteamAudioSound::SteamGlobalHolder *globals, IPLAudioBuffer inBuffe
   IPLDirectEffectParams params{};
 
   IPLVector3 sourcePosition;//Steam audio +y = up, and -z = forward
-  sa_coordinate_transform(globals->source.get_x(), globals->source.get_y(), globals->source.get_z(), sourcePosition);
+  globals->source.get_source_position(sourcePosition);
 
   IPLVector3 listenerPosition;
-  sa_coordinate_transform(globals->listener.get_x(), globals->listener.get_y(), globals->listener.get_z(), sourcePosition);
+  globals->source.get_listener_position(listenerPosition);
 
   switch(_dist_atten) {//Distance Attenuation
   case SAD_USER:
@@ -139,14 +128,7 @@ apply_effect(SteamAudioSound::SteamGlobalHolder *globals, IPLAudioBuffer inBuffe
     directivity.dipolePower = _dipole_pwr;
 
     IPLCoordinateSpace3 sourceCoordinates;
-    LVecBase3f temp = globals->source.get_quat().get_forward();
-    sa_coordinate_transform(temp.get_x(), temp.get_y(), temp.get_z(), sourceCoordinates.ahead);
-    temp = globals->source.get_quat().get_right();
-    sa_coordinate_transform(temp.get_x(), temp.get_y(), temp.get_z(), sourceCoordinates.right);
-    temp = globals->source.get_quat().get_up();
-    sa_coordinate_transform(temp.get_x(), temp.get_y(), temp.get_z(), sourceCoordinates.up);
-    temp = globals->source.get_pos();
-    sa_coordinate_transform(temp.get_x(), temp.get_y(), temp.get_z(), sourceCoordinates.origin);
+    globals->get_source_coordinates(sourceCoordinates);
 
     params.directivity = iplDirectivityCalculate(*globals->_steam_context, sourceCoordinates, listenerPosition, &directivity);
     break;
@@ -213,7 +195,9 @@ get_distance_attenuation_amount() {
 //Air Absorption
 
 /**
-*
+*SAD_DISABLED,//don't use this sub-effect
+*SAD_GENERATE,//automatically generate values
+*SAD_USER//use user-provided values
 **/
 void SteamDirectEffect::
 set_air_absorption(unsigned short state)
@@ -256,6 +240,11 @@ get_air_eq() {
 
 //Directivity
 
+/**
+*SAD_DISABLED,//don't use this sub-effect
+*SAD_GENERATE,//automatically generate values
+*SAD_USER//use user-provided values
+**/
 void SteamDirectEffect::
 set_directivity(unsigned short state)
 {

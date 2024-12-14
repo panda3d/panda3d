@@ -19,8 +19,11 @@
 #include <phonon.h>
 
 SteamMovieAudio::
-explicit SteamMovieAudio(const std::string& name = "Blank Audio", MovieAudio& audio_source) :
-  MovieAudio(name)
+explicit SteamMovieAudio(const std::string& name = "Blank Audio", MovieAudio& audio_source, NodePath* source, NodePath* listener) :
+  MovieAudio(name),
+  _sourceNP(source),
+  _listenerNP(listener),
+  _audio_source(&audio_source)
 {
   //SteamAudio initialization
   if (_steamContext == nullptr) {//we haven't made a context yet
@@ -28,9 +31,6 @@ explicit SteamMovieAudio(const std::string& name = "Blank Audio", MovieAudio& au
     contextSettings.version = STEAMAUDIO_VERSION;
     iplContextCreate(&contextSettings, _steamContext);
   }
-
-  
-  _audio_source = &audio_source;
 }
 
 SteamMovieAudio::
@@ -107,16 +107,65 @@ remove_steam_audio_effect(SteamAudioEffect effect) {
 }
 
 PT(SteamMovieAudio) SteamMovieAudio::
-get(const Filename& name) {
-  return SteamMovieAudio.get(MovieAudio.get(name));
+get(const Filename& name, NodePath& source, NodePath& listener) {
+  return SteamMovieAudio.get(MovieAudio.get(name), source, listener);
 }
 
 /**
 *Creates a SteamMovieAudio based on an existing MovieAudio.
 */
 PT(SteamMovieAudio) SteamMovieAudio::
-get(const MovieAudio& audio) {
-  SteamMovieAudio newSteamAudio = SteamMovieAudio(audio.get_name().append(": Steam Audio"), audio);
+get(const MovieAudio& audio, NodePath& source, NodePath& listener) {
+  SteamMovieAudio newSteamAudio = SteamMovieAudio(audio.get_name().append(": Steam Audio"), audio, source, listener);
   return newSteamAudio;
 }
-//NodePath& source, NodePath& listener
+
+/**
+*Steam Audio has different different axes, so this function quickly translates them.
+*/
+PT(SteamMovieAudio) SteamMovieAudio::
+sa_coordinate_transform(float x1, float y1, float z1, IPLVector3& vals) {
+  vals.x = x1;
+  vals.y = z1;
+  vals.z = -y1;
+}
+
+void SteamMovieAudio::
+get_listener_position(IPLVector3& vals) {
+  sa_coordinate_transform(_listenerNP->get_x(), _listenerNP->get_y(), _listenerNP->get_z(), vals);
+}
+
+void SteamMovieAudio::
+get_source_position(IPLVector3& vals) {
+  sa_coordinate_transform(_sourceNP->get_x(), _sourceNP->get_y(), _sourceNP->get_z(), vals);
+}
+
+void SteamMovieAudio::
+get_source_coordinates(IPLCoordinateSpace3& vals) {
+  LVecBase3f temp = _sourceNP.get_quat().get_forward();
+  sa_coordinate_transform(temp.get_x(), temp.get_y(), temp.get_z(), vals.ahead);
+
+  temp = _sourceNP.get_quat().get_right();
+  sa_coordinate_transform(temp.get_x(), temp.get_y(), temp.get_z(), vals.right);
+
+  temp = _sourceNP.get_quat().get_up();
+  sa_coordinate_transform(temp.get_x(), temp.get_y(), temp.get_z(), vals.up);
+
+  temp = _sourceNP.get_pos();
+  sa_coordinate_transform(temp.get_x(), temp.get_y(), temp.get_z(), vals.origin);
+}
+
+void SteamMovieAudio::
+get_Listener_coordinates(IPLCoordinateSpace3& vals) {
+  LVecBase3f temp = _listenerNP.get_quat().get_forward();
+  sa_coordinate_transform(temp.get_x(), temp.get_y(), temp.get_z(), vals.ahead);
+
+  temp = _listenerNP.get_quat().get_right();
+  sa_coordinate_transform(temp.get_x(), temp.get_y(), temp.get_z(), vals.right);
+
+  temp = _listenerNP.get_quat().get_up();
+  sa_coordinate_transform(temp.get_x(), temp.get_y(), temp.get_z(), vals.up);
+
+  temp = _listenerNP.get_pos();
+  sa_coordinate_transform(temp.get_x(), temp.get_y(), temp.get_z(), vals.origin);
+}
