@@ -15,7 +15,7 @@
 
 #include "steamAudioEffect.h"
 #include "steamDirectEffect.h"
-#include "steamAudioManager.h"
-#include "steamAudioSound.h"
+#include "steamMovieAudio.h"
+#include "steamMovieAudioCursor.h"
 
 #endif /* STEAMUDIO_H */

@@ -16,12 +16,12 @@
 #include "pandabase.h"
 
 #include "movieAudio.h"
+#include "movieAudioCursor.h"
 #include "nodePath.h"
 
 #include <phonon.h>//Import steam audio
 
-class MovieAudioCursor;
-class SteamAudioCursor;
+class SteamMovieAudioCursor;
 class SteamAudioEffect;
 
 
@@ -30,7 +30,7 @@ class SteamAudioEffect;
 */
 class EXPCL_STEAM_AUDIO SteamMovieAudio : public MovieAudio {
 PUBLISHED:
-  explicit SteamMovieAudio(const std::string& name = "Empty SteamMovieAudio", MovieAudio& audio_source, NodePath* source, NodePath* listener);
+  explicit SteamMovieAudio(const std::string& name, MovieAudio& audio_source, NodePath source, NodePath listener);
   virtual ~SteamMovieAudio();
   virtual PT(MovieAudioCursor) open();
 
@@ -40,8 +40,8 @@ PUBLISHED:
   bool remove_steam_audio_effect(int index);
   bool remove_steam_audio_effect(SteamAudioEffect effect);
 
-  static PT(SteamMovieAudio) get(const Filename& name);
-  static PT(SteamMovieAudio) get(const MovieAudio& audio);
+  static PT(SteamMovieAudio) get(const Filename& name, NodePath source, NodePath listener);
+  static PT(SteamMovieAudio) get(const MovieAudio& audio, NodePath source, NodePath listener);
 
 private:
 
@@ -52,8 +52,8 @@ private:
 
   PT(MovieAudio) _audio_source;
 
-  PT(NodePath) _listenerNP;
-  PT(NodePath) _sourceNP;
+  NodePath _listenerNP;
+  NodePath _sourceNP;
 
   void sa_coordinate_transform(float x1, float y1, float z1, IPLVector3& vals);
 

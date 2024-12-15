@@ -21,13 +21,13 @@
 #include "plist.h"//Don't know if I'll need these, but good idea to keep in hand
 #include "pmap.h"
 #include "pset.h"
-#include "steamAudioSound.h"
+#include "steamMovieAudioCursor.h"
 
 #include <phonon.h>
 
 class EXPCL_STEAM_AUDIO SteamAudioEffect : public TypedReferenceCount {
 
-  friend class SteamAudioSound;
+  friend class SteamMovieAudioCursor;
 PUBLISHED:
   SteamAudioEffect();
   ~SteamAudioEffect();
@@ -36,7 +36,7 @@ PUBLISHED:
   bool get_active();
 
 protected:
-  virtual IPLAudioBuffer apply_effect(SteamAudioSound::SteamGlobalHolder* globals, IPLAudioBuffer inBuffer);
+  virtual IPLAudioBuffer apply_effect(SteamMovieAudioCursor::SteamGlobalHolder* globals, IPLAudioBuffer inBuffer);
   bool _isActive;
 
 

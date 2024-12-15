@@ -12,9 +12,10 @@
 
 #include "config_steamaudio.h"
 
-#include "steamAudioManager.h"
-#include "steamAudioSound.h"
+#include "steamMovieAudio.h"
+#include "steamMovieAudioCursor.h"
 
+#include "steamAudioEffect.h"
 #include "steamDirectEffect.h"
 
 #include "pandaSystem.h"
@@ -45,9 +46,10 @@ init_libsteamaudio() {
   }
   initialized = true;
 
-  SteamAudioManager::init_type();
-  SteamAudioSound::init_type();
+  SteamMovieAudio::init_type();
+  SteamMovieAudioCursor::init_type();
 
+  SteamAudioEffect::init_type();
   SteamDirectEffect::init_type();
 
   PandaSystem* ps = PandaSystem::get_global_ptr();

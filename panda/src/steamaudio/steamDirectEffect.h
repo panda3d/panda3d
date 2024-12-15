@@ -17,7 +17,6 @@
 #include "typedObject.h"
 
 #include "nodePath.h"
-#include "movieAudioCursor.h"
 #include "plist.h"//Don't know if I'll need these, but good idea to keep in hand
 #include "PTA_float.h"
 #include "nodePath.h"
@@ -25,11 +24,11 @@
 
 #include <phonon.h>
 
-class SteamAudioSound;
+class SteamMovieAudioCursor;
 
 class EXPCL_STEAM_AUDIO SteamDirectEffect : public SteamAudioEffect {
 
-  friend class SteamAudioSound;
+  friend class SteamMovieAudioCursor;
 
 PUBLISHED:
    SteamDirectEffect();
@@ -69,7 +68,7 @@ PUBLISHED:
   };
 
 protected:
-  virtual IPLAudioBuffer apply_effect(SteamAudioSound::SteamGlobalHolder* globals, IPLAudioBuffer inBuffer);
+  virtual IPLAudioBuffer apply_effect(SteamMovieAudioCursor::SteamGlobalHolder* globals, IPLAudioBuffer inBuffer);
 
   unsigned short _dist_atten;//IPL_DIRECTEFFECTFLAGS_APPLYDISTANCEATTENUATION
   float _dist_atten_amnt;

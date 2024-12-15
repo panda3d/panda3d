@@ -18,8 +18,10 @@
 //Steam Audio
 #include <phonon.h>
 
+#include "steamMovieAudioCursor.h"
+
 SteamMovieAudio::
-explicit SteamMovieAudio(const std::string& name = "Blank Audio", MovieAudio& audio_source, NodePath* source, NodePath* listener) :
+explicit SteamMovieAudio(const std::string& name MovieAudio& audio_source, NodePath* source, NodePath* listener) :
   MovieAudio(name),
   _sourceNP(source),
   _listenerNP(listener),
@@ -34,13 +36,14 @@ explicit SteamMovieAudio(const std::string& name = "Blank Audio", MovieAudio& au
 }
 
 SteamMovieAudio::
-~SteamMovieAudio()
-{
+~SteamMovieAudio() {
 
 }
 
-//Add open here:
-
+PT(MovieAudioCursor) SteamMovieAudio::
+open() {
+  return PT((MovieAudioCursor)SteamMovieAudioCursor(this))
+}
 
 /**
 *returns the index of the newly-added steam audio effect.
@@ -107,7 +110,7 @@ remove_steam_audio_effect(SteamAudioEffect effect) {
 }
 
 PT(SteamMovieAudio) SteamMovieAudio::
-get(const Filename& name, NodePath& source, NodePath& listener) {
+get(const Filename& name, NodePath source, NodePath listener) {
   return SteamMovieAudio.get(MovieAudio.get(name), source, listener);
 }
 
@@ -115,7 +118,7 @@ get(const Filename& name, NodePath& source, NodePath& listener) {
 *Creates a SteamMovieAudio based on an existing MovieAudio.
 */
 PT(SteamMovieAudio) SteamMovieAudio::
-get(const MovieAudio& audio, NodePath& source, NodePath& listener) {
+get(const MovieAudio& audio, NodePath source, NodePath listener) {
   SteamMovieAudio newSteamAudio = SteamMovieAudio(audio.get_name().append(": Steam Audio"), audio, source, listener);
   return newSteamAudio;
 }
@@ -132,12 +135,12 @@ sa_coordinate_transform(float x1, float y1, float z1, IPLVector3& vals) {
 
 void SteamMovieAudio::
 get_listener_position(IPLVector3& vals) {
-  sa_coordinate_transform(_listenerNP->get_x(), _listenerNP->get_y(), _listenerNP->get_z(), vals);
+  sa_coordinate_transform(_listenerNP.get_x(), _listenerNP.get_y(), _listenerNP.get_z(), vals);
 }
 
 void SteamMovieAudio::
 get_source_position(IPLVector3& vals) {
-  sa_coordinate_transform(_sourceNP->get_x(), _sourceNP->get_y(), _sourceNP->get_z(), vals);
+  sa_coordinate_transform(_sourceNP.get_x(), _sourceNP.get_y(), _sourceNP.get_z(), vals);
 }
 
 void SteamMovieAudio::

@@ -13,7 +13,6 @@
 #include "pandabase.h"
 
 #include "steamAudioEffect.h"
-#include "steamAudioManager.h"
 
 #include <phonon.h>
 
@@ -41,7 +40,7 @@ SteamAudioEffect::~SteamAudioEffect() {
 }
 
 /**
-*Sets whether this effect has an impact on audiosounds it's applied to.
+* If we're not active, we just skip this effect.
 **/
 void SteamAudioEffect::
 set_active(bool val) {
@@ -60,8 +59,8 @@ get_active() {
 *returns a blank outBuffer. This shouldn't be called, though.
 **/
 IPLAudioBuffer SteamAudioEffect::
-apply_effect(SteamAudioSound::SteamGlobalHolder *globals, IPLAudioBuffer inBuffer) {
+apply_effect(SteamMovieAudioCursor::SteamGlobalHolder *globals, IPLAudioBuffer inBuffer) {
   IPLAudioBuffer outBuffer;
-  iplAudioBufferAllocate(*globals->_steam_context, globals->_channels, globals->_samples, &outBuffer);//Be sure to deallocate this in SteamAudioSound
+  iplAudioBufferAllocate(*globals->_steam_context, globals->_channels, globals->_samples, &outBuffer);//Be sure to deallocate this in SteamMovieAudioCursor
   return outBuffer;
 }

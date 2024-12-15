@@ -13,7 +13,6 @@
 #include "pandabase.h"
 
 #include "steamDirectEffect.h"
-#include "steamAudioManager.h"
 
 #include "PTA_float.h"
 #include "nodePath.h"
@@ -67,11 +66,11 @@ SteamDirectEffect::
 *returns a blank outBuffer. This shouldn't be called, though.
 **/
 IPLAudioBuffer SteamDirectEffect::
-apply_effect(SteamAudioSound::SteamGlobalHolder *globals, IPLAudioBuffer inBuffer) {
+apply_effect(SteamMovieAudioCursor::SteamGlobalHolder *globals, IPLAudioBuffer inBuffer) {
   IPLContext* context = globals->_steam_context;
 
   IPLAudioBuffer outBuffer;
-  iplAudioBufferAllocate(*globals->_steam_context, globals->_channels, globals->_samples, &outBuffer);//Be sure to deallocate this in SteamAudioSound
+  iplAudioBufferAllocate(*globals->_steam_context, globals->_channels, globals->_samples, &outBuffer);
 
   IPLDirectEffectSettings effectSettings{};
   effectSettings.numChannels = globals->_channels;
@@ -82,10 +81,10 @@ apply_effect(SteamAudioSound::SteamGlobalHolder *globals, IPLAudioBuffer inBuffe
   IPLDirectEffectParams params{};
 
   IPLVector3 sourcePosition;//Steam audio +y = up, and -z = forward
-  globals->source.get_source_position(sourcePosition);
+  globals->source->get_source_position(sourcePosition);
 
   IPLVector3 listenerPosition;
-  globals->source.get_listener_position(listenerPosition);
+  globals->source->get_listener_position(listenerPosition);
 
   switch(_dist_atten) {//Distance Attenuation
   case SAD_USER:
@@ -128,7 +127,7 @@ apply_effect(SteamAudioSound::SteamGlobalHolder *globals, IPLAudioBuffer inBuffe
     directivity.dipolePower = _dipole_pwr;
 
     IPLCoordinateSpace3 sourceCoordinates;
-    globals->get_source_coordinates(sourceCoordinates);
+    globals->source->get_source_coordinates(sourceCoordinates);
 
     params.directivity = iplDirectivityCalculate(*globals->_steam_context, sourceCoordinates, listenerPosition, &directivity);
     break;
@@ -185,7 +184,7 @@ set_distance_attenuation_amount(float val)
 
 /**
 *TODO:: This function doesn't actually give the generated value if we are in SAD_GENERATE mode.
-* That could be usefull for people looking to bake information or make ai react to sounds and such.
+* That could be useful for people looking to bake information or make ai react to sounds and such.
 **/
 float SteamDirectEffect::
 get_distance_attenuation_amount() {

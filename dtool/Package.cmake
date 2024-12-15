@@ -690,7 +690,7 @@ endif()
 find_package(SteamAudio QUIET)
 
 package_option(SteamAudio
-  "This enables works in tandem with OpenAL to spatialize sound."
+  "3D spatialization of sound."
   IMPORTED_AS SteamAudio::SteamAudio
   LICENSE "Apache")
 
