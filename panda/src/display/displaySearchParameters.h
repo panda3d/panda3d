@@ -39,6 +39,8 @@ public:
   int _maximum_height;
   int _minimum_bits_per_pixel;
   int _maximum_bits_per_pixel;
+   int _current_width;  
+  int _current_height;
 };
 
 #endif
