@@ -1517,22 +1517,22 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   switch (msg) {
   case WM_GETMINMAXINFO:
   {
-    MINMAXINFO* MinMaxInfo = (MINMAXINFO*)lparam;
+    MINMAXINFO* minmaxinfo = (MINMAXINFO*)lparam;
 
     int minClientWidth = 1;  // Minimum client area width
     int minClientHeight = 1; // Minimum client area height
 
     // Adjust window for non-client area
-    RECT clientRect = { 0, 0, minClientWidth, minClientHeight };
-    AdjustWindowRect(&clientRect, GetWindowLong(hwnd, GWL_STYLE), FALSE);
+    RECT rect = { 0, 0, minClientWidth, minClientHeight };
+    AdjustWindowRect(&rect, GetWindowLong(hwnd, GWL_STYLE), FALSE);
 
     // Calculate final size
-    int minWidth = clientRect.right - clientRect.left;
-    int minHeight = clientRect.bottom - clientRect.top;
+    int minWidth = rect.right - rect.left;
+    int minHeight = rect.bottom - rect.top;
 
     // Set the minimum track size in MINMAXINFO
-    MinMaxInfo->ptMinTrackSize.x = minWidth;  // Minimum window width
-    MinMaxInfo->ptMinTrackSize.y = minHeight; // Minimum window height
+    minmaxinfo->ptMinTrackSize.x = minWidth;  // Minimum window width
+    minmaxinfo->ptMinTrackSize.y = minHeight; // Minimum window height
   }
   break;
   case WM_MOUSEMOVE:
