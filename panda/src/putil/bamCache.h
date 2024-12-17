@@ -77,6 +77,7 @@ PUBLISHED:
 
   void consider_flush_index();
   void flush_index();
+  void request_clear_cache();
 
   void list_index(std::ostream &out, int indent_level = 0) const;
 

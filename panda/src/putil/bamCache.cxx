@@ -190,6 +190,20 @@ lookup(const Filename &source_filename, const string &cache_extension) {
  * via a prior call to lookup(), and then stored the data via
  * record->set_data().  Returns true on success, false on failure.
  */
+
+void BamCache::request_clear_cache() {
+    // Lock to ensure thread safety
+    ReMutexHolder holder(_lock);
+  
+
+    // Call existing cache clearing logic
+    clear_cache();
+
+    // Log the action
+    util_cat.info() << "Cache cleared via request.\n";
+    
+}
+
 bool BamCache::
 store(BamCacheRecord *record) {
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
