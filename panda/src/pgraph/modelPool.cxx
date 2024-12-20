@@ -48,7 +48,7 @@ ns_has_model(const Filename &filename) {
 /**
  * The nonstatic implementation of get_model().
  */
-ModelRoot *ModelPool::
+PT(ModelRoot) ModelPool::
 ns_get_model(const Filename &filename, bool verify) {
 
   PT(ModelRoot) cached_model;
@@ -116,7 +116,7 @@ ns_get_model(const Filename &filename, bool verify) {
 /**
  * The nonstatic implementation of load_model().
  */
-ModelRoot *ModelPool::
+PT(ModelRoot) ModelPool::
 ns_load_model(const Filename &filename, const LoaderOptions &options) {
   // First check if it's been cached under the given filename (for backward
   // compatibility reasons)
