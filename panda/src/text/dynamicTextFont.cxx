@@ -165,10 +165,8 @@ bool DynamicTextFont::replace_font(const std::string &new_font_path) {
         return false;
     }
 
-    // Clean up resources in the current font-object before copying the new font
-    clear_glyph_cache();  // Hypothetical function to release glyph resources
-    clear_textures();     // Hypothetical function to release font textures
-
+  
+ 
     // Replace the internal data with the new font's data
     this->copy_from(*new_font);
 
