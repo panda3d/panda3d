@@ -22,6 +22,11 @@
 #include <sys/stat.h>
 #include <algorithm>
 
+// lockf and tempnam
+#if defined(__wasi__)
+#include "wasi.c"
+#endif // __wasi__
+
 #ifdef PHAVE_UTIME_H
 #include <utime.h>
 #endif
