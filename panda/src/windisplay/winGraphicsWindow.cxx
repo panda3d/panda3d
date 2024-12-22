@@ -1515,6 +1515,26 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   WindowProperties properties;
 
   switch (msg) {
+  case WM_GETMINMAXINFO:
+  {
+    MINMAXINFO* minmaxinfo = (MINMAXINFO*)lparam;
+
+    int minClientWidth = 1;  // Minimum client area width
+    int minClientHeight = 1; // Minimum client area height
+
+    // Adjust window for non-client area
+    RECT rect = { 0, 0, minClientWidth, minClientHeight };
+    AdjustWindowRect(&rect, GetWindowLong(hwnd, GWL_STYLE), FALSE);
+
+    // Calculate final size
+    int minWidth = rect.right - rect.left;
+    int minHeight = rect.bottom - rect.top;
+
+    // Set the minimum track size in MINMAXINFO
+    minmaxinfo->ptMinTrackSize.x = minWidth;  // Minimum window width
+    minmaxinfo->ptMinTrackSize.y = minHeight; // Minimum window height
+  }
+  break;
   case WM_MOUSEMOVE:
     if (!_tracking_mouse_leaving) {
       // need to re-call TrackMouseEvent every time mouse re-enters window
