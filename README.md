@@ -194,9 +194,9 @@ These commands show how to compile wheels for the supported Android ABIs:
 ```bash
 export ANDROID_SDK_ROOT=/home/rdb/local/android
 python3.8 makepanda/makepanda.py --everything --outputdir built-droid-arm64 --arch arm64 --target android-21 --threads 6 --wheel
-python3.8 makepanda/makepanda.py --everything --outputdir built-droid-armv7a --arch armv7a --target android-19 --threads 6 --wheel
+python3.8 makepanda/makepanda.py --everything --outputdir built-droid-armv7a --arch arm --target android-21 --threads 6 --wheel
 python3.8 makepanda/makepanda.py --everything --outputdir built-droid-x86_64 --arch x86_64 --target android-21 --threads 6 --wheel
-python3.8 makepanda/makepanda.py --everything --outputdir built-droid-x86 --arch x86 --target android-19 --threads 6 --wheel
+python3.8 makepanda/makepanda.py --everything --outputdir built-droid-x86 --arch x86 --target android-21 --threads 6 --wheel
 ```
 
 It is now possible to use the generated wheels with `build_apps`, as explained

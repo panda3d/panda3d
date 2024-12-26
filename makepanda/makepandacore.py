@@ -357,11 +357,11 @@ def SetTarget(target, arch=None):
 
     elif target == 'android' or target.startswith('android-'):
         if arch is None:
-            # If compiling on Android, default to same architecture.  Otherwise, arm.
+            # If compiling on Android, default to same architecture.
             if host == 'android':
                 arch = host_arch
             else:
-                arch = 'armv7a'
+                exit('Specify an Android architecture using --arch')
 
         if arch == 'aarch64':
             arch = 'arm64'
@@ -371,12 +371,9 @@ def SetTarget(target, arch=None):
         target, _, api = target.partition('-')
         if api:
             ANDROID_API = int(api)
-        elif arch in ('mips64', 'arm64', 'x86_64'):
-            # 64-bit platforms were introduced in Android 21.
-            ANDROID_API = 21
         else:
             # Default to the lowest API level still supported by Google.
-            ANDROID_API = 19
+            ANDROID_API = 21
 
         # Determine the prefix for our gcc tools, eg. arm-linux-androideabi-gcc
         global ANDROID_ABI, ANDROID_TRIPLE
@@ -1421,6 +1418,9 @@ def GetThirdpartyDir():
 
     elif (target == 'android'):
         THIRDPARTYDIR = base + "/android-libs-%s/" % (target_arch)
+
+        if target_arch == 'armv7a' and not os.path.isdir(THIRDPARTYDIR):
+            THIRDPARTYDIR = base + "/android-libs-arm/"
 
     elif (target == 'emscripten'):
         THIRDPARTYDIR = base + "/emscripten-libs/"

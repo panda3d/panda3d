@@ -485,6 +485,8 @@ elif not CrossCompiling():
 else:
     if target_arch == 'amd64':
         target_arch = 'x86_64'
+    if target_arch == 'arm' and target == 'android':
+        target_arch = 'armv7a'
     PLATFORM = '{0}-{1}'.format(target, target_arch)
 
 
@@ -1371,10 +1373,10 @@ def CompileCxx(obj,src,opts):
                 cmd += ' -gcc-toolchain ' + SDK["ANDROID_GCC_TOOLCHAIN"].replace('\\', '/')
             cmd += ' -ffunction-sections -funwind-tables'
             cmd += ' -target ' + SDK["ANDROID_TRIPLE"]
-            if arch == 'armv7a':
+            if arch in ('armv7a', 'arm'):
                 cmd += ' -march=armv7-a -mfloat-abi=softfp -mfpu=vfpv3-d16'
-            elif arch == 'arm':
-                cmd += ' -march=armv5te -mtune=xscale -msoft-float'
+            #elif arch == 'arm':
+            #    cmd += ' -march=armv5te -mtune=xscale -msoft-float'
             elif arch == 'mips':
                 cmd += ' -mips32'
             elif arch == 'mips64':
@@ -1897,7 +1899,7 @@ def CompileLink(dll, obj, opts):
                 cmd += ' -gcc-toolchain ' + SDK["ANDROID_GCC_TOOLCHAIN"].replace('\\', '/')
             cmd += " -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now"
             cmd += ' -target ' + SDK["ANDROID_TRIPLE"]
-            if arch == 'armv7a':
+            if arch in ('armv7a', 'arm'):
                 cmd += " -march=armv7-a -Wl,--fix-cortex-a8"
             elif arch == 'mips':
                 cmd += ' -mips32'
