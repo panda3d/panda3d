@@ -210,7 +210,7 @@ record_frame() {
 
     RecorderFrame data(now, frame, _user_table_modified, _user_table);
     _user_table_modified = false;
-
+    
     _writer->write_object(&data);
   }
 }
