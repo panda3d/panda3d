@@ -459,15 +459,17 @@ rebuild_bitplanes() {
       }
 
       // If we can't bind this type of texture, punt it.
-      if ((tex->get_texture_type() != Texture::TT_2d_texture) &&
-          (tex->get_texture_type() != Texture::TT_3d_texture) &&
-          (tex->get_texture_type() != Texture::TT_2d_texture_array) &&
-          (tex->get_texture_type() != Texture::TT_cube_map)) {
+      Texture::TextureType texture_type = tex->get_texture_type();
+      if (texture_type != Texture::TT_2d_texture &&
+          texture_type != Texture::TT_3d_texture &&
+          texture_type != Texture::TT_2d_texture_array &&
+          texture_type != Texture::TT_cube_map &&
+          texture_type != Texture::TT_cube_map_array) {
         ((CData *)cdata.p())->_textures[i]._rtm_mode = RTM_copy_texture;
         continue;
       }
 
-      if (_rb_size_z > 1 && tex->get_texture_type() == Texture::TT_2d_texture) {
+      if (_rb_size_z > 1 && texture_type == Texture::TT_2d_texture) {
         // We can't bind a 2D texture to a layered FBO.  If the user happened
         // to request RTM_bind_layered for a 2D texture, that's just silly,
         // and we can't render to anything but the first layer anyway.
@@ -1408,6 +1410,7 @@ attach_tex(GLenum attachpoint, CLP(TextureContext) *gtc, int view, int layer) {
                                    target, index, 0, layer);
     break;
   case GL_TEXTURE_2D_ARRAY:
+  case GL_TEXTURE_CUBE_MAP_ARRAY:
     glgsg->_glFramebufferTextureLayer(GL_FRAMEBUFFER_EXT, attachpoint,
                                       index, 0, layer);
     break;

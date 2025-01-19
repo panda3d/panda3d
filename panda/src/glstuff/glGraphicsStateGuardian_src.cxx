@@ -7708,6 +7708,11 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
         return false;
       }
 
+    } else if (tex->get_texture_type() == Texture::TT_cube_map_array) {
+      if (!_supports_cube_map_array) {
+        return false;
+      }
+
     } else {
       GLCAT.error()
         << "Don't know how to copy framebuffer to texture " << *tex << "\n";
