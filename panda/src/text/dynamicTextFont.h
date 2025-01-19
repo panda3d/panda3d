@@ -126,6 +126,7 @@ PUBLISHED:
 public:
   virtual bool get_glyph(int character, CPT(TextGlyph) &glyph);
   virtual PN_stdfloat get_kerning(int first, int second) const;
+  bool replace_font(const std::string &new_font_path);
 
   bool get_glyph_by_index(int character, int glyph_index, CPT(TextGlyph) &glyph);
   hb_font_t *get_hb_font() const;
