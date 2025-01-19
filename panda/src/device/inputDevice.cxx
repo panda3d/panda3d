@@ -30,6 +30,7 @@ InputDevice(const std::string &name, DeviceClass dev_class) :
 {
   _button_events = new ButtonEventList;
   _pointer_events = new PointerEventList;
+  _gesture_events = new GestureEventList;
 }
 
 /**
@@ -93,6 +94,29 @@ get_pointer_events() {
   LightMutexHolder holder(_lock);
   PT(PointerEventList) result = new PointerEventList;
   swap(_pointer_events, result);
+  return result;
+}
+
+/**
+ * Returns true if this device has a pending gesture event,
+ * or false otherwise.  If this returns true, the particular event may be
+ * extracted via get_gesture_events().
+ */
+bool InputDevice::
+has_gesture_event() const {
+  LightMutexHolder holder(_lock);
+  return _gesture_events != nullptr && !_gesture_events->empty();
+}
+
+/**
+ * Returns a gestureEventList containing all the recent gesture events.
+ * Clears the list.
+ */
+PT(GestureEventList) InputDevice::
+get_gesture_events() {
+  LightMutexHolder holder(_lock);
+  PT(GestureEventList) result = new GestureEventList;
+  swap(_gesture_events, result);
   return result;
 }
 
