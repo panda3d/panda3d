@@ -6274,6 +6274,11 @@ issue_memory_barrier(GLbitfield barriers) {
     GLCAT.spam(false) << " framebuffer";
   }
 
+  if (barriers & GL_SHADER_STORAGE_BARRIER_BIT) {
+    ++_shader_storage_barrier_counter;
+    GLCAT.spam(false) << " shader_storage";
+  }
+
   GLCAT.spam(false) << "\n";
 
   report_my_gl_errors();
@@ -7367,6 +7372,9 @@ prepare_shader_buffer(ShaderBuffer *data) {
       _glBufferData(GL_SHADER_STORAGE_BUFFER, num_bytes, data->get_initial_data(), get_usage(data->get_usage_hint()));
     }
 
+    // Barrier not needed.
+    gbc->_shader_storage_barrier_counter = _shader_storage_barrier_counter - 1;
+
     gbc->enqueue_lru(&_prepared_objects->_graphics_memory_lru);
 
     report_my_gl_errors();
@@ -7379,13 +7387,15 @@ prepare_shader_buffer(ShaderBuffer *data) {
 /**
  * Binds the given shader buffer to the given binding slot.
  */
-void CLP(GraphicsStateGuardian)::
+CLP(BufferContext) *CLP(GraphicsStateGuardian)::
 apply_shader_buffer(GLuint base, ShaderBuffer *buffer) {
+  CLP(BufferContext) *gbc = nullptr;
+
   GLuint index = 0;
   if (buffer != nullptr) {
     BufferContext *bc = buffer->prepare_now(get_prepared_objects(), this);
     if (bc != nullptr) {
-      CLP(BufferContext) *gbc = DCAST(CLP(BufferContext), bc);
+      gbc = DCAST(CLP(BufferContext), bc);
       index = gbc->_index;
       gbc->set_active(true);
     }
@@ -7407,6 +7417,8 @@ apply_shader_buffer(GLuint base, ShaderBuffer *buffer) {
 
     report_my_gl_errors();
   }
+
+  return gbc;
 }
 
 /**
@@ -7636,6 +7648,10 @@ dispatch_compute(int num_groups_x, int num_groups_y, int num_groups_z) {
   PStatGPUTimer timer(this, _compute_dispatch_pcollector);
   nassertv(_supports_compute_shaders);
   nassertv(_current_shader_context != nullptr);
+  CLP(ShaderContext) *gsc;
+  DCAST_INTO_V(gsc, _current_shader_context);
+  gsc->issue_memory_barriers();
+
   _glDispatchCompute(num_groups_x, num_groups_y, num_groups_z);
 
   maybe_gl_finish();

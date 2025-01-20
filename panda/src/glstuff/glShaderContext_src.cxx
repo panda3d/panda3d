@@ -2672,6 +2672,10 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
     update_slider_table(table);
   }
 
+  // This ought to be moved elsewhere, but it's convenient to do this here for
+  // now since it's called before every Geom is drawn.
+  issue_memory_barriers();
+
   _glgsg->report_my_gl_errors();
 
   return true;
@@ -3039,7 +3043,35 @@ update_shader_buffer_bindings(ShaderContext *prev) {
            " (expected at least " << block._min_size << " bytes)\n";
     }
 #endif
-    _glgsg->apply_shader_buffer(block._binding_index, buffer);
+    block._gbc = _glgsg->apply_shader_buffer(block._binding_index, buffer);
+  }
+#endif
+}
+
+/**
+ * Issues memory barriers for shader buffers, should be called before a draw.
+ */
+void CLP(ShaderContext)::
+issue_memory_barriers() {
+#ifndef OPENGLES
+  bool barrier_needed = false;
+  for (StorageBlock &block : _storage_blocks) {
+    if (block._gbc != nullptr &&
+        block._gbc->_shader_storage_barrier_counter == _glgsg->_shader_storage_barrier_counter) {
+      barrier_needed = true;
+      break;
+    }
+  }
+
+  if (barrier_needed) {
+    _glgsg->issue_memory_barrier(GL_SHADER_STORAGE_BARRIER_BIT);
+  }
+
+  // We assume that all SSBOs will be written to, for now.
+  for (StorageBlock &block : _storage_blocks) {
+    if (block._gbc != nullptr) {
+      block._gbc->_shader_storage_barrier_counter = _glgsg->_shader_storage_barrier_counter;
+    }
   }
 #endif
 }

@@ -58,6 +58,7 @@ public:
   void disable_shader_texture_bindings() override;
   void update_shader_texture_bindings(ShaderContext *prev) override;
   void update_shader_buffer_bindings(ShaderContext *prev) override;
+  void issue_memory_barriers();
 
   bool uses_standard_vertex_arrays(void) override {
     return _uses_standard_vertex_arrays;
@@ -96,6 +97,7 @@ private:
 #ifndef OPENGLES
   struct StorageBlock {
     CPT(InternalName) _name;
+    CLP(BufferContext) *_gbc = nullptr;
     GLuint _binding_index;
     GLuint _min_size;
   };

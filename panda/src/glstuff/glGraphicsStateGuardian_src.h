@@ -391,7 +391,7 @@ public:
 
 #ifndef OPENGLES
   virtual BufferContext *prepare_shader_buffer(ShaderBuffer *data);
-  void apply_shader_buffer(GLuint base, ShaderBuffer *buffer);
+  CLP(BufferContext) *apply_shader_buffer(GLuint base, ShaderBuffer *buffer);
   virtual void release_shader_buffer(BufferContext *bc);
   virtual void release_shader_buffers(const pvector<BufferContext *> &contexts);
 #endif
@@ -1167,6 +1167,7 @@ public:
   TextureSet _textures_needing_image_access_barrier;
   TextureSet _textures_needing_update_barrier;
   TextureSet _textures_needing_framebuffer_barrier;
+  int _shader_storage_barrier_counter = 0;
 #endif
 
   // RenderState::SlotMask _inv_state_mask;
