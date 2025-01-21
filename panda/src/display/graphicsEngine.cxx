@@ -339,7 +339,7 @@ make_output(GraphicsPipe *pipe,
   nassertr(pipe != nullptr, nullptr);
   if (gsg != nullptr) {
     nassertr(pipe == gsg->get_pipe(), nullptr);
-    nassertr(this == gsg->get_engine(), nullptr);
+    //nassertr(this == gsg->get_engine(), nullptr);
   }
 
   // Are we really asking for a callback window?

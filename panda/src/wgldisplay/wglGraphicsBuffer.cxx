@@ -301,9 +301,10 @@ open_buffer() {
     // If the old gsg has the wrong pixel format, create a new one that shares
     // with the old gsg.
     DCAST_INTO_R(wglgsg, _gsg, false);
-    if ((!wglgsg->get_fb_properties().subsumes(_fb_properties))||
-        (!wglgsg->get_fb_properties().is_single_buffered())||
-        (!wglgsg->pfnum_supports_pbuffer())) {
+    if (wglgsg->get_engine() != _engine ||
+        !wglgsg->get_fb_properties().subsumes(_fb_properties) ||
+        !wglgsg->get_fb_properties().is_single_buffered() ||
+        !wglgsg->pfnum_supports_pbuffer()) {
       wglgsg = new wglGraphicsStateGuardian(_engine, _pipe, wglgsg);
       wglgsg->choose_pixel_format(_fb_properties, true);
       _gsg = wglgsg;
