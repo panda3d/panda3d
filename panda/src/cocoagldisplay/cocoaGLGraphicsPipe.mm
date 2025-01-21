@@ -125,7 +125,7 @@ make_output(const std::string &name,
         precertify = true;
       }
     }
-    if (host != nullptr && host->get_engine() == _engine) {
+    if (host != nullptr && host->get_engine() == engine) {
       return new GLGraphicsBuffer(engine, this, name, fb_prop, win_prop,
                                   flags, gsg, host);
     } else {
