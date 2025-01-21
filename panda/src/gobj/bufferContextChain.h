@@ -16,6 +16,7 @@
 
 #include "pandabase.h"
 #include "linkedListNode.h"
+#include "lightMutex.h"
 
 class BufferContext;
 
@@ -46,6 +47,9 @@ private:
   INLINE void adjust_bytes(int delta);
   size_t _total_size;
   int _count;
+
+public:
+  LightMutex _lock;
 
   friend class BufferContext;
 };

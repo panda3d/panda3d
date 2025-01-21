@@ -15086,6 +15086,7 @@ get_texture_memory_size(CLP(TextureContext) *gtc) {
 void CLP(GraphicsStateGuardian)::
 check_nonresident_texture(BufferContextChain &chain) {
 #if defined(SUPPORT_FIXED_FUNCTION) && !defined(OPENGLES)  // Residency queries not supported by OpenGL ES.
+  LightMutexHolder holder(chain._lock);
   size_t num_textures = chain.get_count();
   if (num_textures == 0) {
     return;
