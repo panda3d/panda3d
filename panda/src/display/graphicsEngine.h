@@ -33,6 +33,7 @@
 #include "loader.h"
 #include "referenceCount.h"
 #include "renderState.h"
+#include "clockObject.h"
 
 class Pipeline;
 class DisplayRegion;
@@ -53,7 +54,8 @@ class Texture;
  */
 class EXPCL_PANDA_DISPLAY GraphicsEngine : public ReferenceCount {
 PUBLISHED:
-  explicit GraphicsEngine(Pipeline *pipeline = nullptr);
+  explicit GraphicsEngine(ClockObject *clock = ClockObject::get_global_clock(),
+                          Pipeline *pipeline = nullptr);
   BLOCKING ~GraphicsEngine();
 
   void set_threading_model(const GraphicsThreadingModel &threading_model);
@@ -320,6 +322,7 @@ private:
   WindowRenderer *get_window_renderer(const std::string &name, int pipeline_stage);
 
   Pipeline *_pipeline;
+  ClockObject *const _clock;
   Windows _windows;
   bool _windows_sorted;
 

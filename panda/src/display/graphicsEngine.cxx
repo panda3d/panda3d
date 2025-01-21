@@ -152,8 +152,9 @@ INLINE static bool operator < (const CullKey &a, const CullKey &b) {
  * any Pipeline you choose.
  */
 GraphicsEngine::
-GraphicsEngine(Pipeline *pipeline) :
+GraphicsEngine(ClockObject *clock, Pipeline *pipeline) :
   _pipeline(pipeline),
+  _clock(clock),
   _app("app"),
   _lock("GraphicsEngine::_lock"),
   _loaded_textures_lock("GraphicsEngine::_loaded_textures_lock")
@@ -729,11 +730,9 @@ render_frame() {
   // been rendered).
   open_windows();
 
-  ClockObject *global_clock = ClockObject::get_global_clock();
-
   if (display_cat.is_spam()) {
     display_cat.spam()
-      << "render_frame() - frame " << global_clock->get_frame_count() << "\n";
+      << "render_frame() - frame " << _clock->get_frame_count() << "\n";
   }
 
   {
@@ -846,8 +845,8 @@ render_frame() {
     }
 #endif  // THREADED_PIPELINE
 
-    global_clock->tick(current_thread);
-    if (global_clock->check_errors(current_thread)) {
+    _clock->tick(current_thread);
+    if (_clock->check_errors(current_thread)) {
       throw_event("clock_error");
     }
 
