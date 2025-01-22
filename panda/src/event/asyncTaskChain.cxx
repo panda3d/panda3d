@@ -1438,6 +1438,9 @@ AsyncTaskChainThread(const string &name, AsyncTaskChain *chain) :
 void AsyncTaskChain::AsyncTaskChainThread::
 thread_main() {
 #ifdef HAVE_THREADS
+  // Let PStats know this thread exists.
+  PStatClient::thread_tick();
+
   MutexHolder holder(_chain->_manager->_lock);
   while (_chain->_state != S_shutdown && _chain->_state != S_interrupted) {
     thread_consider_yield();
