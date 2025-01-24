@@ -13,6 +13,8 @@
 
 #include "pnotify.h"
 
+static PStatCollector _wait_async_texture_uploads_pcollector("Wait:Async Texture Uploads");
+
 TypeHandle CLP(TextureContext)::_type_handle;
 
 /**
@@ -48,6 +50,8 @@ evict_lru() {
  */
 void CLP(TextureContext)::
 reset_data(GLenum target, int num_views) {
+  cancel_pending_uploads();
+
   // Free the texture resources.
   set_num_views(0);
 
@@ -238,3 +242,59 @@ mark_incoherent(bool wrote) {
 }
 
 #endif  // !OPENGLES_1
+
+/**
+ * Returns a PBO with the given size to the pool of unused PBOs.
+ */
+void CLP(TextureContext)::
+return_pbo(GLuint pbo, size_t size) {
+  // Also triggers when the number of buffers is -1 (which effectively means
+  // to always delete the buffers after use).
+  if (_num_pbos > get_texture()->get_num_async_transfer_buffers() ||
+      size < _pbo_size) {
+    // We have too many PBOs, or this PBO is no longer of the proper
+    // size, so delete it rather than returning it to the pool.
+    _num_pbos--;
+    _glgsg->_glDeleteBuffers(1, &pbo);
+  } else {
+    _unused_pbos.push_front(pbo);
+  }
+}
+
+/**
+ * Deletes all unused PBOs.
+ */
+void CLP(TextureContext)::
+delete_unused_pbos() {
+  if (!_unused_pbos.empty()) {
+    for (GLuint pbo : _unused_pbos) {
+      _glgsg->_glDeleteBuffers(1, &pbo);
+    }
+    _num_pbos -= (int)_unused_pbos.size();
+    _unused_pbos.clear();
+  }
+}
+
+/**
+ * Waits for all uploads to be finished.
+ */
+void CLP(TextureContext)::
+do_wait_pending_uploads() const {
+  PStatTimer timer(_wait_async_texture_uploads_pcollector);
+  do {
+    _glgsg->process_pending_jobs(true);
+  }
+  while (is_upload_pending());
+}
+
+/**
+ *
+ */
+void CLP(TextureContext)::
+do_wait_for_unused_pbo(int limit) const {
+  PStatTimer timer(_wait_async_texture_uploads_pcollector);
+  do {
+    _glgsg->process_pending_jobs(true);
+  }
+  while (_unused_pbos.empty() && _num_pbos >= limit);
+}

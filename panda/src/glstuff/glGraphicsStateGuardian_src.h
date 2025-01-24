@@ -39,6 +39,8 @@
 #include "geomVertexArrayData.h"
 #include "lightMutex.h"
 #include "pStatGPUTimer.h"
+#include "completionToken.h"
+#include "asyncTaskChain.h"
 
 class PlaneNode;
 class Light;
@@ -230,6 +232,7 @@ typedef void (APIENTRYP PFNGLGETPROGRAMBINARYPROC) (GLuint program, GLsizei bufS
 typedef void (APIENTRYP PFNGLPROGRAMBINARYPROC) (GLuint program, GLenum binaryFormat, const void *binary, GLsizei length);
 typedef void (APIENTRYP PFNGLGETINTERNALFORMATIVPROC) (GLenum target, GLenum internalformat, GLenum pname, GLsizei bufSize, GLint *params);
 typedef void (APIENTRYP PFNGLBUFFERSTORAGEPROC) (GLenum target, GLsizeiptr size, const void *data, GLbitfield flags);
+typedef void (APIENTRYP PFNGLCOPYBUFFERSUBDATAPROC) (GLenum readTarget, GLenum writeTarget, GLintptr readOffset, GLintptr writeOffset, GLsizeiptr size);
 typedef void (APIENTRYP PFNGLBINDIMAGETEXTUREPROC) (GLuint unit, GLuint texture, GLint level, GLboolean layered, GLint layer, GLenum access, GLenum format);
 typedef void (APIENTRYP PFNGLCLEARTEXIMAGEPROC) (GLuint texture, GLint level, GLenum format, GLenum type, const void *data);
 typedef void (APIENTRYP PFNGLCLEARTEXSUBIMAGEPROC) (GLuint texture, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, const void *data);
@@ -345,7 +348,8 @@ public:
 #endif
 
   virtual TextureContext *prepare_texture(Texture *tex);
-  virtual bool update_texture(TextureContext *tc, bool force);
+  virtual bool update_texture(TextureContext *tc, bool force,
+                              CompletionToken token = CompletionToken());
   virtual void release_texture(TextureContext *tc);
   virtual void release_textures(const pvector<TextureContext *> &contexts);
   virtual bool extract_texture_data(Texture *tex);
@@ -637,12 +641,21 @@ protected:
   bool apply_texture(CLP(TextureContext) *gtc, int view);
   bool apply_sampler(GLuint unit, const SamplerState &sampler,
                      CLP(TextureContext) *gtc, int view);
-  bool upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps);
-  bool upload_texture_image(CLP(TextureContext) *gtc, int view,
-                            bool needs_reload, int mipmap_bias, int num_levels,
+  bool upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps,
+                      CompletionToken token = CompletionToken());
+  bool upload_texture_view(CLP(TextureContext) *gtc, int view,
+                           bool needs_reload, int mipmap_bias, int num_levels,
+                           GLint internal_format, GLint external_format,
+                           GLenum component_type, bool compressed,
+                           int async_buffers, CompletionToken token);
+  bool upload_texture_level(bool full_reload, bool compressed,
+                            GLenum target, int level,
+                            int width, int height, int depth,
                             GLint internal_format, GLint external_format,
                             GLenum component_type,
-                            Texture::CompressionMode image_compression);
+                            const unsigned char *image_ptr,
+                            size_t page_size, SparseArray pages,
+                            GLenum usage_hint);
   void generate_mipmaps(CLP(TextureContext) *gtc);
   bool upload_simple_texture(CLP(TextureContext) *gtc);
 
@@ -657,6 +670,14 @@ protected:
 #ifdef SUPPORT_FIXED_FUNCTION
   void do_point_size();
 #endif
+
+#ifndef OPENGLES_1
+  void *map_write_discard_buffer(GLenum target, GLuint buffer, size_t size,
+                                 bool create_storage);
+#endif
+
+  void call_later(Completable &&job);
+  void process_pending_jobs(bool wait);
 
   enum AutoAntialiasMode {
     AA_poly,
@@ -904,11 +925,19 @@ public:
   PFNGLGETBUFFERSUBDATAPROC _glGetBufferSubData;
 #endif
 
+#ifndef OPENGLES_1
+  PFNGLCOPYBUFFERSUBDATAPROC _glCopyBufferSubData;
+#endif
+
 #ifdef OPENGLES
   PFNGLMAPBUFFERRANGEEXTPROC _glMapBufferRange;
   PFNGLUNMAPBUFFEROESPROC _glUnmapBuffer;
 #else
   PFNGLMAPBUFFERRANGEPROC _glMapBufferRange;
+#endif
+
+#ifndef OPENGLES_1
+  bool _supports_pixel_buffers;
 #endif
 
 #ifndef OPENGLES_1
@@ -978,6 +1007,7 @@ public:
   PFNGLTEXTUREPARAMETERIPROC _glTextureParameteri;
   PFNGLGENERATETEXTUREMIPMAPPROC _glGenerateTextureMipmap;
   PFNGLBINDTEXTUREUNITPROC _glBindTextureUnit;
+  PFNGLMAPNAMEDBUFFERRANGEPROC _glMapNamedBufferRange;
 #endif
 
 #ifndef OPENGLES_1
@@ -1231,6 +1261,16 @@ public:
   };
   pdeque<AsyncRamCopy> _async_ram_copies;
 
+#ifdef HAVE_THREADS
+  AsyncTaskChain *_async_chain;
+#endif
+
+  // Min job system pending a real job system
+  typedef pvector<Completable> JobQueue;
+  Mutex _job_queue_mutex;
+  ConditionVar _job_queue_cvar;
+  JobQueue _job_queue;
+
   BufferResidencyTracker _renderbuffer_residency;
 
   PStatCollector _active_ppbuffer_memory_pcollector;
@@ -1274,6 +1314,7 @@ private:
   friend class CLP(BufferContext);
   friend class CLP(ShaderContext);
   friend class CLP(CgShaderContext);
+  friend class CLP(TextureContext);
   friend class CLP(GraphicsBuffer);
   friend class CLP(OcclusionQueryContext);
 };

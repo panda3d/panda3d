@@ -22,6 +22,11 @@ ConfigVariableBool gl_forward_compatible
    PRC_DESC("Setting this to true will request a forward-compatible OpenGL "
             "context, which will not support the fixed-function pipeline."));
 
+ConfigVariableBool gl_support_dsa
+  ("gl-support-dsa", true,
+   PRC_DESC("Configure this false if you suspect your GL's implementation of "
+            "Direct State Access is broken."));
+
 ConfigVariableBool gl_support_fbo
   ("gl-support-fbo", true,
    PRC_DESC("Configure this false if your GL's implementation of "

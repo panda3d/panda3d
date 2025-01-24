@@ -32,6 +32,9 @@ public:
   INLINE Completable(const Completable &copy) = delete;
   INLINE Completable(Completable &&from) noexcept;
 
+  INLINE Completable &operator =(const Completable &copy) = delete;
+  INLINE Completable &operator =(Completable &&from);
+
   INLINE void operator ()();
 
   INLINE ~Completable();

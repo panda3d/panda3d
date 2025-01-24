@@ -573,6 +573,23 @@ update_texture(TextureContext *, bool) {
 }
 
 /**
+ * Ensures that the current Texture data is refreshed onto the GSG.  This
+ * means updating the texture properties and/or re-uploading the texture
+ * image, if necessary.  This should only be called within the draw thread.
+ *
+ * If force is true, this function will not return until the texture has been
+ * fully uploaded.  If force is false, the function may choose to upload a
+ * simple version of the texture instead, if the texture is not fully resident
+ * (and if get_incomplete_render() is true).
+ */
+bool GraphicsStateGuardian::
+update_texture(TextureContext *tc, bool force, CompletionToken token) {
+  bool result = update_texture(tc, force);
+  token.complete(result);
+  return result;
+}
+
+/**
  * Frees the resources previously allocated via a call to prepare_texture(),
  * including deleting the TextureContext itself, if it is non-NULL.
  */

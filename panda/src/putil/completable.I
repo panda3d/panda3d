@@ -40,6 +40,20 @@ Completable(Completable &&from) noexcept :
 /**
  *
  */
+INLINE Completable &Completable::
+operator =(Completable &&from) {
+  Data *data = _data;
+  _data = from._data;
+  from._data = nullptr;
+  if (data != nullptr) {
+    data->_function.load(std::memory_order_relaxed)(data, false);
+  }
+  return *this;
+}
+
+/**
+ *
+ */
 INLINE Completable::
 ~Completable() {
   Data *data = _data;

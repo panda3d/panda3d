@@ -35,6 +35,7 @@
 extern EXPCL_GL ConfigVariableInt gl_version;
 extern EXPCL_GL ConfigVariableBool gl_forward_compatible;
 extern EXPCL_GL ConfigVariableBool gl_support_fbo;
+extern ConfigVariableBool gl_support_dsa;
 extern ConfigVariableBool gl_cheap_textures;
 extern ConfigVariableBool gl_ignore_clamp;
 extern ConfigVariableBool gl_support_clamp_to_border;

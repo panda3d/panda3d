@@ -292,6 +292,7 @@ PUBLISHED:
 public:
   virtual TextureContext *prepare_texture(Texture *tex);
   virtual bool update_texture(TextureContext *tc, bool force);
+  virtual bool update_texture(TextureContext *tc, bool force, CompletionToken token);
   virtual void release_texture(TextureContext *tc);
   virtual void release_textures(const pvector<TextureContext *> &contexts);
   virtual bool extract_texture_data(Texture *tex);

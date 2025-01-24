@@ -47,6 +47,18 @@ public:
   void mark_incoherent(bool wrote);
 #endif
 
+  INLINE bool is_upload_pending() const;
+  INLINE void wait_pending_uploads() const;
+  INLINE void cancel_pending_uploads();
+
+  void return_pbo(GLuint pbo, size_t size);
+  void delete_unused_pbos();
+  INLINE void wait_for_unused_pbo(int limit) const;
+
+private:
+  void do_wait_pending_uploads() const;
+  void do_wait_for_unused_pbo(int limit) const;
+
 private:
   // This is the GL "name" of the texture object.
   GLuint _index;
@@ -75,6 +87,14 @@ public:
   int _num_levels;
   GLenum _target;
   SamplerState _active_sampler;
+
+  // These counters are used to prevent out-of-order updates.
+  int _uploads_started = 0;
+  int _uploads_finished = 0;
+  int _uploads_pending = 0;
+  pdeque<GLuint> _unused_pbos;
+  int _num_pbos = 0;
+  size_t _pbo_size = 0;
 
   CLP(GraphicsStateGuardian) *_glgsg;
 

@@ -2140,6 +2140,14 @@ rescale_texture() {
 }
 
 /**
+ * Returns the number previously passed to setup_async_transfer().
+ */
+INLINE int Texture::
+get_num_async_transfer_buffers() const {
+  return _num_async_transfer_buffers.load(std::memory_order_relaxed);
+}
+
+/**
  * Works like adjust_size, but also considers the texture class.  Movie
  * textures, for instance, always pad outwards, regardless of textures-
  * power-2.
