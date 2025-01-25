@@ -746,6 +746,18 @@ release_shader_buffers(const pvector<BufferContext *> &contexts) {
 }
 
 /**
+ * This method should only be called by the GraphicsEngine.  Do not call it
+ * directly; call GraphicsEngine::extract_texture_data() instead.
+ *
+ * This method will be called in the draw thread to download the buffer's
+ * current contents synchronously.
+ */
+bool GraphicsStateGuardian::
+extract_shader_buffer_data(ShaderBuffer *buffer, vector_uchar &data) {
+  return false;
+}
+
+/**
  * Begins a new occlusion query.  After this call, you may call
  * begin_draw_primitives() and draw_triangles()/draw_whatever() repeatedly.
  * Eventually, you should call end_occlusion_query() before the end of the

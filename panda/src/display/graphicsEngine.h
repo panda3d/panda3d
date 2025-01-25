@@ -113,6 +113,7 @@ PUBLISHED:
   BLOCKING void flip_frame();
 
   bool extract_texture_data(Texture *tex, GraphicsStateGuardian *gsg);
+  vector_uchar extract_shader_buffer_data(ShaderBuffer *buffer, GraphicsStateGuardian *gsg);
   void dispatch_compute(const LVecBase3i &work_groups,
                         const RenderState *state,
                         GraphicsStateGuardian *gsg);
@@ -130,7 +131,8 @@ public:
     TS_do_release,
     TS_do_windows,
     TS_do_compute,
-    TS_do_extract,
+    TS_do_extract_texture_data,
+    TS_do_extract_shader_buffer_data,
     TS_do_screenshot,
     TS_terminate,
     TS_done
@@ -313,6 +315,8 @@ private:
     // These are stored for extract_texture_data and dispatch_compute.
     GraphicsStateGuardian *_gsg;
     PT(Texture) _texture;
+    ShaderBuffer *_buffer;
+    vector_uchar *_buffer_result;
     const RenderState *_state;
     DisplayRegion *_region;
     LVecBase3i _work_groups;

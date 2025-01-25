@@ -1160,7 +1160,7 @@ extract_texture_data(Texture *tex, GraphicsStateGuardian *gsg) {
     // Now that the draw thread is idle, signal it to do the extraction task.
     thread->_gsg = gsg;
     thread->_texture = tex;
-    thread->_thread_state = TS_do_extract;
+    thread->_thread_state = TS_do_extract_texture_data;
     thread->_cv_mutex.release();
     thread->_cv_start.notify();
     thread->_cv_mutex.acquire();
@@ -1175,6 +1175,70 @@ extract_texture_data(Texture *tex, GraphicsStateGuardian *gsg) {
     thread->_texture = nullptr;
     return thread->_result;
   }
+}
+
+/**
+ * Asks the indicated GraphicsStateGuardian to retrieve the buffer memory
+ * image of the indicated ShaderBuffer and return it.
+ *
+ * This is mainly useful for debugging.  It is a very slow call because it
+ * introduces a pipeline stall both of Panda's pipeline and the graphics
+ * pipeline.
+ *
+ * The return value is empty if some kind of error occurred.
+ */
+vector_uchar GraphicsEngine::
+extract_shader_buffer_data(ShaderBuffer *buffer, GraphicsStateGuardian *gsg) {
+  ReMutexHolder holder(_lock);
+
+  string draw_name = gsg->get_threading_model().get_draw_name();
+  if (draw_name.empty()) {
+    // A single-threaded environment.  No problem.
+    vector_uchar data;
+    if (!gsg->extract_shader_buffer_data(buffer, data)) {
+      data.clear();
+    }
+    return data;
+  }
+
+  // A multi-threaded environment.  We have to wait until the draw thread
+  // has finished its current task.
+  WindowRenderer *wr = get_window_renderer(draw_name, 0);
+  RenderThread *thread = (RenderThread *)wr;
+  MutexHolder cv_holder(thread->_cv_mutex);
+
+  while (thread->_thread_state != TS_wait) {
+    thread->_cv_done.wait();
+  }
+
+  // Temporarily set this so that it accesses data from the current thread.
+  int pipeline_stage = Thread::get_current_pipeline_stage();
+  int draw_pipeline_stage = thread->get_pipeline_stage();
+  thread->set_pipeline_stage(pipeline_stage);
+
+  // Now that the draw thread is idle, signal it to do the extraction task.
+  vector_uchar data;
+  thread->_gsg = gsg;
+  thread->_buffer = buffer;
+  thread->_buffer_result = &data;
+  thread->_thread_state = TS_do_extract_shader_buffer_data;
+  thread->_cv_mutex.release();
+  thread->_cv_start.notify();
+  thread->_cv_mutex.acquire();
+
+  // Wait for it to finish the extraction.
+  while (thread->_thread_state != TS_wait) {
+    thread->_cv_done.wait();
+  }
+
+  thread->set_pipeline_stage(draw_pipeline_stage);
+  thread->_gsg = nullptr;
+  thread->_buffer = nullptr;
+  thread->_buffer_result = nullptr;
+  if (!thread->_result) {
+    data.clear();
+  }
+  return data;
 }
 
 /**
@@ -2815,9 +2879,14 @@ thread_main() {
       }
       break;
 
-    case TS_do_extract:
+    case TS_do_extract_texture_data:
       nassertd(_gsg != nullptr && _texture != nullptr) break;
       _result = _gsg->extract_texture_data(_texture);
+      break;
+
+    case TS_do_extract_shader_buffer_data:
+      nassertd(_gsg != nullptr && _texture != nullptr) break;
+      _result = _gsg->extract_shader_buffer_data(_buffer, *_buffer_result);
       break;
 
     case TS_do_screenshot:

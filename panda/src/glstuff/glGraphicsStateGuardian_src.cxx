@@ -7367,7 +7367,11 @@ prepare_shader_buffer(ShaderBuffer *data) {
     // Some drivers require the buffer to be padded to 16 byte boundary.
     uint64_t num_bytes = (data->get_data_size_bytes() + 15u) & ~15u;
     if (_supports_buffer_storage) {
-      _glBufferStorage(GL_SHADER_STORAGE_BUFFER, num_bytes, data->get_initial_data(), 0);
+      GLbitfield flags = 0;
+      if (data->get_usage_hint() == GeomEnums::UH_client) {
+        flags |= GL_CLIENT_STORAGE_BIT;
+      }
+      _glBufferStorage(GL_SHADER_STORAGE_BUFFER, num_bytes, data->get_initial_data(), flags);
     } else {
       _glBufferData(GL_SHADER_STORAGE_BUFFER, num_bytes, data->get_initial_data(), get_usage(data->get_usage_hint()));
     }
@@ -7501,6 +7505,35 @@ release_shader_buffers(const pvector<BufferContext *> &contexts) {
 
   _glDeleteBuffers(num_indices, indices);
   report_my_gl_errors();
+}
+
+/**
+ * This method should only be called by the GraphicsEngine.  Do not call it
+ * directly; call GraphicsEngine::extract_texture_data() instead.
+ *
+ * This method will be called in the draw thread to download the buffer's
+ * current contents synchronously.
+ */
+bool CLP(GraphicsStateGuardian)::
+extract_shader_buffer_data(ShaderBuffer *buffer, vector_uchar &data) {
+  GLuint index = 0;
+  BufferContext *bc = buffer->prepare_now(get_prepared_objects(), this);
+  if (bc == nullptr || !bc->is_of_type(CLP(BufferContext)::get_class_type())) {
+    return false;
+  }
+  CLP(BufferContext) *gbc = DCAST(CLP(BufferContext), bc);
+
+  data.resize(buffer->get_data_size_bytes());
+
+  _glBindBuffer(GL_SHADER_STORAGE_BUFFER, gbc->_index);
+
+  _glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, data.size(), &data[0]);
+
+  _glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+  _current_sbuffer_index = 0;
+  report_my_gl_errors();
+
+  return true;
 }
 #endif
 

@@ -316,6 +316,7 @@ public:
   virtual BufferContext *prepare_shader_buffer(ShaderBuffer *data);
   virtual void release_shader_buffer(BufferContext *ibc);
   virtual void release_shader_buffers(const pvector<BufferContext *> &contexts);
+  virtual bool extract_shader_buffer_data(ShaderBuffer *buffer, vector_uchar &data);
 
   virtual void begin_occlusion_query();
   virtual PT(OcclusionQueryContext) end_occlusion_query();

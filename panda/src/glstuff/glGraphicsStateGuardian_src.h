@@ -394,6 +394,7 @@ public:
   CLP(BufferContext) *apply_shader_buffer(GLuint base, ShaderBuffer *buffer);
   virtual void release_shader_buffer(BufferContext *bc);
   virtual void release_shader_buffers(const pvector<BufferContext *> &contexts);
+  virtual bool extract_shader_buffer_data(ShaderBuffer *buffer, vector_uchar &data);
 #endif
 
 #ifndef OPENGLES
