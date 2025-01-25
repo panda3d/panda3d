@@ -114,6 +114,7 @@ PUBLISHED:
   GraphicsEngine *get_engine() const;
   INLINE const GraphicsThreadingModel &get_threading_model() const;
   MAKE_PROPERTY(pipe, get_pipe);
+  MAKE_PROPERTY(engine, get_engine);
 
   INLINE bool is_hardware() const;
   virtual INLINE bool prefers_triangle_strips() const;
