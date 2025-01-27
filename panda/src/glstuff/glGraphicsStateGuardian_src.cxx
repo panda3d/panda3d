@@ -3207,7 +3207,7 @@ reset() {
   _max_image_units = 0;
 #ifndef OPENGLES_1
 #ifdef OPENGLES
-  if (is_at_least_gles_version(3, 1) && gl_immutable_texture_storage) {
+  if (is_at_least_gles_version(3, 1)) {
 #else
   if (is_at_least_gl_version(4, 2) || has_extension("GL_ARB_shader_image_load_store")) {
 #endif
@@ -7516,7 +7516,6 @@ release_shader_buffers(const pvector<BufferContext *> &contexts) {
  */
 bool CLP(GraphicsStateGuardian)::
 extract_shader_buffer_data(ShaderBuffer *buffer, vector_uchar &data) {
-  GLuint index = 0;
   BufferContext *bc = buffer->prepare_now(get_prepared_objects(), this);
   if (bc == nullptr || !bc->is_of_type(CLP(BufferContext)::get_class_type())) {
     return false;
@@ -7524,6 +7523,10 @@ extract_shader_buffer_data(ShaderBuffer *buffer, vector_uchar &data) {
   CLP(BufferContext) *gbc = DCAST(CLP(BufferContext), bc);
 
   data.resize(buffer->get_data_size_bytes());
+
+  if (_glMemoryBarrier != nullptr) {
+    _glMemoryBarrier(GL_BUFFER_UPDATE_BARRIER_BIT);
+  }
 
   _glBindBuffer(GL_SHADER_STORAGE_BUFFER, gbc->_index);
 
