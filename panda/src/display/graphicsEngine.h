@@ -35,6 +35,8 @@
 #include "renderState.h"
 #include "clockObject.h"
 
+#include <type_traits>
+
 class Pipeline;
 class DisplayRegion;
 class GraphicsPipe;
@@ -130,16 +132,17 @@ public:
     TS_do_flip,
     TS_do_release,
     TS_do_windows,
-    TS_do_compute,
-    TS_do_extract_texture_data,
-    TS_do_extract_shader_buffer_data,
-    TS_do_screenshot,
+    TS_callback,
     TS_terminate,
     TS_done
   };
 
   void texture_uploaded(Texture *tex);
-  PT(Texture) do_get_screenshot(DisplayRegion *region, GraphicsStateGuardian *gsg);
+
+#ifndef CPPPARSER
+  template<class Callable>
+  INLINE auto run_on_draw_thread(Callable &&callable) -> decltype(callable());
+#endif
 
 public:
   static void do_cull(CullHandler *cull_handler, SceneSetup *scene_setup,
@@ -306,21 +309,31 @@ private:
     RenderThread(const std::string &name, GraphicsEngine *engine);
     virtual void thread_main();
 
+    typedef void Callback(RenderThread *thread);
+    void run_on_thread(Callback *callback,
+                       void *callback_data = nullptr,
+                       void *return_data = nullptr);
+
+#ifndef CPPPARSER
+    template<class Callable>
+    INLINE auto run_on_thread(Callable &&callable) ->
+      typename std::enable_if<!std::is_void<decltype(callable())>::value, decltype(callable())>::type;
+
+    template<class Callable>
+    INLINE auto run_on_thread(Callable &&callable) ->
+      typename std::enable_if<std::is_void<decltype(callable())>::value, decltype(callable())>::type;
+#endif
+
     GraphicsEngine *_engine;
     Mutex _cv_mutex;
     ConditionVar _cv_start;
     ConditionVar _cv_done;
     ThreadState _thread_state;
 
-    // These are stored for extract_texture_data and dispatch_compute.
-    GraphicsStateGuardian *_gsg;
-    PT(Texture) _texture;
-    ShaderBuffer *_buffer;
-    vector_uchar *_buffer_result;
-    const RenderState *_state;
-    DisplayRegion *_region;
-    LVecBase3i _work_groups;
-    bool _result;
+    // Used for TS_callback.
+    Callback *_callback;
+    void *_callback_data;
+    void *_return_data;
   };
 
   WindowRenderer *get_window_renderer(const std::string &name, int pipeline_stage);
