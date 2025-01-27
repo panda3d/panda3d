@@ -423,7 +423,6 @@ public:
   virtual bool framebuffer_copy_to_ram
     (Texture *tex, int view, int z, const DisplayRegion *dr, const RenderBuffer &rb,
      ScreenshotRequest *request);
-  void finish_async_framebuffer_ram_copies(bool force = false);
 
 #ifdef SUPPORT_FIXED_FUNCTION
   void apply_fog(Fog *fog);
@@ -672,8 +671,14 @@ protected:
 #endif
 
 #ifndef OPENGLES_1
+  void *map_read_buffer(GLenum target, GLuint buffer, size_t size);
   void *map_write_discard_buffer(GLenum target, GLuint buffer, size_t size,
                                  bool create_storage);
+#endif
+
+#ifndef OPENGLES_1
+  void insert_fence(CompletionToken &&callback);
+  void process_fences(bool force);
 #endif
 
   void call_later(Completable &&job);
@@ -1250,16 +1255,11 @@ public:
   FrameTiming *_current_frame_timing = nullptr;
 #endif
 
-  struct AsyncRamCopy {
-    PT(ScreenshotRequest) _request;
-    GLuint _pbo;
-    GLsync _fence;
-    GLuint _external_format;
-    int _view;
-    void *_mapped_pointer;
-    size_t _size;
+  struct Fence {
+    GLsync _object;
+    CompletionToken _token;
   };
-  pdeque<AsyncRamCopy> _async_ram_copies;
+  pdeque<Fence> _fences;
 
 #ifdef HAVE_THREADS
   AsyncTaskChain *_async_chain;

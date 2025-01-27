@@ -4496,9 +4496,11 @@ begin_frame(Thread *current_thread) {
   _primitive_batches_display_list_pcollector.clear_level();
 #endif
 
-  if (!_async_ram_copies.empty()) {
-    finish_async_framebuffer_ram_copies();
+#ifndef OPENGLES_1
+  if (!_fences.empty()) {
+    process_fences(false);
   }
+#endif
 
 #if defined(DO_PSTATS) && !defined(OPENGLES)
   int frame_number = ClockObject::get_global_clock()->get_frame_count(current_thread);
@@ -8480,9 +8482,46 @@ framebuffer_copy_to_ram(Texture *tex, int view, int z,
       _glMemoryBarrier(GL_CLIENT_MAPPED_BUFFER_BARRIER_BIT);
     }
 #endif
-    GLsync fence = _glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
-    _async_ram_copies.push_back({request, pbo, fence, external_format,
-                                 view, mapped_ptr, image_size});
+
+    insert_fence([
+        this, request = PT(ScreenshotRequest)(request),
+        mapped_ptr, size = image_size,
+        pbo, view, external_format
+      ] (bool success) {
+
+      void *ptr = mapped_ptr;
+      if (ptr == nullptr) {
+        ptr = map_read_buffer(GL_PIXEL_PACK_BUFFER, pbo, size);
+      }
+
+      // Do the memcpy in the background, since it can be slow.
+      auto func = [=](AsyncTask *task) {
+        const unsigned char *result = (unsigned char *)ptr;
+        PTA_uchar new_image;
+        if (external_format == GL_RGBA || external_format == GL_RGB) {
+          // We may have to reverse the byte ordering of the image if GL didn't do
+          // it for us.
+          result = fix_component_ordering(new_image, result, size,
+                                          external_format, request->get_result());
+        }
+        request->set_view_data(view, result);
+
+        // Finishing can take a long time, release the client buffer first so it
+        // can be reused for the next screenshot.
+        this->release_client_buffer(pbo, ptr, size);
+        request->finish();
+        return AsyncTask::DS_done;
+      };
+#ifdef HAVE_THREADS
+      // We assign a sort value based on the originating frame number, so that
+      // earlier frames will be processed before subsequent frames, but we don't
+      // make it unique for every frame, which would kill concurrency.
+      int frame_number = request->get_frame_number();
+      _async_chain->add(std::move(func), "screenshot", frame_number >> 3, -(frame_number & ((1 << 3) - 1)));
+#else
+      func(nullptr);
+#endif
+    });
   } else
 #endif
   if (external_format == GL_RGBA || external_format == GL_RGB) {
@@ -8505,97 +8544,6 @@ framebuffer_copy_to_ram(Texture *tex, int view, int z,
 
   report_my_gl_errors();
   return true;
-}
-
-/**
- * Finishes all asynchronous framebuffer-copy-to-ram operations.
- */
-void CLP(GraphicsStateGuardian)::
-finish_async_framebuffer_ram_copies(bool force) {
-#ifndef OPENGLES_1
-  if (_async_ram_copies.empty()) {
-    return;
-  }
-
-  PStatTimer timer(_copy_texture_finish_pcollector);
-
-  if (force) {
-    // Just wait for the last fence, the rest must be complete too then.
-    PStatTimer timer(_wait_fence_pcollector);
-    GLsync fence = _async_ram_copies.back()._fence;
-    _glClientWaitSync(fence, 0, (GLuint64)-1);
-  }
-
-  while (!_async_ram_copies.empty()) {
-    AsyncRamCopy &copy = _async_ram_copies.front();
-    if (!force) {
-      GLenum result = _glClientWaitSync(copy._fence, 0, 0);
-      if (result != GL_ALREADY_SIGNALED && result != GL_CONDITION_SATISFIED) {
-        // Not yet done.  The rest must not yet be done then, either.
-        break;
-      }
-    }
-    _glDeleteSync(copy._fence);
-
-    GLuint pbo = copy._pbo;
-    int view = copy._view;
-    PT(ScreenshotRequest) request = std::move(copy._request);
-    GLuint external_format = copy._external_format;
-    void *mapped_ptr = copy._mapped_pointer;
-    size_t size = copy._size;
-
-    if (mapped_ptr == nullptr) {
-      _glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo);
-#ifdef OPENGLES
-      // There is neither glMapBuffer nor persistent mapping in OpenGL ES
-      mapped_ptr = _glMapBufferRange(GL_PIXEL_PACK_BUFFER, 0, size, GL_MAP_READ_BIT);
-#else
-      // If we get here in desktop GL, we must not have persistent mapping
-      nassertv(!_supports_buffer_storage);
-      mapped_ptr = _glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY);
-#endif
-    }
-
-    // Do the memcpy in the background, since it can be slow.
-    auto func = [=](AsyncTask *task) {
-      const unsigned char *result = (unsigned char *)mapped_ptr;
-      PTA_uchar new_image;
-      if (external_format == GL_RGBA || external_format == GL_RGB) {
-        // We may have to reverse the byte ordering of the image if GL didn't do
-        // it for us.
-        result = fix_component_ordering(new_image, result, size,
-                                        external_format, request->get_result());
-      }
-      request->set_view_data(view, result);
-
-      // Finishing can take a long time, release the client buffer first so it
-      // can be reused for the next screenshot.
-      this->release_client_buffer(pbo, mapped_ptr, size);
-      request->finish();
-      return AsyncTask::DS_done;
-    };
-#ifdef HAVE_THREADS
-    // We assign a sort value based on the originating frame number, so that
-    // earlier frames will be processed before subsequent frames, but we don't
-    // make it unique for every frame, which would kill concurrency.
-    int frame_number = request->get_frame_number();
-    _async_chain->add(std::move(func), "screenshot", frame_number >> 3, -(frame_number & ((1 << 3) - 1)));
-#else
-    func(nullptr);
-#endif
-
-    _async_ram_copies.pop_front();
-
-    // If there is 1 remaining, save it for next frame.  This helps prevent an
-    // inconsistent frame rate when the number of fetched frames alternates
-    // between 0 and 2, which can settle into a stable feedback loop.
-    if (!force && _async_ram_copies.size() == 1) {
-      break;
-    }
-  }
-
-  _glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
-#endif
 }
 
 #ifdef SUPPORT_FIXED_FUNCTION
@@ -16649,6 +16597,34 @@ do_issue_scissor() {
 
 #ifndef OPENGLES_1
 /**
+ * Maps a buffer for reading.  May be temporarily bound to the given target.
+ */
+void *CLP(GraphicsStateGuardian)::
+map_read_buffer(GLenum target, GLuint buffer, size_t size) {
+  nassertr(buffer != 0, nullptr);
+
+#ifndef OPENGLES
+  if (_glMapNamedBufferRange != nullptr) {
+    return _glMapNamedBufferRange(buffer, 0, size, GL_MAP_READ_BIT);
+  }
+#endif
+
+  void *mapped_ptr = nullptr;
+
+  _glBindBuffer(target, buffer);
+#ifdef OPENGLES
+  // There is neither glMapBuffer nor persistent mapping in OpenGL ES
+  mapped_ptr = _glMapBufferRange(target, 0, size, GL_MAP_READ_BIT);
+#else
+  // If we get here in desktop GL, we must not have persistent mapping
+  mapped_ptr = _glMapBuffer(target, GL_READ_ONLY);
+#endif
+
+  _glBindBuffer(target, 0);
+  return mapped_ptr;
+}
+
+/**
  * Maps a buffer as write-only, discarding the previous contents.  If
  * create_storage is true, allocates new storage for the buffer.  May use the
  * given target to temporarily bind the buffer, if DSA is not supported.
@@ -16688,6 +16664,58 @@ map_write_discard_buffer(GLenum target, GLuint buffer, size_t size,
 
   _glBindBuffer(target, 0);
   return mapped_ptr;
+}
+#endif  // !OPENGLES_1
+
+#ifndef OPENGLES_1
+/**
+ * Inserts a fence into the command stream.
+ */
+void CLP(GraphicsStateGuardian)::
+insert_fence(CompletionToken &&callback) {
+  GLsync fence = _glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+  _fences.push_back({fence, std::move(callback)});
+}
+
+/**
+ * Checks which fences are finished and processes those.
+ */
+void CLP(GraphicsStateGuardian)::
+process_fences(bool force) {
+  if (_fences.empty()) {
+    return;
+  }
+
+  PStatTimer timer(_copy_texture_finish_pcollector);
+
+  if (force) {
+    // Just wait for the last fence, the rest must be complete too then.
+    PStatTimer timer(_wait_fence_pcollector);
+    GLsync fence = _fences.back()._object;
+    _glClientWaitSync(fence, 0, (GLuint64)-1);
+  }
+
+  while (!_fences.empty()) {
+    Fence &fence = _fences.front();
+    if (!force) {
+      GLenum result = _glClientWaitSync(fence._object, 0, 0);
+      if (result != GL_ALREADY_SIGNALED && result != GL_CONDITION_SATISFIED) {
+        // Not yet done.  The rest must not yet be done then, either.
+        break;
+      }
+    }
+    _glDeleteSync(fence._object);
+
+    std::move(fence._token).complete(true);
+    _fences.pop_front();
+
+    // If there is 1 remaining, save it for next frame.  This helps prevent an
+    // inconsistent frame rate when the number of fetched frames alternates
+    // between 0 and 2, which can settle into a stable feedback loop.
+    if (!force && _fences.size() == 1) {
+      break;
+    }
+  }
 }
 #endif  // !OPENGLES_1
 
