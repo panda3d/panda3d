@@ -63,12 +63,13 @@ reset_data(GLenum target, int num_views) {
 
 #ifndef OPENGLES_1
   // Mark the texture as coherent.
-  if (gl_enable_memory_barriers) {
-    _glgsg->_textures_needing_fetch_barrier.erase(this);
-    _glgsg->_textures_needing_image_access_barrier.erase(this);
-    _glgsg->_textures_needing_update_barrier.erase(this);
-    _glgsg->_textures_needing_framebuffer_barrier.erase(this);
-  }
+  _texture_fetch_barrier_counter = _glgsg->_texture_fetch_barrier_counter - 1;
+  _shader_image_read_barrier_counter = _glgsg->_shader_image_access_barrier_counter - 1;
+  _shader_image_write_barrier_counter = _glgsg->_shader_image_access_barrier_counter - 1;
+  _texture_read_barrier_counter = _glgsg->_texture_update_barrier_counter - 1;
+  _texture_write_barrier_counter = _glgsg->_shader_image_access_barrier_counter - 1;
+  _framebuffer_read_barrier_counter = _glgsg->_framebuffer_barrier_counter - 1;
+  _framebuffer_write_barrier_counter = _glgsg->_framebuffer_barrier_counter - 1;
 #endif
 }
 
@@ -168,26 +169,50 @@ set_num_views(int num_views) {
 
 #ifndef OPENGLES_1
 /**
- *
+ * Returns true if the texture needs a barrier before a read or write of the
+ * given kind.  If writing is false, only writes are synced, otherwise both
+ * reads and writes are synced.
  */
 bool CLP(TextureContext)::
-needs_barrier(GLbitfield barrier) {
+needs_barrier(GLbitfield barrier, bool writing) {
   if (!gl_enable_memory_barriers) {
     return false;
   }
 
-  return (((barrier & GL_TEXTURE_FETCH_BARRIER_BIT) &&
-           _glgsg->_textures_needing_fetch_barrier.count(this)))
-      || (((barrier & GL_SHADER_IMAGE_ACCESS_BARRIER_BIT) &&
-           _glgsg->_textures_needing_image_access_barrier.count(this)))
-      || (((barrier & GL_TEXTURE_UPDATE_BARRIER_BIT) &&
-           _glgsg->_textures_needing_update_barrier.count(this)))
-      || (((barrier & GL_FRAMEBUFFER_BARRIER_BIT) &&
-           _glgsg->_textures_needing_framebuffer_barrier.count(this)));
+  if (barrier & GL_TEXTURE_FETCH_BARRIER_BIT) {
+    // This is always a read, so only sync RAW.
+    if (_glgsg->_texture_fetch_barrier_counter == _texture_fetch_barrier_counter) {
+      return true;
+    }
+  }
+
+  if (barrier & GL_SHADER_IMAGE_ACCESS_BARRIER_BIT) {
+    // Sync WAR, WAW and RAW, but not RAR.
+    if ((writing && _glgsg->_shader_image_access_barrier_counter == _shader_image_read_barrier_counter) ||
+        (_glgsg->_shader_image_access_barrier_counter == _shader_image_write_barrier_counter)) {
+      return true;
+    }
+  }
+
+  if (barrier & GL_TEXTURE_UPDATE_BARRIER_BIT) {
+    if ((writing && _glgsg->_texture_update_barrier_counter == _texture_read_barrier_counter) ||
+        (_glgsg->_texture_update_barrier_counter == _texture_write_barrier_counter)) {
+      return true;
+    }
+  }
+
+  if (barrier & GL_FRAMEBUFFER_BARRIER_BIT) {
+    if ((writing && _glgsg->_framebuffer_barrier_counter == _framebuffer_read_barrier_counter) ||
+        (_glgsg->_framebuffer_barrier_counter == _framebuffer_write_barrier_counter)) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 /**
- * Mark a texture as needing a memory barrier, since a non-coherent read or
+ * Mark a texture as needing a memory barrier, since an unsynchronized read or
  * write just happened to it.  If 'wrote' is true, it was written to.
  */
 void CLP(TextureContext)::
@@ -199,16 +224,17 @@ mark_incoherent(bool wrote) {
   // If we only read from it, the next read operation won't need another
   // barrier, since it'll be reading the same data.
   if (wrote) {
-    _glgsg->_textures_needing_fetch_barrier.insert(this);
+    _texture_fetch_barrier_counter = _glgsg->_texture_fetch_barrier_counter;
+    _shader_image_write_barrier_counter = _glgsg->_shader_image_access_barrier_counter;
+    _texture_write_barrier_counter = _glgsg->_shader_image_access_barrier_counter;
+    _framebuffer_write_barrier_counter = _glgsg->_framebuffer_barrier_counter;
   }
 
   // We could still write to it before we read from it, so we have to always
-  // insert these barriers.  This could be slightly optimized so that we don't
-  // issue a barrier between consecutive image reads, but that may not be
-  // worth the trouble.
-  _glgsg->_textures_needing_image_access_barrier.insert(this);
-  _glgsg->_textures_needing_update_barrier.insert(this);
-  _glgsg->_textures_needing_framebuffer_barrier.insert(this);
+  // insert these barriers.
+  _shader_image_read_barrier_counter = _glgsg->_shader_image_access_barrier_counter;
+  _texture_read_barrier_counter = _glgsg->_texture_update_barrier_counter;
+  _framebuffer_read_barrier_counter = _glgsg->_framebuffer_barrier_counter;
 }
 
 #endif  // !OPENGLES_1

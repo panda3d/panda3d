@@ -2813,12 +2813,6 @@ update_shader_texture_bindings(ShaderContext *prev) {
 
           int view = _glgsg->get_current_tex_view_offset();
           gl_tex = gtc->get_view_index(view);
-
-#ifndef OPENGLES
-          if (gtc->needs_barrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT)) {
-            barriers |= GL_SHADER_IMAGE_ACCESS_BARRIER_BIT;
-          }
-#endif
         }
       }
       input._writable = false;
@@ -2879,7 +2873,17 @@ update_shader_texture_bindings(ShaderContext *prev) {
             access = GL_READ_ONLY;
             gl_tex = 0;
           }
+        } else {
+          // If no parameters were specified, we have to assume writable access.
+          input._writable = true;
         }
+
+#ifndef OPENGLES
+        if (gtc->needs_barrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT, input._writable)) {
+          barriers |= GL_SHADER_IMAGE_ACCESS_BARRIER_BIT;
+        }
+#endif
+
         _glgsg->_glBindImageTexture(i, gl_tex, bind_level, layered, bind_layer,
                                     access, gtc->_internal_format);
       }
@@ -2969,7 +2973,7 @@ update_shader_texture_bindings(ShaderContext *prev) {
 #ifndef OPENGLES
     // If it was recently written to, we will have to issue a memory barrier
     // soon.
-    if (gtc->needs_barrier(GL_TEXTURE_FETCH_BARRIER_BIT)) {
+    if (gtc->needs_barrier(GL_TEXTURE_FETCH_BARRIER_BIT, false)) {
       barriers |= GL_TEXTURE_FETCH_BARRIER_BIT;
     }
 #endif

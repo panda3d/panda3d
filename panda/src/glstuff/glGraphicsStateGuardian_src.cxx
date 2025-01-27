@@ -6252,25 +6252,24 @@ issue_memory_barrier(GLbitfield barriers) {
 
   _glMemoryBarrier(barriers);
 
-  // Indicate that barriers no longer need to be issued for the relevant lists
-  // of textures.
+  // Increment these counters to indicate that these barriers have been issued.
   if (barriers & GL_TEXTURE_FETCH_BARRIER_BIT) {
-    _textures_needing_fetch_barrier.clear();
+    ++_texture_fetch_barrier_counter;
     GLCAT.spam(false) << " texture_fetch";
   }
 
   if (barriers & GL_SHADER_IMAGE_ACCESS_BARRIER_BIT) {
-    _textures_needing_image_access_barrier.clear();
+    ++_shader_image_access_barrier_counter;
     GLCAT.spam(false) << " shader_image_access";
   }
 
   if (barriers & GL_TEXTURE_UPDATE_BARRIER_BIT) {
-    _textures_needing_update_barrier.clear();
+    ++_texture_update_barrier_counter;
     GLCAT.spam(false) << " texture_update";
   }
 
   if (barriers & GL_FRAMEBUFFER_BARRIER_BIT) {
-    _textures_needing_framebuffer_barrier.clear();
+    ++_framebuffer_barrier_counter;
     GLCAT.spam(false) << " framebuffer";
   }
 
@@ -6445,13 +6444,6 @@ void CLP(GraphicsStateGuardian)::
 release_texture(TextureContext *tc) {
   CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
 
-#ifndef OPENGLES_1
-  _textures_needing_fetch_barrier.erase(gtc);
-  _textures_needing_image_access_barrier.erase(gtc);
-  _textures_needing_update_barrier.erase(gtc);
-  _textures_needing_framebuffer_barrier.erase(gtc);
-#endif
-
   gtc->set_num_views(0);
   delete gtc;
 }
@@ -6472,13 +6464,6 @@ release_textures(const pvector<TextureContext *> &contexts) {
 
   for (TextureContext *tc : contexts) {
     CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
-
-#ifndef OPENGLES_1
-    _textures_needing_fetch_barrier.erase(gtc);
-    _textures_needing_image_access_barrier.erase(gtc);
-    _textures_needing_update_barrier.erase(gtc);
-    _textures_needing_framebuffer_barrier.erase(gtc);
-#endif
 
     num_indices += gtc->_num_views;
     if (gtc->_buffers != nullptr) {
@@ -7887,8 +7872,8 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
   }
 
 #ifndef OPENGLES_1
-  if (gtc->needs_barrier(GL_TEXTURE_UPDATE_BARRIER_BIT)) {
-    // Make sure that any incoherent writes to this texture have been synced.
+  if (gtc->needs_barrier(GL_TEXTURE_UPDATE_BARRIER_BIT, true)) {
+    // Make sure that any reads and writes to this texture have been synced.
     issue_memory_barrier(GL_TEXTURE_UPDATE_BARRIER_BIT);
   }
 #endif
@@ -14175,8 +14160,8 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps) {
 
 #ifndef OPENGLES_1
   if (needs_reload || !image.is_null()) {
-    // Make sure that any incoherent writes to this texture have been synced.
-    if (gtc->needs_barrier(GL_TEXTURE_UPDATE_BARRIER_BIT)) {
+    // Make sure that any reads and writes to this texture have been synced.
+    if (gtc->needs_barrier(GL_TEXTURE_UPDATE_BARRIER_BIT, true)) {
       issue_memory_barrier(GL_TEXTURE_UPDATE_BARRIER_BIT);
     }
   }
@@ -15174,7 +15159,7 @@ do_extract_texture_data(CLP(TextureContext) *gtc, int view) {
 
 #ifndef OPENGLES_1
   // Make sure any incoherent writes to the texture have been synced.
-  if (gtc->needs_barrier(GL_TEXTURE_UPDATE_BARRIER_BIT)) {
+  if (gtc->needs_barrier(GL_TEXTURE_UPDATE_BARRIER_BIT, false)) {
     issue_memory_barrier(GL_TEXTURE_UPDATE_BARRIER_BIT);
   }
 #endif

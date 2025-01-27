@@ -41,9 +41,9 @@ public:
   INLINE GLuint get_view_buffer(int view) const;
 
 #ifdef OPENGLES_1
-  static constexpr bool needs_barrier(GLbitfield barrier) { return false; };
+  static constexpr bool needs_barrier(GLbitfield barrier, bool writing) { return false; };
 #else
-  bool needs_barrier(GLbitfield barrier);
+  bool needs_barrier(GLbitfield barrier, bool writing);
   void mark_incoherent(bool wrote);
 #endif
 
@@ -77,6 +77,15 @@ public:
   SamplerState _active_sampler;
 
   CLP(GraphicsStateGuardian) *_glgsg;
+
+  // These are set to the equivalent counter in glgsg when a write is performed.
+  int _texture_fetch_barrier_counter = -1;
+  int _shader_image_read_barrier_counter = -1;
+  int _shader_image_write_barrier_counter = -1;
+  int _texture_read_barrier_counter = -1;
+  int _texture_write_barrier_counter = -1;
+  int _framebuffer_read_barrier_counter = -1;
+  int _framebuffer_write_barrier_counter = -1;
 
 public:
   static TypeHandle get_class_type() {

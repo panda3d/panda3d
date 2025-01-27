@@ -281,7 +281,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
       CLP(GraphicsStateGuardian) *glgsg = (CLP(GraphicsStateGuardian) *)_gsg.p();
 
       for (CLP(TextureContext) *gtc : _texture_contexts) {
-        if (gtc->needs_barrier(GL_FRAMEBUFFER_BARRIER_BIT)) {
+        if (gtc->needs_barrier(GL_FRAMEBUFFER_BARRIER_BIT, true)) {
           glgsg->issue_memory_barrier(GL_FRAMEBUFFER_BARRIER_BIT);
           // If we've done it for one, we've done it for all.
           break;
@@ -1973,7 +1973,7 @@ resolve_multisamples() {
     // Issue memory barriers as necessary to make sure that the texture memory
     // is synchronized before we blit to it.
     for (CLP(TextureContext) *gtc : _texture_contexts) {
-      if (gtc->needs_barrier(GL_FRAMEBUFFER_BARRIER_BIT)) {
+      if (gtc->needs_barrier(GL_FRAMEBUFFER_BARRIER_BIT, true)) {
         glgsg->issue_memory_barrier(GL_FRAMEBUFFER_BARRIER_BIT);
         // If we've done it for one, we've done it for all.
         break;

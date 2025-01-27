@@ -1162,12 +1162,14 @@ public:
 #endif
 
 #ifndef OPENGLES_1
-  // Stores textures for which memory bariers should be issued.
-  typedef pset<TextureContext*> TextureSet;
-  TextureSet _textures_needing_fetch_barrier;
-  TextureSet _textures_needing_image_access_barrier;
-  TextureSet _textures_needing_update_barrier;
-  TextureSet _textures_needing_framebuffer_barrier;
+  // This count increments every time the corresponding barrier is issued.
+  // GLTextureContext et al store copies of this counter, when a write is
+  // performed on a texture, it will set its counter to match the value on the
+  // GSG to indicate that it is out of sync and the barrier needs to be issued.
+  int _texture_fetch_barrier_counter = 0;
+  int _shader_image_access_barrier_counter = 0;
+  int _texture_update_barrier_counter = 0;
+  int _framebuffer_barrier_counter = 0;
   int _shader_storage_barrier_counter = 0;
 #endif
 
