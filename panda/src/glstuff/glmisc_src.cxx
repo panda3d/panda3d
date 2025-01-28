@@ -326,7 +326,7 @@ ConfigVariableBool gl_depth_zero_to_one
             "range from 0 to 1, matching other graphics APIs.  This setting "
             "requires OpenGL 4.5, or NVIDIA GeForce 8+ hardware."));
 
-ConfigVariableInt gl_texture_reload_num_threads
+ConfigVariableInt gl_texture_transfer_num_threads
  ("gl-texture-transfer-num-threads", 2,
   PRC_DESC("The number of threads that will be started to upload and download "
            "texture data asynchronously, either via the setup_async_transfer "
