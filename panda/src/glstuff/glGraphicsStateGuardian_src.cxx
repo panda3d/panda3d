@@ -715,10 +715,10 @@ CLP(GraphicsStateGuardian)(GraphicsEngine *engine, GraphicsPipe *pipe) :
 #endif
 
 #ifdef HAVE_THREADS
-  //XXX having a fixed number of threads is not a great idea.  We ought to have
-  // a common thread pool that is sized based on the available number of CPUs.
   AsyncTaskManager *task_mgr = AsyncTaskManager::get_global_ptr();
-  _async_chain = task_mgr->make_task_chain("texture_copy", 2, TP_normal);
+  _async_chain = task_mgr->make_task_chain("gl_texture_transfer",
+                                           gl_texture_transfer_num_threads,
+                                           gl_texture_transfer_thread_priority);
 #endif
 
 #ifdef DO_PSTATS
