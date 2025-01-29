@@ -14906,6 +14906,7 @@ upload_texture_view(CLP(TextureContext) *gtc, int view, bool needs_reload,
                    external_format, num_components, component_width);
 
         ptimage = std::move(new_image);
+        image_ptr = ptimage;
       }
     }
 
