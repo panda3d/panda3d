@@ -517,6 +517,18 @@ rebuild_bitplanes() {
       // but it's a waste.  Let's not do it unless the user requested stencil.
       _use_depth_stencil = false;
 
+#ifdef __APPLE__
+    } else if (_fb_properties.get_depth_bits() > 0 && _requested_multisamples) {
+      // Apple's OpenGL driver doesn't like blitting depth-stencil targets.
+      // See GitHub issue #1719
+      _use_depth_stencil = false;
+      if (_fb_properties.get_depth_bits() < 24) {
+        // Make sure we do get at least as many depth bits as we would have
+        // gotten if we did get a depth-stencil buffer.
+        _fb_properties.set_depth_bits(24);
+      }
+#endif
+
     } else if (_fb_properties.get_depth_bits() > 0) {
       // Let's use a depth stencil buffer by default, if a depth buffer was
       // requested.
