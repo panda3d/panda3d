@@ -1137,7 +1137,9 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
 
     if (slot == RTP_depth_stencil) {
       if (GLCAT.is_debug()) {
-        GLCAT.debug() << "Creating depth stencil renderbuffer.\n";
+        GLCAT.debug()
+          << "Creating depth stencil renderbuffer with format 0x" << std::hex
+          << gl_format << std::dec << ".\n";
       }
       // Allocate renderbuffer storage for depth stencil.
       GLint depth_size = 0, stencil_size = 0;
@@ -1165,7 +1167,9 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
 
     } else if (slot == RTP_depth) {
       if (GLCAT.is_debug()) {
-        GLCAT.debug() << "Creating depth renderbuffer.\n";
+        GLCAT.debug()
+          << "Creating depth renderbuffer with format 0x" << std::hex
+          << gl_format << std::dec << ".\n";
       }
       // Allocate renderbuffer storage for regular depth.
       GLint depth_size = 0;
@@ -1180,6 +1184,11 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
           gl_format = GL_DEPTH_COMPONENT32F;
         } else {
           gl_format = GL_DEPTH_COMPONENT32F_NV;
+        }
+        if (GLCAT.is_debug()) {
+          GLCAT.debug()
+            << "GL_DEPTH_COMPONENT32 not supported, switching to format 0x"
+            << std::hex << gl_format << std::dec << " instead.\n";
         }
         glgsg->_glRenderbufferStorage(GL_RENDERBUFFER_EXT, gl_format, _rb_size_x, _rb_size_y);
         glgsg->_glGetRenderbufferParameteriv(GL_RENDERBUFFER_EXT, GL_RENDERBUFFER_DEPTH_SIZE_EXT, &depth_size);
@@ -1205,7 +1214,9 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
 
     } else {
       if (GLCAT.is_debug()) {
-        GLCAT.debug() << "Creating color renderbuffer.\n";
+        GLCAT.debug()
+          << "Creating color renderbuffer with format 0x" << std::hex
+          << gl_format << std::dec << ".\n";
       }
       glgsg->_glRenderbufferStorage(GL_RENDERBUFFER_EXT, gl_format, _rb_size_x, _rb_size_y);
 
@@ -1253,6 +1264,12 @@ bind_slot_multisample(bool rb_resize, Texture **attach, RenderTexturePlane slot,
 #ifndef OPENGLES_2
     if (_use_depth_stencil) {
       glgsg->_glBindRenderbuffer(GL_RENDERBUFFER_EXT, _rbm[slot]);
+      if (GLCAT.is_debug()) {
+        GLCAT.debug()
+          << "Creating depth stencil renderbuffer with format 0x" << std::hex
+          << GL_DEPTH_STENCIL_EXT << std::dec << " and " << _requested_multisamples
+          << " multisamples.\n";
+      }
       if (_requested_coverage_samples) {
         glgsg->_glRenderbufferStorageMultisampleCoverage(GL_RENDERBUFFER_EXT, _requested_coverage_samples,
                                                          _requested_multisamples, GL_DEPTH_STENCIL_EXT,
@@ -1297,6 +1314,12 @@ bind_slot_multisample(bool rb_resize, Texture **attach, RenderTexturePlane slot,
           default:
             break;
         }
+      }
+      if (GLCAT.is_debug()) {
+        GLCAT.debug()
+          << "Creating depth renderbuffer with format 0x" << std::hex
+          << format << std::dec << " and " << _requested_multisamples
+          << " multisamples.\n";
       }
       if (_requested_coverage_samples) {
         glgsg->_glRenderbufferStorageMultisampleCoverage(GL_RENDERBUFFER_EXT, _requested_coverage_samples,
@@ -1351,6 +1374,12 @@ bind_slot_multisample(bool rb_resize, Texture **attach, RenderTexturePlane slot,
         break;
     }
 #endif
+    if (GLCAT.is_debug()) {
+      GLCAT.debug()
+        << "Creating color renderbuffer with format 0x" << std::hex
+        << gl_format << std::dec << " and " << _requested_multisamples
+        << " multisamples.\n";
+    }
     glgsg->_glBindRenderbuffer(GL_RENDERBUFFER_EXT, _rbm[slot]);
     if (_requested_coverage_samples) {
       glgsg->_glRenderbufferStorageMultisampleCoverage(GL_RENDERBUFFER_EXT, _requested_coverage_samples,
