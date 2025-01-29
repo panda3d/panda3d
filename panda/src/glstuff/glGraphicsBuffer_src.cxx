@@ -1264,18 +1264,33 @@ bind_slot_multisample(bool rb_resize, Texture **attach, RenderTexturePlane slot,
 #ifndef OPENGLES_2
     if (_use_depth_stencil) {
       glgsg->_glBindRenderbuffer(GL_RENDERBUFFER_EXT, _rbm[slot]);
+      GLuint format;
+#ifdef OPENGLES_1
+      format = GL_DEPTH24_STENCIL8_OES;
+#else
+      if (_fb_properties.get_depth_bits() > 24 ||
+          _fb_properties.get_float_depth()) {
+        if (!glgsg->_use_remapped_depth_range) {
+          format = GL_DEPTH32F_STENCIL8;
+        } else {
+          format = GL_DEPTH32F_STENCIL8_NV;
+        }
+      } else {
+        format = GL_DEPTH24_STENCIL8;
+      }
+#endif
       if (GLCAT.is_debug()) {
         GLCAT.debug()
           << "Creating depth stencil renderbuffer with format 0x" << std::hex
-          << GL_DEPTH_STENCIL_EXT << std::dec << " and " << _requested_multisamples
+          << format << std::dec << " and " << _requested_multisamples
           << " multisamples.\n";
       }
       if (_requested_coverage_samples) {
         glgsg->_glRenderbufferStorageMultisampleCoverage(GL_RENDERBUFFER_EXT, _requested_coverage_samples,
-                                                         _requested_multisamples, GL_DEPTH_STENCIL_EXT,
+                                                         _requested_multisamples, format,
                                                          _rb_size_x, _rb_size_y);
       } else {
-        glgsg->_glRenderbufferStorageMultisample(GL_RENDERBUFFER_EXT, _requested_multisamples, GL_DEPTH_STENCIL_EXT,
+        glgsg->_glRenderbufferStorageMultisample(GL_RENDERBUFFER_EXT, _requested_multisamples, format,
                                                  _rb_size_x, _rb_size_y);
       }
 #ifndef OPENGLES
@@ -1314,6 +1329,16 @@ bind_slot_multisample(bool rb_resize, Texture **attach, RenderTexturePlane slot,
           default:
             break;
         }
+#ifndef OPENGLES
+      } else if (_fb_properties.get_depth_bits() > 24) {
+        format = GL_DEPTH_COMPONENT32;
+      } else if (_fb_properties.get_depth_bits() > 16) {
+        format = GL_DEPTH_COMPONENT24;
+      } else if (_fb_properties.get_depth_bits() > 1) {
+        format = GL_DEPTH_COMPONENT16;
+      } else {
+        format = GL_DEPTH_COMPONENT;
+#endif
       }
       if (GLCAT.is_debug()) {
         GLCAT.debug()
@@ -1359,17 +1384,87 @@ bind_slot_multisample(bool rb_resize, Texture **attach, RenderTexturePlane slot,
       case RTP_aux_rgba_1:
       case RTP_aux_rgba_2:
       case RTP_aux_rgba_3:
+        gl_format = GL_RGBA;
+        break;
       default:
-        if (_fb_properties.get_srgb_color()) {
-          gl_format = GL_SRGB8_ALPHA8;
-        } else if (_fb_properties.get_float_color()) {
-          if (_fb_properties.get_color_bits() > 16 * 3) {
-            gl_format = GL_RGBA32F_ARB;
+        if (_fb_properties.get_alpha_bits() == 0) {
+          if (_fb_properties.get_srgb_color()) {
+            gl_format = GL_SRGB8;
+          } else if (_fb_properties.get_color_bits() > 16 * 3 ||
+                     _fb_properties.get_red_bits() > 16 ||
+                     _fb_properties.get_green_bits() > 16 ||
+                     _fb_properties.get_blue_bits() > 16) {
+            // 32-bit, which is always floating-point.
+            if (_fb_properties.get_blue_bits() > 0 ||
+                _fb_properties.get_color_bits() == 1 ||
+                _fb_properties.get_color_bits() > 32 * 2) {
+              gl_format = GL_RGB32F;
+            } else if (_fb_properties.get_green_bits() > 0 ||
+                       _fb_properties.get_color_bits() > 32) {
+              gl_format = GL_RG32F;
+            } else {
+              gl_format = GL_R32F;
+            }
+          } else if (_fb_properties.get_float_color()) {
+            // 16-bit floating-point.
+            if (_fb_properties.get_blue_bits() > 10 ||
+                _fb_properties.get_color_bits() == 1 ||
+                _fb_properties.get_color_bits() > 32) {
+              gl_format = GL_RGB16F;
+            } else if (_fb_properties.get_blue_bits() > 0) {
+              if (_fb_properties.get_red_bits() > 11 ||
+                  _fb_properties.get_green_bits() > 11) {
+                gl_format = GL_RGB16F;
+              } else {
+                gl_format = GL_R11F_G11F_B10F;
+              }
+            } else if (_fb_properties.get_green_bits() > 0 ||
+                       _fb_properties.get_color_bits() > 16) {
+              gl_format = GL_RG16F;
+            } else {
+              gl_format = GL_R16F;
+            }
+          } else if (_fb_properties.get_color_bits() > 10 * 3 ||
+                     _fb_properties.get_red_bits() > 10 ||
+                     _fb_properties.get_green_bits() > 10 ||
+                     _fb_properties.get_blue_bits() > 10) {
+            // 16-bit normalized.
+            if (_fb_properties.get_blue_bits() > 0 ||
+                _fb_properties.get_color_bits() == 1 ||
+                _fb_properties.get_color_bits() > 16 * 2) {
+              gl_format = GL_RGBA16;
+            } else if (_fb_properties.get_green_bits() > 0 ||
+                       _fb_properties.get_color_bits() > 16) {
+              gl_format = GL_RG16;
+            } else {
+              gl_format = GL_R16;
+            }
+          } else if (_fb_properties.get_color_bits() > 8 * 3 ||
+                     _fb_properties.get_red_bits() > 8 ||
+                     _fb_properties.get_green_bits() > 8 ||
+                     _fb_properties.get_blue_bits() > 8) {
+            gl_format = GL_RGB10_A2;
           } else {
-            gl_format = GL_RGBA16F_ARB;
+            gl_format = GL_RGB;
           }
         } else {
-          gl_format = GL_RGBA;
+          if (_fb_properties.get_srgb_color()) {
+            gl_format = GL_SRGB8_ALPHA8;
+          } else if (_fb_properties.get_float_color()) {
+            if (_fb_properties.get_color_bits() > 16 * 3) {
+              gl_format = GL_RGBA32F_ARB;
+            } else {
+              gl_format = GL_RGBA16F_ARB;
+            }
+          } else {
+            if (_fb_properties.get_color_bits() > 16 * 3) {
+              gl_format = GL_RGBA32F_ARB;
+            } else if (_fb_properties.get_color_bits() > 8 * 3) {
+              gl_format = GL_RGBA16;
+            } else {
+              gl_format = GL_RGBA;
+            }
+          }
         }
         break;
     }
