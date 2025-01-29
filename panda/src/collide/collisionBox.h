@@ -94,9 +94,6 @@ protected:
   bool intersects_line(double &t1, double &t2,
                        const LPoint3 &from, const LVector3 &delta,
                        PN_stdfloat inflate_size=0) const;
-  bool intersects_capsule(double &t,
-                          const LPoint3 &from, const LVector3 &delta,
-                          PN_stdfloat radius_sq) const;
 
 private:
   LPoint3 _center;
