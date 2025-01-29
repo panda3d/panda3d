@@ -465,7 +465,10 @@ get_external_format_components(GLint external_format) {
   case GL_GREEN_INTEGER:
   case GL_BLUE_INTEGER:
   case GL_ALPHA_INTEGER:
+  case GL_STENCIL_INDEX:
 #endif
+  case GL_DEPTH_COMPONENT:
+  case GL_DEPTH_STENCIL:
     return 1;
 
 #ifndef OPENGLES_1
@@ -523,7 +526,10 @@ copy_image(unsigned char *new_image, const unsigned char *orig_image,
   case GL_GREEN_INTEGER:
   case GL_BLUE_INTEGER:
   case GL_ALPHA_INTEGER:
+  case GL_STENCIL_INDEX:
 #endif
+  case GL_DEPTH_COMPONENT:
+  case GL_DEPTH_STENCIL:
     if (num_components == 1) {
       memcpy(new_image, orig_image, orig_image_size);
       return;
