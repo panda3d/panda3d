@@ -472,9 +472,9 @@ on_keyboard_event(int type, const EmscriptenKeyboardEvent *event, void *user_dat
     // it does the right thing.  We grab the first unicode code point.
     // Unfortunately, this doesn't seem to handle dead keys on Firefox.
     int keycode = 0;
-    EM_ASM_({
-      stringToUTF32(String.fromCharCode($0), $1, 4);
-    }, event->charCode, &keycode);
+    keycode = EM_ASM_INT({
+      return String.fromCharCode($0).codePointAt(0);
+    }, event->charCode);
 
     if (keycode != 0) {
       device->keystroke(keycode);
