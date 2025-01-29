@@ -238,6 +238,16 @@ set_properties_now(WindowProperties &properties) {
     // though, we can't hide the cursor.
     properties.clear_cursor_hidden();
   }
+
+  if (properties.get_foreground()) {
+    EM_ASM_({
+      var canvas = document.getElementById('canvas');
+      if (canvas) {
+        canvas.focus();
+      }
+    });
+    properties.clear_foreground();
+  }
 }
 
 /**
@@ -368,6 +378,19 @@ open_window() {
   emscripten_set_mouseleave_callback(target, user_data, false, &on_mouse_event);
 
   emscripten_set_wheel_callback(target, user_data, false, &on_wheel_event);
+
+  if (!_properties.has_foreground() || _properties.get_foreground()) {
+    _properties.set_foreground(EM_ASM_INT({
+      var canvas = document.getElementById('canvas');
+      if (canvas) {
+        canvas.focus();
+
+        return document.activeElement === canvas;
+      } else {
+        return false;
+      }
+    }));
+  }
 
   return true;
 }
