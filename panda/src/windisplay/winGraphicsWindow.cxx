@@ -2064,7 +2064,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     // the actual value passed to WM_CHAR seems to be poorly defined.  Now we
     // are using RegisterClassW etc., which means WM_CHAR is absolutely
     // supposed to be utf-16.
-    if (!_ime_open) {
+    if (!_ime_open || !ime_aware) {
       _input->keystroke(wparam);
     }
     break;
