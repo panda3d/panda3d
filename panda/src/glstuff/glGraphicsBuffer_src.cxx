@@ -640,10 +640,23 @@ rebuild_bitplanes() {
 
     if (_have_any_color || have_any_depth) {
       // Clear if the fbo was just created, regardless of the clear settings per
-      // frame.
+      // frame.  However, we don't do this for textures, which may have useful
+      // contents that need to be preserved.
       if (_initial_clear) {
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+        GLbitfield mask = 0;
+        if (_rb[RTP_color]) {
+          glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+          mask |= GL_COLOR_BUFFER_BIT;
+        }
+        if (_rb[RTP_depth]) {
+          mask |= GL_DEPTH_BUFFER_BIT;
+        }
+        if (_rb[RTP_depth_stencil]) {
+          mask |= GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT;
+        }
+        if (mask != 0) {
+          glClear(mask);
+        }
       }
 #ifndef OPENGLES_1
     } else if (glgsg->_supports_empty_framebuffer) {
@@ -806,6 +819,10 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
       break;
     default:
       _fb_properties.setup_color_texture(tex);
+    }
+
+    if (slot == RTP_color && !tex->has_clear_color()) {
+      tex->set_clear_color(LColor(0, 0, 0, 1));
     }
 
     _textures.push_back(tex);
