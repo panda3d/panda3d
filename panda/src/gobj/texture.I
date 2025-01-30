@@ -278,7 +278,7 @@ set_clear_color(const LColor &color) {
 INLINE void Texture::
 clear_clear_color() {
   CDWriter cdata(_cycler, true);
-  cdata->_has_clear_color = true;
+  cdata->_has_clear_color = false;
 }
 
 /**
