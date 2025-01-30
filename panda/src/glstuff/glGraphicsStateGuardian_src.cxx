@@ -14675,6 +14675,11 @@ upload_texture_view(CLP(TextureContext) *gtc, int view, bool needs_reload,
         << "loading new texture object for " << tex->get_name() << " view "
         << view << ", " << width << " x " << height << " x " << depth
         << ", mipmaps " << num_ram_mipmap_levels << " / " << num_levels;
+
+      if (num_ram_mipmap_levels == 0 && tex->has_clear_color()) {
+        GLCAT.debug(false)
+          << ", clearing to " << tex->get_clear_color();
+      }
     }
     else {
       // Try to subload the image over the existing GL Texture object, possibly
@@ -14758,28 +14763,36 @@ upload_texture_view(CLP(TextureContext) *gtc, int view, bool needs_reload,
         // level to a solid color.
 #ifndef OPENGLES
         if (target != GL_TEXTURE_BUFFER) {
-          if (_supports_clear_texture && !needs_reload) {
-            // We can do that with the convenient glClearTexImage
-            // function.
-            vector_uchar clear_data = tex->get_clear_data();
+          if (_supports_clear_texture && !compressed) {
+            // If we don't have storage, we create it with a NULL image first.
+            if (!needs_reload ||
+                upload_texture_level(true, false, target, level,
+                                     width, height, depth, internal_format,
+                                     external_format, component_type,
+                                     nullptr, 0, pages, usage)) {
+              vector_uchar clear_data = tex->get_clear_data();
 
-            if (pages.has_all_of(0, depth)) {
-              _glClearTexImage(index, level, external_format,
-                               component_type, (void *)&clear_data[0]);
+              if (needs_reload || pages.has_all_of(0, depth)) {
+                _glClearTexImage(index, level, external_format,
+                                 component_type, (void *)&clear_data[0]);
+              }
+              else for (size_t sri = 0; sri < pages.get_num_subranges(); ++sri) {
+                int begin = pages.get_subrange_begin(sri);
+                int num_pages = pages.get_subrange_end(sri) - begin;
+                _glClearTexSubImage(index, level, 0, 0, begin,
+                                    width, height, num_pages, external_format,
+                                    component_type, (void *)&clear_data[0]);
+              }
+              continue;
             }
-            else for (size_t sri = 0; sri < pages.get_num_subranges(); ++sri) {
-              int begin = pages.get_subrange_begin(sri);
-              int num_pages = pages.get_subrange_end(sri) - begin;
-              _glClearTexSubImage(index, level, 0, 0, begin,
-                                  width, height, num_pages, external_format,
-                                  component_type, (void *)&clear_data[0]);
-            }
-            continue;
           }
         } else {
-          if (_supports_clear_buffer && !needs_reload) {
+          if (_supports_clear_buffer) {
             // For buffer textures we need to clear the underlying
             // storage.
+            if (needs_reload) {
+              _glBufferData(GL_TEXTURE_BUFFER, tex->get_expected_ram_mipmap_view_size(n), nullptr, usage);
+            }
             vector_uchar clear_data = tex->get_clear_data();
 
             _glClearBufferData(GL_TEXTURE_BUFFER, internal_format, external_format,
