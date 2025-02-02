@@ -666,11 +666,12 @@ def oscmd(cmd, ignoreError = False, cwd=None):
         print(GetColor("blue") + cmd.split(" ", 1)[0] + " " + GetColor("magenta") + cmd.split(" ", 1)[1] + GetColor())
     sys.stdout.flush()
 
+    if cmd[0] == '"':
+        exe = cmd[1 : cmd.index('"', 1)]
+    else:
+        exe = cmd.split()[0]
+
     if sys.platform == "win32":
-        if cmd[0] == '"':
-            exe = cmd[1 : cmd.index('"', 1)]
-        else:
-            exe = cmd.split()[0]
         exe_path = LocateBinary(exe)
         if exe_path is None:
             exit("Cannot find "+exe+" on search path")
@@ -706,7 +707,7 @@ def oscmd(cmd, ignoreError = False, cwd=None):
             exit("")
 
     if res != 0 and not ignoreError:
-        if "interrogate" in cmd.split(" ", 1)[0] and GetVerbose():
+        if "interrogate" in exe and "interrogate_module" not in exe and GetVerbose():
             print(ColorText("red", "Interrogate failed, retrieving debug output..."))
             sys.stdout.flush()
             verbose_cmd = cmd.split(" ", 1)[0] + " -vv " + cmd.split(" ", 1)[1]
