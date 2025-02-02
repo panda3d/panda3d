@@ -283,7 +283,7 @@ endfunction(interrogate_sources)
 
 #
 # Function: add_python_module(module [lib1 [lib2 ...]] [LINK lib1 ...]
-#    [IMPORT mod1 ...])
+#    [IMPORT mod1 ...] [INIT func1 ...])
 # Uses interrogate to create a Python module. If the LINK keyword is specified,
 # the Python module is linked against the specified libraries instead of those
 # listed before. The IMPORT keyword makes the output module import another
@@ -305,7 +305,7 @@ function(add_python_module module)
 
   set(keyword)
   foreach(arg ${ARGN})
-    if(arg STREQUAL "LINK" OR arg STREQUAL "IMPORT" OR arg STREQUAL "COMPONENT")
+    if(arg STREQUAL "LINK" OR arg STREQUAL "IMPORT" OR arg STREQUAL "INIT" OR arg STREQUAL "COMPONENT")
       set(keyword "${arg}")
 
     elseif(keyword STREQUAL "LINK")
@@ -314,6 +314,10 @@ function(add_python_module module)
 
     elseif(keyword STREQUAL "IMPORT")
       list(APPEND import_flags "-import" "${arg}")
+      set(keyword)
+
+    elseif(keyword STREQUAL "INIT")
+      list(APPEND import_flags "-init" "${arg}")
       set(keyword)
 
     elseif(keyword STREQUAL "COMPONENT")

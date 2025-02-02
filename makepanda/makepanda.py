@@ -1651,6 +1651,9 @@ def CompileImod(wobj, wsrc, opts):
     importmod = GetValueOption(opts, "IMPORT:")
     if importmod:
         cmd += ' -import ' + importmod
+    initfunc = GetValueOption(opts, "INIT:")
+    if initfunc:
+        cmd += ' -init ' + initfunc
     for x in wsrc: cmd += ' ' + BracketNameWithQuotes(x)
     oscmd(cmd)
     CompileCxx(wobj,woutc,opts)
@@ -4168,7 +4171,7 @@ if GetTarget() != "emscripten":
 if PkgSkip("FREETYPE")==0:
     PyTargetAdd('core_module.obj', input='libp3pnmtext.in')
 
-PyTargetAdd('core_module.obj', opts=['IMOD:panda3d.core', 'ILIB:core'])
+PyTargetAdd('core_module.obj', opts=['IMOD:panda3d.core', 'ILIB:core', 'INIT:pyenv_init'])
 
 PyTargetAdd('core.pyd', input='libp3dtoolbase_igate.obj')
 PyTargetAdd('core.pyd', input='p3dtoolbase_typeHandle_ext.obj')
