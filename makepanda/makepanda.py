@@ -1909,7 +1909,8 @@ def CompileLink(dll, obj, opts):
             cmd += ' -lc -lm'
 
         elif GetTarget() == 'emscripten':
-            cmd += " -s WARN_ON_UNDEFINED_SYMBOLS=1"
+            cmd += " -s WARN_ON_UNDEFINED_SYMBOLS=1 -mbulk-memory"
+
             if GetOrigExt(dll) == ".exe":
                 cmd += " -s EXIT_RUNTIME=1"
 
