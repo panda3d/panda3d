@@ -1913,6 +1913,9 @@ def CompileLink(dll, obj, opts):
             if GetOrigExt(dll) == ".exe":
                 cmd += " -s EXIT_RUNTIME=1"
 
+                if dll.endswith(".js") and "SUBSYSTEM:WINDOWS" not in opts:
+                    cmd += " --pre-js dtool/src/dtoolutil/console_preamble.js"
+
         else:
             cmd += " -pthread"
             if "SYSROOT" in SDK:
@@ -5984,7 +5987,7 @@ if GetLinkAllStatic():
     if not PkgSkip('BULLET'):
         DefSymbol('RUN_TESTS_FLAGS', 'HAVE_BULLET')
 
-    OPTS=['DIR:tests', 'PYTHON', 'RUN_TESTS_FLAGS']
+    OPTS=['DIR:tests', 'PYTHON', 'RUN_TESTS_FLAGS', 'SUBSYSTEM:CONSOLE']
     PyTargetAdd('run_tests-main.obj', opts=OPTS, input='main.c')
     PyTargetAdd('run_tests.exe', input='run_tests-main.obj')
     PyTargetAdd('run_tests.exe', input='core.pyd')
