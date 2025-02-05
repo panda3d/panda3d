@@ -936,6 +936,15 @@ reset() {
   // Print out a list of all extensions.
   report_extensions();
 
+#ifndef OPENGLES_1
+  if (_gl_version_major >= 3) {
+    _glGetIntegeri_v = (PFNGLGETINTEGERI_VPROC)
+      get_extension_func("glGetIntegeri_v");
+  } else {
+    _glGetIntegeri_v = nullptr;
+  }
+#endif
+
   // Check if we are running under a profiling tool such as apitrace.
 #if !defined(NDEBUG) && !defined(OPENGLES_1)
   if (has_extension("GL_EXT_debug_marker")) {
@@ -2116,7 +2125,6 @@ reset() {
   }
 #endif  // HAVE_CG
 
-  _supports_compute_shaders = false;
 #ifndef OPENGLES_1
 #ifdef OPENGLES
   if (is_at_least_gles_version(3, 1)) {
@@ -2127,7 +2135,26 @@ reset() {
       get_extension_func("glDispatchCompute");
 
     if (_glDispatchCompute != nullptr) {
-      _supports_compute_shaders = true;
+      glGetIntegerv(GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS, &_max_compute_work_group_invocations);
+
+      if (_max_compute_work_group_invocations > 0) {
+        // Initialize to spec-mandated minima
+        _max_compute_work_group_count.fill(65535);
+#ifdef OPENGLES
+        _max_compute_work_group_size.set(128, 128, 64);
+#else
+        _max_compute_work_group_size.set(1024, 1024, 64);
+#endif
+
+        if (_glGetIntegeri_v != nullptr) {
+          _glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 0, &_max_compute_work_group_count[0]);
+          _glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 1, &_max_compute_work_group_count[1]);
+          _glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 2, &_max_compute_work_group_count[2]);
+          _glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 0, &_max_compute_work_group_size[0]);
+          _glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 1, &_max_compute_work_group_size[1]);
+          _glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 2, &_max_compute_work_group_size[2]);
+        }
+      }
     }
   }
 #endif  // !OPENGLES_1

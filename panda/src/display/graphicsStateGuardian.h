@@ -176,6 +176,12 @@ PUBLISHED:
   INLINE int get_maximum_simultaneous_render_targets() const;
   INLINE bool get_supports_dual_source_blending() const;
 
+public:
+  INLINE LVecBase3i get_max_compute_work_group_count() const;
+  INLINE LVecBase3i get_max_compute_work_group_size() const;
+  INLINE int get_max_compute_work_group_invocations() const;
+
+PUBLISHED:
   MAKE_PROPERTY(max_vertices_per_array, get_max_vertices_per_array);
   MAKE_PROPERTY(max_vertices_per_primitive, get_max_vertices_per_primitive);
   MAKE_PROPERTY(max_texture_stages, get_max_texture_stages);
@@ -222,6 +228,9 @@ PUBLISHED:
   MAKE_PROPERTY(timer_queries_active, get_timer_queries_active);
   MAKE_PROPERTY(max_color_targets, get_max_color_targets);
   MAKE_PROPERTY(supports_dual_source_blending, get_supports_dual_source_blending);
+  MAKE_PROPERTY(max_compute_work_group_count, get_max_compute_work_group_count);
+  MAKE_PROPERTY(max_compute_work_group_size, get_max_compute_work_group_size);
+  MAKE_PROPERTY(max_compute_work_group_invocations, get_max_compute_work_group_invocations);
 
   INLINE ShaderModel get_shader_model() const;
   INLINE void set_shader_model(ShaderModel shader_model);
@@ -620,11 +629,14 @@ protected:
   bool _supports_basic_shaders;
   bool _supports_geometry_shaders;
   bool _supports_tessellation_shaders;
-  bool _supports_compute_shaders;
   bool _supports_glsl;
   bool _supports_hlsl;
   bool _supports_framebuffer_multisample;
   bool _supports_framebuffer_blit;
+
+  LVecBase3i _max_compute_work_group_count;
+  LVecBase3i _max_compute_work_group_size;
+  int _max_compute_work_group_invocations;
 
   bool _supports_stencil;
   bool _supports_stencil_wrap;

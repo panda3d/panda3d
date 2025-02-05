@@ -168,6 +168,7 @@ typedef void (APIENTRYP PFNGLGETPROGRAMINFOLOGPROC) (GLuint program, GLsizei buf
 typedef void (APIENTRYP PFNGLGETSHADERIVPROC) (GLuint shader, GLenum pname, GLint *params);
 typedef void (APIENTRYP PFNGLGETSHADERINFOLOGPROC) (GLuint shader, GLsizei bufSize, GLsizei *length, GLchar *infoLog);
 typedef GLint (APIENTRYP PFNGLGETUNIFORMLOCATIONPROC) (GLuint program, const GLchar *name);
+typedef void (APIENTRYP PFNGLGETINTEGERI_VPROC) (GLenum target, GLuint index, GLint *data);
 typedef void (APIENTRYP PFNGLLINKPROGRAMPROC) (GLuint program);
 typedef void (APIENTRYP PFNGLSHADERSOURCEPROC_P) (GLuint shader, GLsizei count, const GLchar* const *string, const GLint *length);
 typedef void (APIENTRYP PFNGLUSEPROGRAMPROC) (GLuint program);
@@ -823,6 +824,10 @@ protected:
 #endif
 
 public:
+#ifndef OPENGLES_1
+  PFNGLGETINTEGERI_VPROC _glGetIntegeri_v;
+#endif
+
 #ifndef OPENGLES_1
   bool _use_depth_zero_to_one;
   bool _use_remapped_depth_range;
