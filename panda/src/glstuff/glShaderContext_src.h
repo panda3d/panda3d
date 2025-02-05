@@ -120,6 +120,10 @@ private:
 
   bool _uses_standard_vertex_arrays;
 
+#ifdef DO_PSTATS
+  PStatCollector _compute_dispatch_pcollector;
+#endif
+
   void glsl_report_shader_errors(GLuint shader, Shader::ShaderType type, bool fatal);
   void glsl_report_program_errors(GLuint program, bool fatal);
   bool glsl_compile_shader(Shader::ShaderType type);

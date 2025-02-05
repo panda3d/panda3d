@@ -7916,11 +7916,16 @@ void CLP(GraphicsStateGuardian)::
 dispatch_compute(int num_groups_x, int num_groups_y, int num_groups_z) {
   maybe_gl_finish();
 
-  PStatGPUTimer timer(this, _compute_dispatch_pcollector);
-  nassertv(_supports_compute_shaders);
+  nassertv(get_supports_compute_shaders());
   nassertv(_current_shader_context != nullptr);
   CLP(ShaderContext) *gsc;
   DCAST_INTO_V(gsc, _current_shader_context);
+
+#ifdef DO_PSTATS
+  _compute_work_groups_pcollector.add_level(num_groups_x * num_groups_y * num_groups_z);
+  PStatGPUTimer timer(this, gsc->_compute_dispatch_pcollector);
+#endif
+
   gsc->issue_memory_barriers();
 
   _glDispatchCompute(num_groups_x, num_groups_y, num_groups_z);

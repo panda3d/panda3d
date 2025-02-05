@@ -100,6 +100,7 @@ PStatCollector GraphicsStateGuardian::_draw_primitive_pcollector("Draw:Primitive
 PStatCollector GraphicsStateGuardian::_draw_set_state_pcollector("Draw:Set State");
 PStatCollector GraphicsStateGuardian::_flush_pcollector("Draw:Flush");
 PStatCollector GraphicsStateGuardian::_compute_dispatch_pcollector("Draw:Compute dispatch");
+PStatCollector GraphicsStateGuardian::_compute_work_groups_pcollector("Compute work groups");
 
 PStatCollector GraphicsStateGuardian::_wait_occlusion_pcollector("Wait:Occlusion");
 PStatCollector GraphicsStateGuardian::_wait_timer_pcollector("Wait:Timer Queries");
@@ -2780,6 +2781,7 @@ end_frame(Thread *current_thread) {
   _vertices_tri_pcollector.flush_level();
   _vertices_patch_pcollector.flush_level();
   _vertices_other_pcollector.flush_level();
+  _compute_work_groups_pcollector.flush_level();
 
   _state_pcollector.flush_level();
   _texture_state_pcollector.flush_level();
@@ -3428,6 +3430,7 @@ init_frame_pstats() {
     _vertices_tri_pcollector.clear_level();
     _vertices_patch_pcollector.clear_level();
     _vertices_other_pcollector.clear_level();
+    _compute_work_groups_pcollector.clear_level();
 
     _state_pcollector.clear_level();
     _transform_state_pcollector.clear_level();

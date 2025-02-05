@@ -421,6 +421,10 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
 
   _mat_part_cache = new LVecBase4f[_shader->cp_get_mat_cache_size()];
   _mat_scratch_space = new LVecBase4f[_shader->cp_get_mat_scratch_size()];
+
+#ifdef DO_PSTATS
+  _compute_dispatch_pcollector = PStatCollector(glgsg->_compute_dispatch_pcollector, s->get_debug_name());
+#endif
 }
 
 /**
