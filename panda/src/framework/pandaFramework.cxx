@@ -204,6 +204,8 @@ close_framework() {
 
   _event_handler.remove_all_hooks();
 
+  _task_mgr.cleanup();
+
   _is_open = false;
   _made_default_pipe = false;
   _default_pipe.clear();

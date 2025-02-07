@@ -125,12 +125,12 @@ make_output(const std::string &name,
         precertify = true;
       }
     }
-    if (host != nullptr) {
+    if (host != nullptr && host->get_engine() == engine) {
       return new GLGraphicsBuffer(engine, this, name, fb_prop, win_prop,
                                   flags, gsg, host);
     } else {
       return new CocoaGLGraphicsBuffer(engine, this, name, fb_prop, win_prop,
-                                       flags, gsg, host);
+                                       flags, gsg, nullptr);
     }
   }
 

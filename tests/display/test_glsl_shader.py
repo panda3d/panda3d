@@ -284,12 +284,12 @@ def test_glsl_image_size(env):
 
 
 def test_glsl_ssbo(env):
-    from struct import pack
+    from struct import pack, unpack
     num1 = pack('<i', 1234567)
-    num2 = pack('<i', -1234567)
+    num2 = pack('<ii', -1234567, 0)
     buffer1 = core.ShaderBuffer("buffer1", num1, core.GeomEnums.UH_static)
     buffer2 = core.ShaderBuffer("buffer2", num2, core.GeomEnums.UH_static)
-    buffer3 = core.ShaderBuffer("buffer3", 4, core.GeomEnums.UH_static)
+    buffer3 = core.ShaderBuffer("buffer3", 8, core.GeomEnums.UH_static)
 
     preamble = """
     layout(std430, binding=0) readonly buffer buffer1 {
@@ -297,21 +297,30 @@ def test_glsl_ssbo(env):
     };
     layout(std430, binding=1) buffer buffer2 {
         readonly int value2;
+        int value3;
     };
     layout(std430, binding=3) buffer buffer3 {
-        writeonly int value3;
-        int value4;
+        writeonly int value4;
+        int value5;
     };
     """
     # Assigning value3 to 999 first proves buffers aren't accidentally aliased
     code = """
-    value3 = 999;
     assert(value1 == 1234567);
     assert(value2 == -1234567);
+    value3 = 98765;
+    value4 = 5343525;
+    value5 = 999;
     """
     env.run_glsl(code, preamble,
                   {'buffer1': buffer1, 'buffer2': buffer2, 'buffer3': buffer3},
                   version=430)
+
+    data1 = env.engine.extract_shader_buffer_data(buffer2, env.gsg)
+    assert unpack('<ii', data1[:8]) == (-1234567, 98765)
+
+    data2 = env.engine.extract_shader_buffer_data(buffer3, env.gsg)
+    assert unpack('<ii', data2[:8]) == (5343525, 999)
 
 
 def test_glsl_ssbo_array(env):

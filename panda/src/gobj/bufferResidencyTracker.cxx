@@ -117,6 +117,7 @@ write(std::ostream &out, int indent_level) const {
  */
 void BufferResidencyTracker::
 move_inactive(BufferContextChain &inactive, BufferContextChain &active) {
+  LightMutexHolder active_holder(active._lock);
   BufferContext *node = active.get_first();
   while (node != nullptr) {
     nassertv((node->_residency_state & S_active) != 0);

@@ -92,6 +92,7 @@ private:
   void disable_shader_texture_bindings();
   void update_shader_texture_bindings(ShaderContext *prev);
   void update_shader_buffer_bindings(ShaderContext *prev);
+  void issue_memory_barriers();
 
   bool uses_standard_vertex_arrays(void) {
     return _uses_standard_vertex_arrays;
@@ -172,6 +173,7 @@ private:
 
   struct StorageBlock {
     PT(ShaderInputBinding) _binding;
+    CLP(BufferContext) *_gbc = nullptr;
     ShaderInputBinding::ResourceId _resource_id;
     GLint _binding_index;
   };
@@ -187,6 +189,10 @@ private:
   LocationMap _bindings;
 
   bool _uses_standard_vertex_arrays;
+
+#ifdef DO_PSTATS
+  PStatCollector _compute_dispatch_pcollector;
+#endif
 
   void report_shader_errors(GLuint handle, Shader::Stage stage, bool fatal);
   void report_program_errors(GLuint program, bool fatal);

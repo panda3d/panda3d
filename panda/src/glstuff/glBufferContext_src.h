@@ -32,6 +32,10 @@ public:
   // This is the GL "name" of the data object.
   GLuint _index;
 
+  // This is set to glgsg->_shader_storage_barrier_counter if a write was
+  // performed, in which case a barrier is issued before the next use.
+  int _shader_storage_barrier_counter = -1;
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

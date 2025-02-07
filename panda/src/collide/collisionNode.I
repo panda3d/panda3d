@@ -166,3 +166,24 @@ INLINE CollideMask CollisionNode::
 get_default_collide_mask() {
   return default_collision_node_collide_mask;
 }
+
+/**
+ * Returns the custom pointer set via set_owner().
+ */
+INLINE void *CollisionNode::
+get_owner() const {
+  return _owner;
+}
+
+/**
+ * Sets a custom pointer, together with an optional callback that will be
+ * called when the node is deleted.
+ *
+ * The owner or the callback will not be copied along with the CollisionNode.
+ */
+INLINE void CollisionNode::
+set_owner(void *owner, OwnerCallback *callback) {
+  clear_owner();
+  _owner = owner;
+  _owner_callback = callback;
+}

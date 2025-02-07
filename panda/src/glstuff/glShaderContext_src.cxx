@@ -199,6 +199,10 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
   if (!valid) {
     _shader->_error_flag = true;
   }
+
+#ifdef DO_PSTATS
+  _compute_dispatch_pcollector = PStatCollector(_glgsg->_compute_dispatch_pcollector, s->get_debug_name());
+#endif
 }
 
 /**
@@ -2173,6 +2177,10 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
     issue_parameters(Shader::D_vertex_data);
   }
 
+  // This ought to be moved elsewhere, but it's convenient to do this here for
+  // now since it's called before every Geom is drawn.
+  issue_memory_barriers();
+
   _glgsg->report_my_gl_errors();
 
   return true;
@@ -2256,9 +2264,7 @@ update_shader_texture_bindings(ShaderContext *prev) {
   //  return;
   //}
 
-#ifndef OPENGLES
   GLbitfield barriers = 0;
-#endif
 
   ShaderInputBinding::State state;
   state.gsg = _glgsg;
@@ -2293,12 +2299,6 @@ update_shader_texture_bindings(ShaderContext *prev) {
 
           int view = _glgsg->get_current_tex_view_offset();
           gl_tex = gtc->get_view_index(view);
-
-#ifndef OPENGLES
-          if (gtc->needs_barrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT)) {
-            barriers |= GL_SHADER_IMAGE_ACCESS_BARRIER_BIT;
-          }
-#endif
         }
       }
 
@@ -2353,6 +2353,10 @@ update_shader_texture_bindings(ShaderContext *prev) {
           gl_access = GL_READ_WRITE;
           unit._written = true;
           break;
+        }
+
+        if (gtc->needs_barrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT, unit._written)) {
+          barriers |= GL_SHADER_IMAGE_ACCESS_BARRIER_BIT;
         }
 
         _glgsg->_glBindImageTexture(i, gl_tex, bind_level, layered,
@@ -2420,7 +2424,7 @@ update_shader_texture_bindings(ShaderContext *prev) {
 #ifndef OPENGLES
     // If it was recently written to, we will have to issue a memory barrier
     // soon.
-    if (gtc->needs_barrier(GL_TEXTURE_FETCH_BARRIER_BIT)) {
+    if (gtc->needs_barrier(GL_TEXTURE_FETCH_BARRIER_BIT, false)) {
       barriers |= GL_TEXTURE_FETCH_BARRIER_BIT;
     }
 #endif
@@ -2471,12 +2475,12 @@ update_shader_texture_bindings(ShaderContext *prev) {
     _glgsg->_glBindTextures(0, num_textures, textures);
     _glgsg->_glBindSamplers(0, num_textures, samplers);
   }
+#endif
 
   if (barriers != 0) {
     // Issue a memory barrier prior to this shader's execution.
     _glgsg->issue_memory_barrier(barriers);
   }
-#endif
 
   _glgsg->report_my_gl_errors();
 }
@@ -2491,10 +2495,38 @@ update_shader_buffer_bindings(ShaderContext *prev) {
   state.gsg = _glgsg;
   state.matrix_cache = &_matrix_cache[0];
 
-  for (const StorageBlock &block : _storage_blocks) {
+  for (StorageBlock &block : _storage_blocks) {
     PT(ShaderBuffer) buffer = block._binding->fetch_shader_buffer(state, block._resource_id);
-    _glgsg->apply_shader_buffer(block._binding_index, buffer);
+    block._gbc = _glgsg->apply_shader_buffer(block._binding_index, buffer);
   }
+}
+
+/**
+ * Issues memory barriers for shader buffers, should be called before a draw.
+ */
+void CLP(ShaderContext)::
+issue_memory_barriers() {
+#ifndef OPENGLES
+  bool barrier_needed = false;
+  for (StorageBlock &block : _storage_blocks) {
+    if (block._gbc != nullptr &&
+        block._gbc->_shader_storage_barrier_counter == _glgsg->_shader_storage_barrier_counter) {
+      barrier_needed = true;
+      break;
+    }
+  }
+
+  if (barrier_needed) {
+    _glgsg->issue_memory_barrier(GL_SHADER_STORAGE_BARRIER_BIT);
+  }
+
+  // We assume that all SSBOs will be written to, for now.
+  for (StorageBlock &block : _storage_blocks) {
+    if (block._gbc != nullptr) {
+      block._gbc->_shader_storage_barrier_counter = _glgsg->_shader_storage_barrier_counter;
+    }
+  }
+#endif
 }
 
 /**

@@ -40,7 +40,7 @@ add_object(CullableObject *object, Thread *current_thread) {
   // Determine the center of the bounding volume.
   CPT(BoundingVolume) volume = object->_geom->get_bounds();
   if (volume->is_empty()) {
-    delete object;
+    // No point in culling objects with no volume.
     return;
   }
 

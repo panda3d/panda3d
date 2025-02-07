@@ -1479,7 +1479,7 @@ assemble_row(TextAssembler::TextRow &row,
   PN_stdfloat underscore_start = 0.0f;
   const TextProperties *underscore_properties = nullptr;
 
-#ifdef HAVE_HARFBUZZ
+#if defined(HAVE_HARFBUZZ) && defined(HAVE_FREETYPE)
   const ComputedProperties *prev_cprops = nullptr;
   hb_buffer_t *harfbuff = nullptr;
 #endif
@@ -1525,7 +1525,7 @@ assemble_row(TextAssembler::TextRow &row,
       line_height = max(line_height, font->get_line_height() * properties->get_glyph_scale() * properties->get_text_scale());
     }
 
-#ifdef HAVE_HARFBUZZ
+#if defined(HAVE_HARFBUZZ) && defined(HAVE_FREETYPE)
     if (tch._cprops != prev_cprops || graphic != nullptr) {
       if (harfbuff != nullptr && hb_buffer_get_length(harfbuff) > 0) {
         // Shape the buffer accumulated so far.
@@ -1760,7 +1760,7 @@ assemble_row(TextAssembler::TextRow &row,
     }
   }
 
-#ifdef HAVE_HARFBUZZ
+#if defined(HAVE_HARFBUZZ) && defined(HAVE_FREETYPE)
   if (harfbuff != nullptr && hb_buffer_get_length(harfbuff) > 0) {
     shape_buffer(harfbuff, placed_glyphs, xpos, prev_cprops->_properties);
   }
@@ -1797,7 +1797,7 @@ void TextAssembler::
 shape_buffer(hb_buffer_t *buf, PlacedGlyphs &placed_glyphs, PN_stdfloat &xpos,
              const TextProperties &properties) {
 
-#ifdef HAVE_HARFBUZZ
+#if defined(HAVE_HARFBUZZ) && defined(HAVE_FREETYPE)
   // If we did not specify a text direction, harfbuzz will guess it based on
   // the script we are using.
   hb_direction_t direction = HB_DIRECTION_INVALID;
