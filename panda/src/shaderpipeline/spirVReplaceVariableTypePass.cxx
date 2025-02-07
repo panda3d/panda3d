@@ -96,6 +96,12 @@ transform_function_op(Instruction op) {
               components.push_back(0xffffffff);
               ++i;
             }
+
+            if (new_vector->get_scalar_type() == old_vector->get_scalar_type()) {
+              push_id(op.args[1]);
+              temp = op_vector_shuffle(temp, temp, components);
+              return false;
+            }
             temp = op_vector_shuffle(temp, temp, components);
           }
         }
