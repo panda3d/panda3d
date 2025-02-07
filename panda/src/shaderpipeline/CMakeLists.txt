@@ -21,6 +21,7 @@ set(P3SHADERPIPELINE_SOURCES
   shaderCompilerGlslPreProc.cxx
   shaderModuleGlsl.cxx
   shaderModuleSpirV.cxx
+  spirVEmulateTextureQueriesPass.cxx
   spirVFlattenStructPass.cxx
   spirVHoistStructResourcesPass.cxx
   spirVInjectAlphaTestPass.cxx

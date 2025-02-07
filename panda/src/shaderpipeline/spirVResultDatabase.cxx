@@ -749,10 +749,9 @@ parse_instruction(spv::Op opcode, const uint32_t *args, uint32_t nargs, uint32_t
     // fall through
 
   case spv::OpCompositeExtract:
-    // Composite types are used for some arithmetic ops.
-    if (_defs[args[2]]._flags & DF_constant_expression) {
-      _defs[args[1]]._flags |= DF_constant_expression;
-    }
+    // Composite types are used for some arithmetic ops, so inherit the const
+    // expression flag.
+    _defs[args[1]]._flags |= _defs[args[2]]._flags & (DF_constant_expression | DF_sampled_image);
     _defs[args[1]]._type_id = args[0];
     break;
 
@@ -793,6 +792,27 @@ parse_instruction(spv::Op opcode, const uint32_t *args, uint32_t nargs, uint32_t
       uint32_t var_id = _defs[args[2]]._origin_id;
       if (var_id != 0) {
         _defs[var_id]._flags |= DF_dref_sampled;
+      }
+      _defs[args[1]]._type_id = args[0];
+    }
+    break;
+
+  case spv::OpImage:
+  case spv::OpSampledImage:
+    record_temporary(args[1], args[0], args[2], current_function_id);
+
+    if (opcode == spv::OpImage) {
+      _defs[args[1]]._flags |= DF_sampled_image;
+    }
+    break;
+
+  case spv::OpImageQuerySizeLod:
+  case spv::OpImageQuerySize:
+  case spv::OpImageQueryLevels:
+    {
+      uint32_t var_id = _defs[args[2]]._origin_id;
+      if (var_id != 0) {
+        _defs[var_id]._flags |= DF_queried_image_size_levels;
       }
       _defs[args[1]]._type_id = args[0];
     }
@@ -1232,7 +1252,7 @@ record_function(uint32_t id, uint32_t type_id) {
  * the purpose of transitively tracking usage.
  */
 void SpirVResultDatabase::
-record_temporary(uint32_t id, uint32_t type_id, uint32_t from_id, uint32_t function_id) {
+record_temporary(uint32_t id, uint32_t type_id, uint32_t from_id, uint32_t function_id, bool propagate_constexpr) {
   // Call modify_definition first, because it may invalidate references
   Definition &def = modify_definition(id);
 
@@ -1244,6 +1264,10 @@ record_temporary(uint32_t id, uint32_t type_id, uint32_t from_id, uint32_t funct
   def._type_id = type_id;
   def._origin_id = from_def._origin_id;
   def._function_id = function_id;
+
+  if (propagate_constexpr && from_def.is_constant_expression()) {
+    def._flags |= DF_constant_expression;
+  }
 
   nassertv(function_id != 0);
 }
@@ -1263,6 +1287,14 @@ record_spec_constant(uint32_t id, uint32_t type_id) {
   def._type_id = type_id;
   def._type = type_def._type;
   def._flags |= DF_constant_expression;
+}
+
+/**
+ * Changes the origin of an existing id.
+ */
+void SpirVResultDatabase::
+set_origin(uint32_t id, uint32_t other) {
+  modify_definition(id)._origin_id = get_definition(other)._origin_id;
 }
 
 /**

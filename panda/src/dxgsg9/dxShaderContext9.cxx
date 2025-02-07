@@ -16,6 +16,7 @@
 #include "dxVertexBufferContext9.h"
 #include "shaderModuleSpirV.h"
 #include "spirVTransformer.h"
+#include "spirVEmulateTextureQueriesPass.h"
 #include "spirVHoistStructResourcesPass.h"
 #include "spirVRemoveUnusedVariablesPass.h"
 
@@ -118,26 +119,68 @@ compile_module(const ShaderModule *module, DWORD *&data) {
   // need to modify the SPIR-V to hoist those out.
   // We tell it not to remove the empty structs, since that changes the member
   // numbering, which we need to match between the original and the HLSL.
-  if (hoist_necessary) {
+  static const uint64_t emulate_caps = (Shader::C_texture_query_size | Shader::C_image_query_size | Shader::C_texture_query_levels);
+  if (hoist_necessary || (spv->_emulatable_caps & emulate_caps) != 0) {
     SpirVTransformer transformer(stream);
-    SpirVHoistStructResourcesPass hoist_pass(false);
-    transformer.run(hoist_pass);
-    transformer.run(SpirVRemoveUnusedVariablesPass());
-    stream = transformer.get_result();
 
-    for (const auto &item : hoist_pass._hoisted_vars) {
-      const auto &access_chain = item.first;
+    if ((spv->_emulatable_caps & emulate_caps) != 0) {
+      SpirVEmulateTextureQueriesPass pass(emulate_caps);
+      transformer.run(pass);
 
-      std::ostringstream str;
-      str << param_names[access_chain._var_id];
+      for (const auto &item : pass._size_var_ids) {
+        const auto &access_chain = item.first;
+        const auto &param_name = param_names[access_chain._var_id];
 
-      for (size_t i = 0; i < access_chain.size(); ++i) {
-        str << '_' << access_chain[i];
+        // Determine the resource index within the parameter.
+        const Shader::Parameter &param = _shader->_parameters[atoi(param_name.c_str() + 1)];
+        const ShaderType *type = param._type;
+        int resource_index = 0;
+
+        for (size_t i = 0; i < access_chain.size(); ++i) {
+          uint32_t index = access_chain[i];
+          if (const ShaderType::Array *array_type = type->as_array()) {
+            type = array_type->get_element_type();
+            resource_index += index * type->get_num_resources();
+          }
+          else if (const ShaderType::Struct *struct_type = type->as_struct()) {
+            for (size_t mi = 0; mi < index; ++mi) {
+              resource_index += struct_type->get_member(mi).type->get_num_resources();
+            }
+            type = struct_type->get_member(index).type;
+          }
+          else {
+            nassert_raise("invalid access chain");
+          }
+        }
+
+
+        char buf[256];
+        size_t size = sprintf(buf, "%ss_r%d", param_name.c_str(), resource_index);
+        param_names[item.second] = std::string(buf, size);
       }
-
-      param_names[item.second] = str.str();
     }
 
+    if (hoist_necessary) {
+      SpirVHoistStructResourcesPass hoist_pass(false);
+      transformer.run(hoist_pass);
+
+      for (const auto &item : hoist_pass._hoisted_vars) {
+        // Note that this access chain contains only struct members.
+        const auto &access_chain = item.first;
+
+        std::ostringstream str;
+        str << param_names[access_chain._var_id];
+
+        for (size_t i = 0; i < access_chain.size(); ++i) {
+          str << '_' << access_chain[i];
+        }
+
+        param_names[item.second] = str.str();
+      }
+      transformer.run(SpirVRemoveUnusedVariablesPass());
+    }
+
+    stream = transformer.get_result();
 #ifndef NDEBUG
     if (!stream.validate()) {
       return false;
@@ -295,6 +338,13 @@ query_constants(const ShaderModule *module, DWORD *data) {
     }
   }
 
+  struct SizeInput {
+    const Shader::Parameter &param;
+    int resource_index;
+    UINT reg;
+  };
+  pvector<SizeInput> size_inputs;
+
   Shader::Stage stage = module->get_stage();
 
   for (DWORD ci = 0; ci < table->Constants; ++ci) {
@@ -342,6 +392,13 @@ query_constants(const ShaderModule *module, DWORD *data) {
     }
 #endif
 
+    if (suffix[0] == 's') {
+      // Texture size input, named like p0s_r2
+      int resource_index = atoi(suffix + 3);
+      size_inputs.push_back({param, resource_index, constant.RegisterIndex});
+      continue;
+    }
+
     int reg_set = constant.RegisterSet;
     int reg_idx = constant.RegisterIndex;
     int reg_end = reg_idx + constant.RegisterCount;
@@ -380,6 +437,38 @@ query_constants(const ShaderModule *module, DWORD *data) {
       if (!r_query_resources(stage, param, param._type, suffix, 0, reg_set, reg_idx, reg_end)) {
         return false;
       }
+    }
+  }
+
+  for (const SizeInput &input : size_inputs) {
+    uint64_t resource_id = input.param._binding->get_resource_id(input.resource_index);
+
+    bool found_treg = false;
+    for (TextureRegister &treg : _textures) {
+      if (treg.binding == input.param._binding && treg.resource_id == resource_id) {
+        if (stage == Shader::Stage::VERTEX) {
+          if (treg.size_vreg >= 0) {
+            continue;
+          }
+          treg.size_vreg = input.reg;
+        }
+        if (stage == Shader::Stage::FRAGMENT) {
+          if (treg.size_freg >= 0) {
+            continue;
+          }
+          treg.size_freg = input.reg;
+        }
+        found_treg = true;
+        break;
+      }
+    }
+
+    if (!found_treg) {
+      // We have a size input for a texture that got optimized out.
+      // Generate a dummy texture register for this.
+      int vreg = (stage == Shader::Stage::VERTEX) ? input.reg : -1;
+      int freg = (stage == Shader::Stage::FRAGMENT) ? input.reg : -1;
+      _textures.push_back({(UINT)-1, input.param._binding, resource_id, vreg, freg});
     }
   }
 
@@ -516,7 +605,7 @@ r_query_resources(Shader::Stage stage, const Shader::Parameter &param,
       TextureRegister reg;
       reg.unit = reg_idx;
       reg.binding = param._binding;
-      reg.resource_id = param._binding->get_resource_id(resource_index, resource_type);
+      reg.resource_id = param._binding->get_resource_id(resource_index);
       _textures.push_back(std::move(reg));
       ++reg_idx;
     }
@@ -698,6 +787,9 @@ update_tables(GSG *gsg, const GeomVertexDataPipelineReader *data_reader) {
 void DXShaderContext9::
 disable_shader_texture_bindings(GSG *gsg) {
   for (const TextureRegister &reg : _textures) {
+    if (reg.unit == (UINT)-1) {
+      continue;
+    }
     HRESULT hr = gsg->_d3d_device->SetTexture(reg.unit, nullptr);
     if (FAILED(hr)) {
       dxgsg9_cat.error()
@@ -736,12 +828,29 @@ update_shader_texture_bindings(DXShaderContext9 *prev, GSG *gsg) {
       continue;
     }
 
-    TextureContext *tc = tex->prepare_now(gsg->_prepared_objects, gsg);
+    DXTextureContext9 *tc = (DXTextureContext9 *)tex->prepare_now(gsg->_prepared_objects, gsg);
     if (tc == nullptr) {
       continue;
     }
 
-    gsg->apply_texture(reg.unit, tc, view, sampler);
+    if (reg.unit != (UINT)-1) {
+      gsg->apply_texture(reg.unit, tc, view, sampler);
+    }
+    else if (!gsg->update_texture(tc, false)) {
+      continue;
+    }
+
+    if (reg.size_vreg >= 0 || reg.size_freg >= 0) {
+      DWORD levels = tc->get_d3d_texture(view)->GetLevelCount();
+      const float data[4] = {(float)tc->_width, (float)tc->_height, (float)tc->_depth, (float)levels};
+
+      if (reg.size_vreg >= 0) {
+        gsg->_d3d_device->SetVertexShaderConstantF(reg.size_vreg, data, 1);
+      }
+      if (reg.size_freg >= 0) {
+        gsg->_d3d_device->SetPixelShaderConstantF(reg.size_freg, data, 1);
+      }
+    }
   }
 }
 

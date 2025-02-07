@@ -471,7 +471,7 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, BamCacheRecord *reco
           const ShaderType::SampledImage *sampler = sampler_def._type->as_sampled_image();
           if (sampler != nullptr &&
               sampler->get_texture_type() == Texture::TT_cube_map) {
-            _used_caps |= C_sampler_cube_shadow;
+            _emulatable_caps |= C_sampler_cube_shadow;
           }
         }
       }
@@ -489,13 +489,32 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, BamCacheRecord *reco
 
     case spv::OpImageQuerySizeLod:
     case spv::OpImageQuerySize:
+    case spv::OpImageQueryLevels:
       {
         const Definition &image_def = db.get_definition(op.args[2]);
-        if (image_def._type != nullptr && image_def._type->as_image() != nullptr) {
-          _used_caps |= C_image_query_size;
+
+        uint64_t cap;
+        if (op.opcode == spv::OpImageQueryLevels) {
+          cap = C_texture_query_levels;
+        } else if (image_def._flags & SpirVResultDatabase::DF_sampled_image) {
+          cap = C_texture_query_size;
         } else {
-          _used_caps |= C_texture_query_size;
+          cap = C_image_query_size;
         }
+
+        // Note, we can emulate simple size queries as long as there's no
+        // dynamic indexing going on and it's of lod level 0.
+        if (image_def._origin_id != 0) {
+          const Definition &var_def = db.get_definition(image_def._origin_id);
+          if (!var_def.is_dynamically_indexed()) {
+            if (op.opcode != spv::OpImageQuerySizeLod ||
+                db.get_definition(op.args[3]).is_constant(0)) {
+              _emulatable_caps |= cap;
+              break;
+            }
+          }
+        }
+        _used_caps |= cap;
       }
       break;
 
@@ -518,10 +537,6 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, BamCacheRecord *reco
 
     case spv::OpImageQueryLod:
       _used_caps |= C_texture_query_lod;
-      break;
-
-    case spv::OpImageQueryLevels:
-      _used_caps |= C_texture_query_levels;
       break;
 
     case spv::OpImageQuerySamples:
@@ -574,6 +589,9 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, BamCacheRecord *reco
       break;
     }
   }
+
+  // Any caps we strictly require will also not be emulated.
+  _emulatable_caps &= ~_used_caps;
 }
 
 ShaderModuleSpirV::

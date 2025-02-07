@@ -63,10 +63,10 @@ fetch_data(const State &state, void *into, bool packed) const {
 
 /**
  * Returns an opaque resource identifier that can later be used to fetch the
- * nth resource, which is of the given type.
+ * nth resource, numbered using a depth-first traversal of the parameter type.
  */
 ShaderInputBinding::ResourceId ShaderInputBinding::
-get_resource_id(int index, const ShaderType *type) const {
+get_resource_id(int index) const {
   return 0;
 }
 

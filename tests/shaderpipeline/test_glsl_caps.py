@@ -249,18 +249,70 @@ def test_glsl_caps_texture_lod():
 
 
 def test_glsl_caps_texture_query_size():
+    # This can be emulated, should NOT have the cap
+    assert compile_and_get_caps(Stage.FRAGMENT, """
+    #version 330
+
+    uniform sampler1D a;
+    uniform sampler1D b[2];
+
+    struct C {
+      sampler1D member[2];
+    };
+    uniform C c;
+
+    struct D {
+      sampler1D member;
+    };
+    uniform D d[2];
+
+    void main() {
+        gl_FragColor = vec4(textureSize(a, 0),
+                            textureSize(b[1], 0),
+                            textureSize(c.member[1], 0),
+                            textureSize(d[1].member, 0));
+    }
+    """) == 0
+
+    # This can NOT be emulated (at the moment), non-zero LOD level
     assert compile_and_get_caps(Stage.FRAGMENT, """
     #version 330
 
     uniform sampler2D a;
+    uniform float i;
 
     void main() {
-        gl_FragColor = vec4(vec2(textureSize(a, 0)), 0.0, 1.0);
+        gl_FragColor = vec4(vec2(textureSize(a, 1)), 0.0, 1.0);
     }
     """) == Shader.C_texture_query_size
 
+    # This can NOT be emulated, non-constant LOD level
+    assert compile_and_get_caps(Stage.FRAGMENT, """
+    #version 330
+
+    uniform sampler2D a;
+    uniform float i;
+
+    void main() {
+        gl_FragColor = vec4(vec2(textureSize(a, int(i))), 0.0, 1.0);
+    }
+    """) == Shader.C_texture_query_size
+
+    # There's no point emulating this for dynamically indexed textures
+    assert compile_and_get_caps(Stage.FRAGMENT, """
+    #version 400
+
+    uniform sampler2D a[2];
+    uniform float i;
+
+    void main() {
+        gl_FragColor = vec4(vec2(textureSize(a[int(i)], 0)), 0.0, 1.0);
+    }
+    """) == Shader.C_dynamic_indexing | Shader.C_texture_query_size
+
 
 def test_glsl_caps_sampler_cube_shadow():
+    # Can be emulated, so does not get the cap for now
     assert compile_and_get_caps(Stage.FRAGMENT, """
     #version 330
 
@@ -269,7 +321,7 @@ def test_glsl_caps_sampler_cube_shadow():
     void main() {
         gl_FragColor = vec4(texture(a, vec4(0.0)), 0.0, 0.0, 1.0);
     }
-    """) == Shader.C_shadow_samplers | Shader.C_sampler_cube_shadow
+    """) == Shader.C_shadow_samplers# | Shader.C_sampler_cube_shadow
 
 
 def test_glsl_caps_vertex_id():
@@ -653,6 +705,7 @@ def test_glsl_caps_image_atomic():
 
 
 def test_glsl_caps_image_query_size():
+    # Can be emulated
     assert compile_and_get_caps(Stage.FRAGMENT, """
     #version 420
 
@@ -665,10 +718,27 @@ def test_glsl_caps_image_query_size():
     void main() {
         p3d_FragColor = vec4(vec2(imageSize(a)), 0.0, 1.0);
     }
-    """) == Shader.C_image_query_size
+    """) == 0
+
+    # Can NOT be emulated (dynamically indexed)
+    assert compile_and_get_caps(Stage.FRAGMENT, """
+    #version 420
+
+    #extension GL_ARB_shader_image_size : require
+
+    uniform writeonly image2D a[2];
+    uniform int i;
+
+    out vec4 p3d_FragColor;
+
+    void main() {
+        p3d_FragColor = vec4(vec2(imageSize(a[i])), 0.0, 1.0);
+    }
+    """) == Shader.C_dynamic_indexing | Shader.C_image_query_size
 
 
 def test_glsl_caps_texture_query_levels():
+    # Can be emulated
     assert compile_and_get_caps(Stage.FRAGMENT, """
     #version 430
 
@@ -679,7 +749,21 @@ def test_glsl_caps_texture_query_levels():
     void main() {
         p3d_FragColor = vec4(float(textureQueryLevels(a)), 0.0, 0.0, 1.0);
     }
-    """) == Shader.C_texture_query_levels
+    """) == 0
+
+    # Can NOT be emulated (dynamically indexed)
+    assert compile_and_get_caps(Stage.FRAGMENT, """
+    #version 430
+
+    uniform sampler2D a[2];
+    uniform int i;
+
+    out vec4 p3d_FragColor;
+
+    void main() {
+        p3d_FragColor = vec4(float(textureQueryLevels(a[i])), 0.0, 0.0, 1.0);
+    }
+    """) == Shader.C_dynamic_indexing | Shader.C_texture_query_levels
 
 
 def test_glsl_caps_storage_buffer():

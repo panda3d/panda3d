@@ -15,6 +15,7 @@
 #include "typedWritable_ext.h"
 #include "shaderInput_ext.h"
 #include "shaderAttrib.h"
+#include "collisionNode.h"
 
 #ifdef HAVE_PYTHON
 
@@ -324,6 +325,64 @@ get_tight_bounds(const NodePath &other) const {
 
   } else {
     return Py_NewRef(Py_None);
+  }
+}
+
+/**
+ * Recursively assigns a weak reference to the given owner object to all
+ * collision nodes at this level and below.
+ *
+ * You may pass in None to clear all owners below this level.
+ *
+ * Note that there is no corresponding get_collide_owner(), since there may be
+ * multiple nodes below this level with different owners.
+ */
+void Extension<NodePath>::
+set_collide_owner(PyObject *owner) {
+  if (owner != Py_None) {
+    PyObject *ref = PyWeakref_NewRef(owner, nullptr);
+    if (ref != nullptr) {
+      r_set_collide_owner(_this->node(), ref);
+      Py_DECREF(ref);
+    }
+  } else {
+    r_clear_collide_owner(_this->node());
+  }
+}
+
+/**
+ * Recursive implementation of set_collide_owner.  weakref must be a weak ref
+ * object.
+ */
+void Extension<NodePath>::
+r_set_collide_owner(PandaNode *node, PyObject *weakref) {
+  if (node->is_collision_node()) {
+    CollisionNode *cnode = (CollisionNode *)node;
+    cnode->set_owner(Py_NewRef(weakref),
+                     [](void *obj) { Py_DECREF((PyObject *)obj); });
+  }
+
+  PandaNode::Children cr = node->get_children();
+  int num_children = cr.get_num_children();
+  for (int i = 0; i < num_children; i++) {
+    r_set_collide_owner(cr.get_child(i), weakref);
+  }
+}
+
+/**
+ * Recursive implementation of set_collide_owner(None).
+ */
+void Extension<NodePath>::
+r_clear_collide_owner(PandaNode *node) {
+  if (node->is_collision_node()) {
+    CollisionNode *cnode = (CollisionNode *)node;
+    cnode->clear_owner();
+  }
+
+  PandaNode::Children cr = node->get_children();
+  int num_children = cr.get_num_children();
+  for (int i = 0; i < num_children; i++) {
+    r_clear_collide_owner(cr.get_child(i));
   }
 }
 

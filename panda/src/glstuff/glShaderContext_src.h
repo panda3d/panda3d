@@ -65,7 +65,7 @@ private:
                                          GLint &num_ssbo_bindings,
                                          GLint &num_image_bindings);
 
-  void r_collect_uniforms(GLuint program,
+  void r_collect_uniforms(RenderAttrib::PandaCompareFunc alpha_test_mode,
                           const Shader::Parameter &param, UniformCalls &calls,
                           const ShaderType *type, const char *name,
                           const char *sym, int &location,
@@ -92,6 +92,7 @@ private:
   void disable_shader_texture_bindings();
   void update_shader_texture_bindings(ShaderContext *prev);
   void update_shader_buffer_bindings(ShaderContext *prev);
+  void issue_memory_barriers();
 
   bool uses_standard_vertex_arrays(void) {
     return _uses_standard_vertex_arrays;
@@ -150,6 +151,7 @@ private:
     PT(ShaderInputBinding) _binding;
     ShaderInputBinding::ResourceId _resource_id;
     GLenum _target;
+    GLint _size_loc[RenderAttrib::M_always];
   };
   typedef pvector<TextureUnit> TextureUnits;
   TextureUnits _texture_units;
@@ -160,6 +162,7 @@ private:
     CLP(TextureContext) *_gtc = nullptr;
     ShaderType::Access _access;
     bool _written = false;
+    GLint _size_loc[RenderAttrib::M_always];
   };
   typedef pvector<ImageUnit> ImageUnits;
   ImageUnits _image_units;
@@ -170,6 +173,7 @@ private:
 
   struct StorageBlock {
     PT(ShaderInputBinding) _binding;
+    CLP(BufferContext) *_gbc = nullptr;
     ShaderInputBinding::ResourceId _resource_id;
     GLint _binding_index;
   };
@@ -178,12 +182,17 @@ private:
   uint32_t _storage_block_bindings = 0;
 
   CLP(GraphicsStateGuardian) *_glgsg;
+  uint64_t _emulated_caps = 0u;
 
   bool _remap_locations = false;
   LocationMap _locations;
   LocationMap _bindings;
 
   bool _uses_standard_vertex_arrays;
+
+#ifdef DO_PSTATS
+  PStatCollector _compute_dispatch_pcollector;
+#endif
 
   void report_shader_errors(GLuint handle, Shader::Stage stage, bool fatal);
   void report_program_errors(GLuint program, bool fatal);

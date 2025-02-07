@@ -88,7 +88,9 @@ MANYLINUX_LIBS = [
     # These are not mentioned in manylinux1 spec but should nonetheless always
     # be excluded.
     "linux-vdso.so.1", "linux-gate.so.1", "ld-linux.so.2", "libdrm.so.2",
+    "ld-linux-x86-64.so.2", "ld-linux-aarch64.so.1",
     "libEGL.so.1", "libOpenGL.so.0", "libGLX.so.0", "libGLdispatch.so.0",
+    "libGLESv2.so.2",
 ]
 
 # Binaries to never scan for dependencies on non-Windows systems.
@@ -677,6 +679,7 @@ def makewheel(version, output_dir, platform=None):
         or platform.startswith('win_') \
         or platform.startswith('cygwin_')
     is_macosx = platform.startswith('macosx_')
+    is_android = platform.startswith('android_')
 
     # Global filepaths
     panda3d_dir = join(output_dir, "panda3d")
@@ -747,6 +750,9 @@ def makewheel(version, output_dir, platform=None):
     elif is_macosx:
         pylib_name = 'libpython{0}.{1}{2}.dylib'.format(sys.version_info[0], sys.version_info[1], suffix)
         pylib_path = os.path.join(get_config_var('LIBDIR'), pylib_name)
+    elif is_android and CrossCompiling():
+        pylib_name = 'libpython{0}.{1}{2}.so'.format(sys.version_info[0], sys.version_info[1], suffix)
+        pylib_path = os.path.join(GetThirdpartyDir(), 'python', 'lib', pylib_name)
     else:
         pylib_name = get_config_var('LDLIBRARY')
         pylib_arch = get_config_var('MULTIARCH')

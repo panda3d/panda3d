@@ -1368,6 +1368,11 @@ adjust_z_order() {
 void WinGraphicsWindow::
 adjust_z_order(WindowProperties::ZOrder last_z_order,
                WindowProperties::ZOrder this_z_order) {
+  // Prevent calling this recursively.
+  if (_in_adjust_z_order) {
+    return;
+  }
+
   HWND order;
   bool do_change = false;
 
@@ -1397,8 +1402,10 @@ adjust_z_order(WindowProperties::ZOrder last_z_order,
     break;
   }
   if (do_change) {
+    _in_adjust_z_order = true;
     BOOL result = SetWindowPos(_hWnd, order, 0,0,0,0,
                                SWP_NOMOVE | SWP_NOSENDCHANGING | SWP_NOSIZE);
+    _in_adjust_z_order = false;
     if (!result) {
       windisplay_cat.warning()
         << "SetWindowPos failed.\n";
@@ -1508,6 +1515,26 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   WindowProperties properties;
 
   switch (msg) {
+  case WM_GETMINMAXINFO:
+  {
+    MINMAXINFO* minmaxinfo = (MINMAXINFO*)lparam;
+
+    int minClientWidth = 1;  // Minimum client area width
+    int minClientHeight = 1; // Minimum client area height
+
+    // Adjust window for non-client area
+    RECT rect = { 0, 0, minClientWidth, minClientHeight };
+    AdjustWindowRect(&rect, GetWindowLong(hwnd, GWL_STYLE), FALSE);
+
+    // Calculate final size
+    int minWidth = rect.right - rect.left;
+    int minHeight = rect.bottom - rect.top;
+
+    // Set the minimum track size in MINMAXINFO
+    minmaxinfo->ptMinTrackSize.x = minWidth;  // Minimum window width
+    minmaxinfo->ptMinTrackSize.y = minHeight; // Minimum window height
+  }
+  break;
   case WM_MOUSEMOVE:
     if (!_tracking_mouse_leaving) {
       // need to re-call TrackMouseEvent every time mouse re-enters window
@@ -1690,7 +1717,9 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     if (_hWnd != nullptr) {
       handle_reshape();
     }
-    adjust_z_order();
+    if (!_in_adjust_z_order) {
+      adjust_z_order();
+    }
     return 0;
 
   case WM_PAINT:
@@ -2035,7 +2064,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     // the actual value passed to WM_CHAR seems to be poorly defined.  Now we
     // are using RegisterClassW etc., which means WM_CHAR is absolutely
     // supposed to be utf-16.
-    if (!_ime_open) {
+    if (!_ime_open || !ime_aware) {
       _input->keystroke(wparam);
     }
     break;

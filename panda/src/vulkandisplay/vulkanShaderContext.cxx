@@ -483,7 +483,7 @@ r_extract_resources(const Shader::Parameter &param, const AccessChain &chain,
   }
 
   Descriptor &desc = descriptors[chain];
-  desc._resource_ids.push_back(param._binding->get_resource_id(resource_index++, type));
+  desc._resource_ids.push_back(param._binding->get_resource_id(resource_index++));
 
   if (desc._binding == nullptr) {
     desc._binding = param._binding;

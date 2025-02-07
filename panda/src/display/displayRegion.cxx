@@ -474,9 +474,7 @@ get_screenshot(PNMImage &image) {
  * it as a Texture, or NULL on failure.
  */
 PT(Texture) DisplayRegion::
-get_screenshot() {
-  Thread *current_thread = Thread::get_current_thread();
-
+get_screenshot(Thread *current_thread) {
   GraphicsOutput *window = get_window();
   nassertr(window != nullptr, nullptr);
 
@@ -487,7 +485,9 @@ get_screenshot() {
   if (gsg->get_threading_model().get_draw_stage() != current_thread->get_pipeline_stage()) {
     // Ask the engine to do on the draw thread.
     GraphicsEngine *engine = window->get_engine();
-    return engine->do_get_screenshot(this, gsg);
+    return engine->run_on_draw_thread([this] (Thread *current_thread) {
+      return get_screenshot(current_thread);
+    });
   }
 
   // We are on the draw thread.

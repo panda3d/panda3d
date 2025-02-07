@@ -28,7 +28,7 @@ if hasattr(sys, 'getandroidapilevel'):
     signal = None
 else:
     try:
-        import _signal as signal  # type: ignore[import, no-redef]
+        import _signal as signal  # type: ignore[import-not-found, no-redef]
     except ImportError:
         signal = None
 

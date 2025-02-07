@@ -47,6 +47,78 @@ def test_glsl_sampler(env):
     env.run_glsl(code, preamble, {'tex1': tex1, 'tex2': tex2, 'tex3': tex3})
 
 
+def test_glsl_texture_size(env):
+    tex1_0 = core.Texture("tex1-0-1d")
+    tex1_0.setup_1d_texture(128, core.Texture.T_unsigned_byte, core.Texture.F_rgba8)
+
+    tex1_1 = core.Texture("tex1-1-1d")
+    tex1_1.setup_1d_texture(256, core.Texture.T_unsigned_byte, core.Texture.F_rgba8)
+
+    tex2 = core.Texture("tex2-2d")
+    tex2.setup_2d_texture(64, 32, core.Texture.T_unsigned_byte, core.Texture.F_rgba8)
+
+    tex3 = core.Texture("tex3-cube")
+    tex3.setup_cube_map(16, core.Texture.T_unsigned_byte, core.Texture.F_rgba8)
+
+    tex4 = core.Texture("tex4-3d")
+    tex4.setup_3d_texture(8, 4, 2, core.Texture.T_unsigned_byte, core.Texture.F_rgba8)
+
+    preamble = """
+    uniform sampler1D tex1[2];
+    uniform sampler2D tex2;
+    uniform samplerCube tex3;
+    uniform sampler3D tex4;
+    """
+    code = """
+    assert(textureSize(tex1[0], 0) == 128);
+    assert(textureSize(tex1[1], 0) == 256);
+    assert(textureSize(tex2, 0) == ivec2(64, 32));
+    assert(textureSize(tex3, 0) == ivec2(16, 16));
+    assert(textureSize(tex4, 0) == ivec3(8, 4, 2));
+
+    // dummy sample this texture so it doesn't get optimized out
+    assert(texture(tex1[0], 0) != vec4(2, 2, 2, 2));
+    """
+    env.run_glsl(code, preamble, {'tex1[0]': tex1_0, 'tex1[1]': tex1_1, 'tex2': tex2, 'tex3': tex3, 'tex4': tex4})
+
+
+def test_glsl_texture_query_levels(env):
+    tex1_0 = core.Texture("tex1-0-1d")
+    tex1_0.setup_1d_texture(128, core.Texture.T_unsigned_byte, core.Texture.F_rgba8)
+    tex1_0.set_minfilter(core.SamplerState.FT_linear_mipmap_linear)
+
+    tex1_1 = core.Texture("tex1-1-1d")
+    tex1_1.setup_1d_texture(256, core.Texture.T_unsigned_byte, core.Texture.F_rgba8)
+    tex1_1.set_minfilter(core.SamplerState.FT_nearest)
+
+    tex2 = core.Texture("tex2-2d")
+    tex2.setup_2d_texture(64, 32, core.Texture.T_unsigned_byte, core.Texture.F_rgba8)
+    tex2.set_minfilter(core.SamplerState.FT_linear_mipmap_linear)
+
+    tex3 = core.Texture("tex3-cube")
+    tex3.setup_cube_map(16, core.Texture.T_unsigned_byte, core.Texture.F_rgba8)
+    tex3.set_minfilter(core.SamplerState.FT_linear_mipmap_linear)
+
+    tex4 = core.Texture("tex4-3d")
+    tex4.setup_3d_texture(8, 4, 2, core.Texture.T_unsigned_byte, core.Texture.F_rgba8)
+    tex4.set_minfilter(core.SamplerState.FT_linear_mipmap_linear)
+
+    preamble = """
+    uniform sampler1D tex1[2];
+    uniform sampler2D tex2;
+    uniform samplerCube tex3;
+    uniform sampler3D tex4;
+    """
+    code = """
+    assert(textureQueryLevels(tex1[1]) == 1);
+    assert(textureQueryLevels(tex1[0]) == 8);
+    assert(textureQueryLevels(tex2) == 7);
+    assert(textureQueryLevels(tex3) == 5);
+    assert(textureQueryLevels(tex4) == 4);
+    """
+    env.run_glsl(code, preamble, {'tex1[0]': tex1_0, 'tex1[1]': tex1_1, 'tex2': tex2, 'tex3': tex3, 'tex4': tex4}, version=430)
+
+
 def test_glsl_isampler(env):
     from struct import pack
 
@@ -179,13 +251,45 @@ def test_glsl_uimage(env):
     env.run_glsl(code, preamble, {'tex1': tex1, 'tex2': tex2, 'tex3': tex3})
 
 
+def test_glsl_image_size(env):
+    tex1_0 = core.Texture("tex1-0-1d")
+    tex1_0.setup_1d_texture(128, core.Texture.T_unsigned_byte, core.Texture.F_rgba8)
+
+    tex1_1 = core.Texture("tex1-1-1d")
+    tex1_1.setup_1d_texture(256, core.Texture.T_unsigned_byte, core.Texture.F_rgba8)
+
+    tex2 = core.Texture("tex2-2d")
+    tex2.setup_2d_texture(64, 32, core.Texture.T_unsigned_byte, core.Texture.F_rgba8)
+
+    tex3 = core.Texture("tex3-cube")
+    tex3.setup_cube_map(16, core.Texture.T_unsigned_byte, core.Texture.F_rgba8)
+
+    tex4 = core.Texture("tex4-3d")
+    tex4.setup_3d_texture(8, 4, 2, core.Texture.T_unsigned_byte, core.Texture.F_rgba8)
+
+    preamble = """
+    uniform writeonly image1D tex1[2];
+    uniform writeonly image2D tex2;
+    uniform writeonly imageCube tex3;
+    uniform writeonly image3D tex4;
+    """
+    code = """
+    assert(imageSize(tex1[0]) == 128);
+    assert(imageSize(tex1[1]) == 256);
+    assert(imageSize(tex2) == ivec2(64, 32));
+    assert(imageSize(tex3) == ivec2(16, 16));
+    assert(imageSize(tex4) == ivec3(8, 4, 2));
+    """
+    env.run_glsl(code, preamble, {'tex1[0]': tex1_0, 'tex1[1]': tex1_1, 'tex2': tex2, 'tex3': tex3, 'tex4': tex4}, version=430)
+
+
 def test_glsl_ssbo(env):
-    from struct import pack
+    from struct import pack, unpack
     num1 = pack('<i', 1234567)
-    num2 = pack('<i', -1234567)
+    num2 = pack('<ii', -1234567, 0)
     buffer1 = core.ShaderBuffer("buffer1", num1, core.GeomEnums.UH_static)
     buffer2 = core.ShaderBuffer("buffer2", num2, core.GeomEnums.UH_static)
-    buffer3 = core.ShaderBuffer("buffer3", 4, core.GeomEnums.UH_static)
+    buffer3 = core.ShaderBuffer("buffer3", 8, core.GeomEnums.UH_static)
 
     preamble = """
     layout(std430, binding=0) readonly buffer buffer1 {
@@ -193,21 +297,30 @@ def test_glsl_ssbo(env):
     };
     layout(std430, binding=1) buffer buffer2 {
         readonly int value2;
+        int value3;
     };
     layout(std430, binding=3) buffer buffer3 {
-        writeonly int value3;
-        int value4;
+        writeonly int value4;
+        int value5;
     };
     """
     # Assigning value3 to 999 first proves buffers aren't accidentally aliased
     code = """
-    value3 = 999;
     assert(value1 == 1234567);
     assert(value2 == -1234567);
+    value3 = 98765;
+    value4 = 5343525;
+    value5 = 999;
     """
     env.run_glsl(code, preamble,
                   {'buffer1': buffer1, 'buffer2': buffer2, 'buffer3': buffer3},
                   version=430)
+
+    data1 = env.engine.extract_shader_buffer_data(buffer2, env.gsg)
+    assert unpack('<ii', data1[:8]) == (-1234567, 98765)
+
+    data2 = env.engine.extract_shader_buffer_data(buffer3, env.gsg)
+    assert unpack('<ii', data2[:8]) == (5343525, 999)
 
 
 def test_glsl_ssbo_array(env):

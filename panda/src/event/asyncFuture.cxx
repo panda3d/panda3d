@@ -390,6 +390,17 @@ wake_task(AsyncTask *task) {
 }
 
 /**
+ * Internal callback called when a CompletionToken created from this future
+ * completes.
+ */
+void AsyncFuture::
+token_callback(Completable::Data *data, bool success) {
+  AsyncFuture *future = (AsyncFuture *)data;
+  future->set_result(EventParameter(success));
+  unref_delete(future);
+}
+
+/**
  * @see AsyncFuture::gather
  */
 AsyncGatheringFuture::

@@ -161,7 +161,7 @@ PUBLISHED:
   bool save_screenshot(
     const Filename &filename, const std::string &image_comment = "");
   bool get_screenshot(PNMImage &image);
-  PT(Texture) get_screenshot();
+  PT(Texture) get_screenshot(Thread *current_thread = Thread::get_current_thread());
 
   void clear_cull_result();
   virtual PT(PandaNode) make_cull_result_graph();

@@ -88,6 +88,7 @@ public:
 
   virtual BufferContext *prepare_shader_buffer(ShaderBuffer *data);
   virtual void release_shader_buffer(BufferContext *bc);
+  virtual bool extract_shader_buffer_data(ShaderBuffer *buffer, vector_uchar &data);
 
   virtual void dispatch_compute(int size_x, int size_y, int size_z);
 

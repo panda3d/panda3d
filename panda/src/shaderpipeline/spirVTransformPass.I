@@ -96,7 +96,20 @@ get_id_bound() const {
  */
 INLINE uint32_t SpirVTransformPass::
 allocate_id() {
+  uint32_t next_id = _next_id;
+  if (next_id != 0) {
+    _next_id = 0;
+    return next_id;
+  }
   return _new_preamble[3]++;
+}
+
+/**
+ * Sets the next id that should be returned by allocate_id().
+ */
+INLINE void SpirVTransformPass::
+push_id(uint32_t id) {
+  _next_id = id;
 }
 
 /**
@@ -141,6 +154,19 @@ decorate(uint32_t id, spv::Decoration decoration, uint32_t value) {
   if (decoration == spv::DecorationLocation) {
     _db.modify_definition(id)._location = (int)value;
   }
+}
+
+/**
+ * Defines a new constant of type float.
+ */
+INLINE uint32_t SpirVTransformPass::
+define_float_constant(float constant) {
+  union {
+    float f;
+    uint32_t ui;
+  } u;
+  u.f = constant;
+  return define_constant(ShaderType::float_type, u.ui);
 }
 
 /**

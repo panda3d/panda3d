@@ -238,6 +238,16 @@ set_properties_now(WindowProperties &properties) {
     // though, we can't hide the cursor.
     properties.clear_cursor_hidden();
   }
+
+  if (properties.get_foreground()) {
+    EM_ASM_({
+      var canvas = document.getElementById('canvas');
+      if (canvas) {
+        canvas.focus();
+      }
+    });
+    properties.clear_foreground();
+  }
 }
 
 /**
@@ -369,6 +379,19 @@ open_window() {
 
   emscripten_set_wheel_callback(target, user_data, false, &on_wheel_event);
 
+  if (!_properties.has_foreground() || _properties.get_foreground()) {
+    _properties.set_foreground(EM_ASM_INT({
+      var canvas = document.getElementById('canvas');
+      if (canvas) {
+        canvas.focus();
+
+        return document.activeElement === canvas;
+      } else {
+        return false;
+      }
+    }));
+  }
+
   return true;
 }
 
@@ -472,9 +495,9 @@ on_keyboard_event(int type, const EmscriptenKeyboardEvent *event, void *user_dat
     // it does the right thing.  We grab the first unicode code point.
     // Unfortunately, this doesn't seem to handle dead keys on Firefox.
     int keycode = 0;
-    EM_ASM_({
-      stringToUTF32(String.fromCharCode($0), $1, 4);
-    }, event->charCode, &keycode);
+    keycode = EM_ASM_INT({
+      return String.fromCharCode($0).codePointAt(0);
+    }, event->charCode);
 
     if (keycode != 0) {
       device->keystroke(keycode);

@@ -42,7 +42,7 @@ verify_model(const Filename &filename) {
  * date (and hasn't been modified in the meantime), and if not, will still
  * return NULL.
  */
-INLINE ModelRoot *ModelPool::
+INLINE PT(ModelRoot) ModelPool::
 get_model(const Filename &filename, bool verify) {
   return get_ptr()->ns_get_model(filename, verify);
 }
@@ -54,7 +54,7 @@ get_model(const Filename &filename, bool verify) {
  * is true and the file has recently changed).  If the model file cannot be
  * found, or cannot be loaded for some reason, returns NULL.
  */
-INLINE ModelRoot *ModelPool::
+INLINE PT(ModelRoot) ModelPool::
 load_model(const Filename &filename, const LoaderOptions &options) {
   return get_ptr()->ns_load_model(filename, options);
 }

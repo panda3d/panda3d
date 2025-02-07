@@ -52,6 +52,14 @@ is_constant() const {
 }
 
 /**
+ * Returns true if this is a constant and has the given value.
+ */
+INLINE bool SpirVResultDatabase::Definition::
+is_constant(uint32_t value) const {
+  return _dtype == DT_constant && _constant == value;
+}
+
+/**
  * Returns true if this is specifically a null constant.
  */
 INLINE bool SpirVResultDatabase::Definition::
@@ -100,6 +108,14 @@ is_used() const {
 INLINE bool SpirVResultDatabase::Definition::
 is_dref_sampled() const {
   return (_flags & DF_dref_sampled) != 0;
+}
+
+/**
+ * For a variable, returns true if its value may be evaluated at compile time.
+ */
+INLINE bool SpirVResultDatabase::Definition::
+is_constant_expression() const {
+  return (_flags & DF_constant_expression) != 0;
 }
 
 /**

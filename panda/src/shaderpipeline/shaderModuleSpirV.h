@@ -124,6 +124,7 @@ public:
   InstructionStream _instructions;
 
   pmap<uint32_t, const ShaderType::Struct *> _uniform_struct_types;
+  uint64_t _emulatable_caps = 0u;
 
 private:
   void remap_locations(spv::StorageClass storage_class, const pmap<int, int> &locations);

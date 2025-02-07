@@ -74,6 +74,8 @@ set(P3COLLIDE_IGATEEXT
   collisionHandlerPhysical_ext.h
   collisionHandlerQueue_ext.cxx
   collisionHandlerQueue_ext.h
+  collisionNode_ext.cxx
+  collisionNode_ext.h
   collisionPolygon_ext.cxx
   collisionPolygon_ext.h
   collisionTraverser_ext.cxx

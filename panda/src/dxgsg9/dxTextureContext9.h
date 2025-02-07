@@ -53,6 +53,9 @@ private:
   unsigned int get_bits_per_pixel(Texture::Format format, int *alphbits);
   PN_stdfloat d3d_format_to_bytes_per_pixel (D3DFORMAT format);
 
+public:
+  UINT _width, _height, _depth;
+
 private:
   D3DFORMAT _d3d_format;    // the 'D3DFORMAT' the Panda TextureBuffer fmt corresponds to
   small_vector<IDirect3DBaseTexture9 *> _d3d_textures;

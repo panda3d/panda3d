@@ -59,3 +59,43 @@ get_view_buffer(int view) const {
     return 0;
   }
 }
+
+/**
+ * Returns true if an async upload is pending.
+ */
+INLINE bool CLP(TextureContext)::
+is_upload_pending() const {
+  // We can't simply compare _uploads_started to _uploads_finished, since
+  // they also get set to the same by cancel_pending_uploads()
+  return _uploads_pending > 0;
+}
+
+/**
+ * Waits for all uploads to be finished.
+ */
+INLINE void CLP(TextureContext)::
+wait_pending_uploads() const {
+  if (is_upload_pending()) {
+    do_wait_pending_uploads();
+  }
+}
+
+/**
+ * Cancels all asynchronous uploads.  Not guaranteed to be cancelled by the
+ * time this returns, consider following this up with a call to
+ * wait_pending_uploads().
+ */
+INLINE void CLP(TextureContext)::
+cancel_pending_uploads() {
+  _uploads_finished = _uploads_started;
+}
+
+/**
+ * Waits for an unused PBO unless we're not at the given limit of PBOs yet.
+ */
+INLINE void CLP(TextureContext)::
+wait_for_unused_pbo(int limit) const {
+  if (_unused_pbos.empty() && _num_pbos >= limit) {
+    do_wait_for_unused_pbo(limit);
+  }
+}

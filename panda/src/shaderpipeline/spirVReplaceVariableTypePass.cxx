@@ -80,10 +80,9 @@ transform_function_op(Instruction op) {
           (old_vector != nullptr && new_scalar != nullptr) ||
           (old_scalar != nullptr && new_vector != nullptr)) {
         uint32_t temp = op_load(op.args[2]);
-        ShaderType::ScalarType old_scalar_type, new_scalar_type;
+        ShaderType::ScalarType new_scalar_type;
         if (new_vector != nullptr && old_vector != nullptr) {
           // Swizzle the vector.
-          old_scalar_type = old_vector->get_scalar_type();
           new_scalar_type = new_vector->get_scalar_type();
           if (new_vector->get_num_components() != old_vector->get_num_components()) {
             pvector<uint32_t> components;
@@ -97,56 +96,33 @@ transform_function_op(Instruction op) {
               components.push_back(0xffffffff);
               ++i;
             }
+
+            if (new_vector->get_scalar_type() == old_vector->get_scalar_type()) {
+              push_id(op.args[1]);
+              temp = op_vector_shuffle(temp, temp, components);
+              return false;
+            }
             temp = op_vector_shuffle(temp, temp, components);
           }
         }
         else if (new_vector != nullptr) {
           // Convert scalar to vector.
-          old_scalar_type = old_scalar->get_scalar_type();
           new_scalar_type = new_vector->get_scalar_type();
           pvector<uint32_t> components(new_vector->get_num_components(), temp);
           temp = op_composite_construct(new_scalar, components);
         }
         else if (new_scalar != nullptr) {
           // Convert vector to scalar.
-          old_scalar_type = old_vector->get_scalar_type();
           new_scalar_type = new_scalar->get_scalar_type();
           temp = op_composite_extract(temp, {0});
         }
         else {
-          old_scalar_type = old_scalar->get_scalar_type();
           new_scalar_type = new_scalar->get_scalar_type();
         }
 
-        // Determine which conversion instruction to use.
-        spv::Op opcode;
-        if (old_scalar_type != new_scalar_type) {
-          bool old_float = old_scalar_type == ShaderType::ST_float
-                        || old_scalar_type == ShaderType::ST_double;
-          bool new_float = new_scalar_type == ShaderType::ST_float
-                        || new_scalar_type == ShaderType::ST_double;
-
-          if (old_float && new_float) {
-            opcode = spv::OpFConvert;
-          }
-          else if (old_float) {
-            bool new_signed = new_scalar_type == ShaderType::ST_int;
-            opcode = new_signed ? spv::OpConvertFToS : spv::OpConvertFToU;
-          }
-          else if (new_float) {
-            bool old_signed = old_scalar_type == ShaderType::ST_int;
-            opcode = old_signed ? spv::OpConvertSToF : spv::OpConvertUToF;
-          }
-          else {
-            // Assuming it's the same bit width, for now.
-            opcode = spv::OpBitcast;
-          }
-        } else {
-          // Redundant instruction, but keeps the logic here simple.
-          opcode = spv::OpCopyObject;
-        }
         // Replace the original load with our conversion.
-        add_instruction(opcode, {op.args[0], op.args[1], temp});
+        push_id(op.args[1]);
+        op_convert(new_scalar_type, temp);
         return false;
       }
       else {

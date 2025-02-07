@@ -120,9 +120,10 @@ fnrgl = fnargle:FnargleLoader
         sys.path = [str(tmp_path), platstdlib, stdlib]
 
         Loader._loadedPythonFileTypes = False
+        loader = Loader()
 
-        # base parameter is only used for audio
-        loader = Loader(None)
+        if not Loader._loadedPythonFileTypes:
+            Loader._loadPythonFileTypes()
         assert Loader._loadedPythonFileTypes
 
         # Should be registered, not yet loaded

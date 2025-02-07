@@ -558,6 +558,14 @@ reset() {
   _max_cube_map_dimension = limits.maxImageDimensionCube;
   _max_buffer_texture_size = limits.maxTexelBufferElements;
 
+  _max_compute_work_group_invocations = limits.maxComputeWorkGroupInvocations;
+  _max_compute_work_group_count.set(limits.maxComputeWorkGroupCount[0],
+                                    limits.maxComputeWorkGroupCount[1],
+                                    limits.maxComputeWorkGroupCount[2]);
+  _max_compute_work_group_size.set(limits.maxComputeWorkGroupSize[0],
+                                   limits.maxComputeWorkGroupSize[1],
+                                   limits.maxComputeWorkGroupSize[2]);
+
   _supports_3d_texture = true;
   _supports_2d_texture_array = true;
   _supports_cube_map = true;
@@ -2580,6 +2588,18 @@ release_shader_buffer(BufferContext *context) {
   _frame_data->_pending_destroy_buffers.push_back(bc->_buffer);
   _frame_data->_pending_free.push_back(std::move(bc->_block));
   delete bc;
+}
+
+/**
+ * This method should only be called by the GraphicsEngine.  Do not call it
+ * directly; call GraphicsEngine::extract_texture_data() instead.
+ *
+ * This method will be called in the draw thread to download the buffer's
+ * current contents synchronously.
+ */
+bool VulkanGraphicsStateGuardian::
+extract_shader_buffer_data(ShaderBuffer *buffer, vector_uchar &data) {
+  return false;
 }
 
 /**

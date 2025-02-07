@@ -884,6 +884,8 @@ PUBLISHED:
   INLINE void set_collide_mask(CollideMask new_mask, CollideMask bits_to_change = CollideMask::all_on(),
                                TypeHandle node_type = TypeHandle::none());
 
+  EXTENSION(void set_collide_owner(PyObject *owner));
+
   // Comparison methods
   INLINE bool operator == (const NodePath &other) const;
   INLINE bool operator != (const NodePath &other) const;
