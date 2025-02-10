@@ -32,6 +32,7 @@ public:
 public:
   VkBuffer _buffer;
   VulkanMemoryBlock _block;
+  bool _host_visible = false;
 
 public:
   static TypeHandle get_class_type() {

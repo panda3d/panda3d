@@ -2505,12 +2505,23 @@ prepare_shader_buffer(ShaderBuffer *data) {
   VkDeviceSize data_size = data->get_data_size_bytes();
 
   bool use_staging_buffer = !_has_unified_memory;
+  VkMemoryPropertyFlagBits mem_flags = (VkMemoryPropertyFlagBits)0;
+  if (data->get_usage_hint() == GeomEnums::UH_client) {
+    use_staging_buffer = false;
+  } else {
+    mem_flags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+  }
+
+  int usage_flags = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
+  if (use_staging_buffer) {
+    usage_flags |= VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+  } else {
+    mem_flags = (VkMemoryPropertyFlagBits)(mem_flags | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+  }
 
   VkBuffer buffer;
   VulkanMemoryBlock block;
-  if (!create_buffer(data_size, buffer, block,
-                     VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | (use_staging_buffer ? VK_BUFFER_USAGE_TRANSFER_DST_BIT : 0),
-                     VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)) {
+  if (!create_buffer(data_size, buffer, block, usage_flags, mem_flags)) {
     vulkandisplay_cat.error()
       << "Failed to create shader buffer.\n";
     return nullptr;
@@ -2519,6 +2530,7 @@ prepare_shader_buffer(ShaderBuffer *data) {
   VulkanBufferContext *bc = new VulkanBufferContext(_prepared_objects, data);
   bc->_buffer = buffer;
   bc->_block = std::move(block);
+  bc->_host_visible = !use_staging_buffer;
   bc->update_data_size_bytes(data_size);
 
   const unsigned char *initial_data = data->get_initial_data();
@@ -2592,14 +2604,32 @@ release_shader_buffer(BufferContext *context) {
 
 /**
  * This method should only be called by the GraphicsEngine.  Do not call it
- * directly; call GraphicsEngine::extract_texture_data() instead.
+ * directly; call GraphicsEngine::extract_shader_buffer_data() instead.
  *
- * This method will be called in the draw thread to download the buffer's
- * current contents synchronously.
+ * This method will be called in the draw thread between begin_frame() and
+ * end_frame() to download the shader buffer data into the given vector.
+ * It may not be called between begin_scene() and end_scene().
  */
 bool VulkanGraphicsStateGuardian::
 extract_shader_buffer_data(ShaderBuffer *buffer, vector_uchar &data) {
-  return false;
+  VulkanBufferContext *bc;
+  DCAST_INTO_R(bc, buffer->prepare_now(get_prepared_objects(), this), false);
+  bc->set_active(true);
+
+  if (_frame_data != nullptr) {
+    // In the middle of rendering a frame.
+    bool result = do_extract_buffer(*_frame_data, bc, data);
+    return _frame_data->begin_transfer_cmd() && result;
+  }
+
+  // Grab the next frame data and start the transfer command buffer.
+  // Since we wait for the fence we can reuse it right away.
+  VulkanFrameData &frame_data = get_next_frame_data();
+  if (!frame_data.begin_transfer_cmd()) {
+    return false;
+  }
+
+  return do_extract_buffer(frame_data, bc, data);
 }
 
 /**
@@ -2937,64 +2967,7 @@ begin_frame(Thread *current_thread) {
   nassertr_always(!_closing_gsg, false);
   nassertr_always(_frame_data == nullptr, false);
 
-  // First, finish old, finished frames.
-  VkFence reset_fences[_frame_data_capacity];
-  size_t num_reset_fences = 0;
-
-  if (_frame_data_head != _frame_data_capacity) {
-    while (true) {
-      FrameData &frame_data = _frame_data_pool[_frame_data_tail];
-      if (vkGetFenceStatus(_device, frame_data._fence) == VK_NOT_READY) {
-        // This frame is not yet ready, so abort the loop here, since there's no
-        // use checking frames that come after this one.
-        break;
-      }
-
-      // This frame has completed execution.
-      reset_fences[num_reset_fences++] = frame_data._fence;
-      finish_frame(frame_data);
-
-      _frame_data_tail = (_frame_data_tail + 1) % _frame_data_capacity;
-      if (_frame_data_tail == _frame_data_head) {
-        // This was the last one, it's now empty.
-        _frame_data_head = _frame_data_capacity;
-        _frame_data_tail = 0;
-        break;
-      }
-    }
-  }
-
-  // If the frame queue is full, we must wait until a frame is done.
-  if (_frame_data_tail == _frame_data_head) {
-    FrameData &frame_data = _frame_data_pool[_frame_data_tail];
-    VkResult err;
-    err = vkWaitForFences(_device, 1, &frame_data._fence, VK_TRUE, 1000000000ULL);
-    if (err == VK_TIMEOUT) {
-      vulkandisplay_cat.error()
-        << "Timed out waiting for previous frame to complete rendering.\n";
-      return false;
-    }
-    else if (err) {
-      vulkan_error(err, "Failure waiting for command buffer fence");
-      if (err == VK_ERROR_DEVICE_LOST) {
-        mark_new();
-      }
-      return false;
-    }
-
-    // This frame has completed execution.
-    reset_fences[num_reset_fences++] = frame_data._fence;
-    finish_frame(frame_data);
-    _frame_data_tail = (_frame_data_tail + 1) % _frame_data_capacity;
-  }
-
-  // Reset the used fences to unsignaled status.
-  if (num_reset_fences > 0) {
-    VkResult err = vkResetFences(_device, num_reset_fences, reset_fences);
-    nassertr(!err, false);
-  }
-
-  _frame_data = &_frame_data_pool[_frame_data_head % _frame_data_capacity];
+  _frame_data = &get_next_frame_data(true);
 
   // Begin the transfer command buffer, for preparing resources.
   if (!_frame_data->begin_transfer_cmd()) {
@@ -3331,6 +3304,73 @@ finish_frame(FrameData &frame_data) {
   if (_last_frame_data == &frame_data) {
     _last_frame_data = nullptr;
   }
+}
+
+/**
+ * Returns the next available VulkanFrameData object.
+ * If finish_frames is true, will finish any old frames that are already done
+ * first.  Otherwise, will only do that if the frame queue is full.
+ */
+VulkanFrameData &VulkanGraphicsStateGuardian::
+get_next_frame_data(bool finish_frames) {
+  // First, finish old, finished frames.
+  VkFence reset_fences[_frame_data_capacity];
+  size_t num_reset_fences = 0;
+
+  if (finish_frames && _frame_data_head != _frame_data_capacity) {
+    while (true) {
+      FrameData &frame_data = _frame_data_pool[_frame_data_tail];
+      if (vkGetFenceStatus(_device, frame_data._fence) == VK_NOT_READY) {
+        // This frame is not yet ready, so abort the loop here, since there's no
+        // use checking frames that come after this one.
+        break;
+      }
+
+      // This frame has completed execution.
+      reset_fences[num_reset_fences++] = frame_data._fence;
+      finish_frame(frame_data);
+
+      _frame_data_tail = (_frame_data_tail + 1) % _frame_data_capacity;
+      if (_frame_data_tail == _frame_data_head) {
+        // This was the last one, it's now empty.
+        _frame_data_head = _frame_data_capacity;
+        _frame_data_tail = 0;
+        break;
+      }
+    }
+  }
+
+  // If the frame queue is full, we must wait until a frame is done.
+  if (_frame_data_tail == _frame_data_head) {
+    FrameData &frame_data = _frame_data_pool[_frame_data_tail];
+    VkResult err;
+    err = vkWaitForFences(_device, 1, &frame_data._fence, VK_TRUE, 1000000000ULL);
+    if (err == VK_TIMEOUT) {
+      vulkandisplay_cat.error()
+        << "Timed out waiting for previous frame to complete rendering.\n";
+      vkQueueWaitIdle(_queue);
+    }
+    else if (err) {
+      vulkan_error(err, "Failure waiting for command buffer fence");
+      if (err == VK_ERROR_DEVICE_LOST) {
+        mark_new();
+      }
+      vkQueueWaitIdle(_queue);
+    }
+
+    // This frame has completed execution.
+    reset_fences[num_reset_fences++] = frame_data._fence;
+    finish_frame(frame_data);
+    _frame_data_tail = (_frame_data_tail + 1) % _frame_data_capacity;
+  }
+
+  // Reset the used fences to unsignaled status.
+  if (num_reset_fences > 0) {
+    vkResetFences(_device, num_reset_fences, reset_fences);
+    //nassertr(!err, false);
+  }
+
+  return _frame_data_pool[_frame_data_head % _frame_data_capacity];
 }
 
 /**
@@ -3799,6 +3839,113 @@ do_extract_image(VulkanTextureContext *tc, Texture *tex, int view, int z, Screen
     // the end_frame() method, so we can process the results right away.
     _frame_data->_wait_for_finish = true;
   }
+  return true;
+}
+
+/**
+ * Assumes there is a transfer command buffer started, which is finished and
+ * submitted.  Caller is responsible for reopening that buffer if needed.
+ */
+bool VulkanGraphicsStateGuardian::
+do_extract_buffer(VulkanFrameData &frame_data, VulkanBufferContext *bc, vector_uchar &data) {
+  size_t num_bytes = bc->get_data_size_bytes();
+
+  // Create a temporary buffer for transferring into.
+  VkBuffer tmp_buffer = VK_NULL_HANDLE;
+  VulkanMemoryBlock tmp_block;
+  if (!bc->_host_visible) {
+    if (!create_buffer(num_bytes, tmp_buffer, tmp_block,
+                       VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+                       VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)) {
+      vulkandisplay_cat.error()
+        << "Failed to create staging buffer for buffer data extraction.\n";
+      return false;
+    }
+
+    VkBufferMemoryBarrier barrier;
+    barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+    barrier.pNext = nullptr;
+    barrier.srcAccessMask = VK_ACCESS_MEMORY_WRITE_BIT;
+    barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+    barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    barrier.buffer = bc->_buffer;
+    barrier.offset = 0;
+    barrier.size = VK_WHOLE_SIZE;
+    vkCmdPipelineBarrier(frame_data._transfer_cmd,
+                         VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+                         VK_PIPELINE_STAGE_TRANSFER_BIT,
+                         0, 0, nullptr, 1, &barrier, 0, nullptr);
+
+    VkBufferCopy region;
+    region.srcOffset = 0;
+    region.dstOffset = 0;
+    region.size = num_bytes;
+    vkCmdCopyBuffer(frame_data._transfer_cmd, bc->_buffer, tmp_buffer, 1, &region);
+
+    // Issue a new barrier to make the copy visible on the host.
+    barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+    barrier.dstAccessMask = VK_ACCESS_HOST_READ_BIT;
+    barrier.buffer = tmp_buffer;
+    barrier.offset = 0;
+    barrier.size = VK_WHOLE_SIZE;
+    vkCmdPipelineBarrier(frame_data._transfer_cmd,
+                         VK_PIPELINE_STAGE_TRANSFER_BIT,
+                         VK_PIPELINE_STAGE_HOST_BIT,
+                         0, 0, nullptr, 1, &barrier, 0, nullptr);
+  } else {
+    VkBufferMemoryBarrier barrier;
+    barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+    barrier.pNext = nullptr;
+    barrier.srcAccessMask = VK_ACCESS_MEMORY_WRITE_BIT;
+    barrier.dstAccessMask = VK_ACCESS_HOST_READ_BIT;
+    barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    barrier.buffer = bc->_buffer;
+    barrier.offset = 0;
+    barrier.size = VK_WHOLE_SIZE;
+    vkCmdPipelineBarrier(frame_data._transfer_cmd,
+                         VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+                         VK_PIPELINE_STAGE_HOST_BIT,
+                         0, 0, nullptr, 1, &barrier, 0, nullptr);
+  }
+
+  frame_data.end_transfer_cmd();
+
+  VkSubmitInfo submit_info;
+  submit_info.pNext = nullptr;
+  submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+  submit_info.waitSemaphoreCount = 0;
+  submit_info.pWaitSemaphores = nullptr;
+  submit_info.pWaitDstStageMask = nullptr;
+  submit_info.commandBufferCount = 1;
+  submit_info.pCommandBuffers = &frame_data._transfer_cmd;
+  submit_info.signalSemaphoreCount = 0;
+  submit_info.pSignalSemaphores = nullptr;
+
+  VkResult err = vkQueueSubmit(_queue, 1, &submit_info, frame_data._fence);
+  if (err) {
+    vulkan_error(err, "Error submitting queue");
+    if (err == VK_ERROR_DEVICE_LOST) {
+      mark_new();
+    }
+    return false;
+  }
+
+  err = vkWaitForFences(_device, 1, &frame_data._fence, VK_TRUE, 1000000000ULL);
+  nassertr(err == VK_SUCCESS, false);
+  vkDestroyBuffer(_device, tmp_buffer, nullptr);
+
+  data.resize(num_bytes);
+  {
+    VulkanMemoryBlock &block = (_has_unified_memory ? bc->_block : tmp_block);
+    VulkanMemoryMapping mapping = block.map();
+    block.invalidate();
+    memcpy(&data[0], mapping, num_bytes);
+  }
+
+  err = vkResetFences(_device, 1, &frame_data._fence);
+
   return true;
 }
 

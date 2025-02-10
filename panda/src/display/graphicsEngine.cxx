@@ -1159,14 +1159,9 @@ vector_uchar GraphicsEngine::
 extract_shader_buffer_data(ShaderBuffer *buffer, GraphicsStateGuardian *gsg) {
   return run_on_draw_thread([=] (Thread *current_thread) {
     vector_uchar data;
-    if (!gsg->begin_frame(current_thread)) {
-      return data;
-    }
-
     if (!gsg->extract_shader_buffer_data(buffer, data)) {
       data.clear();
     }
-    gsg->end_frame(current_thread);
     return data;
   });
 }

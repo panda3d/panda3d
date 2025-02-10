@@ -109,6 +109,7 @@ public:
   virtual void end_frame(Thread *current_thread);
   void end_frame(Thread *current_thread, VkSemaphore wait_for, VkSemaphore signal_done);
   void finish_frame(FrameData &frame_data);
+  FrameData &get_next_frame_data(bool finish_frames = false);
   INLINE FrameData &get_frame_data();
 
   virtual bool begin_draw_primitives(const GeomPipelineReader *geom_reader,
@@ -152,6 +153,8 @@ public:
 private:
   bool do_extract_image(VulkanTextureContext *tc, Texture *tex, int view, int z=-1,
                         ScreenshotRequest *request = nullptr);
+  bool do_extract_buffer(VulkanFrameData &frame_data,
+                         VulkanBufferContext *tc, vector_uchar &data);
 
   bool do_draw_primitive_with_topology(const GeomPrimitivePipelineReader *reader,
                                       bool force, VkPrimitiveTopology topology,
