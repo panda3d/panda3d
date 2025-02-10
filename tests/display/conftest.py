@@ -25,6 +25,10 @@ if sys.platform == 'win32':
     if pipe and pipe.is_valid():
         ALL_PIPES.append(pipe)
 
+pipe = sel.make_module_pipe('p3vulkandisplay')
+if pipe and pipe.is_valid():
+    ALL_PIPES.append(pipe)
+
 
 @pytest.fixture(scope='session')
 def graphics_pipes():
@@ -501,6 +505,8 @@ for pipe in ALL_PIPES:
         ENVS |= frozenset(("gles-cross-100", "gles-cross-300", "gles-cross-310", "gles-cross-320"))
     elif pipe.interface_name == 'DirectX9':
         ENVS |= frozenset(("dx9-cross", ))
+    elif pipe.interface_name == 'Vulkan':
+        ENVS |= frozenset(("vk-spirv", ))
 
 
 @pytest.fixture(scope="session", params=sorted(ENVS))
@@ -527,6 +533,13 @@ def env(request):
                 break
         else:
             pytest.skip("no DirectX 9 pipe found")
+
+    elif request.param.startswith("vk-"):
+        for pipe in ALL_PIPES:
+            if pipe.interface_name == 'Vulkan':
+                break
+        else:
+            pytest.skip("no Vulkan pipe found")
 
     words = request.param.split("-")
     if words[0] == "gl" or words[0] == "gles":
