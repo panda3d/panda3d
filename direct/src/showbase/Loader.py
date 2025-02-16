@@ -63,7 +63,7 @@ class Loader(DirectObject):
             callback: Callable[..., object] | None,
             extraArgs: list,
         ) -> None:
-            self._loader: Loader | None = loader
+            self._loader = loader
             self.objects: list[Any | None] = [None] * numObjects
             self.gotList = gotList
             self.callback = callback
