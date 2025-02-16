@@ -693,6 +693,11 @@ advance_scroll() {
  */
 void PGSliderBar::
 advance_page() {
+  // Do not try to advance the page while dragging
+  if (_dragging) {
+    return;
+  }
+
   // Is the mouse position left or right of the current thumb position?
   LPoint3 mouse = mouse_to_local(_mouse_pos) - _thumb_start;
   PN_stdfloat target_ratio = mouse.dot(_axis) / _range_x;
@@ -705,7 +710,7 @@ advance_page() {
     t = min(_ratio + _page_ratio - _scroll_ratio, target_ratio);
   }
   internal_set_ratio(t);
-  if (t == target_ratio) {
+  if (_ratio == target_ratio) {
     // We made it; begin dragging from now on until the user releases the
     // mouse.
     begin_drag();
