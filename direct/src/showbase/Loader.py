@@ -27,8 +27,8 @@ from panda3d.core import (
 )
 from panda3d.core import Loader as PandaLoader
 from direct.directnotify.DirectNotifyGlobal import directNotify
-from direct.showbase import ShowBase
 from direct.showbase.DirectObject import DirectObject
+from . import ShowBase
 import warnings
 import sys
 from typing import Any, Callable, Iterable
