@@ -7,14 +7,14 @@ from __future__ import annotations
 __all__ = ['Messenger']
 
 import types
-from typing import Callable
+from collections.abc import Callable
+from typing import Protocol
 
 from panda3d.core import AsyncTask
 
 from direct.stdpy.threading import Lock
 from direct.directnotify import DirectNotifyGlobal
 from .PythonUtil import safeRepr
-from . import DirectObject
 
 # The following variables are typing constructs used in annotations
 # to succinctly express complex type structures.
@@ -23,6 +23,10 @@ _CallbackInfo = list  # [Callable, list, bool]
 _ListenerObject = list  # [int, DirectObject]
 _AcceptorDict = dict[_ObjMsgrId, _CallbackInfo]
 _EventTuple = tuple[_AcceptorDict, str, list, bool]
+
+
+class _HasMessengerID(Protocol):
+    _MSGRmessengerId: _ObjMsgrId
 
 
 class Messenger:
@@ -77,7 +81,7 @@ class Messenger:
                        'collisionLoopFinished':1,
                        } # see def quiet()
 
-    def _getMessengerId(self, object: DirectObject.DirectObject) -> _ObjMsgrId:
+    def _getMessengerId(self, object: _HasMessengerID) -> _ObjMsgrId:
         # TODO: allocate this id in DirectObject.__init__ and get derived
         # classes to call down (speed optimization, assuming objects
         # accept/ignore more than once over their lifetime)
@@ -88,7 +92,7 @@ class Messenger:
             self._messengerIdGen += 1
         return object._MSGRmessengerId
 
-    def _storeObject(self, object: DirectObject.DirectObject) -> None:
+    def _storeObject(self, object: _HasMessengerID) -> None:
         # store reference-counted reference to object in case we need to
         # retrieve it later.  assumes lock is held.
         id = self._getMessengerId(object)
@@ -97,7 +101,7 @@ class Messenger:
         else:
             self._id2object[id][0] += 1
 
-    def _getObject(self, id: _ObjMsgrId) -> DirectObject.DirectObject:
+    def _getObject(self, id: _ObjMsgrId) -> _HasMessengerID:
         return self._id2object[id][1]
 
     def _getObjects(self):
@@ -116,7 +120,7 @@ class Messenger:
     def _getEvents(self):
         return list(self.__callbacks.keys())
 
-    def _releaseObject(self, object: DirectObject.DirectObject) -> None:
+    def _releaseObject(self, object: _HasMessengerID) -> None:
         # assumes lock is held.
         id = self._getMessengerId(object)
         if id in self._id2object:
@@ -135,7 +139,7 @@ class Messenger:
     def accept(
         self,
         event: str,
-        object: DirectObject.DirectObject,
+        object: _HasMessengerID,
         method: Callable,
         extraArgs: list = [],
         persistent: bool = True,
@@ -196,7 +200,7 @@ class Messenger:
         finally:
             self.lock.release()
 
-    def ignore(self, event: str, object: DirectObject.DirectObject) -> None:
+    def ignore(self, event: str, object: _HasMessengerID) -> None:
         """ ignore(self, string, DirectObject)
         Make this object no longer respond to this event.
         It is safe to call even if it was not already accepting
@@ -230,7 +234,7 @@ class Messenger:
         finally:
             self.lock.release()
 
-    def ignoreAll(self, object: DirectObject.DirectObject) -> None:
+    def ignoreAll(self, object: _HasMessengerID) -> None:
         """
         Make this object no longer respond to any events it was accepting
         Useful for cleanup
