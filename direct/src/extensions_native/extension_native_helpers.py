@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 __all__ = ["Dtool_ObjectToDict", "Dtool_funcToMethod"]
 
 from collections.abc import Callable
