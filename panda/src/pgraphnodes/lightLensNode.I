@@ -37,6 +37,14 @@ get_shadow_buffer_sort() const {
 }
 
 /**
+ * Sets the sort of the shadow buffer to be created for this light source.
+ */
+INLINE void LightLensNode::
+set_shadow_buffer_sort(int sort) {
+  _sb_sort = sort;
+}
+
+/**
  * Returns the size of the shadow buffer to be created for this light source.
  */
 INLINE LVecBase2i LightLensNode::
