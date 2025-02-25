@@ -41,13 +41,17 @@ import time
 import builtins
 import importlib
 import functools
-from typing import Callable
+from collections.abc import Callable, Container, Iterable, Mapping
+from typing import Any, Generic, TypeVar
 
 __report_indent = 3
 
 from panda3d.core import ConfigVariableBool, ConfigVariableString, ConfigFlags
 from panda3d.core import ClockObject
 
+_T = TypeVar('_T')
+_KT = TypeVar('_KT')
+_VT = TypeVar('_VT')
 
 ## with one integer positional arg, this uses about 4/5 of the memory of the Functor class below
 #def Functor(function, *args, **kArgs):
@@ -100,9 +104,9 @@ class Functor:
         return s
 
 
-class Stack:
-    def __init__(self):
-        self.__list = []
+class Stack(Generic[_T]):
+    def __init__(self) -> None:
+        self.__list: list[_T] = []
 
     def push(self, item):
         self.__list.append(item)
@@ -411,7 +415,7 @@ def list2dict(L, value=None):
     return dict([(k, value) for k in L])
 
 
-def listToIndex2item(L):
+def listToIndex2item(L: Iterable[_VT]) -> dict[int, _VT]:
     """converts list to dict of list index->list item"""
     d = {}
     for i, item in enumerate(L):
@@ -422,7 +426,7 @@ def listToIndex2item(L):
 assert listToIndex2item(['a','b']) == {0: 'a', 1: 'b',}
 
 
-def listToItem2index(L):
+def listToItem2index(L: Iterable[_KT]) -> dict[_KT, int]:
     """converts list to dict of list item->list index
     This is lossy if there are duplicate list items"""
     d = {}
@@ -451,7 +455,7 @@ def invertDict(D, lossy=False):
     return n
 
 
-def invertDictLossless(D):
+def invertDictLossless(D: Mapping[_KT, _VT]) -> dict[_VT, list[_KT]]:
     """similar to invertDict, but values of new dict are lists of keys from
     old dict. No information is lost.
 
@@ -459,7 +463,7 @@ def invertDictLossless(D):
     >>> invertDictLossless(old)
     {1: ['key1'], 2: ['key2', 'keyA']}
     """
-    n = {}
+    n: dict[_VT, list[_KT]] = {}
     for key, value in D.items():
         n.setdefault(value, [])
         n[value].append(key)
@@ -706,7 +710,7 @@ if __debug__:
     movedDumpFuncs: list[Callable] = []
     movedLoadFuncs: list[Callable] = []
     profileFilenames = set()
-    profileFilenameList = Stack()
+    profileFilenameList = Stack[str]()
     profileFilename2file = {}
     profileFilename2marshalData = {}
 
@@ -1278,7 +1282,7 @@ def randInt32(rng=random.random):
 class SerialNumGen:
     """generates serial numbers"""
 
-    def __init__(self, start=None):
+    def __init__(self, start: int | None = None) -> None:
         if start is None:
             start = 0
         self.__counter = start-1
@@ -1305,7 +1309,7 @@ class SerialMaskedGen(SerialNumGen):
 _serialGen = SerialNumGen()
 
 
-def serialNum():
+def serialNum() -> int:
     return _serialGen.next()
 
 
@@ -1588,7 +1592,7 @@ class ScratchPad:
 class Sync:
     _SeriesGen = SerialNumGen()
 
-    def __init__(self, name, other=None):
+    def __init__(self, name: str, other: Sync | None = None) -> None:
         self._name = name
         if other is None:
             self._series = self._SeriesGen.next()
@@ -1972,7 +1976,13 @@ def pstatcollect(scope, level = None):
 __report_indent = 0
 
 
-def report(types = [], prefix = '', xform = None, notifyFunc = None, dConfigParam = []):
+def report(
+    types: Container[str] = [],
+    prefix: str = '',
+    xform: Callable[[Any], object] | None = None,
+    notifyFunc: Callable[[str], object] | None = None,
+    dConfigParam: str | list[str] | tuple[str, ...] = [],
+) -> Callable[[_T], _T]:
     """
     This is a decorator generating function.  Use is similar to
     a @decorator, except you must be sure to call it as a function.
@@ -2031,7 +2041,7 @@ def report(types = [], prefix = '', xform = None, notifyFunc = None, dConfigPara
         return f
 
     try:
-        if not __dev__ and not ConfigVariableBool('force-reports', False):
+        if not __dev__ and not ConfigVariableBool('force-reports', False):  # type: ignore[name-defined]
             return decorator
 
         # determine whether we should use the decorator
@@ -2041,6 +2051,7 @@ def report(types = [], prefix = '', xform = None, notifyFunc = None, dConfigPara
         if not dConfigParam:
             doPrint = True
         else:
+            dConfigParams: list[str] | tuple[str, ...]
             if not isinstance(dConfigParam, (list,tuple)):
                 dConfigParams = (dConfigParam,)
             else:
@@ -2070,7 +2081,7 @@ def report(types = [], prefix = '', xform = None, notifyFunc = None, dConfigPara
 
     globalClockDelta = importlib.import_module("direct.distributed.ClockDelta").globalClockDelta
 
-    def decorator(f):
+    def decorator(f):  # type: ignore[no-redef]
         def wrap(*args, **kwargs):
             if args:
                 rArgs = [args[0].__class__.__name__ + ', ']
