@@ -53,6 +53,11 @@ BamInfo() {
      "Output verbose information about each Geom in the Bam file.",
      &BamInfo::dispatch_none, &_verbose_geoms);
 
+  add_option
+    ("tex", "", 0,
+      "Lists each texture path found within the scene graph.",
+      &BamInfo::dispatch_none, &_verbose_textures);
+
   _num_scene_graphs = 0;
 }
 
@@ -207,6 +212,10 @@ describe_scene_graph(PandaNode *node) {
   if (_ls || _verbose_geoms || _verbose_transitions) {
     list_hierarchy(node, 0);
   }
+
+  if (_verbose_textures) {
+    list_textures();
+  }
 }
 
 /**
@@ -317,6 +326,19 @@ list_hierarchy(PandaNode *node, int indent_level) {
   for (int i = 0; i < num_children; i++) {
     PandaNode *child = node->get_child(i);
     list_hierarchy(child, indent_level + 2);
+  }
+}
+
+void BamInfo::
+list_textures() {
+  nout << "\n";
+  for (const auto &item : _analyzer.get_textures()) {
+    Texture* texture = item.first;
+    nout << texture->get_name() << ":\n";
+    nout << "  Filename: " << texture->get_filename() << "\n";
+    if (item.first->has_alpha_filename()) {
+      nout << "  Alpha Filename: " << texture->get_alpha_filename() << "\n";
+    }
   }
 }
 

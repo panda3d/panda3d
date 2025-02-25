@@ -50,6 +50,7 @@ private:
   void describe_session(RecorderHeader *header, const Objects &objects);
   void describe_general_object(TypedWritable *object);
   void list_hierarchy(PandaNode *node, int indent_level);
+  void list_textures();
 
   typedef pvector<Filename> Filenames;
   Filenames _filenames;
@@ -57,6 +58,7 @@ private:
   bool _ls;
   bool _verbose_transitions;
   bool _verbose_geoms;
+  bool _verbose_textures;
 
   int _num_scene_graphs;
   SceneGraphAnalyzer _analyzer;
