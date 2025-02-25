@@ -9,6 +9,8 @@ __all__ = ['Messenger']
 import types
 from collections.abc import Callable
 from typing import Protocol
+# These can be replaced with their builtin counterparts once support for Python 3.8 is dropped.
+from typing import Dict, Tuple
 
 from panda3d.core import AsyncTask
 
@@ -18,11 +20,11 @@ from .PythonUtil import safeRepr
 
 # The following variables are typing constructs used in annotations
 # to succinctly express complex type structures.
-_ObjMsgrId = tuple[str, int]
+_ObjMsgrId = Tuple[str, int]
 _CallbackInfo = list  # [Callable, list, bool]
 _ListenerObject = list  # [int, DirectObject]
-_AcceptorDict = dict[_ObjMsgrId, _CallbackInfo]
-_EventTuple = tuple[_AcceptorDict, str, list, bool]
+_AcceptorDict = Dict[_ObjMsgrId, _CallbackInfo]
+_EventTuple = Tuple[_AcceptorDict, str, list, bool]
 
 
 class _HasMessengerID(Protocol):
