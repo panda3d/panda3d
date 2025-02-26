@@ -1127,7 +1127,20 @@ class ShowBase(DirectObject.DirectObject):
             del kw['startDirect']
 
         self.openMainWindow(*args, **kw)
+        if self.win: #initialized when function is called  
+            """
+            kw.pop allows us to recieve arguments from openDefaultWindow  
+            to allow different programs to have set widths and heights  
+            """
+            minWidth = kw.pop('minWidth',120) 
+            minHeight = kw.pop('minHeight',120)
 
+             # Set minimum window size
+            props = WindowProperties() 
+            # Set minimum width & height
+            props.setMinSize(minWidth, minHeight)   
+            #Due to inheritence from ShowBase.pu, it allows all games to recieve restricted window size
+            self.win.requestProperties(props) 
         if startDirect:
             self.__doStartDirect()
 
