@@ -9,8 +9,6 @@
  * @file flacAudio.h
  * @author rdb
  * @date 2016-04-27
- * @author Stavros P.
- * @date 2025-03-05
  */
 
 #ifndef FLACAUDIO_H
