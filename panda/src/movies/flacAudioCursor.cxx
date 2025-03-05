@@ -65,7 +65,7 @@ FlacAudioCursor(FlacAudio *src, std::istream *stream) :
   nassertv(stream != nullptr);
   nassertv(stream->good());
 
-  _drflac = drflac_open(&cb_read_proc, &cb_seek_proc, (void *)stream);
+  _drflac = drflac_open(&cb_read_proc, &cb_seek_proc, (void *)stream, NULL);
 
   if (_drflac == nullptr) {
     movies_cat.error()
@@ -73,7 +73,7 @@ FlacAudioCursor(FlacAudio *src, std::istream *stream) :
     _is_valid = false;
   }
 
-  _length = (_drflac->totalSampleCount / _drflac->channels) / (double)_drflac->sampleRate;
+  _length = _drflac->totalPCMFrameCount / (double)_drflac->sampleRate;
 
   _audio_channels = _drflac->channels;
   _audio_rate = _drflac->sampleRate;
@@ -105,12 +105,10 @@ void FlacAudioCursor::
 seek(double t) {
   t = std::max(t, 0.0);
 
-  uint64_t sample = t * _drflac->sampleRate;
-
-  if (drflac_seek_to_sample(_drflac, sample * _drflac->channels)) {
-    _last_seek = sample / (double)_drflac->sampleRate;
-    _samples_read = 0;
-  }
+  uint64_t frame = t * _drflac->sampleRate;
+  
+  if (drflac_seek_to_pcm_frame(_drflac, frame)) {
+    _last_seek = frame / (double)_drflac->sampleRate;
 }
 
 /**
@@ -120,8 +118,7 @@ seek(double t) {
  */
 int FlacAudioCursor::
 read_samples(int n, int16_t *data) {
-  int desired = n * _audio_channels;
-  n = drflac_read_s16(_drflac, desired, data) / _audio_channels;
+  n = drflac_read_pcm_frames_s16(_drflac, n, data);
   _samples_read += n;
   return n;
 }

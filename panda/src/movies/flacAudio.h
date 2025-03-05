@@ -9,6 +9,8 @@
  * @file flacAudio.h
  * @author rdb
  * @date 2016-04-27
+ * @author Stavros P.
+ * @date 2025-03-05
  */
 
 #ifndef FLACAUDIO_H
@@ -20,7 +22,7 @@
 class FlacAudioCursor;
 
 /**
- * Reads FLAC audio files.  Ogg-encapsulated FLAC files are not supported.
+ * Reads FLAC audio files.  Ogg-encapsulated FLAC files are now supported.
  *
  * @since 1.10.0
  */

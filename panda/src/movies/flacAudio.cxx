@@ -9,6 +9,14 @@
  * @file flacAudio.cxx
  * @author rdb
  * @date 2016-04-27
+ * @author Stavros
+ * @date 2025-03-05
+ * 
+ * @brief Updated FLAC functionality to use dr_flac v0.12.44 API.
+ * 
+ * This change updates the API calls to be compatible with the newer version
+ * of dr_flac library, converting from sample-based to PCM frame-based operations
+ * and adding support for the new memory allocation system.
  */
 
 #include "flacAudio.h"
