@@ -2873,8 +2873,9 @@ class ParticlePanel(AppShell):
                 #f.setFalloffType(LinearDistanceForce.FTONEOVERRCUBED)
                 f.setFalloffType(2)
             if type == 'FT_ONE_OVER_R_OVER_DISTANCE':
-                #f.setFalloffType(LinearDistanceForce.FTONEOVERRCUBED)
                 f.setFalloffType(3)
+            if type == 'FT_ONE_OVER_R_OVER_DISTANCE_SQUARED':
+                f.setFalloffType(4)
 
         def setForceCenter(vec, f = force):
             f.setForceCenter(Point3(vec[0], vec[1], vec[2]))
@@ -2890,19 +2891,23 @@ class ParticlePanel(AppShell):
             ('FT_ONE_OVER_R',
              'FT_ONE_OVER_R_SQUARED',
              'FT_ONE_OVER_R_CUBED',
-             'FT_ONE_OVER_R_OVER_DISTANCE'),
+             'FT_ONE_OVER_R_OVER_DISTANCE',
+             'FT_ONE_OVER_R_OVER_DISTANCE_SQUARED'),
             command = setFalloffType)
         self.getWidget(pageName, forceName + ' Falloff').configure(
             label_width = 16)
         falloff = force.getFalloffType()
         if falloff == LinearDistanceForce.FTONEOVERR:
             var.set('FT_ONE_OVER_R')
+            print('FT_ONE_OVER_R')
         elif falloff == LinearDistanceForce.FTONEOVERRSQUARED:
             var.set('FT_ONE_OVER_R_SQUARED')
         elif falloff == LinearDistanceForce.FTONEOVERRCUBED:
             var.set('FT_ONE_OVER_R_CUBED')
         elif falloff == LinearDistanceForce.FTONEOVERROVERDISTANCE:
             var.set('FT_ONE_OVER_R_OVER_DISTANCE')
+        elif falloff == LinearDistanceForce.FTONEOVERROVERDISTANCESQUARED:
+            var.set('FT_ONE_OVER_R_OVER_DISTANCE_SQUARED')
         vec = force.getForceCenter()
         self.createVector3Entry(frame, pageName, forceName + ' Center',
                                 'Set center of force',

@@ -68,7 +68,17 @@ get_child_vector(const PhysicsObject *po) {
       return (distance_vector / distance) * get_scalar_term();
     } 
     else {
-      return LVector3(0, 0, 0); // Return zero vector if the distance is zero
+      return LVector3(0, 0, 0); 
+    }
+  } 
+  else if (get_falloff_type() == FT_ONE_OVER_R_OVER_DISTANCE_SQUARED) {
+    LVector3 distance_vector = po->get_position() - get_force_center();
+    PN_stdfloat distance = distance_vector.length();
+    if (distance != 0) {
+      return (distance_vector / distance / distance) * get_scalar_term();
+    } 
+    else {
+      return LVector3(0, 0, 0); 
     }
   }
   return (po->get_position() - get_force_center()) * get_scalar_term();
