@@ -61,7 +61,17 @@ make_copy() {
  */
 LVector3 LinearSourceForce::
 get_child_vector(const PhysicsObject *po) {
-  return (po->get_position() - get_force_center()) * get_scalar_term();
+  if (get_falloff_type() == FT_ONE_OVER_R_OVER_DISTANCE) {
+    LVector3 distance_vector = get_force_center() - po->get_position();
+    PN_stdfloat distance = distance_vector.length();
+    if (distance != 0) {
+      return (distance_vector / distance) * get_scalar_term();
+    } 
+    else {
+      return LVector3(0, 0, 0); // Return zero vector if the distance is zero
+    }
+  }
+  return (get_force_center() - po->get_position()) * get_scalar_term();
 }
 
 /**
