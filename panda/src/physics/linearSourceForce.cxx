@@ -61,37 +61,25 @@ make_copy() {
  */
 LVector3 LinearSourceForce::
 get_child_vector(const PhysicsObject *po) {
-  if (get_falloff_type() == FT_ONE_OVER_R_OVER_DISTANCE) {
-    LVector3 distance_vector = po->get_position() - get_force_center();
-    PN_stdfloat distance = distance_vector.length();
-    if (distance != 0) {
-      return (distance_vector / distance) * get_scalar_term();
-    } 
-    else {
-      return LVector3(0, 0, 0); 
-    }
-  } 
-  else if (get_falloff_type() == FT_ONE_OVER_R_OVER_DISTANCE_SQUARED) {
-    LVector3 distance_vector = po->get_position() - get_force_center();
-    PN_stdfloat distance = distance_vector.length();
-    if (distance != 0) {
-      return (distance_vector / distance / distance) * get_scalar_term();
-    } 
-    else {
-      return LVector3(0, 0, 0); 
-    }
+  LVector3 distance_vector = po->get_position() - get_force_center();
+  PN_stdfloat distance = distance_vector.length();
+
+  if (distance == 0) {
+    return distance_vector;
   }
-  else if (get_falloff_type() == FT_ONE_OVER_R_OVER_DISTANCE_CUBED) {
-    LVector3 distance_vector = po->get_position() - get_force_center();
-    PN_stdfloat distance = distance_vector.length();
-    if (distance != 0) {
-      return (distance_vector / distance / distance / distance) * get_scalar_term();
-    } 
-    else {
-      return LVector3(0, 0, 0); 
-    }
+
+  PN_stdfloat scalar = get_scalar_term();
+
+  switch (get_falloff_type()) {
+    case FT_ONE_OVER_R_OVER_DISTANCE:
+      return (distance_vector / distance) * scalar;
+    case FT_ONE_OVER_R_OVER_DISTANCE_SQUARED:
+      return (distance_vector / (distance * distance)) * scalar;
+    case FT_ONE_OVER_R_OVER_DISTANCE_CUBED:
+      return (distance_vector / (distance * distance * distance)) * scalar;
+    default:
+      return distance_vector * scalar;
   }
-  return (po->get_position() - get_force_center()) * get_scalar_term();
 }
 
 /**
