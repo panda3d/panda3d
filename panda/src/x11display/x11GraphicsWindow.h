@@ -46,6 +46,8 @@ public:
 
   INLINE X11_Window get_xwindow() const;
 
+  void enable_detectable_auto_repeat();
+
 protected:
   virtual void close_window();
   virtual bool open_window();
