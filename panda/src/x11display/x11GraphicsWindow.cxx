@@ -126,10 +126,6 @@ x11GraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
   add_input_device(device);
   _input = device;
 
-  // Disable accessibility settings
-  //disable_accessibility_settings();
-
-  // Enable detectable auto-repeat
   enable_detectable_auto_repeat();
 }
 
