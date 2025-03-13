@@ -47,6 +47,9 @@ PUBLISHED:
   INLINE UpdateSeq get_modified() const;
   INLINE bool get_active() const;
   INLINE bool get_resident() const;
+  
+  virtual uint64_t get_native_id() const;
+  virtual uint64_t get_native_buffer_id() const;
 
   MAKE_PROPERTY(object, get_object);
 

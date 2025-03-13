@@ -47,3 +47,11 @@ evict_lru() {
   update_data_size_bytes(0);
   mark_unloaded();
 }
+
+/**
+ * Returns the native OpenGL buffer ID for this buffer.
+ */
+uint64_t CLP(IndexBufferContext)::get_native_id() const {
+  return static_cast<uint64_t>(_index);
+}
+

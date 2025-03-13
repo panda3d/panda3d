@@ -47,3 +47,10 @@ evict_lru() {
   update_data_size_bytes(0);
   mark_unloaded();
 }
+
+/**
+ * Returns the OpenGL buffer ID associated with this vertex buffer context.
+ */
+uint64_t CLP(VertexBufferContext)::get_native_id() const {
+  return static_cast<uint64_t>(_index);  // Return the OpenGL buffer ID
+}
