@@ -200,7 +200,8 @@ open_window() {
     // If the old gsg has the wrong pixel format, create a new one that shares
     // with the old gsg.
     DCAST_INTO_R(cocoagsg, _gsg, false);
-    if (!cocoagsg->get_fb_properties().subsumes(_fb_properties)) {
+    if (cocoagsg->get_engine() != _engine ||
+        !cocoagsg->get_fb_properties().subsumes(_fb_properties)) {
       cocoagsg = new CocoaGLGraphicsStateGuardian(_engine, _pipe, cocoagsg);
       cocoagsg->choose_pixel_format(_fb_properties, _display, false);
       _gsg = cocoagsg;

@@ -209,7 +209,8 @@ open_window() {
     // If the old gsg has the wrong pixel format, create a new one that shares
     // with the old gsg.
     DCAST_INTO_R(wglgsg, _gsg, false);
-    if (!wglgsg->get_fb_properties().subsumes(_fb_properties)) {
+    if (wglgsg->get_engine() != _engine ||
+        !wglgsg->get_fb_properties().subsumes(_fb_properties)) {
       wglgsg = new wglGraphicsStateGuardian(_engine, _pipe, wglgsg);
       wglgsg->choose_pixel_format(_fb_properties, false);
       _gsg = wglgsg;

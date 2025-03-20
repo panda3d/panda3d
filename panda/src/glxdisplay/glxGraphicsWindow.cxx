@@ -184,7 +184,8 @@ open_window() {
     // If the old gsg has the wrong pixel format, create a new one that shares
     // with the old gsg.
     DCAST_INTO_R(glxgsg, _gsg, false);
-    if (!glxgsg->get_fb_properties().subsumes(_fb_properties)) {
+    if (glxgsg->get_engine() != _engine ||
+        !glxgsg->get_fb_properties().subsumes(_fb_properties)) {
       glxgsg = new glxGraphicsStateGuardian(_engine, _pipe, glxgsg);
       glxgsg->choose_pixel_format(_fb_properties, glx_pipe->get_display(), glx_pipe->get_screen(), false, false);
       _gsg = glxgsg;

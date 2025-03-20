@@ -357,11 +357,11 @@ def SetTarget(target, arch=None):
 
     elif target == 'android' or target.startswith('android-'):
         if arch is None:
-            # If compiling on Android, default to same architecture.  Otherwise, arm.
+            # If compiling on Android, default to same architecture.
             if host == 'android':
                 arch = host_arch
             else:
-                arch = 'armv7a'
+                exit('Specify an Android architecture using --arch')
 
         if arch == 'aarch64':
             arch = 'arm64'
@@ -371,12 +371,9 @@ def SetTarget(target, arch=None):
         target, _, api = target.partition('-')
         if api:
             ANDROID_API = int(api)
-        elif arch in ('mips64', 'arm64', 'x86_64'):
-            # 64-bit platforms were introduced in Android 21.
-            ANDROID_API = 21
         else:
             # Default to the lowest API level still supported by Google.
-            ANDROID_API = 19
+            ANDROID_API = 21
 
         # Determine the prefix for our gcc tools, eg. arm-linux-androideabi-gcc
         global ANDROID_ABI, ANDROID_TRIPLE
@@ -592,8 +589,8 @@ def GetInterrogateDir():
             return INTERROGATE_DIR
 
         dir = os.path.join(GetOutputDir(), "tmp", "interrogate")
-        if not os.path.isdir(os.path.join(dir, "panda3d_interrogate-0.4.0.dist-info")):
-            oscmd("\"%s\" -m pip install --force-reinstall --upgrade -t \"%s\" panda3d-interrogate==0.4.0" % (sys.executable, dir))
+        if not os.path.isdir(os.path.join(dir, "panda3d_interrogate-0.5.0.dist-info")):
+            oscmd("\"%s\" -m pip install --force-reinstall --upgrade -t \"%s\" panda3d-interrogate==0.5.0" % (sys.executable, dir))
 
         INTERROGATE_DIR = dir
 
@@ -669,11 +666,12 @@ def oscmd(cmd, ignoreError = False, cwd=None):
         print(GetColor("blue") + cmd.split(" ", 1)[0] + " " + GetColor("magenta") + cmd.split(" ", 1)[1] + GetColor())
     sys.stdout.flush()
 
+    if cmd[0] == '"':
+        exe = cmd[1 : cmd.index('"', 1)]
+    else:
+        exe = cmd.split()[0]
+
     if sys.platform == "win32":
-        if cmd[0] == '"':
-            exe = cmd[1 : cmd.index('"', 1)]
-        else:
-            exe = cmd.split()[0]
         exe_path = LocateBinary(exe)
         if exe_path is None:
             exit("Cannot find "+exe+" on search path")
@@ -709,7 +707,7 @@ def oscmd(cmd, ignoreError = False, cwd=None):
             exit("")
 
     if res != 0 and not ignoreError:
-        if "interrogate" in cmd.split(" ", 1)[0] and GetVerbose():
+        if "interrogate" in exe and "interrogate_module" not in exe and GetVerbose():
             print(ColorText("red", "Interrogate failed, retrieving debug output..."))
             sys.stdout.flush()
             verbose_cmd = cmd.split(" ", 1)[0] + " -vv " + cmd.split(" ", 1)[1]
@@ -1421,6 +1419,9 @@ def GetThirdpartyDir():
 
     elif (target == 'android'):
         THIRDPARTYDIR = base + "/android-libs-%s/" % (target_arch)
+
+        if target_arch == 'armv7a' and not os.path.isdir(THIRDPARTYDIR):
+            THIRDPARTYDIR = base + "/android-libs-arm/"
 
     elif (target == 'emscripten'):
         THIRDPARTYDIR = base + "/emscripten-libs/"

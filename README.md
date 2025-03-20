@@ -181,22 +181,21 @@ Although it's possible to build Panda3D on an Android device using the
 [termux](https://termux.com/) shell, the recommended route is to cross-compile
 .whl files using the SDK and NDK, which can then be used by the `build_apps`
 command to build a Python application into an .apk or .aab bundle.  You will
-need to get the latest thirdparty packages, which can be obtained from the
-artifacts page of the last successful run here:
+need to get the latest thirdparty packages, which can be obtained from here:
 
-https://github.com/rdb/panda3d-thirdparty/actions?query=branch%3Amain+is%3Asuccess+event%3Apush
+https://rdb.name/thirdparty-android.tar.gz
 
-This does not include Python at the moment, which can be extracted from
-[this archive](https://rdb.name/thirdparty-android.tar.gz) instead.
+This includes a copy of Python 3.13 compiled for Android.  You will need to
+use Python 3.13 on the host as well.
 
 These commands show how to compile wheels for the supported Android ABIs:
 
 ```bash
 export ANDROID_SDK_ROOT=/home/rdb/local/android
-python3.8 makepanda/makepanda.py --everything --outputdir built-droid-arm64 --arch arm64 --target android-21 --threads 6 --wheel
-python3.8 makepanda/makepanda.py --everything --outputdir built-droid-armv7a --arch armv7a --target android-19 --threads 6 --wheel
-python3.8 makepanda/makepanda.py --everything --outputdir built-droid-x86_64 --arch x86_64 --target android-21 --threads 6 --wheel
-python3.8 makepanda/makepanda.py --everything --outputdir built-droid-x86 --arch x86 --target android-19 --threads 6 --wheel
+python3.13 makepanda/makepanda.py --everything --outputdir built-droid-arm64 --arch arm64 --target android-21 --threads 6 --wheel
+python3.13 makepanda/makepanda.py --everything --outputdir built-droid-armv7a --arch arm --target android-21 --threads 6 --wheel
+python3.13 makepanda/makepanda.py --everything --outputdir built-droid-x86_64 --arch x86_64 --target android-21 --threads 6 --wheel
+python3.13 makepanda/makepanda.py --everything --outputdir built-droid-x86 --arch x86 --target android-21 --threads 6 --wheel
 ```
 
 It is now possible to use the generated wheels with `build_apps`, as explained

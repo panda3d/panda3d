@@ -48,7 +48,7 @@ ns_has_model(const Filename &filename) {
 /**
  * The nonstatic implementation of get_model().
  */
-ModelRoot *ModelPool::
+PT(ModelRoot) ModelPool::
 ns_get_model(const Filename &filename, bool verify) {
 
   PT(ModelRoot) cached_model;
@@ -116,54 +116,31 @@ ns_get_model(const Filename &filename, bool verify) {
 /**
  * The nonstatic implementation of load_model().
  */
-ModelRoot *ModelPool::
+PT(ModelRoot) ModelPool::
 ns_load_model(const Filename &filename, const LoaderOptions &options) {
-
-  // First check if it has already been loaded and is still current.
+  // First check if it's been cached under the given filename (for backward
+  // compatibility reasons)
   PT(ModelRoot) cached_model = ns_get_model(filename, true);
   if (cached_model != nullptr) {
     return cached_model;
   }
 
-  // Look on disk for the current file.
   LoaderOptions new_options(options);
-  new_options.set_flags((new_options.get_flags() | LoaderOptions::LF_no_ram_cache) &
-                        ~LoaderOptions::LF_search);
+  new_options.set_flags(new_options.get_flags() & ~LoaderOptions::LF_no_ram_cache);
 
   Loader *model_loader = Loader::get_global_ptr();
   PT(PandaNode) panda_node = model_loader->load_sync(filename, new_options);
   PT(ModelRoot) node;
 
-  if (panda_node.is_null()) {
-    // This model was not found.
-
-  } else {
+  if (!panda_node.is_null()) {
     if (panda_node->is_of_type(ModelRoot::get_class_type())) {
       node = DCAST(ModelRoot, panda_node);
-
     } else {
       // We have to construct a ModelRoot node to put it under.
       node = new ModelRoot(filename);
       node->add_child(panda_node);
     }
-    node->set_fullpath(filename);
   }
-
-  {
-    LightMutexHolder holder(_lock);
-
-    // Look again, in case someone has just loaded the model in another
-    // thread.
-    Models::const_iterator ti;
-    ti = _models.find(filename);
-    if (ti != _models.end() && (*ti).second != cached_model) {
-      // This model was previously loaded.
-      return (*ti).second;
-    }
-
-    _models[filename] = node;
-  }
-
   return node;
 }
 

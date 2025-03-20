@@ -508,7 +508,7 @@ jobs:
     - name: Setup emsdk
       uses: mymindstorm/setup-emsdk@v14
       with:
-        version: 3.1.70
+        version: 4.0.2
         actions-cache-folder: 'emsdk-cache'
 
     - name: Restore Python build cache
@@ -516,19 +516,19 @@ jobs:
       uses: actions/cache/restore@v4
       with:
         path: ~/python
-        key: cache-emscripten-python-3.12.7
+        key: cache-emscripten-python-3.12.8
 
     - name: Build Python 3.12
       if: steps.cache-emscripten-python-restore.outputs.cache-hit != 'true'
       run: |
-        wget https://www.python.org/ftp/python/3.12.7/Python-3.12.7.tar.xz
-        tar -xJf Python-3.12.7.tar.xz
-        (cd Python-3.12.7 && EM_CONFIG=$EMSDK/.emscripten python3 Tools/wasm/wasm_build.py emscripten-browser)
-        (cd Python-3.12.7/builddir/emscripten-browser && make install DESTDIR=~/python)
-        cp Python-3.12.7/builddir/emscripten-browser/Modules/_hacl/libHacl_Hash_SHA2.a ~/python/usr/local/lib
-        cp Python-3.12.7/builddir/emscripten-browser/Modules/_decimal/libmpdec/libmpdec.a ~/python/usr/local/lib
-        cp Python-3.12.7/builddir/emscripten-browser/Modules/expat/libexpat.a ~/python/usr/local/lib
-        rm -rf Python-3.12.7
+        wget https://www.python.org/ftp/python/3.12.8/Python-3.12.8.tar.xz
+        tar -xJf Python-3.12.8.tar.xz
+        (cd Python-3.12.8 && EM_CONFIG=$EMSDK/.emscripten python3 Tools/wasm/wasm_build.py emscripten-browser)
+        (cd Python-3.12.8/builddir/emscripten-browser && make install DESTDIR=~/python)
+        cp Python-3.12.8/builddir/emscripten-browser/Modules/_hacl/libHacl_Hash_SHA2.a ~/python/usr/local/lib
+        cp Python-3.12.8/builddir/emscripten-browser/Modules/_decimal/libmpdec/libmpdec.a ~/python/usr/local/lib
+        cp Python-3.12.8/builddir/emscripten-browser/Modules/expat/libexpat.a ~/python/usr/local/lib
+        rm -rf Python-3.12.8
 
     - name: Save Python build cache
       id: cache-emscripten-python-save

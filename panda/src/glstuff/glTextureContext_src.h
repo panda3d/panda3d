@@ -41,11 +41,23 @@ public:
   INLINE GLuint get_view_buffer(int view) const;
 
 #ifdef OPENGLES_1
-  static constexpr bool needs_barrier(GLbitfield barrier) { return false; };
+  static constexpr bool needs_barrier(GLbitfield barrier, bool writing) { return false; };
 #else
-  bool needs_barrier(GLbitfield barrier);
+  bool needs_barrier(GLbitfield barrier, bool writing);
   void mark_incoherent(bool wrote);
 #endif
+
+  INLINE bool is_upload_pending() const;
+  INLINE void wait_pending_uploads() const;
+  INLINE void cancel_pending_uploads();
+
+  void return_pbo(GLuint pbo, size_t size);
+  void delete_unused_pbos();
+  INLINE void wait_for_unused_pbo(int limit) const;
+
+private:
+  void do_wait_pending_uploads() const;
+  void do_wait_for_unused_pbo(int limit) const;
 
 private:
   // This is the GL "name" of the texture object.
@@ -76,7 +88,24 @@ public:
   GLenum _target;
   SamplerState _active_sampler;
 
+  // These counters are used to prevent out-of-order updates.
+  int _uploads_started = 0;
+  int _uploads_finished = 0;
+  int _uploads_pending = 0;
+  pdeque<GLuint> _unused_pbos;
+  int _num_pbos = 0;
+  size_t _pbo_size = 0;
+
   CLP(GraphicsStateGuardian) *_glgsg;
+
+  // These are set to the equivalent counter in glgsg when a write is performed.
+  int _texture_fetch_barrier_counter = -1;
+  int _shader_image_read_barrier_counter = -1;
+  int _shader_image_write_barrier_counter = -1;
+  int _texture_read_barrier_counter = -1;
+  int _texture_write_barrier_counter = -1;
+  int _framebuffer_read_barrier_counter = -1;
+  int _framebuffer_write_barrier_counter = -1;
 
 public:
   static TypeHandle get_class_type() {

@@ -421,6 +421,10 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
 
   _mat_part_cache = new LVecBase4f[_shader->cp_get_mat_cache_size()];
   _mat_scratch_space = new LVecBase4f[_shader->cp_get_mat_scratch_size()];
+
+#ifdef DO_PSTATS
+  _compute_dispatch_pcollector = PStatCollector(glgsg->_compute_dispatch_pcollector, s->get_debug_name());
+#endif
 }
 
 /**
@@ -2672,6 +2676,10 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
     update_slider_table(table);
   }
 
+  // This ought to be moved elsewhere, but it's convenient to do this here for
+  // now since it's called before every Geom is drawn.
+  issue_memory_barriers();
+
   _glgsg->report_my_gl_errors();
 
   return true;
@@ -2809,12 +2817,6 @@ update_shader_texture_bindings(ShaderContext *prev) {
 
           int view = _glgsg->get_current_tex_view_offset();
           gl_tex = gtc->get_view_index(view);
-
-#ifndef OPENGLES
-          if (gtc->needs_barrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT)) {
-            barriers |= GL_SHADER_IMAGE_ACCESS_BARRIER_BIT;
-          }
-#endif
         }
       }
       input._writable = false;
@@ -2875,7 +2877,17 @@ update_shader_texture_bindings(ShaderContext *prev) {
             access = GL_READ_ONLY;
             gl_tex = 0;
           }
+        } else {
+          // If no parameters were specified, we have to assume writable access.
+          input._writable = true;
         }
+
+#ifndef OPENGLES
+        if (gtc->needs_barrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT, input._writable)) {
+          barriers |= GL_SHADER_IMAGE_ACCESS_BARRIER_BIT;
+        }
+#endif
+
         _glgsg->_glBindImageTexture(i, gl_tex, bind_level, layered, bind_layer,
                                     access, gtc->_internal_format);
       }
@@ -2965,7 +2977,7 @@ update_shader_texture_bindings(ShaderContext *prev) {
 #ifndef OPENGLES
     // If it was recently written to, we will have to issue a memory barrier
     // soon.
-    if (gtc->needs_barrier(GL_TEXTURE_FETCH_BARRIER_BIT)) {
+    if (gtc->needs_barrier(GL_TEXTURE_FETCH_BARRIER_BIT, false)) {
       barriers |= GL_TEXTURE_FETCH_BARRIER_BIT;
     }
 #endif
@@ -3039,7 +3051,35 @@ update_shader_buffer_bindings(ShaderContext *prev) {
            " (expected at least " << block._min_size << " bytes)\n";
     }
 #endif
-    _glgsg->apply_shader_buffer(block._binding_index, buffer);
+    block._gbc = _glgsg->apply_shader_buffer(block._binding_index, buffer);
+  }
+#endif
+}
+
+/**
+ * Issues memory barriers for shader buffers, should be called before a draw.
+ */
+void CLP(ShaderContext)::
+issue_memory_barriers() {
+#ifndef OPENGLES
+  bool barrier_needed = false;
+  for (StorageBlock &block : _storage_blocks) {
+    if (block._gbc != nullptr &&
+        block._gbc->_shader_storage_barrier_counter == _glgsg->_shader_storage_barrier_counter) {
+      barrier_needed = true;
+      break;
+    }
+  }
+
+  if (barrier_needed) {
+    _glgsg->issue_memory_barrier(GL_SHADER_STORAGE_BARRIER_BIT);
+  }
+
+  // We assume that all SSBOs will be written to, for now.
+  for (StorageBlock &block : _storage_blocks) {
+    if (block._gbc != nullptr) {
+      block._gbc->_shader_storage_barrier_counter = _glgsg->_shader_storage_barrier_counter;
+    }
   }
 #endif
 }

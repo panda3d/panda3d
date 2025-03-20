@@ -22,10 +22,10 @@
 #include <map>
 
 #if defined(__EMSCRIPTEN__) && !defined(CPPPARSER)
-class ExecutionEnvironment;
-
 extern "C" void EMSCRIPTEN_KEEPALIVE
-_set_env_var(ExecutionEnvironment *ptr, const char *var, const char *value);
+_set_env_var(const char *var, const char *value);
+extern "C" void EMSCRIPTEN_KEEPALIVE
+_set_binary_name(const char *path);
 #endif
 
 /**
@@ -98,7 +98,7 @@ private:
   static ExecutionEnvironment *_global_ptr;
 
 #ifdef __EMSCRIPTEN__
-  friend void ::_set_env_var(ExecutionEnvironment *ptr, const char *var, const char *value);
+  friend void ::_set_env_var(const char *var, const char *value);
 #endif
 };
 
