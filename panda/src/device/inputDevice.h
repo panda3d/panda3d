@@ -23,6 +23,7 @@
 #include "pointerData.h"
 #include "trackerData.h"
 #include "clockObject.h"
+#include "gestureEvent.h"
 
 #include "pdeque.h"
 #include "pvector.h"
@@ -114,6 +115,9 @@ PUBLISHED:
 
     // The device provides information about battery life.
     BATTERY,
+
+    // The device reports input gestures
+    GESTURE,
 
     // Deprecated aliases.
     pointer = POINTER,
@@ -318,6 +322,8 @@ PUBLISHED:
   PT(ButtonEventList) get_button_events();
   bool has_pointer_event() const;
   PT(PointerEventList) get_pointer_events();
+  bool has_gesture_event() const;
+  PT(GestureEventList) get_gesture_events();
 
   virtual void output(std::ostream &out) const;
 
@@ -370,6 +376,7 @@ protected:
   bool _enable_pointer_events = false;
   PT(ButtonEventList) _button_events;
   PT(PointerEventList) _pointer_events;
+  PT(GestureEventList) _gesture_events;
 
   size_t _num_pointers = 0;
   typedef pvector<PointerData> Pointers;
