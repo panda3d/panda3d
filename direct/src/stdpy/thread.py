@@ -250,7 +250,7 @@ def exit():
     raise SystemExit
 
 
-def allocate_lock():
+def allocate_lock() -> LockType:
     return LockType()
 
 
