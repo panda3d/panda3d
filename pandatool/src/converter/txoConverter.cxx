@@ -31,11 +31,6 @@ TxoConverter() : WithOutputFile(true, false, true) {
   add_runline("[opts] -o output input");
 
   add_option
-    ("ow", "", 0,
-     "Overwrite all existing TXO files.",
-     &TxoConverter::dispatch_none, &_txo_overwrite);
-
-  add_option
      ("o", "filename", 0,
       "Specify the filename to which the resulting .bam file will be written.  "
       "If this option is omitted, the last parameter name is taken to be the "
@@ -54,16 +49,9 @@ TxoConverter() : WithOutputFile(true, false, true) {
 void TxoConverter::
 run() {
     nassertv(has_output_filename());
-    Filename input = Filename(_image_filename);
-    Filename fullpath = Filename(input.get_fullpath());
+    Filename fullpath = Filename(_image_filename.get_fullpath());
 
-    if (!fullpath.exists()) {
-      nout << "The file '" << fullpath << "' does not exist, skipping...\n";
-      return;
-    }
-    else {
-      nout << "Reading file " << fullpath << "...\n";
-    }
+    nout << "Reading file " << fullpath << "...\n";
 
     PNMFileType *type = PNMFileTypeRegistry::get_global_ptr()->get_type_from_extension(fullpath);
     if (type == nullptr) {
@@ -128,17 +116,39 @@ convert_txo(Texture *tex) {
  */
 bool TxoConverter::
 handle_args(ProgramBase::Args &args) {
+  if (_allow_last_param && !_got_output_filename && args.size() > 1) {
+    _got_output_filename = true;
+    _output_filename = Filename::from_os_specific(args.back());
+    args.pop_back();
+
+    if (!(_output_filename.get_extension() == "txo")) {
+      nout << "Output filename " << _output_filename
+           << " does not end in .txo.  If this is really what you intended, "
+              "use the -o output syntax.\n";
+      return false;
+    }
+
+    if (!verify_output_file_safe()) {
+      return false;
+    }
+  }
+
   if (args.empty()) {
     nout << "You must specify the image file to read on the command line.\n";
     return false;
   }
 
-  if (args.size() > 1) {
+  if (args.size() != 1) {
     nout << "Specify only one image on the command line.\n";
     return false;
   }
 
   _image_filename = Filename::from_os_specific(args[0]);
+
+  if (!_output_filename.exists()) {
+    nout << "The file '" << _output_filename << "' does not exist, skipping...\n";
+    return false;
+  }
 
   return true;
 }
