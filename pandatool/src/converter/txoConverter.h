@@ -32,11 +32,15 @@ class TxoConverter : public ProgramBase, public WithOutputFile {
     
     protected:
         virtual bool handle_args(Args &args);
+        virtual bool post_command_line();
     
     private:
-        void convert_txo(Texture *tex, Filename output);
+        void convert_txo(Texture *tex);
 
+        Filename _image_filename;
         bool _txo_overwrite;
+        bool _got_rgb_filename;
+        Filename _rgb_filename;
 
         typedef pvector<Filename> Filenames;
         Filenames _filenames;
