@@ -32,7 +32,6 @@ class TxoConverter : public ProgramBase, public WithOutputFile {
     
     protected:
         virtual bool handle_args(Args &args);
-        virtual bool post_command_line();
     
     private:
         void convert_txo(Texture *tex);

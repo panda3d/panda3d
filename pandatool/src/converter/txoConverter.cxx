@@ -31,11 +31,11 @@ TxoConverter() : WithOutputFile(true, false, true) {
   add_runline("[opts] -o output input");
 
   add_option
-     ("o", "filename", 0,
-      "Specify the filename to which the resulting .bam file will be written.  "
-      "If this option is omitted, the last parameter name is taken to be the "
-      "name of the output file.",
-      &TxoConverter::dispatch_filename, &_got_output_filename, &_output_filename);
+    ("o", "filename", 0,
+     "Specify the filename to which the resulting .bam file will be written.  "
+     "If this option is omitted, the last parameter name is taken to be the "
+     "name of the output file.",
+     &TxoConverter::dispatch_filename, &_got_output_filename, &_output_filename);
 
   add_option
     ("alpha", "filename", 0,
@@ -110,7 +110,7 @@ convert_txo(Texture *tex) {
  */
 bool TxoConverter::
 handle_args(ProgramBase::Args &args) {
-  if (_allow_last_param && !_got_output_filename && args.size() > 1) {
+  if (!_got_output_filename && args.size() > 1) {
     _got_output_filename = true;
     _output_filename = Filename::from_os_specific(args.back());
     args.pop_back();
@@ -133,18 +133,6 @@ handle_args(ProgramBase::Args &args) {
 
   _image_filename = Filename::from_os_specific(args[0]);
 
-  return true;
-}
-
-/**
- *
- */
-bool TxoConverter::
-post_command_line() {
-  if (!_got_output_filename) {
-    nout << "You must specify the filename to write with -o.\n";
-    return false;
-  }
   return true;
 }
 
