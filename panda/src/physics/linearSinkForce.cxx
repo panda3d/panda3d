@@ -62,7 +62,7 @@ make_copy() {
 LVector3 LinearSinkForce::
 get_child_vector(const PhysicsObject *po) {
   LVector3 distance_vector = get_force_center() - po->get_position();
-  PN_stdfloat distance = distance_vector.length();
+  PN_stdfloat distance_squared = distance_vector.length_squared();
 
   if (distance == 0) {
     return distance_vector;
@@ -72,11 +72,11 @@ get_child_vector(const PhysicsObject *po) {
 
   switch (get_falloff_type()) {
   case FT_ONE_OVER_R_OVER_DISTANCE:
-    return (distance_vector / distance) * scalar;
+    return (distance_vector / sqrt(distance_squared)) * scalar;
   case FT_ONE_OVER_R_OVER_DISTANCE_SQUARED:
-    return (distance_vector / (distance * distance)) * scalar;
+    return (distance_vector / distance_squared) * scalar;
   case FT_ONE_OVER_R_OVER_DISTANCE_CUBED:
-    return (distance_vector / (distance * distance * distance)) * scalar;
+    return (distance_vector / (distance_squared * sqrt(distance_squared))) * scalar;
   default:
     return distance_vector * scalar;
   }
