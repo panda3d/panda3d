@@ -43,7 +43,7 @@ TxoConverter() : WithOutputFile(true, false, true) {
       &TxoConverter::dispatch_filename, &_got_output_filename, &_output_filename);
 
   add_option
-    ("rgba", "filename", 0,
+    ("alpha", "filename", 0,
      "Apply an RGB alpha file for image types such as JPEG.",
      &TxoConverter::dispatch_filename, &_got_rgb_filename, &_rgb_filename);
 }
