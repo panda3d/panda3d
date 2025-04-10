@@ -71,14 +71,14 @@ get_child_vector(const PhysicsObject *po) {
   PN_stdfloat scalar = get_scalar_term();
 
   switch (get_falloff_type()) {
-    case FT_ONE_OVER_R_OVER_DISTANCE:
-      return (distance_vector / distance) * scalar;
-    case FT_ONE_OVER_R_OVER_DISTANCE_SQUARED:
-      return (distance_vector / (distance * distance)) * scalar;
-    case FT_ONE_OVER_R_OVER_DISTANCE_CUBED:
-      return (distance_vector / (distance * distance * distance)) * scalar;
-    default:
-      return distance_vector * scalar;
+  case FT_ONE_OVER_R_OVER_DISTANCE:
+    return (distance_vector / distance) * scalar;
+  case FT_ONE_OVER_R_OVER_DISTANCE_SQUARED:
+    return (distance_vector / (distance * distance)) * scalar;
+  case FT_ONE_OVER_R_OVER_DISTANCE_CUBED:
+    return (distance_vector / (distance * distance * distance)) * scalar;
+  default:
+    return distance_vector * scalar;
   }
 }
 
