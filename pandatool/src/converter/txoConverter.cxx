@@ -116,6 +116,11 @@ handle_args(ProgramBase::Args &args) {
     args.pop_back();
   }
 
+  if (!_got_output_filename) {
+    nout << "You must specify an output path.";
+    return false;
+  }
+
   if (!(_output_filename.get_extension() == "txo")) {
     nout << "Output filename " << _output_filename << " must end in .txo\n";
     return false;
