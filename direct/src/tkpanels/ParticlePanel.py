@@ -2902,7 +2902,6 @@ class ParticlePanel(AppShell):
         falloff = force.getFalloffType()
         if falloff == LinearDistanceForce.FTONEOVERR:
             var.set('FT_ONE_OVER_R')
-            print('FT_ONE_OVER_R')
         elif falloff == LinearDistanceForce.FTONEOVERRSQUARED:
             var.set('FT_ONE_OVER_R_SQUARED')
         elif falloff == LinearDistanceForce.FTONEOVERRCUBED:
