@@ -51,7 +51,7 @@ run() {
     nassertv(has_output_filename());
     Filename fullpath = Filename(_image_filename.get_fullpath());
 
-    nout << "Reading file " << fullpath << "...\n";
+    nout << "Reading " << fullpath << "...\n";
 
     PNMFileType *type = PNMFileTypeRegistry::get_global_ptr()->get_type_from_extension(fullpath);
     if (type == nullptr) {
@@ -93,20 +93,14 @@ convert_txo(Texture *tex) {
     Filename output = get_output_filename();
     output.make_dir();
 
-    if (output.exists() && !_txo_overwrite) {
-      nout << "The file '" << output.get_fullpath() << "' already exists, skipping...\n";
-      return;
-    }
-    else {
-      if (tex->write(output)) {
-        nout << "Writing " << output << "...\n";
-        tex->set_loaded_from_txo();
-        tex->set_fullpath(output);
-        tex->clear_alpha_fullpath();
-  
-        tex->set_filename(output);
-        tex->clear_alpha_filename();
-      }
+    if (tex->write(output)) {
+      nout << "Writing " << output << "...\n";
+      tex->set_loaded_from_txo();
+      tex->set_fullpath(output);
+      tex->clear_alpha_fullpath();
+
+      tex->set_filename(output);
+      tex->clear_alpha_filename();
     }
   }
 }
@@ -120,17 +114,11 @@ handle_args(ProgramBase::Args &args) {
     _got_output_filename = true;
     _output_filename = Filename::from_os_specific(args.back());
     args.pop_back();
+  }
 
-    if (!(_output_filename.get_extension() == "txo")) {
-      nout << "Output filename " << _output_filename
-           << " does not end in .txo.  If this is really what you intended, "
-              "use the -o output syntax.\n";
-      return false;
-    }
-
-    if (!verify_output_file_safe()) {
-      return false;
-    }
+  if (!(_output_filename.get_extension() == "txo")) {
+    nout << "Output filename " << _output_filename << " must end in .txo\n";
+    return false;
   }
 
   if (args.empty()) {
@@ -144,11 +132,6 @@ handle_args(ProgramBase::Args &args) {
   }
 
   _image_filename = Filename::from_os_specific(args[0]);
-
-  if (!_output_filename.exists()) {
-    nout << "The file '" << _output_filename << "' does not exist, skipping...\n";
-    return false;
-  }
 
   return true;
 }

@@ -38,7 +38,6 @@ class TxoConverter : public ProgramBase, public WithOutputFile {
         void convert_txo(Texture *tex);
 
         Filename _image_filename;
-        bool _txo_overwrite;
         bool _got_rgb_filename;
         Filename _rgb_filename;
 
