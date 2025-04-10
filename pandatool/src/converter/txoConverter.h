@@ -39,9 +39,6 @@ class TxoConverter : public ProgramBase, public WithOutputFile {
         Filename _image_filename;
         bool _got_rgb_filename;
         Filename _rgb_filename;
-
-        typedef pvector<Filename> Filenames;
-        Filenames _filenames;
 };
 
 #endif
