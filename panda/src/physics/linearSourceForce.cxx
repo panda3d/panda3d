@@ -64,7 +64,7 @@ get_child_vector(const PhysicsObject *po) {
   LVector3 distance_vector = po->get_position() - get_force_center();
   PN_stdfloat distance_squared = distance_vector.length_squared();
 
-  if (distance == 0) {
+  if (distance_squared == 0) {
     return distance_vector;
   }
 
