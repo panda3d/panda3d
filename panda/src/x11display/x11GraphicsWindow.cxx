@@ -2750,7 +2750,12 @@ xim_preedit_done(XIC ic, XPointer client_data, XPointer call_data) {
 /**
  * Enables detectable auto-repeat if supported by the X server.
  */
-void x11GraphicsWindow::enable_detectable_auto_repeat() {
+void x11GraphicsWindow::
+enable_detectable_auto_repeat() {
+  if (!x_detectable_auto_repeat) {
+    return;
+  }
+  
   Bool supported;
   if (XkbSetDetectableAutoRepeat(_display, True, &supported)) {
     x11display_cat.info() << "Detectable auto-repeat enabled.\n";
