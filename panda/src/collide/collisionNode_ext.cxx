@@ -53,7 +53,17 @@ void Extension<CollisionNode>::
 set_owner(PyObject *owner) {
   if (owner != Py_None) {
     PyObject *ref = PyWeakref_NewRef(owner, nullptr);
-    _this->set_owner(ref, [](void *obj) { Py_DECREF((PyObject *)obj); });
+    _this->set_owner(ref, [](void *obj) {
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
+      // Use PyGILState to protect this asynchronous call.
+      PyGILState_STATE gstate;
+      gstate = PyGILState_Ensure();
+#endif
+      Py_DECREF((PyObject *)obj);
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
+      PyGILState_Release(gstate);
+#endif
+    });
   } else {
     _this->clear_owner();
   }
