@@ -84,6 +84,10 @@ ConfigVariableString x_wm_class
  PRC_DESC("Specify the value to use for the res_class field of the window's "
           "WM_CLASS property."));
 
+ConfigVariableBool x_detectable_auto_repeat
+("x-detectable-auto-repeat", false,
+ PRC_DESC("Set this true to enable detectable auto-repeat for keyboard input."));
+
 /**
  * Initializes the library.  This must be called at least once before any of
  * the functions or classes in this library can be used.  Normally it will be
