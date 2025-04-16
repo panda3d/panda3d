@@ -91,6 +91,10 @@ ConfigVariableBool x_send_startup_notification
           "lets the window manager know that an application has launched, so "
           "that it no longer needs to display a spinning mouse cursor."));
 
+ConfigVariableBool x_detectable_auto_repeat
+("x-detectable-auto-repeat", false,
+ PRC_DESC("Set this true to enable detectable auto-repeat for keyboard input."));
+
 /**
  * Initializes the library.  This must be called at least once before any of
  * the functions or classes in this library can be used.  Normally it will be
