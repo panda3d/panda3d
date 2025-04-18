@@ -143,6 +143,44 @@ make_copy() const {
   return new DynamicTextFont(*this);
 }
 
+
+//to add newfont
+bool DynamicTextFont::replace_font(const std::string &new_font_path) {
+    VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+
+    // Check if the new font file exists
+    if (!vfs->exists(new_font_path)) {
+        text_cat.error()
+            << "Font file not found: " << new_font_path
+            << ". Ensure the file exists and the path is correct.\n";
+        return false;
+    }
+
+    // Load the new font file into a temporary object
+    PT(DynamicTextFont) new_font = new DynamicTextFont(new_font_path);
+    if (!new_font || !new_font->is_valid()) {
+        text_cat.error()
+            << "Failed to load font: " << new_font_path
+            << ". Possible reasons: unsupported font format, corrupted file, or incompatible font type.\n";
+        return false;
+    }
+
+  
+ 
+    // Replace the internal data with the new font's data
+    this->copy_from(*new_font);
+
+    // Log success with additional details
+    text_cat.info()
+        << "Successfully replaced font with: " << new_font_path
+        << ". Font family: " << new_font->get_name()
+        << ", Size: " << new_font->get_point_size() << ".\n";
+
+    return true;
+}
+
+
+
 /**
  * Returns the number of pages associated with the font.  Initially, the font
  * has zero pages; when the first piece of text is rendered with the font, it
