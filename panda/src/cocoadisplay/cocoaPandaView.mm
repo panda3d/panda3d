@@ -161,6 +161,14 @@
   _graphicsWindow->handle_wheel_event([event deltaX], [event deltaY]);
 }
 
+- (void)magnifyWithEvent:(NSEvent *)event {
+  _graphicsWindow->handle_magnify([event magnification], [event phase]);
+}
+
+- (void)rotateWithEvent:(NSEvent*)event {
+  _graphicsWindow->handle_rotate([event rotation], [event phase]);
+}
+
 - (BOOL) isOpaque {
   return YES;
 }
