@@ -223,7 +223,8 @@ open_window() {
     // If the old gsg has the wrong pixel format, create a new one that shares
     // with the old gsg.
     DCAST_INTO_R(eglgsg, _gsg, false);
-    if (!eglgsg->get_fb_properties().subsumes(_fb_properties)) {
+    if (eglgsg->get_engine() != _engine ||
+        !eglgsg->get_fb_properties().subsumes(_fb_properties)) {
       eglgsg = new eglGraphicsStateGuardian(_engine, _pipe, eglgsg);
       eglgsg->choose_pixel_format(_fb_properties, egl_pipe, true, false, false);
       _gsg = eglgsg;

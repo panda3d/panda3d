@@ -100,6 +100,7 @@ PStatCollector GraphicsStateGuardian::_draw_primitive_pcollector("Draw:Primitive
 PStatCollector GraphicsStateGuardian::_draw_set_state_pcollector("Draw:Set State");
 PStatCollector GraphicsStateGuardian::_flush_pcollector("Draw:Flush");
 PStatCollector GraphicsStateGuardian::_compute_dispatch_pcollector("Draw:Compute dispatch");
+PStatCollector GraphicsStateGuardian::_compute_work_groups_pcollector("Compute work groups");
 
 PStatCollector GraphicsStateGuardian::_wait_occlusion_pcollector("Wait:Occlusion");
 PStatCollector GraphicsStateGuardian::_wait_timer_pcollector("Wait:Timer Queries");
@@ -244,9 +245,12 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
   _supports_basic_shaders = false;
   _supports_geometry_shaders = false;
   _supports_tessellation_shaders = false;
-  _supports_compute_shaders = false;
   _supports_glsl = false;
   _supports_hlsl = false;
+
+  _max_compute_work_group_count = LVecBase3i(0, 0, 0);
+  _max_compute_work_group_size = LVecBase3i(0, 0, 0);
+  _max_compute_work_group_invocations = 0;
 
   _supports_stencil = false;
   _supports_stencil_wrap = false;
@@ -573,6 +577,23 @@ update_texture(TextureContext *, bool) {
 }
 
 /**
+ * Ensures that the current Texture data is refreshed onto the GSG.  This
+ * means updating the texture properties and/or re-uploading the texture
+ * image, if necessary.  This should only be called within the draw thread.
+ *
+ * If force is true, this function will not return until the texture has been
+ * fully uploaded.  If force is false, the function may choose to upload a
+ * simple version of the texture instead, if the texture is not fully resident
+ * (and if get_incomplete_render() is true).
+ */
+bool GraphicsStateGuardian::
+update_texture(TextureContext *tc, bool force, CompletionToken token) {
+  bool result = update_texture(tc, force);
+  token.complete(result);
+  return result;
+}
+
+/**
  * Frees the resources previously allocated via a call to prepare_texture(),
  * including deleting the TextureContext itself, if it is non-NULL.
  */
@@ -743,6 +764,18 @@ release_shader_buffers(const pvector<BufferContext *> &contexts) {
   for (BufferContext *bc : contexts) {
     release_shader_buffer(bc);
   }
+}
+
+/**
+ * This method should only be called by the GraphicsEngine.  Do not call it
+ * directly; call GraphicsEngine::extract_texture_data() instead.
+ *
+ * This method will be called in the draw thread to download the buffer's
+ * current contents synchronously.
+ */
+bool GraphicsStateGuardian::
+extract_shader_buffer_data(ShaderBuffer *buffer, vector_uchar &data) {
+  return false;
 }
 
 /**
@@ -2748,6 +2781,7 @@ end_frame(Thread *current_thread) {
   _vertices_tri_pcollector.flush_level();
   _vertices_patch_pcollector.flush_level();
   _vertices_other_pcollector.flush_level();
+  _compute_work_groups_pcollector.flush_level();
 
   _state_pcollector.flush_level();
   _texture_state_pcollector.flush_level();
@@ -3396,6 +3430,7 @@ init_frame_pstats() {
     _vertices_tri_pcollector.clear_level();
     _vertices_patch_pcollector.clear_level();
     _vertices_other_pcollector.clear_level();
+    _compute_work_groups_pcollector.clear_level();
 
     _state_pcollector.clear_level();
     _transform_state_pcollector.clear_level();

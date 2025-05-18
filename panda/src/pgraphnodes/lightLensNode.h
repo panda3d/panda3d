@@ -42,6 +42,7 @@ PUBLISHED:
   void set_shadow_caster(bool caster, int buffer_xsize, int buffer_ysize, int sort = -10);
 
   INLINE int get_shadow_buffer_sort() const;
+  INLINE void set_shadow_buffer_sort(int sort);
 
   INLINE LVecBase2i get_shadow_buffer_size() const;
   INLINE void set_shadow_buffer_size(const LVecBase2i &size);
@@ -50,6 +51,7 @@ PUBLISHED:
 
 PUBLISHED:
   MAKE_PROPERTY(shadow_caster, is_shadow_caster);
+  MAKE_PROPERTY(shadow_buffer_sort, get_shadow_buffer_sort, set_shadow_buffer_sort);
   MAKE_PROPERTY(shadow_buffer_size, get_shadow_buffer_size, set_shadow_buffer_size);
 
 public:

@@ -1515,9 +1515,24 @@ begin_frame(GraphicsStateGuardianBase *gsg, Thread *current_thread) {
     Texture *tex = qti->first;
     TextureContext *tc = tex->prepare_now(this, gsg);
     if (tc != nullptr) {
-      gsg->update_texture(tc, true);
-      if (qti->second != nullptr) {
-        qti->second->set_result(tc);
+      if (tex->get_num_async_transfer_buffers() == 0) {
+        gsg->update_texture(tc, true);
+        if (qti->second != nullptr) {
+          qti->second->set_result(tc);
+        }
+      } else {
+        // Async update
+        CompletionToken token;
+        if (qti->second != nullptr) {
+          token = [tc, fut = std::move(qti->second)] (bool success) {
+            if (success) {
+              fut->set_result(tc);
+            } else {
+              fut->notify_removed();
+            }
+          };
+        }
+        gsg->update_texture(tc, false, std::move(token));
       }
     }
   }

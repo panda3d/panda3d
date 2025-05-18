@@ -88,6 +88,7 @@ defaultHiddenImports = {
         'numpy.core._dtype_ctypes',
         'numpy.core._methods',
     ],
+    'panda3d.core': ['enum'],
     'pandas.compat': ['lzma', 'cmath'],
     'pandas._libs.tslibs.conversion': ['pandas._libs.tslibs.base'],
     'plyer': ['plyer.platforms'],

@@ -88,7 +88,9 @@ MANYLINUX_LIBS = [
     # These are not mentioned in manylinux1 spec but should nonetheless always
     # be excluded.
     "linux-vdso.so.1", "linux-gate.so.1", "ld-linux.so.2", "libdrm.so.2",
+    "ld-linux-x86-64.so.2", "ld-linux-aarch64.so.1",
     "libEGL.so.1", "libOpenGL.so.0", "libGLX.so.0", "libGLdispatch.so.0",
+    "libGLESv2.so.2",
 ]
 
 # Binaries to never scan for dependencies on non-Windows systems.
