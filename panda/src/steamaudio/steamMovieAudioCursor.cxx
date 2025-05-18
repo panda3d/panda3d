@@ -16,14 +16,14 @@ SteamMovieAudioCursor::
 SteamMovieAudioCursor(SteamMovieAudio* src) :
   MovieAudioCursor(src)
 {
+  _source_cursor = ((PT(SteamMovieAudio))_source)->_audio_source->open();
+
   //make audiosettings
   _steamAudioSettings = &IPLAudioSettings{};
-  _steamAudioSettings->samplingRate = audio_source.open().audio_rate();
-  _steamAudioSettings->frameSize = 8192;
+  _steamAudioSettings->samplingRate = _source_cursor->audio_rate();
+  _steamAudioSettings->frameSize = 65536;
   //IPLAudioSetting's values tell Steam Audio's classes the speed and amount of data being processed.
   //frameSize is just the length of the buffers we're handing them.
-
-  _source_cursor = &_source->open();
 }
 
 SteamMovieAudioCursor::
@@ -32,43 +32,53 @@ SteamMovieAudioCursor::
 }
 
 int SteamMovieAudioCursor::
-read_samples(int n, int16_t* data) {
+read_samples(int n, int16_t* data) {//IN PROGRESS: adding a loop so we can actually do const array sizes
   if (n <= 0) {
     return 0;
   }
 
   int length = n * _audio_channels;
-  _steamAudioSettings->frameSize = n;
 
-  int16_t srcData[length];
+  int dataPoint = 0;
+  
+  while (n > 0) {
+    int blocksize = (65536 / _audio_channels);
+    if (blocksize > n) { blocksize = n; }
 
-  _source_cursor->read_samples(n, srcData);
+    int16_t srcData[65536];
 
-  IPLfloat32 fData[length];//we need to change 16ints to IPLfloats
+    int nread = _source_cursor->read_samples(blocksize, srcData);
+    if (nread == 0) { return n; }
 
-  for (size_t i = 0; i < length; i++) {
-    fData[i] = (IPLfloat32)srcData[i];//get int16_t and cast to IPLfloat32
-  }
+    IPLfloat32 fData[65536];//we need to change 16ints to IPLfloats
 
-  IPLAudioBuffer inBuffer;
-  iplAudioBufferAllocate(*_source->_steamContext, _audio_channels, n, &inBuffer);
-  iplAudioBufferDeinterleave(*_source->_steamContext, fData, &inBuffer);
-  SteamAudioSound::SteamGlobalHolder globals(_steamAudioSettings, _source->_steamContext, _audio_channels, n, &_source);
-
-  for (size_t i = 0; i < _source->_steam_effects.size(); i++) {
-    SteamAudioEffect effect = *_source->_steam_effects[i];
-    if (effect._isActive) {//TODO:: Add conditions for skipping simulated effects if no simulator, effects that encode to ambisonics, etc
-      IPLAudioBuffer outBuffer = effect.apply_effect(&globals, inBuffer);
-      std::swap(inBuffer, outBuffer);
-      iplAudioBufferFree(*_source->_steamContext, &outBuffer);
+    for (size_t i = 0; i < blocksize; i++) {
+      fData[i] = (IPLfloat32)srcData[i];//get int16_t and cast to IPLfloat32
     }
-  }
 
-  iplAudioBufferInterleave(*(_source->_steamContext), &inBuffer, fData);
-  iplAudioBufferFree(*_source->_steamContext, &inBuffer);
+    _steamAudioSettings->frameSize = blocksize;
 
-  for (size_t i = 0; i < length; i++) {
-    data[i] = (int16_t)fData[i];
+    IPLAudioBuffer inBuffer;
+    iplAudioBufferAllocate(*((PT(SteamMovieAudio))_source)->_steamContext, _audio_channels, blocksize, &inBuffer);
+    iplAudioBufferDeinterleave(*((PT(SteamMovieAudio))_source)->_steamContext, fData, &inBuffer);
+    SteamAudioSound::SteamGlobalHolder globals(_steamAudioSettings, ((PT(SteamMovieAudio))_source)->_steamContext, _audio_channels, n, &_source);
+
+    for (size_t i = 0; i < ((PT(SteamMovieAudio))_source)->_steam_effects.size(); i++) {
+      SteamAudioEffect effect = *((PT(SteamMovieAudio))_source)->_steam_effects[i];
+      if (effect._isActive) {//TODO:: Add conditions for skipping simulated effects if no simulator, effects that encode to ambisonics, etc
+        IPLAudioBuffer outBuffer = effect.apply_effect(&globals, inBuffer);
+        std::swap(inBuffer, outBuffer);
+        iplAudioBufferFree(*((PT(SteamMovieAudio))_source)->_steamContext, &outBuffer);
+      }
+    }
+
+    iplAudioBufferInterleave(*((PT(SteamMovieAudio))_source)->_steamContext, &inBuffer, fData);
+    iplAudioBufferFree(*((PT(SteamMovieAudio))_source)->_steamContext, &inBuffer);
+
+    for (size_t i = 0; i < blocksize; i++) {
+      data[dataPoint] = (int16_t)fData[i];
+      dataPoint++
+    }
   }
   return n;
 }

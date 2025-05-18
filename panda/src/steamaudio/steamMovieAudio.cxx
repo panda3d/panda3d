@@ -21,11 +21,11 @@
 #include "steamMovieAudioCursor.h"
 
 SteamMovieAudio::
-explicit SteamMovieAudio(const std::string& name MovieAudio& audio_source, NodePath* source, NodePath* listener) :
+SteamMovieAudio(const std::string& name, PT(MovieAudio) audio_source, NodePath source, NodePath listener) :
   MovieAudio(name),
   _sourceNP(source),
   _listenerNP(listener),
-  _audio_source(&audio_source)
+  _audio_source(audio_source)
 {
   //SteamAudio initialization
   if (_steamContext == nullptr) {//we haven't made a context yet
@@ -42,7 +42,7 @@ SteamMovieAudio::
 
 PT(MovieAudioCursor) SteamMovieAudio::
 open() {
-  return PT((MovieAudioCursor)SteamMovieAudioCursor(this))
+  return new SteamMovieAudioCursor(this);
 }
 
 /**
@@ -75,8 +75,8 @@ find_steam_audio_effect(SteamAudioEffect effect) {
 */
 SteamAudioEffect SteamMovieAudio::
 get_steam_audio_effect(int index) {
-  if (index < myVector.size()) {
-    return _steam_effects[index];
+  if (index < _steam_effects.size()) {
+    return *_steam_effects[index];
   }
   else {
     return SteamAudioEffect();
@@ -111,22 +111,22 @@ remove_steam_audio_effect(SteamAudioEffect effect) {
 
 PT(SteamMovieAudio) SteamMovieAudio::
 get(const Filename& name, NodePath source, NodePath listener) {
-  return SteamMovieAudio.get(MovieAudio.get(name), source, listener);
+  return get(MovieAudio().get(name), source, listener);
 }
 
 /**
 *Creates a SteamMovieAudio based on an existing MovieAudio.
 */
 PT(SteamMovieAudio) SteamMovieAudio::
-get(const MovieAudio& audio, NodePath source, NodePath listener) {
-  SteamMovieAudio newSteamAudio = SteamMovieAudio(audio.get_name().append(": Steam Audio"), audio, source, listener);
+get(const PT(MovieAudio) audio, NodePath source, NodePath listener) {
+  PT(SteamMovieAudio) newSteamAudio = new SteamMovieAudio(*audio.get_name().append(std::string(": Steam Audio")), audio, source, listener);
   return newSteamAudio;
 }
 
 /**
 *Steam Audio has different different axes, so this function quickly translates them.
 */
-PT(SteamMovieAudio) SteamMovieAudio::
+void SteamMovieAudio::
 sa_coordinate_transform(float x1, float y1, float z1, IPLVector3& vals) {
   vals.x = x1;
   vals.y = z1;

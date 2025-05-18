@@ -1,6 +1,6 @@
 
 #include "config_steamaudio.cxx"
-#include "steamMovieAudio.h"
-#include "steamMovieAudioCursor.h"
+#include "steamMovieAudio.cxx"
+#include "steamMovieAudioCursor.cxx"
 #include "steamAudioEffect.cxx"
 #include "steamDirectEffect.cxx"

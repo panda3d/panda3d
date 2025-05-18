@@ -46,7 +46,7 @@ public:
   }
   static void init_type() {
     TypedObject::init_type();
-    register_type(_type_handle, "SteamAudioEffect", TypedObject::get_class_type());
+    register_type(_type_handle, "SteamAudioEffect", TypedReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

@@ -30,7 +30,7 @@ class SteamAudioEffect;
 */
 class EXPCL_STEAM_AUDIO SteamMovieAudio : public MovieAudio {
 PUBLISHED:
-  explicit SteamMovieAudio(const std::string& name, MovieAudio& audio_source, NodePath source, NodePath listener);
+  explicit SteamMovieAudio(const std::string& name, PT(MovieAudio) audio_source, NodePath source, NodePath listener);
   virtual ~SteamMovieAudio();
   virtual PT(MovieAudioCursor) open();
 
@@ -41,7 +41,7 @@ PUBLISHED:
   bool remove_steam_audio_effect(SteamAudioEffect effect);
 
   static PT(SteamMovieAudio) get(const Filename& name, NodePath source, NodePath listener);
-  static PT(SteamMovieAudio) get(const MovieAudio& audio, NodePath source, NodePath listener);
+  static PT(SteamMovieAudio) get(const PT(MovieAudio)audio, NodePath source, NodePath listener);
 
 private:
 
