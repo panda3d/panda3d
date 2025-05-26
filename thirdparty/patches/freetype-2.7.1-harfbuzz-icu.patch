@@ -1,0 +1,27 @@
+diff -ur a/builds/cmake/FindHarfBuzz.cmake b/builds/cmake/FindHarfBuzz.cmake
+--- a/builds/cmake/FindHarfBuzz.cmake	2022-02-05 16:09:17.087419136 +0100
++++ b/builds/cmake/FindHarfBuzz.cmake	2022-02-05 16:09:38.440814613 +0100
+@@ -49,14 +49,15 @@
+     else ()
+         set(_HARFBUZZ_REQUIRED "")
+     endif ()
+-    pkg_check_modules(PC_HARFBUZZ_ICU harfbuzz-icu>=0.9.18 ${_HARFBUZZ_REQUIRED})
+-    find_library(HARFBUZZ_ICU_LIBRARIES NAMES harfbuzz-icu
+-        HINTS ${PC_HARFBUZZ_ICU_LIBRARY_DIRS} ${PC_HARFBUZZ_ICU_LIBDIR}
+-    )
+-    if (HARFBUZZ_ICU_LIBRARIES)
+-        list(APPEND HARFBUZZ_LIBRARIES "${HARFBUZZ_ICU_LIBRARIES}")
+-    endif ()
+-    set(_HARFBUZZ_EXTRA_REQUIRED_VAR "HARFBUZZ_ICU_LIBRARIES")
++    #pkg_check_modules(PC_HARFBUZZ_ICU harfbuzz-icu>=0.9.18 ${_HARFBUZZ_REQUIRED})
++    #find_library(HARFBUZZ_ICU_LIBRARIES NAMES harfbuzz-icu
++    #    HINTS ${PC_HARFBUZZ_ICU_LIBRARY_DIRS} ${PC_HARFBUZZ_ICU_LIBDIR}
++    #)
++    #if (HARFBUZZ_ICU_LIBRARIES)
++    #    list(APPEND HARFBUZZ_LIBRARIES "${HARFBUZZ_ICU_LIBRARIES}")
++    #endif ()
++    #set(_HARFBUZZ_EXTRA_REQUIRED_VAR "HARFBUZZ_ICU_LIBRARIES")
++    set(_HARFBUZZ_EXTRA_REQUIRED_VAR "")
+ else ()
+     set(_HARFBUZZ_EXTRA_REQUIRED_VAR "")
+ endif ()
