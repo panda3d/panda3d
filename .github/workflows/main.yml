@@ -1,0 +1,46 @@
+name: ContinutousIntegration
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  build:
+    runs-on: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.13'
+
+    - name: Install dependencies for Linux
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential python3-dev
+
+    - name: Install dependencies for Macintosh
+      if: runner.os == 'macOS'
+      run: |
+        brew install python3
+
+    - name: Install dependencies for Windows
+      if: runner.os == 'Windows'
+      run: |
+        choco install python --version=3.13.0
+
+    - name: Static build of Panda3D commands go here
+      run: |
+        # Need to adjust this build command for Panda3D's static build requirements
+        python makepanda/makepanda.py --everything
+
+    - name: Run Tests
+      run: |
+        # Not sure what to add as a unit test here.
+        python -m foo.bar
