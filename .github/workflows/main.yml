@@ -8,7 +8,6 @@ on:
 
 jobs:
   build:
-  - name: OSes to be run on
     runs-on: [ubuntu-latest, windows-latest, macos-latest]
 
     steps:
