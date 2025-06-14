@@ -96,8 +96,8 @@ class FilterConfig:
 
 
 class ToneMap:
-    ACES = "ACES"
-    neutral = "Neutral"
+    ACES = object()
+    PBR_NEUTRAL = object()
 
 
 class CommonFilters:
@@ -196,6 +196,8 @@ class CommonFilters:
                 self.del_uniforms(filter["uniforms"], reconfigure=False)
             del self.filters[name]
             self.reconfigure()
+        else:
+            raise ValueError(f"No filter named {name}")
 
     def setShaderInputs(self, inputs):
         for key, value in inputs.items():
@@ -750,22 +752,6 @@ o_color.b = (o_color.b < 0.0031308) ? (o_color.b * 12.92) : (1.055 * pow(o_color
         self.fbprops.setSrgbColor(False)
         self.clamping = False
 
-                       shader_string="""float3 aces_color = mul(aces_input_mat, o_color.rgb);
-                                     o_color.rgb = saturate(mul(aces_output_mat, 
-                                     (aces_color * (aces_color + 0.0245786f) - 0.000090537f) / 
-                                     (aces_color * (0.983729f * aces_color + 0.4329510f) + 0.238081f)));""",
-                       consts=["""static const float3x3 aces_input_mat = {
-                      {0.59719, 0.35458, 0.04823},
-                      {0.07600, 0.90834, 0.01566},
-                      {0.02840, 0.13383, 0.83777},
-                    };
-                    static const float3x3 aces_output_mat = {
-                      { 1.60475, -0.53108, -0.07367},
-                      {-0.10208,  1.10813, -0.00605},
-                      {-0.00327, -0.07276,  1.07602},
-                    };"""
-                               ], sort=sort)
-
     def delHighDynamicRange(self):
         self.fbprops.setFloatColor(False)
         self.fbprops.setSrgbColor(True)
@@ -791,27 +777,52 @@ o_color.b = (o_color.b < 0.0031308) ? (o_color.b * 12.92) : (1.055 * pow(o_color
     def delExposureAdjust(self):
         self.del_filter("ExposureAdjust")
 
-            neutral_color -= offset;
-            float peak = max(neutral_color.r, max(neutral_color.g, neutral_color.b));
-            if (peak < start_compression){
-            o_color.rgb =  neutral_color;
-            }else{
-            const float d = 1.0 - start_compression;
-            float new_peak = 1.0 - d * d / (peak + d - start_compression);
-            neutral_color *= new_peak / peak;
-            float g = 1.0 - 1.0 / (desaturation * (peak - new_peak) + 1.0);
-            text += "o_color.rgb = mix(neutral_color, new_peak * float3(1, 1, 1), g);}"""
+    def setToneMap(self, tonemap=ToneMap.PBR_NEUTRAL, sort=8):
+        if tonemap == ToneMap.ACES:
+            self.setFilter('ToneMap', shader_string="""float3 aces_color = mul(aces_input_mat, o_color.rgb);
+                                                 o_color.rgb = saturate(mul(aces_output_mat,
+                                                 (aces_color * (aces_color + 0.0245786f) - 0.000090537f) /
+                                                 (aces_color * (0.983729f * aces_color + 0.4329510f) + 0.238081f)));""",
+                           consts=["""static const float3x3 aces_input_mat = {
+                                  {0.59719, 0.35458, 0.04823},
+                                  {0.07600, 0.90834, 0.01566},
+                                  {0.02840, 0.13383, 0.83777},
+                                };
+                                static const float3x3 aces_output_mat = {
+                                  { 1.60475, -0.53108, -0.07367},
+                                  {-0.10208,  1.10813, -0.00605},
+                                  {-0.00327, -0.07276,  1.07602},
+                                };"""
+                                   ], sort=sort)
+        elif tonemap == ToneMap.PBR_NEUTRAL:
+            const = "  const float start_compression = 0.8 - 0.04;\n"
+            const += "  const float desaturation = 0.15;\n"
 
-            self.setFilter("ToneMap", shader_string=text, sort=sort)
+            text = """float x = min(o_color.r, min(o_color.g, o_color.b));
+                      float offset = x < 0.08 ? x - 6.25 * x * x : 0.04;
+                      o_color.rgb -= offset;
+
+                      float peak = max(o_color.r, max(o_color.g, o_color.b));
+
+                      if (peak >= start_compression) {
+                        const float d = 1.0 - start_compression;
+                        float new_peak = 1.0 - d * d / (peak + d - start_compression);
+                        o_color.rgb *= new_peak / peak;
+                        float g = 1.0 - 1.0 / (desaturation * (peak - new_peak) + 1.0);
+
+                o_color.rgb = lerp(o_color.rgb, new_peak * float3(1, 1, 1), g);
+            }\n"""
+
+            self.setFilter("ToneMap", shader_string=text, consts=const, sort=sort)
+        else:
+            raise ValueError("Invalid value for tonemap")
 
     def delToneMap(self):
         self.del_filter("ToneMap")
 
-
     def printShader(self):
         for count, line in enumerate(c.current_text.split("\n")):
             print(count, line)
-
 
     #snake_case alias:
     set_msaa = setMSAA
@@ -909,9 +920,9 @@ if __name__ == "__main__":
     c.set_cartoon_ink()
     c.set_ambient_occlusion()
     c.set_bloom()
-    c.set_view_glow()
     c.set_exposure_adjust(stops=1)
     c.set_high_dynamic_range()
+    c.setToneMap(ToneMap.PBR_NEUTRAL)
 
     c.print_shader()
 
@@ -919,4 +930,7 @@ if __name__ == "__main__":
     s.accept("p", c.print_shader)
     s.accept("m", c.del_msaa)
     s.accept("d", c.del_bloom)
+    s.accept('r', lambda: c.del_filter('increase red'))
+    s.accept('a', lambda: c.del_filter('raise amount'))
+
     s.run()
