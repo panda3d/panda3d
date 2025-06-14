@@ -13,6 +13,7 @@ from .FunctionInterval import *
 from .LerpInterval import *
 from .IndirectInterval import *
 from .MopathInterval import *
+from .CutScene import *
 try:
     import panda3d.physics
     # Some people may have the particle system compiled out
