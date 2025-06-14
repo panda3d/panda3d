@@ -91,13 +91,14 @@ __setstate__(PyObject *self, PyObject *props) {
   PyObject *key, *value;
   Py_ssize_t pos = 0;
 
+  Py_BEGIN_CRITICAL_SECTION(props);
   while (PyDict_Next(props, &pos, &key, &value)) {
     // Look for a writable property on the type by this name.
     PyObject *descr = _PyType_Lookup(type, key);
 
     if (descr != nullptr && Py_TYPE(descr)->tp_descr_set != nullptr) {
       if (Py_TYPE(descr)->tp_descr_set(descr, self, value) < 0) {
-        return;
+        break;
       }
     } else {
       PyObject *key_repr = PyObject_Repr(key);
@@ -106,9 +107,10 @@ __setstate__(PyObject *self, PyObject *props) {
                    PyUnicode_AsUTF8(key_repr)
                   );
       Py_DECREF(key_repr);
-      return;
+      break;
     }
   }
+  Py_END_CRITICAL_SECTION();
 }
 
 #endif  // HAVE_PYTHON

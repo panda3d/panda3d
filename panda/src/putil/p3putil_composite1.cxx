@@ -17,6 +17,7 @@
 #include "callbackObject.cxx"
 #include "clockObject.cxx"
 #include "colorSpace.cxx"
+#include "completionCounter.cxx"
 #include "config_putil.cxx"
 #include "configurable.cxx"
 #include "copyOnWriteObject.cxx"

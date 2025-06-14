@@ -24,13 +24,27 @@
  */
 INLINE_LINMATH std::string Extension<FLOATNAME(LVecBase4)>::
 __repr__() const {
-  std::ostringstream out;
-  out << "LVecBase4" << FLOATTOKEN << "("
-      << MAYBE_ZERO(_this->_v(0)) << ", "
-      << MAYBE_ZERO(_this->_v(1)) << ", "
-      << MAYBE_ZERO(_this->_v(2)) << ", "
-      << MAYBE_ZERO(_this->_v(3)) << ")";
-  return out.str();
+  char buf[160] = "LVecBase4";
+  char *p = buf + strlen(buf);
+  *(p++) = FLOATTOKEN;
+  *(p++) = '(';
+  FLOATTYPE_REPR(_this->_v(0), p);
+  p += strlen(p);
+  *(p++) = ',';
+  *(p++) = ' ';
+  FLOATTYPE_REPR(_this->_v(1), p);
+  p += strlen(p);
+  *(p++) = ',';
+  *(p++) = ' ';
+  FLOATTYPE_REPR(_this->_v(2), p);
+  p += strlen(p);
+  *(p++) = ',';
+  *(p++) = ' ';
+  FLOATTYPE_REPR(_this->_v(3), p);
+  p += strlen(p);
+  *(p++) = ')';
+  *p = '\0';
+  return std::string(buf, p - buf);
 }
 
 /**
@@ -182,7 +196,7 @@ __setattr__(PyObject *self, const std::string &attr_name, PyObject *assign) {
 #endif
       } else {
         PyErr_Format(PyExc_ValueError, "'%.200s' object is not iterable",
-          assign->ob_type->tp_name);
+          Py_TYPE(assign)->tp_name);
       }
       return -1;
     }

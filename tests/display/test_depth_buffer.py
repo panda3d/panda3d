@@ -198,12 +198,12 @@ def test_depth_bias(depth_region):
     # With slope-scaled depth bias (our quad has no slope)
     state = core.RenderState.make(core.DepthBiasAttrib.make(10, 0))
     z = render_depth_pixel(depth_region, 5, near=1, far=10, state=state)
-    assert z == z_ref
+    assert z == pytest.approx(z_ref)
 
     # Same, but negative
     state = core.RenderState.make(core.DepthBiasAttrib.make(-10, 0))
     z = render_depth_pixel(depth_region, 5, near=1, far=10, state=state)
-    assert z == z_ref
+    assert z == pytest.approx(z_ref)
 
 
 def test_depth_offset(depth_region):

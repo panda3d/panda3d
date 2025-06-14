@@ -14,11 +14,15 @@
 #include "bufferContextChain.h"
 #include "bufferContext.h"
 #include "indent.h"
+#include "lightMutexHolder.h"
 
 /**
  * Returns the first BufferContext object stored in the tracker.  You can walk
  * through the entire list of objects stored on the tracker by calling
  * get_next() on each returned object, until the return value is NULL.
+ *
+ * This does not grab the lock; make sure you are holding the lock while
+ * iterating over the chain.
  */
 BufferContext *BufferContextChain::
 get_first() {
@@ -32,9 +36,11 @@ get_first() {
 
 /**
  * Moves all of the BufferContexts from the other tracker onto this one.
+ * The other chain must be locked.
  */
 void BufferContextChain::
 take_from(BufferContextChain &other) {
+  LightMutexHolder holder(_lock);
   _total_size += other._total_size;
   _count += other._count;
   other._total_size = 0;
@@ -55,6 +61,7 @@ take_from(BufferContextChain &other) {
  */
 void BufferContextChain::
 write(std::ostream &out, int indent_level) const {
+  LightMutexHolder holder(_lock);
   indent(out, indent_level)
     << _count << " objects, consuming " << _total_size << " bytes:\n";
 

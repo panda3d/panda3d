@@ -24,18 +24,6 @@
 TypeHandle CullBinFrontToBack::_type_handle;
 
 /**
- *
- */
-CullBinFrontToBack::
-~CullBinFrontToBack() {
-  Objects::iterator oi;
-  for (oi = _objects.begin(); oi != _objects.end(); ++oi) {
-    CullableObject *object = (*oi)._object;
-    delete object;
-  }
-}
-
-/**
  * Factory constructor for passing to the CullBinManager.
  */
 CullBin *CullBinFrontToBack::
@@ -52,7 +40,7 @@ add_object(CullableObject *object, Thread *current_thread) {
   // Determine the center of the bounding volume.
   CPT(BoundingVolume) volume = object->_geom->get_bounds();
   if (volume->is_empty()) {
-    delete object;
+    // No point in culling objects with no volume.
     return;
   }
 

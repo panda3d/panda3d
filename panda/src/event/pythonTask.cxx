@@ -174,9 +174,15 @@ get_args() {
       PyTuple_SET_ITEM(with_task, i, Py_NewRef(item));
     }
 
-    this->ref();
-    PyObject *self = DTool_CreatePyInstance(this, Dtool_PythonTask, true, false);
-    PyTuple_SET_ITEM(with_task, num_args, self);
+    // Check whether we have a Python wrapper.  This is not the case if the
+    // object has been created by C++ and never been exposed to Python code.
+    if (__self__ == nullptr) {
+      // A __self__ instance does not exist, let's create one now.
+      this->ref();
+      __self__ = DTool_CreatePyInstance(this, Dtool_PythonTask, true, false);
+    }
+
+    PyTuple_SET_ITEM(with_task, num_args, Py_NewRef(__self__));
     return with_task;
   }
   else {
@@ -294,13 +300,13 @@ __setattr__(PyObject *self, PyObject *attr, PyObject *v) {
   if (!PyUnicode_Check(attr)) {
     PyErr_Format(PyExc_TypeError,
                  "attribute name must be string, not '%.200s'",
-                 attr->ob_type->tp_name);
+                 Py_TYPE(attr)->tp_name);
     return -1;
   }
 
   PyObject *descr = _PyType_Lookup(Py_TYPE(self), attr);
   if (descr != nullptr) {
-    descrsetfunc f = descr->ob_type->tp_descr_set;
+    descrsetfunc f = Py_TYPE(descr)->tp_descr_set;
     if (f != nullptr) {
       return f(descr, self, v);
     }
@@ -357,11 +363,9 @@ PyObject *PythonTask::
 __getattribute__(PyObject *self, PyObject *attr) const {
   // We consult the instance dict first, since the user may have overridden a
   // method or something.
-  PyObject *item = PyDict_GetItem(__dict__, attr);
-
-  if (item != nullptr) {
-    // PyDict_GetItem returns a borrowed reference.
-    return Py_NewRef(item);
+  PyObject *item;
+  if (PyDict_GetItemRef(__dict__, attr, &item) > 0) {
+    return item;
   }
 
   return PyObject_GenericGetAttr(self, attr);
@@ -465,7 +469,7 @@ cancel() {
 #endif
 
       // Shortcut for unextended AsyncFuture.
-      if (Py_TYPE(_fut_waiter) == (PyTypeObject *)&Dtool_AsyncFuture) {
+      if (Py_IS_TYPE(_fut_waiter, Dtool_GetPyTypeObject(&Dtool_AsyncFuture))) {
         AsyncFuture *fut = (AsyncFuture *)DtoolInstance_VOID_PTR(_fut_waiter);
         if (!fut->done()) {
           fut->cancel();
@@ -713,7 +717,7 @@ do_python_task() {
         _retrieved_exception = false;
 
         if (task_cat.is_debug()) {
-          if (_exception != nullptr && Py_TYPE(_exception) == &PyType_Type) {
+          if (_exception != nullptr && Py_IS_TYPE(_exception, &PyType_Type)) {
             task_cat.debug()
               << *this << " received " << ((PyTypeObject *)_exception)->tp_name << " from coroutine.\n";
           } else {
@@ -795,6 +799,7 @@ do_python_task() {
             << *this << " is now polling " << PyUnicode_AsUTF8(str) << ".done()\n";
           Py_DECREF(str);
         }
+        Py_DECREF(fut_done);
         _fut_waiter = result;
         return DS_cont;
       }
@@ -857,7 +862,7 @@ do_python_task() {
   PyMethodDef *meth = nullptr;
   if (PyCFunction_Check(result)) {
     meth = ((PyCFunctionObject *)result)->m_ml;
-  } else if (Py_TYPE(result) == &PyMethodDescr_Type) {
+  } else if (Py_IS_TYPE(result, &PyMethodDescr_Type)) {
     meth = ((PyMethodDescrObject *)result)->d_method;
   }
 
@@ -1003,11 +1008,16 @@ call_owner_method(const char *method_name) {
 void PythonTask::
 call_function(PyObject *function) {
   if (function != Py_None) {
-    this->ref();
-    PyObject *self = DTool_CreatePyInstance(this, Dtool_PythonTask, true, false);
-    PyObject *result = PyObject_CallOneArg(function, self);
+    // Check whether we have a Python wrapper.  This is not the case if the
+    // object has been created by C++ and never been exposed to Python code.
+    if (__self__ == nullptr) {
+      // A __self__ instance does not exist, let's create one now.
+      this->ref();
+      __self__ = DTool_CreatePyInstance(this, Dtool_PythonTask, true, false);
+    }
+
+    PyObject *result = PyObject_CallOneArg(function, __self__);
     Py_XDECREF(result);
-    Py_DECREF(self);
   }
 }
 

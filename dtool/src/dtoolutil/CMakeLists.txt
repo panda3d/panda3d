@@ -69,6 +69,8 @@ set(P3DTOOLUTIL_IGATEEXT
   globPattern_ext.h
   iostream_ext.cxx
   iostream_ext.h
+  pyenv_init.cxx
+  pyenv_init.h
   textEncoder_ext.cxx
   textEncoder_ext.h
 )

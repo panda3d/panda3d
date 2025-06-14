@@ -17,6 +17,7 @@
 #include "meshDrawer.h"
 #include "meshDrawer2D.h"
 #include "geoMipTerrain.h"
+#include "htmlVideoTexture.h"
 #include "movieTexture.h"
 #include "pandaSystem.h"
 #include "texturePool.h"
@@ -136,5 +137,11 @@ init_libgrutil() {
 
   TexturePool *ts = TexturePool::get_global_ptr();
   ts->register_texture_type(MovieTexture::make_texture, "avi m2v mov mpg mpeg mp4 wmv asf flv nut ogm mkv ogv webm");
+#endif
+
+#ifdef __EMSCRIPTEN__
+  HTMLVideoTexture::init_type();
+
+  ts->register_texture_type(HTMLVideoTexture::make_texture, "avi m2v mov mpg mpeg mp4 wmv asf flv nut ogm mkv ogv webm");
 #endif
 }

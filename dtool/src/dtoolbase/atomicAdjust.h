@@ -30,7 +30,7 @@ struct AtomicAdjust {
 #include "atomicAdjustDummyImpl.h"
 typedef AtomicAdjustDummyImpl AtomicAdjust;
 
-#elif (defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 7))) || (defined(__clang__) && (__clang_major__ >= 3))
+#elif (defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 7))) || (defined(__clang__) && (__clang_major__ >= 3) && !defined(WIN32_VC) )
 // GCC 4.7 and above has built-in __atomic functions for atomic operations.
 // Clang 3.0 and above also supports them.
 

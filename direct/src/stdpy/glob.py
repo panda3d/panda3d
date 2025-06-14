@@ -52,7 +52,7 @@ def glob1(dirname, pattern):
     if not dirname:
         dirname = os.curdir
     try:
-        names = os.listdir(dirname)
+        names = file.listdir(dirname)
     except os.error:
         return []
     if pattern[0] != '.':

@@ -168,7 +168,7 @@ get_num_characters() const {
  * string.  If the object at this position is a graphic object instead of a
  * character, returns 0.
  */
-INLINE wchar_t TextAssembler::
+INLINE char32_t TextAssembler::
 get_character(int n) const {
   nassertr(n >= 0 && n < (int)_text_string.size(), 0);
   return _text_string[n]._character;
@@ -232,7 +232,7 @@ get_num_cols(int r) const {
  * the object at this position is a graphic object instead of a character,
  * returns 0.
  */
-INLINE wchar_t TextAssembler::
+INLINE char32_t TextAssembler::
 get_character(int r, int c) const {
   nassertr(r >= 0 && r < (int)_text_block.size(), 0);
   nassertr(c >= 0 && c < (int)_text_block[r]._string.size(), 0);
@@ -308,6 +308,18 @@ calc_width(const TextCharacter &tch) {
  */
 INLINE TextAssembler::TextCharacter::
 TextCharacter(wchar_t character,
+              TextAssembler::ComputedProperties *cprops) :
+  _character(character),
+  _graphic(nullptr),
+  _cprops(cprops)
+{
+}
+
+/**
+ *
+ */
+INLINE TextAssembler::TextCharacter::
+TextCharacter(char32_t character,
               TextAssembler::ComputedProperties *cprops) :
   _character(character),
   _graphic(nullptr),

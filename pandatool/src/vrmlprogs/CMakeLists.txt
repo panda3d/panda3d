@@ -1,3 +1,7 @@
+if(NOT BUILD_TOOLS)
+  return()
+endif()
+
 add_executable(vrml-trans vrmlTrans.cxx vrmlTrans.h)
 target_link_libraries(vrml-trans p3progbase p3vrml)
 install(TARGETS vrml-trans EXPORT Tools COMPONENT Tools DESTINATION ${CMAKE_INSTALL_BINDIR})

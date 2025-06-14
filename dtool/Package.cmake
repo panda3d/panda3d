@@ -1,9 +1,54 @@
-set(_thirdparty_dir_default "${PROJECT_SOURCE_DIR}/thirdparty")
-if(NOT IS_DIRECTORY "${_thirdparty_dir_default}")
-  set(_thirdparty_dir_default "")
+set(_thirdparty_platform)
+
+if(APPLE)
+  set(_thirdparty_platform "darwin-libs-a")
+
+elseif(WIN32)
+  if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    set(_thirdparty_platform "win-libs-vc14-x64")
+  else()
+    set(_thirdparty_platform "win-libs-vc14")
+  endif()
+
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+  if(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
+    set(_thirdparty_platform "linux-libs-arm64")
+  elseif(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    set(_thirdparty_platform "linux-libs-x64")
+  else()
+    set(_thirdparty_platform "linux-libs-a")
+  endif()
+
+elseif(CMAKE_SYSTEM_NAME STREQUAL "FreeBSD")
+  if(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
+    set(_thirdparty_platform "freebsd-libs-arm64")
+  elseif(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    set(_thirdparty_platform "freebsd-libs-x64")
+  else()
+    set(_thirdparty_platform "freebsd-libs-a")
+  endif()
+
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Android")
+  set(_thirdparty_platform "android-libs-${CMAKE_ANDROID_ARCH}")
+
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
+  set(_thirdparty_platform "emscripten-libs")
+
+elseif(CMAKE_SYSTEM_NAME STREQUAL "WASI")
+  set(_thirdparty_platform "wasi-libs-${CMAKE_SYSTEM_PROCESSOR}")
+
 endif()
-if(CMAKE_SYSTEM_NAME STREQUAL "WASI")
-  set(_thirdparty_dir_default "")
+
+set(_thirdparty_dir_default "")
+if(_thirdparty_platform)
+  if(IS_DIRECTORY "${PROJECT_SOURCE_DIR}/thirdparty/${_thirdparty_platform}")
+    set(_thirdparty_dir_default "${PROJECT_SOURCE_DIR}/thirdparty")
+
+  else()
+    message(WARNING
+      "Ignoring thirdparty directory without ${_thirdparty_platform} subdirectory.")
+
+  endif()
 endif()
 
 set(THIRDPARTY_DIRECTORY "${_thirdparty_dir_default}" CACHE PATH
@@ -14,6 +59,11 @@ set(THIRDPARTY_DIRECTORY "${_thirdparty_dir_default}" CACHE PATH
 set(THIRDPARTY_DLLS)
 
 if(THIRDPARTY_DIRECTORY)
+  if(NOT _thirdparty_platform)
+    message(FATAL_ERROR
+      "You can't use THIRDPARTY_DIRECTORY on this platform. Unset it to continue.")
+  endif()
+
   # This policy is necessary for PackageName_ROOT variables to be respected
   if(POLICY CMP0074)
     cmake_policy(GET CMP0074 _policy_cmp0074)
@@ -24,62 +74,13 @@ if(THIRDPARTY_DIRECTORY)
       "Your version of CMake is too old; please upgrade or unset THIRDPARTY_DIRECTORY to continue.")
   endif()
 
-  # Dig up the actual "libs" directory
   if(APPLE)
-    set(_package_dir "${THIRDPARTY_DIRECTORY}/darwin-libs-a")
-
     # Make sure thirdparty has the first shot, not system frameworks
     set(CMAKE_FIND_FRAMEWORK LAST)
 
   elseif(WIN32)
-    if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-      set(_package_dir "${THIRDPARTY_DIRECTORY}/win-libs-vc14-x64")
-
-      file(GLOB _python_dirs "${THIRDPARTY_DIRECTORY}/win-python*-x64")
-    else()
-      set(_package_dir "${THIRDPARTY_DIRECTORY}/win-libs-vc14")
-
-      file(GLOB _python_dirs "${THIRDPARTY_DIRECTORY}/win-python*")
-    endif()
-
-    list(REVERSE _python_dirs) # Descending order of version
-    if(NOT DEFINED Python_ROOT)
-      set(Python_ROOT "${_python_dirs}")
-    endif()
-
     set(BISON_ROOT "${THIRDPARTY_DIRECTORY}/win-util")
     set(FLEX_ROOT "${THIRDPARTY_DIRECTORY}/win-util")
-
-  elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    if(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
-      set(_package_dir ${THIRDPARTY_DIRECTORY}/linux-libs-arm64)
-    elseif(CMAKE_SIZEOF_VOID_P EQUAL 8)
-      set(_package_dir ${THIRDPARTY_DIRECTORY}/linux-libs-x64)
-    else()
-      set(_package_dir ${THIRDPARTY_DIRECTORY}/linux-libs-a)
-    endif()
-
-  elseif(CMAKE_SYSTEM_NAME STREQUAL "FreeBSD")
-    if(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
-      set(_package_dir ${THIRDPARTY_DIRECTORY}/freebsd-libs-arm64)
-    elseif(CMAKE_SIZEOF_VOID_P EQUAL 8)
-      set(_package_dir ${THIRDPARTY_DIRECTORY}/freebsd-libs-x64)
-    else()
-      set(_package_dir ${THIRDPARTY_DIRECTORY}/freebsd-libs-a)
-    endif()
-
-  elseif(CMAKE_SYSTEM_NAME STREQUAL "Android")
-    set(_package_dir ${THIRDPARTY_DIRECTORY}/android-libs-${CMAKE_ANDROID_ARCH})
-
-  else()
-    message(FATAL_ERROR
-      "You can't use THIRDPARTY_DIRECTORY on this platform. Unset it to continue.")
-
-  endif()
-
-  if(NOT EXISTS "${_package_dir}")
-    message(FATAL_ERROR
-      "Either your THIRDPARTY_DIRECTORY path does not exist, or it is for the wrong platform.")
 
   endif()
 
@@ -133,7 +134,7 @@ if(THIRDPARTY_DIRECTORY)
     endif()
 
     # Set search path
-    set(${_Package}_ROOT "${_package_dir}/${_package}")
+    set(${_Package}_ROOT "${THIRDPARTY_DIRECTORY}/${_thirdparty_platform}/${_package}")
 
     # Set up copying DLLs, if necessary
     file(GLOB _dlls "${${_Package}_ROOT}/bin/*.dll")
@@ -198,6 +199,27 @@ if(DEFINED _PREV_WANT_PYTHON_VERSION
 
   unset(_PREV_PYTHON_VALUES CACHE)
 
+endif()
+
+# Look for Python in the thirdparty directory on Windows.
+if(WIN32 AND THIRDPARTY_DIRECTORY)
+  set(_python_dir_suffix "")
+  if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    set(_python_dir_suffix "-x64")
+  endif()
+
+  if(WANT_PYTHON_VERSION)
+    set(Python_ROOT_DIR "${THIRDPARTY_DIRECTORY}/win-python${WANT_PYTHON_VERSION}${_python_dir_suffix}")
+  else()
+    # CMake doesn't support NATURAL sorting until 3.18, so we sort the 3.1x
+    # versions separately from the prior versions.
+    file(GLOB _python_dirs "${THIRDPARTY_DIRECTORY}/win-python3.[0-9][0-9]${_python_dir_suffix}")
+    file(GLOB _python_dirs2 "${THIRDPARTY_DIRECTORY}/win-python3.[0-9]${_python_dir_suffix}")
+    list(SORT _python_dirs COMPARE FILE_BASENAME CASE INSENSITIVE ORDER DESCENDING)
+    list(SORT _python_dirs2 COMPARE FILE_BASENAME CASE INSENSITIVE ORDER DESCENDING)
+    list(APPEND _python_dirs ${_python_dirs2})
+    set(Python_ROOT_DIR "${_python_dirs}")
+  endif()
 endif()
 
 if(WANT_PYTHON_VERSION)
@@ -318,6 +340,104 @@ if(HAVE_PYTHON)
 
   set(PYTHON_EXTENSION_SUFFIX "${_EXT_SUFFIX}" CACHE STRING
     "Suffix for Python binary extension modules.")
+
+  # Determine the platform to use for .whl files.
+  if(WIN32)
+    if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+      set(_platform "win-amd64")
+    else()
+      set(_platform "win32")
+    endif()
+
+  elseif(APPLE)
+    if(NOT CMAKE_OSX_ARCHITECTURES)
+      set(_arch_tag ${CMAKE_SYSTEM_PROCESSOR})
+
+    elseif("x86_64" IN_LIST CMAKE_OSX_ARCHITECTURES)
+      if("arm64" IN_LIST CMAKE_OSX_ARCHITECTURES)
+        set(_arch_tag "universal2")
+
+      elseif("i386" IN_LIST CMAKE_OSX_ARCHITECTURES AND
+             "ppc64" IN_LIST CMAKE_OSX_ARCHITECTURES AND
+             "ppc" IN_LIST CMAKE_OSX_ARCHITECTURES)
+        set(_arch_tag "universal")
+
+      elseif("i386" IN_LIST CMAKE_OSX_ARCHITECTURES AND
+             "ppc" IN_LIST CMAKE_OSX_ARCHITECTURES)
+        set(_arch_tag "fat32")
+
+      elseif("ppc64" IN_LIST CMAKE_OSX_ARCHITECTURES)
+        set(_arch_tag "fat64")
+
+      elseif("i386" IN_LIST CMAKE_OSX_ARCHITECTURES)
+        set(_arch_tag "intel")
+
+      else()
+        set(_arch_tag "x86_64")
+
+      endif()
+
+    elseif("i386" IN_LIST CMAKE_OSX_ARCHITECTURES AND
+           "ppc" IN_LIST CMAKE_OSX_ARCHITECTURES)
+      set(_arch_tag "fat")
+
+    else()
+      list(GET CMAKE_OSX_ARCHITECTURES 0 _arch_tag)
+
+    endif()
+
+    set(_target "${CMAKE_OSX_DEPLOYMENT_TARGET}")
+
+    if(_arch_tag STREQUAL "arm64" AND _target VERSION_LESS "11.0")
+      set(_target "11.0")
+
+    elseif(PYTHON_VERSION_STRING VERSION_GREATER_EQUAL "3.13" AND _target VERSION_LESS "10.13")
+      set(_target "10.13")
+
+    elseif(PYTHON_VERSION_STRING VERSION_GREATER_EQUAL "3.8" AND _target VERSION_LESS "10.9")
+      set(_target "10.9")
+
+    endif()
+
+    set(_platform "macosx-${_target}-${_arch_tag}")
+
+  elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    set(_platform "linux-${CMAKE_SYSTEM_PROCESSOR}")
+
+    if(IS_DIRECTORY "/opt/python")
+      # Sloppy detection for manylinux.
+      if(EXISTS "/lib64/libc-2.5.so" OR EXISTS "/lib/libc-2.5.so")
+        set(_platform "manylinux1-${CMAKE_SYSTEM_PROCESSOR}")
+
+      elseif(EXISTS "/lib64/libc-2.12.so" OR EXISTS "/lib/libc-2.12.so")
+        set(_platform "manylinux2010-${CMAKE_SYSTEM_PROCESSOR}")
+
+      elseif(EXISTS "/lib64/libc-2.17.so" OR EXISTS "/lib/libc-2.17.so")
+        set(_platform "manylinux2014-${CMAKE_SYSTEM_PROCESSOR}")
+
+      elseif(EXISTS "/lib/x86_64-linux-gnu/libc-2.24.so" OR EXISTS "/lib/i386-linux-gnu/libc-2.24.so")
+        set(_platform "manylinux_2_24-${CMAKE_SYSTEM_PROCESSOR}")
+
+      elseif(EXISTS "/etc/almalinux-release" AND EXISTS "/lib64/libc-2.28.so")
+        set(_platform "manylinux_2_28-${CMAKE_SYSTEM_PROCESSOR}")
+
+      endif()
+    endif()
+
+  elseif(CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
+    set(_platform "emscripten-${CMAKE_SYSTEM_PROCESSOR}")
+
+  else()
+    set(_platform "")
+
+  endif()
+
+  # This is being read out of the CMake cache by makewheel.py.
+  if(_platform)
+    set(PYTHON_PLATFORM_TAG "${_platform}" CACHE STRING "" FORCE)
+  else()
+    unset(PYTHON_PLATFORM_TAG CACHE)
+  endif()
 
 endif()
 

@@ -104,7 +104,7 @@ run() {
 
   // First, get the average color of all the opaque pixels.
   int count = 0;
-  LRGBColor color(0.0, 0.0, 0.0);
+  LRGBColorf color(0.0, 0.0, 0.0);
   int xi, yi;
   for (yi = 0; yi < _image.get_y_size(); ++yi) {
     for (xi = 0; xi < _image.get_x_size(); ++xi) {

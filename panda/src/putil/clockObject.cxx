@@ -499,6 +499,8 @@ wait_until(double want_time) {
 
   double wait_interval = (want_time - _actual_frame_time) - sleep_precision;
 
+  double now = get_real_time();
+
   if (wait_interval > 0.0) {
     Thread::sleep(wait_interval);
   }
@@ -506,6 +508,20 @@ wait_until(double want_time) {
 #ifdef DO_PSTATS
   (*_start_clock_busy_wait)();
 #endif
+
+  _actual_frame_time = get_real_time();
+  if (_actual_frame_time > want_time) {
+    if (util_cat.is_debug()) {
+      util_cat.debug()
+        << "Overslept by " << (int)((_actual_frame_time - want_time) * 1000000)
+        << " us while waiting for next frame, consider raising sleep-precision.\n";
+    }
+  }
+  else if (util_cat.is_spam()) {
+    util_cat.spam()
+      << "Busy waiting for " << (int)((want_time - _actual_frame_time) * 1000000)
+      << " us.\n";
+  }
 
   // Now busy-wait until the actual time elapses.
   while (_actual_frame_time < want_time) {

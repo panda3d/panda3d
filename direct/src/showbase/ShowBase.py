@@ -32,6 +32,8 @@ built-in scope.
 
 """
 
+from __future__ import annotations
+
 __all__ = ['ShowBase', 'WindowControls']
 
 # This module redefines the builtin import function with one
@@ -71,9 +73,11 @@ from panda3d.core import (
     GraphicsPipe,
     GraphicsPipeSelection,
     GraphicsWindow,
+    InputDevice,
     InputDeviceManager,
     InputDeviceNode,
     KeyboardButton,
+    Lens,
     LensNode,
     Mat4,
     ModelNode,
@@ -118,9 +122,11 @@ from . import DConfig
 from direct.extensions_native import NodePath_extensions # pylint: disable=unused-import
 
 # This needs to be available early for DirectGUI imports
+from typing import Any
+builtins: Any  # Tell mypy not to worry about us setting attributes on builtins
 import sys
 import builtins
-builtins.config = DConfig  # type: ignore[attr-defined]
+builtins.config = DConfig
 
 from direct.directnotify.DirectNotifyGlobal import directNotify, giveNotify
 from direct.directnotify.Notifier import Notifier
@@ -141,7 +147,7 @@ import importlib
 from direct.showbase import ExceptionVarDump
 from . import DirectObject
 from . import SfxPlayer
-from typing import ClassVar, Optional
+from typing import Callable, ClassVar, Literal, NoReturn
 if __debug__:
     from direct.showbase import GarbageReport
     from direct.directutil import DeltaProfiler
@@ -150,9 +156,10 @@ if __debug__:
 
 
 @atexit.register
-def exitfunc():
-    if getattr(builtins, 'base', None) is not None:
-        builtins.base.destroy()
+def exitfunc() -> None:
+    base = getattr(builtins, 'base', None)
+    if base is not None:
+        base.destroy()
 
 # Now ShowBase is a DirectObject.  We need this so ShowBase can hang
 # hooks on messages, particularly on window-event.  This doesn't
@@ -170,7 +177,9 @@ class ShowBase(DirectObject.DirectObject):
     aspect2d: NodePath
     pixel2d: NodePath
 
-    def __init__(self, fStartDirect=True, windowType=None):
+    cluster: Any | None
+
+    def __init__(self, fStartDirect: bool = True, windowType: str | None = None) -> None:
         """Opens a window, sets up a 3-D and several 2-D scene graphs, and
         everything else needed to render the scene graph to the window.
 
@@ -233,10 +242,10 @@ class ShowBase(DirectObject.DirectObject):
         self.wantRender2dp = ConfigVariableBool('want-render2dp', True).value
 
         self.screenshotExtension = ConfigVariableString('screenshot-extension', 'jpg').value
-        self.musicManager = None
-        self.musicManagerIsValid = None
-        self.sfxManagerList = []
-        self.sfxManagerIsValidList = []
+        self.musicManager: AudioManager | None = None
+        self.musicManagerIsValid: bool | None = None
+        self.sfxManagerList: list[AudioManager] = []
+        self.sfxManagerIsValidList: list[bool] = []
 
         self.wantStats = ConfigVariableBool('want-pstats', False).value
         self.wantTk = False
@@ -245,12 +254,12 @@ class ShowBase(DirectObject.DirectObject):
 
         #: Fill this in with a function to invoke when the user "exits"
         #: the program by closing the main window.
-        self.exitFunc = None
+        self.exitFunc: Callable[[], object] | None = None
 
         #: Add final-exit callbacks to this list.  These will be called
         #: when sys.exit() is called, after Panda has unloaded, and
         #: just before Python is about to shut down.
-        self.finalExitCallbacks = []
+        self.finalExitCallbacks: list[Callable[[], object]] = []
 
         # Set up the TaskManager to reset the PStats clock back
         # whenever we resume from a pause.  This callback function is
@@ -268,7 +277,7 @@ class ShowBase(DirectObject.DirectObject):
         self.__configAspectRatio = ConfigVariableDouble('aspect-ratio', 0).value
         # This variable is used to see if the aspect ratio has changed when
         # we get a window-event.
-        self.__oldAspectRatio = None
+        self.__oldAspectRatio: float | None = None
 
         #: This is set to the value of the window-type config variable, but may
         #: optionally be overridden in the Showbase constructor.  Should either
@@ -279,68 +288,68 @@ class ShowBase(DirectObject.DirectObject):
         self.requireWindow = ConfigVariableBool('require-window', True).value
 
         #: This is the main, or only window; see `winList` for a list of *all* windows.
-        self.win = None
-        self.frameRateMeter = None
-        self.sceneGraphAnalyzerMeter = None
+        self.win: GraphicsOutput | None = None
+        self.frameRateMeter: FrameRateMeter | None = None
+        self.sceneGraphAnalyzerMeter: SceneGraphAnalyzerMeter | None = None
         #: A list of all windows opened via `openWindow()`.
-        self.winList = []
-        self.winControls = []
-        self.mainWinMinimized = 0
-        self.mainWinForeground = 0
+        self.winList: list[GraphicsEngine] = []
+        self.winControls: list[WindowControls] = []
+        self.mainWinMinimized = False
+        self.mainWinForeground = False
         #: Contains the :class:`~panda3d.core.GraphicsPipe` object created by
         #: `makeDefaultPipe()`.
-        self.pipe = None
+        self.pipe: GraphicsPipe | None = None
         #: The full list of :class:`~panda3d.core.GraphicsPipe` objects,
         #: including any auxiliary pipes.  Filled by `makeAllPipes()`.
-        self.pipeList = []
-        self.mouse2cam = None
-        self.buttonThrowers = None
-        self.mouseWatcher = None
+        self.pipeList: list[GraphicsPipe] = []
+        self.mouse2cam: NodePath | None = None
+        self.buttonThrowers: list[ButtonThrower] | None = None
+        self.mouseWatcher: NodePath | None = None
         #: The :class:`~panda3d.core.MouseWatcher` object, created by
         #: `setupMouse()`.
-        self.mouseWatcherNode = None
-        self.pointerWatcherNodes = None
-        self.mouseInterface = None
-        self.drive = None
-        self.trackball = None
-        self.texmem = None
-        self.showVertices = None
-        self.deviceButtonThrowers = []
+        self.mouseWatcherNode: MouseWatcher | None = None
+        self.pointerWatcherNodes: list[MouseWatcher] | None = None
+        self.mouseInterface: NodePath | None = None
+        self.drive: NodePath | None = None
+        self.trackball: NodePath | None = None
+        self.texmem: Any | None = None
+        self.showVertices: NodePath | None = None
+        self.deviceButtonThrowers: list[NodePath] = []
 
         #: This is a :class:`~panda3d.core.NodePath` pointing to the
         #: :class:`~panda3d.core.Camera` object set up for the 3D scene.
         #: Usually a child of `camera`.
-        self.cam = None
+        self.cam: NodePath | None = None
         #: Same as `cam`, but for the 2D scene graph.
-        self.cam2d = None
+        self.cam2d: NodePath | None = None
         #: Same as `cam2d`, but for the 2D overlay scene graph.
-        self.cam2dp = None
+        self.cam2dp: NodePath | None = None
 
         #: This is the :class:`~panda3d.core.NodePath` that should be used to
         #: manipulate the camera.  It points at the node to which the default
         #: camera (`cam`, `camNode`) is attached.
-        self.camera = None
+        self.camera: NodePath | None = None
         #: Same as `camera`, but for the 2D scene graph.  Parent of `cam2d`.
-        self.camera2d = None
+        self.camera2d: NodePath | None = None
         #: Same as `camera2d`, but for the 2D overlay scene graph.  Parent of
         #: `cam2dp`.
-        self.camera2dp = None
+        self.camera2dp: NodePath | None = None
 
         #: A list of all cameras created with `makeCamera()`, including `cam`.
-        self.camList = []
+        self.camList: list[NodePath] = []
         #: Convenience accessor for base.cam.node(), containing a
         #: :class:`~panda3d.core.Camera` object.
-        self.camNode = None
+        self.camNode: Camera | None = None
         #: Convenience accessor for base.camNode.get_lens(), containing a
         #: :class:`~panda3d.core.Lens` object.
-        self.camLens = None
-        self.camFrustumVis = None
+        self.camLens: Lens | None = None
+        self.camFrustumVis: NodePath | None = None
         self.direct = None
         #: This is used to store the wx.Application object used when want-wx is
         #: set or `startWx()` is called.
-        self.wxApp = None
+        self.wxApp: Any | None = None
         self.wxAppCreated = False
-        self.tkRoot = None
+        self.tkRoot: Any | None = None
         self.tkRootCreated = False
 
         # This is used for syncing multiple PCs in a distributed cluster
@@ -371,11 +380,11 @@ class ShowBase(DirectObject.DirectObject):
         #: traverse it automatically in the collisionLoop task, so you won't
         #: need to call :meth:`~panda3d.core.CollisionTraverser.traverse()`
         #: yourself every frame.
-        self.cTrav = 0
-        self.shadowTrav = 0
-        self.cTravStack = Stack()
+        self.cTrav: CollisionTraverser | Literal[0] = 0
+        self.shadowTrav: CollisionTraverser | Literal[0] = 0
+        self.cTravStack = Stack[CollisionTraverser]()
         # Ditto for an AppTraverser.
-        self.appTrav = 0
+        self.appTrav: Any | Literal[0] = 0
 
         # This is the DataGraph traverser, which we might as well
         # create now.
@@ -383,7 +392,7 @@ class ShowBase(DirectObject.DirectObject):
 
         # Maybe create a RecorderController to record and/or play back
         # the user session.
-        self.recorder = None
+        self.recorder: RecorderController | None = None
         playbackSession = ConfigVariableFilename('playback-session', '')
         recordSession = ConfigVariableFilename('record-session', '')
         if not playbackSession.empty():
@@ -429,9 +438,9 @@ class ShowBase(DirectObject.DirectObject):
         self.useTrackball()
 
         #: `.Loader.Loader` object.
-        self.loader = Loader.Loader(self)
+        self.loader = ShowBaseGlobal.loader
+        self.loader._init_base(self)
         self.graphicsEngine.setDefaultLoader(self.loader.loader)
-        ShowBaseGlobal.loader = self.loader
 
         #: The global event manager, as imported from `.EventManagerGlobal`.
         self.eventMgr = eventMgr
@@ -448,22 +457,22 @@ class ShowBase(DirectObject.DirectObject):
         #: If `enableParticles()` has been called, this is the particle manager
         #: as imported from :mod:`direct.particles.ParticleManagerGlobal`.
         self.particleMgr = None
-        self.particleMgrEnabled = 0
+        self.particleMgrEnabled = False
 
         #: If `enableParticles()` has been called, this is the physics manager
         #: as imported from :mod:`direct.showbase.PhysicsManagerGlobal`.
         self.physicsMgr = None
-        self.physicsMgrEnabled = 0
-        self.physicsMgrAngular = 0
+        self.physicsMgrEnabled = False
+        self.physicsMgrAngular = False
 
         #: This is the global :class:`~panda3d.core.InputDeviceManager`, which
         #: keeps track of connected input devices.
         self.devices = InputDeviceManager.getGlobalPtr()
-        self.__inputDeviceNodes = {}
+        self.__inputDeviceNodes: dict[InputDevice, NodePath] = {}
 
         self.createStats()
 
-        self.AppHasAudioFocus = 1
+        self.AppHasAudioFocus = True
 
         # Get a pointer to Panda's global ClockObject, used for
         # synchronizing events between Python and C.
@@ -502,7 +511,7 @@ class ShowBase(DirectObject.DirectObject):
                 affinity = ConfigVariableInt('client-cpu-affinity', -1).value
             if (affinity in (None, -1)) and autoAffinity:
                 affinity = 0
-            if affinity not in (None, -1):
+            if affinity is not None and affinity != -1:
                 # Windows XP supports a 32-bit affinity mask
                 TrueClock.getGlobalPtr().setCpuAffinity(1 << (affinity % 32))
 
@@ -575,7 +584,7 @@ class ShowBase(DirectObject.DirectObject):
         # Now hang a hook on the window-event from Panda.  This allows
         # us to detect when the user resizes, minimizes, or closes the
         # main window.
-        self.__prevWindowProperties = None
+        self.__prevWindowProperties: WindowProperties | None = None
         self.__directObject.accept('window-event', self.windowEvent)
 
         # Transition effects (fade, iris, etc)
@@ -658,7 +667,7 @@ class ShowBase(DirectObject.DirectObject):
             #print getDnaPath()
             print("}")
 
-    def destroy(self):
+    def destroy(self) -> None:
         """ Call this function to destroy the ShowBase and stop all
         its tasks, freeing all of the Panda resources.  Normally, you
         should not need to call it explicitly, as it is bound to the
@@ -672,7 +681,7 @@ class ShowBase(DirectObject.DirectObject):
         complete.
         """
 
-        if Thread.getCurrentThread() != Thread.getMainThread():
+        if sys.platform != "android" and Thread.getCurrentThread() != Thread.getMainThread():
             task = taskMgr.add(self.destroy, extraArgs=[])
             task.wait()
             return
@@ -704,6 +713,7 @@ class ShowBase(DirectObject.DirectObject):
         self.shutdown()
 
         if getattr(self, 'musicManager', None):
+            assert self.musicManager is not None
             self.musicManager.shutdown()
             self.musicManager = None
             for sfxManager in self.sfxManagerList:
@@ -711,12 +721,12 @@ class ShowBase(DirectObject.DirectObject):
             self.sfxManagerList = []
         if getattr(self, 'loader', None):
             self.loader.destroy()
-            self.loader = None
+            del self.loader
         if getattr(self, 'graphicsEngine', None):
             self.graphicsEngine.removeAllWindows()
 
         try:
-            self.direct.panel.destroy()
+            self.direct.panel.destroy()  # type: ignore[attr-defined]
         except Exception:
             pass
 
@@ -1185,7 +1195,7 @@ class ShowBase(DirectObject.DirectObject):
             self.setSceneGraphAnalyzerMeter(flag.value)
         return success
 
-    def setSleep(self, amount):
+    def setSleep(self, amount: float) -> None:
         """
         Sets up a task that calls python 'sleep' every frame.  This is a simple
         way to reduce the CPU usage (and frame rate) of a panda program.
@@ -1200,12 +1210,12 @@ class ShowBase(DirectObject.DirectObject):
             self.taskMgr.remove('clientSleep')
             self.taskMgr.add(self.__sleepCycleTask, 'clientSleep', sort = 55)
 
-    def __sleepCycleTask(self, task):
+    def __sleepCycleTask(self, task: object) -> int:
         Thread.sleep(self.clientSleep)
         #time.sleep(self.clientSleep)
         return Task.cont
 
-    def setFrameRateMeter(self, flag):
+    def setFrameRateMeter(self, flag: bool) -> None:
         """
         Turns on or off (according to flag) a standard frame rate
         meter in the upper-right corner of the main window.
@@ -1219,7 +1229,7 @@ class ShowBase(DirectObject.DirectObject):
                 self.frameRateMeter.clearWindow()
                 self.frameRateMeter = None
 
-    def setSceneGraphAnalyzerMeter(self, flag):
+    def setSceneGraphAnalyzerMeter(self, flag: bool) -> None:
         """
         Turns on or off (according to flag) a standard frame rate
         meter in the upper-right corner of the main window.
@@ -1242,7 +1252,7 @@ class ShowBase(DirectObject.DirectObject):
                 mouseKeyboard = self.dataRoot.find("**/*"))
         self.winControls.append(winCtrl)
 
-    def setupRender(self):
+    def setupRender(self) -> None:
         """
         Creates the render scene graph, the primary scene graph for
         rendering 3-d geometry.
@@ -1252,11 +1262,11 @@ class ShowBase(DirectObject.DirectObject):
         self.render.setAttrib(RescaleNormalAttrib.makeDefault())
 
         self.render.setTwoSided(0)
-        self.backfaceCullingEnabled = 1
-        self.textureEnabled = 1
-        self.wireframeEnabled = 0
+        self.backfaceCullingEnabled = True
+        self.textureEnabled = True
+        self.wireframeEnabled = False
 
-    def setupRender2d(self):
+    def setupRender2d(self) -> None:
         """
         Creates the render2d scene graph, the primary scene graph for
         2-d objects and gui elements that are superimposed over the
@@ -1355,7 +1365,7 @@ class ShowBase(DirectObject.DirectObject):
         if xsize > 0 and ysize > 0:
             self.pixel2d.setScale(2.0 / xsize, 1.0, 2.0 / ysize)
 
-    def setupRender2dp(self):
+    def setupRender2dp(self) -> None:
         """
         Creates a render2d scene graph, the secondary scene graph for
         2-d objects and gui elements that are superimposed over the
@@ -1436,7 +1446,7 @@ class ShowBase(DirectObject.DirectObject):
         self.__configAspectRatio = aspectRatio
         self.adjustWindowAspectRatio(self.getAspectRatio())
 
-    def getAspectRatio(self, win = None):
+    def getAspectRatio(self, win: GraphicsOutput | None = None) -> float:
         # Returns the actual aspect ratio of the indicated (or main
         # window), or the default aspect ratio if there is not yet a
         # main window.
@@ -1445,7 +1455,7 @@ class ShowBase(DirectObject.DirectObject):
         if self.__configAspectRatio:
             return self.__configAspectRatio
 
-        aspectRatio = 1
+        aspectRatio: float = 1
 
         if win is None:
             win = self.win
@@ -1468,7 +1478,7 @@ class ShowBase(DirectObject.DirectObject):
 
         return aspectRatio
 
-    def getSize(self, win = None):
+    def getSize(self, win: GraphicsOutput | None = None) -> tuple[int, int]:
         """
         Returns the actual size of the indicated (or main window), or the
         default size if there is not yet a main window.
@@ -1677,7 +1687,7 @@ class ShowBase(DirectObject.DirectObject):
 
         return camera2dp
 
-    def setupDataGraph(self):
+    def setupDataGraph(self) -> None:
         """
         Creates the data graph and populates it with the basic input
         devices.
@@ -2006,7 +2016,7 @@ class ShowBase(DirectObject.DirectObject):
             self.physicsMgr.doPhysics(dt)
         return Task.cont
 
-    def createStats(self, hostname=None, port=None):
+    def createStats(self, hostname: str | None = None, port: int | None = None) -> bool:
         """
         If want-pstats is set in Config.prc, or the `wantStats` member is
         otherwise set to True, connects to the PStats server.
@@ -2168,7 +2178,7 @@ class ShowBase(DirectObject.DirectObject):
                 music.setLoop(looping)
                 music.play()
 
-    def __resetPrevTransform(self, state):
+    def __resetPrevTransform(self, state: object) -> int:
         # Clear out the previous velocity deltas now, after we have
         # rendered (the previous frame).  We do this after the render,
         # so that we have a chance to draw a representation of spheres
@@ -2179,7 +2189,7 @@ class ShowBase(DirectObject.DirectObject):
         PandaNode.resetAllPrevTransform()
         return Task.cont
 
-    def __dataLoop(self, state):
+    def __dataLoop(self, state: object) -> int:
         # Check if there were newly connected devices.
         self.devices.update()
 
@@ -2189,7 +2199,7 @@ class ShowBase(DirectObject.DirectObject):
         self.dgTrav.traverse(self.dataRootNode)
         return Task.cont
 
-    def __ivalLoop(self, state):
+    def __ivalLoop(self, state: object) -> int:
         # Execute all intervals in the global ivalMgr.
         IntervalManager.ivalMgr.step()
         return Task.cont
@@ -2207,7 +2217,7 @@ class ShowBase(DirectObject.DirectObject):
             self.shadowTrav.traverse(self.render)
         return Task.cont
 
-    def __collisionLoop(self, state):
+    def __collisionLoop(self, state: object) -> int:
         # run the collision traversal if we have a
         # CollisionTraverser set.
         if self.cTrav:
@@ -2219,14 +2229,14 @@ class ShowBase(DirectObject.DirectObject):
         messenger.send("collisionLoopFinished")
         return Task.cont
 
-    def __audioLoop(self, state):
+    def __audioLoop(self, state: object) -> int:
         if self.musicManager is not None:
             self.musicManager.update()
         for x in self.sfxManagerList:
             x.update()
         return Task.cont
 
-    def __garbageCollectStates(self, state):
+    def __garbageCollectStates(self, state: object) -> int:
         """ This task is started only when we have
         garbage-collect-states set in the Config.prc file, in which
         case we're responsible for taking out Panda's garbage from
@@ -2237,7 +2247,7 @@ class ShowBase(DirectObject.DirectObject):
         RenderState.garbageCollect()
         return Task.cont
 
-    def __igLoop(self, state):
+    def __igLoop(self, state: object) -> int:
         if __debug__:
             # We render the watch variables for the onScreenDebug as soon
             # as we reasonably can before the renderFrame().
@@ -2277,7 +2287,7 @@ class ShowBase(DirectObject.DirectObject):
         throw_new_frame()
         return Task.cont
 
-    def __igLoopSync(self, state):
+    def __igLoopSync(self, state: object) -> int:
         if __debug__:
             # We render the watch variables for the onScreenDebug as soon
             # as we reasonably can before the renderFrame().
@@ -2286,6 +2296,7 @@ class ShowBase(DirectObject.DirectObject):
         if self.recorder:
             self.recorder.recordFrame()
 
+        assert self.cluster is not None
         self.cluster.collectData()
 
         # Finally, render the frame.
@@ -2315,6 +2326,7 @@ class ShowBase(DirectObject.DirectObject):
             time.sleep(0.1)
 
         self.graphicsEngine.readyFlip()
+        assert self.cluster is not None
         self.cluster.waitForFlipCommand()
         self.graphicsEngine.flipFrame()
 
@@ -2323,7 +2335,7 @@ class ShowBase(DirectObject.DirectObject):
         throw_new_frame()
         return Task.cont
 
-    def restart(self, clusterSync=False, cluster=None):
+    def restart(self, clusterSync: bool = False, cluster=None) -> None:
         self.shutdown()
         # __resetPrevTransform goes at the very beginning of the frame.
         self.taskMgr.add(
@@ -2354,7 +2366,7 @@ class ShowBase(DirectObject.DirectObject):
         self.taskMgr.add(self.__audioLoop, 'audioLoop', sort = 60)
         self.eventMgr.restart()
 
-    def shutdown(self):
+    def shutdown(self) -> None:
         self.taskMgr.remove('audioLoop')
         self.taskMgr.remove('igLoop')
         self.taskMgr.remove('shadowCollisionLoop')
@@ -2745,7 +2757,7 @@ class ShowBase(DirectObject.DirectObject):
                 self.oobeVis.reparentTo(self.camera)
             self.oobeMode = 1
 
-    def __oobeButton(self, suffix, button):
+    def __oobeButton(self, suffix: str, button: str) -> None:
         if button.startswith('mouse'):
             # Eat mouse buttons.
             return
@@ -3065,7 +3077,7 @@ class ShowBase(DirectObject.DirectObject):
         else:
             return Task.cont
 
-    def windowEvent(self, win):
+    def windowEvent(self, win: GraphicsOutput) -> None:
         if win != self.win:
             # This event isn't about our window.
             return
@@ -3084,9 +3096,9 @@ class ShowBase(DirectObject.DirectObject):
                 self.userExit()
 
             if properties.getForeground() and not self.mainWinForeground:
-                self.mainWinForeground = 1
+                self.mainWinForeground = True
             elif not properties.getForeground() and self.mainWinForeground:
-                self.mainWinForeground = 0
+                self.mainWinForeground = False
                 if __debug__:
                     if self.__autoGarbageLogging:
                         GarbageReport.b_checkForGarbageLeaks()
@@ -3094,12 +3106,12 @@ class ShowBase(DirectObject.DirectObject):
             if properties.getMinimized() and not self.mainWinMinimized:
                 # If the main window is minimized, throw an event to
                 # stop the music.
-                self.mainWinMinimized = 1
+                self.mainWinMinimized = True
                 messenger.send('PandaPaused')
             elif not properties.getMinimized() and self.mainWinMinimized:
                 # If the main window is restored, throw an event to
                 # restart the music.
-                self.mainWinMinimized = 0
+                self.mainWinMinimized = False
                 messenger.send('PandaRestarted')
 
             # If we have not forced the aspect ratio, let's see if it has
@@ -3117,7 +3129,7 @@ class ShowBase(DirectObject.DirectObject):
                     if self.wantRender2dp:
                         self.pixel2dp.setScale(2.0 / xsize, 1.0, 2.0 / ysize)
 
-    def adjustWindowAspectRatio(self, aspectRatio):
+    def adjustWindowAspectRatio(self, aspectRatio: float) -> None:
         """ This function is normally called internally by
         `windowEvent()`, but it may also be called to explicitly adjust
         the aspect ratio of the render/render2d DisplayRegion, by a
@@ -3195,14 +3207,14 @@ class ShowBase(DirectObject.DirectObject):
             # If anybody needs to update their GUI, put a callback on this event
             messenger.send("aspectRatioChanged")
 
-    def userExit(self):
+    def userExit(self) -> NoReturn:
         # The user has requested we exit the program.  Deal with this.
         if self.exitFunc:
             self.exitFunc()
         self.notify.info("Exiting ShowBase.")
         self.finalizeExit()
 
-    def finalizeExit(self):
+    def finalizeExit(self) -> NoReturn:
         """
         Called by `userExit()` to quit the application.  The default
         implementation just calls `sys.exit()`.
@@ -3431,7 +3443,7 @@ class ShowBase(DirectObject.DirectObject):
         This method must be called from the main thread, otherwise an error is
         thrown.
         """
-        if Thread.getCurrentThread() != Thread.getMainThread():
+        if Thread.getCurrentThread() != Thread.getMainThread() and sys.platform != "android":
             self.notify.error("run() must be called from the main thread.")
             return
 

@@ -1571,6 +1571,27 @@ get_view_modified_pages(UpdateSeq since, int view, int n) const {
 }
 
 /**
+ * Sets the number of buffers for asynchronous upload of texture data.  If this
+ * number is higher than 0, future texture uploads will occur in the background,
+ * up to the provided amount at a time.  The asynchronous upload will be
+ * triggered by calls to prepare() or when the texture comes into view and
+ * allow-incomplete-render is true.
+ *
+ * Each buffer is only large enough to contain a single view, so you may wish
+ * to create twice as many buffers if you want to update twice as many views.
+ *
+ * You can also pass the special value -1, which means to create as many
+ * buffers as is necessary for all asynchronous uploads to take place, and they
+ * will be deleted afterwards automatically.
+ *
+ * This setting will take effect immediately.
+ */
+void Texture::
+setup_async_transfer(int num_buffers) {
+  _num_async_transfer_buffers.store(num_buffers);
+}
+
+/**
  * Indicates that the texture should be enqueued to be prepared in the
  * indicated prepared_objects at the beginning of the next frame.  This will
  * ensure the texture is already loaded into texture memory if it is expected
@@ -5704,7 +5725,14 @@ do_modify_ram_image(CData *cdata) {
   } else {
     do_clear_ram_mipmap_images(cdata);
   }
-  return cdata->_ram_images[0]._image;
+  PTA_uchar data = cdata->_ram_images[0]._image;
+  if (data.get_node_ref_count() > 0) {
+    // Copy on write, if an upload thread is reading this now.
+    PTA_uchar new_data = PTA_uchar::empty_array(0);
+    new_data.v() = data.v();
+    data.swap(new_data);
+  }
+  return data;
 }
 
 /**
@@ -5779,7 +5807,15 @@ do_modify_ram_mipmap_image(CData *cdata, int n) {
       cdata->_ram_images[n]._image.empty()) {
     do_make_ram_mipmap_image(cdata, n);
   }
-  return cdata->_ram_images[n]._image;
+
+  PTA_uchar data = cdata->_ram_images[n]._image;
+  if (data.get_node_ref_count() > 0) {
+    // Copy on write, if an upload thread is reading this now.
+    PTA_uchar new_data = PTA_uchar::empty_array(0);
+    new_data.v() = data.v();
+    data.swap(new_data);
+  }
+  return data;
 }
 
 /**
@@ -10183,13 +10219,15 @@ do_write_datagram_header(CData *cdata, BamWriter *manager, Datagram &me, bool &h
         << "Texture file " << cdata->_fullpath
         << " found as " << filename << "\n";
     }
-    if (!has_bam_dir || !alpha_filename.make_relative_to(bam_dir, true)) {
-      alpha_filename.find_on_searchpath(get_model_path());
-    }
-    if (gobj_cat.is_debug()) {
-      gobj_cat.debug()
-        << "Alpha image " << cdata->_alpha_fullpath
-        << " found as " << alpha_filename << "\n";
+    if (!alpha_filename.empty()) {
+      if (!has_bam_dir || !alpha_filename.make_relative_to(bam_dir, true)) {
+        alpha_filename.find_on_searchpath(get_model_path());
+      }
+      if (gobj_cat.is_debug()) {
+        gobj_cat.debug()
+          << "Alpha image " << cdata->_alpha_fullpath
+          << " found as " << alpha_filename << "\n";
+      }
     }
     break;
 

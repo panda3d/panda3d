@@ -47,6 +47,7 @@
 #include "pfmFile.h"
 #include "asyncTask.h"
 #include "extension.h"
+#include "patomic.h"
 
 class TextureContext;
 class FactoryParams;
@@ -536,6 +537,8 @@ PUBLISHED:
   MAKE_PROPERTY(auto_texture_scale, get_auto_texture_scale,
                                     set_auto_texture_scale);
 
+  void setup_async_transfer(int num_buffers);
+
   PT(AsyncFuture) prepare(PreparedGraphicsObjects *prepared_objects);
   bool is_prepared(PreparedGraphicsObjects *prepared_objects) const;
   bool was_image_modified(PreparedGraphicsObjects *prepared_objects) const;
@@ -628,6 +631,7 @@ PUBLISHED:
 
 public:
   void texture_uploaded();
+  INLINE int get_num_async_transfer_buffers() const;
 
   virtual bool has_cull_callback() const;
   virtual bool cull_callback(CullTraverser *trav, const CullTraverserData &data) const;
@@ -1071,6 +1075,8 @@ protected:
   // other's list.
   typedef pmap<PreparedGraphicsObjects *, TextureContext *> Contexts;
   Contexts _contexts;
+
+  patomic_signed_lock_free _num_async_transfer_buffers { 0 };
 
   // It is common, when using normal maps, specular maps, gloss maps, and
   // such, to use a file naming convention where the filenames of the special

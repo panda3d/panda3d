@@ -27,17 +27,6 @@ ConfigureFn(config_windisplay) {
   init_libwindisplay();
 }
 
-ConfigVariableBool responsive_minimized_fullscreen_window
-("responsive-minimized-fullscreen-window",false);
-
-ConfigVariableBool hold_keys_across_windows
-("hold-keys-across-windows", false,
- PRC_DESC("Set this true to remember the current state of the keyboard while "
-          "the window focus is lost, or false to pretend the user is not "
-          "holding down any keys while the window focus is lost.  In either "
-          "case it should accurately restore the correct keyboard state when "
-          "the window focus is regained."));
-
 ConfigVariableBool do_vidmemsize_check
 ("do-vidmemsize-check", true,
  PRC_DESC("if true, use ddraw's GetAvailVidMem to fail if driver says "
@@ -75,10 +64,6 @@ ConfigVariableBool dpi_window_resize
           "different DPI, or when the DPI setting is changed in the control "
           "panel.  Only available in Windows 8.1 and later, and requires "
           "dpi-aware to be set as well."));
-
-ConfigVariableBool swapbuffer_framelock
-("swapbuffer-framelock", false,
- PRC_DESC("Set this true to enable HW swapbuffer frame-lock on 3dlabs cards"));
 
 ConfigVariableBool paste_emit_keystrokes
 ("paste-emit-keystrokes", true,

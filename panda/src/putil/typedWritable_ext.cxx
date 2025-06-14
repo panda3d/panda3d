@@ -134,10 +134,10 @@ wrap_typed_writable(void *from_this, PyTypeObject *from_type) {
   nassertr(from_type != nullptr, nullptr);
 
   TypedWritableProxy *to_this;
-  if (from_type == &Dtool_TypedWritable._PyType) {
+  if (from_type == Dtool_GetPyTypeObject(&Dtool_TypedWritable)) {
     to_this = (TypedWritableProxy *)(TypedWritable *)from_this;
   }
-  else if (from_type == (PyTypeObject *)&Dtool_TypedObject._PyType) {
+  else if (from_type == Dtool_GetPyTypeObject(&Dtool_TypedObject)) {
     to_this = (TypedWritableProxy *)(TypedObject *)from_this;
   }
   else {
@@ -336,35 +336,37 @@ find_global_decode(PyObject *this_class, const char *func_name) {
   // Get the module in which BamWriter is defined.
   PyObject *module_name = PyObject_GetAttrString((PyObject *)&Dtool_BamWriter, "__module__");
   if (module_name != nullptr) {
-    // borrowed reference
-    PyObject *sys_modules = PyImport_GetModuleDict();
-    if (sys_modules != nullptr) {
-      // borrowed reference
-      PyObject *module = PyDict_GetItem(sys_modules, module_name);
-      if (module != nullptr) {
-        PyObject *func = PyObject_GetAttrString(module, (char *)func_name);
-        if (func != nullptr) {
-          Py_DECREF(module_name);
-          return func;
-        }
+    PyObject *module = PyImport_GetModule(module_name);
+    Py_DECREF(module_name);
+    if (module != nullptr) {
+      PyObject *func = PyObject_GetAttrString(module, (char *)func_name);
+      Py_DECREF(module);
+      if (func != nullptr) {
+        return func;
       }
     }
-    Py_DECREF(module_name);
   }
 
   PyObject *bases = PyObject_GetAttrString(this_class, "__bases__");
   if (bases != nullptr) {
-    if (PySequence_Check(bases)) {
-      Py_ssize_t size = PySequence_Size(bases);
-      for (Py_ssize_t i = 0; i < size; ++i) {
-        PyObject *base = PySequence_GetItem(bases, i);
-        if (base != nullptr) {
-          PyObject *func = find_global_decode(base, func_name);
-          Py_DECREF(base);
-          if (func != nullptr) {
-            Py_DECREF(bases);
-            return func;
-          }
+    {
+      PyObject *tuple = PySequence_Tuple(bases);
+      Py_DECREF(bases);
+      if (tuple == nullptr) {
+        PyErr_Clear();
+        return nullptr;
+      }
+      bases = tuple;
+    }
+
+    Py_ssize_t size = PyTuple_GET_SIZE(bases);
+    for (Py_ssize_t i = 0; i < size; ++i) {
+      PyObject *base = PyTuple_GET_ITEM(bases, i);
+      if (base != nullptr) {
+        PyObject *func = find_global_decode(base, func_name);
+        if (func != nullptr) {
+          Py_DECREF(bases);
+          return func;
         }
       }
     }

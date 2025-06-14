@@ -146,6 +146,8 @@ static PyObject *gen_next_asyncfuture(PyObject *self) {
     PyObject *result = get_done_result(future);
     if (result != nullptr) {
       PyErr_SetObject(PyExc_StopIteration, result);
+      // PyErr_SetObject increased the reference count, so we no longer need our reference.
+      Py_DECREF(result);
     }
     return nullptr;
   }
@@ -173,7 +175,7 @@ set_result(PyObject *result) {
   else if (DtoolInstance_Check(result)) {
     // If this is a Python subclass of a C++ type, fall through to below, since
     // we don't want to lose that extra information.
-    if (Py_TYPE(result) == (PyTypeObject *)DtoolInstance_TYPE(result)) {
+    if (Py_IS_TYPE(result, Dtool_GetPyTypeObject(DtoolInstance_TYPE(result)))) {
       void *ptr;
       if ((ptr = DtoolInstance_UPCAST(result, Dtool_TypedWritableReferenceCount))) {
         _this->set_result((TypedWritableReferenceCount *)ptr);

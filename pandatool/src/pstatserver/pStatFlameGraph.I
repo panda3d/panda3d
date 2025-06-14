@@ -28,6 +28,31 @@ get_collector_index() const {
 }
 
 /**
+ * Clears the history stack.
+ */
+INLINE void PStatFlameGraph::
+clear_history() {
+  _history.clear();
+}
+
+/**
+ * Returns the depth of the history stack.
+ */
+INLINE size_t PStatFlameGraph::
+get_history_depth() const {
+  return _history.size();
+}
+
+/**
+ * Returns the particular frame number whose data this flame graph reflects.
+ * Returns -1 if we're looking at a moving average instead.
+ */
+INLINE int PStatFlameGraph::
+get_frame_number() const {
+  return _frame_number;
+}
+
+/**
  * Returns the amount of total time the width of the horizontal axis
  * represents.
  */

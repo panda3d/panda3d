@@ -162,3 +162,62 @@ make_parasite(GraphicsOutput *host, const std::string &name,
                                        host->get_gsg(), host);
   return result;
 }
+
+/**
+ * Version of dispatch_compute that takes a ShaderAttrib instead of a full
+ * RenderState.
+ */
+INLINE void GraphicsEngine::
+dispatch_compute(const LVecBase3i &work_groups, const ShaderAttrib *sattr, GraphicsStateGuardian *gsg) {
+  dispatch_compute(work_groups, RenderState::make(sattr), gsg);
+}
+
+#ifndef CPPPARSER
+/**
+ * Waits for the draw thread to become idle, then runs the given function on it.
+ */
+template<class Callable>
+INLINE auto GraphicsEngine::
+run_on_draw_thread(Callable &&callable) -> decltype(callable()) {
+  ReMutexHolder holder(_lock);
+  std::string draw_name = _threading_model.get_draw_name();
+  if (draw_name.empty()) {
+    return std::move(callable)();
+  } else {
+    WindowRenderer *wr = get_window_renderer(draw_name, 0);
+    RenderThread *thread = (RenderThread *)wr;
+    return thread->run_on_thread(std::move(callable));
+  }
+}
+
+/**
+ * Waits for this thread to become idle, then runs the given function on it.
+ */
+template<class Callable>
+INLINE auto GraphicsEngine::RenderThread::
+run_on_thread(Callable &&callable) ->
+  typename std::enable_if<!std::is_void<decltype(callable())>::value, decltype(callable())>::type {
+
+  using ReturnType = decltype(callable());
+  alignas(ReturnType) unsigned char storage[sizeof(ReturnType)];
+
+  run_on_thread([] (RenderThread *data) {
+    new (data->_return_data) ReturnType(std::move(*(Callable *)data->_callback_data)());
+  }, &callable, storage);
+
+  return *(ReturnType *)storage;
+}
+
+/**
+ * Waits for this thread to become idle, then runs the given function on it.
+ */
+template<class Callable>
+INLINE auto GraphicsEngine::RenderThread::
+run_on_thread(Callable &&callable) ->
+  typename std::enable_if<std::is_void<decltype(callable())>::value, decltype(callable())>::type {
+
+  run_on_thread([] (RenderThread *data) {
+    std::move(*(Callable *)data->_callback_data)();
+  }, &callable, nullptr);
+}
+#endif  // CPPPARSER

@@ -65,7 +65,7 @@ typedef int Py_ssize_t;
 
 /* Python 2.6 */
 
-#ifndef Py_TYPE
+#if PY_VERSION_HEX < 0x02060000
 #  define Py_TYPE(ob) (((PyObject*)(ob))->ob_type)
 #endif
 
@@ -189,6 +189,20 @@ INLINE PyObject *_PyObject_FastCall(PyObject *func, PyObject **args, Py_ssize_t 
   } while (0)
 #endif
 
+#if PY_VERSION_HEX < 0x03070000
+INLINE PyObject *PyImport_GetModule(PyObject *name) {
+  PyObject *modules = PyImport_GetModuleDict();
+  if (modules != nullptr) {
+    PyObject *module = PyDict_GetItem(modules, name);
+    if (module != nullptr) {
+      Py_INCREF(module);
+      return module;
+    }
+  }
+  return nullptr;
+}
+#endif
+
 /* Python 3.8 */
 #if PY_VERSION_HEX < 0x03080000
 INLINE PyObject *_PyLong_Rshift(PyObject *a, size_t shiftby) {
@@ -207,8 +221,12 @@ INLINE PyObject *_PyLong_Lshift(PyObject *a, size_t shiftby) {
 
 /* Python 3.9 */
 
+#if PY_VERSION_HEX < 0x030900A4 && !defined(Py_IS_TYPE)
+#  define Py_IS_TYPE(ob, type) (Py_TYPE((PyObject *)ob) == type)
+#endif
+
 #ifndef PyCFunction_CheckExact
-#  define PyCFunction_CheckExact(op) (Py_TYPE(op) == &PyCFunction_Type)
+#  define PyCFunction_CheckExact(op) (Py_IS_TYPE(op, &PyCFunction_Type))
 #endif
 
 #if PY_VERSION_HEX < 0x03090000
@@ -277,6 +295,77 @@ INLINE bool PyLong_IsNonNegative(PyObject *value) {
   long longval = PyLong_AsLongAndOverflow(value, &overflow);
   return overflow == 1 || longval >= 0;
 }
+#endif
+
+/* Python 3.13 */
+
+#if PY_VERSION_HEX < 0x030D00A1
+#  define PyLong_AsInt(x) (_PyLong_AsInt(x))
+#endif
+
+#if PY_VERSION_HEX < 0x030D00A1
+ALWAYS_INLINE int
+PyModule_Add(PyObject *mod, const char *name, PyObject *value) {
+  int res = PyModule_AddObjectRef(mod, name, value);
+  Py_XDECREF(value);
+  return res;
+}
+#endif
+
+#if PY_VERSION_HEX < 0x030D00A1
+INLINE int
+PyDict_GetItemRef(PyObject *mp, PyObject *key, PyObject **result) {
+#if PY_MAJOR_VERSION >= 3
+  PyObject *item = PyDict_GetItemWithError(mp, key);
+#else
+  PyObject *item = _PyDict_GetItemWithError(mp, key);
+#endif
+  if (item != nullptr) {
+    *result = Py_NewRef(item);
+    return 1;
+  }
+  *result = nullptr;
+  return PyErr_Occurred() ? -1 : 0;
+}
+
+INLINE int
+PyDict_GetItemStringRef(PyObject *mp, const char *key, PyObject **result) {
+  PyObject *item = nullptr;
+#if PY_MAJOR_VERSION >= 3
+  PyObject *key_obj = PyUnicode_FromString(key);
+  item = key_obj ? PyDict_GetItemWithError(mp, key_obj) : nullptr;
+#else
+  PyObject *key_obj = PyString_FromString(key);
+  item = key_obj ? _PyDict_GetItemWithError(mp, key_obj) : nullptr;
+#endif
+  Py_DECREF(key_obj);
+  if (item != nullptr) {
+    *result = Py_NewRef(item);
+    return 1;
+  }
+  *result = nullptr;
+  return PyErr_Occurred() ? -1 : 0;
+}
+#endif
+
+#if PY_VERSION_HEX >= 0x03050200 && PY_VERSION_HEX < 0x030D00A1
+#  define PyThreadState_GetUnchecked() (_PyThreadState_UncheckedGet())
+#endif
+
+#if PY_VERSION_HEX < 0x030D00A2
+#  define PyList_Extend(list, iterable) (PyList_SetSlice((list), PY_SSIZE_T_MAX, PY_SSIZE_T_MAX, (iterable)))
+#  define PyList_Clear(list) (PyList_SetSlice((list), 0, PY_SSIZE_T_MAX, nullptr))
+#endif
+
+#if PY_VERSION_HEX < 0x030D00A4
+#  define PyList_GetItemRef(op, index) (Py_XNewRef(PyList_GetItem((op), (index))))
+#endif
+
+#if PY_VERSION_HEX < 0x030D00B3
+#  define Py_BEGIN_CRITICAL_SECTION(op) {
+#  define Py_END_CRITICAL_SECTION() }
+#  define Py_BEGIN_CRITICAL_SECTION2(a, b) {
+#  define Py_END_CRITICAL_SECTION2() }
 #endif
 
 /* Other Python implementations */

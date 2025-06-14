@@ -596,7 +596,7 @@ get_supports_tessellation_shaders() const {
  */
 INLINE bool GraphicsStateGuardian::
 get_supports_compute_shaders() const {
-  return _supports_compute_shaders;
+  return _max_compute_work_group_invocations > 0;
 }
 
 /**
@@ -707,6 +707,45 @@ get_max_color_targets() const {
 INLINE bool GraphicsStateGuardian::
 get_supports_dual_source_blending() const {
   return _supports_dual_source_blending;
+}
+
+/**
+ * Returns the maximum number of work groups that can be submitted in a single
+ * compute dispatch.
+ *
+ * If compute shaders are supported, this will be at least 65535x65535x65535.
+ * Otherwise, it will be zero.
+ */
+INLINE LVecBase3i GraphicsStateGuardian::
+get_max_compute_work_group_count() const {
+  return _max_compute_work_group_count;
+}
+
+/**
+ * Returns the maximum number of invocations in each work group split out
+ * separately to every x, y, z dimension.  This limit applies in addition to
+ * the overall number of invocations, which is specified by
+ * get_max_compute_work_group_invocations().
+ *
+ * If compute shaders are supported, this will be at least 128x128x64.
+ * Otherwise, it will be zero.
+ */
+INLINE LVecBase3i GraphicsStateGuardian::
+get_max_compute_work_group_size() const {
+  return _max_compute_work_group_size;
+}
+
+/**
+ * Returns the maximum number of invocations in each work group as a product
+ * of the x, y, z dimensions.  This limit applies in addition to the
+ * per-dimension limits specified by get_max_compute_work_group_size().
+ *
+ * If compute shaders are supported, this will be at least 128.  Otherwise, it
+ * will be zero.
+ */
+INLINE int GraphicsStateGuardian::
+get_max_compute_work_group_invocations() const {
+  return _max_compute_work_group_invocations;
 }
 
 /**

@@ -278,7 +278,7 @@ set_clear_color(const LColor &color) {
 INLINE void Texture::
 clear_clear_color() {
   CDWriter cdata(_cycler, true);
-  cdata->_has_clear_color = true;
+  cdata->_has_clear_color = false;
 }
 
 /**
@@ -2137,6 +2137,14 @@ INLINE bool Texture::
 rescale_texture() {
   CDWriter cdata(_cycler, true);
   return do_rescale_texture(cdata);
+}
+
+/**
+ * Returns the number previously passed to setup_async_transfer().
+ */
+INLINE int Texture::
+get_num_async_transfer_buffers() const {
+  return _num_async_transfer_buffers.load(std::memory_order_relaxed);
 }
 
 /**

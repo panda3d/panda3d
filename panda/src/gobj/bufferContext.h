@@ -73,7 +73,7 @@ protected:
   TypedWritableReferenceCount *_object;
 
 private:
-  BufferResidencyTracker *_residency;
+  BufferResidencyTracker *const _residency;
   int _residency_state;
 
   size_t _data_size_bytes;

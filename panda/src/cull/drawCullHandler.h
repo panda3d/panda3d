@@ -31,7 +31,7 @@ class EXPCL_PANDA_CULL DrawCullHandler : public CullHandler {
 public:
   INLINE DrawCullHandler(GraphicsStateGuardianBase *gsg);
 
-  virtual void record_object(CullableObject *object,
+  virtual void record_object(CullableObject &&object,
                              const CullTraverser *traverser);
 
 private:

@@ -17,6 +17,7 @@
 #include "configVariableEnum.h"
 #include "geomEnums.h"
 #include "coordinateSystem.h"
+#include "threadPriority.h"
 
 // Define some macros to transparently map to the double or float versions of
 // the OpenGL function names.
@@ -35,6 +36,7 @@
 extern EXPCL_GL ConfigVariableInt gl_version;
 extern EXPCL_GL ConfigVariableBool gl_forward_compatible;
 extern EXPCL_GL ConfigVariableBool gl_support_fbo;
+extern ConfigVariableBool gl_support_dsa;
 extern ConfigVariableBool gl_cheap_textures;
 extern ConfigVariableBool gl_ignore_clamp;
 extern ConfigVariableBool gl_support_clamp_to_border;
@@ -75,6 +77,8 @@ extern ConfigVariableBool gl_support_shadow_filter;
 extern ConfigVariableBool gl_support_vertex_array_bgra;
 extern ConfigVariableBool gl_force_image_bindings_writeonly;
 extern ConfigVariableEnum<CoordinateSystem> gl_coordinate_system;
+extern ConfigVariableInt gl_texture_transfer_num_threads;
+extern ConfigVariableEnum<ThreadPriority> gl_texture_transfer_thread_priority;
 
 extern EXPCL_GL void CLP(init_classes)();
 

@@ -75,6 +75,7 @@ def _model_to_bam(_build_cmd, srcpath, dstpath):
 
     src_fn = p3d.Filename.from_os_specific(srcpath)
     dst_fn = p3d.Filename.from_os_specific(dstpath)
+    dst_fn.set_binary()
 
     _register_python_loaders()
 
@@ -85,8 +86,30 @@ def _model_to_bam(_build_cmd, srcpath, dstpath):
     if not node:
         raise IOError('Failed to load model: %s' % (srcpath))
 
-    if not p3d.NodePath(node).write_bam_file(dst_fn):
-        raise IOError('Failed to write .bam file: %s' % (dstpath))
+    stream = p3d.OFileStream()
+    if not dst_fn.open_write(stream):
+        raise IOError('Failed to open .bam file for writing: %s' % (dstpath))
+
+    # We pass it the source filename here so that texture files are made
+    # relative to the original pathname and don't point from the destination
+    # back into the source directory.
+    dout = p3d.DatagramOutputFile()
+    if not dout.open(stream, src_fn) or not dout.write_header("pbj\0\n\r"):
+        raise IOError('Failed to write to .bam file: %s' % (dstpath))
+
+    writer = p3d.BamWriter(dout)
+    writer.root_node = node
+    writer.init()
+    if _build_cmd.bam_embed_textures:
+        writer.set_file_texture_mode(p3d.BamEnums.BTM_rawdata)
+    else:
+        writer.set_file_texture_mode(p3d.BamEnums.BTM_relative)
+    writer.write_object(node)
+    writer.flush()
+    writer = None
+    dout.close()
+    dout = None
+    stream.close()
 
 
 macosx_binary_magics = (
@@ -165,11 +188,26 @@ FrozenImporter.get_data = get_data
 """
 
 SITE_PY_ANDROID = """
+# Define this first, before we import anything that might import an extension
+# module.
 import sys, os
+from importlib import _bootstrap, _bootstrap_external
+
+class AndroidExtensionFinder:
+    @classmethod
+    def find_spec(cls, fullname, path=None, target=None):
+        soname = 'libpy.' + fullname + '.so'
+        path = os.path.join(sys.platlibdir, soname)
+
+        if os.path.exists(path):
+            loader = _bootstrap_external.ExtensionFileLoader(fullname, path)
+            return _bootstrap.ModuleSpec(fullname, loader, origin=path)
+
+
+sys.meta_path.append(AndroidExtensionFinder)
+
+
 from _frozen_importlib import _imp, FrozenImporter
-from importlib import _bootstrap_external
-from importlib.abc import Loader, MetaPathFinder
-from importlib.machinery import ModuleSpec
 from io import RawIOBase, TextIOWrapper
 
 from android_log import write as android_log_write
@@ -219,8 +257,9 @@ class AndroidLogStream:
     def writable(self):
         return True
 
-sys.stdout = AndroidLogStream(2, 'Python')
-sys.stderr = AndroidLogStream(3, 'Python')
+if sys.version_info < (3, 13):
+    sys.stdout = AndroidLogStream(4, 'python.stdout')
+    sys.stderr = AndroidLogStream(5, 'python.stderr')
 
 
 # Alter FrozenImporter to give a __file__ property to frozen modules.
@@ -239,20 +278,6 @@ def get_data(path):
 
 FrozenImporter.find_spec = find_spec
 FrozenImporter.get_data = get_data
-
-
-class AndroidExtensionFinder(MetaPathFinder):
-    @classmethod
-    def find_spec(cls, fullname, path=None, target=None):
-        soname = 'libpy.' + fullname + '.so'
-        path = os.path.join(os.path.dirname(sys.executable), soname)
-
-        if os.path.exists(path):
-            loader = _bootstrap_external.ExtensionFileLoader(fullname, path)
-            return ModuleSpec(fullname, loader, origin=path)
-
-
-sys.meta_path.append(AndroidExtensionFinder)
 """
 
 
@@ -271,6 +296,7 @@ class build_apps(setuptools.Command):
         self.application_id = None
         self.android_abis = None
         self.android_debuggable = False
+        self.android_app_category = None
         self.android_version_code = 1
         self.android_min_sdk_version = 21
         self.android_max_sdk_version = None
@@ -289,6 +315,11 @@ class build_apps(setuptools.Command):
             'macosx_10_9_x86_64',
             'win_amd64',
         ]
+
+        if sys.version_info >= (3, 13):
+            # This version of Python is only available for 10.13+.
+            self.platforms[1] = 'macosx_10_13_x86_64'
+
         self.plugins = []
         self.embed_prc_data = True
         self.extra_prc_files = []
@@ -307,6 +338,7 @@ class build_apps(setuptools.Command):
         ]
         self.file_handlers = {}
         self.bam_model_extensions = ['.egg', '.gltf', '.glb']
+        self.bam_embed_textures = False
         self.exclude_dependencies = [
             # Windows
             'kernel32.dll', 'user32.dll', 'wsock32.dll', 'ws2_32.dll',
@@ -321,7 +353,8 @@ class build_apps(setuptools.Command):
 
             # manylinux1/linux
             'libdl.so.*', 'libstdc++.so.*', 'libm.so.*', 'libgcc_s.so.*',
-            'libpthread.so.*', 'libc.so.*', 'ld-linux-x86-64.so.*',
+            'libpthread.so.*', 'libc.so.*',
+            'ld-linux-x86-64.so.*', 'ld-linux-aarch64.so.*',
             'libgl.so.*', 'libx11.so.*', 'libncursesw.so.*', 'libz.so.*',
             'librt.so.*', 'libutil.so.*', 'libnsl.so.1', 'libXext.so.6',
             'libXrender.so.1', 'libICE.so.6', 'libSM.so.6', 'libEGL.so.1',
@@ -486,6 +519,18 @@ class build_apps(setuptools.Command):
         tmp.update(self.package_data_dirs)
         self.package_data_dirs = tmp
 
+        if 'android' in self.platforms:
+            assert self.application_id, \
+                'Must have a valid application_id when targeting Android!'
+
+            parts = self.application_id.split('.')
+            assert len(parts) >= 2, \
+                'application_id must contain at least one \'.\' separator!'
+
+            for part in parts:
+                assert part.isidentifier(), \
+                    'Each part of application_id must be a valid identifier!'
+
         # Default to all supported ABIs (for the given Android version).
         if self.android_max_sdk_version and self.android_max_sdk_version < 21:
             assert self.android_max_sdk_version >= 19, \
@@ -646,14 +691,20 @@ class build_apps(setuptools.Command):
             subprocess.check_call([sys.executable, '-m', 'pip'] + pip_args)
         except:
             # Display a more helpful message for these common issues.
-            if platform.startswith('manylinux2010_') and sys.version_info >= (3, 11):
+            if platform.startswith('macosx_10_9_') and sys.version_info >= (3, 13):
+                new_platform = platform.replace('macosx_10_9_', 'macosx_10_13_')
+                self.announce('This error likely occurs because {} is not a supported target as of Python 3.13.\nChange the target platform to {} instead.'.format(platform, new_platform), distutils.log.ERROR)
+            elif platform.startswith('manylinux2010_') and sys.version_info >= (3, 11):
                 new_platform = platform.replace('manylinux2010_', 'manylinux2014_')
                 self.announce('This error likely occurs because {} is not a supported target as of Python 3.11.\nChange the target platform to {} instead.'.format(platform, new_platform), distutils.log.ERROR)
             elif platform.startswith('manylinux1_') and sys.version_info >= (3, 10):
                 new_platform = platform.replace('manylinux1_', 'manylinux2014_')
                 self.announce('This error likely occurs because {} is not a supported target as of Python 3.10.\nChange the target platform to {} instead.'.format(platform, new_platform), distutils.log.ERROR)
             elif platform.startswith('macosx_10_6_') and sys.version_info >= (3, 8):
-                new_platform = platform.replace('macosx_10_6_', 'macosx_10_9_')
+                if sys.version_info >= (3, 13):
+                    new_platform = platform.replace('macosx_10_6_', 'macosx_10_13_')
+                else:
+                    new_platform = platform.replace('macosx_10_6_', 'macosx_10_9_')
                 self.announce('This error likely occurs because {} is not a supported target as of Python 3.8.\nChange the target platform to {} instead.'.format(platform, new_platform), distutils.log.ERROR)
             raise
 
@@ -746,10 +797,29 @@ class build_apps(setuptools.Command):
         version = self.distribution.get_version()
         classifiers = self.distribution.get_classifiers()
 
-        is_game = False
-        for classifier in classifiers:
-            if classifier == 'Topic :: Games/Entertainment' or classifier.startswith('Topic :: Games/Entertainment ::'):
-                is_game = True
+        # If we have no app category, determine it based on the classifiers.
+        category = self.android_app_category
+        if not category:
+            for classifier in classifiers:
+                classifier = tuple(classifier.split(' :: '))
+                if len(classifier) < 2 or classifier[0] != 'Topic':
+                    continue
+
+                if classifier[:2] == ('Topic', 'Games/Entertainment'):
+                    category = 'game'
+                    break
+                elif classifier[:3] == ('Topic', 'Multimedia', 'Audio'):
+                    category = 'audio'
+                elif classifier[:4] == ('Topic', 'Multimedia', 'Graphics', 'Editors'):
+                    category = 'image'
+                elif classifier[:2] == ('Topic', 'Communications', 'Usenet News'):
+                    category = 'news'
+                elif classifier[:2] == ('Topic', 'Office/Business'):
+                    category = 'productivity'
+                elif classifier[:3] == ('Topic', 'Communications', 'Chat'):
+                    category = 'social'
+                elif classifier[:3] == ('Topic', 'Multimedia', 'Video'):
+                    category = 'video'
 
         manifest = ET.Element('manifest')
         manifest.set('xmlns:android', 'http://schemas.android.com/apk/res/android')
@@ -780,9 +850,13 @@ class build_apps(setuptools.Command):
 
         application = ET.SubElement(manifest, 'application')
         application.set('android:label', name)
-        application.set('android:isGame', ('false', 'true')[is_game])
+        if category == 'game':
+            application.set('android:isGame', 'true')
+        if category:
+            application.set('android:appCategory', category)
         application.set('android:debuggable', ('false', 'true')[self.android_debuggable])
         application.set('android:extractNativeLibs', 'true')
+        application.set('android:hardwareAccelerated', 'true')
 
         app_icon = self.icon_objects.get('*', self.icon_objects.get(self.macos_main_app))
         if app_icon:
@@ -792,9 +866,11 @@ class build_apps(setuptools.Command):
             activity = ET.SubElement(application, 'activity')
             activity.set('android:name', 'org.panda3d.android.PythonActivity')
             activity.set('android:label', appname)
-            activity.set('android:theme', '@android:style/Theme.NoTitleBar')
-            activity.set('android:configChanges', 'orientation|keyboardHidden')
+            activity.set('android:theme', '@android:style/Theme.NoTitleBar.Fullscreen')
+            activity.set('android:alwaysRetainTaskState', 'true')
+            activity.set('android:configChanges', 'layoutDirection|locale|grammaticalGender|fontScale|fontWeightAdjustment|orientation|uiMode|screenLayout|screenSize|smallestScreenSize|keyboard|keyboardHidden|navigation')
             activity.set('android:launchMode', 'singleInstance')
+            activity.set('android:preferMinimalPostProcessing', 'true')
 
             act_icon = self.icon_objects.get(appname)
             if act_icon and act_icon is not app_icon:

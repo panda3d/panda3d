@@ -51,8 +51,8 @@ elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GCC")
 
 endif()
 
-# Panda3D is now a C++11 project.
-set(CMAKE_CXX_STANDARD 11)
+# Panda3D is now a C++14 project.
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Set certain CMake flags we expect
@@ -190,8 +190,8 @@ else()
 
   check_cxx_compiler_flag("-fno-rtti" COMPILER_SUPPORTS_FRTTI)
   if(COMPILER_SUPPORTS_FRTTI)
-    set(cxx_rtti_on "-frtti")
-    set(cxx_rtti_off "-fno-rtti")
+    set(cxx_rtti_on "$<$<OR:$<COMPILE_LANGUAGE:CXX>,$<COMPILE_LANGUAGE:OBJCXX>>:-frtti>")
+    set(cxx_rtti_off "$<$<OR:$<COMPILE_LANGUAGE:CXX>,$<COMPILE_LANGUAGE:OBJCXX>>:-fno-rtti>")
 
   else()
     set(cxx_rtti_on)

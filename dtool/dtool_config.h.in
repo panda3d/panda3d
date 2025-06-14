@@ -24,9 +24,6 @@
 /* Define to use doubles for most numbers, intead of single-precision floats. */
 #cmakedefine STDFLOAT_DOUBLE
 
-/* Define if we have built libRocket available and built with Python support. */
-#cmakedefine HAVE_ROCKET_PYTHON
-
 /* Define if we have ARToolKit available. */
 #cmakedefine HAVE_ARTOOLKIT
 

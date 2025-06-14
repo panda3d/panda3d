@@ -146,6 +146,13 @@ def test_vec4_floordiv(type):
             assert v.x == i // -j
 
 
+def test_vec4_repr():
+    assert repr(Vec4F(0.1, 0.2, 0.3, 0.4)) == "LVector4f(0.1, 0.2, 0.3, 0.4)"
+    assert repr(Vec4F(-0.9999999403953552, 1.000001, 1e-8, 0.0)) == "LVector4f(-0.99999994, 1.000001, 1e-8, 0)"
+    assert repr(Vec4D(0.1, 0.2, 0.3, 0.4)) == "LVector4d(0.1, 0.2, 0.3, 0.4)"
+    assert repr(Vec4D(-0.9999999403953552, 1.00000001, 1e-8, 0.0)) == "LVector4d(-0.9999999403953552, 1.00000001, 1e-8, 0)"
+
+
 def test_vec4_buffer():
     v = Vec4(0, 0.5, 2.0, -4.0)
     m = memoryview(v)

@@ -32,6 +32,8 @@ THE SOFTWARE.
 #include <intrin.h>
 #include <float.h>
 #define copysign _copysign
+
+#pragma float_control(precise, on, push)
 #endif
 
 #define UINT64_C2(h, l) ((static_cast<uint64_t>(h) << 32) | static_cast<uint64_t>(l))
@@ -428,3 +430,165 @@ void pdtoa(double value, char *buffer) {
     Prettify(buffer, length, K);
   }
 }
+
+/**
+ * Version of pdtoa that tries hard to find the minimal string representation
+ * for a single-precision floating-point number.
+ */
+void pftoa(float value, char *buffer) {
+#ifdef _MSC_VER
+  if (copysign(1.0f, value) < 0) {
+#else
+  if (std::signbit(value)) {
+#endif
+    *buffer++ = '-';
+    value = -value;
+  }
+  if (cinf(value)) {
+    buffer[0] = 'i';
+    buffer[1] = 'n';
+    buffer[2] = 'f';
+    buffer[3] = '\0';
+  } else if (cnan(value)) {
+    buffer[0] = 'n';
+    buffer[1] = 'a';
+    buffer[2] = 'n';
+    buffer[3] = '\0';
+  } else if (value == 0.0f) {
+    buffer[0] = '0';
+    buffer[1] = '.';
+    buffer[2] = '0';
+    buffer[3] = '\0';
+  } else if (value == 1.0f) {
+    buffer[0] = '1';
+    buffer[1] = '.';
+    buffer[2] = '0';
+    buffer[3] = '\0';
+  } else {
+    int length, k;
+    Grisu2(value, buffer, &length, &k);
+
+    const int kk = length + k;  // 10^(kk-1) <= v < 10^kk
+
+    if (length <= kk && kk <= 21) {
+      // 1234e7 -> 12340000000
+      for (int i = length; i < kk; i++)
+        buffer[i] = '0';
+      buffer[kk] = '.';
+      buffer[kk + 1] = '0';
+      buffer[kk + 2] = '\0';
+    }
+    else if (0 < kk && kk <= 21) {
+      // 1234e-2 -> 12.34
+      memmove(&buffer[kk + 1], &buffer[kk], length - kk);
+
+      // We want the shortest possible representation, so keep reading digits
+      // until strtod would give the correct float value.
+      buffer[kk] = '\0';
+      double v = (double)atoi(buffer);
+      buffer[kk] = '.';
+
+      double multiplicand = 0.1;
+      for (int i = kk + 1; i <= length; ++i) {
+        double vplus = v + (buffer[i] - '0' + 1) * multiplicand;
+        v += (buffer[i] - '0') * multiplicand;
+        multiplicand *= 0.1;
+
+        if ((float)v == value) {
+          length = i;
+          break;
+        }
+        if (buffer[i] < '9' && (float)vplus == value) {
+          ++buffer[i];
+          length = i;
+          break;
+        }
+      }
+
+      buffer[length + 1] = '\0';
+    }
+    else if (-6 < kk && kk <= 0) {
+      // 1234e-6 -> 0.001234
+      const int offset = 2 - kk;
+      memmove(&buffer[offset], &buffer[0], length);
+      buffer[0] = '0';
+      buffer[1] = '.';
+
+      // We want the shortest possible representation, so keep reading digits
+      // until strtod would give the correct float value.
+      double multiplicand = 1.0;
+      for (int i = 2; i < offset; i++) {
+        buffer[i] = '0';
+        multiplicand *= 0.1;
+      }
+      if ((float)multiplicand == value) {
+        length = 0;
+        buffer[offset - 1] = '1';
+      } else {
+        multiplicand *= 0.1;
+        double v = 0.0;
+        for (int i = offset; i < length + offset; ++i) {
+          double vplus = v + (buffer[i] - '0' + 1) * multiplicand;
+          v += (buffer[i] - '0') * multiplicand;
+          multiplicand *= 0.1;
+
+          if ((float)v == value) {
+            buffer[i + 1] = '\0';
+            break;
+          }
+          if (buffer[i] < '9' && (float)vplus == value) {
+            buffer[i]++;
+            buffer[i + 1] = '\0';
+            break;
+          }
+        }
+      }
+      buffer[length + offset] = '\0';
+    }
+    else if (length == 1) {
+      // 1e30
+      buffer[1] = 'e';
+      WriteExponent(kk - 1, &buffer[2]);
+    }
+    else {
+      // 1234e30 -> 1.234e33
+      memmove(&buffer[2], &buffer[1], length - 1);
+      buffer[1] = '.';
+      buffer[length + 1] = 'e';
+
+      double e_mult = pow(10.0, kk - 1);
+      if ((float)(10.0 * e_mult) == value) {
+        buffer[0] = '1';
+        buffer[1] = 'e';
+        WriteExponent(kk, &buffer[2]);
+      } else {
+        // We want the shortest possible representation, so keep reading
+        // digits until strtod would give the correct float value.
+        double v = buffer[0] - '0';
+        double multiplicand = 0.1;
+        for (int i = 2; i < length + 2; ++i) {
+          double vplus = v + (buffer[i] - '0' + 1) * multiplicand;
+          v += (buffer[i] - '0') * multiplicand;
+          multiplicand *= 0.1;
+
+          if ((float)(v * e_mult) == value) {
+            length = i;
+            buffer[i + 1] = 'e';
+            break;
+          }
+          if (buffer[i] < '9' && (float)(vplus * e_mult) == value) {
+            buffer[i]++;
+            length = i;
+            buffer[i + 1] = 'e';
+            break;
+          }
+        }
+        WriteExponent(kk - 1, &buffer[0 + length + 2]);
+      }
+    }
+  }
+}
+
+#ifdef _MSC_VER
+#pragma float_control(pop)
+#endif

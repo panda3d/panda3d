@@ -76,6 +76,7 @@ private:
   long _slider_table_size;
 
   LVecBase4f *_mat_part_cache = nullptr;
+  LVecBase4f *_mat_scratch_space = nullptr;
   pvector<CGparameter> _cg_parameter_map;
 
   WCPT(RenderState) _state_rs;

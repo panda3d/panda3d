@@ -77,6 +77,22 @@ PUBLISHED:
   INLINE static CollideMask get_default_collide_mask();
   MAKE_PROPERTY(default_collide_mask, get_default_collide_mask);
 
+public:
+  typedef void (OwnerCallback)(void *);
+
+  INLINE void *get_owner() const;
+
+#ifndef CPPPARSER
+  INLINE void set_owner(void *owner, OwnerCallback *callback = nullptr);
+  void clear_owner();
+#endif
+
+  EXTENSION(PyObject *get_owner() const);
+  EXTENSION(void set_owner(PyObject *owner));
+
+PUBLISHED:
+  MAKE_PROPERTY(owner, get_owner, set_owner);
+
 protected:
   virtual void compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
                                        int &internal_vertices,
@@ -93,6 +109,9 @@ private:
 
   typedef pvector< COWPT(CollisionSolid) > Solids;
   Solids _solids;
+
+  void *_owner = nullptr;
+  OwnerCallback *_owner_callback = nullptr;
 
   friend class CollisionTraverser;
 

@@ -566,7 +566,7 @@ make_glyph(int character, FT_Face face, int glyph_index) {
   if (_render_mode == RM_texture) {
     // Render the glyph if necessary.
     if (slot->format != ft_glyph_format_bitmap) {
-      FT_Render_Glyph(slot, ft_render_mode_normal);
+      FT_Render_Glyph(slot, _native_antialias ? ft_render_mode_normal : ft_render_mode_mono);
     }
 
     tex_x_size = bitmap.width;
