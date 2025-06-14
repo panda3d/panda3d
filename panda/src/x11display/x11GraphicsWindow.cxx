@@ -97,7 +97,8 @@ x11GraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
                   int flags,
                   GraphicsStateGuardian *gsg,
                   GraphicsOutput *host) :
-  GraphicsWindow(engine, pipe, name, fb_prop, win_prop, flags, gsg, host) {
+  GraphicsWindow(engine, pipe, name, fb_prop, win_prop, flags, gsg, host)
+{
   x11GraphicsPipe *x11_pipe;
   DCAST_INTO_V(x11_pipe, _pipe);
   _display = x11_pipe->get_display();
@@ -125,8 +126,6 @@ x11GraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
   PT(GraphicsWindowInputDevice) device = GraphicsWindowInputDevice::pointer_and_keyboard(this, "keyboard_mouse");
   add_input_device(device);
   _input = device;
-
-  enable_detectable_auto_repeat();
 }
 
 /**
@@ -1322,15 +1321,6 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
     if (XStringListToTextProperty((char **)&name, 1, &window_name) != 0) {
       window_name_p = &window_name;
     }
-
-#ifdef X_HAVE_UTF8_STRING
-    XTextProperty wm_name;
-    if (Xutf8TextListToTextProperty(_display, (char **)&name, 1,
-                                    XUTF8StringStyle, &wm_name) == Success) {
-      XSetTextProperty(_display, _xwindow, &wm_name, x11_pipe->_net_wm_name);
-      XFree(wm_name.value);
-    }
-#endif
   }
 
   // The size hints request a window of a particular size andor a particular
@@ -2745,23 +2735,4 @@ void x11GraphicsWindow::
 xim_preedit_done(XIC ic, XPointer client_data, XPointer call_data) {
   x11GraphicsWindow *window = (x11GraphicsWindow *)client_data;
   window->handle_preedit_done();
-}
-
-/**
- * Enables detectable auto-repeat if supported by the X server.
- */
-void x11GraphicsWindow::
-enable_detectable_auto_repeat() {
-  if (!x_detectable_auto_repeat) {
-    return;
-  }
-  
-  Bool supported;
-  if (XkbSetDetectableAutoRepeat(_display, True, &supported)) {
-    x11display_cat.info() << "Detectable auto-repeat enabled.\n";
-  } else if (!supported) {
-    x11display_cat.warning() << "Detectable auto-repeat is not supported by the X server.\n";
-  } else {
-    x11display_cat.error() << "Failed to set detectable auto-repeat.\n";
-  }
 }

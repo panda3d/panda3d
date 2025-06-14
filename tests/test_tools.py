@@ -5,9 +5,6 @@ import os
 import tempfile
 import panda3d
 
-if sys.platform == "emscripten":
-    pytest.skip(allow_module_level=True)
-
 try:
     panda3d_tools = pytest.importorskip("panda3d_tools")
 except:

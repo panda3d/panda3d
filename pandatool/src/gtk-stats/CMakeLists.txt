@@ -1,7 +1,3 @@
-if(NOT BUILD_TOOLS)
-  return()
-endif()
-
 if(NOT HAVE_GTK3 OR NOT HAVE_NET)
   return()
 endif()

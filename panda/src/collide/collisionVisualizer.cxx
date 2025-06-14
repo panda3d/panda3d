@@ -207,8 +207,11 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
           PT(Geom) geom = new Geom(point_vdata);
           geom->add_primitive(points);
 
-          trav->get_cull_handler()->record_object(CullableObject(
-            geom, point_state, xform_data.get_internal_transform(trav)), trav);
+          CullableObject *object =
+            new CullableObject(geom, point_state,
+                               xform_data.get_internal_transform(trav));
+
+          trav->get_cull_handler()->record_object(object, trav);
         }
 
         // Draw the normal vector at the surface point.
@@ -233,8 +236,11 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
           PT(Geom) geom = new Geom(line_vdata);
           geom->add_primitive(lines);
 
-          trav->get_cull_handler()->record_object(CullableObject(
-            geom, empty_state, xform_data.get_internal_transform(trav)), trav);
+          CullableObject *object =
+            new CullableObject(geom, empty_state,
+                               xform_data.get_internal_transform(trav));
+
+          trav->get_cull_handler()->record_object(object, trav);
         }
       }
     }

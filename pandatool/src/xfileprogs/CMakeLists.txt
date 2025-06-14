@@ -1,7 +1,3 @@
-if(NOT BUILD_TOOLS)
-  return()
-endif()
-
 add_executable(x-trans xFileTrans.cxx xFileTrans.h)
 target_link_libraries(x-trans p3progbase p3xfile)
 install(TARGETS x-trans EXPORT Tools COMPONENT Tools DESTINATION ${CMAKE_INSTALL_BINDIR})

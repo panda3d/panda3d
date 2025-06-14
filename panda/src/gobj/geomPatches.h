@@ -32,9 +32,7 @@ public:
   virtual PT(GeomPrimitive) make_copy() const;
   virtual PrimitiveType get_primitive_type() const;
 
-  virtual int get_num_vertices_per_primitive() const final {
-    return _num_vertices_per_patch;
-  }
+  virtual int get_num_vertices_per_primitive() const;
 
 public:
   virtual bool draw(GraphicsStateGuardianBase *gsg,

@@ -1,0 +1,7 @@
+#include "config_interrogatedb.cxx"
+#include "indexRemapper.cxx"
+#include "interrogateComponent.cxx"
+#include "interrogateDatabase.cxx"
+#include "interrogateElement.cxx"
+#include "interrogateFunction.cxx"
+#include "interrogateFunctionWrapper.cxx"

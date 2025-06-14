@@ -31,7 +31,8 @@ def test_event_subclass_gc():
     with gc_disabled():
         event = PythonEvent('test_event_subclass_gc1')
 
-        assert event in gc.get_objects()
+        assert len(gc.get_objects()) == 1
+        assert gc.get_objects()[0] == event
 
         event = None
 

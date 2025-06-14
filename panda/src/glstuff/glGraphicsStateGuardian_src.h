@@ -39,8 +39,6 @@
 #include "geomVertexArrayData.h"
 #include "lightMutex.h"
 #include "pStatGPUTimer.h"
-#include "completionToken.h"
-#include "asyncTaskChain.h"
 
 class PlaneNode;
 class Light;
@@ -168,7 +166,6 @@ typedef void (APIENTRYP PFNGLGETPROGRAMINFOLOGPROC) (GLuint program, GLsizei buf
 typedef void (APIENTRYP PFNGLGETSHADERIVPROC) (GLuint shader, GLenum pname, GLint *params);
 typedef void (APIENTRYP PFNGLGETSHADERINFOLOGPROC) (GLuint shader, GLsizei bufSize, GLsizei *length, GLchar *infoLog);
 typedef GLint (APIENTRYP PFNGLGETUNIFORMLOCATIONPROC) (GLuint program, const GLchar *name);
-typedef void (APIENTRYP PFNGLGETINTEGERI_VPROC) (GLenum target, GLuint index, GLint *data);
 typedef void (APIENTRYP PFNGLLINKPROGRAMPROC) (GLuint program);
 typedef void (APIENTRYP PFNGLSHADERSOURCEPROC_P) (GLuint shader, GLsizei count, const GLchar* const *string, const GLint *length);
 typedef void (APIENTRYP PFNGLUSEPROGRAMPROC) (GLuint program);
@@ -233,7 +230,6 @@ typedef void (APIENTRYP PFNGLGETPROGRAMBINARYPROC) (GLuint program, GLsizei bufS
 typedef void (APIENTRYP PFNGLPROGRAMBINARYPROC) (GLuint program, GLenum binaryFormat, const void *binary, GLsizei length);
 typedef void (APIENTRYP PFNGLGETINTERNALFORMATIVPROC) (GLenum target, GLenum internalformat, GLenum pname, GLsizei bufSize, GLint *params);
 typedef void (APIENTRYP PFNGLBUFFERSTORAGEPROC) (GLenum target, GLsizeiptr size, const void *data, GLbitfield flags);
-typedef void (APIENTRYP PFNGLCOPYBUFFERSUBDATAPROC) (GLenum readTarget, GLenum writeTarget, GLintptr readOffset, GLintptr writeOffset, GLsizeiptr size);
 typedef void (APIENTRYP PFNGLBINDIMAGETEXTUREPROC) (GLuint unit, GLuint texture, GLint level, GLboolean layered, GLint layer, GLenum access, GLenum format);
 typedef void (APIENTRYP PFNGLCLEARTEXIMAGEPROC) (GLuint texture, GLint level, GLenum format, GLenum type, const void *data);
 typedef void (APIENTRYP PFNGLCLEARTEXSUBIMAGEPROC) (GLuint texture, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, const void *data);
@@ -349,8 +345,7 @@ public:
 #endif
 
   virtual TextureContext *prepare_texture(Texture *tex);
-  virtual bool update_texture(TextureContext *tc, bool force,
-                              CompletionToken token = CompletionToken());
+  virtual bool update_texture(TextureContext *tc, bool force);
   virtual void release_texture(TextureContext *tc);
   virtual void release_textures(const pvector<TextureContext *> &contexts);
   virtual bool extract_texture_data(Texture *tex);
@@ -396,10 +391,9 @@ public:
 
 #ifndef OPENGLES
   virtual BufferContext *prepare_shader_buffer(ShaderBuffer *data);
-  CLP(BufferContext) *apply_shader_buffer(GLuint base, ShaderBuffer *buffer);
+  void apply_shader_buffer(GLuint base, ShaderBuffer *buffer);
   virtual void release_shader_buffer(BufferContext *bc);
   virtual void release_shader_buffers(const pvector<BufferContext *> &contexts);
-  virtual bool extract_shader_buffer_data(ShaderBuffer *buffer, vector_uchar &data);
 #endif
 
 #ifndef OPENGLES
@@ -424,6 +418,7 @@ public:
   virtual bool framebuffer_copy_to_ram
     (Texture *tex, int view, int z, const DisplayRegion *dr, const RenderBuffer &rb,
      ScreenshotRequest *request);
+  void finish_async_framebuffer_ram_copies(bool force = false);
 
 #ifdef SUPPORT_FIXED_FUNCTION
   void apply_fog(Fog *fog);
@@ -641,21 +636,12 @@ protected:
   bool apply_texture(CLP(TextureContext) *gtc, int view);
   bool apply_sampler(GLuint unit, const SamplerState &sampler,
                      CLP(TextureContext) *gtc, int view);
-  bool upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps,
-                      CompletionToken token = CompletionToken());
-  bool upload_texture_view(CLP(TextureContext) *gtc, int view,
-                           bool needs_reload, int mipmap_bias, int num_levels,
-                           GLint internal_format, GLint external_format,
-                           GLenum component_type, bool compressed,
-                           int async_buffers, CompletionToken token);
-  bool upload_texture_level(bool full_reload, bool compressed,
-                            GLenum target, int level,
-                            int width, int height, int depth,
+  bool upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps);
+  bool upload_texture_image(CLP(TextureContext) *gtc, int view,
+                            bool needs_reload, int mipmap_bias, int num_levels,
                             GLint internal_format, GLint external_format,
                             GLenum component_type,
-                            const unsigned char *image_ptr,
-                            size_t page_size, SparseArray pages,
-                            GLenum usage_hint);
+                            Texture::CompressionMode image_compression);
   void generate_mipmaps(CLP(TextureContext) *gtc);
   bool upload_simple_texture(CLP(TextureContext) *gtc);
 
@@ -670,20 +656,6 @@ protected:
 #ifdef SUPPORT_FIXED_FUNCTION
   void do_point_size();
 #endif
-
-#ifndef OPENGLES_1
-  void *map_read_buffer(GLenum target, GLuint buffer, size_t size);
-  void *map_write_discard_buffer(GLenum target, GLuint buffer, size_t size,
-                                 bool create_storage);
-#endif
-
-#ifndef OPENGLES_1
-  void insert_fence(CompletionToken &&callback);
-  void process_fences(bool force);
-#endif
-
-  void call_later(Completable &&job);
-  void process_pending_jobs(bool wait);
 
   enum AutoAntialiasMode {
     AA_poly,
@@ -825,10 +797,6 @@ protected:
 
 public:
 #ifndef OPENGLES_1
-  PFNGLGETINTEGERI_VPROC _glGetIntegeri_v;
-#endif
-
-#ifndef OPENGLES_1
   bool _use_depth_zero_to_one;
   bool _use_remapped_depth_range;
 #endif
@@ -935,19 +903,11 @@ public:
   PFNGLGETBUFFERSUBDATAPROC _glGetBufferSubData;
 #endif
 
-#ifndef OPENGLES_1
-  PFNGLCOPYBUFFERSUBDATAPROC _glCopyBufferSubData;
-#endif
-
 #ifdef OPENGLES
   PFNGLMAPBUFFERRANGEEXTPROC _glMapBufferRange;
   PFNGLUNMAPBUFFEROESPROC _glUnmapBuffer;
 #else
   PFNGLMAPBUFFERRANGEPROC _glMapBufferRange;
-#endif
-
-#ifndef OPENGLES_1
-  bool _supports_pixel_buffers;
 #endif
 
 #ifndef OPENGLES_1
@@ -1017,7 +977,6 @@ public:
   PFNGLTEXTUREPARAMETERIPROC _glTextureParameteri;
   PFNGLGENERATETEXTUREMIPMAPPROC _glGenerateTextureMipmap;
   PFNGLBINDTEXTUREUNITPROC _glBindTextureUnit;
-  PFNGLMAPNAMEDBUFFERRANGEPROC _glMapNamedBufferRange;
 #endif
 
 #ifndef OPENGLES_1
@@ -1202,15 +1161,12 @@ public:
 #endif
 
 #ifndef OPENGLES_1
-  // This count increments every time the corresponding barrier is issued.
-  // GLTextureContext et al store copies of this counter, when a write is
-  // performed on a texture, it will set its counter to match the value on the
-  // GSG to indicate that it is out of sync and the barrier needs to be issued.
-  int _texture_fetch_barrier_counter = 0;
-  int _shader_image_access_barrier_counter = 0;
-  int _texture_update_barrier_counter = 0;
-  int _framebuffer_barrier_counter = 0;
-  int _shader_storage_barrier_counter = 0;
+  // Stores textures for which memory bariers should be issued.
+  typedef pset<TextureContext*> TextureSet;
+  TextureSet _textures_needing_fetch_barrier;
+  TextureSet _textures_needing_image_access_barrier;
+  TextureSet _textures_needing_update_barrier;
+  TextureSet _textures_needing_framebuffer_barrier;
 #endif
 
   // RenderState::SlotMask _inv_state_mask;
@@ -1260,21 +1216,16 @@ public:
   FrameTiming *_current_frame_timing = nullptr;
 #endif
 
-  struct Fence {
-    GLsync _object;
-    CompletionToken _token;
+  struct AsyncRamCopy {
+    PT(ScreenshotRequest) _request;
+    GLuint _pbo;
+    GLsync _fence;
+    GLuint _external_format;
+    int _view;
+    void *_mapped_pointer;
+    size_t _size;
   };
-  pdeque<Fence> _fences;
-
-#ifdef HAVE_THREADS
-  AsyncTaskChain *_async_chain;
-#endif
-
-  // Min job system pending a real job system
-  typedef pvector<Completable> JobQueue;
-  Mutex _job_queue_mutex;
-  ConditionVar _job_queue_cvar;
-  JobQueue _job_queue;
+  pdeque<AsyncRamCopy> _async_ram_copies;
 
   BufferResidencyTracker _renderbuffer_residency;
 
@@ -1319,7 +1270,6 @@ private:
   friend class CLP(BufferContext);
   friend class CLP(ShaderContext);
   friend class CLP(CgShaderContext);
-  friend class CLP(TextureContext);
   friend class CLP(GraphicsBuffer);
   friend class CLP(OcclusionQueryContext);
 };

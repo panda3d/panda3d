@@ -20,7 +20,6 @@
 #include "eventParameter.h"
 #include "patomic.h"
 #include "small_vector.h"
-#include "completionToken.h"
 
 class AsyncTaskManager;
 class AsyncTask;
@@ -59,7 +58,7 @@ class AsyncTask;
  *
  * @since 1.10.0
  */
-class EXPCL_PANDA_EVENT AsyncFuture : public TypedReferenceCount, protected Completable::Data {
+class EXPCL_PANDA_EVENT AsyncFuture : public TypedReferenceCount {
 PUBLISHED:
   INLINE AsyncFuture();
   virtual ~AsyncFuture();
@@ -110,8 +109,6 @@ public:
 private:
   void wake_task(AsyncTask *task);
 
-  static void token_callback(Completable::Data *, bool success);
-
 protected:
   enum FutureState : patomic_unsigned_lock_free::value_type {
     // Pending states
@@ -139,7 +136,6 @@ protected:
 
   friend class AsyncGatheringFuture;
   friend class AsyncTaskChain;
-  friend class CompletionToken;
   friend class PythonTask;
 
 public:
@@ -202,33 +198,6 @@ public:
 private:
   static TypeHandle _type_handle;
 };
-
-#ifndef CPPPARSER
-// Allow passing a future into a method accepting a CompletionToken.
-template<>
-INLINE CompletionToken::
-CompletionToken(AsyncFuture *future) {
-  if (future != nullptr) {
-    future->ref();
-    _callback._data = future;
-    if (_callback._data->_function == nullptr) {
-      _callback._data->_function = &AsyncFuture::token_callback;
-    }
-  }
-}
-
-template<>
-INLINE CompletionToken::
-CompletionToken(PT(AsyncFuture) future) {
-  if (future != nullptr) {
-    _callback._data = future;
-    if (_callback._data->_function == nullptr) {
-      _callback._data->_function = &AsyncFuture::token_callback;
-    }
-    future.cheat() = nullptr;
-  }
-}
-#endif
 
 #include "asyncFuture.I"
 

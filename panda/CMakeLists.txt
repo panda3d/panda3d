@@ -107,7 +107,7 @@ if(HAVE_FREETYPE)
 endif()
 
 if(INTERROGATE_PYTHON_INTERFACE)
-  add_python_module(panda3d.core ${CORE_MODULE_COMPONENTS} LINK panda INIT pyenv_init)
+  add_python_module(panda3d.core ${CORE_MODULE_COMPONENTS} LINK panda)
 
   # Generate our __init__.py
   if(WIN32)

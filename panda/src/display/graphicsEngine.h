@@ -32,10 +32,6 @@
 #include "indirectLess.h"
 #include "loader.h"
 #include "referenceCount.h"
-#include "renderState.h"
-#include "clockObject.h"
-
-#include <type_traits>
 
 class Pipeline;
 class DisplayRegion;
@@ -56,8 +52,7 @@ class Texture;
  */
 class EXPCL_PANDA_DISPLAY GraphicsEngine : public ReferenceCount {
 PUBLISHED:
-  explicit GraphicsEngine(ClockObject *clock = ClockObject::get_global_clock(),
-                          Pipeline *pipeline = nullptr);
+  explicit GraphicsEngine(Pipeline *pipeline = nullptr);
   BLOCKING ~GraphicsEngine();
 
   void set_threading_model(const GraphicsThreadingModel &threading_model);
@@ -115,13 +110,9 @@ PUBLISHED:
   BLOCKING void flip_frame();
 
   bool extract_texture_data(Texture *tex, GraphicsStateGuardian *gsg);
-  vector_uchar extract_shader_buffer_data(ShaderBuffer *buffer, GraphicsStateGuardian *gsg);
   void dispatch_compute(const LVecBase3i &work_groups,
-                        const RenderState *state,
+                        const ShaderAttrib *sattr,
                         GraphicsStateGuardian *gsg);
-  INLINE void dispatch_compute(const LVecBase3i &work_groups,
-                               const ShaderAttrib *sattr,
-                               GraphicsStateGuardian *gsg);
 
   static GraphicsEngine *get_global_ptr();
 
@@ -132,17 +123,15 @@ public:
     TS_do_flip,
     TS_do_release,
     TS_do_windows,
-    TS_callback,
+    TS_do_compute,
+    TS_do_extract,
+    TS_do_screenshot,
     TS_terminate,
     TS_done
   };
 
   void texture_uploaded(Texture *tex);
-
-#ifndef CPPPARSER
-  template<class Callable>
-  INLINE auto run_on_draw_thread(Callable &&callable) -> decltype(callable());
-#endif
+  PT(Texture) do_get_screenshot(DisplayRegion *region, GraphicsStateGuardian *gsg);
 
 public:
   static void do_cull(CullHandler *cull_handler, SceneSetup *scene_setup,
@@ -309,37 +298,24 @@ private:
     RenderThread(const std::string &name, GraphicsEngine *engine);
     virtual void thread_main();
 
-    typedef void Callback(RenderThread *thread);
-    void run_on_thread(Callback *callback,
-                       void *callback_data = nullptr,
-                       void *return_data = nullptr);
-
-#ifndef CPPPARSER
-    template<class Callable>
-    INLINE auto run_on_thread(Callable &&callable) ->
-      typename std::enable_if<!std::is_void<decltype(callable())>::value, decltype(callable())>::type;
-
-    template<class Callable>
-    INLINE auto run_on_thread(Callable &&callable) ->
-      typename std::enable_if<std::is_void<decltype(callable())>::value, decltype(callable())>::type;
-#endif
-
     GraphicsEngine *_engine;
     Mutex _cv_mutex;
     ConditionVar _cv_start;
     ConditionVar _cv_done;
     ThreadState _thread_state;
 
-    // Used for TS_callback.
-    Callback *_callback;
-    void *_callback_data;
-    void *_return_data;
+    // These are stored for extract_texture_data and dispatch_compute.
+    GraphicsStateGuardian *_gsg;
+    PT(Texture) _texture;
+    const RenderState *_state;
+    DisplayRegion *_region;
+    LVecBase3i _work_groups;
+    bool _result;
   };
 
   WindowRenderer *get_window_renderer(const std::string &name, int pipeline_stage);
 
   Pipeline *_pipeline;
-  ClockObject *const _clock;
   Windows _windows;
   bool _windows_sorted;
 

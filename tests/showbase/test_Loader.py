@@ -6,9 +6,7 @@ import sys
 
 @pytest.fixture
 def loader():
-    loader = Loader(base=None)
-    yield loader
-    loader.destroy()
+    return Loader(base=None)
 
 
 @pytest.fixture
@@ -92,7 +90,7 @@ class FnargleLoader:
 """)
     (tmp_path / "fnargle.dist-info").mkdir()
     (tmp_path / "fnargle.dist-info" / "METADATA").write_text("""
-Metadata-Version: 2.1
+Metadata-Version: 2.0
 Name: fnargle
 Version: 1.0.0
 """)
@@ -122,10 +120,9 @@ fnrgl = fnargle:FnargleLoader
         sys.path = [str(tmp_path), platstdlib, stdlib]
 
         Loader._loadedPythonFileTypes = False
-        loader = Loader()
 
-        if not Loader._loadedPythonFileTypes:
-            Loader._loadPythonFileTypes()
+        # base parameter is only used for audio
+        loader = Loader(None)
         assert Loader._loadedPythonFileTypes
 
         # Should be registered, not yet loaded

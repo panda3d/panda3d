@@ -62,8 +62,7 @@ aspect2d = render2d.attachNewNode(PGTop("aspect2d"))
 #: A dummy scene graph that is not being rendered by anything.
 hidden = NodePath("hidden")
 
-#: The global Loader instance for models, textures, etc.
-loader = Loader()
+loader: Loader
 
 # Set direct notify categories now that we have config
 directNotify.setDconfigLevels()

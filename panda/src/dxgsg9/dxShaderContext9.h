@@ -88,7 +88,6 @@ private:
 #endif
 
   LVecBase4f *_mat_part_cache = nullptr;
-  LVecBase4f *_mat_scratch_space = nullptr;
 
 private:
   void release_resources(void);

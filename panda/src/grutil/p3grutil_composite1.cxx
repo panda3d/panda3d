@@ -1,6 +1,5 @@
 #include "cardMaker.cxx"
 #include "heightfieldTesselator.cxx"
-#include "htmlVideoTexture.cxx"
 #include "geoMipTerrain.cxx"
 #include "shaderTerrainMesh.cxx"
 #include "config_grutil.cxx"

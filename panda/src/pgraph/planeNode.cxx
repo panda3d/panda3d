@@ -140,8 +140,10 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   // Normally, a PlaneNode is invisible.  But if someone shows it, we will
   // draw a visualization, a nice yellow wireframe.
 
-  trav->get_cull_handler()->record_object(CullableObject(
-    get_viz(trav, data), data._state, data.get_internal_transform(trav)), trav);
+  CullableObject *plane_viz =
+    new CullableObject(get_viz(trav, data), data._state,
+                       data.get_internal_transform(trav));
+  trav->get_cull_handler()->record_object(plane_viz, trav);
 
   // Now carry on to render our child nodes.
   return true;

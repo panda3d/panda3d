@@ -1,7 +1,3 @@
-if(NOT BUILD_TOOLS)
-  return()
-endif()
-
 if(NOT HAVE_EGG OR NOT HAVE_FREETYPE)
   return()
 endif()

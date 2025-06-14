@@ -48,9 +48,6 @@ protected:
   virtual void close_window();
   virtual bool open_window();
 
-public:
-  void on_resize(double width, double height);
-
 private:
   static EM_BOOL on_fullscreen_event(int type, const EmscriptenFullscreenChangeEvent *event, void *user_data);
   static EM_BOOL on_pointerlock_event(int type, const EmscriptenPointerlockChangeEvent *event, void *user_data);

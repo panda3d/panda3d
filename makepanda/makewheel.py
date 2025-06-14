@@ -19,15 +19,13 @@ from sysconfig import get_platform
 
 
 def get_abi_tag():
-    ver = 'cp%d%d' % sys.version_info[:2]
-    if hasattr(sys, 'abiflags'):
-        return ver + sys.abiflags
+    soabi = get_config_var('SOABI')
+    if soabi and soabi.startswith('cpython-'):
+        return 'cp' + soabi.split('-')[1]
+    elif soabi:
+        return soabi.replace('.', '_').replace('-', '_')
 
-    gil_disabled = get_config_var("Py_GIL_DISABLED")
-    if gil_disabled and int(gil_disabled):
-        return ver + 't'
-
-    return ver
+    return 'cp%d%d' % (sys.version_info[:2])
 
 
 def is_exe_file(path):
@@ -88,25 +86,12 @@ MANYLINUX_LIBS = [
     # These are not mentioned in manylinux1 spec but should nonetheless always
     # be excluded.
     "linux-vdso.so.1", "linux-gate.so.1", "ld-linux.so.2", "libdrm.so.2",
-    "ld-linux-x86-64.so.2", "ld-linux-aarch64.so.1",
     "libEGL.so.1", "libOpenGL.so.0", "libGLX.so.0", "libGLdispatch.so.0",
-    "libGLESv2.so.2",
 ]
 
 # Binaries to never scan for dependencies on non-Windows systems.
 IGNORE_UNIX_DEPS_OF = [
     "panda3d_tools/pstats",
-]
-
-# Tools to exclude from the wheel.
-EXCLUDE_BINARIES = [
-    'eggcacher',
-    'packpanda',
-    'interrogate',
-    'interrogate_module',
-    'test_interrogate',
-    'parse_file',
-    'run_tests',
 ]
 
 WHEEL_DATA = """Wheel-Version: 1.0
@@ -120,7 +105,7 @@ PROJECT_URLS = dict([line.split('=', 1) for line in GetMetadataValue('project_ur
 METADATA = {
     "license": GetMetadataValue('license'),
     "name": GetMetadataValue('name'),
-    "metadata_version": "2.1",
+    "metadata_version": "2.0",
     "generator": "makepanda",
     "summary": GetMetadataValue('description'),
     "extensions": {
@@ -502,8 +487,7 @@ class WheelFile(object):
                         self.consider_add_dependency(target_dep, dep_path)
                         continue
 
-                    elif dep.startswith('/Library/Frameworks/Python.framework/') or \
-                         dep.startswith('/Library/Frameworks/PythonT.framework/'):
+                    elif dep.startswith('/Library/Frameworks/Python.framework/'):
                         # Add this dependency if it's in the Python directory.
                         target_dep = os.path.dirname(target_path) + '/' + os.path.basename(dep)
                         target_dep = self.consider_add_dependency(target_dep, dep, loader_path)
@@ -645,20 +629,10 @@ def makewheel(version, output_dir, platform=None):
     if platform is None:
         # Determine the platform from the build.
         platform_dat = os.path.join(output_dir, 'tmp', 'platform.dat')
-        cmake_cache = os.path.join(output_dir, 'CMakeCache.txt')
         if os.path.isfile(platform_dat):
-            # This is written by makepanda.
             platform = open(platform_dat, 'r').read().strip()
-        elif os.path.isfile(cmake_cache):
-            # This variable is written to the CMake cache by Package.cmake.
-            for line in open(cmake_cache, 'r').readlines():
-                if line.startswith('PYTHON_PLATFORM_TAG:STRING='):
-                    platform = line[27:].strip()
-                    break
-            if not platform:
-                raise Exception("Could not find PYTHON_PLATFORM_TAG in CMakeCache.txt, specify --platform manually.")
         else:
-            print("Could not find platform.dat or CMakeCache.txt in build directory")
+            print("Could not find platform.dat in build directory")
             platform = get_platform()
             if platform.startswith("linux-") and os.path.isdir("/opt/python"):
                 # Is this manylinux?
@@ -679,7 +653,6 @@ def makewheel(version, output_dir, platform=None):
         or platform.startswith('win_') \
         or platform.startswith('cygwin_')
     is_macosx = platform.startswith('macosx_')
-    is_android = platform.startswith('android_')
 
     # Global filepaths
     panda3d_dir = join(output_dir, "panda3d")
@@ -739,20 +712,12 @@ def makewheel(version, output_dir, platform=None):
         whl.ignore_deps.update(MANYLINUX_LIBS)
 
     # Add libpython for deployment.
-    suffix = ''
-    gil_disabled = get_config_var("Py_GIL_DISABLED")
-    if gil_disabled and int(gil_disabled):
-        suffix = 't'
-
     if is_windows:
-        pylib_name = 'python{0}{1}{2}.dll'.format(sys.version_info[0], sys.version_info[1], suffix)
+        pylib_name = 'python{0}{1}.dll'.format(*sys.version_info)
         pylib_path = os.path.join(get_config_var('BINDIR'), pylib_name)
     elif is_macosx:
-        pylib_name = 'libpython{0}.{1}{2}.dylib'.format(sys.version_info[0], sys.version_info[1], suffix)
+        pylib_name = 'libpython{0}.{1}.dylib'.format(*sys.version_info)
         pylib_path = os.path.join(get_config_var('LIBDIR'), pylib_name)
-    elif is_android and CrossCompiling():
-        pylib_name = 'libpython{0}.{1}{2}.so'.format(sys.version_info[0], sys.version_info[1], suffix)
-        pylib_path = os.path.join(GetThirdpartyDir(), 'python', 'lib', pylib_name)
     else:
         pylib_name = get_config_var('LDLIBRARY')
         pylib_arch = get_config_var('MULTIARCH')
@@ -891,7 +856,7 @@ if __debug__:
     tools_init = ''
     for file in sorted(os.listdir(bin_dir)):
         basename = os.path.splitext(file)[0]
-        if basename in EXCLUDE_BINARIES:
+        if basename in ('eggcacher', 'packpanda'):
             continue
 
         source_path = os.path.join(bin_dir, file)

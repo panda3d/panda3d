@@ -253,7 +253,7 @@ eggyywarning(YYLTYPE *loc, EggParserState &state, yyscan_t scanner, const string
 #  endif
 # endif
 
-#include "parser.h"
+#include "parser.yxx.h"
 /* Symbol kind.  */
 enum yysymbol_kind_t
 {

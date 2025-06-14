@@ -58,7 +58,6 @@ public:
   void disable_shader_texture_bindings() override;
   void update_shader_texture_bindings(ShaderContext *prev) override;
   void update_shader_buffer_bindings(ShaderContext *prev) override;
-  void issue_memory_barriers();
 
   bool uses_standard_vertex_arrays(void) override {
     return _uses_standard_vertex_arrays;
@@ -92,12 +91,12 @@ private:
   GLint _slider_table_index;
   GLsizei _transform_table_size;
   GLsizei _slider_table_size;
+  GLint _frame_number_loc;
   GLint _frame_number;
 
 #ifndef OPENGLES
   struct StorageBlock {
     CPT(InternalName) _name;
-    CLP(BufferContext) *_gbc = nullptr;
     GLuint _binding_index;
     GLuint _min_size;
   };
@@ -114,15 +113,10 @@ private:
   pvector<ImageInput> _glsl_img_inputs;
 
   LVecBase4f *_mat_part_cache = nullptr;
-  LVecBase4f *_mat_scratch_space = nullptr;
 
   CLP(GraphicsStateGuardian) *_glgsg;
 
   bool _uses_standard_vertex_arrays;
-
-#ifdef DO_PSTATS
-  PStatCollector _compute_dispatch_pcollector;
-#endif
 
   void glsl_report_shader_errors(GLuint shader, Shader::ShaderType type, bool fatal);
   void glsl_report_program_errors(GLuint program, bool fatal);

@@ -2,7 +2,6 @@
 name: Bug report
 about: Report a defect
 title:
-type: bug
 labels:
 assignees:
 ---

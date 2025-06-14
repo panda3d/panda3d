@@ -179,7 +179,7 @@ dc_cleanup_parser() {
 #  endif
 # endif
 
-#include "dcParser.h"
+#include "dcParser.yxx.h"
 /* Symbol kind.  */
 enum yysymbol_kind_t
 {

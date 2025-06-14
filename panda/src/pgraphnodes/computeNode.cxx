@@ -82,10 +82,11 @@ add_for_draw(CullTraverser *trav, CullTraverserData &data) {
   // OK, render this node.  Rendering this node means creating a
   // CullableObject for the Dispatcher.  We don't need to pass any Geoms,
   // however.
-  CullableObject object(nullptr, data._state,
-                        data.get_internal_transform(trav));
-  object.set_draw_callback(_dispatcher);
-  trav->get_cull_handler()->record_object(std::move(object), trav);
+  CullableObject *object =
+    new CullableObject(nullptr, data._state,
+                       data.get_internal_transform(trav));
+  object->set_draw_callback(_dispatcher);
+  trav->get_cull_handler()->record_object(object, trav);
 }
 
 /**

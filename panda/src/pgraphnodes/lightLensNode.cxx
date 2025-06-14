@@ -19,7 +19,6 @@
 #include "renderState.h"
 #include "cullFaceAttrib.h"
 #include "colorWriteAttrib.h"
-#include "lightAttrib.h"
 #include "graphicsStateGuardianBase.h"
 
 TypeHandle LightLensNode::_type_handle;
@@ -38,14 +37,10 @@ LightLensNode(const std::string &name, Lens *lens) :
   _shadow_caster = false;
   _sb_size.set(512, 512);
   _sb_sort = -10;
-
+  // set_initial_state(RenderState::make(ShaderAttrib::make_off(), 1000));
   // Backface culling helps eliminating artifacts.
-  static CPT(RenderState) default_initial_state =
-    RenderState::make(
-      CullFaceAttrib::make_reverse(),
-      ColorWriteAttrib::make(ColorWriteAttrib::C_off)
-    )->set_attrib(LightAttrib::make_all_off(), RenderState::get_max_priority());
-  set_initial_state(default_initial_state);
+  set_initial_state(RenderState::make(CullFaceAttrib::make_reverse(),
+                    ColorWriteAttrib::make(ColorWriteAttrib::C_off)));
 }
 
 /**

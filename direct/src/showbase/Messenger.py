@@ -2,40 +2,19 @@
 :ref:`event handling <event-handlers>` that happens on the Python side.
 """
 
-from __future__ import annotations
-
 __all__ = ['Messenger']
-
-import types
-from collections.abc import Callable
-from typing import Protocol
-# These can be replaced with their builtin counterparts once support for Python 3.8 is dropped.
-from typing import Dict, Tuple
-
-from panda3d.core import AsyncTask
 
 from direct.stdpy.threading import Lock
 from direct.directnotify import DirectNotifyGlobal
 from .PythonUtil import safeRepr
-
-# The following variables are typing constructs used in annotations
-# to succinctly express complex type structures.
-_ObjMsgrId = Tuple[str, int]
-_CallbackInfo = list  # [Callable, list, bool]
-_ListenerObject = list  # [int, DirectObject]
-_AcceptorDict = Dict[_ObjMsgrId, _CallbackInfo]
-_EventTuple = Tuple[_AcceptorDict, str, list, bool]
-
-
-class _HasMessengerID(Protocol):
-    _MSGRmessengerId: _ObjMsgrId
+import types
 
 
 class Messenger:
 
     notify = DirectNotifyGlobal.directNotify.newCategory("Messenger")
 
-    def __init__(self) -> None:
+    def __init__(self):
         """
         One is keyed off the event name. It has the following structure::
 
@@ -55,16 +34,16 @@ class Messenger:
             {'mouseDown': {avatar: [avatar.jump, [2.0], 1]}}
         """
         # eventName->objMsgrId->callbackInfo
-        self.__callbacks: dict[str, _AcceptorDict] = {}
+        self.__callbacks = {}
         # objMsgrId->set(eventName)
-        self.__objectEvents: dict[_ObjMsgrId, dict[str, None]] = {}
+        self.__objectEvents = {}
         self._messengerIdGen = 0
         # objMsgrId->listenerObject
-        self._id2object: dict[_ObjMsgrId, _ListenerObject] = {}
+        self._id2object = {}
 
         # A mapping of taskChain -> eventList, used for sending events
         # across task chains (and therefore across threads).
-        self._eventQueuesByTaskChain: dict[str, list[_EventTuple]] = {}
+        self._eventQueuesByTaskChain = {}
 
         # This protects the data structures within this object from
         # multithreaded access.
@@ -72,7 +51,7 @@ class Messenger:
 
         if __debug__:
             self.__isWatching=0
-            self.__watching: dict[str, bool] = {}
+            self.__watching={}
         # I'd like this to be in the __debug__, but I fear that someone will
         # want this in a release build.  If you're sure that that will not be
         # then please remove this comment and put the quiet/verbose stuff
@@ -83,7 +62,7 @@ class Messenger:
                        'collisionLoopFinished':1,
                        } # see def quiet()
 
-    def _getMessengerId(self, object: _HasMessengerID) -> _ObjMsgrId:
+    def _getMessengerId(self, object):
         # TODO: allocate this id in DirectObject.__init__ and get derived
         # classes to call down (speed optimization, assuming objects
         # accept/ignore more than once over their lifetime)
@@ -94,7 +73,7 @@ class Messenger:
             self._messengerIdGen += 1
         return object._MSGRmessengerId
 
-    def _storeObject(self, object: _HasMessengerID) -> None:
+    def _storeObject(self, object):
         # store reference-counted reference to object in case we need to
         # retrieve it later.  assumes lock is held.
         id = self._getMessengerId(object)
@@ -103,7 +82,7 @@ class Messenger:
         else:
             self._id2object[id][0] += 1
 
-    def _getObject(self, id: _ObjMsgrId) -> _HasMessengerID:
+    def _getObject(self, id):
         return self._id2object[id][1]
 
     def _getObjects(self):
@@ -122,7 +101,7 @@ class Messenger:
     def _getEvents(self):
         return list(self.__callbacks.keys())
 
-    def _releaseObject(self, object: _HasMessengerID) -> None:
+    def _releaseObject(self, object):
         # assumes lock is held.
         id = self._getMessengerId(object)
         if id in self._id2object:
@@ -138,14 +117,7 @@ class Messenger:
         from .EventManagerGlobal import eventMgr
         return eventMgr.eventHandler.get_future(event)
 
-    def accept(
-        self,
-        event: str,
-        object: _HasMessengerID,
-        method: Callable,
-        extraArgs: list = [],
-        persistent: bool = True,
-    ) -> None:
+    def accept(self, event, object, method, extraArgs=[], persistent=1):
         """ accept(self, string, DirectObject, Function, List, Boolean)
 
         Make this object accept this event. When the event is
@@ -202,7 +174,7 @@ class Messenger:
         finally:
             self.lock.release()
 
-    def ignore(self, event: str, object: _HasMessengerID) -> None:
+    def ignore(self, event, object):
         """ ignore(self, string, DirectObject)
         Make this object no longer respond to this event.
         It is safe to call even if it was not already accepting
@@ -236,7 +208,7 @@ class Messenger:
         finally:
             self.lock.release()
 
-    def ignoreAll(self, object: _HasMessengerID) -> None:
+    def ignoreAll(self, object):
         """
         Make this object no longer respond to any events it was accepting
         Useful for cleanup
@@ -311,7 +283,7 @@ class Messenger:
         """
         return not self.isAccepting(event, object)
 
-    def send(self, event: str, sentArgs: list = [], taskChain: str | None = None) -> None:
+    def send(self, event, sentArgs=[], taskChain=None):
         """
         Send this event, optionally passing in arguments.
 
@@ -333,12 +305,12 @@ class Messenger:
 
         self.lock.acquire()
         try:
-            foundWatch = False
+            foundWatch = 0
             if __debug__:
                 if self.__isWatching:
                     for i in self.__watching:
                         if str(event).find(i) >= 0:
-                            foundWatch = True
+                            foundWatch = 1
                             break
             acceptorDict = self.__callbacks.get(event)
             if not acceptorDict:
@@ -364,7 +336,7 @@ class Messenger:
         finally:
             self.lock.release()
 
-    def __taskChainDispatch(self, taskChain: str, task: AsyncTask) -> int:
+    def __taskChainDispatch(self, taskChain, task):
         """ This task is spawned each time an event is sent across
         task chains.  Its job is to empty the task events on the queue
         for this particular task chain.  This guarantees that events
@@ -393,13 +365,7 @@ class Messenger:
 
         return task.done
 
-    def __dispatch(
-        self,
-        acceptorDict: _AcceptorDict,
-        event: str,
-        sentArgs: list,
-        foundWatch: bool,
-    ) -> None:
+    def __dispatch(self, acceptorDict, event, sentArgs, foundWatch):
         for id in list(acceptorDict.keys()):
             # We have to make this apparently redundant check, because
             # it is possible that one object removes its own hooks

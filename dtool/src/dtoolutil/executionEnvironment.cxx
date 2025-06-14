@@ -72,7 +72,7 @@ extern char **environ;
 // read environment variables at static init time.  In this case, we must read
 // all of the environment variables directly and cache them locally.
 
-#if !defined(STATIC_INIT_GETENV) || defined(__EMSCRIPTEN__)
+#ifndef STATIC_INIT_GETENV
 #define PREREAD_ENVIRONMENT
 #endif
 
@@ -123,20 +123,7 @@ static const char *const libp3dtool_filenames[] = {
 };
 #endif /* !LINK_ALL_STATIC */
 
-#if defined(__EMSCRIPTEN__) && !defined(CPPPARSER)
-extern "C" void EMSCRIPTEN_KEEPALIVE
-_set_env_var(const char *var, const char *value) {
-  ExecutionEnvironment *ptr = ExecutionEnvironment::get_ptr();
-  ptr->_variables[std::string(var)] = std::string(value);
-}
-
-extern "C" void EMSCRIPTEN_KEEPALIVE
-_set_binary_name(const char *path) {
-  ExecutionEnvironment::set_binary_name(std::string(path));
-}
-#endif
-
-// Linux with GNU libc does have global argv/argc variables, but we can't
+// Linux with GNU libc does have global argvargc variables, but we can't
 // safely access them at stat init time--at least, not in libc5. (It does seem
 // to work with glibc2, however.)
 
@@ -462,7 +449,7 @@ ns_set_environment_variable(const string &var, const string &value) {
 void ExecutionEnvironment::
 ns_shadow_environment_variable(const string &var, const string &value) {
   _variables[var] = value;
-  //string putstr = var + "=" + value;
+  string putstr = var + "=" + value;
 }
 
 /**
@@ -590,10 +577,7 @@ read_environment_variables() {
     }
   }
 #elif defined(__EMSCRIPTEN__)
-  // The environment variables get loaded in by the .js file before main()
-  // using the _set_env_var exported function, defined above.  Trying to load
-  // env vars at static init time otherwise makes some optimizations more
-  // difficult, notably wasm-ctor-eval/wizer.
+  // Emscripten has no environment vars.  Don't even try.
 
 #elif defined(HAVE_PROC_SELF_ENVIRON)
   // In some cases, we may have a file called procselfenviron that may be read

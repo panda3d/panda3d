@@ -12,7 +12,6 @@
  */
 
 #include "bufferContext.h"
-#include "lightMutexHolder.h"
 
 TypeHandle BufferContext::_type_handle;
 
@@ -44,8 +43,7 @@ BufferContext::
 void BufferContext::
 set_owning_chain(BufferContextChain *chain) {
   if (chain != _owning_chain) {
-    if (_owning_chain != nullptr) {
-      LightMutexHolder holder(_owning_chain->_lock);
+    if (_owning_chain != nullptr){
       --(_owning_chain->_count);
       _owning_chain->adjust_bytes(-(int)_data_size_bytes);
       remove_from_list();
@@ -54,7 +52,6 @@ set_owning_chain(BufferContextChain *chain) {
     _owning_chain = chain;
 
     if (_owning_chain != nullptr) {
-      LightMutexHolder holder(_owning_chain->_lock);
       ++(_owning_chain->_count);
       _owning_chain->adjust_bytes((int)_data_size_bytes);
       insert_before(_owning_chain);

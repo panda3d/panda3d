@@ -654,7 +654,7 @@ class _Timer(Thread):
 
 class _MainThread(Thread):
 
-    def __init__(self) -> None:
+    def __init__(self):
         Thread.__init__(self, name="MainThread")
         self._Thread__started = True
         _active_limbo_lock.acquire()

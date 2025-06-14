@@ -1,13 +1,7 @@
 """Defines the DirectObject class, a convenient class to inherit from if the
 object needs to be able to respond to events."""
 
-from __future__ import annotations
-
 __all__ = ['DirectObject']
-
-from typing import Callable
-
-from panda3d.core import AsyncTask
 
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.task.TaskManagerGlobal import taskMgr
@@ -18,9 +12,6 @@ class DirectObject:
     """
     This is the class that all Direct/SAL classes should inherit from
     """
-    _MSGRmessengerId: tuple[str, int]
-    _taskList: dict[int, AsyncTask]
-
     #def __del__(self):
         # This next line is useful for debugging leaks
         #print "Destructing: ", self.__class__.__name__
@@ -28,16 +19,16 @@ class DirectObject:
     # Wrapper functions to have a cleaner, more object oriented approach to
     # the messenger functionality.
 
-    def accept(self, event: str, method: Callable, extraArgs: list = []) -> None:
-        return messenger.accept(event, self, method, extraArgs, True)
+    def accept(self, event, method, extraArgs=[]):
+        return messenger.accept(event, self, method, extraArgs, 1)
 
     def acceptOnce(self, event, method, extraArgs=[]):
         return messenger.accept(event, self, method, extraArgs, 0)
 
-    def ignore(self, event: str) -> None:
+    def ignore(self, event):
         return messenger.ignore(event, self)
 
-    def ignoreAll(self) -> None:
+    def ignoreAll(self):
         return messenger.ignoreAll(self)
 
     def isAccepting(self, event):
@@ -50,7 +41,7 @@ class DirectObject:
         return messenger.isIgnoring(event, self)
 
     #This function must be used if you want a managed task
-    def addTask(self, *args, **kwargs) -> AsyncTask:
+    def addTask(self, *args, **kwargs):
         if not hasattr(self, "_taskList"):
             self._taskList = {}
         kwargs['owner'] = self

@@ -136,8 +136,6 @@ open_buffer() {
     return false;
   }
 
-  _fb_properties.set_depth_bits(ZB_Z_BITS);
-
   tinygsg->_current_frame_buffer = _frame_buffer;
 
   tinygsg->reset_if_new();

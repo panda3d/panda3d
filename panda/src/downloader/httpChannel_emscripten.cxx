@@ -373,11 +373,9 @@ run_headers_received() {
       var xhr = window._httpChannels[$0];
       var loaded = 0;
       xhr.onprogress = function (ev) {
-        var body = this.responseText;
-        var ptr = __extend_string($1, ev.loaded - loaded);
-        for (var i = loaded; i < ev.loaded; ++i) {
-          HEAPU8[ptr + i] = body.charCodeAt(i);
-        }
+        var chunk = this.responseText.slice(loaded, ev.loaded);
+        var ptr = __extend_string($1, chunk.length);
+        writeAsciiToMemory(chunk, ptr, true);
         loaded = ev.loaded;
       };
     }, this, dest);
@@ -390,11 +388,8 @@ run_headers_received() {
       var loaded = 0;
       xhr.onprogress = function (ev) {
         while (loaded < ev.loaded) {
-          var body = this.responseText;
           var size = Math.min(ev.loaded - read, 4096);
-          for (var i = read; i < read + size; ++i) {
-            HEAPU8[$2 + i] = body.charCodeAt(i);
-          }
+          writeAsciiToMemory(this.responseText.substr(read, size), $2, true);
           __write_stream($1, $2, size);
           loaded += size;
         }
@@ -705,9 +700,7 @@ download_to_ram(Ramfile *ramfile, bool subdocument_resumes) {
     var state = xhr.readyState;
     var body = xhr.responseText;
     var ptr = __extend_string($1, body.length);
-    for (var i = 0; i < body.length; ++i) {
-      HEAPU8[ptr + i] = body.charCodeAt(i);
-    }
+    writeAsciiToMemory(body, ptr, true);
     return state;
   }, this, &ramfile->_data);
 

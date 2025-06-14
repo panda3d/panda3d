@@ -89,25 +89,26 @@ init(PyObject *loader) {
       return false;
     }
 
-    PyObject *tuple = PySequence_Tuple(extensions);
-    Py_ssize_t num_items = PyTuple_GET_SIZE(tuple);
+    PyObject *sequence = PySequence_Fast(extensions, "extensions must be a sequence");
+    PyObject **items = PySequence_Fast_ITEMS(sequence);
+    Py_ssize_t num_items = PySequence_Fast_GET_SIZE(sequence);
     Py_DECREF(extensions);
 
     if (num_items == 0) {
       PyErr_SetString(PyExc_ValueError, "extensions list may not be empty");
-      Py_DECREF(tuple);
+      Py_DECREF(sequence);
       return false;
     }
 
     bool found_extension = false;
 
     for (Py_ssize_t i = 0; i < num_items; ++i) {
-      PyObject *extension = PyTuple_GET_ITEM(tuple, i);
+      PyObject *extension = items[i];
       const char *extension_str;
       Py_ssize_t extension_len;
       extension_str = PyUnicode_AsUTF8AndSize(extension, &extension_len);
       if (extension_str == nullptr) {
-        Py_DECREF(tuple);
+        Py_DECREF(sequence);
         return false;
       }
 
@@ -126,7 +127,7 @@ init(PyObject *loader) {
         }
       }
     }
-    Py_DECREF(tuple);
+    Py_DECREF(sequence);
 
     if (!found_extension) {
       PyObject *repr = PyObject_Repr(loader);

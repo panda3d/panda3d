@@ -47,7 +47,4 @@ add_subdirectory(src/xfile)
 add_subdirectory(src/xfileegg)
 add_subdirectory(src/xfileprogs)
 
-if(BUILD_TOOLS)
-  export_targets(Tools)
-endif()
-export_targets(ToolsDevel NAMESPACE "Panda3D::Tools::" COMPONENT ToolsDevel)
+export_targets(Tools)

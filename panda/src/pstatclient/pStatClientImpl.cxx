@@ -155,9 +155,10 @@ client_connect(std::string hostname, int port) {
       int thread_index = current_thread->get_pstats_index();
       if (thread_index >= 0) {
         PStatClient *client = PStatClient::get_global_pstats();
-        client->start(_wait_sleep_pcollector.get_index(), thread_index);
+        double start = client->get_real_time();
         ThreadImpl::sleep(seconds);
-        client->stop(_wait_sleep_pcollector.get_index(), thread_index);
+        double stop = client->get_real_time();
+        client->start_stop(_wait_sleep_pcollector.get_index(), thread_index, start, stop);
         client->add_level(_cswitch_sleep_pcollector.get_index(), thread_index, 1);
       }
       else {
@@ -170,9 +171,10 @@ client_connect(std::string hostname, int port) {
       int thread_index = current_thread->get_pstats_index();
       if (thread_index >= 0) {
         PStatClient *client = PStatClient::get_global_pstats();
-        client->start(_wait_yield_pcollector.get_index(), thread_index);
+        double start = client->get_real_time();
         ThreadImpl::yield();
-        client->stop(_wait_yield_pcollector.get_index(), thread_index);
+        double stop = client->get_real_time();
+        client->start_stop(_wait_yield_pcollector.get_index(), thread_index, start, stop);
         client->add_level(_cswitch_yield_pcollector.get_index(), thread_index, 1);
       }
       else {
@@ -188,9 +190,10 @@ client_connect(std::string hostname, int port) {
         BOOL result;
         if (thread_index >= 0) {
           PStatClient *client = PStatClient::get_global_pstats();
-          client->start(_wait_cvar_pcollector.get_index(), thread_index);
+          double start = client->get_real_time();
           result = SleepConditionVariableSRW(cvar, lock, time, flags);
-          client->stop(_wait_cvar_pcollector.get_index(), thread_index);
+          double stop = client->get_real_time();
+          client->start_stop(_wait_cvar_pcollector.get_index(), thread_index, start, stop);
           client->add_level(_cswitch_cvar_pcollector.get_index(), thread_index, 1);
         }
         else {
@@ -208,9 +211,10 @@ client_connect(std::string hostname, int port) {
         int result;
         if (thread_index >= 0) {
           PStatClient *client = PStatClient::get_global_pstats();
-          client->start(_wait_cvar_pcollector.get_index(), thread_index);
+          double start = client->get_real_time();
           result = pthread_cond_wait(cvar, lock);
-          client->stop(_wait_cvar_pcollector.get_index(), thread_index);
+          double stop = client->get_real_time();
+          client->start_stop(_wait_cvar_pcollector.get_index(), thread_index, start, stop);
           client->add_level(_cswitch_cvar_pcollector.get_index(), thread_index, 1);
         }
         else {
@@ -227,9 +231,10 @@ client_connect(std::string hostname, int port) {
         int result;
         if (thread_index >= 0) {
           PStatClient *client = PStatClient::get_global_pstats();
-          client->start(_wait_cvar_pcollector.get_index(), thread_index);
+          double start = client->get_real_time();
           result = pthread_cond_timedwait(cvar, lock, ts);
-          client->stop(_wait_cvar_pcollector.get_index(), thread_index);
+          double stop = client->get_real_time();
+          client->start_stop(_wait_cvar_pcollector.get_index(), thread_index, start, stop);
           client->add_level(_cswitch_cvar_pcollector.get_index(), thread_index, 1);
         }
         else {

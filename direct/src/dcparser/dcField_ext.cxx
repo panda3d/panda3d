@@ -278,9 +278,8 @@ get_pystr(PyObject *value) {
     return result;
   }
 
-  PyTypeObject *type = Py_TYPE(value);
-  if (type != nullptr) {
-    PyObject *typestr = PyObject_Str((PyObject *)type);
+  if (value->ob_type != nullptr) {
+    PyObject *typestr = PyObject_Str((PyObject *)(value->ob_type));
     if (typestr != nullptr) {
       std::string result = PyUnicode_AsUTF8(typestr);
       Py_DECREF(typestr);

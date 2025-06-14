@@ -1,5 +1,4 @@
 #include "filename_ext.cxx"
 #include "globPattern_ext.cxx"
 #include "iostream_ext.cxx"
-#include "pyenv_init.cxx"
 #include "textEncoder_ext.cxx"

@@ -86,7 +86,7 @@ PkgListSet(["PYTHON", "DIRECT",                        # Python support
   "ODE", "BULLET", "PANDAPHYSICS",                     # Physics
   "SPEEDTREE",                                         # SpeedTree
   "ZLIB", "PNG", "JPEG", "TIFF", "OPENEXR", "SQUISH",  # 2D Formats support
-  "FCOLLADA", "ASSIMP", "EGG",                         # 3D Formats support
+  ] + MAYAVERSIONS + MAXVERSIONS + [ "FCOLLADA", "ASSIMP", "EGG", # 3D Formats support
   "FREETYPE", "HARFBUZZ",                              # Text rendering
   "VRPN", "OPENSSL",                                   # Transport
   "FFTW",                                              # Algorithm helpers
@@ -156,7 +156,7 @@ def usage(problem):
     print("  --everything      (enable every third-party lib)")
     print("  --directx-sdk=X   (specify version of DirectX SDK to use: jun2010, aug2009)")
     print("  --windows-sdk=X   (specify Windows SDK version, eg. 7.1, 8.1, 10 or 11.  Default is 8.1)")
-    print("  --msvc-version=X  (specify Visual C++ version, eg. 14.1, 14.2, 14.3.  Default is 14.1)")
+    print("  --msvc-version=X  (specify Visual C++ version, eg. 10, 11, 12, 14, 14.1, 14.2, 14.3.  Default is 14)")
     print("  --use-icl         (experimental setting to use an intel compiler instead of MSVC on Windows)")
     print("")
     print("The simplest way to compile panda is to just type:")
@@ -176,13 +176,6 @@ def parseopts(args):
     removedopts = [
         "use-touchinput", "no-touchinput", "no-awesomium", "no-directscripts",
         "no-carbon", "no-physx", "no-rocket", "host", "osxtarget=",
-        "no-max6", "no-max7", "no-max8", "no-max9", "no-max2009",
-        "no-max2010", "no-max2011", "no-max2012", "no-max2013", "no-max2014",
-        "no-maya6", "no-maya65", "no-maya7", "no-maya8", "no-maya85",
-        "no-maya2008", "no-maya2009", "no-maya2010", "no-maya2011",
-        "no-maya2012", "no-maya2013", "no-maya20135", "no-maya2014",
-        "no-maya2015", "no-maya2016", "no-maya20165", "no-maya2017",
-        "no-maya2018", "no-maya2019", "no-maya2020", "no-maya2022",
         ]
 
     # All recognized options.
@@ -267,11 +260,11 @@ def parseopts(args):
                         break
                     elif option == "--" + pkg.lower() + "-incdir":
                         PkgSetCustomLocation(pkg)
-                        IncDirectory(pkg, os.path.expanduser(value))
+                        IncDirectory(pkg, value)
                         break
                     elif option == "--" + pkg.lower() + "-libdir":
                         PkgSetCustomLocation(pkg)
-                        LibDirectory(pkg, os.path.expanduser(value))
+                        LibDirectory(pkg, value)
                         break
             if (option == "--everything" or option.startswith("--use-")
                 or option == "--nothing" or option.startswith("--no-")):
@@ -309,8 +302,8 @@ def parseopts(args):
 
     if GetTarget() == 'windows':
         if not MSVC_VERSION:
-            print("No MSVC version specified. Defaulting to 14.1 (Visual Studio 2017).")
-            MSVC_VERSION = (14, 1)
+            print("No MSVC version specified. Defaulting to 14 (Visual Studio 2015).")
+            MSVC_VERSION = (14, 0)
         else:
             try:
                 MSVC_VERSION = tuple(int(d) for d in MSVC_VERSION.split('.'))[:2]
@@ -319,10 +312,12 @@ def parseopts(args):
             except:
                 usage("Invalid setting for --msvc-version")
 
-        if MSVC_VERSION < (14, 1):
+        if MSVC_VERSION < (14, 0):
             warn_prefix = "%sERROR:%s " % (GetColor("red"), GetColor())
             print("=========================================================================")
-            print(warn_prefix + "Support for MSVC versions before 2017 has been discontinued.")
+            print(warn_prefix + "Support for MSVC versions before 2015 has been discontinued.")
+            print(warn_prefix + "For more information, or any questions, please visit:")
+            print(warn_prefix + "  https://github.com/panda3d/panda3d/issues/288")
             print("=========================================================================")
             sys.stdout.flush()
             time.sleep(1.0)
@@ -421,8 +416,6 @@ elif target == 'darwin':
 
     if arch_tag == 'arm64':
         PLATFORM = 'macosx-11.0-' + arch_tag
-    elif sys.version_info >= (3, 13):
-        PLATFORM = 'macosx-10.13-' + arch_tag
     else:
         PLATFORM = 'macosx-10.9-' + arch_tag
 
@@ -485,8 +478,6 @@ elif not CrossCompiling():
 else:
     if target_arch == 'amd64':
         target_arch = 'x86_64'
-    if target_arch == 'arm' and target == 'android':
-        target_arch = 'armv7a'
     PLATFORM = '{0}-{1}'.format(target, target_arch)
 
 
@@ -529,6 +520,8 @@ LoadDependencyCache()
 MakeBuildTree()
 
 SdkLocateDirectX(STRDXSDKVERSION)
+SdkLocateMaya()
+SdkLocateMax()
 SdkLocateMacOSX(OSX_ARCHS)
 SdkLocatePython(False)
 SdkLocateWindows(WINDOWS_SDK)
@@ -536,6 +529,8 @@ SdkLocateSpeedTree()
 SdkLocateAndroid()
 
 SdkAutoDisableDirectX()
+SdkAutoDisableMaya()
+SdkAutoDisableMax()
 SdkAutoDisableSpeedTree()
 
 if not PkgSkip("PYTHON") and SDK["PYTHONVERSION"] == "python2.7":
@@ -562,11 +557,6 @@ if GetHost() == 'windows' and GetTarget() == 'windows':
 else:
     COMPILER = "GCC"
 
-# Ensure we've pip-installed interrogate if we need it before setting
-# PYTHONHOME, etc.
-if not PkgSkip("PYTHON"):
-    GetInterrogate()
-
 SetupBuildEnvironment(COMPILER)
 
 ########################################################################
@@ -591,7 +581,20 @@ if (COMPILER == "MSVC"):
     SmartPkgEnable("EIGEN",     "eigen3",     (), ("Eigen/Dense",), target_pkg = 'ALWAYS')
     for pkg in PkgListGet():
         if not PkgSkip(pkg):
-            if (pkg[:2]=="DX"):
+            if (pkg[:4]=="MAYA"):
+                IncDirectory(pkg, SDK[pkg]      + "/include")
+                DefSymbol(pkg, "MAYAVERSION", pkg)
+                DefSymbol(pkg, "MLIBRARY_DONTUSE_MFC_MANIFEST", "")
+            elif (pkg[:3]=="MAX"):
+                IncDirectory(pkg, SDK[pkg]      + "/include")
+                IncDirectory(pkg, SDK[pkg]      + "/include/CS")
+                IncDirectory(pkg, SDK[pkg+"CS"] + "/include")
+                IncDirectory(pkg, SDK[pkg+"CS"] + "/include/CS")
+                DefSymbol(pkg, "MAX", pkg)
+                if (int(pkg[3:]) >= 2013):
+                    DefSymbol(pkg, "UNICODE", "")
+                    DefSymbol(pkg, "_UNICODE", "")
+            elif (pkg[:2]=="DX"):
                 IncDirectory(pkg, SDK[pkg]      + "/include")
             elif GetThirdpartyDir() is not None:
                 IncDirectory(pkg, GetThirdpartyDir() + pkg.lower() + "/include")
@@ -767,6 +770,21 @@ if (COMPILER == "MSVC"):
             if not os.path.isfile(path):
                 path = GetThirdpartyDir() + "opus/lib/{0}.lib".format(lib)
             LibName("OPUS", path)
+    for pkg in MAYAVERSIONS:
+        if not PkgSkip(pkg):
+            LibName(pkg, '"' + SDK[pkg] + '/lib/Foundation.lib"')
+            LibName(pkg, '"' + SDK[pkg] + '/lib/OpenMaya.lib"')
+            LibName(pkg, '"' + SDK[pkg] + '/lib/OpenMayaAnim.lib"')
+            LibName(pkg, '"' + SDK[pkg] + '/lib/OpenMayaUI.lib"')
+    for pkg in MAXVERSIONS:
+        if not PkgSkip(pkg):
+            LibName(pkg, SDK[pkg] +  '/lib/core.lib')
+            LibName(pkg, SDK[pkg] +  '/lib/edmodel.lib')
+            LibName(pkg, SDK[pkg] +  '/lib/gfx.lib')
+            LibName(pkg, SDK[pkg] +  '/lib/geom.lib')
+            LibName(pkg, SDK[pkg] +  '/lib/mesh.lib')
+            LibName(pkg, SDK[pkg] +  '/lib/maxutil.lib')
+            LibName(pkg, SDK[pkg] +  '/lib/paramblk2.lib')
 
     if not PkgSkip("SPEEDTREE"):
         if GetTargetArch() == 'x64':
@@ -1025,14 +1043,12 @@ if (COMPILER=="GCC"):
             # Python may have been compiled with these requirements.
             # Is there a cleaner way to check this?
             LinkFlag("PYTHON", "-s USE_BZIP2=1 -s USE_SQLITE3=1")
-            if PkgHasCustomLocation("PYTHON"):
-                python_libdir = FindLibDirectory("PYTHON")
-            else:
+            if not PkgHasCustomLocation("PYTHON"):
                 python_libdir = GetThirdpartyDir() + "python/lib"
-
-            for lib in "libmpdec.a", "libexpat.a", "libHacl_Hash_SHA2.a":
-                if os.path.isfile(python_libdir + "/" + lib):
-                    LibName("PYTHON", python_libdir + "/" + lib)
+                if os.path.isfile(python_libdir + "/libmpdec.a"):
+                    LibName("PYTHON", python_libdir + "/libmpdec.a")
+                if os.path.isfile(python_libdir + "/libexpat.a"):
+                    LibName("PYTHON", python_libdir + "/libexpat.a")
 
         if GetTarget() == "linux":
             LibName("PYTHON", "-lutil")
@@ -1067,6 +1083,28 @@ if (COMPILER=="GCC"):
         elif not PkgSkip("X11"):
             LibDirectory("ALWAYS", "/usr/X11R6/lib")
 
+    for pkg in MAYAVERSIONS:
+        if (PkgSkip(pkg)==0 and (pkg in SDK)):
+            if (GetHost() == "darwin"):
+                # Sheesh, Autodesk really can't make up their mind
+                # regarding the location of the Maya devkit on macOS.
+                if (os.path.isdir(SDK[pkg] + "/Maya.app/Contents/lib")):
+                    LibDirectory(pkg, SDK[pkg] + "/Maya.app/Contents/lib")
+                if (os.path.isdir(SDK[pkg] + "/Maya.app/Contents/MacOS")):
+                    LibDirectory(pkg, SDK[pkg] + "/Maya.app/Contents/MacOS")
+                if (os.path.isdir(SDK[pkg] + "/lib")):
+                    LibDirectory(pkg, SDK[pkg] + "/lib")
+                if (os.path.isdir(SDK[pkg] + "/Maya.app/Contents/include/maya")):
+                    IncDirectory(pkg, SDK[pkg] + "/Maya.app/Contents/include")
+                if (os.path.isdir(SDK[pkg] + "/devkit/include/maya")):
+                    IncDirectory(pkg, SDK[pkg] + "/devkit/include")
+                if (os.path.isdir(SDK[pkg] + "/include/maya")):
+                    IncDirectory(pkg, SDK[pkg] + "/include")
+            else:
+                LibDirectory(pkg, SDK[pkg] + "/lib")
+                IncDirectory(pkg, SDK[pkg] + "/include")
+            DefSymbol(pkg, "MAYAVERSION", pkg)
+
     if GetTarget() == 'darwin':
         LibName("ALWAYS", "-framework AppKit")
         LibName("IOKIT", "-framework IOKit")
@@ -1093,6 +1131,40 @@ if (COMPILER=="GCC"):
         LibName("ANDROID", '-landroid')
         LibName("JNIGRAPHICS", '-ljnigraphics')
         LibName("OPENSLES", '-lOpenSLES')
+
+    for pkg in MAYAVERSIONS:
+        if (PkgSkip(pkg)==0 and (pkg in SDK)):
+            if GetTarget() == 'darwin':
+                LibName(pkg, "-Wl,-rpath,/Applications/Autodesk/" + pkg.lower() + "/Maya.app/Contents/MacOS")
+            else:
+                LibName(pkg, "-Wl,-rpath," + SDK[pkg] + "/lib")
+            LibName(pkg, "-lOpenMaya")
+            LibName(pkg, "-lOpenMayaAnim")
+            LibName(pkg, "-lOpenMayaUI")
+            LibName(pkg, "-lAnimSlice")
+            LibName(pkg, "-lDeformSlice")
+            LibName(pkg, "-lModifiers")
+            LibName(pkg, "-lDynSlice")
+            LibName(pkg, "-lKinSlice")
+            LibName(pkg, "-lModelSlice")
+            LibName(pkg, "-lNurbsSlice")
+            LibName(pkg, "-lPolySlice")
+            LibName(pkg, "-lProjectSlice")
+            LibName(pkg, "-lImage")
+            LibName(pkg, "-lShared")
+            LibName(pkg, "-lTranslators")
+            LibName(pkg, "-lDataModel")
+            LibName(pkg, "-lRenderModel")
+            LibName(pkg, "-lNurbsEngine")
+            LibName(pkg, "-lDependEngine")
+            LibName(pkg, "-lCommandEngine")
+            LibName(pkg, "-lFoundation")
+            if pkg not in ("MAYA2020", "MAYA2022"):
+                LibName(pkg, "-lIMFbase")
+            if GetTarget() != 'darwin':
+                LibName(pkg, "-lOpenMayalib")
+            else:
+                LibName(pkg, "-dylib_file /System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib:/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib")
 
 DefSymbol("WITHINPANDA", "WITHIN_PANDA", "1")
 if GetLinkAllStatic() or GetTarget() == 'emscripten':
@@ -1322,7 +1394,7 @@ def CompileCxx(obj,src,opts):
 
     if (COMPILER=="GCC"):
         if (src.endswith(".c")): cmd = GetCC() +' -fPIC -c -o ' + obj
-        else:                    cmd = GetCXX()+' -std=gnu++14 -ftemplate-depth-70 -fPIC -c -o ' + obj
+        else:                    cmd = GetCXX()+' -std=gnu++11 -ftemplate-depth-70 -fPIC -c -o ' + obj
         for (opt, dir) in INCDIRECTORIES:
             if (opt=="ALWAYS") or (opt in opts): cmd += ' -I' + BracketNameWithQuotes(dir)
         for (opt, dir) in FRAMEWORKDIRECTORIES:
@@ -1373,10 +1445,10 @@ def CompileCxx(obj,src,opts):
                 cmd += ' -gcc-toolchain ' + SDK["ANDROID_GCC_TOOLCHAIN"].replace('\\', '/')
             cmd += ' -ffunction-sections -funwind-tables'
             cmd += ' -target ' + SDK["ANDROID_TRIPLE"]
-            if arch in ('armv7a', 'arm'):
+            if arch == 'armv7a':
                 cmd += ' -march=armv7-a -mfloat-abi=softfp -mfpu=vfpv3-d16'
-            #elif arch == 'arm':
-            #    cmd += ' -march=armv5te -mtune=xscale -msoft-float'
+            elif arch == 'arm':
+                cmd += ' -march=armv5te -mtune=xscale -msoft-float'
             elif arch == 'mips':
                 cmd += ' -mips32'
             elif arch == 'mips64':
@@ -1499,9 +1571,9 @@ def CompileBison(wobj, wsrc, opts):
         else:
             exit('Could not find bison!')
     else:
-        oscmd(bison + ' -y -d -o'+GetOutputDir()+'/tmp/'+ifile[:-4]+'.c -p '+pre+' '+wsrc)
-        CopyFile(wdstc, GetOutputDir()+"/tmp/"+ifile[:-4]+".c")
-        CopyFile(wdsth, GetOutputDir()+"/tmp/"+ifile[:-4]+".h")
+        oscmd(bison + ' -y -d -o'+GetOutputDir()+'/tmp/'+ifile+'.c -p '+pre+' '+wsrc)
+        CopyFile(wdstc, GetOutputDir()+"/tmp/"+ifile+".c")
+        CopyFile(wdsth, GetOutputDir()+"/tmp/"+ifile+".h")
 
     # Finally, compile the generated source file.
     CompileCxx(wobj, wdstc, opts + ["FLEX"])
@@ -1566,7 +1638,12 @@ def CompileIgate(woutd,wsrc,opts):
         ConditionalWriteFile(woutd, "")
         return
 
-    cmd = GetInterrogate()
+    if not CrossCompiling():
+        # If we're compiling for this platform, we can use the one we've built.
+        cmd = os.path.join(GetOutputDir(), 'bin', 'interrogate')
+    else:
+        # Assume that interrogate is on the PATH somewhere.
+        cmd = 'interrogate'
 
     if GetVerbose():
         cmd += ' -v'
@@ -1645,15 +1722,17 @@ def CompileImod(wobj, wsrc, opts):
         CompileCxx(wobj, woutc, opts)
         return
 
-    cmd = GetInterrogateModule()
+    if not CrossCompiling():
+        # If we're compiling for this platform, we can use the one we've built.
+        cmd = os.path.join(GetOutputDir(), 'bin', 'interrogate_module')
+    else:
+        # Assume that interrogate_module is on the PATH somewhere.
+        cmd = 'interrogate_module'
 
     cmd += ' -oc ' + woutc + ' -module ' + module + ' -library ' + library + ' -python-native'
     importmod = GetValueOption(opts, "IMPORT:")
     if importmod:
         cmd += ' -import ' + importmod
-    initfunc = GetValueOption(opts, "INIT:")
-    if initfunc:
-        cmd += ' -init ' + initfunc
     for x in wsrc: cmd += ' ' + BracketNameWithQuotes(x)
     oscmd(cmd)
     CompileCxx(wobj,woutc,opts)
@@ -1737,7 +1816,7 @@ def CompileLink(dll, obj, opts):
                 if "PYTHON" not in opts:
                     pythonv = SDK["PYTHONVERSION"].replace('.', '')
                     if optlevel <= 2:
-                        cmd += ' /NOD:{}_d.lib'.format(pythonv)
+                        cmd += ' /NOD:{}d.lib'.format(pythonv)
                     else:
                         cmd += ' /NOD:{}.lib'.format(pythonv)
 
@@ -1884,8 +1963,6 @@ def CompileLink(dll, obj, opts):
 
             if tuple(OSX_ARCHS) == ('arm64',):
                 cmd += " -mmacosx-version-min=11.0"
-            elif sys.version_info >= (3, 13) and 'PYTHON' in opts:
-                cmd += " -mmacosx-version-min=10.13"
             else:
                 cmd += " -mmacosx-version-min=10.9"
 
@@ -1902,20 +1979,17 @@ def CompileLink(dll, obj, opts):
                 cmd += ' -gcc-toolchain ' + SDK["ANDROID_GCC_TOOLCHAIN"].replace('\\', '/')
             cmd += " -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now"
             cmd += ' -target ' + SDK["ANDROID_TRIPLE"]
-            if arch in ('armv7a', 'arm'):
+            if arch == 'armv7a':
                 cmd += " -march=armv7-a -Wl,--fix-cortex-a8"
             elif arch == 'mips':
                 cmd += ' -mips32'
             cmd += ' -lc -lm'
 
         elif GetTarget() == 'emscripten':
-            cmd += " -s WARN_ON_UNDEFINED_SYMBOLS=1 -mbulk-memory"
-
+            cmd += " -s WARN_ON_UNDEFINED_SYMBOLS=1"
             if GetOrigExt(dll) == ".exe":
+                cmd += " --memory-init-file 0"
                 cmd += " -s EXIT_RUNTIME=1"
-
-                if dll.endswith(".js") and "SUBSYSTEM:WINDOWS" not in opts:
-                    cmd += " --pre-js dtool/src/dtoolutil/console_preamble.js"
 
         else:
             cmd += " -pthread"
@@ -2081,23 +2155,13 @@ def CompileJava(target, src, opts):
     if GetHost() == 'android':
         cmd = "ecj "
     else:
-        cmd = "javac "
-        home = os.environ.get('JAVA_HOME')
-        if home:
-            javac_path = os.path.join(home, 'bin', 'javac')
-            if GetHost() == 'windows':
-                javac_path += '.exe'
-            if os.path.isfile(javac_path):
-                cmd = BracketNameWithQuotes(javac_path) + " "
-
-        cmd += "-Xlint:deprecation "
+        cmd = "javac -bootclasspath " + BracketNameWithQuotes(SDK["ANDROID_JAR"]) + " "
 
     optlevel = GetOptimizeOption(opts)
     if optlevel >= 4:
         cmd += "-debug:none "
 
-    classpath = BracketNameWithQuotes(SDK["ANDROID_JAR"] + ":" + GetOutputDir() + "/classes")
-    cmd += "-cp " + classpath + " "
+    cmd += "-cp " + GetOutputDir() + "/classes "
     cmd += "-d " + GetOutputDir() + "/classes "
     cmd += BracketNameWithQuotes(src)
     oscmd(cmd)
@@ -2358,6 +2422,7 @@ DTOOL_CONFIG=[
     ("PYTHON_FRAMEWORK",               'UNDEF',                  'UNDEF'),
     ("COMPILE_IN_DEFAULT_FONT",        '1',                      '1'),
     ("STDFLOAT_DOUBLE",                'UNDEF',                  'UNDEF'),
+    ("HAVE_MAYA",                      '1',                      '1'),
     ("REPORT_OPENSSL_ERRORS",          '1',                      '1'),
     ("USE_PANDAFILESTREAM",            '1',                      '1'),
     ("USE_DELETED_CHAIN",              '1',                      '1'),
@@ -2536,8 +2601,7 @@ def WriteConfigSettings():
         dtool_config["PYTHON_FRAMEWORK"] = 'Python'
         dtool_config["PHAVE_MALLOC_H"] = 'UNDEF'
         dtool_config["PHAVE_SYS_MALLOC_H"] = '1'
-        if not os.path.isdir(GetThirdpartyDir() + "openal"):
-            dtool_config["HAVE_OPENAL_FRAMEWORK"] = '1'
+        dtool_config["HAVE_OPENAL_FRAMEWORK"] = '1'
         dtool_config["HAVE_X11"] = 'UNDEF'  # We might have X11, but we don't need it.
         dtool_config["IS_LINUX"] = 'UNDEF'
         dtool_config["HAVE_VIDEO4LINUX"] = 'UNDEF'
@@ -2803,8 +2867,7 @@ del_files = ['core.py', 'core.pyc', 'core.pyo',
              'direct.py', 'direct.pyc', 'direct.pyo',
              '_direct.pyd', '_direct.so',
              'dtoolconfig.pyd', 'dtoolconfig.so',
-             'net.pyd', 'net.so',
-             'interrogatedb.pyd', 'interrogatedb.so']
+             'net.pyd', 'net.so']
 
 for basename in del_files:
     path = os.path.join(GetOutputDir(), 'panda3d', basename)
@@ -2939,7 +3002,7 @@ if not PkgSkip("PYTHON"):
 # This is just some basic stuff since setuptools just needs this file to
 # exist, otherwise it will not read the entry_points.txt file.  Maybe we will
 # eventually want to merge this with the metadata generator in makewheel.py.
-METADATA = """Metadata-Version: 2.1
+METADATA = """Metadata-Version: 2.0
 Name: Panda3D
 Version: {version}
 License: BSD
@@ -3233,8 +3296,14 @@ else:
     CopyFile(GetOutputDir()+"/", "doc/LICENSE")
     CopyFile(GetOutputDir()+"/", "doc/ReleaseNotes")
 
+if not PkgSkip("PANDATOOL"):
+    CopyAllFiles(GetOutputDir()+"/plugins/",  "pandatool/src/scripts/", ".mel")
+    CopyAllFiles(GetOutputDir()+"/plugins/",  "pandatool/src/scripts/", ".ms")
+
 if not PkgSkip("PYTHON") and os.path.isdir(GetThirdpartyBase() + "/Pmw"):
     CopyTree(GetOutputDir() + "/Pmw", GetThirdpartyBase() + "/Pmw", exclude=["Pmw_1_3", "Pmw_1_3_3"])
+
+ConditionalWriteFile(GetOutputDir()+'/include/ctl3d.h', '/* dummy file to make MAX happy */')
 
 # Since Eigen is included by all sorts of core headers, as a convenience
 # to C++ users on Win and Mac, we include it in the Panda include directory.
@@ -3260,10 +3329,13 @@ CopyAllHeaders('dtool/src/dtoolbase')
 CopyAllHeaders('dtool/src/dtoolutil', skip=["pandaVersion.h", "checkPandaVersion.h"])
 CopyFile(GetOutputDir()+'/include/','dtool/src/dtoolutil/vector_src.cxx')
 CopyAllHeaders('dtool/metalibs/dtool')
+CopyAllHeaders('dtool/src/cppparser')
 CopyAllHeaders('dtool/src/prc', skip=["prc_parameters.h"])
 CopyAllHeaders('dtool/src/dconfig')
 CopyAllHeaders('dtool/src/interrogatedb')
 CopyAllHeaders('dtool/metalibs/dtoolconfig')
+CopyAllHeaders('dtool/src/interrogate')
+CopyAllHeaders('dtool/src/test_interrogate')
 CopyAllHeaders('panda/src/putil')
 CopyAllHeaders('panda/src/pandabase')
 CopyAllHeaders('panda/src/express')
@@ -3398,6 +3470,10 @@ if not PkgSkip("PANDATOOL"):
     CopyAllHeaders('pandatool/src/lwo')
     CopyAllHeaders('pandatool/src/lwoegg')
     CopyAllHeaders('pandatool/src/lwoprogs')
+    CopyAllHeaders('pandatool/src/maya')
+    CopyAllHeaders('pandatool/src/mayaegg')
+    CopyAllHeaders('pandatool/src/maxegg')
+    CopyAllHeaders('pandatool/src/maxprogs')
     CopyAllHeaders('pandatool/src/objegg')
     CopyAllHeaders('pandatool/src/objprogs')
     CopyAllHeaders('pandatool/src/vrml')
@@ -3498,6 +3574,20 @@ TargetAdd('libp3dtool.dll', input='p3dtoolbase_lookup3.obj')
 TargetAdd('libp3dtool.dll', opts=['ADVAPI','WINSHELL','WINKERNEL','MIMALLOC'])
 
 #
+# DIRECTORY: dtool/src/cppparser/
+#
+
+OPTS=['DIR:dtool/src/cppparser', 'BISONPREFIX_cppyy']
+CreateFile(GetOutputDir()+"/include/cppBison.h")
+TargetAdd('p3cppParser_cppBison.obj',  opts=OPTS, input='cppBison.yxx')
+TargetAdd('cppBison.h', input='p3cppParser_cppBison.obj', opts=['DEPENDENCYONLY'])
+TargetAdd('p3cppParser_composite1.obj', opts=OPTS, input='p3cppParser_composite1.cxx')
+TargetAdd('p3cppParser_composite2.obj', opts=OPTS, input='p3cppParser_composite2.cxx')
+TargetAdd('libp3cppParser.ilb', input='p3cppParser_composite1.obj')
+TargetAdd('libp3cppParser.ilb', input='p3cppParser_composite2.obj')
+TargetAdd('libp3cppParser.ilb', input='p3cppParser_cppBison.obj')
+
+#
 # DIRECTORY: dtool/src/prc/
 #
 
@@ -3518,6 +3608,63 @@ TargetAdd('libp3dtoolconfig.dll', input='libp3dtool.dll')
 TargetAdd('libp3dtoolconfig.dll', opts=['ADVAPI', 'OPENSSL', 'WINGDI', 'WINUSER'])
 
 #
+# DIRECTORY: dtool/src/interrogatedb/
+#
+
+OPTS=['DIR:dtool/src/interrogatedb', 'BUILDING:INTERROGATEDB']
+TargetAdd('p3interrogatedb_composite1.obj', opts=OPTS, input='p3interrogatedb_composite1.cxx')
+TargetAdd('p3interrogatedb_composite2.obj', opts=OPTS, input='p3interrogatedb_composite2.cxx')
+TargetAdd('libp3interrogatedb.dll', input='p3interrogatedb_composite1.obj')
+TargetAdd('libp3interrogatedb.dll', input='p3interrogatedb_composite2.obj')
+TargetAdd('libp3interrogatedb.dll', input='libp3dtool.dll')
+TargetAdd('libp3interrogatedb.dll', input='libp3dtoolconfig.dll')
+
+# This used to be called dtoolconfig.pyd, but it just contains the interrogatedb
+# stuff, so it has been renamed appropriately.
+OPTS=['DIR:dtool/metalibs/dtoolconfig']
+PyTargetAdd('interrogatedb_pydtool.obj', opts=OPTS, input="pydtool.cxx")
+PyTargetAdd('interrogatedb.pyd', input='interrogatedb_pydtool.obj')
+PyTargetAdd('interrogatedb.pyd', input='libp3dtool.dll')
+PyTargetAdd('interrogatedb.pyd', input='libp3dtoolconfig.dll')
+PyTargetAdd('interrogatedb.pyd', input='libp3interrogatedb.dll')
+
+#
+# DIRECTORY: dtool/src/interrogate/
+#
+
+OPTS=['DIR:dtool/src/interrogate', 'DIR:dtool/src/cppparser', 'DIR:dtool/src/interrogatedb']
+TargetAdd('interrogate_composite1.obj', opts=OPTS, input='interrogate_composite1.cxx')
+TargetAdd('interrogate_composite2.obj', opts=OPTS, input='interrogate_composite2.cxx')
+TargetAdd('interrogate.exe', input='interrogate_composite1.obj')
+TargetAdd('interrogate.exe', input='interrogate_composite2.obj')
+TargetAdd('interrogate.exe', input='libp3cppParser.ilb')
+TargetAdd('interrogate.exe', input=COMMON_DTOOL_LIBS)
+TargetAdd('interrogate.exe', input='libp3interrogatedb.dll')
+TargetAdd('interrogate.exe', opts=['ADVAPI', 'WINSHELL', 'WINGDI', 'WINUSER'])
+
+preamble = WriteEmbeddedStringFile('interrogate_preamble_python_native', inputs=[
+    'dtool/src/interrogatedb/py_panda.cxx',
+    'dtool/src/interrogatedb/py_compat.cxx',
+    'dtool/src/interrogatedb/py_wrappers.cxx',
+    'dtool/src/interrogatedb/dtool_super_base.cxx',
+])
+TargetAdd('interrogate_module_preamble_python_native.obj', opts=OPTS, input=preamble)
+TargetAdd('interrogate_module_interrogate_module.obj', opts=OPTS, input='interrogate_module.cxx')
+TargetAdd('interrogate_module.exe', input='interrogate_module_interrogate_module.obj')
+TargetAdd('interrogate_module.exe', input='interrogate_module_preamble_python_native.obj')
+TargetAdd('interrogate_module.exe', input='libp3cppParser.ilb')
+TargetAdd('interrogate_module.exe', input=COMMON_DTOOL_LIBS)
+TargetAdd('interrogate_module.exe', input='libp3interrogatedb.dll')
+TargetAdd('interrogate_module.exe', opts=['ADVAPI', 'WINSHELL', 'WINGDI', 'WINUSER'])
+
+TargetAdd('parse_file_parse_file.obj', opts=OPTS, input='parse_file.cxx')
+TargetAdd('parse_file.exe', input='parse_file_parse_file.obj')
+TargetAdd('parse_file.exe', input='libp3cppParser.ilb')
+TargetAdd('parse_file.exe', input=COMMON_DTOOL_LIBS)
+TargetAdd('parse_file.exe', input='libp3interrogatedb.dll')
+TargetAdd('parse_file.exe', opts=['ADVAPI', 'WINSHELL', 'WINGDI', 'WINUSER'])
+
+#
 # DIRECTORY: dtool/src/prckeys/
 #
 
@@ -3527,6 +3674,17 @@ if not PkgSkip("OPENSSL"):
     TargetAdd('make-prc-key.exe', input='make-prc-key_makePrcKey.obj')
     TargetAdd('make-prc-key.exe', input=COMMON_DTOOL_LIBS)
     TargetAdd('make-prc-key.exe', opts=['ADVAPI', 'OPENSSL', 'WINSHELL', 'WINGDI', 'WINUSER'])
+
+#
+# DIRECTORY: dtool/src/test_interrogate/
+#
+
+OPTS=['DIR:dtool/src/test_interrogate']
+TargetAdd('test_interrogate_test_interrogate.obj', opts=OPTS, input='test_interrogate.cxx')
+TargetAdd('test_interrogate.exe', input='test_interrogate_test_interrogate.obj')
+TargetAdd('test_interrogate.exe', input='libp3interrogatedb.dll')
+TargetAdd('test_interrogate.exe', input=COMMON_DTOOL_LIBS)
+TargetAdd('test_interrogate.exe', opts=['ADVAPI', 'WINSHELL', 'WINGDI', 'WINUSER'])
 
 #
 # DIRECTORY: dtool/src/dtoolbase/
@@ -4031,9 +4189,7 @@ TargetAdd('libp3pgui.in', opts=['IMOD:panda3d.core', 'ILIB:libp3pgui', 'SRCDIR:p
 # DIRECTORY: panda/src/pnmimagetypes/
 #
 
-OPTS=['DIR:panda/src/pnmimagetypes', 'DIR:panda/src/pnmimage', 'BUILDING:PANDA', 'PNG', 'ZLIB', 'JPEG', 'TIFF', 'OPENEXR']
-if not PkgSkip('OPENEXR') and GetTarget() != 'emscripten':
-    OPTS.append('EXCEPTIONS')
+OPTS=['DIR:panda/src/pnmimagetypes', 'DIR:panda/src/pnmimage', 'BUILDING:PANDA', 'PNG', 'ZLIB', 'JPEG', 'TIFF', 'OPENEXR', 'EXCEPTIONS']
 TargetAdd('p3pnmimagetypes_composite1.obj', opts=OPTS, input='p3pnmimagetypes_composite1.cxx')
 TargetAdd('p3pnmimagetypes_composite2.obj', opts=OPTS, input='p3pnmimagetypes_composite2.cxx')
 
@@ -4177,7 +4333,7 @@ if GetTarget() != "emscripten":
 if PkgSkip("FREETYPE")==0:
     PyTargetAdd('core_module.obj', input='libp3pnmtext.in')
 
-PyTargetAdd('core_module.obj', opts=['IMOD:panda3d.core', 'ILIB:core', 'INIT:pyenv_init'])
+PyTargetAdd('core_module.obj', opts=['IMOD:panda3d.core', 'ILIB:core'])
 
 PyTargetAdd('core.pyd', input='libp3dtoolbase_igate.obj')
 PyTargetAdd('core.pyd', input='p3dtoolbase_typeHandle_ext.obj')
@@ -4235,6 +4391,7 @@ PyTargetAdd('core.pyd', input='p3display_ext_composite.obj')
 PyTargetAdd('core.pyd', input='p3collide_ext_composite.obj')
 
 PyTargetAdd('core.pyd', input='core_module.obj')
+PyTargetAdd('core.pyd', input='libp3interrogatedb.dll')
 PyTargetAdd('core.pyd', input=COMMON_PANDA_LIBS)
 PyTargetAdd('core.pyd', opts=['WINSOCK2'])
 
@@ -4274,6 +4431,7 @@ if not PkgSkip("VISION"):
     PyTargetAdd('vision.pyd', input='vision_module.obj')
     PyTargetAdd('vision.pyd', input='libp3vision_igate.obj')
     PyTargetAdd('vision.pyd', input='libp3vision.dll')
+    PyTargetAdd('vision.pyd', input='libp3interrogatedb.dll')
     PyTargetAdd('vision.pyd', input=COMMON_PANDA_LIBS)
 
 #
@@ -4305,6 +4463,7 @@ if not PkgSkip('SKEL'):
     PyTargetAdd('skel.pyd', input='skel_module.obj')
     PyTargetAdd('skel.pyd', input='libp3skel_igate.obj')
     PyTargetAdd('skel.pyd', input='libpandaskel.dll')
+    PyTargetAdd('skel.pyd', input='libp3interrogatedb.dll')
     PyTargetAdd('skel.pyd', input=COMMON_PANDA_LIBS)
 
 #
@@ -4341,6 +4500,7 @@ if not PkgSkip('PANDAFX'):
     PyTargetAdd('fx.pyd', input='fx_module.obj')
     PyTargetAdd('fx.pyd', input='libp3distort_igate.obj')
     PyTargetAdd('fx.pyd', input='libpandafx.dll')
+    PyTargetAdd('fx.pyd', input='libp3interrogatedb.dll')
     PyTargetAdd('fx.pyd', input=COMMON_PANDA_LIBS)
 
 #
@@ -4366,6 +4526,7 @@ if not PkgSkip("VRPN"):
     PyTargetAdd('vrpn.pyd', input='vrpn_module.obj')
     PyTargetAdd('vrpn.pyd', input='libp3vrpn_igate.obj')
     PyTargetAdd('vrpn.pyd', input='libp3vrpn.dll')
+    PyTargetAdd('vrpn.pyd', input='libp3interrogatedb.dll')
     PyTargetAdd('vrpn.pyd', input=COMMON_PANDA_LIBS)
 
 #
@@ -4584,6 +4745,7 @@ if not PkgSkip("EGG"):
     PyTargetAdd('egg.pyd', input='libp3egg_igate.obj')
     PyTargetAdd('egg.pyd', input='libp3egg2pg_igate.obj')
     PyTargetAdd('egg.pyd', input='libpandaegg.dll')
+    PyTargetAdd('egg.pyd', input='libp3interrogatedb.dll')
     PyTargetAdd('egg.pyd', input=COMMON_PANDA_LIBS)
 
 #
@@ -4783,6 +4945,7 @@ if not PkgSkip("ODE"):
     PyTargetAdd('ode.pyd', input='libpandaode_igate.obj')
     PyTargetAdd('ode.pyd', input='p3ode_ext_composite.obj')
     PyTargetAdd('ode.pyd', input='libpandaode.dll')
+    PyTargetAdd('ode.pyd', input='libp3interrogatedb.dll')
     PyTargetAdd('ode.pyd', input=COMMON_PANDA_LIBS)
     PyTargetAdd('ode.pyd', opts=['WINUSER', 'ODE'])
 
@@ -4818,6 +4981,7 @@ if not PkgSkip("BULLET"):
     PyTargetAdd('bullet.pyd', input='bullet_module.obj')
     PyTargetAdd('bullet.pyd', input='libpandabullet_igate.obj')
     PyTargetAdd('bullet.pyd', input='libpandabullet.dll')
+    PyTargetAdd('bullet.pyd', input='libp3interrogatedb.dll')
     PyTargetAdd('bullet.pyd', input=COMMON_PANDA_LIBS)
     PyTargetAdd('bullet.pyd', opts=['WINUSER', 'BULLET'])
 
@@ -4883,6 +5047,7 @@ if not PkgSkip("PANDAPHYSICS"):
     if not PkgSkip("PANDAPARTICLESYSTEM"):
         PyTargetAdd('physics.pyd', input='libp3particlesystem_igate.obj')
     PyTargetAdd('physics.pyd', input='libpandaphysics.dll')
+    PyTargetAdd('physics.pyd', input='libp3interrogatedb.dll')
     PyTargetAdd('physics.pyd', input=COMMON_PANDA_LIBS)
 
 #
@@ -4937,13 +5102,11 @@ if GetTarget() == 'android':
     TargetAdd('org/panda3d/android/NativeIStream.class', opts=OPTS, input='NativeIStream.java')
     TargetAdd('org/panda3d/android/NativeOStream.class', opts=OPTS, input='NativeOStream.java')
     TargetAdd('org/panda3d/android/PandaActivity.class', opts=OPTS, input='PandaActivity.java')
-    TargetAdd('org/panda3d/android/PandaActivity$1.class', opts=OPTS+['DEPENDENCYONLY'], input='PandaActivity.java')
     TargetAdd('org/panda3d/android/PythonActivity.class', opts=OPTS, input='PythonActivity.java')
 
     TargetAdd('classes.dex', input='org/panda3d/android/NativeIStream.class')
     TargetAdd('classes.dex', input='org/panda3d/android/NativeOStream.class')
     TargetAdd('classes.dex', input='org/panda3d/android/PandaActivity.class')
-    TargetAdd('classes.dex', input='org/panda3d/android/PandaActivity$1.class')
     TargetAdd('classes.dex', input='org/panda3d/android/PythonActivity.class')
 
     TargetAdd('p3android_composite1.obj', opts=OPTS, input='p3android_composite1.cxx')
@@ -5199,6 +5362,7 @@ if not PkgSkip("DIRECT"):
 
     PyTargetAdd('direct.pyd', input='direct_module.obj')
     PyTargetAdd('direct.pyd', input='libp3direct.dll')
+    PyTargetAdd('direct.pyd', input='libp3interrogatedb.dll')
     PyTargetAdd('direct.pyd', input=COMMON_PANDA_LIBS)
     PyTargetAdd('direct.pyd', opts=['WINUSER', 'WINGDI', 'WINSOCK2'])
 
@@ -5673,6 +5837,75 @@ if not PkgSkip("PANDATOOL"):
         TargetAdd('lwo2egg.exe', opts=['ADVAPI'])
 
 #
+# DIRECTORY: pandatool/src/maya/
+#
+
+for VER in MAYAVERSIONS:
+    VNUM = VER[4:]
+    if PkgSkip(VER) or PkgSkip("PANDATOOL"):
+        continue
+
+    OPTS=['DIR:pandatool/src/maya', VER]
+    TargetAdd('maya'+VNUM+'_composite1.obj', opts=OPTS, input='p3maya_composite1.cxx')
+    TargetAdd('libmaya'+VNUM+'.lib', input='maya'+VNUM+'_composite1.obj')
+
+#
+# DIRECTORY: pandatool/src/mayaegg/
+#
+
+for VER in MAYAVERSIONS:
+    VNUM = VER[4:]
+    if PkgSkip(VER) or PkgSkip("PANDATOOL") or PkgSkip("EGG"):
+        continue
+
+    OPTS=['DIR:pandatool/src/mayaegg', 'DIR:pandatool/src/maya', VER]
+    TargetAdd('mayaegg'+VNUM+'_loader.obj', opts=OPTS, input='mayaEggLoader.cxx')
+    TargetAdd('mayaegg'+VNUM+'_composite1.obj', opts=OPTS, input='p3mayaegg_composite1.cxx')
+    TargetAdd('libmayaegg'+VNUM+'.lib', input='mayaegg'+VNUM+'_loader.obj')
+    TargetAdd('libmayaegg'+VNUM+'.lib', input='mayaegg'+VNUM+'_composite1.obj')
+
+#
+# DIRECTORY: pandatool/src/maxegg/
+#
+
+for VER in MAXVERSIONS:
+    VNUM = VER[3:]
+    if PkgSkip(VER) or PkgSkip("PANDATOOL") or PkgSkip("EGG"):
+        continue
+
+    OPTS=['DIR:pandatool/src/maxegg', VER,  "WINCOMCTL", "WINCOMDLG", "WINUSER", "MSFORSCOPE", "RTTI"]
+    TargetAdd('maxEgg'+VNUM+'.res', opts=OPTS, input='maxEgg.rc')
+    TargetAdd('maxegg'+VNUM+'_loader.obj', opts=OPTS, input='maxEggLoader.cxx')
+    TargetAdd('maxegg'+VNUM+'_composite1.obj', opts=OPTS, input='p3maxegg_composite1.cxx')
+    TargetAdd('maxegg'+VNUM+'.dlo', input='maxegg'+VNUM+'_composite1.obj')
+    TargetAdd('maxegg'+VNUM+'.dlo', input='maxEgg'+VNUM+'.res')
+    TargetAdd('maxegg'+VNUM+'.dlo', input='maxEgg.def', ipath=OPTS)
+    TargetAdd('maxegg'+VNUM+'.dlo', input=COMMON_EGG2X_LIBS)
+    TargetAdd('maxegg'+VNUM+'.dlo', opts=OPTS)
+
+#
+# DIRECTORY: pandatool/src/maxprogs/
+#
+
+for VER in MAXVERSIONS:
+    VNUM = VER[3:]
+    if PkgSkip(VER) or PkgSkip("PANDATOOL") or PkgSkip("EGG"):
+        continue
+
+    OPTS=['DIR:pandatool/src/maxprogs', VER,  "WINCOMCTL", "WINCOMDLG", "WINUSER", "MSFORSCOPE", "RTTI"]
+    TargetAdd('maxImportRes.res', opts=OPTS, input='maxImportRes.rc')
+    TargetAdd('maxprogs'+VNUM+'_maxeggimport.obj', opts=OPTS, input='maxEggImport.cxx')
+    TargetAdd('maxeggimport'+VNUM+'.dle', input='maxegg'+VNUM+'_loader.obj')
+    TargetAdd('maxeggimport'+VNUM+'.dle', input='maxprogs'+VNUM+'_maxeggimport.obj')
+    TargetAdd('maxeggimport'+VNUM+'.dle', input='libpandaegg.dll')
+    TargetAdd('maxeggimport'+VNUM+'.dle', input='libpanda.dll')
+    TargetAdd('maxeggimport'+VNUM+'.dle', input='libpandaexpress.dll')
+    TargetAdd('maxeggimport'+VNUM+'.dle', input='maxImportRes.res')
+    TargetAdd('maxeggimport'+VNUM+'.dle', input='maxEggImport.def', ipath=OPTS)
+    TargetAdd('maxeggimport'+VNUM+'.dle', input=COMMON_DTOOL_LIBS)
+    TargetAdd('maxeggimport'+VNUM+'.dle', opts=OPTS)
+
+#
 # DIRECTORY: pandatool/src/vrml/
 #
 
@@ -5877,6 +6110,127 @@ if not PkgSkip("PANDATOOL"):
         TargetAdd('x2egg.exe', opts=['ADVAPI'])
 
 #
+# DIRECTORY: pandatool/src/mayaprogs/
+#
+
+MAYA_BUILT = False
+
+for VER in MAYAVERSIONS:
+    VNUM = VER[4:]
+    if PkgSkip(VER) or PkgSkip("PANDATOOL") or PkgSkip("EGG"):
+        continue
+
+    if GetTarget() == 'darwin':
+        if int(VNUM) < 2009:
+            # No x86_64 support.
+            continue
+        if tuple(OSX_ARCHS) == ('arm64',):
+            # No arm64 support.
+            continue
+        ARCH_OPTS = ['NOARCH:ARM64']
+    else:
+        ARCH_OPTS = []
+
+    MAYA_BUILT = True
+
+    OPTS=['DIR:pandatool/src/mayaprogs', 'DIR:pandatool/src/maya', 'DIR:pandatool/src/mayaegg', 'BUILDING:MISC', VER] + ARCH_OPTS
+    TargetAdd('mayaeggimport'+VNUM+'_mayaeggimport.obj', opts=OPTS, input='mayaEggImport.cxx')
+    TargetAdd('mayaeggimport'+VNUM+'.mll', input='mayaegg'+VNUM+'_loader.obj')
+    TargetAdd('mayaeggimport'+VNUM+'.mll', input='mayaeggimport'+VNUM+'_mayaeggimport.obj')
+    TargetAdd('mayaeggimport'+VNUM+'.mll', input='libpandaegg.dll')
+    TargetAdd('mayaeggimport'+VNUM+'.mll', input=COMMON_PANDA_LIBS)
+    TargetAdd('mayaeggimport'+VNUM+'.mll', opts=['ADVAPI', VER]+ARCH_OPTS)
+
+    TargetAdd('mayaloader'+VNUM+'_config_mayaloader.obj', opts=OPTS, input='config_mayaloader.cxx')
+    TargetAdd('libp3mayaloader'+VNUM+'.dll', input='mayaloader'+VNUM+'_config_mayaloader.obj')
+    TargetAdd('libp3mayaloader'+VNUM+'.dll', input='libmayaegg'+VNUM+'.lib')
+    TargetAdd('libp3mayaloader'+VNUM+'.dll', input='libp3ptloader.dll')
+    TargetAdd('libp3mayaloader'+VNUM+'.dll', input='libmaya'+VNUM+'.lib')
+    TargetAdd('libp3mayaloader'+VNUM+'.dll', input='libp3fltegg.lib')
+    TargetAdd('libp3mayaloader'+VNUM+'.dll', input='libp3flt.lib')
+    TargetAdd('libp3mayaloader'+VNUM+'.dll', input='libp3lwoegg.lib')
+    TargetAdd('libp3mayaloader'+VNUM+'.dll', input='libp3lwo.lib')
+    TargetAdd('libp3mayaloader'+VNUM+'.dll', input='libp3dxfegg.lib')
+    TargetAdd('libp3mayaloader'+VNUM+'.dll', input='libp3dxf.lib')
+    TargetAdd('libp3mayaloader'+VNUM+'.dll', input='libp3objegg.lib')
+    TargetAdd('libp3mayaloader'+VNUM+'.dll', input='libp3vrmlegg.lib')
+    TargetAdd('libp3mayaloader'+VNUM+'.dll', input='libp3vrml.lib')
+    TargetAdd('libp3mayaloader'+VNUM+'.dll', input='libp3xfileegg.lib')
+    TargetAdd('libp3mayaloader'+VNUM+'.dll', input='libp3xfile.lib')
+    TargetAdd('libp3mayaloader'+VNUM+'.dll', input='libp3eggbase.lib')
+    TargetAdd('libp3mayaloader'+VNUM+'.dll', input='libp3progbase.lib')
+    TargetAdd('libp3mayaloader'+VNUM+'.dll', input='libp3converter.lib')
+    TargetAdd('libp3mayaloader'+VNUM+'.dll', input='libp3pandatoolbase.lib')
+    TargetAdd('libp3mayaloader'+VNUM+'.dll', input='libpandaegg.dll')
+    TargetAdd('libp3mayaloader'+VNUM+'.dll', input=COMMON_PANDA_LIBS)
+    TargetAdd('libp3mayaloader'+VNUM+'.dll', opts=['ADVAPI', VER]+ARCH_OPTS)
+
+    TargetAdd('mayapview'+VNUM+'_mayaPview.obj', opts=OPTS, input='mayaPview.cxx')
+    TargetAdd('libmayapview'+VNUM+'.mll', input='mayapview'+VNUM+'_mayaPview.obj')
+    TargetAdd('libmayapview'+VNUM+'.mll', input='libmayaegg'+VNUM+'.lib')
+    TargetAdd('libmayapview'+VNUM+'.mll', input='libmaya'+VNUM+'.lib')
+    TargetAdd('libmayapview'+VNUM+'.mll', input='libp3framework.dll')
+    TargetAdd('libmayapview'+VNUM+'.mll', input=COMMON_EGG2X_LIBS)
+    TargetAdd('libmayapview'+VNUM+'.mll', opts=['ADVAPI', VER]+ARCH_OPTS)
+
+    TargetAdd('mayaprogs'+VNUM+'_eggToMaya.obj', opts=OPTS, input='eggToMaya.cxx')
+    TargetAdd('mayaprogs'+VNUM+'_mayaToEgg.obj', opts=OPTS, input='mayaToEgg.cxx')
+    TargetAdd('mayaprogs_mayaConversionServer.obj', opts=OPTS, input='mayaConversionServer.cxx')
+
+    TargetAdd('maya2egg'+VNUM+'_mayaToEggBin.obj', opts=OPTS, input='mayaToEggBin.cxx')
+    TargetAdd('maya2egg'+VNUM+'_bin.exe', input='mayaprogs'+VNUM+'_eggToMaya.obj')
+    TargetAdd('maya2egg'+VNUM+'_bin.exe', input='mayaprogs'+VNUM+'_mayaToEgg.obj')
+    TargetAdd('maya2egg'+VNUM+'_bin.exe', input='mayaprogs_mayaConversionServer.obj')
+    TargetAdd('maya2egg'+VNUM+'_bin.exe', input='maya2egg'+VNUM+'_mayaToEggBin.obj')
+    TargetAdd('maya2egg'+VNUM+'_bin.exe', input='libmayaegg'+VNUM+'.lib')
+    TargetAdd('maya2egg'+VNUM+'_bin.exe', input='libmaya'+VNUM+'.lib')
+    TargetAdd('maya2egg'+VNUM+'_bin.exe', input=COMMON_EGG2X_LIBS)
+    TargetAdd('maya2egg'+VNUM+'_bin.exe', opts=['ADVAPI', VER]+ARCH_OPTS)
+
+    TargetAdd('egg2maya'+VNUM+'_eggToMayaBin.obj', opts=OPTS, input='eggToMayaBin.cxx')
+    TargetAdd('egg2maya'+VNUM+'_bin.exe', input='mayaprogs'+VNUM+'_eggToMaya.obj')
+    TargetAdd('egg2maya'+VNUM+'_bin.exe', input='mayaprogs'+VNUM+'_mayaToEgg.obj')
+    TargetAdd('egg2maya'+VNUM+'_bin.exe', input='mayaprogs_mayaConversionServer.obj')
+    TargetAdd('egg2maya'+VNUM+'_bin.exe', input='egg2maya'+VNUM+'_eggToMayaBin.obj')
+    TargetAdd('egg2maya'+VNUM+'_bin.exe', input='libmayaegg'+VNUM+'.lib')
+    TargetAdd('egg2maya'+VNUM+'_bin.exe', input='libmaya'+VNUM+'.lib')
+    TargetAdd('egg2maya'+VNUM+'_bin.exe', input=COMMON_EGG2X_LIBS)
+    TargetAdd('egg2maya'+VNUM+'_bin.exe', opts=['ADVAPI', VER]+ARCH_OPTS)
+
+    TargetAdd('mayasavepview'+VNUM+'_mayaSavePview.obj', opts=OPTS, input='mayaSavePview.cxx')
+    TargetAdd('libmayasavepview'+VNUM+'.mll', input='mayasavepview'+VNUM+'_mayaSavePview.obj')
+    TargetAdd('libmayasavepview'+VNUM+'.mll', opts=['ADVAPI', VER]+ARCH_OPTS)
+
+    TargetAdd('mayapath'+VNUM+'.obj', opts=OPTS, input='mayapath.cxx')
+
+    TargetAdd('maya2egg'+VNUM+'.exe', input='mayapath'+VNUM+'.obj')
+    TargetAdd('maya2egg'+VNUM+'.exe', input='libpandaexpress.dll')
+    TargetAdd('maya2egg'+VNUM+'.exe', input=COMMON_DTOOL_LIBS)
+    TargetAdd('maya2egg'+VNUM+'.exe', opts=['ADVAPI']+ARCH_OPTS)
+
+    TargetAdd('egg2maya'+VNUM+'.exe', input='mayapath'+VNUM+'.obj')
+    TargetAdd('egg2maya'+VNUM+'.exe', input='libpandaexpress.dll')
+    TargetAdd('egg2maya'+VNUM+'.exe', input=COMMON_DTOOL_LIBS)
+    TargetAdd('egg2maya'+VNUM+'.exe', opts=['ADVAPI']+ARCH_OPTS)
+
+if MAYA_BUILT:
+    OPTS=['DIR:pandatool/src/mayaprogs', 'DIR:pandatool/src/maya', 'DIR:pandatool/src/mayaegg', 'BUILDING:MISC', 'NOARCH:ARM64']
+
+    TargetAdd('mayaprogs_mayaConversionClient.obj', opts=OPTS, input='mayaConversionClient.cxx')
+
+    TargetAdd('maya2egg_mayaToEggClient.obj', opts=OPTS, input='mayaToEggClient.cxx')
+    TargetAdd('maya2egg_client.exe', input='mayaprogs_mayaConversionClient.obj')
+    TargetAdd('maya2egg_client.exe', input='maya2egg_mayaToEggClient.obj')
+    TargetAdd('maya2egg_client.exe', input=COMMON_EGG2X_LIBS)
+    TargetAdd('maya2egg_client.exe', opts=['NOARCH:ARM64'])
+
+    TargetAdd('egg2maya_eggToMayaClient.obj', opts=OPTS, input='eggToMayaClient.cxx')
+    TargetAdd('egg2maya_client.exe', input='mayaprogs_mayaConversionClient.obj')
+    TargetAdd('egg2maya_client.exe', input='egg2maya_eggToMayaClient.obj')
+    TargetAdd('egg2maya_client.exe', input=COMMON_EGG2X_LIBS)
+    TargetAdd('egg2maya_client.exe', opts=['NOARCH:ARM64'])
+
+#
 # DIRECTORY: contrib/src/ai/
 #
 if not PkgSkip("CONTRIB"):
@@ -5897,6 +6251,7 @@ if not PkgSkip("CONTRIB"):
     PyTargetAdd('ai.pyd', input='ai_module.obj')
     PyTargetAdd('ai.pyd', input='libpandaai_igate.obj')
     PyTargetAdd('ai.pyd', input='libpandaai.dll')
+    PyTargetAdd('ai.pyd', input='libp3interrogatedb.dll')
     PyTargetAdd('ai.pyd', input=COMMON_PANDA_LIBS)
 
 #
@@ -5917,6 +6272,7 @@ if not PkgSkip("CONTRIB") and not PkgSkip("PYTHON"):
     PyTargetAdd('_rplight.pyd', input='rplight_module.obj')
     PyTargetAdd('_rplight.pyd', input='libp3rplight_igate.obj')
     PyTargetAdd('_rplight.pyd', input='p3rplight_composite1.obj')
+    PyTargetAdd('_rplight.pyd', input='libp3interrogatedb.dll')
     PyTargetAdd('_rplight.pyd', input=COMMON_PANDA_LIBS)
 
 #
@@ -5966,42 +6322,6 @@ if PkgSkip("PYTHON") == 0:
         PyTargetAdd('libdeploy-stubw.dll', input=COMMON_PANDA_LIBS)
         PyTargetAdd('libdeploy-stubw.dll', input='libp3android.dll')
         PyTargetAdd('libdeploy-stubw.dll', opts=['DEPLOYSTUB', 'ANDROID'])
-
-#
-# Build the test runner for static builds
-#
-if GetLinkAllStatic():
-    if GetTarget() == 'emscripten':
-        LinkFlag('RUN_TESTS_FLAGS', '-s NODERAWFS')
-        LinkFlag('RUN_TESTS_FLAGS', '-s ASSERTIONS=2')
-        LinkFlag('RUN_TESTS_FLAGS', '-s ALLOW_MEMORY_GROWTH')
-        LinkFlag('RUN_TESTS_FLAGS', '-s INITIAL_HEAP=585302016')
-        LinkFlag('RUN_TESTS_FLAGS', '-s STACK_SIZE=1048576')
-        LinkFlag('RUN_TESTS_FLAGS', '--minify 0')
-
-    if not PkgSkip('DIRECT'):
-        DefSymbol('RUN_TESTS_FLAGS', 'HAVE_DIRECT')
-    if not PkgSkip('PANDAPHYSICS'):
-        DefSymbol('RUN_TESTS_FLAGS', 'HAVE_PHYSICS')
-    if not PkgSkip('EGG'):
-        DefSymbol('RUN_TESTS_FLAGS', 'HAVE_EGG')
-    if not PkgSkip('BULLET'):
-        DefSymbol('RUN_TESTS_FLAGS', 'HAVE_BULLET')
-
-    OPTS=['DIR:tests', 'PYTHON', 'RUN_TESTS_FLAGS', 'SUBSYSTEM:CONSOLE']
-    PyTargetAdd('run_tests-main.obj', opts=OPTS, input='main.c')
-    PyTargetAdd('run_tests.exe', input='run_tests-main.obj')
-    PyTargetAdd('run_tests.exe', input='core.pyd')
-    if not PkgSkip('DIRECT'):
-        PyTargetAdd('run_tests.exe', input='direct.pyd')
-    if not PkgSkip('PANDAPHYSICS'):
-        PyTargetAdd('run_tests.exe', input='physics.pyd')
-    if not PkgSkip('EGG'):
-        PyTargetAdd('run_tests.exe', input='egg.pyd')
-    if not PkgSkip('BULLET'):
-        PyTargetAdd('run_tests.exe', input='bullet.pyd')
-    PyTargetAdd('run_tests.exe', input=COMMON_PANDA_LIBS)
-    PyTargetAdd('run_tests.exe', opts=['PYTHON', 'BULLET', 'RUN_TESTS_FLAGS'])
 
 #
 # Generate the models directory and samples directory
@@ -6164,16 +6484,8 @@ finally:
 
 # Run the test suite.
 if RUNTESTS:
-    if GetLinkAllStatic():
-        runner = FindLocation("run_tests.exe", [])
-        if runner.endswith(".js"):
-            cmdstr = "node " + BracketNameWithQuotes(runner)
-        else:
-            cmdstr = BracketNameWithQuotes(runner)
-    else:
-        cmdstr = BracketNameWithQuotes(SDK["PYTHONEXEC"].replace('\\', '/'))
-        cmdstr += " -B -m pytest"
-    cmdstr += " tests"
+    cmdstr = BracketNameWithQuotes(SDK["PYTHONEXEC"].replace('\\', '/'))
+    cmdstr += " -B -m pytest tests"
     if GetVerbose():
         cmdstr += " --verbose"
     oscmd(cmdstr)

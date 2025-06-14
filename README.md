@@ -24,7 +24,7 @@ Installing Panda3D
 ==================
 
 The latest Panda3D SDK can be downloaded from
-[this page](https://www.panda3d.org/download/sdk-1-10-15/).
+[this page](https://www.panda3d.org/download/sdk-1-10-14/).
 If you are familiar with installing Python packages, you can use
 the following command:
 
@@ -52,7 +52,7 @@ Building Panda3D
 Windows
 -------
 
-You can build Panda3D with the Microsoft Visual C++ 2017, 2019 or 2022
+You can build Panda3D with the Microsoft Visual C++ 2015, 2017, 2019 or 2022
 compiler, which can be downloaded for free from the [Visual Studio site](https://visualstudio.microsoft.com/downloads/).
 You will also need to install the [Windows SDK](https://developer.microsoft.com/en-us/windows/downloads/windows-sdk),
 and if you intend to target Windows Vista, you will also need the
@@ -64,8 +64,8 @@ depending on whether you are on a 32-bit or 64-bit system, or you can
 [click here](https://github.com/rdb/panda3d-thirdparty) for instructions on
 building them from source.
 
-- https://www.panda3d.org/download/panda3d-1.10.15/panda3d-1.10.15-tools-win64.zip
-- https://www.panda3d.org/download/panda3d-1.10.15/panda3d-1.10.15-tools-win32.zip
+- https://www.panda3d.org/download/panda3d-1.10.14/panda3d-1.10.14-tools-win64.zip
+- https://www.panda3d.org/download/panda3d-1.10.14/panda3d-1.10.14-tools-win32.zip
 
 After acquiring these dependencies, you can build Panda3D from the command
 prompt using the following command.  Change the `--msvc-version` option based
@@ -136,7 +136,7 @@ macOS
 -----
 
 On macOS, you will need to download a set of precompiled thirdparty packages in order to
-compile Panda3D, which can be acquired from [here](https://www.panda3d.org/download/panda3d-1.10.15/panda3d-1.10.15-tools-mac.tar.gz).
+compile Panda3D, which can be acquired from [here](https://www.panda3d.org/download/panda3d-1.10.14/panda3d-1.10.14-tools-mac.tar.gz).
 
 After placing the thirdparty directory inside the panda3d source directory,
 you may build Panda3D using a command like the following:
@@ -168,7 +168,7 @@ Install the appropriate package for it (such as `python37` or `python38`) and
 run the makepanda script with your chosen Python version:
 
 ```bash
-python3.11 makepanda/makepanda.py --everything --installer --no-egl --no-gles --no-gles2
+python3.7 makepanda/makepanda.py --everything --installer --no-egl --no-gles --no-gles2
 ```
 
 If successful, this will produce a .pkg file in the root of the source
@@ -181,21 +181,22 @@ Although it's possible to build Panda3D on an Android device using the
 [termux](https://termux.com/) shell, the recommended route is to cross-compile
 .whl files using the SDK and NDK, which can then be used by the `build_apps`
 command to build a Python application into an .apk or .aab bundle.  You will
-need to get the latest thirdparty packages, which can be obtained from here:
+need to get the latest thirdparty packages, which can be obtained from the
+artifacts page of the last successful run here:
 
-https://rdb.name/thirdparty-android.tar.gz
+https://github.com/rdb/panda3d-thirdparty/actions?query=branch%3Amain+is%3Asuccess+event%3Apush
 
-This includes a copy of Python 3.13 compiled for Android.  You will need to
-use Python 3.13 on the host as well.
+This does not include Python at the moment, which can be extracted from
+[this archive](https://rdb.name/thirdparty-android.tar.gz) instead.
 
 These commands show how to compile wheels for the supported Android ABIs:
 
 ```bash
 export ANDROID_SDK_ROOT=/home/rdb/local/android
-python3.13 makepanda/makepanda.py --everything --outputdir built-droid-arm64 --arch arm64 --target android-21 --threads 6 --wheel
-python3.13 makepanda/makepanda.py --everything --outputdir built-droid-armv7a --arch arm --target android-21 --threads 6 --wheel
-python3.13 makepanda/makepanda.py --everything --outputdir built-droid-x86_64 --arch x86_64 --target android-21 --threads 6 --wheel
-python3.13 makepanda/makepanda.py --everything --outputdir built-droid-x86 --arch x86 --target android-21 --threads 6 --wheel
+python3.8 makepanda/makepanda.py --everything --outputdir built-droid-arm64 --arch arm64 --target android-21 --threads 6 --wheel
+python3.8 makepanda/makepanda.py --everything --outputdir built-droid-armv7a --arch armv7a --target android-19 --threads 6 --wheel
+python3.8 makepanda/makepanda.py --everything --outputdir built-droid-x86_64 --arch x86_64 --target android-21 --threads 6 --wheel
+python3.8 makepanda/makepanda.py --everything --outputdir built-droid-x86 --arch x86 --target android-19 --threads 6 --wheel
 ```
 
 It is now possible to use the generated wheels with `build_apps`, as explained

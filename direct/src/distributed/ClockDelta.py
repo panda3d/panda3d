@@ -48,7 +48,7 @@ class ClockDelta(DirectObject.DirectObject):
 
     notify = DirectNotifyGlobal.directNotify.newCategory('ClockDelta')
 
-    def __init__(self) -> None:
+    def __init__(self):
         self.globalClock = ClockObject.getGlobalClock()
 
         # self.delta is the relative delta from our clock to the

@@ -38,13 +38,6 @@ protected:
   AnimInterface(const AnimInterface &copy);
 
 PUBLISHED:
-  enum PlayMode {
-    PM_pose,
-    PM_play,
-    PM_loop,
-    PM_pingpong,
-  };
-
   virtual ~AnimInterface();
   INLINE void play();
   INLINE void play(double from, double to);
@@ -66,7 +59,6 @@ PUBLISHED:
   INLINE int get_full_frame() const;
   INLINE double get_full_fframe() const;
   INLINE bool is_playing() const;
-  INLINE PlayMode get_play_mode() const;
 
   virtual void output(std::ostream &out) const;
 
@@ -81,7 +73,6 @@ PUBLISHED:
   MAKE_PROPERTY(full_frame, get_full_frame);
   MAKE_PROPERTY(full_fframe, get_full_fframe);
   MAKE_PROPERTY(playing, is_playing);
-  MAKE_PROPERTY(play_mode, get_play_mode);
 
 protected:
   INLINE void set_frame_rate(double frame_rate);
@@ -89,6 +80,13 @@ protected:
   virtual void animation_activated();
 
 private:
+  enum PlayMode {
+    PM_pose,
+    PM_play,
+    PM_loop,
+    PM_pingpong,
+  };
+
   // This data is not cycled, because it is a semi-permanent part of the
   // interface.  Also, some derivatives of AnimInterface don't even use it.
   int _num_frames;
@@ -114,7 +112,6 @@ private:
     int get_full_frame(int increment) const;
     double get_full_fframe() const;
     bool is_playing() const;
-    INLINE PlayMode get_play_mode() const;
 
     virtual void output(std::ostream &out) const;
 

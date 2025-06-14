@@ -33,7 +33,6 @@
 #undef FLOATTYPE_IS_INT
 #undef STRINGIFY
 #undef FLOATNAME_STR
-#undef FLOATTYPE_REPR
 
 #define FLOATTYPE int
 #define FLOATNAME(ARG) ARG##i
@@ -43,5 +42,3 @@
 
 #define STRINGIFY(ARG) #ARG
 #define FLOATNAME_STR(ARG) STRINGIFY(ARG##i)
-
-#define FLOATTYPE_REPR(v, str) (snprintf((str), 12, "%d", (v)))

@@ -29,9 +29,6 @@ APP_INFO = (
   ("pstats", "Panda3D Profiling Tool", ("pstats",), False),
 )
 
-EXCLUDE_BINARIES = ["deploy-stub", "deploy-stubw", "run_tests"]
-
-
 def WriteApplicationsFile(fname, appinfo, mimeinfo, bindir):
     fhandle = open(fname, "w")
     for app, desc, exts, multiple in appinfo:
@@ -268,7 +265,7 @@ def InstallPanda(destdir="", prefix="/usr", outputdir="built", libdir=GetLibDir(
             oscmd(f"cp -R -P {outputdir}/lib/{base} {dest_libdir}/panda3d/{base}")
 
     for base in os.listdir(outputdir + "/bin"):
-        if base not in EXCLUDE_BINARIES:
+        if not base.startswith("deploy-stub"):
             oscmd(f"cp -R -P {outputdir}/bin/{base} {dest_prefix}/bin/{base}")
 
     DeleteVCS(dest_prefix + "/share/panda3d")

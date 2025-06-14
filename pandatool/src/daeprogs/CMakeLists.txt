@@ -1,7 +1,3 @@
-if(NOT BUILD_TOOLS)
-  return()
-endif()
-
 if(HAVE_EGG AND HAVE_FCOLLADA)
 
   add_executable(dae2egg daeToEgg.cxx daeToEgg.h)

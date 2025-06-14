@@ -357,7 +357,6 @@ match_egg(EggFile *egg_file) const {
     case KW_linear:
     case KW_mipmap:
     case KW_anisotropic:
-    case KW_srgb:
       // These mean nothing to an egg file.
       break;
 

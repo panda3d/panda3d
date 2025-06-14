@@ -40,9 +40,7 @@ CollisionNode::
 CollisionNode(const std::string &name) :
   PandaNode(name),
   _from_collide_mask(get_default_collide_mask()),
-  _collider_sort(0),
-  _owner(nullptr),
-  _owner_callback(nullptr)
+  _collider_sort(0)
 {
   set_cull_callback();
   set_renderable();
@@ -62,9 +60,7 @@ CollisionNode(const CollisionNode &copy) :
   PandaNode(copy),
   _from_collide_mask(copy._from_collide_mask),
   _collider_sort(copy._collider_sort),
-  _solids(copy._solids),
-  _owner(nullptr),
-  _owner_callback(nullptr)
+  _solids(copy._solids)
 {
 }
 
@@ -73,10 +69,6 @@ CollisionNode(const CollisionNode &copy) :
  */
 CollisionNode::
 ~CollisionNode() {
-  if (_owner_callback != nullptr) {
-    _owner_callback(_owner);
-    _owner_callback = nullptr;
-  }
 }
 
 /**
@@ -257,18 +249,6 @@ output(std::ostream &out) const {
 void CollisionNode::
 set_from_collide_mask(CollideMask mask) {
   _from_collide_mask = mask;
-}
-
-/**
- * Removes the owner that was previously set using set_owner().
- */
-void CollisionNode::
-clear_owner() {
-  if (_owner_callback != nullptr) {
-    _owner_callback(_owner);
-  }
-  _owner = nullptr;
-  _owner_callback = nullptr;
 }
 
 /**

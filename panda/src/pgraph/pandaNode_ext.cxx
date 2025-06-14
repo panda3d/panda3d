@@ -47,10 +47,10 @@ __deepcopy__(PyObject *self, PyObject *memo) const {
   extern struct Dtool_PyTypedObject Dtool_PandaNode;
 
   // Borrowed reference.
-  PyObject *dupe;
-  if (PyDict_GetItemRef(memo, self, &dupe) > 0) {
+  PyObject *dupe = PyDict_GetItem(memo, self);
+  if (dupe != nullptr) {
     // Already in the memo dictionary.
-    return dupe;
+    return Py_NewRef(dupe);
   }
 
   PT(PandaNode) node_dupe = _this->copy_subgraph();
@@ -122,11 +122,12 @@ get_python_tag(PyObject *key) const {
   }
 
   PyObject *dict = ((PythonTagDataImpl *)_this->_python_tag_data.p())->_dict;
-  PyObject *value;
-  if (PyDict_GetItemRef(dict, key, &value) == 0) {
-    value = Py_NewRef(Py_None);
+  PyObject *value = PyDict_GetItem(dict, key);
+  if (value == nullptr) {
+    value = Py_None;
   }
-  return value;
+  // PyDict_GetItem returns a borrowed reference.
+  return Py_NewRef(value);
 }
 
 /**
@@ -141,7 +142,7 @@ has_python_tag(PyObject *key) const {
   }
 
   PyObject *dict = ((PythonTagDataImpl *)_this->_python_tag_data.p())->_dict;
-  return PyDict_Contains(dict, key);
+  return (PyDict_GetItem(dict, key) != nullptr);
 }
 
 /**
@@ -156,8 +157,7 @@ clear_python_tag(PyObject *key) {
   }
 
   PyObject *dict = do_get_python_tags();
-  Py_BEGIN_CRITICAL_SECTION(dict);
-  if (PyDict_Contains(dict, key)) {
+  if (PyDict_GetItem(dict, key) != nullptr) {
     PyDict_DelItem(dict, key);
   }
 
@@ -166,7 +166,6 @@ clear_python_tag(PyObject *key) {
     // unique reference to the tags, so clear the tag object.
     _this->_python_tag_data.clear();
   }
-  Py_END_CRITICAL_SECTION();
 }
 
 /**

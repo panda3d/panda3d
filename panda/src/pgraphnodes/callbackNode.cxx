@@ -121,10 +121,11 @@ add_for_draw(CullTraverser *trav, CullTraverserData &data) {
   // Geoms, however.
   CallbackObject *cbobj = get_draw_callback();
   if (cbobj != nullptr) {
-    CullableObject object(nullptr, data._state,
-                          data.get_internal_transform(trav));
-    object.set_draw_callback(cbobj);
-    trav->get_cull_handler()->record_object(std::move(object), trav);
+    CullableObject *object =
+      new CullableObject(nullptr, data._state,
+                         data.get_internal_transform(trav));
+    object->set_draw_callback(cbobj);
+    trav->get_cull_handler()->record_object(object, trav);
   }
 }
 

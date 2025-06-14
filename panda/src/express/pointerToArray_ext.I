@@ -96,7 +96,7 @@ __init__(PyObject *self, PyObject *source) {
 
   // Now construct the internal list by copying the elements one-at-a-time
   // from Python.
-  PyObject *dict = Dtool_GetPyTypeObject(DtoolInstance_TYPE(self))->tp_dict;
+  PyObject *dict = DtoolInstance_TYPE(self)->_PyType.tp_dict;
   PyObject *push_back = PyDict_GetItemString(dict, "push_back");
   if (push_back == nullptr) {
     PyErr_BadArgument();
@@ -106,13 +106,12 @@ __init__(PyObject *self, PyObject *source) {
   // We need to initialize the this pointer before we can call push_back.
   DtoolInstance_INIT_PTR(self, this->_this);
 
-  Py_BEGIN_CRITICAL_SECTION(source);
   Py_ssize_t size = PySequence_Size(source);
   this->_this->reserve(size);
   for (Py_ssize_t i = 0; i < size; ++i) {
     PyObject *item = PySequence_GetItem(source, i);
     if (item == nullptr) {
-      break;
+      return;
     }
     PyObject *result = PyObject_CallFunctionObjArgs(push_back, self, item, nullptr);
     Py_DECREF(item);
@@ -122,11 +121,10 @@ __init__(PyObject *self, PyObject *source) {
       PyErr_Format(PyExc_TypeError,
                    "Element %zd in sequence passed to PointerToArray "
                    "constructor could not be added", i);
-      break;
+      return;
     }
     Py_DECREF(result);
   }
-  Py_END_CRITICAL_SECTION();
 }
 
 /**

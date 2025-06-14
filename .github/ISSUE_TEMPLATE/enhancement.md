@@ -2,7 +2,6 @@
 name: Enhancement request
 about: Request new functionality or improvement to existing functionality
 title:
-type: feature
 labels: enhancement
 assignees:
 ---

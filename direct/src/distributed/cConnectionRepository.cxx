@@ -688,12 +688,11 @@ handle_update_field() {
     nassertr(doId2do != nullptr, false);
 
     PyObject *doId = PyLong_FromUnsignedLong(do_id);
-    PyObject *distobj;
-    int result = PyDict_GetItemRef(doId2do, doId, &distobj);
+    PyObject *distobj = PyDict_GetItem(doId2do, doId);
     Py_DECREF(doId);
     Py_DECREF(doId2do);
 
-    if (result > 0) {
+    if (distobj != nullptr) {
       PyObject *dclass_obj = PyObject_GetAttrString(distobj, "dclass");
       nassertr(dclass_obj != nullptr, false);
 
@@ -712,11 +711,9 @@ handle_update_field() {
         nassertr(neverDisable != nullptr, false);
 
         unsigned int cNeverDisable = PyLong_AsLong(neverDisable);
-        Py_DECREF(neverDisable);
         if (!cNeverDisable) {
           // in quiet zone and distobj is disable-able drop update on the
           // floor
-          Py_DECREF(distobj);
 #if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
           PyGILState_Release(gstate);
 #endif
@@ -724,8 +721,13 @@ handle_update_field() {
         }
       }
 
-      invoke_extension(dclass).receive_update(distobj, _di);
-      Py_DECREF(distobj);
+      // It's a good idea to ensure the reference count to distobj is raised
+      // while we call the update method--otherwise, the update method might
+      // get into trouble if it tried to delete the object from the doId2do
+      // map.
+      PyObject *distobj_ref = Py_NewRef(distobj);
+      invoke_extension(dclass).receive_update(distobj_ref, _di);
+      Py_DECREF(distobj_ref);
 
       if (PyErr_Occurred()) {
 #if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
@@ -775,11 +777,10 @@ handle_update_field_owner() {
     PyObject *doId = PyLong_FromUnsignedLong(do_id);
 
     // pass the update to the owner view first
-    PyObject *distobjOV;
-    int result = PyDict_GetItemRef(doId2ownerView, doId, &distobjOV);
+    PyObject *distobjOV = PyDict_GetItem(doId2ownerView, doId);
     Py_DECREF(doId2ownerView);
 
-    if (result > 0) {
+    if (distobjOV != nullptr) {
       PyObject *dclass_obj = PyObject_GetAttrString(distobjOV, "dclass");
       nassertr(dclass_obj != nullptr, false);
 
@@ -797,29 +798,32 @@ handle_update_field_owner() {
       int field_id = packer.raw_unpack_uint16();
       DCField *field = dclass->get_field_by_index(field_id);
       if (field->is_ownrecv()) {
+        // It's a good idea to ensure the reference count to distobjOV is
+        // raised while we call the update method--otherwise, the update
+        // method might get into trouble if it tried to delete the object from
+        // the doId2do map.
+        PyObject *distobjOV_ref = Py_NewRef(distobjOV);
         // make a copy of the datagram iterator so that we can use the main
         // iterator for the non-owner update
         DatagramIterator _odi(_di);
-        invoke_extension(dclass).receive_update(distobjOV, _odi);
+        invoke_extension(dclass).receive_update(distobjOV_ref, _odi);
+        Py_DECREF(distobjOV_ref);
 
         if (PyErr_Occurred()) {
-          Py_DECREF(distobjOV);
 #if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
           PyGILState_Release(gstate);
 #endif
           return false;
         }
       }
-      Py_DECREF(distobjOV);
     }
 
     // now pass the update to the visible view
-    PyObject *distobj;
-    result = PyDict_GetItemRef(doId2do, doId, &distobj);
+    PyObject *distobj = PyDict_GetItem(doId2do, doId);
     Py_DECREF(doId);
     Py_DECREF(doId2do);
 
-    if (result > 0) {
+    if (distobj != nullptr) {
       PyObject *dclass_obj = PyObject_GetAttrString(distobj, "dclass");
       nassertr(dclass_obj != nullptr, false);
 
@@ -838,17 +842,21 @@ handle_update_field_owner() {
       //int field_id = packer.raw_unpack_uint16();
       //DCField *field = dclass->get_field_by_index(field_id);
       if (true) {//field->is_broadcast()) {
-        invoke_extension(dclass).receive_update(distobj, _di);
+        // It's a good idea to ensure the reference count to distobj is raised
+        // while we call the update method--otherwise, the update method might
+        // get into trouble if it tried to delete the object from the doId2do
+        // map.
+        PyObject *distobj_ref = Py_NewRef(distobj);
+        invoke_extension(dclass).receive_update(distobj_ref, _di);
+        Py_DECREF(distobj_ref);
 
         if (PyErr_Occurred()) {
-          Py_DECREF(distobj);
 #if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
           PyGILState_Release(gstate);
 #endif
           return false;
         }
       }
-      Py_DECREF(distobj);
     }
   }
 
@@ -948,14 +956,12 @@ describe_message(std::ostream &out, const string &prefix,
       nassertv(doId2do != nullptr);
 
       PyObject *doId = PyLong_FromUnsignedLong(do_id);
-      PyObject *distobj;
-      int result = PyDict_GetItemRef(doId2do, doId, &distobj);
+      PyObject *distobj = PyDict_GetItem(doId2do, doId);
       Py_DECREF(doId);
       Py_DECREF(doId2do);
 
-      if (result > 0) {
+      if (distobj != nullptr) {
         PyObject *dclass_obj = PyObject_GetAttrString(distobj, "dclass");
-        Py_DECREF(distobj);
         nassertv(dclass_obj != nullptr);
 
         PyObject *dclass_this = PyObject_GetAttrString(dclass_obj, "this");

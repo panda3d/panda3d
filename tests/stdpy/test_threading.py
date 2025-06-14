@@ -9,7 +9,6 @@ def test_threading_error():
         threading.stack_size()
 
 
-@pytest.mark.skipif(sys.platform == "emscripten", reason="No threading")
 def test_threading():
     from collections import deque
 

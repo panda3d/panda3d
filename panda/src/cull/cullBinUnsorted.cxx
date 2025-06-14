@@ -20,6 +20,18 @@
 TypeHandle CullBinUnsorted::_type_handle;
 
 /**
+ *
+ */
+CullBinUnsorted::
+~CullBinUnsorted() {
+  Objects::iterator oi;
+  for (oi = _objects.begin(); oi != _objects.end(); ++oi) {
+    CullableObject *object = (*oi);
+    delete object;
+  }
+}
+
+/**
  * Factory constructor for passing to the CullBinManager.
  */
 CullBin *CullBinUnsorted::

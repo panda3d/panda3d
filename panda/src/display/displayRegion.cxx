@@ -487,9 +487,7 @@ get_screenshot() {
   if (gsg->get_threading_model().get_draw_stage() != current_thread->get_pipeline_stage()) {
     // Ask the engine to do on the draw thread.
     GraphicsEngine *engine = window->get_engine();
-    return engine->run_on_draw_thread([this] {
-      return get_screenshot();
-    });
+    return engine->do_get_screenshot(this, gsg);
   }
 
   // We are on the draw thread.

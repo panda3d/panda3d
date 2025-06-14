@@ -44,10 +44,6 @@ using std::max;
 using std::min;
 using std::wstring;
 
-enum ClusterFlags {
-  CF_small_caps = 0x200000,
-};
-
 // This is the factor by which CT_small scales the character down.
 static const PN_stdfloat small_accent_scale = 0.6f;
 
@@ -239,16 +235,11 @@ wstring TextAssembler::
 get_plain_wtext() const {
   wstring wtext;
 
-  for (const TextCharacter &tch : _text_string) {
+  TextString::const_iterator si;
+  for (si = _text_string.begin(); si != _text_string.end(); ++si) {
+    const TextCharacter &tch = (*si);
     if (tch._graphic == nullptr) {
-      if (sizeof(wchar_t) >= 4 || (tch._character & ~0xffff) == 0) {
-        wtext += (wchar_t)tch._character;
-      } else {
-        // Use a surrogate pair.
-        char32_t v = (char32_t)tch._character - 0x10000u;
-        wtext += (wchar_t)((v >> 10u) | 0xd800u);
-        wtext += (wchar_t)((v & 0x3ffu) | 0xdc00u);
-      }
+      wtext += tch._character;
     } else {
       wtext.push_back(0);
     }
@@ -278,16 +269,11 @@ get_wordwrapped_plain_wtext() const {
       wtext += '\n';
     }
 
-    for (const TextCharacter &tch : row._string) {
+    TextString::const_iterator si;
+    for (si = row._string.begin(); si != row._string.end(); ++si) {
+      const TextCharacter &tch = (*si);
       if (tch._graphic == nullptr) {
-        if (sizeof(wchar_t) >= 4 || (tch._character & ~0xffff) == 0) {
-          wtext += (wchar_t)tch._character;
-        } else {
-          // Use a surrogate pair.
-          char32_t v = (char32_t)tch._character - 0x10000u;
-          wtext += (wchar_t)((v >> 10u) | 0xd800u);
-          wtext += (wchar_t)((v & 0x3ffu) | 0xdc00u);
-        }
+        wtext += tch._character;
       } else {
         wtext.push_back(0);
       }
@@ -309,17 +295,12 @@ get_wtext() const {
   wstring wtext;
   PT(ComputedProperties) current_cprops = _initial_cprops;
 
-  for (const TextCharacter &tch : _text_string) {
+  TextString::const_iterator si;
+  for (si = _text_string.begin(); si != _text_string.end(); ++si) {
+    const TextCharacter &tch = (*si);
     current_cprops->append_delta(wtext, tch._cprops);
     if (tch._graphic == nullptr) {
-      if (sizeof(wchar_t) >= 4 || (tch._character & ~0xffff) == 0) {
-        wtext += (wchar_t)tch._character;
-      } else {
-        // Use a surrogate pair.
-        char32_t v = (char32_t)tch._character - 0x10000u;
-        wtext += (wchar_t)((v >> 10u) | 0xd800u);
-        wtext += (wchar_t)((v & 0x3ffu) | 0xdc00u);
-      }
+      wtext += tch._character;
     } else {
       wtext.push_back(text_embed_graphic_key);
       wtext += tch._graphic_wname;
@@ -360,17 +341,12 @@ get_wordwrapped_wtext() const {
       wtext += '\n';
     }
 
-    for (const TextCharacter &tch : row._string) {
+    TextString::const_iterator si;
+    for (si = row._string.begin(); si != row._string.end(); ++si) {
+      const TextCharacter &tch = (*si);
       current_cprops->append_delta(wtext, tch._cprops);
       if (tch._graphic == nullptr) {
-        if (sizeof(wchar_t) >= 4 || (tch._character & ~0xffff) == 0) {
-          wtext += (wchar_t)tch._character;
-        } else {
-          // Use a surrogate pair.
-          char32_t v = (char32_t)tch._character - 0x10000u;
-          wtext += (wchar_t)((v >> 10u) | 0xd800u);
-          wtext += (wchar_t)((v & 0x3ffu) | 0xdc00u);
-        }
+        wtext += tch._character;
       } else {
         wtext.push_back(text_embed_graphic_key);
         wtext += tch._graphic_wname;
@@ -431,14 +407,14 @@ calc_r_c(int &r, int &c, int n) const {
     c = 0;
     int i = row._row_start;
     while (i < n - 1) {
-      if (_text_string[i]._character != (char32_t)text_soft_hyphen_key &&
-          _text_string[i]._character != (char32_t)text_soft_break_key) {
+      if (_text_string[i]._character != text_soft_hyphen_key &&
+          _text_string[i]._character != text_soft_break_key) {
         ++c;
       }
       ++i;
     }
-    if (_text_string[n - 1]._character != (char32_t)text_soft_hyphen_key &&
-        _text_string[n - 1]._character != (char32_t)text_soft_break_key) {
+    if (_text_string[n - 1]._character != text_soft_hyphen_key &&
+        _text_string[n - 1]._character != text_soft_break_key) {
       ++c;
       if (_text_string[n - 1]._character == '\n') {
         is_real_char = false;
@@ -482,8 +458,8 @@ calc_index(int r, int c) const {
       // we have to scan past them to get n precisely.
       int n = row._row_start;
       while (c > 0) {
-        if (_text_string[n]._character != (char32_t)text_soft_hyphen_key &&
-            _text_string[n]._character != (char32_t)text_soft_break_key) {
+        if (_text_string[n]._character != text_soft_hyphen_key &&
+            _text_string[n]._character != text_soft_break_key) {
           --c;
         }
         ++n;
@@ -648,18 +624,6 @@ assemble_text() {
  */
 PN_stdfloat TextAssembler::
 calc_width(wchar_t character, const TextProperties &properties) {
-  return calc_width((char32_t)character, properties);
-}
-
-/**
- * Returns the width of a single character, according to its associated font.
- * This also correctly calculates the width of cheesy ligatures and accented
- * characters, which may not exist in the font as such.
- *
- * This does not take kerning into account, however.
- */
-PN_stdfloat TextAssembler::
-calc_width(char32_t character, const TextProperties &properties) {
   if (character == ' ') {
     // A space is a special case.
     TextFont *font = properties.get_font();
@@ -802,13 +766,13 @@ scan_wtext(TextAssembler::TextString &output_string,
            const wstring::const_iterator &send,
            TextAssembler::ComputedProperties *current_cprops) {
   while (si != send) {
-    if ((*si) == (wchar_t)text_push_properties_key) {
+    if ((*si) == text_push_properties_key) {
       // This indicates a nested properties structure.  Pull off the name of
       // the TextProperties structure, which is everything until the next
       // text_push_properties_key.
       wstring wname;
       ++si;
-      while (si != send && (*si) != (wchar_t)text_push_properties_key) {
+      while (si != send && (*si) != text_push_properties_key) {
         wname += (*si);
         ++si;
       }
@@ -839,20 +803,20 @@ scan_wtext(TextAssembler::TextString &output_string,
         }
       }
 
-    } else if ((*si) == (wchar_t)text_pop_properties_key) {
+    } else if ((*si) == text_pop_properties_key) {
       // This indicates the undoing of a previous push_properties_key.  We
       // simply return to the previous level.
       ++si;
       return;
 
-    } else if ((*si) == (wchar_t)text_embed_graphic_key) {
+    } else if ((*si) == text_embed_graphic_key) {
       // This indicates an embedded graphic.  Pull off the name of the
       // TextGraphic structure, which is everything until the next
       // text_embed_graphic_key.
 
       wstring graphic_wname;
       ++si;
-      while (si != send && (*si) != (wchar_t)text_embed_graphic_key) {
+      while (si != send && (*si) != text_embed_graphic_key) {
         graphic_wname += (*si);
         ++si;
       }
@@ -882,27 +846,6 @@ scan_wtext(TextAssembler::TextString &output_string,
         text_cat.warning()
           << "Unknown TextGraphic: " << graphic_name << "\n";
       }
-
-#if WCHAR_MAX < 0x10FFFF
-    } else if (*si >= 0xd800 && *si < 0xdc00) {
-      // This is a high surrogate.  Look for a subsequent low surrogate.
-      wchar_t ch = *si;
-      ++si;
-      if (si == send) {
-        text_cat.warning()
-          << "High surrogate at end of text.\n";
-        return;
-      }
-      wchar_t ch2 = *si;
-      if (ch2 >= 0xdc00 && ch2 < 0xe000) {
-        char32_t code_point = 0x10000 + ((ch - 0xd800) << 10) + (ch2 - 0xdc00);
-        output_string.push_back(TextCharacter(code_point, current_cprops));
-        ++si;
-      } else {
-        text_cat.warning()
-          << "High surrogate was not followed by low surrogate in text.\n";
-      }
-#endif
 
     } else {
       // A normal character.  Apply it.
@@ -984,7 +927,7 @@ wordwrap_text() {
       }
 
       if (isspacew(_text_string[q]._character) ||
-          _text_string[q]._character == (char32_t)text_soft_break_key) {
+          _text_string[q]._character == text_soft_break_key) {
         if (!last_was_space) {
           any_spaces = true;
           // We only care about logging whether there is a soft-hyphen
@@ -1001,7 +944,7 @@ wordwrap_text() {
 
       // A soft hyphen character is not printed, but marks a point at which we
       // might hyphenate a word if we need to.
-      if (_text_string[q]._character == (char32_t)text_soft_hyphen_key) {
+      if (_text_string[q]._character == text_soft_hyphen_key) {
         if (wordwrap_width > 0.0f) {
           // We only consider this as a possible hyphenation point if (a) it
           // is not the very first character, and (b) there is enough room for
@@ -1108,8 +1051,8 @@ wordwrap_text() {
     }
 
     for (size_t pi = p; pi < q; pi++) {
-      if (_text_string[pi]._character != (char32_t)text_soft_hyphen_key &&
-          _text_string[pi]._character != (char32_t)text_soft_break_key) {
+      if (_text_string[pi]._character != text_soft_hyphen_key &&
+          _text_string[pi]._character != text_soft_break_key) {
         _text_block.back()._string.push_back(_text_string[pi]);
       } else {
         _text_block.back()._got_soft_hyphens = true;
@@ -1479,13 +1422,15 @@ assemble_row(TextAssembler::TextRow &row,
   PN_stdfloat underscore_start = 0.0f;
   const TextProperties *underscore_properties = nullptr;
 
-#if defined(HAVE_HARFBUZZ) && defined(HAVE_FREETYPE)
+#ifdef HAVE_HARFBUZZ
   const ComputedProperties *prev_cprops = nullptr;
   hb_buffer_t *harfbuff = nullptr;
 #endif
 
-  for (const TextCharacter &tch : row._string) {
-    char32_t character = tch._character;
+  TextString::const_iterator si;
+  for (si = row._string.begin(); si != row._string.end(); ++si) {
+    const TextCharacter &tch = (*si);
+    wchar_t character = tch._character;
     const TextGraphic *graphic = tch._graphic;
     const TextProperties *properties = &(tch._cprops->_properties);
 
@@ -1525,7 +1470,7 @@ assemble_row(TextAssembler::TextRow &row,
       line_height = max(line_height, font->get_line_height() * properties->get_glyph_scale() * properties->get_text_scale());
     }
 
-#if defined(HAVE_HARFBUZZ) && defined(HAVE_FREETYPE)
+#ifdef HAVE_HARFBUZZ
     if (tch._cprops != prev_cprops || graphic != nullptr) {
       if (harfbuff != nullptr && hb_buffer_get_length(harfbuff) > 0) {
         // Shape the buffer accumulated so far.
@@ -1542,20 +1487,7 @@ assemble_row(TextAssembler::TextRow &row,
     }
 
     if (graphic == nullptr && harfbuff != nullptr) {
-      unsigned int cluster = character;
-
-      if (properties->get_small_caps()) {
-        const UnicodeLatinMap::Entry *map_entry =
-          UnicodeLatinMap::look_up((char32_t)character);
-        if (map_entry != nullptr &&
-            map_entry->_toupper_character != (char32_t)character) {
-          character = map_entry->_toupper_character;
-
-          // Set a high bit on the cluster to flag this as needing a scale.
-          cluster |= CF_small_caps;
-        }
-      }
-      hb_buffer_add(harfbuff, character, cluster);
+      hb_buffer_add(harfbuff, character, character);
       continue;
     }
 #endif
@@ -1594,7 +1526,7 @@ assemble_row(TextAssembler::TextRow &row,
       xpos = (floor(xpos / tab_width) + 1.0f) * tab_width;
       prev_char = -1;
 
-    } else if (character == (char32_t)text_soft_hyphen_key) {
+    } else if (character == text_soft_hyphen_key) {
       // And so is the 'soft-hyphen' key character.
 
     } else if (graphic != nullptr) {
@@ -1760,7 +1692,7 @@ assemble_row(TextAssembler::TextRow &row,
     }
   }
 
-#if defined(HAVE_HARFBUZZ) && defined(HAVE_FREETYPE)
+#ifdef HAVE_HARFBUZZ
   if (harfbuff != nullptr && hb_buffer_get_length(harfbuff) > 0) {
     shape_buffer(harfbuff, placed_glyphs, xpos, prev_cprops->_properties);
   }
@@ -1797,7 +1729,7 @@ void TextAssembler::
 shape_buffer(hb_buffer_t *buf, PlacedGlyphs &placed_glyphs, PN_stdfloat &xpos,
              const TextProperties &properties) {
 
-#if defined(HAVE_HARFBUZZ) && defined(HAVE_FREETYPE)
+#ifdef HAVE_HARFBUZZ
   // If we did not specify a text direction, harfbuzz will guess it based on
   // the script we are using.
   hb_direction_t direction = HB_DIRECTION_INVALID;
@@ -1827,8 +1759,7 @@ shape_buffer(hb_buffer_t *buf, PlacedGlyphs &placed_glyphs, PN_stdfloat &xpos,
   hb_glyph_position_t *glyph_pos = hb_buffer_get_glyph_positions(buf, &glyph_count);
 
   for (unsigned int i = 0; i < glyph_count; ++i) {
-    unsigned int cluster = glyph_info[i].cluster;
-    int character = cluster & 0x1fffff;
+    int character = glyph_info[i].cluster;
     int glyph_index = glyph_info[i].codepoint;
 
     CPT(TextGlyph) glyph;
@@ -1867,12 +1798,6 @@ shape_buffer(hb_buffer_t *buf, PlacedGlyphs &placed_glyphs, PN_stdfloat &xpos,
     placement._ypos = properties.get_glyph_shift() + y_offset;
     placement._slant = properties.get_slant();
     placement._properties = &properties;
-
-    if (cluster & CF_small_caps) {
-      advance *= properties.get_small_caps_scale();
-      placement._scale *= properties.get_small_caps_scale();
-    }
-
     placed_glyphs.push_back(placement);
 
     xpos += advance;

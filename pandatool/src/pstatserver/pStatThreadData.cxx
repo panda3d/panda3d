@@ -235,7 +235,7 @@ get_frame_number_after(double time, int start_at) const {
 
   while (end < time) {
     ++i;
-    if ((size_t)i >= _frames.size()) {
+    if (i >= _frames.size()) {
       break;
     }
     if (_frames[i] != nullptr) {

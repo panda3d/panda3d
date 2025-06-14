@@ -1,7 +1,3 @@
-if(NOT BUILD_TOOLS)
-  return()
-endif()
-
 add_executable(dxf-points dxfPoints.cxx dxfPoints.h)
 target_link_libraries(dxf-points p3progbase p3dxf)
 install(TARGETS dxf-points EXPORT Tools COMPONENT Tools DESTINATION ${CMAKE_INSTALL_BINDIR})

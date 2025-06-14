@@ -89,16 +89,12 @@ get_num_off_bits() const {
 
 /**
  * Returns the index of the lowest 1 bit in the array.  Returns -1 if there
- * are no 1 bits and 0 if there are an infinite number of 1 bits.
+ * are no 1 bits or if there are an infinite number of 1 bits.
  */
 int SparseArray::
 get_lowest_on_bit() const {
   if (_inverse) {
-    if (_subranges.empty() || _subranges[0]._begin > 0) {
-      return 0;
-    } else {
-      return _subranges[0]._end;
-    }
+    return -1;
   }
 
   if (_subranges.empty()) {
@@ -115,11 +111,7 @@ get_lowest_on_bit() const {
 int SparseArray::
 get_lowest_off_bit() const {
   if (!_inverse) {
-    if (_subranges.empty() || _subranges[0]._begin > 0) {
-      return 0;
-    } else {
-      return _subranges[0]._end;
-    }
+    return -1;
   }
 
   if (_subranges.empty()) {

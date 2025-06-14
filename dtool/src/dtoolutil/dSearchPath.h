@@ -11,8 +11,8 @@
  * @date 2000-07-01
  */
 
-#ifndef DSEARCHPATH_H
-#define DSEARCHPATH_H
+#ifndef PANDASEARCHPATH_H
+#define PANDASEARCHPATH_H
 
 #include "dtoolbase.h"
 

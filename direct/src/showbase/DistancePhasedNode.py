@@ -87,8 +87,7 @@ class DistancePhasedNode(PhasedObject, DirectObject, NodePath):
         """
         Reuse abandoned ids.
         """
-        if DistancePhasedNode is not None:
-            DistancePhasedNode.__InstanceDeque.append(id)
+        DistancePhasedNode.__InstanceDeque.append(id)
 
     def __init__(self, name, phaseParamMap = {},
                  autoCleanup = True,
