@@ -248,8 +248,8 @@ typedef unsigned short          drflac_uint16;
 typedef   signed int            drflac_int32;
 typedef unsigned int            drflac_uint32;
 #if defined(_MSC_VER) && !defined(__clang__)
-    typedef   signed __int64    drflac_int64;
-    typedef unsigned __int64    drflac_uint64;
+    typedef   signed int_64_t    drflac_int64;
+    typedef unsigned int_64_t    drflac_uint64;
 #else
     #if defined(__clang__) || (defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6)))
         #pragma GCC diagnostic push
