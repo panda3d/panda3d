@@ -28,6 +28,7 @@ class DirectCheckBox(DirectButton):
             # Sounds to be used for button events
             ('rolloverSound', DGG.getDefaultRolloverSound(), self.setRolloverSound),
             ('clickSound',    DGG.getDefaultClickSound(),    self.setClickSound),
+            ('releaseSound',  DGG.getDefaultReleaseSound(),  self.setReleaseSound),
             # Can only be specified at time of widget contruction
             # Do the text/graphics appear to move when the button is clicked
             ('pressEffect',     1,         DGG.INITOPT),
