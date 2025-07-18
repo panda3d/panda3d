@@ -13,6 +13,8 @@ to import Panda's thread reimplementation instead of the system thread
 module, and so it is therefore layered on top of Panda's thread
 implementation. """
 
+from __future__ import annotations
+
 import sys as _sys
 import atexit as _atexit
 
@@ -21,8 +23,10 @@ from direct.stdpy.thread import stack_size, _newname, _local as local
 from panda3d import core
 _sleep = core.Thread.sleep
 
+from collections.abc import Callable, Iterable, Mapping
 from time import time as _time
 from traceback import format_exc as _format_exc
+from typing import Any
 
 __all__ = ['get_ident', 'active_count', 'Condition', 'current_thread',
            'enumerate', 'main_thread', 'TIMEOUT_MAX',
@@ -51,7 +55,7 @@ if __debug__:
 
     class _Verbose(object):
 
-        def __init__(self, verbose=None):
+        def __init__(self, verbose: bool | None = None) -> None:
             if verbose is None:
                 verbose = _VERBOSE
             self.__verbose = verbose
@@ -66,7 +70,7 @@ if __debug__:
 else:
     # Disable this when using "python -O"
     class _Verbose(object):  # type: ignore[no-redef]
-        def __init__(self, verbose=None):
+        def __init__(self, verbose: bool | None = None) -> None:
             pass
         def _note(self, *args):
             pass
@@ -88,15 +92,15 @@ def settrace(func):
 
 Lock = _allocate_lock
 
-def RLock(*args, **kwargs):
-    return _RLock(*args, **kwargs)
+def RLock(verbose: bool | None = None) -> _RLock:
+    return _RLock(verbose)
 
 class _RLock(_Verbose):
 
-    def __init__(self, verbose=None):
+    def __init__(self, verbose: bool | None = None) -> None:
         _Verbose.__init__(self, verbose)
         self.__block = _allocate_lock()
-        self.__owner = None
+        self.__owner: Thread | None = None
         self.__count = 0
 
     def __repr__(self):
@@ -381,7 +385,7 @@ class _Event(_Verbose):
 
 # Active thread administration
 _active_limbo_lock = _allocate_lock()
-_active = {}    # maps thread id to Thread object
+_active: dict[int, Thread] = {}    # maps thread id to Thread object
 _limbo = {}
 
 
@@ -400,8 +404,16 @@ class Thread(_Verbose):
     # Protected by _active_limbo_lock.
     __registered_atexit = False
 
-    def __init__(self, group=None, target=None, name=None,
-                 args=(), kwargs=None, verbose=None, daemon=None):
+    def __init__(
+        self,
+        group: None = None,
+        target: Callable[..., object] | None = None,
+        name: object = None,
+        args: Iterable[Any] = (),
+        kwargs: Mapping[str, Any] | None = None,
+        verbose: bool | None = None,
+        daemon: bool | None = None,
+    ) -> None:
         assert group is None, "group argument must be None for now"
         _Verbose.__init__(self, verbose)
         if kwargs is None:
@@ -422,7 +434,7 @@ class Thread(_Verbose):
         # sys.exc_info since it can be changed between instances
         self.__stderr = _sys.stderr
 
-    def _set_daemon(self):
+    def _set_daemon(self) -> bool:
         # Overridden in _MainThread and _DummyThread
         return currentThread().isDaemon()
 
@@ -606,7 +618,7 @@ class Thread(_Verbose):
 
     isAlive = is_alive
 
-    def isDaemon(self):
+    def isDaemon(self) -> bool:
         assert self.__initialized, "Thread.__init__() not called"
         return self.__daemonic
 
@@ -688,13 +700,13 @@ class _MainThread(Thread):
 
 class _DummyThread(Thread):
 
-    def __init__(self):
+    def __init__(self) -> None:
         Thread.__init__(self, name=_newname("Dummy-%d"), daemon=True)
 
         # Thread.__block consumes an OS-level locking primitive, which
         # can never be used by a _DummyThread.  Since a _DummyThread
         # instance is immortal, that's bad, so release this resource.
-        del self._Thread__block
+        del self._Thread__block  # type: ignore[attr-defined]
 
         self._Thread__started = True
         _active_limbo_lock.acquire()
@@ -710,7 +722,7 @@ class _DummyThread(Thread):
 
 # Global API functions
 
-def current_thread():
+def current_thread() -> Thread:
     try:
         return _active[get_ident()]
     except KeyError:

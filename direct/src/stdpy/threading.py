@@ -206,7 +206,7 @@ class Lock(core.Mutex):
     The wrapper is designed to emulate Python's own threading.Lock
     object. """
 
-    def __init__(self, name = "PythonLock"):
+    def __init__(self, name: str = "PythonLock") -> None:
         core.Mutex.__init__(self, name)
 
 

@@ -41,12 +41,12 @@ class LockType:
     allows a different thread to release the lock than the one that
     acquired it. """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.__lock = core.Mutex('PythonLock')
         self.__cvar = core.ConditionVar(self.__lock)
         self.__locked = False
 
-    def acquire(self, waitflag = 1, timeout = -1):
+    def acquire(self, waitflag: bool = True, timeout: float = -1) -> bool:
         self.__lock.acquire()
         try:
             if self.__locked and not waitflag:
@@ -65,7 +65,7 @@ class LockType:
         finally:
             self.__lock.release()
 
-    def release(self):
+    def release(self) -> None:
         self.__lock.acquire()
         try:
             if not self.__locked:
@@ -90,7 +90,7 @@ class LockType:
 _counter = 0
 
 
-def _newname(template="Thread-%d"):
+def _newname(template: str = "Thread-%d") -> str:
     global _counter
     _counter = _counter + 1
     return template % _counter
@@ -254,7 +254,7 @@ def allocate_lock() -> LockType:
     return LockType()
 
 
-def get_ident():
+def get_ident() -> int:
     return core.Thread.getCurrentThread().this
 
 
