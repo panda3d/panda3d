@@ -60,7 +60,7 @@ if __debug__:
                 verbose = _VERBOSE
             self.__verbose = verbose
 
-        def _note(self, format, *args):
+        def _note(self, format: str, *args: Any) -> None:
             if self.__verbose:
                 format = format % args
                 format = "%s: %s\n" % (
@@ -72,7 +72,7 @@ else:
     class _Verbose(object):  # type: ignore[no-redef]
         def __init__(self, verbose: bool | None = None) -> None:
             pass
-        def _note(self, *args):
+        def _note(self, *args) -> None:
             pass
 
 # Support for profile and trace hooks
@@ -109,13 +109,13 @@ class _RLock(_Verbose):
                 self.__owner and self.__owner.getName(),
                 self.__count)
 
-    def acquire(self, blocking=1):
+    def acquire(self, blocking: bool = True) -> bool:
         me = currentThread()
         if self.__owner is me:
             self.__count = self.__count + 1
             if __debug__:
                 self._note("%s.acquire(%s): recursive success", self, blocking)
-            return 1
+            return True
         rc = self.__block.acquire(blocking)
         if rc:
             self.__owner = me
@@ -129,7 +129,7 @@ class _RLock(_Verbose):
 
     __enter__ = acquire
 
-    def release(self):
+    def release(self) -> None:
         me = currentThread()
         assert self.__owner is me, "release() of un-acquire()d lock"
         self.__count = count = self.__count - 1
@@ -167,12 +167,12 @@ class _RLock(_Verbose):
         return self.__owner is currentThread()
 
 
-def Condition(*args, **kwargs):
-    return _Condition(*args, **kwargs)
+def Condition(lock: _thread.LockType | _RLock | None = None, verbose: bool | None = None) -> _Condition:
+    return _Condition(lock, verbose)
 
 class _Condition(_Verbose):
 
-    def __init__(self, lock=None, verbose=None):
+    def __init__(self, lock: _thread.LockType | _RLock | None = None, verbose: bool | None = None) -> None:
         _Verbose.__init__(self, verbose)
         if lock is None:
             lock = RLock()
@@ -184,18 +184,18 @@ class _Condition(_Verbose):
         # these override the default implementations (which just call
         # release() and acquire() on the lock).  Ditto for _is_owned().
         try:
-            self._release_save = lock._release_save
+            self._release_save = lock._release_save  # type: ignore[method-assign, union-attr]
         except AttributeError:
             pass
         try:
-            self._acquire_restore = lock._acquire_restore
+            self._acquire_restore = lock._acquire_restore  # type: ignore[method-assign, union-attr]
         except AttributeError:
             pass
         try:
-            self._is_owned = lock._is_owned
+            self._is_owned = lock._is_owned  # type: ignore[method-assign, union-attr]
         except AttributeError:
             pass
-        self.__waiters = []
+        self.__waiters: list[_thread.LockType] = []
 
     def __enter__(self):
         return self.__lock.__enter__()
@@ -206,22 +206,22 @@ class _Condition(_Verbose):
     def __repr__(self):
         return "<Condition(%s, %d)>" % (self.__lock, len(self.__waiters))
 
-    def _release_save(self): # pylint: disable=method-hidden
+    def _release_save(self) -> Any: # pylint: disable=method-hidden
         self.__lock.release()           # No state to save
 
-    def _acquire_restore(self, x): # pylint: disable=method-hidden
+    def _acquire_restore(self, x) -> None: # pylint: disable=method-hidden
         self.__lock.acquire()           # Ignore saved state
 
-    def _is_owned(self): # pylint: disable=method-hidden
+    def _is_owned(self) -> bool: # pylint: disable=method-hidden
         # Return True if lock is owned by currentThread.
         # This method is called only if __lock doesn't have _is_owned().
-        if self.__lock.acquire(0):
+        if self.__lock.acquire(False):
             self.__lock.release()
             return False
         else:
             return True
 
-    def wait(self, timeout=None):
+    def wait(self, timeout: float | None = None) -> None:
         assert self._is_owned(), "wait() of un-acquire()d lock"
         waiter = _allocate_lock()
         waiter.acquire()
@@ -241,7 +241,7 @@ class _Condition(_Verbose):
                 endtime = _time() + timeout
                 delay = 0.0005 # 500 us -> initial delay of 1 ms
                 while True:
-                    gotit = waiter.acquire(0)
+                    gotit = waiter.acquire(False)
                     if gotit:
                         break
                     remaining = endtime - _time()
@@ -262,7 +262,7 @@ class _Condition(_Verbose):
         finally:
             self._acquire_restore(saved_state)
 
-    def notify(self, n=1):
+    def notify(self, n: int = 1) -> None:
         assert self._is_owned(), "notify() of un-acquire()d lock"
         __waiters = self.__waiters
         waiters = __waiters[:n]
@@ -279,7 +279,7 @@ class _Condition(_Verbose):
             except ValueError:
                 pass
 
-    def notifyAll(self):
+    def notifyAll(self) -> None:
         self.notify(len(self.__waiters))
 
 
@@ -449,7 +449,7 @@ class Thread(_Verbose):
             status = status + " daemon"
         return "<%s(%s, %s)>" % (self.__class__.__name__, self.__name, status)
 
-    def start(self):
+    def start(self) -> None:
         assert self.__initialized, "Thread.__init__() not called"
         assert not self.__started, "thread already started"
         if __debug__:
@@ -469,11 +469,11 @@ class Thread(_Verbose):
         self.__started = True
         _sleep(0.000001)    # 1 usec, to let the thread run (Solaris hack)
 
-    def run(self):
+    def run(self) -> None:
         if self.__target:
             self.__target(*self.__args, **self.__kwargs)
 
-    def __bootstrap(self):
+    def __bootstrap(self) -> None:
         try:
             self.__started = True
             _active_limbo_lock.acquire()
@@ -509,7 +509,7 @@ class Thread(_Verbose):
                     # Do the best job possible w/o a huge amt. of code to
                     # approximate a traceback (code ideas from
                     # Lib/traceback.py)
-                    exc_type, exc_value, exc_tb = self.__exc_info()
+                    exc_type, exc_value, exc_tb = self.__exc_info()  # type: ignore[misc]
                     try:
                         self.__stderr.write("Exception in thread " + self.getName() +
                             " (most likely raised during interpreter shutdown):\n")
@@ -535,13 +535,13 @@ class Thread(_Verbose):
             except:
                 pass
 
-    def __stop(self):
+    def __stop(self) -> None:
         self.__block.acquire()
         self.__stopped = True
         self.__block.notifyAll()
         self.__block.release()
 
-    def __delete(self):
+    def __delete(self) -> None:
         "Remove current thread from the dict of currently running threads."
 
         # Notes about running with dummy_thread:
@@ -575,7 +575,7 @@ class Thread(_Verbose):
         finally:
             _active_limbo_lock.release()
 
-    def join(self, timeout=None):
+    def join(self, timeout: float | None = None) -> None:
         assert self.__initialized, "Thread.__init__() not called"
         assert self.__started, "cannot join thread before it is started"
         assert self is not currentThread(), "cannot join current thread"
@@ -604,11 +604,11 @@ class Thread(_Verbose):
         finally:
             self.__block.release()
 
-    def getName(self):
+    def getName(self) -> str:
         assert self.__initialized, "Thread.__init__() not called"
         return self.__name
 
-    def setName(self, name):
+    def setName(self, name: object) -> None:
         assert self.__initialized, "Thread.__init__() not called"
         self.__name = str(name)
 
