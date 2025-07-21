@@ -409,7 +409,7 @@ jobs:
     - name: Build Python 3.13
       shell: bash
       run: |
-        python makepanda/makepanda.py --git-commit=${{github.sha}} --outputdir=built --everything --no-eigen --python-incdir="$pythonLocation/include" --python-libdir="$pythonLocation/lib" --verbose --threads=4 --windows-sdk=10 --msvc-version=14.2
+        python makepanda/makepanda.py --git-commit=${{github.sha}} --outputdir=built --everything --no-eigen --python-incdir="$pythonLocation/include" --python-libdir="$pythonLocation/lib" --verbose --threads=4 --windows-sdk=10 --msvc-version=14.3
     - name: Test Python 3.13
       shell: bash
       run: |
@@ -423,7 +423,7 @@ jobs:
     - name: Build Python 3.12 (double)
       shell: bash
       run: |
-        python makepanda/makepanda.py --override STDFLOAT_DOUBLE=1 --git-commit=${{github.sha}} --outputdir=built_dbl --everything --no-eigen --python-incdir="$pythonLocation/include" --python-libdir="$pythonLocation/lib" --verbose --threads=4 --windows-sdk=10 --msvc-version=14.2
+        python makepanda/makepanda.py --override STDFLOAT_DOUBLE=1 --git-commit=${{github.sha}} --outputdir=built_dbl --everything --no-eigen --python-incdir="$pythonLocation/include" --python-libdir="$pythonLocation/lib" --verbose --threads=4 --windows-sdk=10 --msvc-version=14.3
     - name: Test Python 3.12 (double)
       shell: bash
       run: |
@@ -441,7 +441,7 @@ jobs:
     - name: Build Python 3.11
       shell: bash
       run: |
-        python makepanda/makepanda.py --git-commit=${{github.sha}} --outputdir=built --everything --no-eigen --python-incdir="$pythonLocation/include" --python-libdir="$pythonLocation/lib" --verbose --threads=4 --windows-sdk=10 --msvc-version=14.2
+        python makepanda/makepanda.py --git-commit=${{github.sha}} --outputdir=built --everything --no-eigen --python-incdir="$pythonLocation/include" --python-libdir="$pythonLocation/lib" --verbose --threads=4 --windows-sdk=10 --msvc-version=14.3
     - name: Test Python 3.11
       shell: bash
       run: |
@@ -455,7 +455,7 @@ jobs:
     - name: Build Python 3.10
       shell: bash
       run: |
-        python makepanda/makepanda.py --git-commit=${{github.sha}} --outputdir=built --everything --no-eigen --python-incdir="$pythonLocation/include" --python-libdir="$pythonLocation/lib" --verbose --threads=4 --windows-sdk=10 --msvc-version=14.2
+        python makepanda/makepanda.py --git-commit=${{github.sha}} --outputdir=built --everything --no-eigen --python-incdir="$pythonLocation/include" --python-libdir="$pythonLocation/lib" --verbose --threads=4 --windows-sdk=10 --msvc-version=14.3
     - name: Test Python 3.10
       shell: bash
       run: |
@@ -469,7 +469,7 @@ jobs:
     - name: Build Python 3.9
       shell: bash
       run: |
-        python makepanda/makepanda.py --git-commit=${{github.sha}} --outputdir=built --everything --no-eigen --python-incdir="$pythonLocation/include" --python-libdir="$pythonLocation/lib" --verbose --threads=4 --windows-sdk=10 --msvc-version=14.2
+        python makepanda/makepanda.py --git-commit=${{github.sha}} --outputdir=built --everything --no-eigen --python-incdir="$pythonLocation/include" --python-libdir="$pythonLocation/lib" --verbose --threads=4 --windows-sdk=10 --msvc-version=14.3
     - name: Test Python 3.9
       shell: bash
       run: |
@@ -483,7 +483,7 @@ jobs:
     - name: Build Python 3.8
       shell: bash
       run: |
-        python makepanda/makepanda.py --git-commit=${{github.sha}} --outputdir=built --everything --no-eigen --python-incdir="$pythonLocation/include" --python-libdir="$pythonLocation/lib" --verbose --threads=4 --windows-sdk=10 --msvc-version=14.2
+        python makepanda/makepanda.py --git-commit=${{github.sha}} --outputdir=built --everything --no-eigen --python-incdir="$pythonLocation/include" --python-libdir="$pythonLocation/lib" --verbose --threads=4 --windows-sdk=10 --msvc-version=14.3
     - name: Test Python 3.8
       shell: bash
       run: |
