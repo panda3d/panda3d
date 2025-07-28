@@ -167,8 +167,27 @@ static PyObject *gen_next(PyObject *self) {
   } else {
     PyObject *result = get_done_result(future);
     if (result != nullptr) {
-      Py_INCREF(PyExc_StopIteration);
-      PyErr_Restore(PyExc_StopIteration, result, nullptr);
+      // See python/cpython#101578 - PyErr_SetObject has a special case where
+      // it interprets a tuple specially, so we bypass that by creating the
+      // exception directly.
+#if PY_VERSION_HEX >= 0x030C0000 // 3.12
+      PyObject *exc = PyObject_CallOneArg(PyExc_StopIteration, result);
+      if (LIKELY(exc != nullptr)) {
+        // This function steals a reference to exc.
+        PyErr_SetRaisedException(exc);
+      }
+#else
+      if (PyTuple_Check(result)) {
+        PyObject *exc = PyObject_CallOneArg(PyExc_StopIteration, result);
+        if (LIKELY(exc != nullptr)) {
+          PyErr_SetObject(PyExc_StopIteration, exc);
+          Py_DECREF(exc);
+        }
+      } else {
+        Py_INCREF(PyExc_StopIteration);
+        PyErr_Restore(PyExc_StopIteration, result, nullptr);
+      }
+#endif
     }
     return nullptr;
   }

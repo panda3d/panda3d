@@ -10,6 +10,21 @@ else:
     CancelledError = Exception
 
 
+def check_result(fut, expected):
+    """Asserts the result of the future is the expected value."""
+
+    if fut.result() != expected:
+        return False
+
+    # Make sure that await also returns the values properly
+    with pytest.raises(StopIteration) as e:
+        next(fut.__await__())
+    if e.value.value != expected:
+        return False
+
+    return True
+
+
 def test_future_cancelled():
     fut = core.AsyncFuture()
 
@@ -205,15 +220,20 @@ def test_future_result():
     ep = core.EventParameter(0.5)
     fut = core.AsyncFuture()
     fut.set_result(ep)
-    assert fut.result() == 0.5
-    assert fut.result() == 0.5
+    assert check_result(fut, 0.5)
+    assert check_result(fut, 0.5)
 
     # Store TypedObject
     dg = core.Datagram(b"test")
     fut = core.AsyncFuture()
     fut.set_result(dg)
-    assert fut.result() == dg
-    assert fut.result() == dg
+    assert check_result(fut, dg)
+    assert check_result(fut, dg)
+
+    # Store tuple
+    fut = core.AsyncFuture()
+    fut.set_result((1, 2))
+    assert check_result(fut, (1, 2))
 
     # Store arbitrary Python object
     obj = object()
@@ -250,7 +270,7 @@ def test_future_gather():
     assert gather.done()
 
     assert not gather.cancelled()
-    assert tuple(gather.result()) == (1, 2)
+    assert check_result(gather, (1, 2))
 
 
 def test_future_gather_cancel_inner():
