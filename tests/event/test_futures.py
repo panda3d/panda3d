@@ -133,13 +133,29 @@ def test_future_wait_cancel():
         fut.result()
 
 
-def test_task_cancel():
+def test_task_remove():
     task_mgr = core.AsyncTaskManager.get_global_ptr()
     task = core.PythonTask(lambda task: task.done)
     task_mgr.add(task)
 
     assert not task.done()
     task_mgr.remove(task)
+    assert not task.is_alive()
+    assert task.done()
+    assert task.cancelled()
+
+    with pytest.raises(CancelledError):
+        task.result()
+
+
+def test_task_cancel():
+    task_mgr = core.AsyncTaskManager.get_global_ptr()
+    task = core.PythonTask(lambda task: task.done)
+    task_mgr.add(task)
+
+    assert not task.done()
+    task.cancel()
+    assert not task.is_alive()
     assert task.done()
     assert task.cancelled()
 
