@@ -118,4 +118,5 @@ jobs:
 
     - name: Make installer
       run: |
+        rm -f built/bin/p3dcparse
         python makepanda/makepackage.py --verbose --lzma
