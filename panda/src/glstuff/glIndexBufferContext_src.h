@@ -27,6 +27,10 @@ public:
 
   virtual void evict_lru();
 
+  // Override to expose OpenGL buffer ID
+  virtual uint64_t get_native_id() const override;
+
+
   CLP(GraphicsStateGuardian) *_glgsg;
 
   // This is the GL "name" of the data object.
