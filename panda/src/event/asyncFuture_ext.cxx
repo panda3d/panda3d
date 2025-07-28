@@ -63,13 +63,13 @@ static PyObject *get_done_result(const AsyncFuture *future) {
       // If it's an AsyncGatheringFuture, get the result for each future.
       const AsyncGatheringFuture *gather = (const AsyncGatheringFuture *)future;
       Py_ssize_t num_futures = (Py_ssize_t)gather->get_num_futures();
-      PyObject *results = PyTuple_New(num_futures);
+      PyObject *results = PyList_New(num_futures);
 
       for (Py_ssize_t i = 0; i < num_futures; ++i) {
         PyObject *result = get_done_result(gather->get_future((size_t)i));
         if (result != nullptr) {
           // This steals a reference.
-          PyTuple_SET_ITEM(results, i, result);
+          PyList_SET_ITEM(results, i, result);
         } else {
           Py_DECREF(results);
           return nullptr;

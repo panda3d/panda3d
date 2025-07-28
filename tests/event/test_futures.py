@@ -527,7 +527,7 @@ def test_future_gather():
     assert gather.done()
 
     assert not gather.cancelled()
-    assert check_result(gather, (1, 2))
+    assert check_result(gather, [1, 2])
 
 
 def test_future_gather_cancel_inner():
