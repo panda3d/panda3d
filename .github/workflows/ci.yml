@@ -372,7 +372,7 @@ jobs:
     if: "!contains(github.event.head_commit.message, '[skip ci]') && !contains(github.event.head_commit.message, '[ci skip]')"
     strategy:
       matrix:
-        os: [ubuntu-22.04, windows-2019, macOS-13]
+        os: [ubuntu-22.04, windows-2022, macOS-13]
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v4
