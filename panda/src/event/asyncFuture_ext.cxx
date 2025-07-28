@@ -172,6 +172,7 @@ static PyObject *gen_next(PyObject *self) {
       // exception directly.
 #if PY_VERSION_HEX >= 0x030C0000 // 3.12
       PyObject *exc = PyObject_CallOneArg(PyExc_StopIteration, result);
+      Py_DECREF(result);
       if (LIKELY(exc != nullptr)) {
         // This function steals a reference to exc.
         PyErr_SetRaisedException(exc);
@@ -179,6 +180,7 @@ static PyObject *gen_next(PyObject *self) {
 #else
       if (PyTuple_Check(result)) {
         PyObject *exc = PyObject_CallOneArg(PyExc_StopIteration, result);
+        Py_DECREF(result);
         if (LIKELY(exc != nullptr)) {
           PyErr_SetObject(PyExc_StopIteration, exc);
           Py_DECREF(exc);
