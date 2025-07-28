@@ -144,7 +144,7 @@ class VFSLoader(Loader):
             raise OSError
 
 
-class VFSSourceLoader(VFSLoader, SourceLoader):
+class VFSSourceLoader(VFSLoader, SourceLoader): # type: ignore[misc]
     def get_source(self, fullname):
         if fullname is not None and self.name != fullname:
             raise ImportError
