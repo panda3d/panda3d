@@ -116,7 +116,10 @@ jobs:
         python -m pip install pytest
         PYTHONPATH=built LD_LIBRARY_PATH=built/lib:$pythonLocation/lib DYLD_LIBRARY_PATH=built/lib python -m pytest
 
-    - name: Make installer
+    - name: Remove p3dcparse
+      if: matrix.os == 'ubuntu-22.04'
       run: |
         rm -f built/bin/p3dcparse
+    - name: Make installer
+      run: |
         python makepanda/makepackage.py --verbose --lzma
