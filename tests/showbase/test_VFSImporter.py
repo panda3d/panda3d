@@ -1,4 +1,4 @@
-from panda3d.core import VirtualFileSystem, VirtualFileMountRamdisk
+from panda3d.core import VirtualFileSystem, VirtualFileMountRamdisk, Filename
 import sys
 
 
@@ -25,28 +25,32 @@ def test_VFSImporter():
         import testmod
         assert testmod.var == 1
         assert testmod.__spec__.name == 'testmod'
-        assert testmod.__spec__.origin == '/ram/testmod.py'
-        assert testmod.__file__ == '/ram/testmod.py'
+        filename = Filename('/ram/testmod.py').to_os_specific()
+        assert testmod.__spec__.origin == filename
+        assert testmod.__file__ == filename
 
         import testpkg
         assert testpkg.var == 2
         assert testpkg.__package__ == 'testpkg'
-        assert testpkg.__path__ == ['/ram/testpkg']
+        assert testpkg.__path__ == [Filename('/ram/testpkg').to_os_specific()]
         assert testpkg.__spec__.name == 'testpkg'
-        assert testpkg.__spec__.origin == '/ram/testpkg/__init__.py'
-        assert testpkg.__file__ == '/ram/testpkg/__init__.py'
+        filename = Filename('/ram/testpkg/__init__.py').to_os_specific()
+        assert testpkg.__spec__.origin == filename
+        assert testpkg.__file__ == filename
 
         from testpkg import test
         assert test.var == 3
         assert test.__spec__.name == 'testpkg.test'
-        assert test.__spec__.origin == '/ram/testpkg/test.py'
-        assert test.__file__ == '/ram/testpkg/test.py'
+        filename = Filename('/ram/testpkg/test.py').to_os_specific()
+        assert test.__spec__.origin == filename
+        assert test.__file__ == filename
 
         from testnspkg import test
         assert test.var == 4
         assert test.__spec__.name == 'testnspkg.test'
-        assert test.__spec__.origin == '/ram/testnspkg/test.py'
-        assert test.__file__ == '/ram/testnspkg/test.py'
+        filename = Filename('/ram/testnspkg/test.py').to_os_specific()
+        assert test.__spec__.origin == filename
+        assert test.__file__ == filename
 
     finally:
         vfs.unmount(mount)
