@@ -187,7 +187,7 @@ is_copy_constructible() const {
  */
 bool CPPReferenceType::
 is_destructible() const {
-  return false;
+  return true;
 }
 
 /**
