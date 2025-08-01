@@ -115,7 +115,7 @@ class VFSLoader(Loader):
 
     def exec_module(self, module: ModuleType) -> None:
         """Execute the module."""
-        code = self.get_code(module.__name__)
+        code = self.get_code(module.__name__)  # type: ignore[attr-defined]
         exec(code, module.__dict__)
 
     def get_filename(self, fullname: str) -> str:
@@ -236,7 +236,7 @@ class VFSExtensionLoader(VFSLoader):
         return None
 
 
-class VFSNamespaceLoader:
+class VFSNamespaceLoader(Loader):
     def create_module(self, spec: ModuleSpec) -> ModuleType | None:
         """Use default semantics for module creation."""
 
