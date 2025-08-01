@@ -38,13 +38,10 @@ class VFSFinder:
     def __init__(self, path):
         self.path = path
 
-    def find_spec(self, fullname, path, target=None):
-        if path is None:
-            path = self.path
-
+    def find_spec(self, fullname, target=None):
         #print(f"find_spec({fullname}), dir_path = {dir_path}", file=sys.stderr)
         basename = fullname.split('.')[-1]
-        filename = Filename(Filename.from_os_specific(path), basename)
+        filename = Filename(Filename.from_os_specific(self.path), basename)
 
         # First, look for Python files.
         vfile = vfs.get_file(filename + '.py', True)
