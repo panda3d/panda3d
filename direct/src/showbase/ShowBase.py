@@ -177,6 +177,8 @@ class ShowBase(DirectObject.DirectObject):
     aspect2d: NodePath
     pixel2d: NodePath
 
+    a2dTopLeft: NodePath
+
     cluster: Any | None
 
     def __init__(self, fStartDirect: bool = True, windowType: str | None = None) -> None:
@@ -438,7 +440,7 @@ class ShowBase(DirectObject.DirectObject):
         self.useTrackball()
 
         #: `.Loader.Loader` object.
-        self.loader = ShowBaseGlobal.loader
+        self.loader: Loader.Loader = ShowBaseGlobal.loader
         self.loader._init_base(self)
         self.graphicsEngine.setDefaultLoader(self.loader.loader)
 
