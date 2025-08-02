@@ -654,7 +654,7 @@ class ShowBase(DirectObject.DirectObject):
     def getExitErrorCode(self):
         return 0
 
-    def printEnvDebugInfo(self):
+    def printEnvDebugInfo(self) -> None:
         """Print some information about the environment that we are running
         in.  Stuff like the model paths and other paths.  Feel free to
         add stuff to this.
