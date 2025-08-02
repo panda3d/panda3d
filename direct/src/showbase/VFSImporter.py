@@ -5,9 +5,11 @@ Calling the :func:`register()` function to register the import hooks should be
 sufficient to enable this functionality.
 """
 
+from __future__ import annotations
+
 __all__ = ['register']
 
-from panda3d.core import Filename, VirtualFileSystem, VirtualFileMountSystem
+from panda3d.core import Filename, VirtualFile, VirtualFileSystem, VirtualFileMountSystem
 from panda3d.core import OFileStream, copy_stream
 import sys
 import marshal
@@ -16,14 +18,17 @@ import atexit
 from importlib.abc import Loader, SourceLoader
 from importlib.util import MAGIC_NUMBER, decode_source
 from importlib.machinery import ModuleSpec, EXTENSION_SUFFIXES, BYTECODE_SUFFIXES
+from types import ModuleType
+from typing import Any
 
 vfs = VirtualFileSystem.get_global_ptr()
 
 
-def _make_spec(fullname, loader, *, is_package):
+def _make_spec(fullname: str, loader: VFSLoader, *, is_package: bool) -> ModuleSpec:
     filename = loader._vfile.get_filename()
     spec = ModuleSpec(fullname, loader, origin=filename.to_os_specific(), is_package=is_package)
     if is_package:
+        assert spec.submodule_search_locations is not None
         spec.submodule_search_locations.append(Filename(filename.get_dirname()).to_os_specific())
     spec.has_location = True
     return spec
@@ -35,16 +40,15 @@ class VFSFinder:
     which allows loading Python source files from mounted .mf files
     (among other places). """
 
-    def __init__(self, path):
+    def __init__(self, path: str) -> None:
         self.path = path
 
-    def find_spec(self, fullname, path, target=None):
-        if path is None:
-            path = self.path
-
+    def find_spec(self, fullname: str, target: ModuleType | None = None) -> ModuleSpec | None:
         #print(f"find_spec({fullname}), dir_path = {dir_path}", file=sys.stderr)
         basename = fullname.split('.')[-1]
-        filename = Filename(Filename.from_os_specific(path), basename)
+        filename = Filename(Filename.from_os_specific(self.path), basename)
+
+        loader: VFSLoader
 
         # First, look for Python files.
         vfile = vfs.get_file(filename + '.py', True)
@@ -84,6 +88,7 @@ class VFSFinder:
         # Consider a namespace package.
         if vfs.is_directory(filename):
             spec = ModuleSpec(fullname, VFSNamespaceLoader(), is_package=True)
+            assert spec.submodule_search_locations is not None
             spec.submodule_search_locations.append(filename.to_os_specific())
             return spec
 
@@ -92,7 +97,7 @@ class VFSFinder:
 
 
 class VFSLoader(Loader):
-    def __init__(self, fullname, vfile):
+    def __init__(self, fullname: str, vfile: VirtualFile) -> None:
         self.name = fullname
         self._vfile = vfile
 
@@ -105,22 +110,22 @@ class VFSLoader(Loader):
         tail_name = fullname.rpartition('.')[2]
         return filename_base == '__init__' and tail_name != '__init__'
 
-    def create_module(self, spec):
+    def create_module(self, spec: ModuleSpec) -> ModuleType | None:
         """Use default semantics for module creation."""
 
-    def exec_module(self, module):
+    def exec_module(self, module: ModuleType) -> None:
         """Execute the module."""
-        code = self.get_code(module.__name__)
+        code = self.get_code(module.__name__)  # type: ignore[attr-defined]
         exec(code, module.__dict__)
 
-    def get_filename(self, fullname):
+    def get_filename(self, fullname: str) -> str:
         if fullname is not None and self.name != fullname:
             raise ImportError
 
         return self._vfile.get_filename().to_os_specific()
 
     @staticmethod
-    def get_data(path):
+    def get_data(path: str) -> bytes:
         vfile = vfs.get_file(Filename.from_os_specific(path))
         if vfile:
             return vfile.read_file(True)
@@ -128,7 +133,7 @@ class VFSLoader(Loader):
             raise OSError
 
     @staticmethod
-    def path_stats(path):
+    def path_stats(path: str) -> dict[str, Any]:
         vfile = vfs.get_file(Filename.from_os_specific(path))
         if vfile:
             return {'mtime': vfile.get_timestamp(), 'size': vfile.get_file_size()}
@@ -231,11 +236,11 @@ class VFSExtensionLoader(VFSLoader):
         return None
 
 
-class VFSNamespaceLoader:
-    def create_module(self, spec):
+class VFSNamespaceLoader(Loader):
+    def create_module(self, spec: ModuleSpec) -> ModuleType | None:
         """Use default semantics for module creation."""
 
-    def exec_module(self, module):
+    def exec_module(self, module: ModuleType) -> None:
         pass
 
     def is_package(self, fullname):
@@ -248,7 +253,7 @@ class VFSNamespaceLoader:
         return compile('', '<string>', 'exec', dont_inherit=True)
 
 
-def _path_hook(entry):
+def _path_hook(entry: str) -> VFSFinder:
     # If this is a directory in the VFS, create a VFSFinder for this entry.
     vfile = vfs.get_file(Filename.from_os_specific(entry), False)
     if vfile and vfile.is_directory() and not isinstance(vfile.get_mount(), VirtualFileMountSystem):
@@ -259,7 +264,7 @@ def _path_hook(entry):
 
 _registered = False
 
-def register():
+def register() -> None:
     """ Register the VFSFinder on the path_hooks, if it has not
     already been registered, so that future Python import statements
     will vector through here (and therefore will take advantage of
