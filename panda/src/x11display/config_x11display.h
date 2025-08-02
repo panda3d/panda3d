@@ -27,6 +27,10 @@ extern EXPCL_PANDAX11 void init_libx11display();
 extern ConfigVariableString display_cfg;
 extern ConfigVariableBool x_error_abort;
 extern ConfigVariableBool x_init_threads;
+extern ConfigVariableBool x_support_xcursor;
+extern ConfigVariableBool x_support_xinput2;
+extern ConfigVariableBool x_support_xf86dga;
+extern ConfigVariableBool x_support_xrandr;
 
 extern ConfigVariableInt x_wheel_up_button;
 extern ConfigVariableInt x_wheel_down_button;
