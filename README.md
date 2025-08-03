@@ -228,8 +228,8 @@ information as possible to help the developers track down the issue, such as
 your version of Panda3D, operating system, architecture, and any code and
 models that are necessary for the developers to reproduce the issue.
 
-If you're not sure whether you've encountered a bug, feel free to ask about
-it in the forums or the IRC channel first.
+If you're unsure whether you've encountered a bug, feel free to ask in the [forums](https://discourse.panda3d.org) or the [IRC channel](https://web.libera.chat/#panda3d) before opening an issue.
+
 
 Supporting the Project
 ======================

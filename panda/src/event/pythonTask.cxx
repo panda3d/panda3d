@@ -503,7 +503,7 @@ cancel() {
       --_chain->_num_awaiting_tasks;
       return true;
     }
-    else if (must_cancel || _fut_waiter != nullptr) {
+    else if (_generator != nullptr && (must_cancel || _fut_waiter != nullptr)) {
       // We may be polling an external future, so we still need to throw a
       // CancelledException and allow it to be caught.
       if (must_cancel) {

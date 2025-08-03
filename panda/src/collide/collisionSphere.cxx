@@ -242,7 +242,8 @@ test_intersection_from_line(const CollisionEntry &entry) const {
   const CollisionLine *line;
   DCAST_INTO_R(line, entry.get_from(), nullptr);
 
-  const LMatrix4 &wrt_mat = entry.get_wrt_mat();
+  CPT(TransformState) wrt_space = entry.get_wrt_space();
+  const LMatrix4 &wrt_mat = wrt_space->get_mat();
 
   LPoint3 from_origin = line->get_origin() * wrt_mat;
   LVector3 from_direction = line->get_direction() * wrt_mat;
@@ -284,10 +285,11 @@ test_intersection_from_box(const CollisionEntry &entry) const {
 
   // Instead of transforming the box into the sphere's coordinate space, we do
   // it the other way around.  It's easier that way.
-  const LMatrix4 &wrt_mat = entry.get_inv_wrt_mat();
+  CPT(TransformState) inv_wrt_space = entry.get_inv_wrt_space();
+  const LMatrix4 &inv_wrt_mat = inv_wrt_space->get_mat();
 
-  LPoint3 center = wrt_mat.xform_point(_center);
-  PN_stdfloat radius_sq = wrt_mat.xform_vec(LVector3(0, 0, _radius)).length_squared();
+  LPoint3 center = inv_wrt_mat.xform_point(_center);
+  PN_stdfloat radius_sq = inv_wrt_mat.xform_vec(LVector3(0, 0, _radius)).length_squared();
 
   LPoint3 box_min = box->get_min();
   LPoint3 box_max = box->get_max();
@@ -336,7 +338,8 @@ test_intersection_from_box(const CollisionEntry &entry) const {
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
   // To get the interior point, clamp the sphere center to the AABB.
-  LPoint3 interior = entry.get_wrt_mat().xform_point(center.fmax(box_min).fmin(box_max));
+  CPT(TransformState) wrt_space = entry.get_wrt_space();
+  LPoint3 interior = wrt_space->get_mat().xform_point(center.fmax(box_min).fmin(box_max));
   new_entry->set_interior_point(interior);
 
   // Now extrapolate the surface point and normal from that.
@@ -358,7 +361,8 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
   const CollisionRay *ray;
   DCAST_INTO_R(ray, entry.get_from(), nullptr);
 
-  const LMatrix4 &wrt_mat = entry.get_wrt_mat();
+  CPT(TransformState) wrt_space = entry.get_wrt_space();
+  const LMatrix4 &wrt_mat = wrt_space->get_mat();
 
   LPoint3 from_origin = ray->get_origin() * wrt_mat;
   LVector3 from_direction = ray->get_direction() * wrt_mat;
@@ -405,7 +409,8 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
   const CollisionSegment *segment;
   DCAST_INTO_R(segment, entry.get_from(), nullptr);
 
-  const LMatrix4 &wrt_mat = entry.get_wrt_mat();
+  CPT(TransformState) wrt_space = entry.get_wrt_space();
+  const LMatrix4 &wrt_mat = wrt_space->get_mat();
 
   LPoint3 from_a = segment->get_point_a() * wrt_mat;
   LPoint3 from_b = segment->get_point_b() * wrt_mat;
@@ -454,7 +459,8 @@ test_intersection_from_capsule(const CollisionEntry &entry) const {
   const CollisionCapsule *capsule;
   DCAST_INTO_R(capsule, entry.get_from(), nullptr);
 
-  const LMatrix4 &wrt_mat = entry.get_wrt_mat();
+  CPT(TransformState) wrt_space = entry.get_wrt_space();
+  const LMatrix4 &wrt_mat = wrt_space->get_mat();
 
   LPoint3 from_a = capsule->get_point_a() * wrt_mat;
   LPoint3 from_b = capsule->get_point_b() * wrt_mat;
@@ -510,7 +516,8 @@ test_intersection_from_parabola(const CollisionEntry &entry) const {
   const CollisionParabola *parabola;
   DCAST_INTO_R(parabola, entry.get_from(), nullptr);
 
-  const LMatrix4 &wrt_mat = entry.get_wrt_mat();
+  CPT(TransformState) wrt_space = entry.get_wrt_space();
+  const LMatrix4 &wrt_mat = wrt_space->get_mat();
 
   // Convert the parabola into local coordinate space.
   LParabola local_p(parabola->get_parabola());
