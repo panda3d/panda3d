@@ -17,6 +17,9 @@
 #include "openalAudioSound.h"
 #include "openalAudioManager.h"
 
+
+#include "coordinateSystem.h"
+
 TypeHandle OpenALAudioSound::_type_handle;
 
 
@@ -745,18 +748,37 @@ length() const {
 void OpenALAudioSound::
 set_3d_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx, PN_stdfloat vy, PN_stdfloat vz) {
   ReMutexHolder holder(OpenALAudioManager::_lock);
-  _location[0] = px;
-  _location[1] = pz;
-  _location[2] = -py;
+  CoordinateSystem cs = get_default_coordinate_system();
+  PN_stdfloat openal_pos[3];
+  PN_stdfloat openal_vel[3];
+  if (cs == CS_yup_left) {
+    openal_pos[0] = -px;
+    openal_pos[1] = pz;
+    openal_pos[2] = -py;
+    
+    openal_vel[0] = -vx;
+    openal_vel[1] = vz;
+    openal_vel[2] = -vy;
+  } else {
+    openal_pos[0] = px;
+    openal_pos[1] = pz;
+    openal_pos[2] = -py;
 
-  _velocity[0] = vx;
-  _velocity[1] = vz;
-  _velocity[2] = -vy;
+    openal_vel[0] = vx;
+    openal_vel[1] = vz;
+    openal_vel[2] = -vy;
+  }
 
+  _location[0] = openal_pos[0];
+  _location[1] = openal_pos[1]; 
+  _location[2] = openal_pos[2];
+  _velocity[0] = openal_vel[0];
+  _velocity[1] = openal_vel[1];
+  _velocity[2] = openal_vel[2];
   if (is_playing()) {
     _manager->make_current();
 
-    alGetError(); // clear errors
+    alGetError();
     alSourcefv(_source,AL_POSITION,_location);
     al_audio_errcheck("alSourcefv(_source,AL_POSITION)");
     alSourcefv(_source,AL_VELOCITY,_velocity);
