@@ -382,7 +382,7 @@ class ShowBase(DirectObject.DirectObject):
         #: yourself every frame.
         self.cTrav: CollisionTraverser | Literal[0] = 0
         self.shadowTrav: CollisionTraverser | Literal[0] = 0
-        self.cTravStack = Stack()
+        self.cTravStack = Stack[CollisionTraverser]()
         # Ditto for an AppTraverser.
         self.appTrav: Any | Literal[0] = 0
 

@@ -21,11 +21,16 @@ easier to use and understand.
 It is permissible to mix-and-match both threading and threading2
 within the same application. """
 
+from __future__ import annotations
+
 from panda3d import core
 from direct.stdpy import thread as _thread
 import sys as _sys
 
 import weakref
+
+from collections.abc import Callable, Iterable, Mapping
+from typing import Any, NoReturn
 
 __all__ = [
     'Thread',
@@ -54,10 +59,14 @@ class ThreadBase:
     """ A base class for both Thread and ExternalThread in this
     module. """
 
-    def __init__(self):
+    name: str
+    ident: int
+    daemon: bool
+
+    def __init__(self) -> None:
         pass
 
-    def getName(self):
+    def getName(self) -> str:
         return self.name
 
     def isDaemon(self):
@@ -92,7 +101,15 @@ class Thread(ThreadBase):
     object.  The wrapper is designed to emulate Python's own
     threading.Thread object. """
 
-    def __init__(self, group=None, target=None, name=None, args=(), kwargs={}, daemon=None):
+    def __init__(
+        self,
+        group: None = None,
+        target: Callable[..., object] | None = None,
+        name: str | None = None,
+        args: Iterable[Any] = (),
+        kwargs: Mapping[str, Any] = {},
+        daemon: bool | None = None,
+    ) -> None:
         ThreadBase.__init__(self)
 
         assert group is None
@@ -131,7 +148,7 @@ class Thread(ThreadBase):
 
     isAlive = is_alive
 
-    def start(self):
+    def start(self) -> None:
         thread = self.__thread
         if thread is None or thread.is_started():
             raise RuntimeError
@@ -147,7 +164,7 @@ class Thread(ThreadBase):
 
         self.__target(*self.__args, **self.__kwargs)
 
-    def join(self, timeout = None):
+    def join(self, timeout: float | None = None) -> None:
         # We don't support a timed join here, sorry.
         assert timeout is None
         thread = self.__thread
@@ -157,7 +174,7 @@ class Thread(ThreadBase):
             self.__thread = None
             _thread._remove_thread_id(self.ident)
 
-    def setName(self, name):
+    def setName(self, name: str) -> None:
         self.__dict__['name'] = name
         self.__thread.setName(name)
 
@@ -166,7 +183,7 @@ class ExternalThread(ThreadBase):
     """ Returned for a Thread object that wasn't created by this
     interface. """
 
-    def __init__(self, extThread, threadId):
+    def __init__(self, extThread: core.Thread, threadId: int) -> None:
         ThreadBase.__init__(self)
 
         self.__thread = extThread
@@ -196,7 +213,7 @@ class ExternalThread(ThreadBase):
 class MainThread(ExternalThread):
     """ Returned for the MainThread object. """
 
-    def __init__(self, extThread, threadId):
+    def __init__(self, extThread: core.Thread, threadId: int) -> None:
         ExternalThread.__init__(self, extThread, threadId)
         self.__dict__['daemon'] = False
 
@@ -206,7 +223,7 @@ class Lock(core.Mutex):
     The wrapper is designed to emulate Python's own threading.Lock
     object. """
 
-    def __init__(self, name = "PythonLock"):
+    def __init__(self, name: str = "PythonLock") -> None:
         core.Mutex.__init__(self, name)
 
 
@@ -224,7 +241,7 @@ class Condition(core.ConditionVar):
     object.  The wrapper is designed to emulate Python's own
     threading.Condition object. """
 
-    def __init__(self, lock = None):
+    def __init__(self, lock: Lock | RLock | None = None) -> None:
         if not lock:
             lock = Lock()
 
@@ -241,7 +258,7 @@ class Condition(core.ConditionVar):
     def release(self):
         self.__lock.release()
 
-    def wait(self, timeout = None):
+    def wait(self, timeout: float | None = None) -> None:
         if timeout is None:
             core.ConditionVar.wait(self)
         else:
@@ -373,8 +390,9 @@ class Timer(Thread):
         self.finished.set()
 
 
-def _create_thread_wrapper(t, threadId):
+def _create_thread_wrapper(t: core.Thread, threadId: int) -> ExternalThread:
     """ Creates a thread wrapper for the indicated external thread. """
+    pyt: ExternalThread
     if isinstance(t, core.MainThread):
         pyt = MainThread(t, threadId)
     else:
@@ -383,7 +401,7 @@ def _create_thread_wrapper(t, threadId):
     return pyt
 
 
-def current_thread():
+def current_thread() -> ThreadBase:
     t = core.Thread.getCurrentThread()
     return _thread._get_thread_wrapper(t, _create_thread_wrapper)
 
@@ -430,5 +448,5 @@ def setprofile(func):
     _setprofile_func = func
 
 
-def stack_size(size = None):
+def stack_size(size: object = None) -> NoReturn:
     raise ThreadError

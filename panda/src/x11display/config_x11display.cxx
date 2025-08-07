@@ -45,6 +45,27 @@ ConfigVariableBool x_init_threads
  PRC_DESC("Set this true to ask Panda3D to call XInitThreads() upon loading "
           "the display module, which may help with some threading issues."));
 
+ConfigVariableBool x_support_xcursor
+("x-support-xcursor", true,
+ PRC_DESC("Set this false if you wish to disable loading of the XCursor "
+          "library, which is used for setting custom cursor icons."));
+
+ConfigVariableBool x_support_xinput2
+("x-support-xinput2", true,
+ PRC_DESC("Set this false if you wish to disable loading of the XInput2 "
+          "library, which is used for raw mouse events as well as for relative "
+          "mouse events if the xf86dga extension is not supported."));
+
+ConfigVariableBool x_support_xf86dga
+("x-support-xf86dga", true,
+ PRC_DESC("Set this false if you wish to disable loading of the xf86dga "
+          "extension, which is used for relative mouse mode."));
+
+ConfigVariableBool x_support_xrandr
+("x-support-xrandr", true,
+ PRC_DESC("Set this false if you wish to disable loading of the Xrandr "
+          "extension, which is used for changing screen resolutions."));
+
 ConfigVariableInt x_wheel_up_button
 ("x-wheel-up-button", 4,
  PRC_DESC("This is the mouse button index of the wheel_up event: which "
@@ -90,6 +111,10 @@ ConfigVariableBool x_send_startup_notification
           "manager automatically after the first window is opened.  This "
           "lets the window manager know that an application has launched, so "
           "that it no longer needs to display a spinning mouse cursor."));
+
+ConfigVariableBool x_detectable_auto_repeat
+("x-detectable-auto-repeat", false,
+ PRC_DESC("Set this true to enable detectable auto-repeat for keyboard input."));
 
 /**
  * Initializes the library.  This must be called at least once before any of

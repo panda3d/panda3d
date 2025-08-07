@@ -235,6 +235,7 @@ EXPCL_PYPANDA PyObject *Dtool_Raise_AssertionError();
 EXPCL_PYPANDA PyObject *Dtool_Raise_TypeError(const char *message);
 EXPCL_PYPANDA PyObject *Dtool_Raise_ArgTypeError(PyObject *obj, int param, const char *function_name, const char *type_name);
 EXPCL_PYPANDA PyObject *Dtool_Raise_AttributeError(PyObject *obj, const char *attribute);
+EXPCL_PYPANDA int Dtool_Raise_CantDeleteAttributeError(const char *attribute);
 
 EXPCL_PYPANDA PyObject *_Dtool_Raise_BadArgumentsError();
 EXPCL_PYPANDA PyObject *_Dtool_Raise_BadArgumentsError(const char *message);

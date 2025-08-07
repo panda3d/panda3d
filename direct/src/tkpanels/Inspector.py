@@ -48,7 +48,7 @@ def inspectorFor(anObject):
 
 ### initializing
 
-def initializeInspectorMap():
+def initializeInspectorMap() -> None:
     global _InspectorMap
     notFinishedTypes = ['BufferType',  'EllipsisType',  'FrameType', 'TracebackType', 'XRangeType']
 

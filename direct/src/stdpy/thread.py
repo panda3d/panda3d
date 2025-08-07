@@ -5,6 +5,8 @@ in some compilation models, Panda's threading constructs are
 incompatible with the OS-provided threads used by Python's thread
 module. """
 
+from __future__ import annotations
+
 __all__ = [
     'error', 'LockType',
     'start_new_thread',
@@ -18,6 +20,9 @@ __all__ = [
 
 from panda3d import core
 import sys
+
+from collections.abc import Callable, Iterable, Mapping
+from typing import Any
 
 if sys.platform == "win32":
     TIMEOUT_MAX = float(0xffffffff // 1000)
@@ -41,12 +46,12 @@ class LockType:
     allows a different thread to release the lock than the one that
     acquired it. """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.__lock = core.Mutex('PythonLock')
         self.__cvar = core.ConditionVar(self.__lock)
         self.__locked = False
 
-    def acquire(self, waitflag = 1, timeout = -1):
+    def acquire(self, waitflag: bool = True, timeout: float = -1) -> bool:
         self.__lock.acquire()
         try:
             if self.__locked and not waitflag:
@@ -65,7 +70,7 @@ class LockType:
         finally:
             self.__lock.release()
 
-    def release(self):
+    def release(self) -> None:
         self.__lock.acquire()
         try:
             if not self.__locked:
@@ -90,18 +95,23 @@ class LockType:
 _counter = 0
 
 
-def _newname(template="Thread-%d"):
+def _newname(template: str = "Thread-%d") -> str:
     global _counter
     _counter = _counter + 1
     return template % _counter
 
 
-_threads = {}
+_threads: dict[int, tuple[core.Thread, dict[int, dict[str, Any]], Any | None]] = {}
 _nextThreadId = 0
 _threadsLock = core.Mutex('thread._threadsLock')
 
 
-def start_new_thread(function, args, kwargs = {}, name = None):
+def start_new_thread(
+    function: Callable[..., object],
+    args: Iterable[Any],
+    kwargs: Mapping[str, Any] = {},
+    name: str | None = None,
+) -> int:
     def threadFunc(threadId, function = function, args = args, kwargs = kwargs):
         try:
             try:
@@ -132,7 +142,7 @@ def start_new_thread(function, args, kwargs = {}, name = None):
         _threadsLock.release()
 
 
-def _add_thread(thread, wrapper):
+def _add_thread(thread: core.Thread, wrapper: Any) -> int:
     """ Adds the indicated core.Thread object, with the indicated Python
     wrapper, to the thread list.  Returns the new thread ID. """
 
@@ -150,7 +160,7 @@ def _add_thread(thread, wrapper):
         _threadsLock.release()
 
 
-def _get_thread_wrapper(thread, wrapperClass):
+def _get_thread_wrapper(thread: core.Thread, wrapperClass: Callable[[core.Thread, int], Any]) -> Any:
     """ Returns the thread wrapper for the indicated thread.  If there
     is not one, creates an instance of the indicated wrapperClass
     instead. """
@@ -222,7 +232,7 @@ def _get_thread_locals(thread, i):
             _threadsLock.release()
 
 
-def _remove_thread_id(threadId):
+def _remove_thread_id(threadId: int) -> None:
     """ Removes the thread with the indicated ID from the thread list. """
 
     # On interpreter shutdown, Python may set module globals to None.
@@ -250,11 +260,11 @@ def exit():
     raise SystemExit
 
 
-def allocate_lock():
+def allocate_lock() -> LockType:
     return LockType()
 
 
-def get_ident():
+def get_ident() -> int:
     return core.Thread.getCurrentThread().this
 
 

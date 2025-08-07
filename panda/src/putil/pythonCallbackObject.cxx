@@ -58,7 +58,18 @@ PythonCallbackObject(PyObject *function) {
  */
 PythonCallbackObject::
 ~PythonCallbackObject() {
+  // This may be called from the cull or draw thread, so we have to be sure we
+  // own the GIL.
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
+  PyGILState_STATE gstate;
+  gstate = PyGILState_Ensure();
+#endif
+
   Py_DECREF(_function);
+
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
+  PyGILState_Release(gstate);
+#endif
 }
 
 /**

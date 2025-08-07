@@ -30,6 +30,7 @@ operator == (const BamCacheRecord &other) const {
   return (_source_pathname == other._source_pathname &&
           _cache_filename == other._cache_filename &&
           _recorded_time == other._recorded_time &&
+          _loader_type == other._loader_type &&
           _record_size == other._record_size);
 }
 

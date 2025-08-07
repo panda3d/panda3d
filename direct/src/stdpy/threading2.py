@@ -13,6 +13,8 @@ to import Panda's thread reimplementation instead of the system thread
 module, and so it is therefore layered on top of Panda's thread
 implementation. """
 
+from __future__ import annotations
+
 import sys as _sys
 import atexit as _atexit
 
@@ -21,8 +23,10 @@ from direct.stdpy.thread import stack_size, _newname, _local as local
 from panda3d import core
 _sleep = core.Thread.sleep
 
+from collections.abc import Callable, Iterable, Mapping
 from time import time as _time
 from traceback import format_exc as _format_exc
+from typing import Any
 
 __all__ = ['get_ident', 'active_count', 'Condition', 'current_thread',
            'enumerate', 'main_thread', 'TIMEOUT_MAX',
@@ -51,12 +55,12 @@ if __debug__:
 
     class _Verbose(object):
 
-        def __init__(self, verbose=None):
+        def __init__(self, verbose: bool | None = None) -> None:
             if verbose is None:
                 verbose = _VERBOSE
             self.__verbose = verbose
 
-        def _note(self, format, *args):
+        def _note(self, format: str, *args: Any) -> None:
             if self.__verbose:
                 format = format % args
                 format = "%s: %s\n" % (
@@ -66,9 +70,9 @@ if __debug__:
 else:
     # Disable this when using "python -O"
     class _Verbose(object):  # type: ignore[no-redef]
-        def __init__(self, verbose=None):
+        def __init__(self, verbose: bool | None = None) -> None:
             pass
-        def _note(self, *args):
+        def _note(self, *args) -> None:
             pass
 
 # Support for profile and trace hooks
@@ -88,15 +92,15 @@ def settrace(func):
 
 Lock = _allocate_lock
 
-def RLock(*args, **kwargs):
-    return _RLock(*args, **kwargs)
+def RLock(verbose: bool | None = None) -> _RLock:
+    return _RLock(verbose)
 
 class _RLock(_Verbose):
 
-    def __init__(self, verbose=None):
+    def __init__(self, verbose: bool | None = None) -> None:
         _Verbose.__init__(self, verbose)
         self.__block = _allocate_lock()
-        self.__owner = None
+        self.__owner: Thread | None = None
         self.__count = 0
 
     def __repr__(self):
@@ -105,13 +109,13 @@ class _RLock(_Verbose):
                 self.__owner and self.__owner.getName(),
                 self.__count)
 
-    def acquire(self, blocking=1):
+    def acquire(self, blocking: bool = True) -> bool:
         me = currentThread()
         if self.__owner is me:
             self.__count = self.__count + 1
             if __debug__:
                 self._note("%s.acquire(%s): recursive success", self, blocking)
-            return 1
+            return True
         rc = self.__block.acquire(blocking)
         if rc:
             self.__owner = me
@@ -125,7 +129,7 @@ class _RLock(_Verbose):
 
     __enter__ = acquire
 
-    def release(self):
+    def release(self) -> None:
         me = currentThread()
         assert self.__owner is me, "release() of un-acquire()d lock"
         self.__count = count = self.__count - 1
@@ -163,12 +167,12 @@ class _RLock(_Verbose):
         return self.__owner is currentThread()
 
 
-def Condition(*args, **kwargs):
-    return _Condition(*args, **kwargs)
+def Condition(lock: _thread.LockType | _RLock | None = None, verbose: bool | None = None) -> _Condition:
+    return _Condition(lock, verbose)
 
 class _Condition(_Verbose):
 
-    def __init__(self, lock=None, verbose=None):
+    def __init__(self, lock: _thread.LockType | _RLock | None = None, verbose: bool | None = None) -> None:
         _Verbose.__init__(self, verbose)
         if lock is None:
             lock = RLock()
@@ -180,18 +184,18 @@ class _Condition(_Verbose):
         # these override the default implementations (which just call
         # release() and acquire() on the lock).  Ditto for _is_owned().
         try:
-            self._release_save = lock._release_save
+            self._release_save = lock._release_save  # type: ignore[method-assign, union-attr]
         except AttributeError:
             pass
         try:
-            self._acquire_restore = lock._acquire_restore
+            self._acquire_restore = lock._acquire_restore  # type: ignore[method-assign, union-attr]
         except AttributeError:
             pass
         try:
-            self._is_owned = lock._is_owned
+            self._is_owned = lock._is_owned  # type: ignore[method-assign, union-attr]
         except AttributeError:
             pass
-        self.__waiters = []
+        self.__waiters: list[_thread.LockType] = []
 
     def __enter__(self):
         return self.__lock.__enter__()
@@ -202,22 +206,22 @@ class _Condition(_Verbose):
     def __repr__(self):
         return "<Condition(%s, %d)>" % (self.__lock, len(self.__waiters))
 
-    def _release_save(self): # pylint: disable=method-hidden
+    def _release_save(self) -> Any: # pylint: disable=method-hidden
         self.__lock.release()           # No state to save
 
-    def _acquire_restore(self, x): # pylint: disable=method-hidden
+    def _acquire_restore(self, x) -> None: # pylint: disable=method-hidden
         self.__lock.acquire()           # Ignore saved state
 
-    def _is_owned(self): # pylint: disable=method-hidden
+    def _is_owned(self) -> bool: # pylint: disable=method-hidden
         # Return True if lock is owned by currentThread.
         # This method is called only if __lock doesn't have _is_owned().
-        if self.__lock.acquire(0):
+        if self.__lock.acquire(False):
             self.__lock.release()
             return False
         else:
             return True
 
-    def wait(self, timeout=None):
+    def wait(self, timeout: float | None = None) -> None:
         assert self._is_owned(), "wait() of un-acquire()d lock"
         waiter = _allocate_lock()
         waiter.acquire()
@@ -237,7 +241,7 @@ class _Condition(_Verbose):
                 endtime = _time() + timeout
                 delay = 0.0005 # 500 us -> initial delay of 1 ms
                 while True:
-                    gotit = waiter.acquire(0)
+                    gotit = waiter.acquire(False)
                     if gotit:
                         break
                     remaining = endtime - _time()
@@ -258,7 +262,7 @@ class _Condition(_Verbose):
         finally:
             self._acquire_restore(saved_state)
 
-    def notify(self, n=1):
+    def notify(self, n: int = 1) -> None:
         assert self._is_owned(), "notify() of un-acquire()d lock"
         __waiters = self.__waiters
         waiters = __waiters[:n]
@@ -275,7 +279,7 @@ class _Condition(_Verbose):
             except ValueError:
                 pass
 
-    def notifyAll(self):
+    def notifyAll(self) -> None:
         self.notify(len(self.__waiters))
 
 
@@ -381,7 +385,7 @@ class _Event(_Verbose):
 
 # Active thread administration
 _active_limbo_lock = _allocate_lock()
-_active = {}    # maps thread id to Thread object
+_active: dict[int, Thread] = {}    # maps thread id to Thread object
 _limbo = {}
 
 
@@ -400,8 +404,16 @@ class Thread(_Verbose):
     # Protected by _active_limbo_lock.
     __registered_atexit = False
 
-    def __init__(self, group=None, target=None, name=None,
-                 args=(), kwargs=None, verbose=None, daemon=None):
+    def __init__(
+        self,
+        group: None = None,
+        target: Callable[..., object] | None = None,
+        name: object = None,
+        args: Iterable[Any] = (),
+        kwargs: Mapping[str, Any] | None = None,
+        verbose: bool | None = None,
+        daemon: bool | None = None,
+    ) -> None:
         assert group is None, "group argument must be None for now"
         _Verbose.__init__(self, verbose)
         if kwargs is None:
@@ -422,7 +434,7 @@ class Thread(_Verbose):
         # sys.exc_info since it can be changed between instances
         self.__stderr = _sys.stderr
 
-    def _set_daemon(self):
+    def _set_daemon(self) -> bool:
         # Overridden in _MainThread and _DummyThread
         return currentThread().isDaemon()
 
@@ -437,7 +449,7 @@ class Thread(_Verbose):
             status = status + " daemon"
         return "<%s(%s, %s)>" % (self.__class__.__name__, self.__name, status)
 
-    def start(self):
+    def start(self) -> None:
         assert self.__initialized, "Thread.__init__() not called"
         assert not self.__started, "thread already started"
         if __debug__:
@@ -457,11 +469,11 @@ class Thread(_Verbose):
         self.__started = True
         _sleep(0.000001)    # 1 usec, to let the thread run (Solaris hack)
 
-    def run(self):
+    def run(self) -> None:
         if self.__target:
             self.__target(*self.__args, **self.__kwargs)
 
-    def __bootstrap(self):
+    def __bootstrap(self) -> None:
         try:
             self.__started = True
             _active_limbo_lock.acquire()
@@ -497,7 +509,7 @@ class Thread(_Verbose):
                     # Do the best job possible w/o a huge amt. of code to
                     # approximate a traceback (code ideas from
                     # Lib/traceback.py)
-                    exc_type, exc_value, exc_tb = self.__exc_info()
+                    exc_type, exc_value, exc_tb = self.__exc_info()  # type: ignore[misc]
                     try:
                         self.__stderr.write("Exception in thread " + self.getName() +
                             " (most likely raised during interpreter shutdown):\n")
@@ -523,13 +535,13 @@ class Thread(_Verbose):
             except:
                 pass
 
-    def __stop(self):
+    def __stop(self) -> None:
         self.__block.acquire()
         self.__stopped = True
         self.__block.notifyAll()
         self.__block.release()
 
-    def __delete(self):
+    def __delete(self) -> None:
         "Remove current thread from the dict of currently running threads."
 
         # Notes about running with dummy_thread:
@@ -563,7 +575,7 @@ class Thread(_Verbose):
         finally:
             _active_limbo_lock.release()
 
-    def join(self, timeout=None):
+    def join(self, timeout: float | None = None) -> None:
         assert self.__initialized, "Thread.__init__() not called"
         assert self.__started, "cannot join thread before it is started"
         assert self is not currentThread(), "cannot join current thread"
@@ -592,11 +604,11 @@ class Thread(_Verbose):
         finally:
             self.__block.release()
 
-    def getName(self):
+    def getName(self) -> str:
         assert self.__initialized, "Thread.__init__() not called"
         return self.__name
 
-    def setName(self, name):
+    def setName(self, name: object) -> None:
         assert self.__initialized, "Thread.__init__() not called"
         self.__name = str(name)
 
@@ -606,7 +618,7 @@ class Thread(_Verbose):
 
     isAlive = is_alive
 
-    def isDaemon(self):
+    def isDaemon(self) -> bool:
         assert self.__initialized, "Thread.__init__() not called"
         return self.__daemonic
 
@@ -654,7 +666,7 @@ class _Timer(Thread):
 
 class _MainThread(Thread):
 
-    def __init__(self):
+    def __init__(self) -> None:
         Thread.__init__(self, name="MainThread")
         self._Thread__started = True
         _active_limbo_lock.acquire()
@@ -688,13 +700,13 @@ class _MainThread(Thread):
 
 class _DummyThread(Thread):
 
-    def __init__(self):
+    def __init__(self) -> None:
         Thread.__init__(self, name=_newname("Dummy-%d"), daemon=True)
 
         # Thread.__block consumes an OS-level locking primitive, which
         # can never be used by a _DummyThread.  Since a _DummyThread
         # instance is immortal, that's bad, so release this resource.
-        del self._Thread__block
+        del self._Thread__block  # type: ignore[attr-defined]
 
         self._Thread__started = True
         _active_limbo_lock.acquire()
@@ -710,7 +722,7 @@ class _DummyThread(Thread):
 
 # Global API functions
 
-def current_thread():
+def current_thread() -> Thread:
     try:
         return _active[get_ident()]
     except KeyError:
