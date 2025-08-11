@@ -1,5 +1,7 @@
 """Contains utility classes for debugging memory leaks."""
 
+from __future__ import annotations
+
 __all__ = ['FakeObject', '_createGarbage', 'GarbageReport', 'GarbageLogger']
 
 from direct.directnotify.DirectNotifyGlobal import directNotify
@@ -10,6 +12,7 @@ from direct.showbase.JobManagerGlobal import jobMgr
 from direct.showbase.MessengerGlobal import messenger
 from panda3d.core import ConfigVariableBool
 import gc
+from collections.abc import Callable
 
 GarbageCycleCountAnnounceEvent = 'announceGarbageCycleDesc2num'
 
@@ -41,9 +44,21 @@ class GarbageReport(Job):
     If you just want to dump the report to the log, use GarbageLogger."""
     notify = directNotify.newCategory("GarbageReport")
 
-    def __init__(self, name, log=True, verbose=False, fullReport=False, findCycles=True,
-                 threaded=False, doneCallback=None, autoDestroy=False, priority=None,
-                 safeMode=False, delOnly=False, collect=True):
+    def __init__(
+        self,
+        name: str,
+        log: bool = True,
+        verbose: bool = False,
+        fullReport: bool = False,
+        findCycles: bool = True,
+        threaded: bool = False,
+        doneCallback: Callable[[GarbageReport], object] | None = None,
+        autoDestroy: bool = False,
+        priority: int | None = None,
+        safeMode: bool = False,
+        delOnly: bool = False,
+        collect: bool = True
+    ) -> None:
         # if autoDestroy is True, GarbageReport will self-destroy after logging
         # if false, caller is responsible for calling destroy()
         # if threaded is True, processing will be performed over multiple frames
@@ -399,7 +414,7 @@ class GarbageReport(Job):
         if self._args.autoDestroy:
             self.destroy()
 
-    def destroy(self):
+    def destroy(self) -> None:
         #print 'GarbageReport.destroy'
         del self._args
         del self.garbage
@@ -417,13 +432,13 @@ class GarbageReport(Job):
             del self._reportStr
         Job.destroy(self)
 
-    def getNumCycles(self):
+    def getNumCycles(self) -> int:
         # if the job hasn't run yet, we don't have a numCycles yet
         return self.numCycles
 
-    def getDesc2numDict(self):
+    def getDesc2numDict(self) -> dict[str, int]:
         # dict of python-syntax leak -> number of that type of leak
-        desc2num = {}
+        desc2num: dict[str, int] = {}
         for cycleBySyntax in self.cyclesBySyntax:
             desc2num.setdefault(cycleBySyntax, 0)
             desc2num[cycleBySyntax] += 1
@@ -563,7 +578,7 @@ class _CFGLGlobals:
     LastNumCycles = 0
 
 
-def checkForGarbageLeaks():
+def checkForGarbageLeaks() -> int:
     gc.collect()
     numGarbage = len(gc.garbage)
     if numGarbage > 0 and ConfigVariableBool('auto-garbage-logging', False):
@@ -576,6 +591,7 @@ def checkForGarbageLeaks():
             messenger.send(GarbageCycleCountAnnounceEvent, [gr.getDesc2numDict()])
             gr.destroy()
         notify = directNotify.newCategory("GarbageDetect")
+        func: Callable[[str], object]
         if ConfigVariableBool('allow-garbage-cycles', True):
             func = notify.warning
         else:
@@ -584,7 +600,8 @@ def checkForGarbageLeaks():
     return numGarbage
 
 
-def b_checkForGarbageLeaks(wantReply=False):
+def b_checkForGarbageLeaks(wantReply: bool = False) -> int:
+    from direct.showbase.ShowBaseGlobal import base, __dev__
     if not __dev__:
         return 0
     # does a garbage collect on the client and the AI
@@ -592,10 +609,10 @@ def b_checkForGarbageLeaks(wantReply=False):
     # logs leak info and terminates (if configured to do so)
     try:
         # if this is the client, tell the AI to check for leaks too
-        base.cr.timeManager
+        base.cr.timeManager  # type: ignore[attr-defined]
     except Exception:
         pass
     else:
-        if base.cr.timeManager:
-            base.cr.timeManager.d_checkForGarbageLeaks(wantReply=wantReply)
+        if base.cr.timeManager:  # type: ignore[attr-defined]
+            base.cr.timeManager.d_checkForGarbageLeaks(wantReply=wantReply)  # type: ignore[attr-defined]
     return checkForGarbageLeaks()

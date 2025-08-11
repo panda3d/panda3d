@@ -1,6 +1,10 @@
 """Contains the OnScreenDebug class."""
 
+from __future__ import annotations
+
 __all__ = ['OnScreenDebug']
+
+from typing import Any
 
 from panda3d.core import (
     ConfigVariableBool,
@@ -18,13 +22,13 @@ class OnScreenDebug:
 
     enabled = ConfigVariableBool("on-screen-debug-enabled", False)
 
-    def __init__(self):
-        self.onScreenText = None
+    def __init__(self) -> None:
+        self.onScreenText: OnscreenText.OnscreenText | None = None
         self.frame = 0
         self.text = ""
-        self.data = {}
+        self.data: dict[str, tuple[int, Any]] = {}
 
-    def load(self):
+    def load(self) -> None:
         if self.onScreenText:
             return
 
@@ -40,6 +44,7 @@ class OnScreenDebug:
         fgColor.setW(ConfigVariableDouble("on-screen-debug-fg-alpha", 0.85).value)
         bgColor.setW(ConfigVariableDouble("on-screen-debug-bg-alpha", 0.85).value)
 
+        from direct.showbase.ShowBaseGlobal import base
         font = base.loader.loadFont(fontPath)
         if not font.isValid():
             print("failed to load OnScreenDebug font %s" % fontPath)
@@ -47,15 +52,16 @@ class OnScreenDebug:
         self.onScreenText = OnscreenText.OnscreenText(
                 parent = base.a2dTopLeft, pos = (0.0, -0.1),
                 fg=fgColor, bg=bgColor, scale = (fontScale, fontScale, 0.0),
-                align = TextNode.ALeft, mayChange = 1, font = font)
+                align = TextNode.ALeft, mayChange = True, font = font)
         # Make sure readout is never lit or drawn in wireframe
         DirectUtil.useDirectRenderStyle(self.onScreenText)
 
-    def render(self):
+    def render(self) -> None:
         if not self.enabled:
             return
         if not self.onScreenText:
             self.load()
+        assert self.onScreenText is not None
         self.onScreenText.clearText()
         for k, v in sorted(self.data.items()):
             if v[0] == self.frame:
@@ -75,7 +81,7 @@ class OnScreenDebug:
         self.onScreenText.appendText(self.text)
         self.frame += 1
 
-    def clear(self):
+    def clear(self) -> None:
         self.text = ""
         if self.onScreenText:
             self.onScreenText.clearText()

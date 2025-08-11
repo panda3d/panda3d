@@ -12,6 +12,8 @@ Or, you can enable the following variable in your Config.prc::
     show-buffers true
 """
 
+from __future__ import annotations
+
 __all__ = ['BufferViewer']
 
 from panda3d.core import (
@@ -39,14 +41,19 @@ from direct.task.TaskManagerGlobal import taskMgr
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.showbase.DirectObject import DirectObject
 import math
+from typing import Literal, Union
+
+# The following variables are typing constructs used in annotations
+# to succinctly express complex type structures.
+_Texture = Union[Texture, GraphicsOutput, Literal['all']]
 
 
 class BufferViewer(DirectObject):
     notify = directNotify.newCategory('BufferViewer')
 
-    def __init__(self, win, parent):
+    def __init__(self, win: GraphicsOutput | None, parent: NodePath) -> None:
         """Access: private.  Constructor."""
-        self.enabled = 0
+        self.enabled = False
         size = ConfigVariableDouble('buffer-viewer-size', '0 0')
         self.sizex = size[0]
         self.sizey = size[1]
@@ -59,23 +66,23 @@ class BufferViewer(DirectObject):
         self.win = win
         self.engine = GraphicsEngine.getGlobalPtr()
         self.renderParent = parent
-        self.cards = []
+        self.cards: list[NodePath] = []
         self.cardindex = 0
         self.cardmaker = CardMaker("cubemaker")
         self.cardmaker.setFrame(-1,1,-1,1)
         self.task = 0
-        self.dirty = 1
+        self.dirty = True
         self.accept("render-texture-targets-changed", self.refreshReadout)
         if ConfigVariableBool("show-buffers", 0):
-            self.enable(1)
+            self.enable(True)
 
-    def refreshReadout(self):
+    def refreshReadout(self) -> None:
         """Force the readout to be refreshed.  This is usually invoked
         by GraphicsOutput::add_render_texture (via an event handler).
         However, it is also possible to invoke it manually.  Currently,
         the only time I know of that this is necessary is after a
         window resize (and I ought to fix that)."""
-        self.dirty = 1
+        self.dirty = True
 
         # Call enabled again, mainly to ensure that the task has been
         # started.
@@ -95,14 +102,14 @@ class BufferViewer(DirectObject):
         """Returns true if the buffer viewer is currently enabled."""
         return self.enabled
 
-    def enable(self, x):
+    def enable(self, x: bool) -> None:
         """Turn the buffer viewer on or off.  The initial state of the
         buffer viewer depends on the Config variable 'show-buffers'."""
         if x != 0 and x != 1:
             BufferViewer.notify.error('invalid parameter to BufferViewer.enable')
             return
         self.enabled = x
-        self.dirty = 1
+        self.dirty = True
         if (x and self.task == 0):
             self.task = taskMgr.add(self.maintainReadout, "buffer-viewer-maintain-readout",
                                     priority=1)
@@ -218,7 +225,11 @@ class BufferViewer(DirectObject):
         self.renderParent = renderParent
         self.dirty = 1
 
-    def analyzeTextureSet(self, x, set):
+    def analyzeTextureSet(
+        self,
+        x: _Texture | GraphicsEngine | list[_Texture | GraphicsEngine],
+        set: dict[Texture, int],
+    ) -> None:
         """Access: private.  Converts a list of GraphicsObject,
         GraphicsEngine, and Texture into a table of Textures."""
 
@@ -240,7 +251,7 @@ class BufferViewer(DirectObject):
         else:
             return
 
-    def makeFrame(self, sizex, sizey):
+    def makeFrame(self, sizex: int, sizey: int) -> NodePath:
         """Access: private.  Each texture card is displayed with
         a two-pixel wide frame (a ring of black and a ring of white).
         This routine builds the frame geometry.  It is necessary to
@@ -287,7 +298,7 @@ class BufferViewer(DirectObject):
         geomnode.addGeom(geom)
         return NodePath(geomnode)
 
-    def maintainReadout(self, task):
+    def maintainReadout(self, task: object) -> int:
         """Access: private.  Whenever necessary, rebuilds the entire
         display from scratch.  This is only done when the configuration
         parameters have changed."""
@@ -295,7 +306,7 @@ class BufferViewer(DirectObject):
         # If nothing has changed, don't update.
         if not self.dirty:
             return Task.cont
-        self.dirty = 0
+        self.dirty = False
 
         # Delete the old set of cards.
         for card in self.cards:
@@ -308,8 +319,8 @@ class BufferViewer(DirectObject):
             return Task.done
 
         # Generate the include and exclude sets.
-        exclude = {}
-        include = {}
+        exclude: dict[Texture, int] = {}
+        include: dict[Texture, int] = {}
         self.analyzeTextureSet(self.exclude, exclude)
         self.analyzeTextureSet(self.include, include)
 
@@ -407,6 +418,7 @@ class BufferViewer(DirectObject):
 
         bordersize = 4.0
 
+        assert self.win is not None
         if float(self.sizex) == 0.0 and float(self.sizey) == 0.0:
             sizey = int(0.4266666667 * self.win.getYSize())
             sizex = (sizey * aspectx) // aspecty

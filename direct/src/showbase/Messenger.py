@@ -596,7 +596,7 @@ class Messenger:
                         break
         return matches
 
-    def __methodRepr(self, method):
+    def __methodRepr(self, method: object) -> str:
         """
         return string version of class.method or method.
         """
