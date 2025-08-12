@@ -88,7 +88,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
       with:
         fetch-depth: 10
 
@@ -375,7 +375,7 @@ jobs:
         os: [ubuntu-22.04, windows-2022, macOS-13]
     runs-on: ${{ matrix.os }}
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - name: Install dependencies (Ubuntu)
       if: matrix.os == 'ubuntu-22.04'
       run: |
@@ -498,7 +498,7 @@ jobs:
     if: "!contains(github.event.head_commit.message, '[skip ci]') && !contains(github.event.head_commit.message, '[ci skip]')"
     runs-on: ubuntu-24.04
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
 
     - name: Install dependencies
       run: |
