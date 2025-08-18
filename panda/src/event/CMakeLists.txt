@@ -7,6 +7,8 @@ set(P3EVENT_HEADERS
   asyncTaskPause.h asyncTaskPause.I
   asyncTaskSequence.h asyncTaskSequence.I
   config_event.h
+  axisEvent.h
+  axisEventList.I axisEventList.h
   buttonEvent.I buttonEvent.h
   buttonEventList.I buttonEventList.h
   genericAsyncTask.h genericAsyncTask.I
@@ -26,6 +28,8 @@ set(P3EVENT_SOURCES
   asyncTaskManager.cxx
   asyncTaskPause.cxx
   asyncTaskSequence.cxx
+  axisEvent.cxx
+  axisEventList.cxx
   buttonEvent.cxx
   buttonEventList.cxx
   genericAsyncTask.cxx
