@@ -147,6 +147,8 @@ PUBLISHED:
   void write_tags(std::ostream &out, int indent_level) const;
   void write_render_mode(std::ostream &out, int indent_level) const;
 
+  bool satisfies_object_type(EggGroup *type);
+
   virtual bool is_joint() const;
 
   virtual EggRenderMode *determine_alpha_mode();
