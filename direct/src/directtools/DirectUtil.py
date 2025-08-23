@@ -1,4 +1,4 @@
-from panda3d.core import VBase4
+from panda3d.core import NodePath, VBase4
 from direct.task.Task import Task
 from direct.task.TaskManagerGlobal import taskMgr
 
@@ -55,7 +55,7 @@ def lerpBackgroundColor(r, g, b, duration):
 
 # Set direct drawing style for an object
 # Never light object or draw in wireframe
-def useDirectRenderStyle(nodePath, priority = 0):
+def useDirectRenderStyle(nodePath: NodePath, priority: int = 0) -> None:
     """
     Function to force a node path to use direct render style:
     no lighting, and no wireframe
