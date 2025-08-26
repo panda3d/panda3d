@@ -11,13 +11,15 @@
  * @date 1999-02-08
  */
 
-#ifndef EGGSWITCHCONDITION
-#define EGGSWITCHCONDITION
+#ifndef EGGSWITCHCONDITION_H
+#define EGGSWITCHCONDITION_H
 
 #include "pandabase.h"
 
 #include "eggObject.h"
 #include "luse.h"
+
+class EggSwitchConditionDistance;
 
 /**
  * This corresponds to a <SwitchCondition> entry within a group.  It indicates
@@ -33,6 +35,10 @@ PUBLISHED:
 
   virtual void transform(const LMatrix4d &mat)=0;
 
+  virtual const EggSwitchConditionDistance *as_distance() const;
+
+  INLINE bool operator == (const EggSwitchCondition &other) const;
+  INLINE bool operator != (const EggSwitchCondition &other) const;
 
 public:
 
@@ -68,6 +74,11 @@ PUBLISHED:
 
   virtual void transform(const LMatrix4d &mat);
 
+  virtual const EggSwitchConditionDistance *as_distance() const;
+
+  INLINE bool operator == (const EggSwitchConditionDistance &other) const;
+  INLINE bool operator != (const EggSwitchConditionDistance &other) const;
+
 public:
   double _switch_in, _switch_out, _fade;
   LPoint3d _center;
@@ -89,5 +100,6 @@ private:
   static TypeHandle _type_handle;
 };
 
+#include <eggSwitchCondition.I>
 
 #endif
