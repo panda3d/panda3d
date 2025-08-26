@@ -18,6 +18,7 @@
 #include "asyncTaskManager.h"
 #include "asyncTaskPause.h"
 #include "asyncTaskSequence.h"
+#include "axisEventList.h"
 #include "buttonEventList.h"
 #include "event.h"
 #include "eventHandler.h"
@@ -43,6 +44,7 @@ ConfigureFn(config_event) {
   AsyncTaskManager::init_type();
   AsyncTaskPause::init_type();
   AsyncTaskSequence::init_type();
+  AxisEventList::init_type();
   ButtonEventList::init_type();
   PointerEventList::init_type();
   Event::init_type();
@@ -51,6 +53,7 @@ ConfigureFn(config_event) {
   EventStoreDouble::init_type("EventStoreDouble");
   GenericAsyncTask::init_type();
 
+  AxisEventList::register_with_read_factory();
   ButtonEventList::register_with_read_factory();
   EventStoreInt::register_with_read_factory();
   EventStoreDouble::register_with_read_factory();
