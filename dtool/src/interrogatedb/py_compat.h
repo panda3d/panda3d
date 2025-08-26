@@ -368,6 +368,12 @@ PyDict_GetItemStringRef(PyObject *mp, const char *key, PyObject **result) {
 #  define Py_END_CRITICAL_SECTION2() }
 #endif
 
+/* Python 3.14 */
+
+#if PY_VERSION_HEX < 0x030E00A8
+#  define PyUnstable_Object_IsUniquelyReferenced(op) (Py_REFCNT((op)) == 1)
+#endif
+
 /* Other Python implementations */
 
 #endif  // HAVE_PYTHON
