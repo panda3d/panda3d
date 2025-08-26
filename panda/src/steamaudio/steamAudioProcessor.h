@@ -20,6 +20,8 @@
 #include "pmap.h"
 #include "pset.h"
 
+#include "pta_LVecBase3.h"
+
 #include <phonon.h>
 
 class NodePath;
@@ -42,27 +44,24 @@ PUBLISHED:
 
   //Put source transformation methods here
 
-  bool update_source_transform_nodePath(NodePath np);
-  bool update_source_transform_nodePath_local(NodePath np);//if you want to move np relative to parent rather than root
+  bool set_source_transform(std::string source_name, const LVecBase3 &pos);//Needs to be implemented
 
   bool has_source(std::string name);
   int get_num_sources();
   void clear_all_sources();
 
   //audio_loading
-  bool buffer_audio(std::string source, MovieAudioCursor cursor, int samples);
+  void buffer_audio(const MovieAudioCursor& cursor, int samples, std::string source = "");
 
   void render_effects();
 
   //configuration
-  void set_frame_size(int size);
   int get_frame_size();
 
-  void set_sample_rate(int size);
   int get_sample_rate();
 
   //effects
-  int add_steam_audio_effect(SteamAudioEffect effect);
+  int add_steam_audio_effect(const SteamAudioEffect& effect);
   int find_steam_audio_effect(SteamAudioEffect effect);
   SteamAudioEffect get_steam_audio_effect(int index);
   bool remove_steam_audio_effect(int index);
@@ -75,8 +74,16 @@ private:
   void sa_coordinate_transform(float x1, float y1, float z1, IPLVector3& vals);
 
   //buffers
-  typedef pset<IPLAudioBuffer> SteamBuffers;
-  SteamBuffers _global_buffers;//set of buffers that contain sound data that is processed all at once, by merging into one single buffer.
+  struct buffer_properties {
+  private:
+    friend class SteamAudioProcessor;
+
+    bool isGlobal = true;//true by default as a safeguard to a null sourceName getting accessed
+    IPLAudioBuffer buffer;
+    std::string sourceName = "";
+  };
+  typedef pset<buffer_properties> SteamBuffers;
+  SteamBuffers _buffers;//set of buffers that contain sound data that is processed all at once, by merging into one single buffer.
 
   //sources/simulation
   class source_properties {
@@ -108,8 +115,8 @@ private:
   SAEffects _steam_effects;
 
   //configuration
-  unsigned int frame_size;
-  unsigned int sample_rate;
+  unsigned int _frame_size;
+  unsigned int _sample_rate;
 
   IPLContext* _steamContext;//This risks being inefficient; but we don't have any near-gaurentee that we'll be used at app startup like the audio system
 

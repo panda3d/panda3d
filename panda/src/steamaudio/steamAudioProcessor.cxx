@@ -12,10 +12,20 @@
 
 #include "steamAudioProcessor.h"
 
+/**
+*
+* frame_rate sets how long a segment of audio is processed when render_effects is called.
+* Essentially, audio sources and moving objects do not move in steam audio's simulations
+* during a single "frame".
+* It's a good idea to tie the frame size with how often you pass updated positions to this class.
+* (Or vice-versa.)
+*
+* sample rate is both the rate that steam audio processes sound, and the rate at which it will be played back, regardless the rate of any audio you buffer in.
+**/
 SteamAudioProcessor::
 SteamAudioProcessor() {
-  frame_size = 512;
-  sample_rate = 44100;
+  _frame_size = 512;
+  _sample_rate = 44100;
 
   //create context
   IPLContextSettings contextSettings{};
@@ -33,7 +43,7 @@ SteamAudioProcessor() {
 SteamAudioProcessor::
 ~SteamAudioProcessor() {
   _sources.clear();
-  _global_buffers.clear();
+  _buffers.clear();
   _steam_effects.clear();
 
   iplContextRelease(_steamContext);
@@ -56,12 +66,12 @@ sa_coordinate_transform(float x1, float y1, float z1, IPLVector3& vals) {
 **/
 bool SteamAudioProcessor::
 make_source(std::string source_name) {
-  if ((sources.count(source_name) < 1) and _sources.max_size() > _sources.size()) :
+  if ((_sources.count(source_name) < 1) && _sources.max_size() > _sources.size())
   {
-    _sources[source_name] = source_properties()
+    _sources[source_name] = source_properties();
       return true;
   }
-  else:
+  else
   {
     return false;
   }
@@ -72,7 +82,7 @@ make_source(std::string source_name) {
 **/
 bool SteamAudioProcessor::
 has_source(std::string source_name) {
-  return (_sources.count(source_name) >= 1);
+  return (_sources.count(source_name) == 1);
 }
 
 /**
@@ -95,45 +105,70 @@ clear_all_sources() {
 
 //audio loading
 /**
-*
+* Load the provided number of samples from cursor, and send to steam audio.
+* If source is not provided, then the audio is assumed to be played from the listner's perspective.
 **/
 void SteamAudioProcessor::
-buffer_audio(std::string source, MovieAudioCursor cursor, int samples) {
+buffer_audio(const MovieAudioCursor& cursor, int samples, std::string source) {
+  int numChannels = cursor.audio_channels();
+  int cursorRate = cursor.audio_rate();
 
-}
+  int numInptSamples;//How large we need to make our imput array
+  if (_sample_rate <= cursorRate) {
+    numInptSamples = _frame_size;//We don't actually need as many if the cursorrate is larger than our rate, but this makes the code simpler and more readable.
+  }
+  else {
+    numInptSamples = ceil((_frame_size * cursorRate) / _sample_rate) + 1;
+  }
+  int16_t rawSamples[numInptSamples * numChannels];
+  cursor.read_samples(numInptSamples, rawSamples);
 
-/**
-*
-**/
-void SteamAudioProcessor::
-render_effects() {
+  float resampleRatio = static_cast<float>(_sample_rate) / cursorRate;
 
+  float compatibleSamples[_frame_size];
+  if (resampleRatio == 1) {//No need to resample
+    for (int i = 0; i < _frame_size; ++i) {
+      compatibleSamples[i] = static_cast<float>(rawSamples[i]) / 32768.0f;
+    }
+  }
+  else {//source rate is different than our rate
+    for (int i = 0; i < _frame_size; ++i) {
+      float j = static_cast<float>(i) / resampleRatio;//The actual index representing the timepoint we're attempting to get a sample for
+      int j0 = floor(j);
+      int j1 = j0 + 1;
+      float offset = j - j0;
+      assert( (j0 < numInptSamples) );
+
+      if (j1 > numInptSamples) { j1 = j0; }
+
+      float interpSample = ((1 - offset) * rawSamples[j0]) + (offset * rawSamples[j1]);
+
+      compatibleSamples[i] = interpSample / 32768.0f;//finish off by changing sample format to 32 bit float
+    }
+  }
+  
+
+  buffer_properties newBuffer;
+  newBuffer.buffer = new IPLAudioBuffer;
+  iplAudioBufferDeinterleave(_steamContext, compatibleSamples, newBuffer.buffer);
+
+  if (!source.empty() && has_source(source)) {
+    newBuffer.isGlobal = false;
+    newBuffer.sourceName = source;
+  }
+
+  _buffers.insert(newBuffer);
 }
 
 
 //configuration
-/**
-*
-**/
-void SteamAudioProcessor::
-set_frame_size(int size) {
-
-}
 
 /**
 *
 **/
 int SteamAudioProcessor::
 get_frame_size() {
-
-}
-
-/**
-*
-**/
-void SteamAudioProcessor::
-set_sample_rate(int size) {
-
+  return _frame_size;
 }
 
 /**
@@ -141,7 +176,7 @@ set_sample_rate(int size) {
 **/
 int SteamAudioProcessor::
 get_sample_rate() {
-
+  return _sample_rate;
 }
 
 /**
@@ -157,10 +192,10 @@ force_simulator_commit() {
 *Adds a SteamAudioEffect, and then returns it's index.
 */
 int SteamAudioProcessor::
-add_steam_audio_effect(SteamAudioEffect effect) {
+add_steam_audio_effect(const SteamAudioEffect& effect) {
   _steam_effects.push_back(&effect);
   pvector<PT(SteamAudioEffect)>::iterator i = std::find(_steam_effects.begin(), _steam_effects.end(), &effect);
-  return i - _steam_effects.begin();
+  return std::distance(_steam_effects.begin(), i);
 }
 
 /**
@@ -170,7 +205,7 @@ int SteamAudioProcessor::
 find_steam_audio_effect(SteamAudioEffect effect) {
   auto i = std::find(_steam_effects.begin(), _steam_effects.end(), &effect);
   if (i != _steam_effects.end()) {
-    return i - _steam_effects.begin();
+    return std::distance(_steam_effects.begin(), i);
   }
   else {
     return -1;
@@ -215,6 +250,18 @@ remove_steam_audio_effect(SteamAudioEffect effect) {
   else {
     return false;
   }
+}
+
+//Rendering/Output
+/**
+* Renders one frame of all buffered audio,
+* and outputs it to this instance's steamMovieAudio.
+* Note that the duration of one frame is not tied to the application framerate;
+* See set_frame_size for details!
+**/
+void SteamAudioProcessor::
+render_effects() {
+  //TODO:: delete buffered audio. Use the delete keyword!!
 }
 
 

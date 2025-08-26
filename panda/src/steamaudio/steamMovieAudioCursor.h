@@ -31,6 +31,7 @@ class EXPCL_STEAM_AUDIO SteamMovieAudioCursor : public MovieAudioCursor {
 PUBLISHED:
   SteamMovieAudioCursor(SteamMovieAudio* src);
   virtual ~SteamMovieAudioCursor();
+  //TODO:: seek()
 
 public:
   int read_samples(int n, int16_t* data);
