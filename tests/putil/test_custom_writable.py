@@ -32,6 +32,7 @@ BamReader.register_factory(CustomObject.get_class_type(), CustomObject.make_from
 def test_typed_writable_subclass():
     obj = CustomObject()
     obj.field = 123
+    base_rc = sys.getrefcount(obj)
     assert obj.get_type() == CustomObject.get_class_type()
     assert obj.type == CustomObject.get_class_type()
 
@@ -45,9 +46,9 @@ def test_typed_writable_subclass():
     reader = BamReader(buf)
     reader.init()
     obj = reader.read_object()
-    assert sys.getrefcount(obj) == 3
+    assert sys.getrefcount(obj) == base_rc + 1
     reader.resolve()
     del reader
-    assert sys.getrefcount(obj) == 2
+    assert sys.getrefcount(obj) == base_rc
 
     assert obj.field == 123
