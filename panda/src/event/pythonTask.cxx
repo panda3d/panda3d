@@ -534,9 +534,15 @@ do_python_task() {
     // We are calling a generator.  Use "send" rather than PyIter_Next since
     // we need to be able to read the value from a StopIteration exception.
     PyObject *func = PyObject_GetAttrString(_generator, "send");
-    nassertr(func != nullptr, DS_interrupt);
-    result = PyObject_CallFunctionObjArgs(func, Py_None, nullptr);
-    Py_DECREF(func);
+    if (func != nullptr) {
+      result = PyObject_CallOneArg(func, Py_None);
+      Py_DECREF(func);
+    } else {
+      // It has no send(), just call next() directly.
+      nassertr(Py_TYPE(_generator)->tp_iternext != nullptr, DS_interrupt);
+      PyErr_Clear();
+      result = Py_TYPE(_generator)->tp_iternext(_generator);
+    }
 
     if (result == nullptr) {
       // An error happened.  If StopIteration, that indicates the task has
