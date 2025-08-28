@@ -46,6 +46,31 @@ def check_result(fut, expected):
     return True
 
 
+def test_future_await_send():
+    fut = core.AsyncFuture()
+
+    i = fut.__await__()
+    assert i.send(None) == fut
+    assert i.send(None) == fut
+    assert i.send(None) == fut
+    assert i.send(None) == fut
+
+    fut.set_result(123)
+
+    with pytest.raises(StopIteration) as e:
+        i.send(None)
+
+    assert e.value.value == 123
+
+
+def test_future_await_throw():
+    fut = core.AsyncFuture()
+
+    i = fut.__await__()
+    with pytest.raises(RuntimeError):
+        i.throw(RuntimeError)
+
+
 def test_future_cancelled():
     fut = core.AsyncFuture()
 
