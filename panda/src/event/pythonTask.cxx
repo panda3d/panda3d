@@ -364,7 +364,7 @@ __getattribute__(PyObject *self, PyObject *attr) const {
   // We consult the instance dict first, since the user may have overridden a
   // method or something.
   PyObject *item;
-  if (PyDict_GetItemRef(__dict__, attr, &item) > 0) {
+  if (PyDict_GetItemRef(__dict__, attr, &item) != 0) {
     return item;
   }
 
