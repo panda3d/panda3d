@@ -73,11 +73,21 @@ __declspec(noinline)
 make_python_frame_collector(PyFrameObject *frame, PyCodeObject *code) {
 #if PY_VERSION_HEX >= 0x030B0000 // 3.11
   // Fetch the module name out of the frame's global scope.
+  const char *mod_name = "<unknown>";
+  PyObject *py_mod_name = nullptr;
   PyObject *globals = PyFrame_GetGlobals(frame);
-  PyObject *py_mod_name = PyDict_GetItemString(globals, "__name__");
+#if PY_VERSION_HEX >= 0x030D00A1 // 3.13
+  if (PyDict_GetItemStringRef(globals, "__name__", &py_mod_name) > 0) {
+    mod_name = PyUnicode_AsUTF8(py_mod_name);
+  }
+#else
+  py_mod_name = PyDict_GetItemString(globals, "__name__");
+  if (py_mod_name != nullptr) {
+    mod_name = PyUnicode_AsUTF8(py_mod_name);
+  }
+#endif
   Py_DECREF(globals);
 
-  const char *mod_name = py_mod_name ? PyUnicode_AsUTF8(py_mod_name) : "<unknown>";
   const char *meth_name = PyUnicode_AsUTF8(code->co_qualname);
   char buffer[1024];
   size_t len = snprintf(buffer, sizeof(buffer), "%s:%s", mod_name, meth_name);
@@ -86,6 +96,11 @@ make_python_frame_collector(PyFrameObject *frame, PyCodeObject *code) {
       buffer[i] = ':';
     }
   }
+
+#if PY_VERSION_HEX >= 0x030D00A1 // 3.13
+  Py_XDECREF(py_mod_name);
+#endif
+
 #else
   // Try to figure out the type name.  There's no obvious way to do this.
   // It's possible that the first argument passed to this function is the

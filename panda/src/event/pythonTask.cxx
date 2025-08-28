@@ -368,6 +368,17 @@ __getattr__(PyObject *attr) const {
   // tp_getattro slot (a la __getattribute__). So, we won't get here when the
   // attribute has already been found via other methods.
 
+#if PY_VERSION_HEX >= 0x030D00A1  // 3.13
+  PyObject *item = nullptr;
+  if (PyDict_GetItemRef(__dict__, attr, &item) == 0) {
+    // PyDict_GetItemRef does not raise an exception on missing attribute.
+    PyErr_Format(PyExc_AttributeError,
+                 "'PythonTask' object has no attribute '%U'",
+                 attr);
+  }
+  return item;
+
+#else  // 3.12 and lower
   PyObject *item = PyDict_GetItem(__dict__, attr);
 
   if (item == nullptr) {
@@ -387,6 +398,7 @@ __getattr__(PyObject *attr) const {
   // PyDict_GetItem returns a borrowed reference.
   Py_INCREF(item);
   return item;
+#endif
 }
 
 /**

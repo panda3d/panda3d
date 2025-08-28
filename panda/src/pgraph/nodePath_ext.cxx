@@ -55,6 +55,13 @@ PyObject *Extension<NodePath>::
 __deepcopy__(PyObject *self, PyObject *memo) const {
   extern struct Dtool_PyTypedObject Dtool_NodePath;
 
+#if PY_VERSION_HEX >= 0x030D00A1  // 3.13
+  PyObject *dupe;
+  if (PyDict_GetItemRef(memo, self, &dupe) != 0) {
+    // Already in the memo dictionary (or an error happened).
+    return dupe;
+  }
+#else
   // Borrowed reference.
   PyObject *dupe = PyDict_GetItem(memo, self);
   if (dupe != nullptr) {
@@ -62,6 +69,7 @@ __deepcopy__(PyObject *self, PyObject *memo) const {
     Py_INCREF(dupe);
     return dupe;
   }
+#endif
 
   NodePath *np_dupe;
   if (_this->is_empty()) {
