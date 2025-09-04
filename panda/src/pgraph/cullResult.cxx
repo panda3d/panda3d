@@ -385,6 +385,9 @@ delete_page(AllocationPage *page) {
   size_t size = std::exchange(page->_size, 0);
   for (size_t i = 0; i < size; ++i) {
     ((CullableObject *)page->_memory)[i].~CullableObject();
+#ifdef DO_MEMORY_USAGE
+    //MemoryUsage::remove_void_pointer(&((CullableObject *)page->_memory)[i]);
+#endif
   }
   AllocationPage *next = page->_next;
   if (next != nullptr) {
