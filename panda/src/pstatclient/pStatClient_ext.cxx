@@ -270,10 +270,10 @@ client_connect(std::string hostname, int port) {
       _python_profiler_enabled = true;
     }
 
-    // We require 3.14a6, since that version fixes an important bug with the
-    // ref tracer; prior versions did not properly send destroy events.
-#if PY_VERSION_HEX >= 0x030E0000
-    if (Py_Version >= 0x030E00A6) {
+    // We require 3.13.3 or 3.14a6, since those versions fix an important bug
+    // with the ref tracer; prior versions did not always send destroy events.
+#if PY_VERSION_HEX >= 0x030D0000
+    if (Py_Version >= 0x030D0300 || Py_Version >= 0x030E00A6) {
       if (pstats_python_ref_tracer) {
         PyRefTracer_SetTracer(&ref_trace_callback, _this);
       }
@@ -283,7 +283,7 @@ client_connect(std::string hostname, int port) {
     if (pstats_python_ref_tracer) {
       pstats_cat.warning()
         << "The pstats-python-ref-tracer feature requires at least "
-           "Python 3.14a6.\n";
+           "Python 3.13.3 or Python 3.14a6.\n";
     }
 
     return true;
@@ -306,7 +306,7 @@ client_disconnect() {
     _python_profiler_enabled = false;
   }
 
-#if PY_VERSION_HEX >= 0x030E0000 // 3.14
+#if PY_VERSION_HEX >= 0x030D0000 // 3.13
   void *data;
   if (PyRefTracer_GetTracer(&data) == &ref_trace_callback && data == _this) {
     PyRefTracer_SetTracer(nullptr, nullptr);
@@ -396,7 +396,7 @@ trace_callback(PyObject *py_thread, PyFrameObject *frame, int what, PyObject *ar
 /**
  * Callback passed to PyRefTracer_SetTracer.
  */
-#if PY_VERSION_HEX >= 0x030E0000 // 3.14
+#if PY_VERSION_HEX >= 0x030D0000 // 3.13
 int Extension<PStatClient>::
 ref_trace_callback(PyObject *obj, PyRefTracerEvent event, void *data) {
   PStatClient *client = (PStatClient *)data;
