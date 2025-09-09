@@ -76,8 +76,6 @@ PUBLISHED:
 private:
   std::string get_config_name() const;
   void update_severity_cache();
-  static bool get_notify_timestamp();
-  static bool get_check_debug_notify_protect();
 
   std::string _fullname;
   std::string _basename;
@@ -86,12 +84,16 @@ private:
   typedef std::vector<NotifyCategory *> Children;
   Children _children;
 
+  static bool _notify_timestamp;
+  static bool _check_debug_notify_protect;
+
   static long _server_delta; // not a time_t because server delta may be signed.
 
   AtomicAdjust::Integer _local_modified;
   NotifySeverity _severity_cache;
 
   friend class Notify;
+  friend class ConfigPageManager;
 };
 
 INLINE std::ostream &operator << (std::ostream &out, const NotifyCategory &cat);

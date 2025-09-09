@@ -44,12 +44,12 @@ EXPCL_INTERROGATEDB void interrogate_request_database(const char *database_filen
 
 /* The more sophisticated interface uses these structures. */
 
-typedef struct {
+typedef struct InterrogateUniqueNameDef {
   const char *name;
   int index_offset;
 } InterrogateUniqueNameDef;
 
-typedef struct {
+typedef struct InterrogateModuleDef {
   int file_identifier;
 
   const char *library_name;

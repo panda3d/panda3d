@@ -265,7 +265,7 @@ if(BUILD_INTERROGATE)
     panda3d-interrogate
 
     GIT_REPOSITORY https://github.com/panda3d/interrogate.git
-    GIT_TAG 502b4806427f456e5fdbf4f98f271f89622a8a9c
+    GIT_TAG c19b93c00bd31ecdde861f6511e7830d9f69ac91
 
     PREFIX ${_interrogate_dir}
     CMAKE_ARGS
