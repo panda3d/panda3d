@@ -755,58 +755,61 @@ set_3d_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx
   switch (cs) {
   case CS_yup_left:
     // Y-up, left-handed: negate X
-    openal_pos[0] = -px;
-    openal_pos[1] = pz;
-    openal_pos[2] = -py;
+    openal_pos[0]=-px;
+    openal_pos[1]=pz;
+    openal_pos[2]=-py;
 
-    openal_vel[0] = -vx;
-    openal_vel[1] = vz;
-    openal_vel[2] = -vy;
+    openal_vel[0]=-vx;
+    openal_vel[1]=vz;
+    openal_vel[2]=-vy;
     break;
 
   case CS_zup_left:
     // Z-up, left-handed: negate X
-    openal_pos[0] = -px;
-    openal_pos[1] = py;
-    openal_pos[2] = pz;
+    openal_pos[0]=-px;
+    openal_pos[1]=py;
+    openal_pos[2]=pz;
 
-    openal_vel[0] = -vx;
-    openal_vel[1] = vy;
-    openal_vel[2] = vz;
-    break;
-
-  case CS_zup_right:
-    // Z-up, right-handed: standard Z-up transformation
-    openal_pos[0] = px;
-    openal_pos[1] = py;
-    openal_pos[2] = pz;
-
-    openal_vel[0] = vx;
-    openal_vel[1] = vy;
-    openal_vel[2] = vz;
+    openal_vel[0]=-vx;
+    openal_vel[1]=vy;
+    openal_vel[2]=vz;
     break;
 
   case CS_yup_right:
-  default:
     // Y-up, right-handed: standard Y-up transformation
-    openal_pos[0] = px;
-    openal_pos[1] = pz;
-    openal_pos[2] = -py;
+    openal_pos[0]=px;
+    openal_pos[1]=py;
+    openal_pos[2]=-pz;
 
-    openal_vel[0] = vx;
-    openal_vel[1] = vz;
-    openal_vel[2] = -vy;
+    openal_vel[0]=vx;
+    openal_vel[1]=vy;
+    openal_vel[2]=-vz;
+    break;
+
+  case CS_zup_right:
+  default:
+    // Z-up, right-handed: standard Z-up transformation (DEFAULT CASE)
+    openal_pos[0]=px;
+    openal_pos[1]=pz;
+    openal_pos[2]=-py;
+
+    openal_vel[0]=vx;
+    openal_vel[1]=vz;
+    openal_vel[2]=-vy;
     break;
   }
 
-  _location[0] = openal_pos[0];
-  _location[1] = openal_pos[1];
-  _location[2] = openal_pos[2];
-  _velocity[0] = openal_vel[0];
-  _velocity[1] = openal_vel[1];
-  _velocity[2] = openal_vel[2];
+
+
+
+  _location[0]=openal_pos[0];
+  _location[1]=openal_pos[1];
+  _location[2]=openal_pos[2];
+  _velocity[0]=openal_vel[0];
+  _velocity[1]=openal_vel[1];
+  _velocity[2]=openal_vel[2];
   if (is_playing()) {
-    _manager -> make_current();
+    _manager->make_current();
 
     alGetError();
     alSourcefv(_source, AL_POSITION, _location);

@@ -39,29 +39,29 @@ using std::string;
 TypeHandle OpenALAudioManager::_type_handle;
 
 ReMutex OpenALAudioManager::_lock;
-int OpenALAudioManager::_active_managers = 0;
-bool OpenALAudioManager::_openal_active = false;
-ALCdevice* OpenALAudioManager::_device = nullptr;
-ALCcontext* OpenALAudioManager::_context = nullptr;
+int OpenALAudioManager::_active_managers=0;
+bool OpenALAudioManager::_openal_active=false;
+ALCdevice* OpenALAudioManager::_device=nullptr;
+ALCcontext* OpenALAudioManager::_context=nullptr;
 
 // This is the list of all OpenALAudioManager objects in the world.  It must
 // be a pointer rather than a concrete object, so it won't be destructed at
 // exit time before we're done removing things from it.
-OpenALAudioManager::Managers *OpenALAudioManager::_managers = nullptr;
+OpenALAudioManager::Managers *OpenALAudioManager::_managers=nullptr;
 
-OpenALAudioManager::SourceCache *OpenALAudioManager::_al_sources = nullptr;
+OpenALAudioManager::SourceCache *OpenALAudioManager::_al_sources=nullptr;
 
 
 // Central dispatcher for audio errors.
 void al_audio_errcheck(const char *context) {
-  ALenum result = alGetError();
+  ALenum result=alGetError();
   if (result != AL_NO_ERROR) {
     audio_error(context << ": " << alGetString(result) );
   }
 }
 
 void alc_audio_errcheck(const char *context,ALCdevice* device) {
-  ALCenum result = alcGetError(device);
+  ALCenum result=alcGetError(device);
   if (result != ALC_NO_ERROR) {
     audio_error(context << ": " << alcGetString(device,result) );
   }
@@ -83,51 +83,51 @@ OpenALAudioManager::
 OpenALAudioManager() {
   ReMutexHolder holder(_lock);
   if (_managers == nullptr) {
-    _managers = new Managers;
-    _al_sources = new SourceCache;
+    _managers=new Managers;
+    _al_sources=new SourceCache;
   }
 
   _managers->insert(this);
 
-  _cleanup_required = true;
-  _active = audio_active;
-  _volume = audio_volume;
-  _play_rate = 1.0f;
+  _cleanup_required=true;
+  _active=audio_active;
+  _volume=audio_volume;
+  _play_rate=1.0f;
 
-  _cache_limit = audio_cache_limit;
+  _cache_limit=audio_cache_limit;
 
-  _concurrent_sound_limit = 0;
-  _is_valid = true;
+  _concurrent_sound_limit=0;
+  _is_valid=true;
 
   // Init 3D attributes
-  _distance_factor = 1;
-  _drop_off_factor = 1;
+  _distance_factor=1;
+  _drop_off_factor=1;
 
-  _position[0] = 0;
-  _position[1] = 0;
-  _position[2] = 0;
+  _position[0]=0;
+  _position[1]=0;
+  _position[2]=0;
 
-  _velocity[0] = 0;
-  _velocity[1] = 0;
-  _velocity[2] = 0;
+  _velocity[0]=0;
+  _velocity[1]=0;
+  _velocity[2]=0;
 
-  _forward_up[0] = 0;
-  _forward_up[1] = 0;
-  _forward_up[2] = 0;
-  _forward_up[3] = 0;
-  _forward_up[4] = 0;
-  _forward_up[5] = 0;
+  _forward_up[0]=0;
+  _forward_up[1]=0;
+  _forward_up[2]=0;
+  _forward_up[3]=0;
+  _forward_up[4]=0;
+  _forward_up[5]=0;
 
   // Initialization
   audio_cat.init();
   if (_active_managers == 0 || !_openal_active) {
-    _device = nullptr;
-    string dev_name = select_audio_device();
+    _device=nullptr;
+    string dev_name=select_audio_device();
 
     if (!dev_name.empty()) {
       // Open a specific device by name.
       audio_cat.info() << "Using OpenAL device " << dev_name << "\n";
-      _device = alcOpenDevice(dev_name.c_str());
+      _device=alcOpenDevice(dev_name.c_str());
 
       if (_device == nullptr) {
         audio_cat.error()
@@ -139,11 +139,11 @@ OpenALAudioManager() {
 
     if (_device == nullptr) {
       // Open the default device.
-      _device = alcOpenDevice(nullptr);
+      _device=alcOpenDevice(nullptr);
 
       if (_device == nullptr && dev_name != "OpenAL Soft") {
         // Try the OpenAL Soft driver instead, which is fairly reliable.
-        _device = alcOpenDevice("OpenAL Soft");
+        _device=alcOpenDevice("OpenAL Soft");
 
         if (_device == nullptr) {
           audio_cat.error()
@@ -156,24 +156,24 @@ OpenALAudioManager() {
       // We managed to get a device open.
       alcGetError(_device); // clear errors
 
-      ALCboolean is_hrtf_present = alcIsExtensionPresent(_device, "ALC_SOFT_HRTF");
+      ALCboolean is_hrtf_present=alcIsExtensionPresent(_device, "ALC_SOFT_HRTF");
 
-      ALCint attrs[3] = {0};
+      ALCint attrs[3]={0};
 
 #ifndef HAVE_OPENAL_FRAMEWORK
       if (is_hrtf_present) {
-        attrs[0] = ALC_HRTF_SOFT;
-        attrs[1] = audio_want_hrtf.get_value() ? ALC_TRUE : ALC_FALSE;
-        attrs[2] = 0; // end of list
+        attrs[0]=ALC_HRTF_SOFT;
+        attrs[1]=audio_want_hrtf.get_value() ? ALC_TRUE : ALC_FALSE;
+        attrs[2]=0; // end of list
       } else {
-        attrs[0] = 0; // end of list
+        attrs[0]=0; // end of list
       }
 #endif // HAVE_OPENAL_FRAMEWORK
 
-      _context = alcCreateContext(_device, attrs);
+      _context=alcCreateContext(_device, attrs);
       alc_audio_errcheck("alcCreateContext(_device, NULL)", _device);
       if (_context != nullptr) {
-        _openal_active = true;
+        _openal_active=true;
       }
     }
   }
@@ -185,7 +185,7 @@ OpenALAudioManager() {
 
   if (!_device || !_context) {
     audio_error("OpenALAudioManager: No open device or context");
-    _is_valid = false;
+    _is_valid=false;
   } else {
     alcGetError(_device); // clear errors
     alcMakeContextCurrent(_context);
@@ -216,7 +216,7 @@ OpenALAudioManager::
 ~OpenALAudioManager() {
   ReMutexHolder holder(_lock);
   nassertv(_managers != nullptr);
-  Managers::iterator mi = _managers->find(this);
+  Managers::iterator mi=_managers->find(this);
   nassertv(mi != _managers->end());
   _managers->erase(mi);
   cleanup();
@@ -233,7 +233,7 @@ shutdown() {
   ReMutexHolder holder(_lock);
   if (_managers != nullptr) {
     Managers::iterator mi;
-    for (mi = _managers->begin(); mi != _managers->end(); ++mi) {
+    for (mi=_managers->begin(); mi != _managers->end(); ++mi) {
       (*mi)->cleanup();
     }
   }
@@ -257,14 +257,14 @@ is_valid() {
  */
 string OpenALAudioManager::
 select_audio_device() {
-  string selected_device = openal_device;
+  string selected_device=openal_device;
 
-  const char *devices = nullptr;
+  const char *devices=nullptr;
 
   // This extension gives us all audio paths on all drivers.
   if (alcIsExtensionPresent(nullptr, "ALC_ENUMERATE_ALL_EXT") == AL_TRUE) {
-    string default_device = alcGetString(nullptr, ALC_DEFAULT_ALL_DEVICES_SPECIFIER);
-    devices = (const char *)alcGetString(nullptr, ALC_ALL_DEVICES_SPECIFIER);
+    string default_device=alcGetString(nullptr, ALC_DEFAULT_ALL_DEVICES_SPECIFIER);
+    devices=(const char *)alcGetString(nullptr, ALC_ALL_DEVICES_SPECIFIER);
 
     if (devices) {
       if (audio_cat.is_debug()) {
@@ -293,8 +293,8 @@ select_audio_device() {
   // This extension just gives us generic driver names, like "OpenAL Soft" and
   // "Generic Software", rather than individual outputs.
   if (alcIsExtensionPresent(nullptr, "ALC_ENUMERATION_EXT") == AL_TRUE) {
-    string default_device = alcGetString(nullptr, ALC_DEFAULT_DEVICE_SPECIFIER);
-    devices = (const char *)alcGetString(nullptr, ALC_DEVICE_SPECIFIER);
+    string default_device=alcGetString(nullptr, ALC_DEFAULT_DEVICE_SPECIFIER);
+    devices=(const char *)alcGetString(nullptr, ALC_DEVICE_SPECIFIER);
 
     if (devices) {
       if (audio_cat.is_debug()) {
@@ -308,7 +308,7 @@ select_audio_device() {
         if (selected_device.empty() && device == "OpenAL Soft" &&
             default_device == "Generic Software") {
           // Prefer OpenAL Soft over the buggy Generic Software driver.
-          selected_device = "OpenAL Soft";
+          selected_device="OpenAL Soft";
         }
 
         if (audio_cat.is_debug()) {
@@ -346,7 +346,7 @@ make_current() const {
 bool OpenALAudioManager::
 can_use_audio(MovieAudioCursor *source) {
   ReMutexHolder holder(_lock);
-  int channels = source->audio_channels();
+  int channels=source->audio_channels();
   if ((channels != 1)&&(channels != 2)) {
     audio_error("Currently, only mono and stereo are supported.");
     return false;
@@ -378,9 +378,9 @@ should_load_audio(MovieAudioCursor *source, int mode) {
     // Anything longer than an hour cannot be preloaded.
     return false;
   }
-  int channels = source->audio_channels();
-  int samples = (int)(source->length() * source->audio_rate());
-  int bytes = samples * channels * 2;
+  int channels=source->audio_channels();
+  int samples=(int)(source->length() * source->audio_rate());
+  int bytes=samples * channels * 2;
   if ((mode == SM_heuristic)&&(bytes > audio_preload_threshold)) {
     // In heuristic mode, if file is long, stream it.
     return false;
@@ -397,7 +397,7 @@ should_load_audio(MovieAudioCursor *source, int mode) {
 OpenALAudioManager::SoundData *OpenALAudioManager::
 get_sound_data(MovieAudio *movie, int mode) {
   ReMutexHolder holder(_lock);
-  const Filename &path = movie->get_filename();
+  const Filename &path=movie->get_filename();
 
   // Search for an already-cached sample or an already-opened stream.
   if (!path.empty()) {
@@ -405,7 +405,7 @@ get_sound_data(MovieAudio *movie, int mode) {
     if (mode != SM_stream) {
       SampleCache::iterator lsmi=_sample_cache.find(path);
       if (lsmi != _sample_cache.end()) {
-        SoundData *sd = (*lsmi).second;
+        SoundData *sd=(*lsmi).second;
         increment_client_count(sd);
         return sd;
       }
@@ -414,7 +414,7 @@ get_sound_data(MovieAudio *movie, int mode) {
     if (mode != SM_sample) {
       ExpirationQueue::iterator exqi;
       for (exqi=_expiring_streams.begin(); exqi!=_expiring_streams.end(); exqi++) {
-        SoundData *sd = (SoundData*)(*exqi);
+        SoundData *sd=(SoundData*)(*exqi);
         if (sd->_movie->get_filename() == path) {
           increment_client_count(sd);
           return sd;
@@ -423,7 +423,7 @@ get_sound_data(MovieAudio *movie, int mode) {
     }
   }
 
-  PT(MovieAudioCursor) stream = movie->open();
+  PT(MovieAudioCursor) stream=movie->open();
   if (stream == nullptr) {
     audio_error("Cannot open file: "<<path);
     return nullptr;
@@ -434,13 +434,13 @@ get_sound_data(MovieAudio *movie, int mode) {
     return nullptr;
   }
 
-  SoundData *sd = new SoundData();
-  sd->_client_count = 1;
-  sd->_manager  = this;
-  sd->_movie    = movie;
-  sd->_rate     = stream->audio_rate();
-  sd->_channels = stream->audio_channels();
-  sd->_length   = stream->length();
+  SoundData *sd=new SoundData();
+  sd->_client_count=1;
+  sd->_manager =this;
+  sd->_movie   =movie;
+  sd->_rate    =stream->audio_rate();
+  sd->_channels=stream->audio_channels();
+  sd->_length  =stream->length();
   audio_debug("Creating: " << sd->_movie->get_filename().get_basename());
   audio_debug("  - Rate: " << sd->_rate);
   audio_debug("  - Channels: " << sd->_channels);
@@ -450,7 +450,7 @@ get_sound_data(MovieAudio *movie, int mode) {
     audio_debug(path.get_basename() << ": loading as sample");
     make_current();
     alGetError(); // clear errors
-    sd->_sample = 0;
+    sd->_sample=0;
     alGenBuffers(1, &sd->_sample);
     al_audio_errcheck("alGenBuffers");
     if (sd->_sample == 0) {
@@ -458,15 +458,15 @@ get_sound_data(MovieAudio *movie, int mode) {
       delete sd;
       return nullptr;
     }
-    int channels = stream->audio_channels();
-    int samples = (int)(stream->length() * stream->audio_rate());
-    int16_t *data = new int16_t[samples * channels];
-    samples = stream->read_samples(samples, data);
+    int channels=stream->audio_channels();
+    int samples=(int)(stream->length() * stream->audio_rate());
+    int16_t *data=new int16_t[samples * channels];
+    samples=stream->read_samples(samples, data);
     alBufferData(sd->_sample,
                  (channels>1) ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16,
                  data, samples * channels * 2, stream->audio_rate());
     delete[] data;
-    int err = alGetError();
+    int err=alGetError();
     if (err != AL_NO_ERROR) {
       audio_error("could not fill OpenAL buffer object with data");
       delete sd;
@@ -475,7 +475,7 @@ get_sound_data(MovieAudio *movie, int mode) {
     _sample_cache.insert(SampleCache::value_type(path, sd));
   } else {
     audio_debug(path.get_basename() << ": loading as stream");
-    sd->_stream = stream;
+    sd->_stream=stream;
   }
 
   return sd;
@@ -500,7 +500,7 @@ get_sound(MovieAudio *sound, bool positional, int mode) {
   }
 
   _all_sounds.insert(oas);
-  PT(AudioSound) res = (AudioSound*)(OpenALAudioSound*)oas;
+  PT(AudioSound) res=(AudioSound*)(OpenALAudioSound*)oas;
   return res;
 }
 
@@ -514,8 +514,8 @@ get_sound(const Filename &file_name, bool positional, int mode) {
     return get_null_sound();
   }
 
-  Filename path = file_name;
-  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+  Filename path=file_name;
+  VirtualFileSystem *vfs=VirtualFileSystem::get_global_ptr();
   vfs->resolve_filename(path, get_model_path());
 
   if (path.empty()) {
@@ -523,7 +523,7 @@ get_sound(const Filename &file_name, bool positional, int mode) {
     return nullptr;
   }
 
-  PT(MovieAudio) mva = MovieAudio::get(path);
+  PT(MovieAudio) mva=MovieAudio::get(path);
 
   PT(OpenALAudioSound) oas =
     new OpenALAudioSound(this, mva, positional, mode);
@@ -535,7 +535,7 @@ get_sound(const Filename &file_name, bool positional, int mode) {
   }
 
   _all_sounds.insert(oas);
-  PT(AudioSound) res = (AudioSound*)(OpenALAudioSound*)oas;
+  PT(AudioSound) res=(AudioSound*)(OpenALAudioSound*)oas;
   return res;
 }
 
@@ -547,17 +547,17 @@ void OpenALAudioManager::
 uncache_sound(const Filename &file_name) {
   ReMutexHolder holder(_lock);
   nassertv(is_valid());
-  Filename path = file_name;
+  Filename path=file_name;
 
-  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+  VirtualFileSystem *vfs=VirtualFileSystem::get_global_ptr();
   vfs->resolve_filename(path, get_model_path());
 
-  SampleCache::iterator sci = _sample_cache.find(path);
+  SampleCache::iterator sci=_sample_cache.find(path);
   if (sci == _sample_cache.end()) {
-    sci = _sample_cache.find(file_name);
+    sci=_sample_cache.find(file_name);
   }
   if (sci != _sample_cache.end()) {
-    SoundData *sd = (*sci).second;
+    SoundData *sd=(*sci).second;
     if (sd->_client_count == 0) {
       _expiring_samples.erase(sd->_expire);
       _sample_cache.erase(sci);
@@ -566,12 +566,12 @@ uncache_sound(const Filename &file_name) {
   }
 
   ExpirationQueue::iterator exqi;
-  for (exqi = _expiring_streams.begin(); exqi != _expiring_streams.end();) {
-    SoundData *sd = (SoundData *)(*exqi);
+  for (exqi=_expiring_streams.begin(); exqi != _expiring_streams.end();) {
+    SoundData *sd=(SoundData *)(*exqi);
     if (sd->_client_count == 0) {
       if (sd->_movie->get_filename() == path ||
           sd->_movie->get_filename() == file_name) {
-        exqi = _expiring_streams.erase(exqi);
+        exqi=_expiring_streams.erase(exqi);
         delete sd;
         continue;
       }
@@ -613,7 +613,7 @@ get_cache_limit() const {
 void OpenALAudioManager::
 release_sound(OpenALAudioSound* audioSound) {
   ReMutexHolder holder(_lock);
-  AllSounds::iterator ai = _all_sounds.find(audioSound);
+  AllSounds::iterator ai=_all_sounds.find(audioSound);
   if (ai != _all_sounds.end()) {
     _all_sounds.erase(ai);
   }
@@ -626,7 +626,7 @@ release_sound(OpenALAudioSound* audioSound) {
 void OpenALAudioManager::set_volume(PN_stdfloat volume) {
   ReMutexHolder holder(_lock);
   if (_volume!=volume) {
-    _volume = volume;
+    _volume=volume;
 
     // Tell our AudioSounds to adjust:
     AllSounds::iterator i=_all_sounds.begin();
@@ -661,7 +661,7 @@ void OpenALAudioManager::
 set_play_rate(PN_stdfloat play_rate) {
   ReMutexHolder holder(_lock);
   if (_play_rate!=play_rate) {
-    _play_rate = play_rate;
+    _play_rate=play_rate;
     // Tell our AudioSounds to adjust:
     AllSounds::iterator i=_all_sounds.begin();
     for (; i!=_all_sounds.end(); ++i) {
@@ -716,84 +716,84 @@ get_active() const {
  void OpenALAudioManager::
   audio_3d_set_listener_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx, PN_stdfloat vy, PN_stdfloat vz, PN_stdfloat fx, PN_stdfloat fy, PN_stdfloat fz, PN_stdfloat ux, PN_stdfloat uy, PN_stdfloat uz) {
     ReMutexHolder holder(_lock);
-    CoordinateSystem cs = get_default_coordinate_system();
+    CoordinateSystem cs=get_default_coordinate_system();
 
     switch (cs) {
     case CS_yup_left:
       // Y-up, left-handed: negate X
-      _position[0] = -px;
-      _position[1] = pz;
-      _position[2] = -py;
+      _position[0]=-px;
+      _position[1]=pz;
+      _position[2]=-py;
 
-      _velocity[0] = -vx;
-      _velocity[1] = vz;
-      _velocity[2] = -vy;
+      _velocity[0]=-vx;
+      _velocity[1]=vz;
+      _velocity[2]=-vy;
 
-      _forward_up[0] = -fx;
-      _forward_up[1] = fz;
-      _forward_up[2] = -fy;
+      _forward_up[0]=-fx;
+      _forward_up[1]=fz;
+      _forward_up[2]=-fy;
 
-      _forward_up[3] = -ux;
-      _forward_up[4] = uz;
-      _forward_up[5] = -uy;
+      _forward_up[3]=-ux;
+      _forward_up[4]=uz;
+      _forward_up[5]=-uy;
       break;
 
     case CS_zup_left:
       // Z-up, left-handed: negate X
-      _position[0] = -px;
-      _position[1] = py;
-      _position[2] = pz;
+      _position[0]=-px;
+      _position[1]=py;
+      _position[2]=pz;
 
-      _velocity[0] = -vx;
-      _velocity[1] = vy;
-      _velocity[2] = vz;
+      _velocity[0]=-vx;
+      _velocity[1]=vy;
+      _velocity[2]=vz;
 
-      _forward_up[0] = -fx;
-      _forward_up[1] = fy;
-      _forward_up[2] = fz;
+      _forward_up[0]=-fx;
+      _forward_up[1]=fy;
+      _forward_up[2]=fz;
 
-      _forward_up[3] = -ux;
-      _forward_up[4] = uy;
-      _forward_up[5] = uz;
+      _forward_up[3]=-ux;
+      _forward_up[4]=uy;
+      _forward_up[5]=uz;
       break;
 
     case CS_zup_right:
       // Z-up, right-handed: standard Z-up transformation
-      _position[0] = px;
-      _position[1] = py;
-      _position[2] = pz;
+      _position[0]=px;
+      _position[1]=py;
+      _position[2]=pz;
 
-      _velocity[0] = vx;
-      _velocity[1] = vy;
-      _velocity[2] = vz;
+      _velocity[0]=vx;
+      _velocity[1]=vy;
+      _velocity[2]=vz;
 
-      _forward_up[0] = fx;
-      _forward_up[1] = fy;
-      _forward_up[2] = fz;
+      _forward_up[0]=fx;
+      _forward_up[1]=fy;
+      _forward_up[2]=fz;
 
-      _forward_up[3] = ux;
-      _forward_up[4] = uy;
-      _forward_up[5] = uz;
+      _forward_up[3]=ux;
+      _forward_up[4]=uy;
+      _forward_up[5]=uz;
       break;
 
     case CS_yup_right:
     default:
       // Y-up, right-handed: standard Y-up transformation
-      _position[0] = px;
-      _position[1] = pz;
-      _position[2] = -py;
+      _position[0]=px;
+      _position[1]=pz;
+      _position[2]=-py;
 
-      _velocity[0] = vx;
-      _velocity[1] = vz;
-      _velocity[2] = -vy;
+      _velocity[0]=vx;
+      _velocity[1]=vz;
+      _velocity[2]=-vy;
 
-      _forward_up[0] = fx;
-      _forward_up[1] = fz;
-      _forward_up[2] = -fy;
+      _forward_up[0]=fx;
+      _forward_up[1]=fz;
+      _forward_up[2]=-fy;
 
-      _forward_up[3] = ux;
-      _forward_up[4] = uz;
-      _forward_up[5] = -uy;
+      _forward_up[3]=ux;
+      _forward_up[4]=uz;
+      _forward_up[5]=-uy;
       break;
     }
 
@@ -812,90 +812,90 @@ get_active() const {
  * Get position of the "ear" that picks up 3d sounds
  */
 void OpenALAudioManager::
-  audio_3d_get_listener_attributes(PN_stdfloat * px, PN_stdfloat * py, PN_stdfloat * pz, PN_stdfloat * vx, PN_stdfloat * vy, PN_stdfloat * vz, PN_stdfloat * fx, PN_stdfloat * fy, PN_stdfloat * fz, PN_stdfloat * ux, PN_stdfloat * uy, PN_stdfloat * uz) {
+  audio_3d_get_listener_attributes(PN_stdfloat*px, PN_stdfloat*py, PN_stdfloat*pz, PN_stdfloat*vx, PN_stdfloat*vy, PN_stdfloat*vz, PN_stdfloat*fx, PN_stdfloat*fy, PN_stdfloat*fz, PN_stdfloat*ux, PN_stdfloat*uy, PN_stdfloat*uz) {
     ReMutexHolder holder(_lock);
-    CoordinateSystem cs = get_default_coordinate_system();
+    CoordinateSystem cs=get_default_coordinate_system();
 
     switch (cs) {
     case CS_yup_left:
       // Y-up, left-handed: negate X
       *
-      px = -_position[0];
-      * py = -_position[2];
-      * pz = _position[1];
+      px=-_position[0];
+      * py=-_position[2];
+      * pz=_position[1];
 
-      * vx = -_velocity[0];
-      * vy = -_velocity[2];
-      * vz = _velocity[1];
+      * vx=-_velocity[0];
+      * vy=-_velocity[2];
+      * vz=_velocity[1];
 
-      * fx = -_forward_up[0];
-      * fy = -_forward_up[2];
-      * fz = _forward_up[1];
+      * fx=-_forward_up[0];
+      * fy=-_forward_up[2];
+      * fz=_forward_up[1];
 
-      * ux = -_forward_up[3];
-      * uy = -_forward_up[5];
-      * uz = _forward_up[4];
+      * ux=-_forward_up[3];
+      * uy=-_forward_up[5];
+      * uz=_forward_up[4];
       break;
 
     case CS_zup_left:
       // Z-up, left-handed: negate X
       *
-      px = -_position[0];
-      * py = _position[1];
-      * pz = _position[2];
+      px=-_position[0];
+      * py=_position[1];
+      * pz=_position[2];
 
-      * vx = -_velocity[0];
-      * vy = _velocity[1];
-      * vz = _velocity[2];
+      * vx=-_velocity[0];
+      * vy=_velocity[1];
+      * vz=_velocity[2];
 
-      * fx = -_forward_up[0];
-      * fy = _forward_up[1];
-      * fz = _forward_up[2];
+      * fx=-_forward_up[0];
+      * fy=_forward_up[1];
+      * fz=_forward_up[2];
 
-      * ux = -_forward_up[3];
-      * uy = _forward_up[4];
-      * uz = _forward_up[5];
+      * ux=-_forward_up[3];
+      * uy=_forward_up[4];
+      * uz=_forward_up[5];
       break;
 
     case CS_zup_right:
       // Z-up, right-handed: standard Z-up transformation
       *
-      px = _position[0];
-      * py = _position[1];
-      * pz = _position[2];
+      px=_position[0];
+      * py=_position[1];
+      * pz=_position[2];
 
-      * vx = _velocity[0];
-      * vy = _velocity[1];
-      * vz = _velocity[2];
+      * vx=_velocity[0];
+      * vy=_velocity[1];
+      * vz=_velocity[2];
 
-      * fx = _forward_up[0];
-      * fy = _forward_up[1];
-      * fz = _forward_up[2];
+      * fx=_forward_up[0];
+      * fy=_forward_up[1];
+      * fz=_forward_up[2];
 
-      * ux = _forward_up[3];
-      * uy = _forward_up[4];
-      * uz = _forward_up[5];
+      * ux=_forward_up[3];
+      * uy=_forward_up[4];
+      * uz=_forward_up[5];
       break;
 
     case CS_yup_right:
     default:
       // Y-up, right-handed: standard Y-up transformation
       *
-      px = _position[0];
-      * py = -_position[2];
-      * pz = _position[1];
+      px=_position[0];
+      * py=-_position[2];
+      * pz=_position[1];
 
-      * vx = _velocity[0];
-      * vy = -_velocity[2];
-      * vz = _velocity[1];
+      * vx=_velocity[0];
+      * vy=-_velocity[2];
+      * vz=_velocity[1];
 
-      * fx = _forward_up[0];
-      * fy = -_forward_up[2];
-      * fz = _forward_up[1];
+      * fx=_forward_up[0];
+      * fy=-_forward_up[2];
+      * fz=_forward_up[1];
 
-      * ux = _forward_up[3];
-      * uy = -_forward_up[5];
-      * uz = _forward_up[4];
+      * ux=_forward_up[3];
+      * uy=-_forward_up[5];
+      * uz=_forward_up[4];
       break;
     }
   }
@@ -908,7 +908,7 @@ void OpenALAudioManager::
 void OpenALAudioManager::
 audio_3d_set_distance_factor(PN_stdfloat factor) {
   ReMutexHolder holder(_lock);
-  _distance_factor = factor;
+  _distance_factor=factor;
 
   make_current();
 
@@ -948,7 +948,7 @@ audio_3d_get_distance_factor() const {
 void OpenALAudioManager::
 audio_3d_set_doppler_factor(PN_stdfloat factor) {
   ReMutexHolder holder(_lock);
-  _doppler_factor = factor;
+  _doppler_factor=factor;
 
   make_current();
 
@@ -971,7 +971,7 @@ audio_3d_get_doppler_factor() const {
 void OpenALAudioManager::
 audio_3d_set_drop_off_factor(PN_stdfloat factor) {
   ReMutexHolder holder(_lock);
-  _drop_off_factor = factor;
+  _drop_off_factor=factor;
 
   AllSounds::iterator i=_all_sounds.begin();
   for (; i!=_all_sounds.end(); ++i) {
@@ -1015,22 +1015,22 @@ starting_sound(OpenALAudioSound* audio) {
     make_current();
     alGetError(); // clear errors
     alGenSources(1,&source);
-    ALenum result = alGetError();
+    ALenum result=alGetError();
     if (result!=AL_NO_ERROR) {
       audio_error("alGenSources(): " << alGetString(result) );
       // if we can't create any more sources, set stop a sound to free a
       // source
       reduce_sounds_playing_to(_sounds_playing.size()-1);
-      source = 0;
+      source=0;
     }
   }
   // get a source from the source bool if we didn't just allocate one
   if (!source && !_al_sources->empty()) {
-    source = *(_al_sources->begin());
+    source=*(_al_sources->begin());
     _al_sources->erase(source);
   }
 
-  audio->_source = source;
+  audio->_source=source;
 
   if (source)
     _sounds_playing.insert(audio);
@@ -1045,7 +1045,7 @@ stopping_sound(OpenALAudioSound* audio) {
   ReMutexHolder holder(_lock);
   if (audio->_source) {
     _al_sources->insert(audio->_source);
-    audio->_source = 0;
+    audio->_source=0;
   }
   _sounds_playing.erase(audio); // This could cause the sound to destruct.
 }
@@ -1056,7 +1056,7 @@ stopping_sound(OpenALAudioSound* audio) {
 void OpenALAudioManager::
 set_concurrent_sound_limit(unsigned int limit) {
   ReMutexHolder holder(_lock);
-  _concurrent_sound_limit = limit;
+  _concurrent_sound_limit=limit;
   reduce_sounds_playing_to(_concurrent_sound_limit);
 }
 
@@ -1078,16 +1078,16 @@ reduce_sounds_playing_to(unsigned int count) {
   // get stopped first
   update();
 
-  int limit = _sounds_playing.size() - count;
+  int limit=_sounds_playing.size() - count;
   while (limit-- > 0) {
-    SoundsPlaying::iterator sound = _sounds_playing.begin();
+    SoundsPlaying::iterator sound=_sounds_playing.begin();
     nassertv(sound != _sounds_playing.end());
     // When the user stops a sound, there is still a PT in the user's hand.
     // When we stop a sound here, however, this can remove the last PT.  This
     // can cause an ugly recursion where stop calls the destructor, and the
     // destructor calls stop.  To avoid this, we create a temporary PT, stop
     // the sound, and then release the PT.
-    PT(OpenALAudioSound) s = (*sound);
+    PT(OpenALAudioSound) s=(*sound);
     s->stop();
   }
 }
@@ -1109,13 +1109,13 @@ update() {
   ReMutexHolder const holder(_lock);
 
   // See if any of our playing sounds have ended.
-  double const rtc = TrueClock::get_global_ptr()->get_short_time();
-  SoundsPlaying::iterator i = _sounds_playing.begin();
+  double const rtc=TrueClock::get_global_ptr()->get_short_time();
+  SoundsPlaying::iterator i=_sounds_playing.begin();
   while (i != _sounds_playing.end()) {
     // The post-increment syntax is *very* important here.
     // As both OpenALAudioSound::pull_used_buffers and OpenALAudioSound::finished can modify the list of sounds playing
     // by erasing 'sound' from the list, thus invaliding the iterator.
-    PT(OpenALAudioSound) sound = *(i++);
+    PT(OpenALAudioSound) sound=*(i++);
     sound->pull_used_buffers();
 
     // If pull_used_buffers() encountered an error, the sound was cleaned up.
@@ -1151,7 +1151,7 @@ cleanup() {
 
   AllSounds sounds(_all_sounds);
   AllSounds::iterator ai;
-  for (ai = sounds.begin(); ai != sounds.end(); ++ai) {
+  for (ai=sounds.begin(); ai != sounds.end(); ++ai) {
     (*ai)->cleanup();
   }
 
@@ -1165,8 +1165,8 @@ cleanup() {
       // empty the source cache
       int i=0;
       ALuint *sources;
-      sources = new ALuint[_al_sources->size()];
-      for (SourceCache::iterator si = _al_sources->begin(); si!=_al_sources->end(); ++si) {
+      sources=new ALuint[_al_sources->size()];
+      for (SourceCache::iterator si=_al_sources->begin(); si!=_al_sources->end(); ++si) {
         sources[i++]=*si;
       }
       make_current();
@@ -1183,20 +1183,20 @@ cleanup() {
 
       alcDestroyContext(_context);
       alc_audio_errcheck("alcDestroyContext(_context)",_device);
-      _context = nullptr;
+      _context=nullptr;
 
       if (_device) {
         audio_debug("Going to try to close openAL");
         alcCloseDevice(_device);
         // alc_audio_errcheck("alcCloseDevice(_device)",_device);
-        _device = nullptr;
+        _device=nullptr;
         audio_debug("openAL Closed");
       }
 
-      _openal_active = false;
+      _openal_active=false;
     }
   }
-  _cleanup_required = false;
+  _cleanup_required=false;
 }
 
 /**
@@ -1225,7 +1225,7 @@ OpenALAudioManager::SoundData::
       _manager->make_current();
       _manager->delete_buffer(_sample);
     }
-    _sample = 0;
+    _sample=0;
   }
 }
 
@@ -1260,11 +1260,11 @@ decrement_client_count(SoundData *sd) {
   if (sd->_client_count == 0) {
     if (sd->_sample) {
       _expiring_samples.push_back(sd);
-      sd->_expire = _expiring_samples.end();
+      sd->_expire=_expiring_samples.end();
       sd->_expire--;
     } else {
       _expiring_streams.push_back(sd);
-      sd->_expire = _expiring_streams.end();
+      sd->_expire=_expiring_streams.end();
       sd->_expire--;
     }
     discard_excess_cache(_cache_limit);
@@ -1278,10 +1278,10 @@ decrement_client_count(SoundData *sd) {
 void OpenALAudioManager::
 discard_excess_cache(int sample_limit) {
   ReMutexHolder holder(_lock);
-  int stream_limit = 5;
+  int stream_limit=5;
 
   while (((int)_expiring_samples.size()) > sample_limit) {
-    SoundData *sd = (SoundData*)(_expiring_samples.front());
+    SoundData *sd=(SoundData*)(_expiring_samples.front());
     nassertv(sd->_client_count == 0);
     nassertv(sd->_expire == _expiring_samples.begin());
     _expiring_samples.pop_front();
@@ -1291,7 +1291,7 @@ discard_excess_cache(int sample_limit) {
   }
 
   while (((int)_expiring_streams.size()) > stream_limit) {
-    SoundData *sd = (SoundData*)(_expiring_streams.front());
+    SoundData *sd=(SoundData*)(_expiring_streams.front());
     nassertv(sd->_client_count == 0);
     nassertv(sd->_expire == _expiring_streams.begin());
     _expiring_streams.pop_front();
@@ -1311,13 +1311,13 @@ discard_excess_cache(int sample_limit) {
 void OpenALAudioManager::
 delete_buffer(ALuint buffer) {
   ReMutexHolder holder(_lock);
-  int tries = 0;
+  int tries=0;
   ALuint error;
 
   // Keep trying until we succeed (or give up).
   while (true) {
     alDeleteBuffers(1, &buffer);
-    error = alGetError();
+    error=alGetError();
 
     if (error == AL_NO_ERROR) {
       // Success!  This will happen right away 99% of the time.
