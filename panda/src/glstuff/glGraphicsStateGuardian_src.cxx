@@ -8717,7 +8717,7 @@ do_issue_shader() {
         // If it's a different type of shader, make sure to unbind the old.
         _current_shader_context->unbind();
       }
-      context->bind();
+      context->bind(this);
       _current_shader = shader;
     }
 
