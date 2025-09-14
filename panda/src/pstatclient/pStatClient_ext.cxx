@@ -273,7 +273,12 @@ client_connect(std::string hostname, int port) {
     // We require 3.13.3 or 3.14a6, since those versions fix an important bug
     // with the ref tracer; prior versions did not always send destroy events.
 #if PY_VERSION_HEX >= 0x030D0000
-    if (Py_Version >= 0x030D0300 || Py_Version >= 0x030E00A6) {
+#if PY_VERSION_HEX >= 0x030E0000
+    if (Py_Version >= 0x030E00A6)
+#else
+    if (Py_Version >= 0x030D0300)
+#endif
+    {
       if (pstats_python_ref_tracer) {
         PyRefTracer_SetTracer(&ref_trace_callback, _this);
       }
