@@ -13,6 +13,7 @@
 
 #include "config_recorder.h"
 
+#include "inputDeviceNodeRecorder.h"
 #include "mouseRecorder.h"
 #include "recorderController.h"
 #include "recorderFrame.h"
@@ -30,6 +31,7 @@ ConfigureDef(config_recorder);
 NotifyCategoryDef(recorder, "");
 
 ConfigureFn(config_recorder) {
+  InputDeviceNodeRecorder::init_type();
   MouseRecorder::init_type();
   RecorderController::init_type();
   RecorderFrame::init_type();
@@ -37,6 +39,7 @@ ConfigureFn(config_recorder) {
   RecorderTable::init_type();
   ReferenceCount::init_type();
 
+  InputDeviceNodeRecorder::register_with_read_factory();
   MouseRecorder::register_with_read_factory();
   RecorderFrame::register_with_read_factory();
   RecorderHeader::register_with_read_factory();
