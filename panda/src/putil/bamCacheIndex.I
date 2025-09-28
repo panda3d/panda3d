@@ -20,3 +20,9 @@ BamCacheIndex() :
   _cache_size(0)
 {
 }
+INLINE void BamCache::
+clear_global() {
+  if (_global_ptr != nullptr) {
+    _global_ptr->clear();
+  }
+}
