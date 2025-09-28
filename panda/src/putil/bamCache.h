@@ -80,9 +80,13 @@ PUBLISHED:
 
   void list_index(std::ostream &out, int indent_level = 0) const;
 
+  void clear();
+
   INLINE static BamCache *get_global_ptr();
   INLINE static void consider_flush_global_index();
   INLINE static void flush_global_index();
+
+  INLINE static void clear_global();
 
 PUBLISHED:
   MAKE_PROPERTY(active, get_active, set_active);
