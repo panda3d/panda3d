@@ -257,3 +257,11 @@ mark_index_stale() {
     _index_stale_since = time(nullptr);
   }
 }
+
+/** Clear the global cache **/ 
+INLINE void BamCache::
+clear_global() {
+  if (_global_ptr != nullptr) {
+    _global_ptr->clear();
+  }
+}
