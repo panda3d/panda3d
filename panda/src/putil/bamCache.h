@@ -83,6 +83,7 @@ PUBLISHED:
   INLINE static BamCache *get_global_ptr();
   INLINE static void consider_flush_global_index();
   INLINE static void flush_global_index();
+  void clear_cache();
 
 PUBLISHED:
   MAKE_PROPERTY(active, get_active, set_active);
