@@ -2438,7 +2438,7 @@ reset() {
 
 #ifndef OPENGLES
   // Check for SSBOs.
-  if (is_at_least_gl_version(4, 3) || has_extension("ARB_shader_storage_buffer_object")) {
+  if (is_at_least_gl_version(4, 3) || has_extension("GL_ARB_shader_storage_buffer_object")) {
     _supports_shader_buffers = true;
     _glGetProgramInterfaceiv = (PFNGLGETPROGRAMINTERFACEIVPROC)
        get_extension_func("glGetProgramInterfaceiv");
