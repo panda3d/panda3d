@@ -1037,9 +1037,9 @@ clear() {
 /* Reset the in-memory cache index to an empty state (caller must hold _lock). */
 void BamCache::
 reset_in_memory_index() {
-    delete _index;
-    _index = new BamCacheIndex;
-    _index_stale_since = 0;
+  delete _index;
+  _index = new BamCacheIndex;
+  _index_stale_since = 0;
 }
 
 /**
