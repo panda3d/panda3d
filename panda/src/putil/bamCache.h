@@ -86,8 +86,6 @@ PUBLISHED:
   INLINE static void consider_flush_global_index();
   INLINE static void flush_global_index();
 
-  INLINE static void clear_global();
-
 PUBLISHED:
   MAKE_PROPERTY(active, get_active, set_active);
   MAKE_PROPERTY(cache_models, get_cache_models, set_cache_models);
