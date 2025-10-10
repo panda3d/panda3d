@@ -125,13 +125,15 @@ get_ip_port() const {
 
   if (_storage.ss_family == AF_INET) {
     getnameinfo(&_addr, sizeof(sockaddr_in), buf, sizeof(buf), nullptr, 0, NI_NUMERICHOST);
-    sprintf(buf + strlen(buf), ":%hu", get_port());
+    size_t len = strlen(buf);
+    snprintf(buf + len, sizeof(buf) - len, ":%hu", get_port());
 
   } else if (_storage.ss_family == AF_INET6) {
     // Protect the IPv6 address within square brackets.
     buf[0] = '[';
     getnameinfo(&_addr, sizeof(sockaddr_in6), buf + 1, sizeof(buf) - 1, nullptr, 0, NI_NUMERICHOST);
-    sprintf(buf + strlen(buf), "]:%hu", get_port());
+    size_t len = strlen(buf);
+    snprintf(buf + len, sizeof(buf) - len, "]:%hu", get_port());
 
   } else {
     nassert_raise("unsupported address family");
