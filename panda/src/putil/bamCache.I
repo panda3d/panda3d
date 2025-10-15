@@ -257,3 +257,4 @@ mark_index_stale() {
     _index_stale_since = time(nullptr);
   }
 }
+
