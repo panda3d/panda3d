@@ -16,7 +16,6 @@
 
 #include "directbase.h"
 
-#include "eventHandler.h"
 #include "graphicsWindow.h"
 #include "graphicsPipe.h"
 #include "animControl.h"
@@ -31,8 +30,6 @@ class Camera;
 class GraphicsEngine;
 
 BEGIN_PUBLISH
-
-EXPCL_DIRECT_SHOWBASE void throw_new_frame();
 
 EXPCL_DIRECT_SHOWBASE void init_app_for_gui();
 

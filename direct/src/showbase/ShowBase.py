@@ -62,6 +62,7 @@ from panda3d.core import (
     DepthTestAttrib,
     DepthWriteAttrib,
     DriveInterface,
+    EventQueue,
     ExecutionEnvironment,
     Filename,
     FisheyeMaker,
@@ -114,7 +115,7 @@ from panda3d.core import (
     WindowProperties,
     getModelPath,
 )
-from panda3d.direct import throw_new_frame, init_app_for_gui
+from panda3d.direct import init_app_for_gui
 from panda3d.direct import storeAccessibilityShortcutKeys, allowAccessibilityShortcutKeys
 from . import DConfig
 
@@ -2284,9 +2285,8 @@ class ShowBase(DirectObject.DirectObject):
             # now until someone complains.
             time.sleep(0.1)
 
-        # Lerp stuff needs this event, and it must be generated in
-        # C++, not in Python.
-        throw_new_frame()
+        # Lerp stuff needs this event, thrown directly on the C++ queue.
+        EventQueue.getGlobalEventQueue().queueEvent("NewFrame")
         return Task.cont
 
     def __igLoopSync(self, state: object) -> int:
@@ -2332,9 +2332,8 @@ class ShowBase(DirectObject.DirectObject):
         self.cluster.waitForFlipCommand()
         self.graphicsEngine.flipFrame()
 
-        # Lerp stuff needs this event, and it must be generated in
-        # C++, not in Python.
-        throw_new_frame()
+        # Lerp stuff needs this event, thrown directly on the C++ queue.
+        EventQueue.getGlobalEventQueue().queueEvent("NewFrame")
         return Task.cont
 
     def restart(self, clusterSync: bool = False, cluster=None) -> None:
