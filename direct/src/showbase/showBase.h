@@ -22,8 +22,6 @@
 #include "animControl.h"
 #include "pointerTo.h"
 #include "dconfig.h"
-#include "dSearchPath.h"
-#include "configVariableSearchPath.h"
 #include "nodePath.h"
 
 ConfigureDecl(config_showbase, EXPCL_DIRECT_SHOWBASE, EXPTP_DIRECT_SHOWBASE);
@@ -33,8 +31,6 @@ class Camera;
 class GraphicsEngine;
 
 BEGIN_PUBLISH
-
-EXPCL_DIRECT_SHOWBASE ConfigVariableSearchPath &get_particle_path();
 
 EXPCL_DIRECT_SHOWBASE void throw_new_frame();
 

@@ -3,7 +3,7 @@
 __all__ = ['ParticlePanel']
 
 # Import Tkinter, Pmw, and the floater code from this directory tree.
-from panda3d.core import ColorBlendAttrib, Filename, Point2, Point3, Vec3, Vec4, getModelPath
+from panda3d.core import ColorBlendAttrib, ConfigVariableSearchPath, Filename, Point2, Point3, Vec3, Vec4, getModelPath
 from panda3d.physics import (
     BaseParticleEmitter,
     BaseParticleRenderer,
@@ -36,7 +36,6 @@ from panda3d.physics import (
     SpriteParticleRenderer,
     TangentRingEmitter,
 )
-from panda3d.direct import getParticlePath
 from direct.tkwidgets.AppShell import AppShell
 from direct.tkwidgets import Dial
 from direct.tkwidgets import Floater
@@ -51,6 +50,10 @@ from tkinter.simpledialog import askstring
 import Pmw
 import os
 import tkinter as tk
+
+
+particlePath = ConfigVariableSearchPath("particle-path",
+    "The directories to search for particle files to be loaded.")
 
 
 class ParticlePanel(AppShell):
@@ -1275,7 +1278,7 @@ class ParticlePanel(AppShell):
 
     def loadParticleEffectFromFile(self):
         # Find path to particle directory
-        pPath = getParticlePath()
+        pPath = particlePath
         if pPath.getNumDirectories() > 0:
             if repr(pPath.getDirectory(0)) == '.':
                 path = '.'
@@ -1303,7 +1306,7 @@ class ParticlePanel(AppShell):
 
     def saveParticleEffectToFile(self):
         # Find path to particle directory
-        pPath = getParticlePath()
+        pPath = particlePath
         if pPath.getNumDirectories() > 0:
             if repr(pPath.getDirectory(0)) == '.':
                 path = '.'

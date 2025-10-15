@@ -45,15 +45,6 @@ ConfigureDef(config_showbase);
 ConfigureFn(config_showbase) {
 }
 
-ConfigVariableSearchPath particle_path
-("particle-path",
- PRC_DESC("The directories to search for particle files to be loaded."));
-
-ConfigVariableSearchPath &
-get_particle_path() {
-  return particle_path;
-}
-
 // Throw the "NewFrame" event in the C++ world.  Some of the lerp code depends
 // on receiving this.
 void
