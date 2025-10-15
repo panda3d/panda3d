@@ -62,6 +62,7 @@ from panda3d.core import (
     DepthTestAttrib,
     DepthWriteAttrib,
     DriveInterface,
+    EventQueue,
     ExecutionEnvironment,
     Filename,
     FisheyeMaker,
@@ -114,7 +115,7 @@ from panda3d.core import (
     WindowProperties,
     getModelPath,
 )
-from panda3d.direct import throw_new_frame, init_app_for_gui
+from panda3d.direct import init_app_for_gui
 from panda3d.direct import storeAccessibilityShortcutKeys, allowAccessibilityShortcutKeys
 from . import DConfig
 
@@ -176,6 +177,8 @@ class ShowBase(DirectObject.DirectObject):
     render2d: NodePath
     aspect2d: NodePath
     pixel2d: NodePath
+
+    a2dTopLeft: NodePath
 
     cluster: Any | None
 
@@ -382,7 +385,7 @@ class ShowBase(DirectObject.DirectObject):
         #: yourself every frame.
         self.cTrav: CollisionTraverser | Literal[0] = 0
         self.shadowTrav: CollisionTraverser | Literal[0] = 0
-        self.cTravStack = Stack()
+        self.cTravStack = Stack[CollisionTraverser]()
         # Ditto for an AppTraverser.
         self.appTrav: Any | Literal[0] = 0
 
@@ -438,7 +441,7 @@ class ShowBase(DirectObject.DirectObject):
         self.useTrackball()
 
         #: `.Loader.Loader` object.
-        self.loader = ShowBaseGlobal.loader
+        self.loader: Loader.Loader = ShowBaseGlobal.loader
         self.loader._init_base(self)
         self.graphicsEngine.setDefaultLoader(self.loader.loader)
 
@@ -654,7 +657,7 @@ class ShowBase(DirectObject.DirectObject):
     def getExitErrorCode(self):
         return 0
 
-    def printEnvDebugInfo(self):
+    def printEnvDebugInfo(self) -> None:
         """Print some information about the environment that we are running
         in.  Stuff like the model paths and other paths.  Feel free to
         add stuff to this.
@@ -2282,9 +2285,8 @@ class ShowBase(DirectObject.DirectObject):
             # now until someone complains.
             time.sleep(0.1)
 
-        # Lerp stuff needs this event, and it must be generated in
-        # C++, not in Python.
-        throw_new_frame()
+        # Lerp stuff needs this event, thrown directly on the C++ queue.
+        EventQueue.getGlobalEventQueue().queueEvent("NewFrame")
         return Task.cont
 
     def __igLoopSync(self, state: object) -> int:
@@ -2330,9 +2332,8 @@ class ShowBase(DirectObject.DirectObject):
         self.cluster.waitForFlipCommand()
         self.graphicsEngine.flipFrame()
 
-        # Lerp stuff needs this event, and it must be generated in
-        # C++, not in Python.
-        throw_new_frame()
+        # Lerp stuff needs this event, thrown directly on the C++ queue.
+        EventQueue.getGlobalEventQueue().queueEvent("NewFrame")
         return Task.cont
 
     def restart(self, clusterSync: bool = False, cluster=None) -> None:

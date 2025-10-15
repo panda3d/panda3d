@@ -50,6 +50,13 @@ PUBLISHED:
   void set_reference(ModelReference *ref);
   MAKE_PROPERTY(reference, get_reference, set_reference);
 
+public:
+  INLINE TypeHandle get_loader_type() const;
+  INLINE void set_loader_type(TypeHandle loader_type);
+
+PUBLISHED:
+  MAKE_PROPERTY(loader_type, get_loader_type);
+
 protected:
   INLINE ModelRoot(const ModelRoot &copy);
 
@@ -60,6 +67,7 @@ private:
   Filename _fullpath;
   time_t _timestamp;
   PT(ModelReference) _reference;
+  TypeHandle _loader_type;
 
 public:
   static void register_with_read_factory();

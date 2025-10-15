@@ -28,6 +28,11 @@
 
 #include "openSSLWrapper.h"
 
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+#define EVP_MD_CTX_new() EVP_MD_CTX_create()
+#define EVP_MD_CTX_free(ctx) EVP_MD_CTX_destroy(ctx)
+#endif
+
 using std::streamoff;
 using std::streampos;
 using std::streamsize;
@@ -571,11 +576,11 @@ add_jar_signature(X509 *cert, EVP_PKEY *pkey, const std::string &alias) {
   const std::string header_digest = "VmrRqAIgAm0FCZViZFzpaP8OfDbN4iY0MyYFuzTMPv8=";
 
   std::stringstream manifest;
-  SHA256_CTX manifest_ctx;
-  SHA256_Init(&manifest_ctx);
+  EVP_MD_CTX *manifest_ctx = EVP_MD_CTX_new();
+  EVP_DigestInit_ex(manifest_ctx, EVP_sha256(), nullptr);
 
   manifest << header;
-  SHA256_Update(&manifest_ctx, header.data(), header.size());
+  EVP_DigestUpdate(manifest_ctx, header.data(), header.size());
 
   std::ostringstream sigfile_body;
 
@@ -594,20 +599,21 @@ add_jar_signature(X509 *cert, EVP_PKEY *pkey, const std::string &alias) {
     {
       std::istream *stream = open_read_subfile(subfile);
 
-      SHA256_CTX subfile_ctx;
-      SHA256_Init(&subfile_ctx);
+      EVP_MD_CTX *subfile_ctx = EVP_MD_CTX_new();
+      EVP_DigestInit_ex(subfile_ctx, EVP_sha256(), nullptr);
 
       char buffer[4096];
       stream->read(buffer, sizeof(buffer));
       size_t count = stream->gcount();
       while (count > 0) {
-        SHA256_Update(&subfile_ctx, buffer, count);
+        EVP_DigestUpdate(subfile_ctx, buffer, count);
         stream->read(buffer, sizeof(buffer));
         count = stream->gcount();
       }
       delete stream;
 
-      SHA256_Final(digest, &subfile_ctx);
+      EVP_DigestFinal_ex(subfile_ctx, digest, nullptr);
+      EVP_MD_CTX_free(subfile_ctx);
     }
 
     // Encode to base64.
@@ -616,24 +622,21 @@ add_jar_signature(X509 *cert, EVP_PKEY *pkey, const std::string &alias) {
     // Encode what we just wrote to the manifest file as well.
     {
       unsigned char digest[SHA256_DIGEST_LENGTH];
-
-      SHA256_CTX section_ctx;
-      SHA256_Init(&section_ctx);
-      SHA256_Update(&section_ctx, section.data(), section.size());
-      SHA256_Final(digest, &section_ctx);
+      EVP_Digest(section.data(), section.size(), digest, nullptr, EVP_sha256(), nullptr);
 
       sigfile_body << "SHA-256-Digest: " << base64_encode(digest, SHA256_DIGEST_LENGTH) << "\r\n\r\n";
     }
 
     manifest << section;
-    SHA256_Update(&manifest_ctx, section.data(), section.size());
+    EVP_DigestUpdate(manifest_ctx, section.data(), section.size());
   }
 
   // The hash for the whole manifest file goes at the beginning of the .SF file.
   std::stringstream sigfile;
   {
     unsigned char digest[SHA256_DIGEST_LENGTH];
-    SHA256_Final(digest, &manifest_ctx);
+    EVP_DigestFinal_ex(manifest_ctx, digest, nullptr);
+    EVP_MD_CTX_free(manifest_ctx);
     sigfile << "Signature-Version: 1.0\r\n";
     sigfile << "SHA-256-Digest-Manifest-Main-Attributes: " << header_digest << "\r\n";
     sigfile << "SHA-256-Digest-Manifest: " << base64_encode(digest, SHA256_DIGEST_LENGTH) << "\r\n\r\n";

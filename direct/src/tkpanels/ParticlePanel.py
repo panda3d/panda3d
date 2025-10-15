@@ -3,7 +3,7 @@
 __all__ = ['ParticlePanel']
 
 # Import Tkinter, Pmw, and the floater code from this directory tree.
-from panda3d.core import ColorBlendAttrib, Filename, Point2, Point3, Vec3, Vec4, getModelPath
+from panda3d.core import ColorBlendAttrib, ConfigVariableSearchPath, Filename, Point2, Point3, Vec3, Vec4, getModelPath
 from panda3d.physics import (
     BaseParticleEmitter,
     BaseParticleRenderer,
@@ -36,7 +36,6 @@ from panda3d.physics import (
     SpriteParticleRenderer,
     TangentRingEmitter,
 )
-from panda3d.direct import getParticlePath
 from direct.tkwidgets.AppShell import AppShell
 from direct.tkwidgets import Dial
 from direct.tkwidgets import Floater
@@ -51,6 +50,10 @@ from tkinter.simpledialog import askstring
 import Pmw
 import os
 import tkinter as tk
+
+
+particlePath = ConfigVariableSearchPath("particle-path",
+    "The directories to search for particle files to be loaded.")
 
 
 class ParticlePanel(AppShell):
@@ -1275,7 +1278,7 @@ class ParticlePanel(AppShell):
 
     def loadParticleEffectFromFile(self):
         # Find path to particle directory
-        pPath = getParticlePath()
+        pPath = particlePath
         if pPath.getNumDirectories() > 0:
             if repr(pPath.getDirectory(0)) == '.':
                 path = '.'
@@ -1303,7 +1306,7 @@ class ParticlePanel(AppShell):
 
     def saveParticleEffectToFile(self):
         # Find path to particle directory
-        pPath = getParticlePath()
+        pPath = particlePath
         if pPath.getNumDirectories() > 0:
             if repr(pPath.getDirectory(0)) == '.':
                 path = '.'
@@ -2872,6 +2875,12 @@ class ParticlePanel(AppShell):
             if type == 'FT_ONE_OVER_R_CUBED':
                 #f.setFalloffType(LinearDistanceForce.FTONEOVERRCUBED)
                 f.setFalloffType(2)
+            if type == 'FT_ONE_OVER_R_OVER_DISTANCE':
+                f.setFalloffType(3)
+            if type == 'FT_ONE_OVER_R_OVER_DISTANCE_SQUARED':
+                f.setFalloffType(4)
+            if type == 'FT_ONE_OVER_R_OVER_DISTANCE_CUBED':
+                f.setFalloffType(5)
 
         def setForceCenter(vec, f = force):
             f.setForceCenter(Point3(vec[0], vec[1], vec[2]))
@@ -2886,7 +2895,10 @@ class ParticlePanel(AppShell):
             'Set force falloff type',
             ('FT_ONE_OVER_R',
              'FT_ONE_OVER_R_SQUARED',
-             'FT_ONE_OVER_R_CUBED'),
+             'FT_ONE_OVER_R_CUBED',
+             'FT_ONE_OVER_R_OVER_DISTANCE',
+             'FT_ONE_OVER_R_OVER_DISTANCE_SQUARED',
+             'FT_ONE_OVER_R_OVER_DISTANCE_CUBED'),
             command = setFalloffType)
         self.getWidget(pageName, forceName + ' Falloff').configure(
             label_width = 16)
@@ -2897,6 +2909,12 @@ class ParticlePanel(AppShell):
             var.set('FT_ONE_OVER_R_SQUARED')
         elif falloff == LinearDistanceForce.FTONEOVERRCUBED:
             var.set('FT_ONE_OVER_R_CUBED')
+        elif falloff == LinearDistanceForce.FTONEOVERROVERDISTANCE:
+            var.set('FT_ONE_OVER_R_OVER_DISTANCE')
+        elif falloff == LinearDistanceForce.FTONEOVERROVERDISTANCESQUARED:
+            var.set('FT_ONE_OVER_R_OVER_DISTANCE_SQUARED')
+        elif falloff == LinearDistanceForce.FTONEOVERROVERDISTANCECUBED:
+            var.set('FT_ONE_OVER_R_OVER_DISTANCE_CUBED')
         vec = force.getForceCenter()
         self.createVector3Entry(frame, pageName, forceName + ' Center',
                                 'Set center of force',

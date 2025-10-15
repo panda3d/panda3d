@@ -2,6 +2,8 @@ from panda3d.core import ZipArchive, IStreamWrapper, StringStream, Filename
 from direct.stdpy.file import StreamIOWrapper
 import zipfile
 from io import BytesIO
+import os
+import pytest
 
 
 EMPTY_ZIP = b'PK\x05\x06' + b'\x00' * 18
@@ -181,3 +183,19 @@ def test_zip_repack(tmp_path):
         assert zf.read("test1.txt") == b"contents of first file"
         assert "test2.txt" not in zf.namelist()
         assert zf.read("test3.txt") == b"contents of third file"
+
+
+@pytest.mark.skipif(not hasattr(ZipArchive, 'add_jar_signature'), reason='OpenSSL support disabled')
+def test_zip_jar_signature():
+    cur_dir = Filename.from_os_specific(os.path.dirname(__file__))
+
+    stream = StringStream()
+    zip = ZipArchive()
+    zip.open_read_write(stream)
+    zip.add_subfile("test.txt", StringStream(b"contents of test file"), 6)
+    zip.add_jar_signature(Filename(cur_dir, "cert.pem"), Filename(cur_dir, "private.pem"))
+    zip.close()
+
+    with zipfile.ZipFile(StreamIOWrapper(stream), 'r') as zf:
+        assert zf.read("META-INF/MANIFEST.MF") == b'Manifest-Version: 1.0\r\n\r\nName: test.txt\r\nSHA-256-Digest: k5XWgStAZvRlNWIcz67qLSzso8Mc+OUG1QOlAwysyhE=\r\n\r\n'
+        assert zf.read("META-INF/CERT.SF") == b'Signature-Version: 1.0\r\nSHA-256-Digest-Manifest-Main-Attributes: VmrRqAIgAm0FCZViZFzpaP8OfDbN4iY0MyYFuzTMPv8=\r\nSHA-256-Digest-Manifest: 9R83KbhgHCBaYGXhJ/bV2MofgjRU254oUx+YilOvRcE=\r\n\r\nName: test.txt\r\nSHA-256-Digest: q8FmiLsrdoC5XQRaN9KmaPCcd2revsR0NzDul9cK6bk=\r\n\r\n'

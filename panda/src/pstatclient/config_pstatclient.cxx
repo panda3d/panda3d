@@ -98,6 +98,16 @@ ConfigVariableBool pstats_python_profiler
           "somewhat, and requires a recent version of the PStats server, so "
           "it is not enabled by default."));
 
+ConfigVariableBool pstats_python_ref_tracer
+("pstats-python-ref-tracer", false,
+ PRC_DESC("Set this true to integrate with the Python ref tracer to show a "
+          "count of all Python objects by module.  This is not enabled by "
+          "default since it incurs a significant performance overhead, but "
+          "can be useful to find bottlenecks caused by a growth of objects "
+          "in the Python interpreter.  This feature is only available as of "
+          "Python 3.14a6."));
+
+
 // The rest are different in that they directly control the server, not the
 // client.
 ConfigVariableBool pstats_scroll_mode

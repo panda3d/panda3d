@@ -22,6 +22,9 @@
 #include <iostream>
 #include "py_panda.h"
 
+using std::ostream;
+using std::istream;
+
 /**
  * These classes define the extension methods for istream and ostream, which
  * are called instead of any C++ methods with the same prototype.

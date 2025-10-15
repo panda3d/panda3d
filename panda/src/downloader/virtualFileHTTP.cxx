@@ -39,8 +39,7 @@ VirtualFileHTTP(VirtualFileMountHTTP *mount, const Filename &local_filename,
   _implicit_pz_file(implicit_pz_file),
   _status_only(open_flags != 0)
 {
-  URLSpec url(_mount->get_root());
-  url.set_path(_mount->get_root().get_path() + _local_filename.c_str());
+  URLSpec url = get_url();
   _channel = _mount->get_channel();
   if (_status_only) {
     _channel->get_header(url);
@@ -87,6 +86,16 @@ get_filename() const {
       return string("/") + mount_point + string("/") + _local_filename.get_fullpath();
     }
   }
+}
+
+/**
+ * Returns the full URL of this file.
+ */
+URLSpec VirtualFileHTTP::
+get_url() const {
+  URLSpec url(_mount->get_root());
+  url.set_path(_mount->get_root().get_path() + _local_filename.c_str());
+  return url;
 }
 
 /**

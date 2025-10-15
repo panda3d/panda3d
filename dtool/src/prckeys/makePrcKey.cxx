@@ -114,6 +114,56 @@ output_c_string(std::ostream &out, const string &string_name,
  */
 EVP_PKEY *
 generate_key() {
+#if OPENSSL_VERSION_MAJOR >= 3
+  EVP_PKEY_CTX *ctx = EVP_PKEY_CTX_new_id(EVP_PKEY_RSA, nullptr);
+  if (ctx == nullptr) {
+    EVP_PKEY_CTX_free(ctx);
+    output_ssl_errors();
+    exit(1);
+  }
+
+  if (EVP_PKEY_keygen_init(ctx) <= 0 ||
+      EVP_PKEY_CTX_set_rsa_keygen_bits(ctx, 1024) <= 0) {
+    EVP_PKEY_CTX_free(ctx);
+    output_ssl_errors();
+    exit(1);
+  }
+
+  BIGNUM *e = BN_new();
+  if (e == nullptr || !BN_set_word(e, 7)) {
+    BN_free(e);
+    EVP_PKEY_CTX_free(ctx);
+    output_ssl_errors();
+    exit(1);
+  }
+
+  unsigned char *e_buf = nullptr;
+  int e_len = BN_num_bytes(e);
+  e_buf = (unsigned char *)OPENSSL_malloc(e_len);
+  BN_bn2bin(e, e_buf);
+
+  size_t bits = 1024;
+  OSSL_PARAM params[] = {
+    OSSL_PARAM_construct_size_t("bits", &bits),
+    OSSL_PARAM_construct_BN("e", e_buf, e_len),
+    OSSL_PARAM_END
+  };
+
+  EVP_PKEY *pkey = nullptr;
+  if (EVP_PKEY_CTX_set_params(ctx, params) <= 0 ||
+      EVP_PKEY_generate(ctx, &pkey) <= 0) {
+    OPENSSL_free(e_buf);
+    BN_free(e);
+    EVP_PKEY_CTX_free(ctx);
+    output_ssl_errors();
+    exit(1);
+  }
+
+  OPENSSL_free(e_buf);
+  BN_free(e);
+  EVP_PKEY_CTX_free(ctx);
+  return pkey;
+#else
   RSA *rsa = RSA_new();
   BIGNUM *e = BN_new();
   if (rsa == nullptr || e == nullptr) {
@@ -134,6 +184,7 @@ generate_key() {
   EVP_PKEY *pkey = EVP_PKEY_new();
   EVP_PKEY_assign_RSA(pkey, rsa);
   return pkey;
+#endif
 }
 
 /**

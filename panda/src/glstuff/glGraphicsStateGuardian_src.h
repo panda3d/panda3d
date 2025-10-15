@@ -1294,7 +1294,7 @@ public:
   pdeque<Fence> _fences;
 
 #ifdef HAVE_THREADS
-  AsyncTaskChain *_async_chain;
+  PT(AsyncTaskChain) _async_chain;
 #endif
 
   // Min job system pending a real job system

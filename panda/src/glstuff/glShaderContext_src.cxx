@@ -228,7 +228,7 @@ bind(CLP(GraphicsStateGuardian) *glgsg,
      RenderAttrib::PandaCompareFunc alpha_test_mode) {
   _glgsg = glgsg;
   /*if (!_validated) {
-    _glgsg->_glValidateProgram(_glsl_program);
+    glgsg->_glValidateProgram(_glsl_program);
     report_program_errors(_glsl_program, false);
     _validated = true;
   }*/
@@ -240,7 +240,7 @@ bind(CLP(GraphicsStateGuardian) *glgsg,
   GLuint program = _linked_programs[alpha_test_mode];
   if (program != 0) {
     if (!_shader->get_error_flag()) {
-      _glgsg->_glUseProgram(program);
+      glgsg->_glUseProgram(program);
     } else {
       return false;
     }
@@ -258,7 +258,7 @@ bind(CLP(GraphicsStateGuardian) *glgsg,
                  << alpha_test_mode << "\n";
   }
 
-  _glgsg->report_my_gl_errors();
+  glgsg->report_my_gl_errors();
   return true;
 }
 

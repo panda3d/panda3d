@@ -19,6 +19,8 @@
 #include "savedContext.h"
 #include "shader.h"
 
+class GraphicsStateGuardian;
+
 /**
  * The ShaderContext is meant to contain the compiled version of a shader
  * string.  ShaderContext is an abstract base class, there will be a subclass
