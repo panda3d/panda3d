@@ -3,6 +3,7 @@ from direct.stdpy.file import StreamIOWrapper
 import zipfile
 from io import BytesIO
 import os
+import pytest
 
 
 EMPTY_ZIP = b'PK\x05\x06' + b'\x00' * 18
@@ -184,6 +185,7 @@ def test_zip_repack(tmp_path):
         assert zf.read("test3.txt") == b"contents of third file"
 
 
+@pytest.mark.skipif(not hasattr(ZipArchive, 'add_jar_signature'), reason='OpenSSL support disabled')
 def test_zip_jar_signature():
     cur_dir = Filename.from_os_specific(os.path.dirname(__file__))
 
