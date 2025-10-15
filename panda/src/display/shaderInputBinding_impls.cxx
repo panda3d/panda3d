@@ -1335,7 +1335,6 @@ ShaderLightStructBinding(const ShaderType *type, const InternalName *input) {
       continue;
     }
 
-    PT(InternalName) fqname = InternalName::make("light")->append(member.name);
     if (member.name == "color") {
       _color_offset = member.offset;
     }
@@ -2275,7 +2274,8 @@ r_collect_members(const InternalName *name, const ShaderType *type, size_t offse
     for (uint32_t ai = 0; ai < array_type->get_num_elements(); ++ai) {
       sprintf(buffer + basename_size, "[%d]", (int)ai);
 
-      r_collect_members(name->get_parent()->append(buffer), element_type, offset);
+      PT(InternalName) fqname = name->get_parent()->append(buffer);
+      r_collect_members(fqname, element_type, offset);
       offset += stride;
     }
   }
@@ -3471,7 +3471,7 @@ make_binding_cg(const InternalName *name, const ShaderType *type) {
   if (pieces[0] == "k") {
     //k_prefix = true;
     name_str = name_str.substr(2);
-    name = InternalName::make(name_str);
+    return make_shader_input(type, InternalName::make(name_str));
   }
 
   // If we get here, it's not a specially recognized input, but just a regular
