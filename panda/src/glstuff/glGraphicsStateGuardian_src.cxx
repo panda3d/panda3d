@@ -14480,8 +14480,8 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps,
 }
 
 /**
- * Loads a texture image, or one page of a cube map image, from system RAM to
- * texture memory.
+ * Loads a texture image, or one view of a multiview texture, from system RAM
+ * to texture memory.
  */
 bool CLP(GraphicsStateGuardian)::
 upload_texture_view(CLP(TextureContext) *gtc, int view, bool needs_reload,
