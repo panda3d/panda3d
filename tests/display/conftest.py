@@ -530,6 +530,11 @@ def env(request):
 
     words = request.param.split("-")
     if words[0] == "gl" or words[0] == "gles":
+        # Set the coordinate system to z-up-right, so that we get the same
+        # results with compute shaders (which always have an identity CS
+        # transform) and regular shaders.
+        config["gl-coordinate-system"] = "zup-right"
+
         if words[0] == "gles":
             # Necessary for image load/store support
             config["gl-immutable-texture-storage"] = "true"
