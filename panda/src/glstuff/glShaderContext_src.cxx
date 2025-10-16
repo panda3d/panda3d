@@ -938,7 +938,7 @@ reflect_program(GLuint program, SparseArray &active_locations) {
       if (p != nullptr) {
         // It's an array, this is a bit annoying.
         CPT_InternalName name = InternalName::make(std::string(block_name_cstr, p - block_name_cstr));
-        SSBO &ssbo = ssbos[name];
+        SSBO &ssbo = ssbos[std::move(name)];
         size_t i = 0;
         do {
           ++p;
@@ -957,7 +957,7 @@ reflect_program(GLuint program, SparseArray &active_locations) {
       } else {
         // Simple case.  We can already jot down the binding, so we don't have
         // to query it later.
-        CPT(InternalName) name = InternalName::make(std::string(block_name_cstr));
+        CPT_InternalName name = InternalName::make(std::string(block_name_cstr));
         _bindings[name] = values[0];
         ssbos[std::move(name)];
       }
