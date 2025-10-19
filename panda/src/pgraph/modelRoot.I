@@ -19,7 +19,8 @@ ModelRoot(const std::string &name) :
   ModelNode(name),
   _fullpath(name),
   _timestamp(0),
-  _reference(new ModelRoot::ModelReference)
+  _reference(new ModelRoot::ModelReference),
+  _loader_type(TypeHandle::none())
 {
 }
 
@@ -31,7 +32,8 @@ ModelRoot(const Filename &fullpath, time_t timestamp) :
   ModelNode(fullpath.get_basename()),
   _fullpath(fullpath),
   _timestamp(timestamp),
-  _reference(new ModelRoot::ModelReference)
+  _reference(new ModelRoot::ModelReference),
+  _loader_type(TypeHandle::none())
 {
 }
 
@@ -115,6 +117,23 @@ set_reference(ModelRoot::ModelReference *ref) {
 }
 
 /**
+ * Returns the type of the loader object that was used to load this model.
+ */
+INLINE TypeHandle ModelRoot::
+get_loader_type() const {
+  return _loader_type;
+}
+
+/**
+ * Sets the type of the loader object used to load this model.  Normally this
+ * is only called by Loader.
+ */
+INLINE void ModelRoot::
+set_loader_type(TypeHandle type) {
+  _loader_type = type;
+}
+
+/**
  *
  */
 INLINE ModelRoot::
@@ -122,7 +141,8 @@ ModelRoot(const ModelRoot &copy) :
   ModelNode(copy),
   _fullpath(copy._fullpath),
   _timestamp(copy._timestamp),
-  _reference(copy._reference)
+  _reference(copy._reference),
+  _loader_type(copy._loader_type)
 {
 }
 

@@ -196,6 +196,7 @@ update_bars(int thread_index, int frame_number) {
 
   // pair<int collector_index, double start_time>
   pvector<std::pair<int, double> > stack;
+  bool had_children = false;
 
   double frame_start = frame_data.get_start() + _clock_skew;
   double prev = frame_start;
@@ -275,6 +276,7 @@ update_bars(int thread_index, int frame_number) {
           thread_row._rows.resize(stack.size());
           changed_num_rows = true;
         }
+        had_children = false;
       }
     }
     else if (!stack.empty() && stack.back().first == collector_index) {
@@ -288,6 +290,7 @@ update_bars(int thread_index, int frame_number) {
       while (!stack.empty() && stack.back().first < 0) {
         stack.pop_back();
       }
+      had_children = true;
     }
     else {
       // Unlikely case: ending a collector before a "child" has ended.
@@ -348,6 +351,33 @@ update_bars(int thread_index, int frame_number) {
         thread_row._rows[1].push_back({
           frame_start, time, collector_index, thread_index,
           frame_number, true, false});
+      }
+      else if (i > 0 && !had_children) {
+        // Figure out if the currently active collector could actually be
+        // slotted higher.  This prevents the staircase effect where
+        // overlapping collectors will cause the number of rows to continue
+        // to grow at every overlap.  We only do this if the current
+        // collector has not had children yet, that'd be too confusing.
+        int j = stack.size() - 3;
+        while (j > 0) {
+          auto &item = stack[j];
+          if (item.first >= 0) {
+            // Nope, can't do.
+            break;
+          }
+          // Yes, does this row have enough space?
+          Row &row = thread_row._rows[j];
+          if (row.empty() || row.back()._end < stack.back().second) {
+            // It does.
+            item = std::move(stack.back());
+            stack.pop_back();
+            while (!stack.empty() && stack.back().first < 0) {
+              stack.pop_back();
+            }
+            break;
+          }
+          --j;
+        }
       }
     }
   }

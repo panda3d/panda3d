@@ -6,7 +6,9 @@ import sys
 
 @pytest.fixture
 def loader():
-    return Loader(base=None)
+    loader = Loader(base=None)
+    yield loader
+    loader.destroy()
 
 
 @pytest.fixture

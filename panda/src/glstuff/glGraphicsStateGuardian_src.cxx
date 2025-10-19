@@ -70,6 +70,10 @@
 #include "displayInformation.h"
 #include "completionCounter.h"
 
+#ifdef __EMSCRIPTEN__
+#include "htmlVideoTexture.h"
+#endif
+
 #include <algorithm>
 
 using std::dec;
@@ -2659,7 +2663,7 @@ reset() {
 
 #ifndef OPENGLES
   // Check for SSBOs.
-  if (is_at_least_gl_version(4, 3) || has_extension("ARB_shader_storage_buffer_object")) {
+  if (is_at_least_gl_version(4, 3) || has_extension("GL_ARB_shader_storage_buffer_object")) {
     _supports_shader_buffers = _supports_program_interface_query;
 
     _glShaderStorageBlockBinding = (PFNGLSHADERSTORAGEBLOCKBINDINGPROC)
@@ -14680,8 +14684,8 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps,
 }
 
 /**
- * Loads a texture image, or one page of a cube map image, from system RAM to
- * texture memory.
+ * Loads a texture image, or one view of a multiview texture, from system RAM
+ * to texture memory.
  */
 bool CLP(GraphicsStateGuardian)::
 upload_texture_view(CLP(TextureContext) *gtc, int view, bool needs_reload,
@@ -14980,6 +14984,30 @@ upload_texture_view(CLP(TextureContext) *gtc, int view, bool needs_reload,
       image_ptr = ptimage;
     }
     if (image_ptr == nullptr) {
+#ifdef __EMSCRIPTEN__
+      if (tex->is_of_type(HTMLVideoTexture::get_class_type())) {
+        // Load directly from the video element into WebGL.
+        int result = EM_ASM_INT({
+          var video = window._htmlVideoData[$7].video;
+          if (video.readyState < video.HAVE_CURRENT_DATA) {
+            return 0;
+          }
+          GLctx.pixelStorei(GLctx.UNPACK_FLIP_Y_WEBGL, true);
+          if ($8) {
+            GLctx.texImage2D($0, $1, $2, $3, $4, 0, $5, $6, video);
+          } else {
+            GLctx.texSubImage2D($0, $1, 0, 0, $3, $4, $5, $6, video);
+          }
+          GLctx.pixelStorei(GLctx.UNPACK_FLIP_Y_WEBGL, false);
+          return 1;
+        }, target, 0, internal_format, width, height, external_format, component_type, tex, needs_reload);
+
+        if (result) {
+          continue;
+        }
+      }
+#endif
+
       if (level < num_ram_mipmap_levels) {
         // We were told we'd have this many RAM mipmap images, but we
         // don't.  Raise a warning.

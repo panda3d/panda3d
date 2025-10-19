@@ -97,8 +97,7 @@ x11GraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
                   int flags,
                   GraphicsStateGuardian *gsg,
                   GraphicsOutput *host) :
-  GraphicsWindow(engine, pipe, name, fb_prop, win_prop, flags, gsg, host)
-{
+  GraphicsWindow(engine, pipe, name, fb_prop, win_prop, flags, gsg, host) {
   x11GraphicsPipe *x11_pipe;
   DCAST_INTO_V(x11_pipe, _pipe);
   _display = x11_pipe->get_display();
@@ -126,6 +125,8 @@ x11GraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
   PT(GraphicsWindowInputDevice) device = GraphicsWindowInputDevice::pointer_and_keyboard(this, "keyboard_mouse");
   add_input_device(device);
   _input = device;
+
+  enable_detectable_auto_repeat();
 }
 
 /**
@@ -2749,4 +2750,23 @@ void x11GraphicsWindow::
 xim_preedit_done(XIC ic, XPointer client_data, XPointer call_data) {
   x11GraphicsWindow *window = (x11GraphicsWindow *)client_data;
   window->handle_preedit_done();
+}
+
+/**
+ * Enables detectable auto-repeat if supported by the X server.
+ */
+void x11GraphicsWindow::
+enable_detectable_auto_repeat() {
+  if (!x_detectable_auto_repeat) {
+    return;
+  }
+  
+  Bool supported;
+  if (XkbSetDetectableAutoRepeat(_display, True, &supported)) {
+    x11display_cat.info() << "Detectable auto-repeat enabled.\n";
+  } else if (!supported) {
+    x11display_cat.warning() << "Detectable auto-repeat is not supported by the X server.\n";
+  } else {
+    x11display_cat.error() << "Failed to set detectable auto-repeat.\n";
+  }
 }

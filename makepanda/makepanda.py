@@ -2489,6 +2489,7 @@ DTOOL_CONFIG=[
     ("PHAVE_DIRENT_H",                 'UNDEF',                  '1'),
     ("PHAVE_UCONTEXT_H",               'UNDEF',                  '1'),
     ("PHAVE_STDINT_H",                 '1',                      '1'),
+    ("PHAVE_EXECINFO_H",               'UNDEF',                  '1'),
     ("HAVE_RTTI",                      '1',                      '1'),
     ("HAVE_X11",                       'UNDEF',                  '1'),
     ("IS_LINUX",                       'UNDEF',                  '1'),
@@ -2617,6 +2618,7 @@ def WriteConfigSettings():
         dtool_config["PHAVE_GLOB_H"] = 'UNDEF'
         dtool_config["PHAVE_LOCKF"] = 'UNDEF'
         dtool_config["HAVE_VIDEO4LINUX"] = 'UNDEF'
+        dtool_config["PHAVE_EXECINFO_H"] = 'UNDEF'
 
     if (GetTarget() == "emscripten"):
         # There are no threads in JavaScript, so don't bother using them.
@@ -2629,6 +2631,7 @@ def WriteConfigSettings():
         dtool_config["PHAVE_LINUX_INPUT_H"] = 'UNDEF'
         dtool_config["HAVE_X11"] = 'UNDEF'
         dtool_config["HAVE_GLX"] = 'UNDEF'
+        dtool_config["PHAVE_EXECINFO_H"] = 'UNDEF'
 
         # There are no environment vars either, or default prc files.
         prc_parameters["DEFAULT_PRC_DIR"] = 'UNDEF'

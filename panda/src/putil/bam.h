@@ -32,8 +32,8 @@ static const unsigned short _bam_major_ver = 6;
 // Bumped to major version 6 on 2006-02-11 to factor out PandaNode::CData.
 
 static const unsigned short _bam_first_minor_ver = 14;
-static const unsigned short _bam_last_minor_ver = 45;
-static const unsigned short _bam_minor_ver = 44;
+static const unsigned short _bam_last_minor_ver = 46;
+static const unsigned short _bam_minor_ver = 46;
 // Bumped to minor version 14 on 2007-12-19 to change default ColorAttrib.
 // Bumped to minor version 15 on 2008-04-09 to add TextureAttrib::_implicit_sort.
 // Bumped to minor version 16 on 2008-05-13 to add Texture::_quality_level.
@@ -66,5 +66,6 @@ static const unsigned short _bam_minor_ver = 44;
 // Bumped to minor version 43 on 2018-12-06 to expand BillboardEffect and CompassEffect.
 // Bumped to minor version 44 on 2018-12-23 to rename CollisionTube to CollisionCapsule.
 // Bumped to minor version 45 on 2020-03-18 to add Texture::_clear_color.
+// Bumped to minor version 46 on 2025-08-03 to add ModelRoot::_loader_type.
 
 #endif

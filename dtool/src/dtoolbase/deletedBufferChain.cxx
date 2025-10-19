@@ -88,7 +88,14 @@ allocate(size_t size, TypeHandle type_handle) {
   return ptr;
 
 #else  // USE_DELETED_CHAIN
-  return PANDA_MALLOC_SINGLE(_buffer_size);
+  void *ptr = PANDA_MALLOC_SINGLE(_buffer_size);
+
+#ifdef DO_MEMORY_USAGE
+  type_handle.inc_memory_usage(TypeHandle::MC_singleton, _buffer_size);
+#endif  // DO_MEMORY_USAGE
+
+  return ptr;
+
 #endif  // USE_DELETED_CHAIN
 }
 
@@ -133,6 +140,11 @@ deallocate(void *ptr, TypeHandle type_handle) {
   _lock.unlock();
 
 #else  // USE_DELETED_CHAIN
+
+#ifdef DO_MEMORY_USAGE
+  type_handle.dec_memory_usage(TypeHandle::MC_singleton, _buffer_size);
+#endif  // DO_MEMORY_USAGE
+
   PANDA_FREE_SINGLE(ptr);
 #endif  // USE_DELETED_CHAIN
 }

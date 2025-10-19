@@ -364,7 +364,7 @@ __getattribute__(PyObject *self, PyObject *attr) const {
   // We consult the instance dict first, since the user may have overridden a
   // method or something.
   PyObject *item;
-  if (PyDict_GetItemRef(__dict__, attr, &item) > 0) {
+  if (PyDict_GetItemRef(__dict__, attr, &item) != 0) {
     return item;
   }
 
@@ -503,7 +503,7 @@ cancel() {
       --_chain->_num_awaiting_tasks;
       return true;
     }
-    else if (must_cancel || _fut_waiter != nullptr) {
+    else if (_generator != nullptr && (must_cancel || _fut_waiter != nullptr)) {
       // We may be polling an external future, so we still need to throw a
       // CancelledException and allow it to be caught.
       if (must_cancel) {
@@ -638,17 +638,31 @@ do_python_task() {
       // We are calling a generator.  Use "send" rather than PyIter_Next since
       // we need to be able to read the value from a StopIteration exception.
       PyObject *func = PyObject_GetAttrString(_generator, "send");
-      nassertr(func != nullptr, DS_interrupt);
-      result = PyObject_CallOneArg(func, Py_None);
-      Py_DECREF(func);
+      if (func != nullptr) {
+        result = PyObject_CallOneArg(func, Py_None);
+        Py_DECREF(func);
+      } else {
+        // It has no send(), just call next() directly.
+        nassertr(Py_TYPE(_generator)->tp_iternext != nullptr, DS_interrupt);
+        PyErr_Clear();
+        result = Py_TYPE(_generator)->tp_iternext(_generator);
+      }
     } else {
       // Throw a CancelledError into the generator.
       _must_cancel = false;
-      PyObject *exc = PyObject_CallNoArgs(Extension<AsyncFuture>::get_cancelled_error_type());
+      PyObject *exc_type = Extension<AsyncFuture>::get_cancelled_error_type();
       PyObject *func = PyObject_GetAttrString(_generator, "throw");
-      result = PyObject_CallFunctionObjArgs(func, exc, nullptr);
-      Py_DECREF(func);
-      Py_DECREF(exc);
+      if (func != nullptr) {
+        PyObject *exc = PyObject_CallNoArgs(exc_type);
+        result = PyObject_CallFunctionObjArgs(func, exc, nullptr);
+        Py_DECREF(exc);
+        Py_DECREF(func);
+      } else {
+        // If it has no throw(), assume it propagated the CancelledException.
+        PyErr_Clear();
+        PyErr_SetNone(exc_type);
+        result = nullptr;
+      }
     }
 
     if (result == nullptr) {

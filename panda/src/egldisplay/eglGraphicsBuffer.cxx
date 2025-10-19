@@ -157,7 +157,10 @@ close_buffer() {
   if (_gsg != nullptr) {
     eglGraphicsStateGuardian *eglgsg;
     DCAST_INTO_V(eglgsg, _gsg);
-    if (!eglMakeCurrent(_egl_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT)) {
+
+    // Try to keep the GSG bound surfaceless if possible, otherwise unbind.
+    if (!eglgsg->make_current() &&
+        !eglMakeCurrent(_egl_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT)) {
       egldisplay_cat.error() << "Failed to call eglMakeCurrent: "
         << get_egl_error_string(eglGetError()) << "\n";
     }

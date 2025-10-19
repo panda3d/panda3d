@@ -52,4 +52,9 @@ PyObject _Py_FalseStruct;
 
 typedef void *visitproc;
 
+typedef enum {
+  PyRefTracer_CREATE = 0,
+  PyRefTracer_DESTROY = 1,
+} PyRefTracerEvent;
+
 #endif  // PYTHON_H

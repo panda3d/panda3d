@@ -12,16 +12,6 @@
  */
 
 /**
- * Creates an empty CullableObject whose pointers can be filled in later.
- */
-INLINE CullableObject::
-CullableObject() {
-#ifdef DO_MEMORY_USAGE
-  MemoryUsage::record_pointer(this, get_class_type());
-#endif
-}
-
-/**
  * Creates a CullableObject based the indicated geom, with the indicated
  * render state and transform.
  */
@@ -32,9 +22,6 @@ CullableObject(CPT(Geom) geom, CPT(RenderState) state,
   _state(std::move(state)),
   _internal_transform(std::move(internal_transform))
 {
-#ifdef DO_MEMORY_USAGE
-  MemoryUsage::record_pointer(this, get_class_type());
-#endif
 }
 
 /**
@@ -47,9 +34,6 @@ CullableObject(const CullableObject &copy) :
   _state(copy._state),
   _internal_transform(copy._internal_transform)
 {
-#ifdef DO_MEMORY_USAGE
-  MemoryUsage::record_pointer(this, get_class_type());
-#endif
 }
 
 /**
