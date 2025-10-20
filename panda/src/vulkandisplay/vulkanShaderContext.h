@@ -178,6 +178,8 @@ private:
   PipelineMap _pipeline_map;
   VkPipeline _compute_pipeline = VK_NULL_HANDLE;
 
+  PStatCollector _compute_dispatch_pcollector;
+
   friend class VulkanGraphicsStateGuardian;
 
 public:

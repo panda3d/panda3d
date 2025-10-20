@@ -19,7 +19,8 @@
 INLINE VulkanShaderContext::
 VulkanShaderContext(Shader *shader) :
   ShaderContext(shader),
-  _modules{VK_NULL_HANDLE} {
+  _modules{VK_NULL_HANDLE},
+  _compute_dispatch_pcollector(GraphicsStateGuardian::_compute_dispatch_pcollector, shader->get_debug_name()) {
 
   _matrix_cache = pvector<LMatrix4>(shader->_matrix_cache_desc.size(), LMatrix4::ident_mat());
   _matrix_cache_deps = shader->_matrix_cache_deps;

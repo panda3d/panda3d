@@ -17,7 +17,7 @@
 #include "vulkanTextureContext.h"
 #include "vulkanVertexBufferContext.h"
 #include "graphicsEngine.h"
-#include "pStatTimer.h"
+#include "pStatGPUTimer.h"
 #include "standardMunger.h"
 #include "shaderModuleSpirV.h"
 
@@ -67,6 +67,9 @@ static const std::string default_fshader =
 static PStatCollector _make_pipeline_pcollector("Draw:Primitive:Make Pipeline");
 static PStatCollector _update_lattr_descriptor_set_pcollector("Draw:Update Descriptor Sets:LightAttrib");
 static PStatCollector _bind_descriptor_sets_pcollector("Draw:Set State:Bind Descriptor Sets");
+static PStatCollector _finish_frame_pcollector("Draw:Finish Frame");
+static PStatCollector _wait_fence_pcollector("Wait:Fence");
+static PStatCollector _wait_semaphore_pcollector("Wait:Semaphore");
 
 TypeHandle VulkanGraphicsStateGuardian::_type_handle;
 
@@ -135,6 +138,16 @@ reset() {
   enabled_features.features.textureCompressionETC2 = features.textureCompressionETC2;
   enabled_features.features.textureCompressionBC = features.textureCompressionBC;
   enabled_features.features.shaderFloat64 = features.shaderFloat64;
+
+#ifdef DO_PSTATS
+  // Vulkan 1.2
+  VkPhysicalDeviceVulkan12Features v_1_2_features = {
+    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
+    enabled_features.pNext,
+  };
+  v_1_2_features.hostQueryReset = VK_TRUE;
+  enabled_features.pNext = &v_1_2_features;
+#endif
 
   VkPhysicalDeviceDynamicRenderingFeatures dr_features = {
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES,
@@ -593,7 +606,8 @@ reset() {
   _max_clip_planes = -1;
 
   _supports_occlusion_query = false;
-  _supports_timer_query = false;
+  _supports_timer_query = limits.timestampComputeAndGraphics;
+  _timer_query_factor = 0.000000001 * limits.timestampPeriod;
 
   // Set to indicate that we get an inverted result when we copy the
   // framebuffer to a texture.
@@ -1534,7 +1548,7 @@ create_texture(VulkanTextureContext *tc) {
 bool VulkanGraphicsStateGuardian::
 upload_texture(VulkanTextureContext *tc) {
   nassertr(_frame_data != nullptr, false);
-  PStatTimer timer(_load_texture_pcollector);
+  PStatGPUTimer timer(this, _load_texture_pcollector);
 
   // Textures can only be updated before the first time they are used in a
   // frame.  This prevents out-of-order calls to transition(), which would
@@ -2204,7 +2218,7 @@ update_vertex_buffer(VulkanVertexBufferContext *vbc,
   VulkanFrameData &frame_data = get_frame_data();
 
   if (vbc->was_modified(reader)) {
-    PStatTimer timer(_load_vertex_buffer_pcollector);
+    PStatGPUTimer timer(this, _load_vertex_buffer_pcollector);
 
     VkDeviceSize num_bytes = reader->get_data_size_bytes();
     if (num_bytes != 0) {
@@ -2364,7 +2378,7 @@ update_index_buffer(VulkanIndexBufferContext *ibc,
   VulkanFrameData &frame_data = get_frame_data();
 
   if (ibc->was_modified(reader)) {
-    PStatTimer timer(_load_index_buffer_pcollector);
+    PStatGPUTimer timer(this, _load_index_buffer_pcollector);
 
     VkDeviceSize num_bytes = reader->get_data_size_bytes();
     if (num_bytes != 0) {
@@ -2633,6 +2647,65 @@ extract_shader_buffer_data(ShaderBuffer *buffer, vector_uchar &data) {
 }
 
 /**
+ * Adds a timer query to the command stream, associated with the given PStats
+ * collector index.
+ */
+void VulkanGraphicsStateGuardian::
+issue_timer_query(int pstats_index) {
+  uint32_t query = get_next_timer_query(pstats_index);
+
+  bool is_end = pstats_index & 0x8000;
+  vkCmdWriteTimestamp(_frame_data->_cmd, is_end ? VK_PIPELINE_STAGE_ALL_COMMANDS_BIT : VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, _timer_query_pool, query);
+}
+
+/**
+ * Returns the next available timer query.
+ */
+uint32_t VulkanGraphicsStateGuardian::
+get_next_timer_query(int pstats_index) {
+  nassertr(_frame_data != nullptr, 0);
+
+  uint32_t new_head = (_timer_query_head + 1) & _timer_query_pool_size;
+  if (UNLIKELY(new_head == _timer_query_tail)) {
+    replace_timer_query_pool();
+    new_head = 1;
+  }
+
+  _frame_data->_timer_query_pool._pstats_indices.push_back(pstats_index);
+  return std::exchange(_timer_query_head, new_head);
+}
+
+/**
+ * Creates a new timer query pool, storing it in _timer_query_pool.  Used when
+ * space runs out in the current pool.
+ * Must be called with transfer command buffer begun.
+ */
+void VulkanGraphicsStateGuardian::
+replace_timer_query_pool() {
+  VkQueryPoolCreateInfo info;
+  info.sType = VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO;
+  info.pNext = nullptr;
+  info.flags = 0;
+  info.queryType = VK_QUERY_TYPE_TIMESTAMP;
+  info.queryCount = (_timer_query_pool_size + 1) << 1;
+  info.pipelineStatistics = 0;
+
+  VkResult err = vkCreateQueryPool(_device, &info, nullptr, &_timer_query_pool);
+  if (err != VK_SUCCESS) {
+    vulkan_error(err, "Failed to create timestamp query pool");
+    return;
+  }
+
+  _timer_query_pool_size = info.queryCount - 1;
+  _timer_query_head = 0;
+  _timer_query_tail = 0;
+
+  vkResetQueryPool(_device, _timer_query_pool, 0, info.queryCount);
+
+  _frame_data->replace_timer_query_pool(_timer_query_pool, _timer_query_pool_size);
+}
+
+/**
  * Dispatches a currently bound compute shader using the given work group
  * counts.
  */
@@ -2641,7 +2714,10 @@ dispatch_compute(int num_groups_x, int num_groups_y, int num_groups_z) {
   nassertv(_frame_data != nullptr);
   nassertv(_current_shader != nullptr);
 
-  PStatTimer timer(_compute_dispatch_pcollector);
+#ifdef DO_PSTATS
+  _compute_work_groups_pcollector.add_level(num_groups_x * num_groups_y * num_groups_z);
+  PStatGPUTimer timer(this, _current_sc->_compute_dispatch_pcollector);
+#endif
 
   //TODO: must actually be outside render pass, and on a queue that supports
   // compute.  Should we have separate pool/queue/buffer for compute?
@@ -2964,84 +3040,7 @@ prepare_lens() {
  */
 bool VulkanGraphicsStateGuardian::
 begin_frame(Thread *current_thread) {
-  nassertr_always(!_closing_gsg, false);
-  nassertr_always(_frame_data == nullptr, false);
-
-  _frame_data = &get_next_frame_data(true);
-
-  // Begin the transfer command buffer, for preparing resources.
-  if (!_frame_data->begin_transfer_cmd()) {
-    _frame_data = nullptr;
-    return false;
-  }
-
-  // Increase the frame counter, which we use to determine whether we've
-  // updated any resources in this frame.
-  _frame_data->_frame_index = ++_frame_counter;
-  _frame_data_head = (_frame_data_head + 1) % _frame_data_capacity;
-
-  // Make sure we have a white texture.
-  if (_white_texture.is_null()) {
-    _white_texture = new Texture();
-    _white_texture->setup_2d_texture(1, 1, Texture::T_unsigned_byte, Texture::F_rgba8);
-    _white_texture->set_clear_color(LColor(1, 1, 1, 1));
-    _white_texture->prepare_now(0, get_prepared_objects(), this);
-  }
-
-  if (_needs_write_null_vertex_data) {
-    _needs_write_null_vertex_data = false;
-    vkCmdFillBuffer(_frame_data->_transfer_cmd, _null_vertex_buffer, 0, 4, 0);
-  }
-
-  // Add a "white" color to be used for ColorAttribs in this frame, since this
-  // color occurs frequently.
-  {
-    VkBuffer buffer;
-    void *ptr = alloc_dynamic_uniform_buffer(16, buffer, _uniform_buffer_white_offset);
-    *(LVecBase4f *)ptr = LVecBase4f(1, 1, 1, 1);
-  }
-
-  // Call the GSG's begin_frame, which will cause any queued-up release() and
-  // prepare() methods to be called.  Note that some of them may add to the
-  // transfer command buffer, which is why we've begun it already.
-  if (GraphicsStateGuardian::begin_frame(current_thread)) {
-    // Now begin the main (ie. graphics) command buffer.
-    if (_frame_data->begin_render_cmd()) {
-      _current_shader = nullptr;
-      _current_sc = nullptr;
-
-      // Bind the "null" vertex buffer.
-      const VkDeviceSize offset = 0;
-      _vkCmdBindVertexBuffers(_frame_data->_cmd, 0, 1, &_null_vertex_buffer, &offset);
-      return true;
-    }
-  }
-
-  // We've already started putting stuff in the transfer command buffer, so now
-  // we are obliged to submit it, even if we won't actually end up rendering
-  // anything in this frame.
-  _frame_data->end_transfer_cmd();
-
-  VkSubmitInfo submit_info;
-  submit_info.pNext = nullptr;
-  submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-  submit_info.waitSemaphoreCount = 0;
-  submit_info.pWaitSemaphores = nullptr;
-  submit_info.pWaitDstStageMask = nullptr;
-  submit_info.commandBufferCount = 1;
-  submit_info.pCommandBuffers = &_frame_data->_transfer_cmd;
-  submit_info.signalSemaphoreCount = 0;
-  submit_info.pSignalSemaphores = nullptr;
-
-  VkResult err = vkQueueSubmit(_queue, 1, &submit_info, _frame_data->_fence);
-  if (err) {
-    vulkan_error(err, "Error submitting queue");
-    if (err == VK_ERROR_DEVICE_LOST) {
-      mark_new();
-    }
-  }
-  _frame_data = nullptr;
-  return false;
+  return begin_frame(current_thread, VK_NULL_HANDLE);
 }
 
 /**
@@ -3083,17 +3082,151 @@ end_scene() {
  */
 void VulkanGraphicsStateGuardian::
 end_frame(Thread *current_thread) {
-  end_frame(current_thread, VK_NULL_HANDLE, VK_NULL_HANDLE);
+  end_frame(current_thread, VK_NULL_HANDLE);
 }
 
 /**
- * Version of end_frame that waits for a semaphore before rendering, and also
- * signals a given semaphore when it's done.
- * Takes ownership of the wait_for semaphore.
+ * Version of begin_frame that transfers ownership of the given wait_for
+ * semaphore to the frame data object.  Rendering will not commence (though
+ * transfers may already take place) until the given semaphore is signalled.
+ */
+bool VulkanGraphicsStateGuardian::
+begin_frame(Thread *current_thread, VkSemaphore wait_for) {
+  nassertr_always(!_closing_gsg, false);
+  nassertr_always(_frame_data == nullptr, false);
+
+  int clock_frame = ClockObject::get_global_clock()->get_frame_count(current_thread);
+  _frame_data = &get_next_frame_data(true);
+  _frame_data->_clock_frame_number = clock_frame;
+
+  // Begin the transfer command buffer, for preparing resources.
+  if (!_frame_data->begin_transfer_cmd()) {
+    _frame_data = nullptr;
+    return false;
+  }
+
+  if (clock_frame != _current_clock_frame_number) {
+    // First Vulkan frame in this clock frame.
+    _current_clock_frame_number = clock_frame;
+
+#ifdef DO_PSTATS
+    if (!_timer_queries_active) {
+      if (pstats_gpu_timing && _supports_timer_query && PStatClient::is_connected()) {
+        _timer_queries_active = true;
+
+        if (_timer_query_pool == VK_NULL_HANDLE) {
+          replace_timer_query_pool();
+        }
+      }
+    }
+
+    if (_timer_queries_active) {
+      // Issue the first timer query on the transfer command buffer, since that
+      // marks the first command we will submit.
+      uint32_t query = get_next_timer_query(0);
+      vkCmdWriteTimestamp(_frame_data->_transfer_cmd, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, _timer_query_pool, query);
+    }
+#endif
+  }
+
+  // Increase the frame counter, which we use to determine whether we've
+  // updated any resources in this frame.
+  _frame_data->_frame_index = ++_frame_counter;
+  _frame_data_head = (_frame_data_head + 1) % _frame_data_capacity;
+
+  // Make sure we have a white texture.
+  if (_white_texture.is_null()) {
+    _white_texture = new Texture();
+    _white_texture->setup_2d_texture(1, 1, Texture::T_unsigned_byte, Texture::F_rgba8);
+    _white_texture->set_clear_color(LColor(1, 1, 1, 1));
+    _white_texture->prepare_now(0, get_prepared_objects(), this);
+  }
+
+  if (_needs_write_null_vertex_data) {
+    _needs_write_null_vertex_data = false;
+    vkCmdFillBuffer(_frame_data->_transfer_cmd, _null_vertex_buffer, 0, 4, 0);
+  }
+
+  // Add a "white" color to be used for ColorAttribs in this frame, since this
+  // color occurs frequently.
+  {
+    VkBuffer buffer;
+    void *ptr = alloc_dynamic_uniform_buffer(16, buffer, _uniform_buffer_white_offset);
+    *(LVecBase4f *)ptr = LVecBase4f(1, 1, 1, 1);
+  }
+
+  // Call the GSG's begin_frame, which will cause any queued-up release() and
+  // prepare() methods to be called.  Note that some of them may add to the
+  // transfer command buffer, which is why we've begun it already.
+  if (GraphicsStateGuardian::begin_frame(current_thread)) {
+    // Now begin the main (ie. graphics) command buffer.
+    if (_frame_data->begin_render_cmd()) {
+      _current_shader = nullptr;
+      _current_sc = nullptr;
+
+#ifdef DO_PSTATS
+      if (_timer_queries_active && wait_for != VK_NULL_HANDLE) {
+        // Measure the gap between the end of the transfer command buffer and
+        // the beginning of the render command buffer.
+        _transfer_end_query = get_next_timer_query(_wait_semaphore_pcollector.get_index());
+        _transfer_end_query_pool = _timer_query_pool;
+        uint32_t query = get_next_timer_query(_wait_semaphore_pcollector.get_index() | 0x8000);
+        vkCmdWriteTimestamp(_frame_data->_cmd, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, _timer_query_pool, query);
+      } else {
+        _transfer_end_query_pool = VK_NULL_HANDLE;
+      }
+#endif
+
+      // This is now owned by this frame data object.
+      _frame_data->_wait_semaphore = wait_for;
+
+      // Bind the "null" vertex buffer.
+      const VkDeviceSize offset = 0;
+      _vkCmdBindVertexBuffers(_frame_data->_cmd, 0, 1, &_null_vertex_buffer, &offset);
+      return true;
+    }
+  }
+
+  // We've already started putting stuff in the transfer command buffer, so now
+  // we are obliged to submit it, even if we won't actually end up rendering
+  // anything in this frame.
+  _frame_data->end_transfer_cmd();
+
+  VkSubmitInfo submit_info;
+  submit_info.pNext = nullptr;
+  submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+  submit_info.waitSemaphoreCount = 0;
+  submit_info.pWaitSemaphores = nullptr;
+  submit_info.pWaitDstStageMask = nullptr;
+  submit_info.commandBufferCount = 1;
+  submit_info.pCommandBuffers = &_frame_data->_transfer_cmd;
+  submit_info.signalSemaphoreCount = 0;
+  submit_info.pSignalSemaphores = nullptr;
+
+  VkResult err = vkQueueSubmit(_queue, 1, &submit_info, _frame_data->_fence);
+  if (err) {
+    vulkan_error(err, "Error submitting queue");
+    if (err == VK_ERROR_DEVICE_LOST) {
+      mark_new();
+    }
+  }
+  _frame_data = nullptr;
+  return false;
+}
+
+/**
+ * Version of end_frame that signals a given semaphore when it's done.
  */
 void VulkanGraphicsStateGuardian::
-end_frame(Thread *current_thread, VkSemaphore wait_for, VkSemaphore signal_done) {
+end_frame(Thread *current_thread, VkSemaphore signal_done) {
   GraphicsStateGuardian::end_frame(current_thread);
+
+#ifdef DO_PSTATS
+  if (_transfer_end_query_pool != VK_NULL_HANDLE) {
+    vkCmdWriteTimestamp(_frame_data->_transfer_cmd, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+                        _transfer_end_query_pool, _transfer_end_query);
+  }
+#endif
 
   _frame_data->end_transfer_cmd();
 
@@ -3137,40 +3270,90 @@ end_frame(Thread *current_thread, VkSemaphore wait_for, VkSemaphore signal_done)
                          0, nullptr, (uint32_t)num_downloads, barriers, 0, nullptr);
   }
 
+#ifdef DO_PSTATS
+  if (_timer_queries_active) {
+    issue_timer_query(0x8000);
+
+    if (_gpu_sync_time == 0) {
+      // Get a synchronized timestamp by waiting for the frame.
+      _frame_data->_wait_for_finish = true;
+    }
+  }
+#endif
   _frame_data->end_render_cmd();
 
-  VkCommandBuffer cmdbufs[] = {_frame_data->_transfer_cmd, _frame_data->_cmd};
+#ifdef DO_PSTATS
+  PStatClient *client = nullptr;
+  if (_timer_queries_active) {
+    client = PStatClient::get_global_pstats();
+    if (client != nullptr) {
+      _frame_data->_submit_time = client->get_real_time();
+    }
+  }
+#endif
 
-  // Submit the command buffers to the queue.
-  VkSubmitInfo submit_info;
-  submit_info.pNext = nullptr;
-  submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-  submit_info.waitSemaphoreCount = 0;
-  submit_info.pWaitSemaphores = nullptr;
-  submit_info.pWaitDstStageMask = nullptr;
-  submit_info.commandBufferCount = 2;
-  submit_info.pCommandBuffers = cmdbufs;
-  submit_info.signalSemaphoreCount = 0;
-  submit_info.pSignalSemaphores = nullptr;
+  VkResult err;
+  if (_frame_data->_wait_semaphore != VK_NULL_HANDLE) {
+    // Submit the command buffers to the queue separately, since the transfer
+    // command buffer doesn't need to wait for the semaphore.
+    VkSubmitInfo submit_infos[2];
+    submit_infos[0].pNext = nullptr;
+    submit_infos[0].sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submit_infos[0].waitSemaphoreCount = 0;
+    submit_infos[0].pWaitSemaphores = nullptr;
+    submit_infos[0].pWaitDstStageMask = nullptr;
+    submit_infos[0].commandBufferCount = 1;
+    submit_infos[0].pCommandBuffers = &_frame_data->_transfer_cmd;
+    submit_infos[0].signalSemaphoreCount = 0;
+    submit_infos[0].pSignalSemaphores = nullptr;
 
-  if (wait_for != VK_NULL_HANDLE) {
+    submit_infos[1].pNext = nullptr;
+    submit_infos[1].sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submit_infos[1].waitSemaphoreCount = 0;
+    submit_infos[1].pWaitSemaphores = nullptr;
+    submit_infos[1].pWaitDstStageMask = nullptr;
+    submit_infos[1].commandBufferCount = 1;
+    submit_infos[1].pCommandBuffers = &_frame_data->_cmd;
+    submit_infos[1].signalSemaphoreCount = 0;
+    submit_infos[1].pSignalSemaphores = nullptr;
+
     // We may need to wait until the attachments are available for writing.
     // TOP_OF_PIPE placates the validation layer, not sure why it's needed.
     static const VkPipelineStageFlags flags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-    submit_info.waitSemaphoreCount = 1;
-    submit_info.pWaitSemaphores = &wait_for;
-    submit_info.pWaitDstStageMask = &flags;
-    _frame_data->_wait_semaphore = wait_for;
+    submit_infos[1].waitSemaphoreCount = 1;
+    submit_infos[1].pWaitSemaphores = &_frame_data->_wait_semaphore;
+    submit_infos[1].pWaitDstStageMask = &flags;
+
+    if (signal_done != VK_NULL_HANDLE) {
+      // And we were asked to signal a semaphore when we are done rendering.
+      submit_infos[1].signalSemaphoreCount = 1;
+      submit_infos[1].pSignalSemaphores = &signal_done;
+    }
+
+    err = vkQueueSubmit(_queue, 2, submit_infos, _frame_data->_fence);
+  } else {
+    // Submit the command buffers to the queue in one go.
+    VkCommandBuffer cmdbufs[] = {_frame_data->_transfer_cmd, _frame_data->_cmd};
+    VkSubmitInfo submit_info;
+    submit_info.pNext = nullptr;
+    submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submit_info.waitSemaphoreCount = 0;
+    submit_info.pWaitSemaphores = nullptr;
+    submit_info.pWaitDstStageMask = nullptr;
+    submit_info.commandBufferCount = 2;
+    submit_info.pCommandBuffers = cmdbufs;
+    submit_info.signalSemaphoreCount = 0;
+    submit_info.pSignalSemaphores = nullptr;
+
+    if (signal_done != VK_NULL_HANDLE) {
+      // And we were asked to signal a semaphore when we are done rendering.
+      submit_info.signalSemaphoreCount = 1;
+      submit_info.pSignalSemaphores = &signal_done;
+    }
+
+    err = vkQueueSubmit(_queue, 1, &submit_info, _frame_data->_fence);
   }
 
-  if (signal_done != VK_NULL_HANDLE) {
-    // And we were asked to signal a semaphore when we are done rendering.
-    submit_info.signalSemaphoreCount = 1;
-    submit_info.pSignalSemaphores = &signal_done;
-  }
-
-  VkResult err;
-  err = vkQueueSubmit(_queue, 1, &submit_info, _frame_data->_fence);
   if (err) {
     vulkan_error(err, "Error submitting queue");
     if (err == VK_ERROR_DEVICE_LOST) {
@@ -3183,7 +3366,7 @@ end_frame(Thread *current_thread, VkSemaphore wait_for, VkSemaphore signal_done)
   // (slow!) and then copy the data from Vulkan host memory to Panda memory.
   if (_frame_data->_wait_for_finish) {
     {
-      PStatTimer timer(_flush_pcollector);
+      PStatTimer timer(_wait_fence_pcollector);
       err = vkWaitForFences(_device, 1, &_frame_data->_fence, VK_TRUE, ~0ULL);
     }
     if (err) {
@@ -3193,6 +3376,11 @@ end_frame(Thread *current_thread, VkSemaphore wait_for, VkSemaphore signal_done)
       }
       vkQueueWaitIdle(_queue);
     }
+#ifdef DO_PSTATS
+    if (client != nullptr) {
+      _frame_data->_finish_time = client->get_real_time();
+    }
+#endif
 
     VkFence reset_fences[_frame_data_capacity];
     size_t num_reset_fences = 0;
@@ -3233,6 +3421,19 @@ end_frame(Thread *current_thread, VkSemaphore wait_for, VkSemaphore signal_done)
  */
 void VulkanGraphicsStateGuardian::
 finish_frame(FrameData &frame_data) {
+#ifdef DO_PSTATS
+  PStatClient *client = PStatClient::get_global_pstats();
+  double finish_time;
+  if (client != nullptr) {
+    if (client->client_is_connected()) {
+      finish_time = client->get_real_time();
+      _finish_frame_pcollector.start(client->get_current_thread(), finish_time);
+    } else {
+      client = nullptr;
+    }
+  }
+#endif
+
   ++_last_finished_frame;
   nassertv(frame_data._frame_index == _last_finished_frame);
 
@@ -3301,6 +3502,110 @@ finish_frame(FrameData &frame_data) {
   // Process texture-to-RAM downloads.
   frame_data.finish_downloads(_device);
 
+#ifdef DO_PSTATS
+  if (client != nullptr && frame_data._timer_query_pool._pool != VK_NULL_HANDLE) {
+    if (_pstats_frame_number != frame_data._clock_frame_number) {
+      if (!_pstats_frame_data.is_empty()) {
+        // Implicitly add an end-of-frame marker.
+        _pstats_frame_data.add_stop(0, _pstats_frame_end_time);
+        PStatThread gpu_thread = get_pstats_thread();
+        gpu_thread.add_frame(_pstats_frame_number, std::move(_pstats_frame_data));
+        _pstats_frame_data.clear();
+      }
+
+      _pstats_frame_number = frame_data._clock_frame_number;
+    }
+
+    if (frame_data._wait_for_finish) {
+      // We have an opportunity to synchronize the frame timing.
+      // Find the end-of-frame marker.
+      for (size_t i = frame_data._timer_query_pool._pstats_indices.size(); i > 0; --i) {
+        uint64_t result;
+        if (frame_data._timer_query_pool._pstats_indices[i - 1] == 0x8000) {
+          vkGetQueryPoolResults(_device, frame_data._timer_query_pool._pool, frame_data._timer_query_pool._offset + i - 1, 1,
+                                sizeof(result), &result, sizeof(uint64_t), VK_QUERY_RESULT_64_BIT);
+          _gpu_sync_time = result;
+          _cpu_sync_time = std::max(frame_data._submit_time, frame_data._finish_time);
+          break;
+        }
+      }
+    }
+
+    // Process timer queries.
+    small_vector<VulkanFrameData::TimerQueryPool *, 1> rpools;
+    size_t data_size = 0;
+    auto *pool = &frame_data._timer_query_pool;
+    while (pool != nullptr) {
+      if (!pool->_pstats_indices.empty()) {
+        // We want to iterate over the pools in reverse order.
+        rpools.insert(rpools.begin(), pool);
+        data_size = std::max(data_size, pool->_pstats_indices.size() * sizeof(uint64_t));
+      }
+      pool = pool->_prev;
+    }
+
+    if (data_size > 0) {
+      uint64_t *results = (uint64_t *)alloca(data_size);
+
+      for (auto *pool : rpools) {
+        size_t split = (pool->_pool_size + 1) - pool->_offset;
+        if (pool->_pstats_indices.size() <= split) {
+          vkGetQueryPoolResults(_device, pool->_pool, pool->_offset, pool->_pstats_indices.size(),
+                                data_size, results, sizeof(uint64_t), VK_QUERY_RESULT_64_BIT);
+        } else {
+          vkGetQueryPoolResults(_device, pool->_pool, pool->_offset, split,
+                                data_size, results, sizeof(uint64_t), VK_QUERY_RESULT_64_BIT);
+          vkGetQueryPoolResults(_device, pool->_pool, 0, pool->_pstats_indices.size() - split,
+                                data_size, results + split, sizeof(uint64_t), VK_QUERY_RESULT_64_BIT);
+        }
+
+        for (size_t i = 0; i < pool->_pstats_indices.size(); ++i) {
+          uint16_t index = pool->_pstats_indices[i];
+          double time = (int64_t)(results[i] - _gpu_sync_time) * _timer_query_factor + _cpu_sync_time;
+          if (time < frame_data._submit_time) {
+            // Can't have executed before submission, shift the timestamp.
+            _cpu_sync_time += frame_data._submit_time - time;
+            time = frame_data._submit_time;
+          }
+
+          if (index == 0x8000) {
+            // We don't want multiple of these in a PStats frame, so we add
+            // only the last one.
+            _pstats_frame_end_time = time;
+            continue;
+          } else if (index & 0x8000) {
+            _pstats_frame_data.add_stop(index & 0x7fff, time);
+          } else {
+            _pstats_frame_data.add_start(index & 0x7fff, time);
+          }
+        }
+
+        if (pool != &frame_data._timer_query_pool) {
+          // This was an old pool, no longer current.  Throw it away.
+          vkDestroyQueryPool(_device, pool->_pool, nullptr);
+        } else {
+          // This is the current pool.  Reset the used ranges.
+          if (pool->_pstats_indices.size() <= split) {
+            vkResetQueryPool(_device, pool->_pool, pool->_offset, pool->_pstats_indices.size());
+          } else {
+            vkResetQueryPool(_device, pool->_pool, pool->_offset, split);
+            vkResetQueryPool(_device, pool->_pool, 0, pool->_pstats_indices.size() - split);
+          }
+          _timer_query_tail = (pool->_offset + pool->_pstats_indices.size()) & _timer_query_pool_size;
+        }
+
+        pool->_pstats_indices.clear();
+        pool = pool->_prev;
+      }
+    }
+
+    _finish_frame_pcollector.stop();
+  }
+#endif
+
+  frame_data._finish_time = 0.0;
+  frame_data._wait_for_finish = false;
+
   if (_last_frame_data == &frame_data) {
     _last_frame_data = nullptr;
   }
@@ -3344,18 +3649,21 @@ get_next_frame_data(bool finish_frames) {
   if (_frame_data_tail == _frame_data_head) {
     FrameData &frame_data = _frame_data_pool[_frame_data_tail];
     VkResult err;
-    err = vkWaitForFences(_device, 1, &frame_data._fence, VK_TRUE, 1000000000ULL);
-    if (err == VK_TIMEOUT) {
-      vulkandisplay_cat.error()
-        << "Timed out waiting for previous frame to complete rendering.\n";
-      vkQueueWaitIdle(_queue);
-    }
-    else if (err) {
-      vulkan_error(err, "Failure waiting for command buffer fence");
-      if (err == VK_ERROR_DEVICE_LOST) {
-        mark_new();
+    {
+      PStatTimer timer(_wait_fence_pcollector);
+      err = vkWaitForFences(_device, 1, &frame_data._fence, VK_TRUE, 1000000000ULL);
+      if (err == VK_TIMEOUT) {
+        vulkandisplay_cat.error()
+          << "Timed out waiting for previous frame to complete rendering.\n";
+        vkQueueWaitIdle(_queue);
       }
-      vkQueueWaitIdle(_queue);
+      else if (err) {
+        vulkan_error(err, "Failure waiting for command buffer fence");
+        if (err == VK_ERROR_DEVICE_LOST) {
+          mark_new();
+        }
+        vkQueueWaitIdle(_queue);
+      }
     }
 
     // This frame has completed execution.
@@ -3370,7 +3678,11 @@ get_next_frame_data(bool finish_frames) {
     //nassertr(!err, false);
   }
 
-  return _frame_data_pool[_frame_data_head % _frame_data_capacity];
+  VulkanFrameData &frame_data = _frame_data_pool[_frame_data_head % _frame_data_capacity];
+  frame_data._timer_query_pool._pool = _timer_query_pool;
+  frame_data._timer_query_pool._pool_size = _timer_query_pool_size;
+  frame_data._timer_query_pool._offset = _timer_query_head;
+  return frame_data;
 }
 
 /**
@@ -3510,7 +3822,7 @@ draw_trifans(const GeomPrimitivePipelineReader *reader, bool force) {
  */
 bool VulkanGraphicsStateGuardian::
 draw_patches(const GeomPrimitivePipelineReader *reader, bool force) {
-  PStatTimer timer(_draw_primitive_pcollector);
+  PStatGPUTimer timer(this, _draw_primitive_pcollector);
 
   uint32_t patch_control_points = ((const GeomPrimitive *)reader->get_object())->get_num_vertices_per_primitive();
   if (_supports_extended_dynamic_state2_patch_control_points) {
@@ -3932,7 +4244,10 @@ do_extract_buffer(VulkanFrameData &frame_data, VulkanBufferContext *bc, vector_u
     return false;
   }
 
-  err = vkWaitForFences(_device, 1, &frame_data._fence, VK_TRUE, 1000000000ULL);
+  {
+    PStatTimer timer(_wait_fence_pcollector);
+    err = vkWaitForFences(_device, 1, &frame_data._fence, VK_TRUE, 1000000000ULL);
+  }
   nassertr(err == VK_SUCCESS, false);
   vkDestroyBuffer(_device, tmp_buffer, nullptr);
 
@@ -3960,7 +4275,7 @@ do_draw_primitive_with_topology(const GeomPrimitivePipelineReader *reader,
                                 bool force, VkPrimitiveTopology topology,
                                 bool primitive_restart_enable) {
 
-  PStatTimer timer(_draw_primitive_pcollector);
+  PStatGPUTimer timer(this, _draw_primitive_pcollector);
 
   if (_supports_extended_dynamic_state2) {
     _vkCmdSetPrimitiveTopologyEXT(_frame_data->_cmd, topology);

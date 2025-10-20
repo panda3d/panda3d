@@ -90,6 +90,10 @@ public:
   virtual void release_shader_buffer(BufferContext *bc);
   virtual bool extract_shader_buffer_data(ShaderBuffer *buffer, vector_uchar &data);
 
+  virtual void issue_timer_query(int pstats_index);
+  uint32_t get_next_timer_query(int pstats_index);
+  void replace_timer_query_pool();
+
   virtual void dispatch_compute(int size_x, int size_y, int size_z);
 
   virtual PT(GeomMunger) make_geom_munger(const RenderState *state,
@@ -107,7 +111,8 @@ public:
   virtual bool begin_scene();
   virtual void end_scene();
   virtual void end_frame(Thread *current_thread);
-  void end_frame(Thread *current_thread, VkSemaphore wait_for, VkSemaphore signal_done);
+  bool begin_frame(Thread *current_thread, VkSemaphore wait_for);
+  void end_frame(Thread *current_thread, VkSemaphore signal_done);
   void finish_frame(FrameData &frame_data);
   FrameData &get_next_frame_data(bool finish_frames = false);
   INLINE FrameData &get_frame_data();
@@ -298,9 +303,23 @@ private:
   size_t _frame_data_tail = 0;
   FrameData *_frame_data = nullptr;
   FrameData *_last_frame_data = nullptr;
+  uint32_t _transfer_end_query = 0;
+  VkQueryPool _transfer_end_query_pool = VK_NULL_HANDLE;
 
   uint64_t _frame_counter = 0;
   uint64_t _last_finished_frame = 0;
+  int _current_clock_frame_number = -1;
+
+  VkQueryPool _timer_query_pool = VK_NULL_HANDLE;
+  uint32_t _timer_query_pool_size = 7; // always power of 2 minus one
+  uint32_t _timer_query_head = 0;
+  uint32_t _timer_query_tail = 0;
+  PStatFrameData _pstats_frame_data;
+  int _pstats_frame_number = 0;
+  double _pstats_frame_end_time = 0.0;
+  uint64_t _gpu_sync_time = 0;
+  double _cpu_sync_time = 0;
+  double _timer_query_factor = 0.0;
 
   // Feature checks.
   bool _supports_dynamic_rendering = false;

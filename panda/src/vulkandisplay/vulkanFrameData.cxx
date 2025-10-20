@@ -227,5 +227,19 @@ finish_downloads(VkDevice device) {
     }
   }
   _download_queue.clear();
-  _wait_for_finish = false;
+}
+
+/**
+ *
+ */
+void VulkanFrameData::
+replace_timer_query_pool(VkQueryPool new_pool, size_t new_size) {
+  if (_timer_query_pool._pool != VK_NULL_HANDLE) {
+    TimerQueryPool *prev_pool = new TimerQueryPool(std::move(_timer_query_pool));
+    _timer_query_pool._prev = prev_pool;
+  }
+  _timer_query_pool._pool = new_pool;
+  _timer_query_pool._pool_size = new_size;
+  _timer_query_pool._offset = 0;
+  _timer_query_pool._pstats_indices.clear();
 }

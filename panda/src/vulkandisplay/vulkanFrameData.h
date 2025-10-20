@@ -44,8 +44,11 @@ public:
 
   void finish_downloads(VkDevice device);
 
+  void replace_timer_query_pool(VkQueryPool new_pool, size_t new_size);
+
 public:
   uint64_t _frame_index = 0;
+  int _clock_frame_number = 0;
   VkFence _fence = VK_NULL_HANDLE;
   VkCommandBuffer _cmd = VK_NULL_HANDLE;
   VkCommandBuffer _transfer_cmd = VK_NULL_HANDLE;
@@ -75,6 +78,28 @@ public:
 
   VkDeviceSize _uniform_buffer_head = 0;
   VkDeviceSize _staging_buffer_head = 0;
+
+  // Defines a range in a timer query pool that is used in this frame.
+  // The _prev pointer is a linked list of old pools that were replaced during
+  // this frame.
+  struct TimerQueryPool {
+    VkQueryPool _pool = VK_NULL_HANDLE;
+    size_t _pool_size = 0;
+    uint32_t _offset = 0;
+    pvector<uint16_t> _pstats_indices;
+    TimerQueryPool *_prev = nullptr;
+  };
+  TimerQueryPool _timer_query_pool;
+
+  // PStats timestamp taken in begin_frame().
+  double _start_time;
+
+  // PStats timestamp taken right before submission, so we can compare how
+  // long it takes for the GPU to start the work.
+  double _submit_time;
+
+  // PStats timestamp taken after waiting for the frame on the GPU.
+  double _finish_time = 0;
 
   // Queued buffer-to-RAM transfer.
   struct QueuedDownload {

@@ -137,9 +137,12 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   // Instruct the GSG that we are commencing a new frame.  This will cause it
   // to create a command buffer.
   vkgsg->set_current_properties(&get_fb_properties());
-  if (!vkgsg->begin_frame(current_thread)) {
+  if (!vkgsg->begin_frame(current_thread, _image_available)) {
     return false;
   }
+
+  // Ownership of this was transferred to the VulkanFrameData.
+  _image_available = VK_NULL_HANDLE;
 
   copy_async_screenshot();
 
@@ -396,10 +399,7 @@ end_frame(FrameMode mode, Thread *current_thread) {
 
   // Note: this will close the command buffer, and unsignal the previous
   // frame's semaphore.
-  vkgsg->end_frame(current_thread, _image_available, signal_done);
-
-  // Ownership of this was transferred to the VulkanFrameData.
-  _image_available = VK_NULL_HANDLE;
+  vkgsg->end_frame(current_thread, signal_done);
 
   if (mode == FM_render) {
     nassertv(!_flip_ready);
