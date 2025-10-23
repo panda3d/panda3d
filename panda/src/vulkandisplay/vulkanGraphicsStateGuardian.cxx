@@ -2267,7 +2267,7 @@ update_vertex_buffer(VulkanVertexBufferContext *vbc,
 
     vbc->mark_loaded(reader);
   }
-  vbc->set_active(true);
+  vbc->mark_used_this_frame(get_frame_data());
   vbc->enqueue_lru(&_prepared_objects->_graphics_memory_lru);
 
   return true;
@@ -2453,7 +2453,7 @@ update_index_buffer(VulkanIndexBufferContext *ibc,
 
     ibc->mark_loaded(reader);
   }
-  ibc->set_active(true);
+  ibc->mark_used_this_frame(get_frame_data());
   ibc->enqueue_lru(&_prepared_objects->_graphics_memory_lru);
 
   return true;

@@ -20,3 +20,16 @@ VulkanBufferContext(PreparedGraphicsObjects *pgo,
   BufferContext(&pgo->_sbuffer_residency, object),
   _buffer(VK_NULL_HANDLE) {
 }
+
+/**
+ * Indicates that the buffer has been read by the command buffer with the
+ * given sequence number.
+ */
+INLINE void VulkanBufferContext::
+mark_read(uint64_t seq) {
+  if (seq != _read_seq) {
+    _read_seq = seq;
+    _buffer_barrier_index = 0;
+    _pooled_barrier_exists = false;
+  }
+}

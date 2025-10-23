@@ -29,6 +29,8 @@ public:
 
   virtual void evict_lru();
 
+  INLINE void mark_read(uint64_t seq);
+
 public:
   VkBuffer _buffer;
   VulkanMemoryBlock _block;
@@ -44,7 +46,7 @@ public:
   uint64_t _write_seq = 0;
 
   // Index of the barrier into the list of barriers of the _read_seq CB.
-  size_t _image_barrier_index = 0;
+  bool _pooled_barrier_exists = false;
   size_t _buffer_barrier_index = 0;
 
   // These fields are managed by VulkanFrameData::add_initial_barrier(),

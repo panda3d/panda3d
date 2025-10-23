@@ -55,7 +55,7 @@ add_barrier(VulkanTextureContext *tc, VkImageLayout layout,
   }
   else if (src_stage_mask == 0) {
     // No write has been done, nothing to do here, except mark the read.
-    tc->_read_seq = _seq;
+    tc->mark_read(_seq);
     tc->_read_stage_mask |= dst_stage_mask;
     return;
   }
@@ -65,7 +65,7 @@ add_barrier(VulkanTextureContext *tc, VkImageLayout layout,
     if (dst_stage_mask == 0) {
       // We could probably improve this by also early-outing if we've already
       // synchronized a *preceding* stage.
-      tc->_read_seq = _seq;
+      tc->mark_read(_seq);
       return;
     }
   }
@@ -108,11 +108,11 @@ add_barrier(VulkanTextureContext *tc, VkImageLayout layout,
     (tc->_write_seq < _seq && (tc->_read_seq < _seq || !is_write));
 
   if (vulkandisplay_cat.is_spam()) {
-    const char src_type = is_write ? 'W' : 'R';
-    const char dst_type = (src_access_mask != 0) ? 'W' : 'R';
+    const char dst_type = is_write ? 'W' : 'R';
+    const char src_type = (src_access_mask != 0) ? 'W' : 'R';
     auto &out = vulkandisplay_cat.spam()
       << (pool_possible ? "Pooling " : "Issuing ")
-      << src_type << 'A' << dst_type << " barrier for ";
+      << dst_type << 'a' << src_type << " barrier for ";
 
     Texture *tex = tc->get_texture();
     if (tex != nullptr) {
@@ -129,14 +129,16 @@ add_barrier(VulkanTextureContext *tc, VkImageLayout layout,
 
   if (pool_possible) {
     // First access in this CB, or a read in a CB without a write.
-    if (tc->_read_seq == _seq) {
+    if (tc->_read_seq == _seq && tc->_pooled_barrier_exists) {
       // Already exists, this barrier, just modify it.
       if (tc->_image != VK_NULL_HANDLE) {
+        nassertv(tc->_image_barrier_index <= _image_barriers.size());
         VkImageMemoryBarrier &existing_barrier = _image_barriers[tc->_image_barrier_index];
         existing_barrier.srcAccessMask |= img_barrier.srcAccessMask;
         existing_barrier.dstAccessMask |= img_barrier.dstAccessMask;
       }
       if (tc->_buffer != VK_NULL_HANDLE) {
+        nassertv(tc->_buffer_barrier_index <= _buffer_barriers.size());
         VkBufferMemoryBarrier &existing_barrier = _buffer_barriers[tc->_buffer_barrier_index];
         existing_barrier.srcAccessMask |= buf_barrier.srcAccessMask;
         existing_barrier.dstAccessMask |= buf_barrier.dstAccessMask;
@@ -144,12 +146,13 @@ add_barrier(VulkanTextureContext *tc, VkImageLayout layout,
     } else {
       if (tc->_image != VK_NULL_HANDLE) {
         tc->_image_barrier_index = _image_barriers.size();
-        _image_barriers.push_back(std::move(img_barrier));
+        _image_barriers.push_back(img_barrier);
       }
       if (tc->_buffer != VK_NULL_HANDLE) {
         tc->_buffer_barrier_index = _buffer_barriers.size();
-        _buffer_barriers.push_back(std::move(buf_barrier));
+        _buffer_barriers.push_back(buf_barrier);
       }
+      tc->_pooled_barrier_exists = true;
     }
     _barrier_src_stage_mask |= src_stage_mask;
     _barrier_dst_stage_mask |= dst_stage_mask;
@@ -160,6 +163,8 @@ add_barrier(VulkanTextureContext *tc, VkImageLayout layout,
                          0, nullptr,
                          (tc->_buffer != VK_NULL_HANDLE), &buf_barrier,
                          (tc->_image != VK_NULL_HANDLE), &img_barrier);
+
+    tc->_pooled_barrier_exists = false;
   }
 
   tc->_layout = layout;
@@ -224,7 +229,7 @@ add_barrier(VulkanBufferContext *bc, VkPipelineStageFlags dst_stage_mask,
   }
   else if (src_stage_mask == 0) {
     // No write has been done, nothing to do here, except mark the read.
-    bc->_read_seq = _seq;
+    bc->mark_read(_seq);
     bc->_read_stage_mask |= dst_stage_mask;
     return;
   }
@@ -234,7 +239,7 @@ add_barrier(VulkanBufferContext *bc, VkPipelineStageFlags dst_stage_mask,
     if (dst_stage_mask == 0) {
       // We could probably improve this by also early-outing if we've already
       // synchronized a *preceding* stage.
-      bc->_read_seq = _seq;
+      bc->mark_read(_seq);
       return;
     }
   }
@@ -253,45 +258,43 @@ add_barrier(VulkanBufferContext *bc, VkPipelineStageFlags dst_stage_mask,
   // We want to avoid adding lots of pipeline barriers to the command stream,
   // so we instead add this to the list of barriers to be issued at the
   // beginning of this CB, unless it has already been accessed in this CB.
-  if (bc->_write_seq < _seq && (bc->_read_seq < _seq || write_mask == 0)) {
+  bool pool_possible =
+    (bc->_write_seq < _seq && (bc->_read_seq < _seq || write_mask == 0));
+
+  if (vulkandisplay_cat.is_spam()) {
+    const char dst_type = (write_mask != 0) ? 'W' : 'R';
+    const char src_type = (src_access_mask != 0) ? 'W' : 'R';
+    vulkandisplay_cat.spam()
+      << (pool_possible ? "Pooling " : "Issuing ")
+      << dst_type << 'a' << src_type << " barrier for "
+      << "SSBO " << *(ShaderBuffer *)bc->get_object()
+      << " on CB #" << _seq << " (last "
+      << ((bc->_read_seq > bc->_write_seq) ? "read on #" : "write on #")
+      << bc->_read_seq << ")\n";
+  }
+
+  if (pool_possible) {
     // First access in this CB, or a read in a CB without a write.
-    if (bc->_read_seq == _seq) {
+    if (bc->_read_seq == _seq && bc->_pooled_barrier_exists) {
       // Already exists, this barrier, just modify it.
+      nassertv(bc->_buffer_barrier_index <= _buffer_barriers.size());
       VkBufferMemoryBarrier &existing_barrier = _buffer_barriers[bc->_buffer_barrier_index];
       existing_barrier.srcAccessMask |= buf_barrier.srcAccessMask;
       existing_barrier.dstAccessMask |= buf_barrier.dstAccessMask;
     } else {
       bc->_buffer_barrier_index = _buffer_barriers.size();
       _buffer_barriers.push_back(std::move(buf_barrier));
+      bc->_pooled_barrier_exists = true;
     }
     _barrier_src_stage_mask |= src_stage_mask;
     _barrier_dst_stage_mask |= dst_stage_mask;
-
-    if (vulkandisplay_cat.is_spam()) {
-      const char src_type = (write_mask != 0) ? 'W' : 'R';
-      const char dst_type = (src_access_mask != 0) ? 'W' : 'R';
-      vulkandisplay_cat.spam()
-        << "Pooling " << src_type << 'A' << dst_type << " barrier for SSBO "
-        << *(ShaderBuffer *)bc->get_object()
-        << " on CB #" << _seq << " (last "
-        << ((bc->_read_seq > bc->_write_seq) ? "read on #" : "write on #")
-        << bc->_read_seq << ")\n";
-    }
   }
   else {
     // We already have an access done in this CB, issue the barrier now.
-    if (vulkandisplay_cat.is_spam()) {
-      const char src_type = (write_mask != 0) ? 'W' : 'R';
-      const char dst_type = (src_access_mask != 0) ? 'W' : 'R';
-      vulkandisplay_cat.spam()
-        << "Issuing " << src_type << 'A' << dst_type << " barrier for SSBO "
-        << *(ShaderBuffer *)bc->get_object()
-        << " on CB #" << _seq << " (last "
-        << ((bc->_read_seq > bc->_write_seq) ? "read on #" : "write on #")
-        << bc->_read_seq << ")\n";
-    }
     vkCmdPipelineBarrier(_cmd, src_stage_mask, dst_stage_mask, 0,
                          0, nullptr, 1, &buf_barrier, 0, nullptr);
+
+    bc->_pooled_barrier_exists = false;
   }
 
   bc->_read_seq = _seq;

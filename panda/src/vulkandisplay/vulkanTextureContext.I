@@ -45,6 +45,20 @@ get_buffer_view(int view) const {
 }
 
 /**
+ * Indicates that the texture has been read by the command buffer with the
+ * given sequence number.
+ */
+INLINE void VulkanTextureContext::
+mark_read(uint64_t seq) {
+  if (seq != _read_seq) {
+    _read_seq = seq;
+    _image_barrier_index = 0;
+    _buffer_barrier_index = 0;
+    _pooled_barrier_exists = false;
+  }
+}
+
+/**
  * Indicates that future commands aren't really interested in seeing the
  * results of writes made before it to this image.
  */
