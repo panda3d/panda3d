@@ -153,17 +153,16 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   nassertr(_image_index < _swap_buffers.size(), false);
   SwapBuffer &buffer = _swap_buffers[_image_index];
 
-  VulkanFrameData &frame_data = vkgsg->get_frame_data();
 
   VulkanTextureContext *color_tc;
-  nassertr(!buffer._tc->is_used_this_frame(frame_data), false);
-  buffer._tc->mark_used_this_frame(frame_data);
+  nassertr(buffer._tc->_read_seq < vkgsg->_render_cmd._seq, false);
+  buffer._tc->set_active(true);
 
   // If we have multisamples, we render to a different image, which we then
   // resolve into the swap chain image.
   if (_ms_color_tc != nullptr) {
-    nassertr(!_ms_color_tc->is_used_this_frame(frame_data), false);
-    _ms_color_tc->mark_used_this_frame(frame_data);
+    nassertr(_ms_color_tc->_read_seq < vkgsg->_render_cmd._seq, false);
+    _ms_color_tc->set_active(true);
     color_tc = _ms_color_tc;
   } else {
     color_tc = buffer._tc;
@@ -175,7 +174,8 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 
   // Now that we have a command buffer, start our render pass.  First
   // transition the swapchain images into the valid state for rendering into.
-  VkCommandBuffer cmd = frame_data._cmd;
+  VkCommandBuffer cmd = vkgsg->_render_cmd;
+  nassertr(cmd != VK_NULL_HANDLE, false);
 
   VkRenderingInfo render_info = {VK_STRUCTURE_TYPE_RENDERING_INFO};
   render_info.layerCount = 1;
@@ -200,20 +200,36 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   }
   color_attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 
-  if (color_tc->_layout != color_attachment.imageLayout ||
+  // Reset this to reflect getting this texture fresh from the present engine.
+  color_tc->_write_stage_mask = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+  color_tc->_write_access_mask = 0;
+  color_tc->_read_stage_mask = 0;
+
+  //NB. We can't let add_barrier pool these barriers because they would be
+  // issued before the wait on the semaphore is complete.  Therefore we
+  // twiddle the _write_seq as well to force it to issue it in the middle of
+  // the command stream.
+  if (vkgsg->_render_cmd._wait_semaphore) {
+    color_tc->_read_seq = vkgsg->_render_cmd._seq;
+    color_tc->_write_seq = vkgsg->_render_cmd._seq;
+  }
+  vkgsg->_render_cmd.add_barrier(color_tc, color_attachment.imageLayout,
+                                 VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                                 VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
+  /*if (color_tc->_layout != color_attachment.imageLayout ||
       (color_tc->_write_stage_mask & ~VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT) != 0 ||
       (color_tc->_read_stage_mask & ~VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT) != 0) {
     frame_data.add_initial_barrier(color_tc,
       color_attachment.imageLayout,
       VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
       VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
-  }
+  }*/
 
   VkRenderingAttachmentInfo depth_attachment = {VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
   VkRenderingAttachmentInfo stencil_attachment = {VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
   if (_depth_stencil_tc != nullptr) {
-    nassertr(!_depth_stencil_tc->is_used_this_frame(frame_data), false);
-    _depth_stencil_tc->mark_used_this_frame(frame_data);
+    nassertr(_depth_stencil_tc->_read_seq < vkgsg->_render_cmd._seq, false);
+    _depth_stencil_tc->set_active(true);
 
     if (_depth_stencil_aspect_mask & VK_IMAGE_ASPECT_DEPTH_BIT) {
       render_info.pDepthAttachment = &depth_attachment;
@@ -243,14 +259,19 @@ begin_frame(FrameMode mode, Thread *current_thread) {
       stencil_attachment.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
     }
 
-    if (_depth_stencil_tc->_layout != VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL ||
+    /*if (_depth_stencil_tc->_layout != VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL ||
         (_depth_stencil_tc->_write_stage_mask & ~VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT) != 0 ||
         (_depth_stencil_tc->_read_stage_mask & ~VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT) != 0) {
       frame_data.add_initial_barrier(_depth_stencil_tc,
         VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
         VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
         VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT);
-    }
+    }*/
+
+    vkgsg->_render_cmd.add_barrier(_depth_stencil_tc,
+      VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+      VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
+      VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT);
   }
 
   vkgsg->_vkCmdBeginRendering(cmd, &render_info);
@@ -361,7 +382,7 @@ end_frame(FrameMode mode, Thread *current_thread) {
   VulkanGraphicsStateGuardian *vkgsg;
   DCAST_INTO_V(vkgsg, _gsg);
 
-  VkCommandBuffer cmd = vkgsg->_frame_data->_cmd;
+  VkCommandBuffer cmd = vkgsg->_render_cmd;
   nassertv(cmd != VK_NULL_HANDLE);
   SwapBuffer &buffer = _swap_buffers[_image_index];
 
@@ -373,14 +394,14 @@ end_frame(FrameMode mode, Thread *current_thread) {
 
     // The driver implicitly transitioned this to the final layout.
     buffer._tc->_layout = _final_layout;*/
-    buffer._tc->mark_written(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-                             VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
+    //buffer._tc->mark_written(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+    //                         VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
 
     if (_depth_stencil_tc != nullptr) {
       //_depth_stencil_tc->_layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-      _depth_stencil_tc->mark_written(
-        VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
-        VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT);
+      //_depth_stencil_tc->mark_written(
+      //  VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
+      //  VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT);
     }
 
     // Now we can do copy-to-texture, now that the render pass has ended.
@@ -389,12 +410,12 @@ end_frame(FrameMode mode, Thread *current_thread) {
     signal_done = buffer._render_complete;
 
     // If we copied the textures, transition it back to the present state.
-    if (buffer._tc->_layout != VK_IMAGE_LAYOUT_PRESENT_SRC_KHR) {
-      buffer._tc->transition(cmd, vkgsg->_graphics_queue_family_index,
-                             VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-                             VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-                             VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
-    }
+    //if (buffer._tc->_layout != VK_IMAGE_LAYOUT_PRESENT_SRC_KHR) {
+    vkgsg->_render_cmd.add_barrier(buffer._tc,
+                                   VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+                                   VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+                                   0);
+    //}
   }
 
   // Note: this will close the command buffer, and unsignal the previous
@@ -744,7 +765,7 @@ setup_render_pass() {
       << "Creating render pass for VulkanGraphicsWindow " << this << "\n";
   }
 
-  nassertr(vkgsg->_frame_data == nullptr, false);
+  vkgsg->flush();
 
   {
     // Do we intend to copy the framebuffer to a texture?
@@ -1065,6 +1086,7 @@ create_swapchain() {
     buffer._tc->_extent = extent;
     buffer._tc->_mip_levels = 1;
     buffer._tc->_array_layers = 1;
+    buffer._tc->_swapchain_index = (int)i;
 
     VkImageViewCreateInfo view_info;
     view_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -1221,7 +1243,7 @@ create_swapchain() {
     }*/
 
     // Don't start rendering until the image has been acquired.
-    buffer._tc->mark_written(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0);
+    //buffer._tc->mark_written(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0);
   }
 
   // Create a semaphore for signalling the availability of an image.

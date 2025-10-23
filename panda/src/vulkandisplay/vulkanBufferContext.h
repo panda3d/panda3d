@@ -34,6 +34,25 @@ public:
   VulkanMemoryBlock _block;
   bool _host_visible = false;
 
+  // Used for shader buffers.
+  VkAccessFlags _write_access_mask = 0;
+  VkPipelineStageFlags _write_stage_mask = 0;
+  VkPipelineStageFlags _read_stage_mask = 0;
+
+  // Sequence number of the last command buffer in which this was used.
+  uint64_t _read_seq = 0;
+  uint64_t _write_seq = 0;
+
+  // Index of the barrier into the list of barriers of the _read_seq CB.
+  size_t _image_barrier_index = 0;
+  size_t _buffer_barrier_index = 0;
+
+  // These fields are managed by VulkanFrameData::add_initial_barrier(),
+  // and are used to keep track of the barrier we issue at the beginning of a
+  // frame.
+  VkAccessFlags _initial_src_access_mask = 0;
+  VkAccessFlags _initial_dst_access_mask = 0;
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

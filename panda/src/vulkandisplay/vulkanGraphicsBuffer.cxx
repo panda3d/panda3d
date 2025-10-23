@@ -141,8 +141,8 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 
   // Now that we have a command buffer, start our render pass.  First
   // transition the swapchain images into the valid state for rendering into.
-  VulkanFrameData &frame_data = vkgsg->get_frame_data();
-  VkCommandBuffer cmd = frame_data._cmd;
+  VkCommandBuffer cmd = vkgsg->_render_cmd;
+  nassertr(cmd != VK_NULL_HANDLE, false);
 
   VkRenderingAttachmentInfo *color_attachments = (VkRenderingAttachmentInfo *)
     alloca(_attachments.size() * sizeof(VkRenderingAttachmentInfo));
@@ -158,8 +158,8 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 
   for (size_t i = 0; i < _attachments.size(); ++i) {
     Attachment &attach = _attachments[i];
-    nassertr(!attach._tc->is_used_this_frame(frame_data), false);
-    attach._tc->mark_used_this_frame(frame_data);
+    nassertr(attach._tc->_read_seq < vkgsg->_render_cmd._seq, false);
+    attach._tc->set_active(true);
 
     VkImageLayout layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
     VkAccessFlags write_access_mask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
@@ -209,12 +209,15 @@ begin_frame(FrameMode mode, Thread *current_thread) {
       color_attachment.imageLayout = layout;
     }
 
-    if (attach._tc->_layout != layout ||
+    vkgsg->_render_cmd.add_barrier(attach._tc, layout, stage_mask,
+                                   read_access_mask | write_access_mask);
+
+    /*if (attach._tc->_layout != layout ||
         (attach._tc->_write_stage_mask & ~stage_mask) != 0 ||
         (attach._tc->_read_stage_mask & ~stage_mask) != 0) {
       frame_data.add_initial_barrier(attach._tc,
         layout, stage_mask, read_access_mask | write_access_mask);
-    }
+    }*/
   }
 
   vkgsg->_vkCmdBeginRendering(cmd, &render_info);
@@ -299,7 +302,7 @@ end_frame(FrameMode mode, Thread *current_thread) {
   if (mode == FM_render) {
     VulkanGraphicsStateGuardian *vkgsg;
     DCAST_INTO_V(vkgsg, _gsg);
-    VkCommandBuffer cmd = vkgsg->_frame_data->_cmd;
+    VkCommandBuffer cmd = vkgsg->_render_cmd;
     nassertv(cmd != VK_NULL_HANDLE);
 
     vkgsg->_vkCmdEndRendering(cmd);
@@ -313,6 +316,20 @@ end_frame(FrameMode mode, Thread *current_thread) {
       // This seems to squelch a validation warning, not sure about this yet
       attach._tc->_write_stage_mask |= VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
     }*/
+
+    for (Attachment &attach : _attachments) {
+      if (attach._plane == RTP_stencil || attach._plane == RTP_depth ||
+          attach._plane == RTP_depth_stencil) {
+        attach._tc->_write_stage_mask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT
+                                      | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+        attach._tc->_write_access_mask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+      } else {
+        attach._tc->_write_stage_mask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        attach._tc->_write_access_mask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+      }
+      attach._tc->_read_stage_mask = 0;
+      attach._tc->_write_seq = vkgsg->_render_cmd._seq;
+    }
 
     // Now we can do copy-to-texture, now that the render pass has ended.
     copy_to_textures();
@@ -585,8 +602,7 @@ destroy_framebuffer() {
   DCAST_INTO_V(vkgsg, _gsg);
   VkDevice device = vkgsg->_device;
 
-  // This shouldn't happen within a begin_frame/end_frame pair.
-  nassertv(vkgsg->_frame_data == nullptr);
+  vkgsg->flush();
 
   // Make sure that the GSG's command buffer releases its resources.
   //if (vkgsg->_cmd != VK_NULL_HANDLE) {

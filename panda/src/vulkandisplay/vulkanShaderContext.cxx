@@ -775,9 +775,16 @@ fetch_descriptor(VulkanGraphicsStateGuardian *gsg, const Descriptor &desc,
     for (ResourceId id : desc._resource_ids) {
       PT(ShaderBuffer) buffer = desc._binding->fetch_shader_buffer(state, id);
 
+      VkAccessFlags access_mask = 0;
+      if ((desc._access & ShaderType::Access::READ_ONLY) != ShaderType::Access::NONE) {
+        access_mask |= VK_ACCESS_SHADER_READ_BIT;
+      }
+      if ((desc._access & ShaderType::Access::WRITE_ONLY) != ShaderType::Access::NONE) {
+        access_mask |= VK_ACCESS_SHADER_WRITE_BIT;
+      }
+
       VulkanBufferContext *bc;
-      DCAST_INTO_R(bc, buffer->prepare_now(pgo, gsg), false);
-      bc->set_active(true);
+      bc = gsg->use_shader_buffer(buffer, desc._pipeline_stage_mask, access_mask);
 
       VkDescriptorBufferInfo &buffer_info = *buffer_infos++;
       buffer_info.buffer = bc->_buffer;

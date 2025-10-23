@@ -17,6 +17,8 @@
  */
 INLINE VulkanFrameData &VulkanGraphicsStateGuardian::
 get_frame_data() {
-  nassertr(_frame_data != nullptr, *_last_frame_data);
+  if (_frame_data == nullptr) {
+    _frame_data = &get_next_frame_data();
+  }
   return *_frame_data;
 }

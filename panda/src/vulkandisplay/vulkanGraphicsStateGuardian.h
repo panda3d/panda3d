@@ -15,10 +15,12 @@
 #define VULKANGRAPHICSSTATEGUARDIAN_H
 
 #include "config_vulkandisplay.h"
+#include "vulkanCommandBuffer.h"
 #include "vulkanFrameData.h"
 #include "vulkanMemoryPage.h"
 #include "vulkanShaderContext.h"
 #include "circularAllocator.h"
+#include "completionToken.h"
 
 class VulkanBufferContext;
 class VulkanGraphicsPipe;
@@ -60,8 +62,10 @@ public:
                                     bool discard=false);
   virtual TextureContext *prepare_texture(Texture *tex);
   bool create_texture(VulkanTextureContext *vtc);
-  bool upload_texture(VulkanTextureContext *vtc);
-  virtual bool update_texture(TextureContext *tc, bool force);
+  bool upload_texture(VulkanTextureContext *vtc,
+                      CompletionToken token = CompletionToken());
+  virtual bool update_texture(TextureContext *tc, bool force,
+                              CompletionToken token = CompletionToken());
   virtual void release_texture(TextureContext *tc);
   virtual bool extract_texture_data(Texture *tex);
 
@@ -86,6 +90,9 @@ public:
                            bool force);
   virtual void release_index_buffer(IndexBufferContext *ibc);
 
+  VulkanBufferContext *use_shader_buffer(ShaderBuffer *buffer,
+                                         VkPipelineStageFlags stage_mask,
+                                         VkAccessFlags access_mask);
   virtual BufferContext *prepare_shader_buffer(ShaderBuffer *data);
   virtual void release_shader_buffer(BufferContext *bc);
   virtual bool extract_shader_buffer_data(ShaderBuffer *buffer, vector_uchar &data);
@@ -116,6 +123,11 @@ public:
   void finish_frame(FrameData &frame_data);
   FrameData &get_next_frame_data(bool finish_frames = false);
   INLINE FrameData &get_frame_data();
+
+  VulkanCommandBuffer begin_command_buffer(VkSemaphore wait_for = VK_NULL_HANDLE);
+  void end_command_buffer(VulkanCommandBuffer &&cmd,
+                          VkSemaphore signal_done = VK_NULL_HANDLE);
+  bool flush(VkFence fence = VK_NULL_HANDLE);
 
   virtual bool begin_draw_primitives(const GeomPipelineReader *geom_reader,
                                      const GeomVertexDataPipelineReader *data_reader,
@@ -158,8 +170,7 @@ public:
 private:
   bool do_extract_image(VulkanTextureContext *tc, Texture *tex, int view, int z=-1,
                         ScreenshotRequest *request = nullptr);
-  bool do_extract_buffer(VulkanFrameData &frame_data,
-                         VulkanBufferContext *tc, vector_uchar &data);
+  bool do_extract_buffer(VulkanBufferContext *tc, vector_uchar &data);
 
   bool do_draw_primitive_with_topology(const GeomPrimitivePipelineReader *reader,
                                       bool force, VkPrimitiveTopology topology,
@@ -175,6 +186,7 @@ public:
                     VkImageCreateFlags flags = 0);
 
   VkSemaphore create_semaphore();
+  VkFence create_fence();
 
   struct FbConfig;
   uint32_t choose_fb_config(FbConfig &out, FrameBufferProperties &props,
@@ -296,6 +308,26 @@ private:
   Mutex _allocator_lock;
   pdeque<VulkanMemoryPage> _memory_pages;
   VkDeviceSize _total_allocated = 0u;
+
+  // We store references to two command buffers.  The transfer cmd is used for
+  // anything that needs to happen outside a render pass (including transfers),
+  // the render cmd is used for anything inside.  The render cmd is only
+  // present between begin_frame() and end_frame() and MUST have a higher seq.
+  VulkanCommandBuffer _transfer_cmd;
+  VulkanCommandBuffer _render_cmd;
+
+  uint64_t _next_begin_command_buffer_seq = 0;
+  uint64_t _next_end_command_buffer_seq = 0;
+  pvector<VkCommandBuffer> _free_command_buffers; // new and unused
+  pvector<VkCommandBuffer> _pending_command_buffers; // ready to submit
+  uint32_t _first_pending_command_buffer_seq = 0;
+  struct PendingSubmission {
+    VkSemaphore _wait_semaphore;
+    VkSemaphore _signal_semaphore;
+    uint32_t _first_command_buffer; // Indexes into _pending_command_buffers
+    uint32_t _num_command_buffers;
+  };
+  pvector<PendingSubmission> _pending_submissions;
 
   static const size_t _frame_data_capacity = 5;
   FrameData _frame_data_pool[_frame_data_capacity];

@@ -45,61 +45,6 @@ get_buffer_view(int view) const {
 }
 
 /**
- * Returns true if the texture has been used this frame.  By "used" we mean
- * that it has been accessed by a shader, not updated from the CPU.
- */
-INLINE bool VulkanTextureContext::
-is_used_this_frame(VulkanFrameData &frame_data) const {
-  return frame_data._frame_index == _last_use_frame;
-}
-
-/**
- * Marks the texture as having been used this frame.  By "used" we mean
- * that it has been accessed by a shader, not updated from the CPU.
- */
-INLINE void VulkanTextureContext::
-mark_used_this_frame(VulkanFrameData &frame_data) {
-  if (frame_data._frame_index != _last_use_frame) {
-    _last_use_frame = frame_data._frame_index;
-
-    // Good opportunity to initialize these fields.
-    _initial_src_layout = VK_IMAGE_LAYOUT_UNDEFINED;
-    _initial_dst_layout = VK_IMAGE_LAYOUT_UNDEFINED;
-    _initial_src_access_mask = 0;
-    _initial_dst_access_mask = 0;
-
-    // And to call this.
-    set_active(true);
-  }
-}
-
-/**
- * Indicates that the texture is being read from by the given stage.  Any
- * subsequent writes must wait until the given stage has passed the pipeline.
- *
- * Generally you should rely on gsg->use_texture() or tc->transition() to take
- * care of this.
- */
-INLINE void VulkanTextureContext::
-mark_read(VkPipelineStageFlags stage) {
-  _read_stage_mask |= stage & ~VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-}
-
-/**
- * Indicates that the texture is being written by the given stage.  Any
- * subsequent writes must wait until the given stage has passed the pipeline.
- *
- * Generally you should rely on gsg->use_texture() or tc->transition() to take
- * care of this.
- */
-INLINE void VulkanTextureContext::
-mark_written(VkPipelineStageFlags stage, VkAccessFlags access_mask) {
-  _write_stage_mask |= stage;
-  _write_access_mask |= access_mask;
-  _read_stage_mask = 0;
-}
-
-/**
  * Indicates that future commands aren't really interested in seeing the
  * results of writes made before it to this image.
  */
@@ -109,5 +54,5 @@ discard() {
   // want the execution dependency; we don't want the next write to stomp over
   // the texture data while it's still being read.
   _layout = VK_IMAGE_LAYOUT_UNDEFINED;
-  _write_access_mask = 0;
+  //_write_access_mask = 0;
 }

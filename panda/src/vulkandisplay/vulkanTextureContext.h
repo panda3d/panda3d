@@ -18,6 +18,8 @@
 #include "textureContext.h"
 #include "small_vector.h"
 
+class VulkanCommandBuffer;
+
 /**
  * Manages a Vulkan image and device memory.
  */
@@ -36,20 +38,11 @@ public:
   INLINE VkImageView get_image_view(int view) const;
   INLINE VkBufferView get_buffer_view(int view) const;
 
-  INLINE bool is_used_this_frame(VulkanFrameData &frame_data) const;
-  INLINE void mark_used_this_frame(VulkanFrameData &frame_data);
-
-  INLINE void mark_read(VkPipelineStageFlags stage_mask);
-  INLINE void mark_written(VkPipelineStageFlags stage_mask,
-                           VkAccessFlags access_mask);
   INLINE void discard();
 
-  void clear_color_image(VkCommandBuffer cmd, const VkClearColorValue &value);
-  void clear_depth_stencil_image(VkCommandBuffer cmd, const VkClearDepthStencilValue &value);
-  void clear_buffer(VkCommandBuffer cmd, uint32_t fill);
-
-  void transition(VkCommandBuffer cmd, uint32_t queue_family, VkImageLayout layout,
-                  VkPipelineStageFlags dst_stage_mask, VkAccessFlags dst_access_mask);
+  void clear_color_image(VulkanCommandBuffer &cmd, const VkClearColorValue &value);
+  void clear_depth_stencil_image(VulkanCommandBuffer &cmd, const VkClearDepthStencilValue &value);
+  void clear_buffer(VulkanCommandBuffer &cmd, uint32_t fill);
 
 public:
   VkFormat _format = VK_FORMAT_UNDEFINED;
@@ -63,6 +56,9 @@ public:
   bool _swap_bgra8 = false;
   bool _supports_render_to_texture = false;
 
+  // Just for debugging.  It's -1 if it's not a swapchain image.
+  int _swapchain_index = -1;
+
   // Depending on whether it's a buffer texture or image texture, either the
   // image and image view or buffer and buffer view will be set.
   VkImage _image = VK_NULL_HANDLE;
@@ -71,25 +67,28 @@ public:
   small_vector<VkBufferView> _buffer_views;
   VulkanMemoryBlock _block;
 
-  // Frame number of the last time gsg->use_texture() was called.
-  uint64_t _last_use_frame = 0;
+  // Sequence number of the last command buffer in which this was used.
+  uint64_t _read_seq = 0;
+  uint64_t _write_seq = 0;
 
-  // These fields are managed by VulkanFrameData::add_initial_transition(),
-  // and are used to keep track of the transition we do at the beginning of a
-  // frame.
-  VkImageLayout _initial_src_layout = VK_IMAGE_LAYOUT_UNDEFINED;
-  VkImageLayout _initial_dst_layout = VK_IMAGE_LAYOUT_UNDEFINED;
-  VkAccessFlags _initial_src_access_mask = 0;
-  VkAccessFlags _initial_dst_access_mask = 0;
+  // Index of the barrier into the list of barriers of the _read_seq CB.
+  size_t _image_barrier_index = 0;
+  size_t _buffer_barrier_index = 0;
 
-  // Frame number of the last GPU write to this texture.
-  uint64_t _last_write_frame = 0;
-
-  // The "current" layout and access mask (as of the last command submitted)
+  // The "current" layout and details of the last write
   VkImageLayout _layout = VK_IMAGE_LAYOUT_UNDEFINED;
   VkAccessFlags _write_access_mask = 0;
   VkPipelineStageFlags _write_stage_mask = 0;
+
+  // Which stages we've already synchronized with the last write.
   VkPipelineStageFlags _read_stage_mask = 0;
+
+  // If you're wondering why there is no _read_access_mask, read this:
+  // https://github.com/KhronosGroup/Vulkan-Docs/issues/131
+
+  VkBuffer _async_staging_buffer = VK_NULL_HANDLE;
+  void *_async_staging_ptr = nullptr;
+  size_t _async_buffer_size = 0;
 
 public:
   static TypeHandle get_class_type() {
