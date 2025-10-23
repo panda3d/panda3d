@@ -240,3 +240,18 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     add_compile_options("-fno-semantic-interposition")
   endif()
 endif()
+
+
+
+
+if(WASI)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_WASI_EMULATED_MMAN -D_WASI_EMULATED_PROCESS_CLOCKS")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lwasi-emulated-mman -lwasi-emulated-process-clocks -lwasi-emulated-getpid")
+    set(cxx_exceptions_off)
+    set(cxx_rtti_off)
+endif()
+
+
+
+
+
