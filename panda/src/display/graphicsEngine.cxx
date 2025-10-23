@@ -1675,7 +1675,7 @@ draw_bins(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
               display_cat.spam()
                 << "Flipping window " << win->get_name() << "\n";
             }
-            PStatGPUTimer timer(gsg, _flip_pcollector, current_thread);
+            PStatTimer timer(_flip_pcollector, current_thread);
             win->begin_flip();
             win->end_flip();
           }
