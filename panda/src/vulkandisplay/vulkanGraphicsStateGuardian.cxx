@@ -3608,6 +3608,43 @@ get_next_frame_data(bool finish_frames) {
 }
 
 /**
+ * Finishes the last frame.  Returns true unless there were no more unfinished
+ * frames.
+ */
+bool VulkanGraphicsStateGuardian::
+finish_one_frame() {
+  if (_frame_data_head != _frame_data_capacity) {
+    return false;
+  }
+
+  FrameData &frame_data = _frame_data_pool[_frame_data_tail];
+  VkResult err;
+  {
+    PStatTimer timer(_wait_fence_pcollector);
+    err = vkWaitForFences(_device, 1, &frame_data._fence, VK_TRUE, 1000000000ULL);
+    if (err == VK_TIMEOUT) {
+      vulkandisplay_cat.error()
+        << "Timed out waiting for previous frame to complete rendering.\n";
+      vkQueueWaitIdle(_queue);
+    }
+    else if (err) {
+      vulkan_error(err, "Failure waiting for command buffer fence");
+      if (err == VK_ERROR_DEVICE_LOST) {
+        mark_new();
+      }
+      vkQueueWaitIdle(_queue);
+    }
+  }
+
+  // This frame has completed execution.
+  finish_frame(frame_data);
+  _frame_data_tail = (_frame_data_tail + 1) % _frame_data_capacity;
+
+  vkResetFences(_device, 1, &frame_data._fence);
+  return true;
+}
+
+/**
  *
  */
 VulkanCommandBuffer VulkanGraphicsStateGuardian::
@@ -3619,8 +3656,9 @@ begin_command_buffer(VkSemaphore wait_for) {
     nullptr,
   };
 
-  //FIXME
-  assert(!_free_command_buffers.empty());
+  while (_free_command_buffers.empty() && finish_one_frame()) {
+  }
+
   VkCommandBuffer handle = _free_command_buffers.back();
   _free_command_buffers.pop_back();
 
@@ -3678,7 +3716,8 @@ end_command_buffer(VulkanCommandBuffer &&cmd, VkSemaphore signal_done) {
     if (_pending_command_buffers.empty()) {
       // We don't have a preceding one, so we need to create one just to issue
       // the barriers.
-      assert(!_free_command_buffers.empty()); //FIXME
+      while (_free_command_buffers.empty() && finish_one_frame()) {
+      }
       VkCommandBuffer handle = _free_command_buffers.back();
       _free_command_buffers.pop_back();
 

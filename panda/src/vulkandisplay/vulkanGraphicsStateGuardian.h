@@ -121,6 +121,7 @@ public:
   bool begin_frame(Thread *current_thread, VkSemaphore wait_for);
   void end_frame(Thread *current_thread, VkSemaphore signal_done);
   void finish_frame(FrameData &frame_data);
+  bool finish_one_frame();
   FrameData &get_next_frame_data(bool finish_frames = false);
   INLINE FrameData &get_frame_data();
 
