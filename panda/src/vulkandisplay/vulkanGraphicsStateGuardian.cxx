@@ -137,6 +137,7 @@ reset() {
   enabled_features.features.samplerAnisotropy = features.samplerAnisotropy;
   enabled_features.features.textureCompressionETC2 = features.textureCompressionETC2;
   enabled_features.features.textureCompressionBC = features.textureCompressionBC;
+  enabled_features.features.fragmentStoresAndAtomics = features.fragmentStoresAndAtomics;
   enabled_features.features.shaderFloat64 = features.shaderFloat64;
 
 #ifdef DO_PSTATS
