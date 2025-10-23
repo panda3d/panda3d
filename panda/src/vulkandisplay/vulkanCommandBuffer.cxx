@@ -125,7 +125,6 @@ add_barrier(VulkanTextureContext *tc, VkImageLayout layout,
     out << " on CB #" << _seq << " (last "
         << ((tc->_read_seq > tc->_write_seq) ? "read on #" : "write on #")
         << tc->_read_seq << ")\n";
-    std::cerr << " last stage " << std::hex << tc->_write_stage_mask << " access mask " << tc->_write_access_mask << std::dec <<  "\n";
   }
 
   if (pool_possible) {
@@ -200,11 +199,9 @@ add_barrier(VulkanBufferContext *bc, VkPipelineStageFlags dst_stage_mask,
             VkAccessFlags dst_access_mask) {
   nassertv(_cmd != VK_NULL_HANDLE);
 
-  // Are we writing to the texture?
+  // Are we writing to the buffer?
   VkAccessFlags write_mask = (dst_access_mask &
     (VK_ACCESS_SHADER_WRITE_BIT |
-     VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
-     VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT |
      VK_ACCESS_TRANSFER_WRITE_BIT |
      VK_ACCESS_HOST_WRITE_BIT |
      VK_ACCESS_MEMORY_WRITE_BIT));
