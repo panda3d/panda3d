@@ -327,11 +327,12 @@ VulkanGraphicsPipe() : _max_allocation_size(0) {
       features2.pNext = &cbc_features;
     }
 
-    VkPhysicalDeviceRobustness2FeaturesEXT ro2_features = {
-      VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_EXT,
+    VkPhysicalDeviceRobustness2FeaturesKHR ro2_features = {
+      VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_KHR,
       features2.pNext,
     };
-    if (has_device_extension(VK_EXT_ROBUSTNESS_2_EXTENSION_NAME)) {
+    if (has_device_extension(VK_KHR_ROBUSTNESS_2_EXTENSION_NAME) ||
+        has_device_extension(VK_EXT_ROBUSTNESS_2_EXTENSION_NAME)) {
       features2.pNext = &ro2_features;
     }
 
@@ -360,6 +361,15 @@ VulkanGraphicsPipe() : _max_allocation_size(0) {
       features2.pNext = &eds2_features;
     }
 
+    VkPhysicalDeviceInlineUniformBlockFeatures iub_features = {
+      VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_INLINE_UNIFORM_BLOCK_FEATURES,
+      features2.pNext,
+    };
+    if (_gpu_properties.apiVersion >= VK_MAKE_VERSION(1, 3, 0) ||
+        has_device_extension(VK_EXT_INLINE_UNIFORM_BLOCK_EXTENSION_NAME)) {
+      features2.pNext = &iub_features;
+    }
+
     pVkGetPhysicalDeviceFeatures2(_gpu, &features2);
     _gpu_features = features2.features;
     _gpu_supports_dynamic_rendering = dr_features.dynamicRendering;
@@ -368,9 +378,15 @@ VulkanGraphicsPipe() : _max_allocation_size(0) {
     _gpu_supports_null_descriptor = ro2_features.nullDescriptor;
     _gpu_supports_vertex_attrib_divisor = div_features.vertexAttributeInstanceRateDivisor;
     _gpu_supports_vertex_attrib_zero_divisor = div_features.vertexAttributeInstanceRateZeroDivisor;
-    _gpu_supports_extended_dynamic_state = eds_features.extendedDynamicState;
-    _gpu_supports_extended_dynamic_state2 = eds2_features.extendedDynamicState2;
+    if (_gpu_properties.apiVersion >= VK_MAKE_VERSION(1, 3, 0)) {
+      _gpu_supports_extended_dynamic_state = true;
+      _gpu_supports_extended_dynamic_state2 = true;
+    } else {
+      _gpu_supports_extended_dynamic_state = eds_features.extendedDynamicState;
+      _gpu_supports_extended_dynamic_state2 = eds2_features.extendedDynamicState2;
+    }
     _gpu_supports_extended_dynamic_state2_patch_control_points = eds2_features.extendedDynamicState2PatchControlPoints;
+    _gpu_supports_inline_uniform_block = iub_features.inlineUniformBlock;
   }
   else {
     vkGetPhysicalDeviceFeatures(_gpu, &_gpu_features);
@@ -382,6 +398,7 @@ VulkanGraphicsPipe() : _max_allocation_size(0) {
     _gpu_supports_extended_dynamic_state = false;
     _gpu_supports_extended_dynamic_state2 = false;
     _gpu_supports_extended_dynamic_state2_patch_control_points = false;
+    _gpu_supports_inline_uniform_block = false;
   }
 
   // Default the maximum allocation size to the largest of the heaps.
@@ -408,6 +425,14 @@ VulkanGraphicsPipe() : _max_allocation_size(0) {
       driver_props.pNext = &maint3_props;
     }
 
+    VkPhysicalDeviceInlineUniformBlockProperties iub_props = {
+      VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_INLINE_UNIFORM_BLOCK_PROPERTIES,
+      props2.pNext,
+    };
+    if (_gpu_supports_inline_uniform_block) {
+      props2.pNext = &iub_props;
+    }
+
     if (_gpu_properties.apiVersion >= VK_MAKE_VERSION(1, 1, 0)) {
       PFN_vkGetPhysicalDeviceProperties2 pVkGetPhysicalDeviceProperties2 =
         (PFN_vkGetPhysicalDeviceProperties2)vkGetInstanceProcAddr(_instance, "vkGetPhysicalDeviceProperties2");
@@ -425,6 +450,7 @@ VulkanGraphicsPipe() : _max_allocation_size(0) {
     }
 
     _max_allocation_size = maint3_props.maxMemoryAllocationSize;
+    _max_inline_uniform_block_size = iub_props.maxInlineUniformBlockSize;
   }
 
   // Fill in DisplayInformation.

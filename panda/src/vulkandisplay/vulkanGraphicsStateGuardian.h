@@ -362,6 +362,9 @@ private:
   bool _supports_extended_dynamic_state2 = false;
   bool _supports_extended_dynamic_state2_patch_control_points = false;
 
+  // Limits.
+  uint32_t _max_inline_uniform_block_size = 0;
+
   // Function pointers.
   PFN_vkCmdBeginRendering _vkCmdBeginRendering;
   PFN_vkCmdBindIndexBuffer _vkCmdBindIndexBuffer;
@@ -372,8 +375,8 @@ private:
   PFN_vkCmdEndRendering _vkCmdEndRendering;
   PFN_vkCmdPushConstants _vkCmdPushConstants;
   PFN_vkCmdSetPatchControlPointsEXT _vkCmdSetPatchControlPointsEXT;
-  PFN_vkCmdSetPrimitiveRestartEnableEXT _vkCmdSetPrimitiveRestartEnableEXT;
-  PFN_vkCmdSetPrimitiveTopologyEXT _vkCmdSetPrimitiveTopologyEXT;
+  PFN_vkCmdSetPrimitiveRestartEnable _vkCmdSetPrimitiveRestartEnable;
+  PFN_vkCmdSetPrimitiveTopology _vkCmdSetPrimitiveTopology;
   PFN_vkUpdateDescriptorSets _vkUpdateDescriptorSets;
 
   friend class VulkanGraphicsBuffer;

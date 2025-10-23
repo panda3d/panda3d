@@ -82,9 +82,11 @@ public:
   bool _gpu_supports_extended_dynamic_state = false;
   bool _gpu_supports_extended_dynamic_state2 = false;
   bool _gpu_supports_extended_dynamic_state2_patch_control_points = false;
+  bool _gpu_supports_inline_uniform_block = false;
   VkPhysicalDeviceMemoryProperties _memory_properties;
   pvector<VkQueueFamilyProperties> _queue_families;
   VkDeviceSize _max_allocation_size;
+  uint32_t _max_inline_uniform_block_size = 0;
 
 private:
   PFN_vkSetDebugUtilsObjectNameEXT _vkSetDebugUtilsObjectName;

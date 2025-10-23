@@ -183,15 +183,19 @@ reset() {
   }
 
   bool supports_null_descriptor = false;
-  VkPhysicalDeviceRobustness2FeaturesEXT ro2_features = {
-    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_EXT,
+  VkPhysicalDeviceRobustness2FeaturesKHR ro2_features = {
+    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_KHR,
     enabled_features.pNext,
   };
   if (pipe->_gpu_supports_null_descriptor) {
     ro2_features.nullDescriptor = VK_TRUE;
     enabled_features.pNext = &ro2_features;
 
-    extensions.push_back(VK_EXT_ROBUSTNESS_2_EXTENSION_NAME);
+    if (pipe->has_device_extension(VK_KHR_ROBUSTNESS_2_EXTENSION_NAME)) {
+      extensions.push_back(VK_KHR_ROBUSTNESS_2_EXTENSION_NAME);
+    } else {
+      extensions.push_back(VK_EXT_ROBUSTNESS_2_EXTENSION_NAME);
+    }
     supports_null_descriptor = true;
   }
 
@@ -222,15 +226,25 @@ reset() {
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_FEATURES_EXT,
     enabled_features.pNext,
   };
-  bool supports_eds_and_eds2 = pipe->_gpu_supports_extended_dynamic_state && pipe->_gpu_supports_extended_dynamic_state2;
-  if (supports_eds_and_eds2) {
-    eds_features.extendedDynamicState = VK_TRUE;
-    enabled_features.pNext = &eds_features;
 
-    extensions.push_back(VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME);
+
+  bool supports_eds_and_eds2;
+  if (pipe->_gpu_properties.apiVersion >= VK_MAKE_VERSION(1, 3, 0)) {
+    // Supported in the core without enable.
+    supports_eds_and_eds2 = true;
     _supports_extended_dynamic_state2 = true;
   } else {
-    _supports_extended_dynamic_state2 = false;
+    supports_eds_and_eds2 = pipe->_gpu_supports_extended_dynamic_state && pipe->_gpu_supports_extended_dynamic_state2;
+
+    if (supports_eds_and_eds2) {
+      eds_features.extendedDynamicState = VK_TRUE;
+      enabled_features.pNext = &eds_features;
+
+      extensions.push_back(VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME);
+      _supports_extended_dynamic_state2 = true;
+    } else {
+      _supports_extended_dynamic_state2 = false;
+    }
   }
 
   // VK_EXT_extended_dynamic_state2
@@ -330,8 +344,13 @@ reset() {
   }
 
   if (_supports_extended_dynamic_state2) {
-    _vkCmdSetPrimitiveTopologyEXT = (PFN_vkCmdSetPrimitiveTopologyEXT)vkGetDeviceProcAddr(_device, "vkCmdSetPrimitiveTopologyEXT");
-    _vkCmdSetPrimitiveRestartEnableEXT = (PFN_vkCmdSetPrimitiveRestartEnableEXT)vkGetDeviceProcAddr(_device, "vkCmdSetPrimitiveRestartEnableEXT");
+    if (pipe->_gpu_properties.apiVersion >= VK_MAKE_VERSION(1, 3, 0)) {
+      _vkCmdSetPrimitiveTopology = (PFN_vkCmdSetPrimitiveTopology)vkGetDeviceProcAddr(_device, "vkCmdSetPrimitiveTopology");
+      _vkCmdSetPrimitiveRestartEnable = (PFN_vkCmdSetPrimitiveRestartEnable)vkGetDeviceProcAddr(_device, "vkCmdSetPrimitiveRestartEnable");
+    } else {
+      _vkCmdSetPrimitiveTopology = (PFN_vkCmdSetPrimitiveTopology)vkGetDeviceProcAddr(_device, "vkCmdSetPrimitiveTopologyEXT");
+      _vkCmdSetPrimitiveRestartEnable = (PFN_vkCmdSetPrimitiveRestartEnable)vkGetDeviceProcAddr(_device, "vkCmdSetPrimitiveRestartEnableEXT");
+    }
   }
   if (_supports_extended_dynamic_state2_patch_control_points) {
     _vkCmdSetPatchControlPointsEXT = (PFN_vkCmdSetPatchControlPointsEXT)vkGetDeviceProcAddr(_device, "vkCmdSetPatchControlPointsEXT");
@@ -4477,8 +4496,8 @@ do_draw_primitive_with_topology(const GeomPrimitivePipelineReader *reader,
   PStatGPUTimer timer(this, _draw_primitive_pcollector);
 
   if (_supports_extended_dynamic_state2) {
-    _vkCmdSetPrimitiveTopologyEXT(_render_cmd, topology);
-    _vkCmdSetPrimitiveRestartEnableEXT(_render_cmd, primitive_restart_enable && reader->is_indexed());
+    _vkCmdSetPrimitiveTopology(_render_cmd, topology);
+    _vkCmdSetPrimitiveRestartEnable(_render_cmd, primitive_restart_enable && reader->is_indexed());
   } else {
     VkPipeline pipeline = _current_sc->get_pipeline(this, _state_rs, _format, topology, 0, _fb_config);
     nassertr(pipeline != VK_NULL_HANDLE, false);
