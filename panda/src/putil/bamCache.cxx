@@ -984,3 +984,17 @@ make_global() {
     _global_ptr->set_active(false);
   }
 }
+
+/**
+* This function clears the BamCache in case settings are changed or to test throughout/between runs
+*/
+void BamCache::clear_cache() {
+  _entries.clear();
+
+  if (!_cache_directory.empty()) {
+    Filename dir = _cache_directory;
+    if (dir.is_directory()) {
+      dir.scan_directory(nullptr);
+    }
+  }
+}
