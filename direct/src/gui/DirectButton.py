@@ -31,19 +31,26 @@ class DirectButton(DirectFrame):
         # Responds to click event and calls command if None
         optiondefs = (
             # Define type of DirectGuiWidget
-            ('pgFunc',         PGButton,   None),
-            ('numStates',      4,          None),
-            ('state',          DGG.NORMAL, None),
-            ('relief',         DGG.RAISED, None),
-            ('invertedFrames', (1,),       None),
+            ('pgFunc',          PGButton,   None),
+            ('numStates',       4,          None),
+            ('state',           DGG.NORMAL, None),
+            ('relief',          DGG.RAISED, None),
+            ('invertedFrames',  (1,),       None),
             # Command to be called on button click
-            ('command',        None,       None),
-            ('extraArgs',      [],         None),
+            ('command',         None,       None),
+            ('extraArgs',       [],         None),
             # Which mouse buttons can be used to click the button
-            ('commandButtons', (DGG.LMB,),     self.setCommandButtons),
+            ('commandButtons',  (DGG.LMB,),     self.setCommandButtons),
+            # Whether the button continuously runs the command if pressed
+            # The default repeat threshold is 0.01
+            # The default delay multiplier is 0.5
+            ('repeat',   False,      None),
+            ('repeatThreshold', 0.01,       None),
+            ('repeatDelay',     1.0,        None),
+            ('repeatDecay',     0.5,        None),
             # Sounds to be used for button events
-            ('rolloverSound', DGG.getDefaultRolloverSound(), self.setRolloverSound),
-            ('clickSound',    DGG.getDefaultClickSound(),    self.setClickSound),
+            ('rolloverSound',   DGG.getDefaultRolloverSound(), self.setRolloverSound),
+            ('clickSound',      DGG.getDefaultClickSound(),    self.setClickSound),
             # Can only be specified at time of widget contruction
             # Do the text/graphics appear to move when the button is clicked
             ('pressEffect',     1,         DGG.INITOPT),
@@ -85,21 +92,39 @@ class DirectButton(DirectFrame):
         if DGG.LMB in self['commandButtons']:
             self.guiItem.addClickButton(MouseButton.one())
             self.bind(DGG.B1CLICK, self.commandFunc)
+            if self['repeat']:
+                self.bind(DGG.B1PRESS, self.__repeat, extraArgs=[True])
+                self.bind(DGG.B1RELEASE, self.__repeat, extraArgs=[False])
         else:
+            if self['repeat']:
+                self.unbind(DGG.B1PRESS)
+                self.unbind(DGG.B1RELEASE)
             self.unbind(DGG.B1CLICK)
             self.guiItem.removeClickButton(MouseButton.one())
         # Middle mouse button
         if DGG.MMB in self['commandButtons']:
             self.guiItem.addClickButton(MouseButton.two())
             self.bind(DGG.B2CLICK, self.commandFunc)
+            if self['repeat']:
+                self.bind(DGG.B2PRESS, self.__repeat, extraArgs=[True])
+                self.bind(DGG.B2RELEASE, self.__repeat, extraArgs=[False])
         else:
+            if self['repeat']:
+                self.unbind(DGG.B2PRESS)
+                self.unbind(DGG.B2RELEASE)
             self.unbind(DGG.B2CLICK)
             self.guiItem.removeClickButton(MouseButton.two())
         # Right mouse button
         if DGG.RMB in self['commandButtons']:
             self.guiItem.addClickButton(MouseButton.three())
             self.bind(DGG.B3CLICK, self.commandFunc)
+            if self['repeat']:
+                self.bind(DGG.B3PRESS, self.__repeat, extraArgs=[True])
+                self.bind(DGG.B3RELEASE, self.__repeat, extraArgs=[False])
         else:
+            if self['repeat']:
+                self.unbind(DGG.B3PRESS)
+                self.unbind(DGG.B3RELEASE)
             self.unbind(DGG.B3CLICK)
             self.guiItem.removeClickButton(MouseButton.three())
 
@@ -107,6 +132,23 @@ class DirectButton(DirectFrame):
         if self['command']:
             # Pass any extra args to command
             self['command'](*self['extraArgs'])
+
+    def __repeat(self, state, event):
+        if state and not taskMgr.hasTaskNamed(self.uniqueName('__repeatFunc')):
+            task = self.addTask(self.__repeatFunc, self.uniqueName('__repeatFunc'), extraArgs=[event], appendTask=True)
+            task.delayTime = self['repeatDelay']
+            task.prevTime = 0.0
+        elif not state:
+            self.removeTask(self.uniqueName('__repeatFunc'))
+
+    def __repeatFunc(self, event, task):
+        if task.time - task.prevTime < task.delayTime:
+            return task.cont
+        else:
+            self.commandFunc(event)
+            task.delayTime = max(self['repeatThreshold'], task.delayTime * self['repeatDecay'])
+            task.prevTime = task.time
+            return task.cont
 
     def setClickSound(self):
         clickSound = self['clickSound']
