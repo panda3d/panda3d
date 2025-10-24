@@ -40,7 +40,10 @@ public:
 public:
   uint64_t _frame_index = 0;
   int _clock_frame_number = 0;
-  VkFence _fence = VK_NULL_HANDLE;
+
+  // When the timeline semaphore reaches this value, that means that the frame
+  // has finished executing.
+  uint64_t _watermark = 0;
 
   // Keep track of resources that should be deleted after this frame is done.
   pvector<VkCommandBuffer> _pending_command_buffers;

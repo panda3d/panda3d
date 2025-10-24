@@ -128,7 +128,7 @@ public:
   VulkanCommandBuffer begin_command_buffer(VkSemaphore wait_for = VK_NULL_HANDLE);
   void end_command_buffer(VulkanCommandBuffer &&cmd,
                           VkSemaphore signal_done = VK_NULL_HANDLE);
-  bool flush(VkFence fence = VK_NULL_HANDLE);
+  uint64_t flush();
 
   virtual bool begin_draw_primitives(const GeomPipelineReader *geom_reader,
                                      const GeomVertexDataPipelineReader *data_reader,
@@ -187,7 +187,8 @@ public:
                     VkImageCreateFlags flags = 0);
 
   VkSemaphore create_semaphore();
-  VkFence create_fence();
+  bool wait_semaphore(VkSemaphore semaphore, uint64_t value,
+                      uint64_t timeout = UINT64_MAX);
 
   struct FbConfig;
   uint32_t choose_fb_config(FbConfig &out, FrameBufferProperties &props,
@@ -329,6 +330,7 @@ private:
     uint32_t _num_command_buffers;
   };
   pvector<PendingSubmission> _pending_submissions;
+  uint64_t _last_submitted_watermark = 0;
 
   static const size_t _frame_data_capacity = 5;
   FrameData _frame_data_pool[_frame_data_capacity];
@@ -336,6 +338,7 @@ private:
   size_t _frame_data_tail = 0;
   FrameData *_frame_data = nullptr;
   FrameData *_last_frame_data = nullptr;
+  VkSemaphore _timeline_semaphore = VK_NULL_HANDLE;
   uint32_t _transfer_end_query = 0;
   VkQueryPool _transfer_end_query_pool = VK_NULL_HANDLE;
 

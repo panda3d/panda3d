@@ -68,7 +68,6 @@ static PStatCollector _make_pipeline_pcollector("Draw:Primitive:Make Pipeline");
 static PStatCollector _update_lattr_descriptor_set_pcollector("Draw:Update Descriptor Sets:LightAttrib");
 static PStatCollector _bind_descriptor_sets_pcollector("Draw:Set State:Bind Descriptor Sets");
 static PStatCollector _finish_frame_pcollector("Draw:Finish Frame");
-static PStatCollector _wait_fence_pcollector("Wait:Fence");
 static PStatCollector _wait_semaphore_pcollector("Wait:Semaphore");
 
 TypeHandle VulkanGraphicsStateGuardian::_type_handle;
@@ -140,15 +139,16 @@ reset() {
   enabled_features.features.fragmentStoresAndAtomics = features.fragmentStoresAndAtomics;
   enabled_features.features.shaderFloat64 = features.shaderFloat64;
 
-#ifdef DO_PSTATS
   // Vulkan 1.2
   VkPhysicalDeviceVulkan12Features v_1_2_features = {
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
     enabled_features.pNext,
   };
+  v_1_2_features.timelineSemaphore = VK_TRUE;
+#ifdef DO_PSTATS
   v_1_2_features.hostQueryReset = VK_TRUE;
-  enabled_features.pNext = &v_1_2_features;
 #endif
+  enabled_features.pNext = &v_1_2_features;
 
   // synchronization2 from 1.3 core
   VkPhysicalDeviceSynchronization2Features sync2_features = {
@@ -392,10 +392,24 @@ reset() {
   err = vkAllocateCommandBuffers(_device, &alloc_info, &_free_command_buffers[0]);
   nassertv(!err);
 
-  size_t ci = 0;
-  for (FrameData &frame_data : _frame_data_pool) {
-    // Create a fence to signal when this frame has finished.
-    frame_data._fence = create_fence();
+  // Create a timeline semaphore so we can track when rendering is done.
+  {
+    VkSemaphoreTypeCreateInfo timeline_info;
+    timeline_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO;
+    timeline_info.pNext = NULL;
+    timeline_info.semaphoreType = VK_SEMAPHORE_TYPE_TIMELINE;
+    timeline_info.initialValue = 0;
+
+    VkSemaphoreCreateInfo create_info;
+    create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+    create_info.pNext = &timeline_info;
+    create_info.flags = 0;
+
+    err = vkCreateSemaphore(_device, &create_info, nullptr, &_timeline_semaphore);
+    if (err) {
+      vulkan_error(err, "Failed to create timeline semaphore");
+      return;
+    }
   }
 
   // Create a pipeline cache, which may help with performance.
@@ -794,9 +808,7 @@ destroy_device() {
     _staging_buffer = VK_NULL_HANDLE;
   }
 
-  for (FrameData &frame_data : _frame_data_pool) {
-    vkDestroyFence(_device, frame_data._fence, nullptr);
-  }
+  vkDestroySemaphore(_device, _timeline_semaphore, nullptr);
 
   // Also free all the memory pages before destroying the device.
   _memory_pages.clear();
@@ -812,13 +824,14 @@ destroy_device() {
  */
 void VulkanGraphicsStateGuardian::
 close_gsg() {
+  // All pending work should be submitted.
   flush();
 
   // Make sure it's no longer doing anything before we destroy it.
   vkDeviceWaitIdle(_device);
 
-  // Call finish_frame() on all frames.  We don't need to wait on the fences due
-  // to the above call.
+  // Call finish_frame() on all frames.  We don't need to wait on the
+  // semaphore due to the above call.
   if (_frame_data_head != _frame_data_capacity) {
     do {
       FrameData &frame_data = _frame_data_pool[_frame_data_tail];
@@ -3118,7 +3131,7 @@ begin_frame(Thread *current_thread, VkSemaphore wait_for) {
     _current_clock_frame_number = clock_frame;
 
     // Make sure any commands from previous frame are submitted.
-    flush(_frame_data != nullptr ? _frame_data->_fence : VK_NULL_HANDLE);
+    flush();
     _frame_data = nullptr;
   }
   if (_frame_data == nullptr) {
@@ -3290,23 +3303,15 @@ end_frame(Thread *current_thread, VkSemaphore signal_done) {
 
   // Submit the command buffers.
   end_command_buffer(std::move(_render_cmd), signal_done);
-  flush(_frame_data->_fence);
+  uint64_t watermark = flush();
 
   // If we queued up synchronous texture downloads, wait for the queue to finish
   // (slow!) and then copy the data from Vulkan host memory to Panda memory.
   if (_frame_data->_wait_for_finish) {
-    VkResult err;
-    {
-      PStatTimer timer(_wait_fence_pcollector);
-      err = vkWaitForFences(_device, 1, &_frame_data->_fence, VK_TRUE, ~0ULL);
-    }
-    if (err) {
-      vulkan_error(err, "Failed to wait for command buffer execution");
-      if (err == VK_ERROR_DEVICE_LOST) {
-        mark_new();
-      }
+    if (!wait_semaphore(_timeline_semaphore, watermark)) {
       vkQueueWaitIdle(_queue);
     }
+
 #ifdef DO_PSTATS
     if (_timer_queries_active) {
       PStatClient *client = PStatClient::get_global_pstats();
@@ -3316,16 +3321,11 @@ end_frame(Thread *current_thread, VkSemaphore signal_done) {
     }
 #endif
 
-    VkFence reset_fences[_frame_data_capacity];
-    size_t num_reset_fences = 0;
-
     nassertv(_frame_data_head != _frame_data_capacity);
-
     do {
       FrameData &frame_data = _frame_data_pool[_frame_data_tail];
 
       // This frame has completed execution.
-      reset_fences[num_reset_fences++] = frame_data._fence;
       finish_frame(frame_data);
 
       _frame_data_tail = (_frame_data_tail + 1) % _frame_data_capacity;
@@ -3334,12 +3334,6 @@ end_frame(Thread *current_thread, VkSemaphore signal_done) {
 
     _frame_data_head = _frame_data_capacity;
     _frame_data_tail = 0;
-
-    // Reset the used fences to unsignaled status.
-    err = vkResetFences(_device, num_reset_fences, reset_fences);
-    if (err != VK_SUCCESS) {
-      vulkan_error(err, "Error resetting fences");
-    }
   }
 
   _last_frame_data = _frame_data;
@@ -3368,8 +3362,13 @@ finish_frame(FrameData &frame_data) {
   }
 #endif
 
-  ++_last_finished_frame;
-  nassertv(frame_data._frame_index == _last_finished_frame);
+#ifndef NDEBUG
+  if (vulkandisplay_cat.is_spam()) {
+    vulkandisplay_cat.spam()
+      << "GPU finished CB #" << frame_data._watermark - 1
+      << ", cleaning up frame data\n";
+  }
+#endif
 
   // Return the used command buffers to the pool.
   _free_command_buffers.insert(
@@ -3560,26 +3559,24 @@ finish_frame(FrameData &frame_data) {
 VulkanFrameData &VulkanGraphicsStateGuardian::
 get_next_frame_data(bool finish_frames) {
   // First, finish old, finished frames.
-  VkFence reset_fences[_frame_data_capacity];
-  size_t num_reset_fences = 0;
-
   if (finish_frames && _frame_data_head != _frame_data_capacity) {
+    uint64_t watermark = 0;
+    vkGetSemaphoreCounterValue(_device, _timeline_semaphore, &watermark);
+
     while (true) {
       FrameData &frame_data = _frame_data_pool[_frame_data_tail];
 
-      if (frame_data._clock_frame_number < _current_clock_frame_number - 3) {
-        // This frame is too old, we must wait before continuing.
-        PStatTimer timer(_wait_fence_pcollector);
-        vkWaitForFences(_device, 1, &frame_data._fence, VK_TRUE, 1000000000ULL);
-      }
-      else if (vkGetFenceStatus(_device, frame_data._fence) == VK_NOT_READY) {
-        // This frame is not yet ready, so abort the loop here, since there's no
-        // use checking frames that come after this one.
-        break;
+      if (frame_data._watermark >= watermark) {
+        // This frame is not yet ready.
+        if (frame_data._clock_frame_number < _current_clock_frame_number - 3) {
+          // This frame is too old, we will wait for it before continuing.
+          wait_semaphore(_timeline_semaphore, frame_data._watermark);
+        } else {
+          break;
+        }
       }
 
       // This frame has completed execution.
-      reset_fences[num_reset_fences++] = frame_data._fence;
       finish_frame(frame_data);
 
       _frame_data_tail = (_frame_data_tail + 1) % _frame_data_capacity;
@@ -3598,35 +3595,7 @@ get_next_frame_data(bool finish_frames) {
 
   // If the frame queue is full, we must wait until a frame is done.
   if (_frame_data_tail == _frame_data_head) {
-    FrameData &frame_data = _frame_data_pool[_frame_data_tail];
-    VkResult err;
-    {
-      PStatTimer timer(_wait_fence_pcollector);
-      err = vkWaitForFences(_device, 1, &frame_data._fence, VK_TRUE, 1000000000ULL);
-      if (err == VK_TIMEOUT) {
-        vulkandisplay_cat.error()
-          << "Timed out waiting for previous frame to complete rendering.\n";
-        vkQueueWaitIdle(_queue);
-      }
-      else if (err) {
-        vulkan_error(err, "Failure waiting for command buffer fence");
-        if (err == VK_ERROR_DEVICE_LOST) {
-          mark_new();
-        }
-        vkQueueWaitIdle(_queue);
-      }
-    }
-
-    // This frame has completed execution.
-    reset_fences[num_reset_fences++] = frame_data._fence;
-    finish_frame(frame_data);
-    _frame_data_tail = (_frame_data_tail + 1) % _frame_data_capacity;
-  }
-
-  // Reset the used fences to unsignaled status.
-  if (num_reset_fences > 0) {
-    vkResetFences(_device, num_reset_fences, reset_fences);
-    //nassertr(!err, false);
+    finish_one_frame();
   }
 
   VulkanFrameData &frame_data = _frame_data_pool[_frame_data_head % _frame_data_capacity];
@@ -3653,29 +3622,13 @@ finish_one_frame() {
   }
 
   FrameData &frame_data = _frame_data_pool[_frame_data_tail];
-  VkResult err;
-  {
-    PStatTimer timer(_wait_fence_pcollector);
-    err = vkWaitForFences(_device, 1, &frame_data._fence, VK_TRUE, 1000000000ULL);
-    if (err == VK_TIMEOUT) {
-      vulkandisplay_cat.error()
-        << "Timed out waiting for previous frame to complete rendering.\n";
-      vkQueueWaitIdle(_queue);
-    }
-    else if (err) {
-      vulkan_error(err, "Failure waiting for command buffer fence");
-      if (err == VK_ERROR_DEVICE_LOST) {
-        mark_new();
-      }
-      vkQueueWaitIdle(_queue);
-    }
+  if (!wait_semaphore(_timeline_semaphore, frame_data._watermark)) {
+    vkQueueWaitIdle(_queue);
   }
 
   // This frame has completed execution.
   finish_frame(frame_data);
   _frame_data_tail = (_frame_data_tail + 1) % _frame_data_capacity;
-
-  vkResetFences(_device, 1, &frame_data._fence);
   return true;
 }
 
@@ -3822,29 +3775,26 @@ end_command_buffer(VulkanCommandBuffer &&cmd, VkSemaphore signal_done) {
 /**
  * Makes sure that any pending command buffers are submitted to the queue.
  * Should not be called between begin_frame() and end_frame().
+ *
+ * Calls to this should be limited to only when something is waiting for this
+ * work, as many intermediate submits may be inefficient.
+ *
+ * Returns a watermark that can be waited for using the timeline semaphore if
+ * you want to wait for the results to be available.
  */
-bool VulkanGraphicsStateGuardian::
-flush(VkFence fence) {
+uint64_t VulkanGraphicsStateGuardian::
+flush() {
   // Shouldn't be called between begin_frame() and end_frame().
-  nassertr_always(!_render_cmd, false);
+  nassertr_always(!_render_cmd, 0);
 
   if (_transfer_cmd) {
     end_command_buffer(std::move(_transfer_cmd));
-    nassertr(!_transfer_cmd, false);
+    nassertr(!_transfer_cmd, 0);
   }
 
   if (_pending_submissions.empty()) {
-    // Bleh, can't signal the fence if we have nothing to submit.
-    if (fence != VK_NULL_HANDLE) {
-      if (vulkandisplay_cat.is_debug()) {
-        vulkandisplay_cat.debug()
-          << "Inserting dummy command buffer\n";
-      }
-      end_command_buffer(begin_command_buffer());
-    } else {
-      nassertr(_pending_command_buffers.empty(), false);
-      return true;
-    }
+    nassertr(_pending_command_buffers.empty(), 0);
+    return _last_submitted_watermark;
   }
 
   // End the last command buffer, which we left open in case we wanted to
@@ -3852,6 +3802,10 @@ flush(VkFence fence) {
   vkEndCommandBuffer(_pending_command_buffers.back());
 
   VulkanFrameData &frame_data = get_frame_data();
+  // As a watermark for the timeline semaphore, we use one past the last
+  // command buffer seq, since otherwise the semaphore's initial state of 0
+  // would indicate that the first command buffer has already completed.
+  frame_data._watermark = _first_pending_command_buffer_seq + _pending_command_buffers.size();
 
   PStatTimer timer(_flush_pcollector);
 
@@ -3860,7 +3814,8 @@ flush(VkFence fence) {
     cb_infos[i] = {VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO, nullptr, _pending_command_buffers[i], 0u};
   }
 
-  VkSemaphoreSubmitInfo *sem_infos = (VkSemaphoreSubmitInfo *)alloca(sizeof(VkSemaphoreSubmitInfo) * _pending_submissions.size() * 2);
+  VkSemaphoreSubmitInfo *sem_infos = (VkSemaphoreSubmitInfo *)
+    alloca(sizeof(VkSemaphoreSubmitInfo) * (_pending_submissions.size() * 2 + 1));
   size_t sem_i = 0;
 
   VkSubmitInfo2 *submit_infos = (VkSubmitInfo2 *)alloca(sizeof(VkSubmitInfo2) * _pending_submissions.size());
@@ -3904,6 +3859,7 @@ flush(VkFence fence) {
       sem_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO;
       sem_info.pNext = nullptr;
       sem_info.semaphore = pending._wait_semaphore;
+      sem_info.value = 0;
       sem_info.stageMask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT;
       sem_info.deviceIndex = 0;
 
@@ -3917,12 +3873,27 @@ flush(VkFence fence) {
       sem_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO;
       sem_info.pNext = nullptr;
       sem_info.semaphore = pending._signal_semaphore;
+      sem_info.value = 0;
       sem_info.stageMask = VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT; //FIXME
       sem_info.deviceIndex = 0;
 
       submit_info.signalSemaphoreInfoCount = 1;
       submit_info.pSignalSemaphoreInfos = &sem_info;
     }
+  }
+
+  // Signal the timeline semaphore in the last submission.
+  {
+    VkSubmitInfo2 &submit_info = submit_infos[_pending_submissions.size() - 1];
+    submit_info.pSignalSemaphoreInfos = &sem_infos[sem_i - submit_info.signalSemaphoreInfoCount];
+    submit_info.signalSemaphoreInfoCount++;
+    VkSemaphoreSubmitInfo &sem_info = sem_infos[sem_i];
+    sem_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO;
+    sem_info.pNext = nullptr;
+    sem_info.semaphore = _timeline_semaphore;
+    sem_info.value = frame_data._watermark;
+    sem_info.stageMask = VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT;
+    sem_info.deviceIndex = 0;
   }
 
 #ifdef DO_PSTATS
@@ -3932,13 +3903,13 @@ flush(VkFence fence) {
   }
 #endif
 
-  VkResult err = vkQueueSubmit2(_queue, _pending_submissions.size(), submit_infos, fence);
+  VkResult err = vkQueueSubmit2(_queue, _pending_submissions.size(), submit_infos, VK_NULL_HANDLE);
   if (err) {
     vulkan_error(err, "Error submitting command buffers");
     if (err == VK_ERROR_DEVICE_LOST) {
       mark_new();
     }
-    return false;
+    return _last_submitted_watermark;
   }
 
   // Move these command buffers to the frame data, so we can release them when
@@ -3950,7 +3921,8 @@ flush(VkFence fence) {
 
   _pending_command_buffers.clear();
   _pending_submissions.clear();
-  return true;
+  _last_submitted_watermark = frame_data._watermark;
+  return frame_data._watermark;
 }
 
 /**
@@ -4505,18 +4477,12 @@ do_extract_buffer(VulkanBufferContext *bc, vector_uchar &data) {
     vkCmdPipelineBarrier2(_transfer_cmd, &info);
   }
 
-  VkFence fence = create_fence();
-  nassertr(fence != VK_NULL_HANDLE, false);
-  flush(fence);
-
-  VkResult err;
-  {
-    PStatTimer timer(_wait_fence_pcollector);
-    err = vkWaitForFences(_device, 1, &fence, VK_TRUE, 1000000000ULL);
+  uint64_t watermark = flush();
+  if (!wait_semaphore(_timeline_semaphore, watermark)) {
+    vkQueueWaitIdle(_queue);
   }
-  vkDestroyFence(_device, fence, nullptr);
+
   vkDestroyBuffer(_device, tmp_buffer, nullptr);
-  nassertr(err == VK_SUCCESS, false);
 
   data.resize(num_bytes);
   {
@@ -4693,7 +4659,7 @@ create_image(VulkanTextureContext *tc, VkImageType type, VkFormat format,
 }
 
 /**
- * Creates a new semaphore on this device.
+ * Creates a new binary semaphore on this device.
  */
 VkSemaphore VulkanGraphicsStateGuardian::
 create_semaphore() {
@@ -4708,22 +4674,23 @@ create_semaphore() {
 }
 
 /**
- * Creates a new fence on this device.
+ * Waits for the given timeline semaphore to have reached the given value.
  */
-VkFence VulkanGraphicsStateGuardian::
-create_fence() {
-  VkFenceCreateInfo fence_info;
-  fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-  fence_info.pNext = nullptr;
-  fence_info.flags = 0;
-  VkFence fence;
-  VkResult err = vkCreateFence(_device, &fence_info, nullptr, &fence);
-  if (err) {
-    vulkan_error(err, "Failed to create fence");
-    return VK_NULL_HANDLE;
+bool VulkanGraphicsStateGuardian::
+wait_semaphore(VkSemaphore semaphore, uint64_t value, uint64_t timeout) {
+  PStatTimer timer(_wait_semaphore_pcollector);
+  VkSemaphoreWaitInfo wait_info;
+  wait_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_WAIT_INFO;
+  wait_info.pNext = nullptr;
+  wait_info.flags = 0;
+  wait_info.semaphoreCount = 1;
+  wait_info.pSemaphores = &semaphore;
+  wait_info.pValues = &value;
+  VkResult err = vkWaitSemaphores(_device, &wait_info, timeout);
+  if (err == VK_ERROR_DEVICE_LOST) {
+    mark_new();
   }
-
-  return fence;
+  return err == VK_SUCCESS;
 }
 
 /**
