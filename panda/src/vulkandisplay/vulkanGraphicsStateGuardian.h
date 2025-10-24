@@ -125,6 +125,7 @@ public:
   FrameData &get_next_frame_data(bool finish_frames = false);
   INLINE FrameData &get_frame_data();
 
+  VkCommandBuffer create_command_buffer();
   VulkanCommandBuffer begin_command_buffer(VkSemaphore wait_for = VK_NULL_HANDLE);
   void end_command_buffer(VulkanCommandBuffer &&cmd,
                           VkSemaphore signal_done = VK_NULL_HANDLE);
@@ -322,7 +323,10 @@ private:
   uint64_t _next_end_command_buffer_seq = 0;
   pvector<VkCommandBuffer> _free_command_buffers; // new and unused
   pvector<VkCommandBuffer> _pending_command_buffers; // ready to submit
+  pvector<VkBufferMemoryBarrier2> _pending_buffer_barriers;
+  pvector<VkImageMemoryBarrier2> _pending_image_barriers;
   uint32_t _first_pending_command_buffer_seq = 0;
+  uint32_t _last_pending_command_buffer_seq = 0;
   struct PendingSubmission {
     VkSemaphore _wait_semaphore;
     VkSemaphore _signal_semaphore;

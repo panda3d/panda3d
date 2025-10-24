@@ -73,7 +73,7 @@ public:
   uint64_t _write_seq = 0;
 
   // Index of the barrier into the list of barriers of the _read_seq CB.
-  bool _pooled_barrier_exists = true;
+  bool _hoisted_barrier_exists = true;
   size_t _image_barrier_index = 0;
   size_t _buffer_barrier_index = 0;
 
@@ -87,10 +87,6 @@ public:
 
   // If you're wondering why there is no _read_access_mask, read this:
   // https://github.com/KhronosGroup/Vulkan-Docs/issues/131
-
-  VkBuffer _async_staging_buffer = VK_NULL_HANDLE;
-  void *_async_staging_ptr = nullptr;
-  size_t _async_buffer_size = 0;
 
 public:
   static TypeHandle get_class_type() {

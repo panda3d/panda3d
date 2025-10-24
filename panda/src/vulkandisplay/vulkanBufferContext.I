@@ -30,6 +30,6 @@ mark_read(uint64_t seq) {
   if (seq != _read_seq) {
     _read_seq = seq;
     _buffer_barrier_index = 0;
-    _pooled_barrier_exists = false;
+    _hoisted_barrier_exists = false;
   }
 }

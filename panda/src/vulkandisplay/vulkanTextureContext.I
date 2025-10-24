@@ -54,7 +54,7 @@ mark_read(uint64_t seq) {
     _read_seq = seq;
     _image_barrier_index = 0;
     _buffer_barrier_index = 0;
-    _pooled_barrier_exists = false;
+    _hoisted_barrier_exists = false;
   }
 }
 

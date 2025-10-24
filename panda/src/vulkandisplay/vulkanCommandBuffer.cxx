@@ -19,7 +19,11 @@
  * Marks the given resource as being used by this command buffer, ensuring that
  * the appropriate pipeline barrier is added to the command buffer.
  *
- * Note that these barriers may be done BEFORE waiting on the semaphore.
+ * This will not write the barrier right away.  It will either be scheduled to
+ * be put on the end of the previous command buffer, or be queued up for the
+ * next call to flush_barriers(), depending on the state of the resource.
+ *
+ * Note that these barriers may execute BEFORE waiting on the semaphore.
  */
 void VulkanCommandBuffer::
 add_barrier(VulkanTextureContext *tc, VkImageLayout layout,
@@ -108,14 +112,15 @@ add_barrier(VulkanTextureContext *tc, VkImageLayout layout,
   // We want to avoid adding lots of pipeline barriers to the command stream,
   // so we instead add this to the list of barriers to be issued at the
   // beginning of this CB, unless it has already been accessed in this CB.
-  bool pool_possible =
+  bool hoist_possible =
     (tc->_write_seq < _seq && (tc->_read_seq < _seq || !is_write));
 
+#ifndef NDEBUG
   if (vulkandisplay_cat.is_spam()) {
     const char dst_type = is_write ? 'W' : 'R';
     const char src_type = (src_access_mask != 0) ? 'W' : 'R';
     auto &out = vulkandisplay_cat.spam()
-      << (pool_possible ? "Pooling " : "Issuing ")
+      << (hoist_possible ? "Hoisting " : "Issuing ")
       << dst_type << 'a' << src_type << " barrier for ";
 
     Texture *tex = tc->get_texture();
@@ -130,10 +135,11 @@ add_barrier(VulkanTextureContext *tc, VkImageLayout layout,
         << ((tc->_read_seq > tc->_write_seq) ? "read on #" : "write on #")
         << tc->_read_seq << ")\n";
   }
+#endif
 
-  if (pool_possible) {
+  if (hoist_possible) {
     // First access in this CB, or a read in a CB without a write.
-    if (tc->_read_seq == _seq && tc->_pooled_barrier_exists) {
+    if (tc->_read_seq == _seq && tc->_hoisted_barrier_exists) {
       // Already exists, this barrier, just modify it.
       if (tc->_image != VK_NULL_HANDLE) {
         nassertv(tc->_image_barrier_index <= _image_barriers.size());
@@ -160,25 +166,18 @@ add_barrier(VulkanTextureContext *tc, VkImageLayout layout,
         tc->_buffer_barrier_index = _buffer_barriers.size();
         _buffer_barriers.push_back(buf_barrier);
       }
-      tc->_pooled_barrier_exists = true;
+      tc->_hoisted_barrier_exists = true;
     }
   }
   else {
     // We already have an access done in this CB, issue the barrier now.
-    VkDependencyInfo info = {
-      VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
-      nullptr, // pNext
-      0, // dependencyFlags
-      0, // memoryBarrierCount
-      nullptr, // pMemoryBarriers
-      tc->_buffer != VK_NULL_HANDLE,
-      &buf_barrier,
-      tc->_image != VK_NULL_HANDLE,
-      &img_barrier,
-    };
-    vkCmdPipelineBarrier2(_cmd, &info);
-
-    tc->_pooled_barrier_exists = false;
+    if (tc->_buffer != VK_NULL_HANDLE) {
+      _pending_buffer_barriers.push_back(buf_barrier);
+    }
+    if (tc->_image != VK_NULL_HANDLE) {
+      _pending_image_barriers.push_back(img_barrier);
+    }
+    tc->_hoisted_barrier_exists = false;
   }
 
   tc->_layout = layout;
@@ -209,9 +208,14 @@ add_barrier(VulkanTextureContext *tc, VkImageLayout layout,
 }
 
 /**
- * Same as above, but for shader buffers.
+ * Marks the given resource as being used by this command buffer, ensuring that
+ * the appropriate pipeline barrier is added to the command buffer.
  *
- * Note that these barriers may be done BEFORE waiting on the semaphore.
+ * This will not write the barrier right away.  It will either be scheduled to
+ * be put on the end of the previous command buffer, or be queued up for the
+ * next call to flush_barriers(), depending on the state of the resource.
+ *
+ * Note that these barriers may execute BEFORE waiting on the semaphore.
  */
 void VulkanCommandBuffer::
 add_barrier(VulkanBufferContext *bc, VkPipelineStageFlags2 dst_stage_mask,
@@ -274,24 +278,26 @@ add_barrier(VulkanBufferContext *bc, VkPipelineStageFlags2 dst_stage_mask,
   // We want to avoid adding lots of pipeline barriers to the command stream,
   // so we instead add this to the list of barriers to be issued at the
   // beginning of this CB, unless it has already been accessed in this CB.
-  bool pool_possible =
+  bool hoist_possible =
     (bc->_write_seq < _seq && (bc->_read_seq < _seq || write_mask == 0));
 
+#ifndef NDEBUG
   if (vulkandisplay_cat.is_spam()) {
     const char dst_type = (write_mask != 0) ? 'W' : 'R';
     const char src_type = (src_access_mask != 0) ? 'W' : 'R';
     vulkandisplay_cat.spam()
-      << (pool_possible ? "Pooling " : "Issuing ")
+      << (hoist_possible ? "Hoisting " : "Issuing ")
       << dst_type << 'a' << src_type << " barrier for "
       << "SSBO " << *(ShaderBuffer *)bc->get_object()
       << " on CB #" << _seq << " (last "
       << ((bc->_read_seq > bc->_write_seq) ? "read on #" : "write on #")
       << bc->_read_seq << ")\n";
   }
+#endif
 
-  if (pool_possible) {
+  if (hoist_possible) {
     // First access in this CB, or a read in a CB without a write.
-    if (bc->_read_seq == _seq && bc->_pooled_barrier_exists) {
+    if (bc->_read_seq == _seq && bc->_hoisted_barrier_exists) {
       // Already exists, this barrier, just modify it.
       nassertv(bc->_buffer_barrier_index <= _buffer_barriers.size());
       VkBufferMemoryBarrier2 &existing_barrier = _buffer_barriers[bc->_buffer_barrier_index];
@@ -302,25 +308,13 @@ add_barrier(VulkanBufferContext *bc, VkPipelineStageFlags2 dst_stage_mask,
     } else {
       bc->_buffer_barrier_index = _buffer_barriers.size();
       _buffer_barriers.push_back(std::move(buf_barrier));
-      bc->_pooled_barrier_exists = true;
+      bc->_hoisted_barrier_exists = true;
     }
   }
   else {
     // We already have an access done in this CB, issue the barrier now.
-    VkDependencyInfo info = {
-      VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
-      nullptr, // pNext
-      0, // dependencyFlags
-      0, // memoryBarrierCount
-      nullptr, // pMemoryBarriers
-      1, // bufferMemoryBarrierCount
-      &buf_barrier, // pBufferMemoryBarriers
-      0, // imageMemoryBarrierCount
-      nullptr, // pImageMemoryBarriers
-    };
-    vkCmdPipelineBarrier2(_cmd, &info);
-
-    bc->_pooled_barrier_exists = false;
+    _pending_buffer_barriers.push_back(buf_barrier);
+    bc->_hoisted_barrier_exists = false;
   }
 
   bc->_read_seq = _seq;
@@ -347,4 +341,31 @@ add_barrier(VulkanBufferContext *bc, VkPipelineStageFlags2 dst_stage_mask,
       bc->_write_access_mask = 0;
     }
   }
+}
+
+/**
+ *
+ */
+void VulkanCommandBuffer::
+do_flush_barriers() {
+  if (vulkandisplay_cat.is_spam()) {
+    vulkandisplay_cat.spam()
+      << "Flushing " << _pending_buffer_barriers.size()
+      << " buffer and " << _pending_image_barriers.size()
+      << " image barriers on CB #" << _seq << "\n";
+  }
+  VkDependencyInfo info = {
+    VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
+    nullptr, // pNext
+    0, // dependencyFlags
+    0, // memoryBarrierCount
+    nullptr, // pMemoryBarriers
+    (uint32_t)_pending_buffer_barriers.size(),
+    _pending_buffer_barriers.data(),
+    (uint32_t)_pending_image_barriers.size(),
+    _pending_image_barriers.data(),
+  };
+  vkCmdPipelineBarrier2(_cmd, &info);
+  _pending_buffer_barriers.clear();
+  _pending_image_barriers.clear();
 }

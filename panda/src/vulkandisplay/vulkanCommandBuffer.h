@@ -47,6 +47,12 @@ public:
                    VkPipelineStageFlags2 stage_mask,
                    VkAccessFlags2 access_mask = 0);
 
+  INLINE void add_barrier(VkImageMemoryBarrier2 barrier);
+  INLINE void add_barrier(VkBufferMemoryBarrier2 barrier);
+
+  INLINE void flush_barriers();
+  void do_flush_barriers();
+
 public:
   VkCommandBuffer _cmd = VK_NULL_HANDLE;
   uint64_t _seq = 0;
@@ -60,6 +66,10 @@ public:
   // barrier is added to the previous command buffer).
   pvector<VkImageMemoryBarrier2> _image_barriers;
   pvector<VkBufferMemoryBarrier2> _buffer_barriers;
+
+  // These barriers are issued during or after the command stream.
+  pvector<VkImageMemoryBarrier2> _pending_image_barriers;
+  pvector<VkBufferMemoryBarrier2> _pending_buffer_barriers;
 };
 
 #include "vulkanCommandBuffer.I"

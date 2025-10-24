@@ -46,7 +46,7 @@ public:
   uint64_t _write_seq = 0;
 
   // Index of the barrier into the list of barriers of the _read_seq CB.
-  bool _pooled_barrier_exists = false;
+  bool _hoisted_barrier_exists = false;
   size_t _buffer_barrier_index = 0;
 
 public:

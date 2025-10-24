@@ -1662,12 +1662,83 @@ upload_texture(VulkanTextureContext *tc, CompletionToken token) {
     return false;
   }
 
+  // Offsets of each level in the staging buffer, -1 if not present.
+  small_vector<int, 1> level_offsets;
+  uint32_t cur_offset = buffer_offset;
+
+  for (int n = tc->_mipmap_begin; n < tc->_mipmap_end; ++n) {
+    // Get a pointer to the RAM image data.
+    const uint8_t *src = (const uint8_t *)texture->get_ram_mipmap_pointer((int)n);
+    size_t src_size;
+    CPTA_uchar ptimage;
+    if (src == nullptr) {
+      ptimage = texture->get_ram_mipmap_image(n);
+      src = (const uint8_t *)ptimage.p();
+      src_size = ptimage.size();
+    } else {
+      // It's a "pointer texture"; we trust it to be the expected size.
+      src_size = texture->get_expected_ram_mipmap_image_size((int)n);
+    }
+
+    if (src == nullptr) {
+      if (n > tc->_mipmap_begin && tc->_generate_mipmaps) {
+        // No image, but we should generate it.
+        level_offsets.push_back(-1);
+      } else {
+        // Shoot.  Um, panic?
+        vulkandisplay_cat.warning()
+          << "No RAM mipmap level " << n << " found for texture "
+          << texture->get_name() << "\n";
+        break;
+      }
+    }
+    else {
+      // Pad for optimal alignment.
+      VkDeviceSize remain = cur_offset % optimal_align;
+      if (remain > 0) {
+        cur_offset += optimal_align - remain;
+      }
+      level_offsets.push_back(cur_offset);
+
+      uint8_t *dest = (uint8_t *)data + (cur_offset - buffer_offset);
+      if (tc->_pack_bgr8) {
+        // Pack RGB data into RGBA, since most cards don't support RGB8.
+        nassertr(((uintptr_t)dest & 0x3) == 0, false);
+        const uint8_t *src_end = src + src_size;
+        uint32_t *dest32 = (uint32_t *)dest;
+
+        for (; src < src_end; src += 3) {
+          *dest32++ = 0xff000000 | (src[0] << 16) | (src[1] << 8) | src[2];
+        }
+        src_size = src_size / 3 * 4;
+      }
+      else if (tc->_swap_bgra8) {
+        nassertr(((uintptr_t)src & 0x3) == 0, false);
+        nassertr(((uintptr_t)dest & 0x3) == 0, false);
+        const uint32_t *src32 = (const uint32_t *)src;
+        const uint32_t *src32_end = (const uint32_t *)(src + src_size);
+        uint32_t *dest32 = (uint32_t *)dest;
+
+        for (; src32 < src32_end; ++src32) {
+          uint32_t v = *src32++;
+          *dest32++ = (v & 0xff00ff00) | ((v & 0x00ff0000) >> 16) | ((v & 0x000000ff) << 16);
+        }
+      }
+      else {
+        memcpy(dest, src, src_size);
+      }
+
+      _data_transferred_pcollector.add_level(src_size);
+    }
+  }
+
   if (tc->_image != VK_NULL_HANDLE) {
     // Issue a command to transition the image into a layout optimal for
     // transferring into.
     _transfer_cmd.add_barrier(tc, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                               VK_PIPELINE_STAGE_2_TRANSFER_BIT,
                               VK_ACCESS_2_TRANSFER_WRITE_BIT);
+    _transfer_cmd.flush_barriers();
 
     // Schedule a copy from our staging buffer to the image.
     VkBufferImageCopy region = {};
@@ -1684,11 +1755,13 @@ upload_texture(VulkanTextureContext *tc, CompletionToken token) {
     blit.srcOffsets[1].z = region.imageExtent.depth;
     blit.dstSubresource = blit.srcSubresource;
 
-    VkImageMemoryBarrier barrier = {};
-    barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+    VkImageMemoryBarrier2 barrier = {};
+    barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
     barrier.pNext = nullptr;
-    barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-    barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+    barrier.srcStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
+    barrier.srcAccessMask = VK_ACCESS_2_TRANSFER_WRITE_BIT;
+    barrier.dstStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
+    barrier.dstAccessMask = VK_ACCESS_2_TRANSFER_READ_BIT;
     barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
     barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
     barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
@@ -1700,100 +1773,50 @@ upload_texture(VulkanTextureContext *tc, CompletionToken token) {
     barrier.subresourceRange.baseArrayLayer = 0;
     barrier.subresourceRange.layerCount = tc->_array_layers;
 
+    VkDependencyInfo dep_info = {
+      VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
+      nullptr, // pNext
+      0, // dependencyFlags
+      0, // memoryBarrierCount
+      nullptr, // pMemoryBarriers
+      0, // bufferMemoryBarrierCount
+      nullptr, // pBufferMemoryBarriers
+      1, &barrier,
+    };
+
     SparseArray levels_in_dst_optimal_layout;
-    levels_in_dst_optimal_layout.set_range(0, tc->_mip_levels);
+    levels_in_dst_optimal_layout.set_range(0, level_offsets.size());
 
-    for (int n = tc->_mipmap_begin; n < tc->_mipmap_end; ++n) {
-      // Get a pointer to the RAM image data.
-      const uint8_t *src = (const uint8_t *)texture->get_ram_mipmap_pointer((int)n);
-      size_t src_size;
-      CPTA_uchar ptimage;
-      if (src == nullptr) {
-        ptimage = texture->get_ram_mipmap_image(n);
-        src = (const uint8_t *)ptimage.p();
-        src_size = ptimage.size();
-      } else {
-        // It's a "pointer texture"; we trust it to be the expected size.
-        src_size = texture->get_expected_ram_mipmap_image_size((int)n);
-      }
-
-      if (src == nullptr) {
-        // There's no image for this level.  Are we supposed to generate it?
-        if (n > 0 && tc->_generate_mipmaps) {
-          // Transition the previous mipmap level to optimal read layout.
-          barrier.subresourceRange.baseMipLevel = blit.srcSubresource.mipLevel;
-          vkCmdPipelineBarrier(_transfer_cmd, VK_PIPELINE_STAGE_TRANSFER_BIT,
-                               VK_PIPELINE_STAGE_TRANSFER_BIT, 0,
-                               0, nullptr, 0, nullptr, 1, &barrier);
-          levels_in_dst_optimal_layout.clear_bit(barrier.subresourceRange.baseMipLevel);
-
-          blit.dstSubresource.mipLevel = region.imageSubresource.mipLevel;
-          blit.dstOffsets[1].x = region.imageExtent.width;
-          blit.dstOffsets[1].y = region.imageExtent.height;
-          blit.dstOffsets[1].z = region.imageExtent.depth;
-          vkCmdBlitImage(_transfer_cmd, image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                         image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blit,
-                         VK_FILTER_LINEAR);
-
-          blit.srcSubresource.mipLevel = blit.dstSubresource.mipLevel;
-          blit.srcOffsets[1] = blit.dstOffsets[1];
-
-        } else {
-          // No, shoot.  Um, panic?
-          vulkandisplay_cat.warning() << "No RAM mipmap level " << n
-            << " found for texture " << texture->get_name() << "\n";
-        }
-
-      } else {
-        // We do have an image.  This means we can write it to the appropriate
-        // location in the staging buffer, and schedule a copy to the image.
-        nassertr(buffer != VK_NULL_HANDLE, false);
-
-        // Pad for optimal alignment.
-        VkDeviceSize remain = region.bufferOffset % optimal_align;
-        if (remain > 0) {
-          region.bufferOffset += optimal_align - remain;
-        }
-
-        uint8_t *dest = (uint8_t *)data + (region.bufferOffset - buffer_offset);
-
-        if (tc->_pack_bgr8) {
-          // Pack RGB data into RGBA, since most cards don't support RGB8.
-          nassertr(((uintptr_t)dest & 0x3) == 0, false);
-          const uint8_t *src_end = src + src_size;
-          uint32_t *dest32 = (uint32_t *)dest;
-
-          for (; src < src_end; src += 3) {
-            *dest32++ = 0xff000000 | (src[0] << 16) | (src[1] << 8) | src[2];
-          }
-          src_size = src_size / 3 * 4;
-        }
-        else if (tc->_swap_bgra8) {
-          nassertr(((uintptr_t)src & 0x3) == 0, false);
-          nassertr(((uintptr_t)dest & 0x3) == 0, false);
-          const uint32_t *src32 = (const uint32_t *)src;
-          const uint32_t *src32_end = (const uint32_t *)(src + src_size);
-          uint32_t *dest32 = (uint32_t *)dest;
-
-          for (; src32 < src32_end; ++src32) {
-            uint32_t v = *src32++;
-            *dest32++ = (v & 0xff00ff00) | ((v & 0x00ff0000) >> 16) | ((v & 0x000000ff) << 16);
-          }
-        }
-        else {
-          memcpy(dest, src, src_size);
-        }
-
+    for (int offset : level_offsets) {
+      if (offset >= 0) {
         // Schedule a copy from the staging buffer.
+        region.bufferOffset = (uint32_t)offset;
+
         vkCmdCopyBufferToImage(_transfer_cmd, buffer, image,
                                VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
-        region.bufferOffset += src_size;
-        _data_transferred_pcollector.add_level(src_size);
 
         blit.srcSubresource.mipLevel = region.imageSubresource.mipLevel;
         blit.srcOffsets[1].x = region.imageExtent.width;
         blit.srcOffsets[1].y = region.imageExtent.height;
         blit.srcOffsets[1].z = region.imageExtent.depth;
+      }
+      else {
+        // There's no image for this level, we are supposed to generate it.
+        // Transition the previous mipmap level to optimal read layout.
+        barrier.subresourceRange.baseMipLevel = blit.srcSubresource.mipLevel;
+        vkCmdPipelineBarrier2(_transfer_cmd, &dep_info);
+        levels_in_dst_optimal_layout.clear_bit(barrier.subresourceRange.baseMipLevel);
+
+        blit.dstSubresource.mipLevel = region.imageSubresource.mipLevel;
+        blit.dstOffsets[1].x = region.imageExtent.width;
+        blit.dstOffsets[1].y = region.imageExtent.height;
+        blit.dstOffsets[1].z = region.imageExtent.depth;
+        vkCmdBlitImage(_transfer_cmd, image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                       image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blit,
+                       VK_FILTER_LINEAR);
+
+        blit.srcSubresource.mipLevel = blit.dstSubresource.mipLevel;
+        blit.srcOffsets[1] = blit.dstOffsets[1];
       }
 
       region.imageExtent.width = std::max(1U, region.imageExtent.width >> 1);
@@ -1803,64 +1826,22 @@ upload_texture(VulkanTextureContext *tc, CompletionToken token) {
     }
 
     // Now, ensure that all the mipmap levels are in the same layout.
-    if (!levels_in_dst_optimal_layout.has_all_of(0, tc->_mip_levels)) {
+    if (!levels_in_dst_optimal_layout.has_all_of(0, level_offsets.size())) {
       for (size_t ri = 0; ri < levels_in_dst_optimal_layout.get_num_subranges(); ++ri) {
         barrier.subresourceRange.baseMipLevel = levels_in_dst_optimal_layout.get_subrange_begin(ri);
         barrier.subresourceRange.levelCount = levels_in_dst_optimal_layout.get_subrange_end(ri)
                                             - levels_in_dst_optimal_layout.get_subrange_begin(ri);
 
-        vkCmdPipelineBarrier(_transfer_cmd, VK_PIPELINE_STAGE_TRANSFER_BIT,
-                             VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0,
-                             nullptr, 1, &barrier);
+        _transfer_cmd.add_barrier(barrier);
       }
       tc->_layout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
     }
   }
   else if (tc->_buffer != VK_NULL_HANDLE) {
-    // Get a pointer to the RAM image data.
-    const uint8_t *src = (const uint8_t *)texture->get_ram_mipmap_pointer(0);
-    size_t src_size;
-    CPTA_uchar ptimage;
-    if (src == nullptr) {
-      ptimage = texture->get_ram_mipmap_image(0);
-      src = (const uint8_t *)ptimage.p();
-      src_size = ptimage.size();
-    } else {
-      // It's a "pointer texture"; we trust it to be the expected size.
-      src_size = texture->get_expected_ram_mipmap_image_size(0);
-    }
-
-    if (tc->_pack_bgr8) {
-      // Pack RGB data into RGBA, since most cards don't support RGB8.
-      nassertr(((uintptr_t)data & 0x3) == 0, false);
-      const uint8_t *src_end = src + src_size;
-      uint32_t *dest32 = (uint32_t *)data;
-
-      for (; src < src_end; src += 3) {
-        *dest32++ = 0xff000000 | (src[0] << 16) | (src[1] << 8) | src[2];
-      }
-      src_size = src_size / 3 * 4;
-    }
-    else if (tc->_swap_bgra8) {
-      nassertr(((uintptr_t)src & 0x3) == 0, false);
-      nassertr(((uintptr_t)data & 0x3) == 0, false);
-      const uint32_t *src32 = (const uint32_t *)src;
-      const uint32_t *src32_end = (const uint32_t *)(src + src_size);
-      uint32_t *dest32 = (uint32_t *)data;
-
-      for (; src32 < src32_end; ++src32) {
-        uint32_t v = *src32++;
-        *dest32++ = (v & 0xff00ff00) | ((v & 0x00ff0000) >> 16) | ((v & 0x000000ff) << 16);
-      }
-    }
-    else {
-      memcpy(data, src, src_size);
-    }
-
     VkBufferCopy region;
     region.srcOffset = buffer_offset;
     region.dstOffset = 0;
-    region.size = src_size;
+    region.size = buffer_size;
     vkCmdCopyBuffer(_transfer_cmd, buffer, tc->_buffer, 1, &region);
   }
 
@@ -2246,20 +2227,20 @@ update_vertex_buffer(VulkanVertexBufferContext *vbc,
       if (vbc->_last_use_frame > _last_finished_frame) {
         // Still in use, so insert an execution dependency.
         // Surely there should be a more optimal way to do this...
-        VkBufferMemoryBarrier barrier;
-        barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+        VkBufferMemoryBarrier2 barrier;
+        barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2;
         barrier.pNext = nullptr;
+        barrier.srcStageMask = VK_PIPELINE_STAGE_2_VERTEX_ATTRIBUTE_INPUT_BIT;
         barrier.srcAccessMask = 0;
-        barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+        barrier.dstStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
+        barrier.dstAccessMask = VK_ACCESS_2_TRANSFER_WRITE_BIT;
         barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
         barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
         barrier.buffer = vbc->_buffer;
         barrier.offset = 0;
         barrier.size = VK_WHOLE_SIZE;
-        vkCmdPipelineBarrier(_transfer_cmd,
-                             VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
-                             VK_PIPELINE_STAGE_TRANSFER_BIT,
-                             0, 0, nullptr, 1, &barrier, 0, nullptr);
+        _transfer_cmd.add_barrier(barrier);
+        _transfer_cmd.flush_barriers();
       }
       else if (_has_unified_memory) {
         // If we have UMA, and the buffer is not in use, we can skip the
@@ -2290,20 +2271,19 @@ update_vertex_buffer(VulkanVertexBufferContext *vbc,
       }
       _data_transferred_pcollector.add_level(num_bytes);
 
-      VkBufferMemoryBarrier barrier;
-      barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+      VkBufferMemoryBarrier2 barrier;
+      barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2;
       barrier.pNext = nullptr;
-      barrier.srcAccessMask = use_staging_buffer ? VK_ACCESS_TRANSFER_WRITE_BIT : VK_ACCESS_HOST_WRITE_BIT;
-      barrier.dstAccessMask = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
+      barrier.srcStageMask = use_staging_buffer ? VK_PIPELINE_STAGE_2_COPY_BIT : VK_PIPELINE_STAGE_2_HOST_BIT;
+      barrier.srcAccessMask = use_staging_buffer ? VK_ACCESS_2_TRANSFER_WRITE_BIT : VK_ACCESS_2_HOST_WRITE_BIT;
+      barrier.dstStageMask = VK_PIPELINE_STAGE_2_VERTEX_ATTRIBUTE_INPUT_BIT;
+      barrier.dstAccessMask = VK_ACCESS_2_VERTEX_ATTRIBUTE_READ_BIT;
       barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
       barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
       barrier.buffer = vbc->_buffer;
       barrier.offset = 0;
       barrier.size = VK_WHOLE_SIZE;
-      vkCmdPipelineBarrier(_transfer_cmd,
-                           use_staging_buffer ? VK_PIPELINE_STAGE_TRANSFER_BIT : VK_PIPELINE_STAGE_HOST_BIT,
-                           VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
-                           0, 0, nullptr, 1, &barrier, 0, nullptr);
+      _transfer_cmd.add_barrier(barrier);
     }
 
     vbc->mark_loaded(reader);
@@ -2416,20 +2396,20 @@ update_index_buffer(VulkanIndexBufferContext *ibc,
       if (ibc->_last_use_frame > _last_finished_frame) {
         // Still in use, so insert an execution dependency.
         // Surely there should be a more optimal way to do this...
-        VkBufferMemoryBarrier barrier;
-        barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+        VkBufferMemoryBarrier2 barrier;
+        barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2;
         barrier.pNext = nullptr;
+        barrier.srcStageMask = VK_PIPELINE_STAGE_2_INDEX_INPUT_BIT;
         barrier.srcAccessMask = 0;
-        barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+        barrier.dstStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
+        barrier.dstAccessMask = VK_ACCESS_2_TRANSFER_WRITE_BIT;
         barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
         barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
         barrier.buffer = ibc->_buffer;
         barrier.offset = 0;
         barrier.size = VK_WHOLE_SIZE;
-        vkCmdPipelineBarrier(_transfer_cmd,
-                             VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
-                             VK_PIPELINE_STAGE_TRANSFER_BIT,
-                             0, 0, nullptr, 1, &barrier, 0, nullptr);
+        _transfer_cmd.add_barrier(barrier);
+        _transfer_cmd.flush_barriers();
       }
       else if (_has_unified_memory) {
         // If we have UMA, and the buffer is not in use, we can skip the
@@ -2476,20 +2456,19 @@ update_index_buffer(VulkanIndexBufferContext *ibc,
       }
       _data_transferred_pcollector.add_level(num_bytes);
 
-      VkBufferMemoryBarrier barrier;
-      barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+      VkBufferMemoryBarrier2 barrier;
+      barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2;
       barrier.pNext = nullptr;
-      barrier.srcAccessMask = use_staging_buffer ? VK_ACCESS_TRANSFER_WRITE_BIT : VK_ACCESS_HOST_WRITE_BIT;
-      barrier.dstAccessMask = VK_ACCESS_INDEX_READ_BIT;
+      barrier.srcStageMask = use_staging_buffer ? VK_PIPELINE_STAGE_2_COPY_BIT : VK_PIPELINE_STAGE_2_HOST_BIT;
+      barrier.srcAccessMask = use_staging_buffer ? VK_ACCESS_2_TRANSFER_WRITE_BIT : VK_ACCESS_2_HOST_WRITE_BIT;
+      barrier.dstStageMask = VK_PIPELINE_STAGE_2_INDEX_INPUT_BIT;
+      barrier.dstAccessMask = VK_ACCESS_2_INDEX_READ_BIT;
       barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
       barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
       barrier.buffer = ibc->_buffer;
       barrier.offset = 0;
       barrier.size = VK_WHOLE_SIZE;
-      vkCmdPipelineBarrier(_transfer_cmd,
-                           use_staging_buffer ? VK_PIPELINE_STAGE_TRANSFER_BIT : VK_PIPELINE_STAGE_HOST_BIT,
-                           VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
-                           0, 0, nullptr, 1, &barrier, 0, nullptr);
+      _transfer_cmd.add_barrier(barrier);
     }
 
     ibc->mark_loaded(reader);
@@ -2593,40 +2572,32 @@ prepare_shader_buffer(ShaderBuffer *data) {
       region.dstOffset = 0;
       region.size = data_size;
       vkCmdCopyBuffer(_transfer_cmd, buffer, bc->_buffer, 1, &region);
+      bc->_read_seq = _transfer_cmd._seq;
+      bc->_write_seq = _transfer_cmd._seq;
+      bc->_write_stage_mask = VK_PIPELINE_STAGE_2_COPY_BIT;
+      bc->_write_access_mask = VK_ACCESS_2_TRANSFER_WRITE_BIT;
     }
     else {
       VulkanMemoryMapping mapping = bc->_block.map();
       memcpy(mapping, initial_data, data_size);
       bc->_block.flush();
+
+      // Don't need to set _write_seq here, as the copy happened on the host,
+      // before this command buffer was submitted.
+      bc->_write_stage_mask = VK_PIPELINE_STAGE_2_HOST_BIT;
+      bc->_write_access_mask = VK_ACCESS_2_HOST_WRITE_BIT;
     }
     _data_transferred_pcollector.add_level(data_size);
 
-    VkBufferMemoryBarrier2 barrier;
-    barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
-    barrier.pNext = nullptr;
-    barrier.srcStageMask = use_staging_buffer ? VK_PIPELINE_STAGE_2_TRANSFER_BIT : VK_PIPELINE_STAGE_2_HOST_BIT;
-    barrier.srcAccessMask = use_staging_buffer ? VK_ACCESS_2_TRANSFER_WRITE_BIT : VK_ACCESS_2_HOST_WRITE_BIT;
-    barrier.dstStageMask = VK_PIPELINE_STAGE_2_VERTEX_SHADER_BIT
-                         | VK_PIPELINE_STAGE_2_TESSELLATION_CONTROL_SHADER_BIT
-                         | VK_PIPELINE_STAGE_2_TESSELLATION_EVALUATION_SHADER_BIT
-                         | VK_PIPELINE_STAGE_2_GEOMETRY_SHADER_BIT
-                         | VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT
-                         | VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT;
-    barrier.dstAccessMask = VK_ACCESS_2_SHADER_READ_BIT;
-    barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    barrier.buffer = bc->_buffer;
-    barrier.offset = 0;
-    barrier.size = VK_WHOLE_SIZE;
-
-    VkDependencyInfo info = {
-      VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
-      nullptr, 0, // pNext, dependencyFlags
-      0, nullptr, // memory barriers
-      1, &barrier, // buffer barriers
-      0, nullptr, // image barriers
-    };
-    vkCmdPipelineBarrier2(_transfer_cmd, &info);
+    // Prepare it for every possible shader access.
+    /*_transfer_cmd.add_barrier(bc,
+                              VK_PIPELINE_STAGE_2_VERTEX_SHADER_BIT |
+                              VK_PIPELINE_STAGE_2_TESSELLATION_CONTROL_SHADER_BIT |
+                              VK_PIPELINE_STAGE_2_TESSELLATION_EVALUATION_SHADER_BIT |
+                              VK_PIPELINE_STAGE_2_GEOMETRY_SHADER_BIT |
+                              VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT |
+                              VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT,
+                              VK_ACCESS_2_SHADER_READ_BIT);*/
   }
 
   //bc->enqueue_lru(&_prepared_objects->_graphics_memory_lru);
@@ -2753,6 +2724,7 @@ dispatch_compute(int num_groups_x, int num_groups_y, int num_groups_z) {
   VkPipeline pipeline = _current_sc->get_compute_pipeline(this);
   nassertv(pipeline != VK_NULL_HANDLE);
   _vkCmdBindPipeline(_render_cmd, VK_PIPELINE_BIND_POINT_COMPUTE, pipeline);
+  _render_cmd.flush_barriers();
 
   vkCmdDispatch(_render_cmd, num_groups_x, num_groups_y, num_groups_z);
 }
@@ -3258,31 +3230,6 @@ end_frame(Thread *current_thread, VkSemaphore signal_done) {
     }
   }
 
-  // Issue commands to transition the staging buffers of the texture downloads
-  // to make sure that the previous copy operations are visible to host reads.
-  if (!_frame_data->_download_queue.empty()) {
-    size_t num_downloads = _frame_data->_download_queue.size();
-    VkBufferMemoryBarrier *barriers = (VkBufferMemoryBarrier *)
-      alloca(sizeof(VkBufferMemoryBarrier) * num_downloads);
-
-    for (size_t i = 0; i < num_downloads; ++i) {
-      barriers[i].sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
-      barriers[i].pNext = nullptr;
-      barriers[i].srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-      barriers[i].dstAccessMask = VK_ACCESS_HOST_READ_BIT;
-      barriers[i].srcQueueFamilyIndex = _graphics_queue_family_index;
-      barriers[i].dstQueueFamilyIndex = _graphics_queue_family_index;
-      barriers[i].buffer = _frame_data->_download_queue[i]._buffer;
-      barriers[i].offset = 0;
-      barriers[i].size = VK_WHOLE_SIZE;
-    }
-
-    // It's safe to issue a barrier on the render cmd since we're no longer
-    // inside an active render pass.
-    vkCmdPipelineBarrier(_render_cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_HOST_BIT, 0,
-                         0, nullptr, (uint32_t)num_downloads, barriers, 0, nullptr);
-  }
-
 #ifdef DO_PSTATS
   if (_timer_queries_active) {
     issue_timer_query(0x8000);
@@ -3635,6 +3582,19 @@ finish_one_frame() {
 /**
  *
  */
+VkCommandBuffer VulkanGraphicsStateGuardian::
+create_command_buffer() {
+  while (_free_command_buffers.empty() && finish_one_frame()) {
+  }
+
+  VkCommandBuffer handle = _free_command_buffers.back();
+  _free_command_buffers.pop_back();
+  return handle;
+}
+
+/**
+ *
+ */
 VulkanCommandBuffer VulkanGraphicsStateGuardian::
 begin_command_buffer(VkSemaphore wait_for) {
   static const VkCommandBufferBeginInfo begin_info = {
@@ -3644,11 +3604,7 @@ begin_command_buffer(VkSemaphore wait_for) {
     nullptr,
   };
 
-  while (_free_command_buffers.empty() && finish_one_frame()) {
-  }
-
-  VkCommandBuffer handle = _free_command_buffers.back();
-  _free_command_buffers.pop_back();
+  VkCommandBuffer handle = create_command_buffer();
 
 #ifndef NDEBUG
   if (vulkandisplay_cat.is_spam()) {
@@ -3699,15 +3655,25 @@ end_command_buffer(VulkanCommandBuffer &&cmd, VkSemaphore signal_done) {
     _first_pending_command_buffer_seq = cmd._seq;
   }
 
-  if (!cmd._image_barriers.empty() || !cmd._buffer_barriers.empty()) {
-    // Need to issue barriers.  We do that on the preceding command buffer.
+  // The new CB's hoisted barriers get combined with the pending barriers.
+  _pending_buffer_barriers.insert(
+    _pending_buffer_barriers.end(),
+    cmd._buffer_barriers.begin(),
+    cmd._buffer_barriers.end());
+  cmd._buffer_barriers.clear();
+
+  _pending_image_barriers.insert(
+    _pending_image_barriers.end(),
+    cmd._image_barriers.begin(),
+    cmd._image_barriers.end());
+  cmd._image_barriers.clear();
+
+  if (!_pending_buffer_barriers.empty() || !_pending_image_barriers.empty()) {
+    // Need to issue barriers on the preceding command buffer.
     if (_pending_command_buffers.empty()) {
       // We don't have a preceding one, so we need to create one just to issue
-      // the barriers.
-      while (_free_command_buffers.empty() && finish_one_frame()) {
-      }
-      VkCommandBuffer handle = _free_command_buffers.back();
-      _free_command_buffers.pop_back();
+      // the barriers.  This one has no seq number.
+      VkCommandBuffer handle = create_command_buffer();
 
       if (vulkandisplay_cat.is_spam()) {
         vulkandisplay_cat.spam()
@@ -3739,14 +3705,17 @@ end_command_buffer(VulkanCommandBuffer &&cmd, VkSemaphore signal_done) {
       0, // dependencyFlags
       0, // memoryBarrierCount
       nullptr, // pMemoryBarriers
-      (uint32_t)cmd._buffer_barriers.size(), cmd._buffer_barriers.data(),
-      (uint32_t)cmd._image_barriers.size(), cmd._image_barriers.data(),
+      (uint32_t)_pending_buffer_barriers.size(), _pending_buffer_barriers.data(),
+      (uint32_t)_pending_image_barriers.size(), _pending_image_barriers.data(),
     };
     vkCmdPipelineBarrier2(_pending_command_buffers.back(), &info);
+    _pending_buffer_barriers.clear();
+    _pending_image_barriers.clear();
   }
 
   size_t i = _pending_command_buffers.size();
   _pending_command_buffers.push_back(cmd._cmd);
+  _last_pending_command_buffer_seq = cmd._seq;
 
   if (cmd._wait_semaphore != VK_NULL_HANDLE ||
       _pending_submissions.empty() ||
@@ -3764,6 +3733,11 @@ end_command_buffer(VulkanCommandBuffer &&cmd, VkSemaphore signal_done) {
   }
   cmd._wait_semaphore = VK_NULL_HANDLE;
   cmd._cmd = VK_NULL_HANDLE;
+
+  // Rather than flushing barriers, we save these up for later combining with
+  // the hoisted barriers of the next command buffer.
+  _pending_buffer_barriers.swap(cmd._pending_buffer_barriers);
+  _pending_image_barriers.swap(cmd._pending_image_barriers);
 
   // We end the penultimate one.  We don't actually end the one we just added
   // because we want to still be able to insert barriers at the end.
@@ -3797,15 +3771,51 @@ flush() {
     return _last_submitted_watermark;
   }
 
+  // Any pending barriers are flushed.
+  if (!_pending_buffer_barriers.empty() || !_pending_image_barriers.empty()) {
+    if (vulkandisplay_cat.is_spam()) {
+      vulkandisplay_cat.spam()
+        << "Flushing " << _pending_buffer_barriers.size()
+        << " buffer and " << _pending_image_barriers.size()
+        << " image barriers on CB #" << _last_pending_command_buffer_seq
+        << " for submit\n";
+    }
+    VkDependencyInfo info = {
+      VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
+      nullptr, // pNext
+      0, // dependencyFlags
+      0, // memoryBarrierCount
+      nullptr, // pMemoryBarriers
+      (uint32_t)_pending_buffer_barriers.size(), _pending_buffer_barriers.data(),
+      (uint32_t)_pending_image_barriers.size(), _pending_image_barriers.data(),
+    };
+    vkCmdPipelineBarrier2(_pending_command_buffers.back(), &info);
+    _pending_buffer_barriers.clear();
+    _pending_image_barriers.clear();
+  }
+
   // End the last command buffer, which we left open in case we wanted to
-  // record transitions.
+  // record barriers.
   vkEndCommandBuffer(_pending_command_buffers.back());
 
   VulkanFrameData &frame_data = get_frame_data();
   // As a watermark for the timeline semaphore, we use one past the last
   // command buffer seq, since otherwise the semaphore's initial state of 0
   // would indicate that the first command buffer has already completed.
-  frame_data._watermark = _first_pending_command_buffer_seq + _pending_command_buffers.size();
+  frame_data._watermark = _last_pending_command_buffer_seq + 1;
+
+#ifndef NDEBUG
+  if (vulkandisplay_cat.is_spam()) {
+    auto &out = vulkandisplay_cat.spam();
+    if (_first_pending_command_buffer_seq == _last_pending_command_buffer_seq) {
+      out << "Submitting CB #" << _first_pending_command_buffer_seq;
+    } else {
+      out << "Submitting CB #" << _first_pending_command_buffer_seq << "-#"
+          << _last_pending_command_buffer_seq;
+    }
+    out << "\n";
+  }
+#endif
 
   PStatTimer timer(_flush_pcollector);
 
@@ -3831,26 +3841,6 @@ flush() {
     submit_info.pCommandBufferInfos = &cb_infos[pending._first_command_buffer];
     submit_info.signalSemaphoreInfoCount = 0;
     submit_info.pSignalSemaphoreInfos = nullptr;
-
-#ifndef NDEBUG
-    if (vulkandisplay_cat.is_spam()) {
-      auto &out = vulkandisplay_cat.spam();
-      size_t first_seq = _first_pending_command_buffer_seq + pending._first_command_buffer;
-      if (pending._num_command_buffers == 1) {
-        out << "Submitting CB #" << first_seq;
-      } else {
-        out << "Submitting CB #" << first_seq << "-#"
-            << (first_seq + pending._num_command_buffers - 1);
-      }
-      if (pending._wait_semaphore) {
-        out << ", waiting for semaphore " << pending._wait_semaphore;
-      }
-      if (pending._signal_semaphore) {
-        out << ", signalling semaphore " << pending._signal_semaphore;
-      }
-      out << "\n";
-    }
-#endif
 
     if (pending._wait_semaphore != VK_NULL_HANDLE) {
       // We may need to wait until the attachments are available for writing.
@@ -4009,6 +3999,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     VkPipeline pipeline = _current_sc->get_pipeline(this, _state_rs, data_reader->get_format(), topology, 0, _fb_config);
     nassertr(pipeline != VK_NULL_HANDLE, false);
     _vkCmdBindPipeline(_render_cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+    _render_cmd.flush_barriers();
   } else {
     _format = data_reader->get_format();
   }
@@ -4075,6 +4066,7 @@ draw_patches(const GeomPrimitivePipelineReader *reader, bool force) {
     VkPipeline pipeline = _current_sc->get_pipeline(this, _state_rs, _format, VK_PRIMITIVE_TOPOLOGY_PATCH_LIST, patch_control_points, _fb_config);
     nassertr(pipeline != VK_NULL_HANDLE, false);
     _vkCmdBindPipeline(_render_cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+    _render_cmd.flush_barriers();
   }
 
   return do_draw_primitive(reader, force);
@@ -4221,6 +4213,7 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
   _render_cmd.add_barrier(fbtc, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
                           VK_PIPELINE_STAGE_2_TRANSFER_BIT,
                           VK_ACCESS_2_TRANSFER_READ_BIT);
+  _render_cmd.flush_barriers();
 
   if (fbtc->_format == tc->_format) {
     // The formats are the same.  This is just an image copy.
@@ -4349,8 +4342,9 @@ do_extract_image(VulkanTextureContext *tc, Texture *tex, int view, int z, Screen
   // Issue a command to transition the image into a layout optimal for
   // transferring from.
   cmd.add_barrier(tc, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                  VK_PIPELINE_STAGE_2_TRANSFER_BIT,
+                  VK_PIPELINE_STAGE_2_COPY_BIT,
                   VK_ACCESS_2_TRANSFER_READ_BIT);
+  cmd.flush_barriers();
 
   if (tc->_image != VK_NULL_HANDLE) {
     VkBufferImageCopy region;
@@ -4385,6 +4379,22 @@ do_extract_image(VulkanTextureContext *tc, Texture *tex, int view, int z, Screen
   down._view = view;
   down._request = request;
 
+  // Issue a barrier to make sure that the previous copy operations on the
+  // staging buffer are visible to host reads.
+  cmd._pending_buffer_barriers.emplace_back();
+  VkBufferMemoryBarrier2 &barrier = cmd._pending_buffer_barriers.back();
+  barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2;
+  barrier.pNext = nullptr;
+  barrier.srcStageMask = VK_PIPELINE_STAGE_2_COPY_BIT;
+  barrier.srcAccessMask = VK_ACCESS_2_TRANSFER_WRITE_BIT;
+  barrier.dstStageMask = VK_PIPELINE_STAGE_2_HOST_BIT;
+  barrier.dstAccessMask = VK_ACCESS_2_HOST_READ_BIT;
+  barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+  barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+  barrier.buffer = down._buffer;
+  barrier.offset = 0;
+  barrier.size = VK_WHOLE_SIZE;
+
   VulkanFrameData &frame_data = get_frame_data();
   frame_data._download_queue.push_back(std::move(down));
 
@@ -4417,7 +4427,7 @@ do_extract_buffer(VulkanBufferContext *bc, vector_uchar &data) {
     }
 
     VkBufferMemoryBarrier2 barrier;
-    barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+    barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2;
     barrier.pNext = nullptr;
     barrier.srcStageMask = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT;
     barrier.srcAccessMask = VK_ACCESS_2_MEMORY_WRITE_BIT;
@@ -4429,14 +4439,8 @@ do_extract_buffer(VulkanBufferContext *bc, vector_uchar &data) {
     barrier.offset = 0;
     barrier.size = VK_WHOLE_SIZE;
 
-    VkDependencyInfo info = {
-      VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
-      nullptr, 0, // pNext, dependencyFlags
-      0, nullptr, // memory barriers
-      1, &barrier, // buffer barriers
-      0, nullptr, // image barriers
-    };
-    vkCmdPipelineBarrier2(_transfer_cmd, &info);
+    _transfer_cmd.add_barrier(barrier);
+    _transfer_cmd.flush_barriers();
 
     VkBufferCopy region;
     region.srcOffset = 0;
@@ -4452,10 +4456,10 @@ do_extract_buffer(VulkanBufferContext *bc, vector_uchar &data) {
     barrier.buffer = tmp_buffer;
     barrier.offset = 0;
     barrier.size = VK_WHOLE_SIZE;
-    vkCmdPipelineBarrier2(_transfer_cmd, &info);
+    _transfer_cmd.add_barrier(barrier);
   } else {
     VkBufferMemoryBarrier2 barrier;
-    barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+    barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2;
     barrier.pNext = nullptr;
     barrier.srcStageMask = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT;
     barrier.srcAccessMask = VK_ACCESS_2_MEMORY_WRITE_BIT;
@@ -4466,15 +4470,7 @@ do_extract_buffer(VulkanBufferContext *bc, vector_uchar &data) {
     barrier.buffer = bc->_buffer;
     barrier.offset = 0;
     barrier.size = VK_WHOLE_SIZE;
-
-    VkDependencyInfo info = {
-      VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
-      nullptr, 0, // pNext, dependencyFlags
-      0, nullptr, // memory barriers
-      1, &barrier, // buffer barriers
-      0, nullptr, // image barriers
-    };
-    vkCmdPipelineBarrier2(_transfer_cmd, &info);
+    _transfer_cmd.add_barrier(barrier);
   }
 
   uint64_t watermark = flush();
@@ -4515,6 +4511,7 @@ do_draw_primitive_with_topology(const GeomPrimitivePipelineReader *reader,
     VkPipeline pipeline = _current_sc->get_pipeline(this, _state_rs, _format, topology, 0, _fb_config);
     nassertr(pipeline != VK_NULL_HANDLE, false);
     _vkCmdBindPipeline(_render_cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+    _render_cmd.flush_barriers();
   }
 
   return do_draw_primitive(reader, force);

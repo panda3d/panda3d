@@ -274,6 +274,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
       VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT);
   }
 
+  vkgsg->_render_cmd.flush_barriers();
   vkgsg->_vkCmdBeginRendering(cmd, &render_info);
   vkgsg->_fb_color_tc = color_tc;
   vkgsg->_fb_depth_tc = _depth_stencil_tc;

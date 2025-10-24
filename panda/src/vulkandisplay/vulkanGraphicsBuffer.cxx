@@ -220,6 +220,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
     }*/
   }
 
+  vkgsg->_render_cmd.flush_barriers();
   vkgsg->_vkCmdBeginRendering(cmd, &render_info);
   vkgsg->_fb_config = _fb_config_id;
   return true;
