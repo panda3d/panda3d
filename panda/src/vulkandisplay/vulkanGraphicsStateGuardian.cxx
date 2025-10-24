@@ -3617,7 +3617,7 @@ get_next_frame_data(bool finish_frames) {
  */
 bool VulkanGraphicsStateGuardian::
 finish_one_frame() {
-  if (_frame_data_head != _frame_data_capacity) {
+  if (_frame_data_head == _frame_data_capacity) {
     return false;
   }
 
