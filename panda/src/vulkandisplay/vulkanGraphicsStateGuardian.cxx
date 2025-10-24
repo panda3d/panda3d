@@ -183,16 +183,16 @@ reset() {
   }
 
   bool supports_null_descriptor = false;
-  VkPhysicalDeviceRobustness2FeaturesKHR ro2_features = {
-    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_KHR,
+  VkPhysicalDeviceRobustness2FeaturesEXT ro2_features = {
+    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_EXT,
     enabled_features.pNext,
   };
   if (pipe->_gpu_supports_null_descriptor) {
     ro2_features.nullDescriptor = VK_TRUE;
     enabled_features.pNext = &ro2_features;
 
-    if (pipe->has_device_extension(VK_KHR_ROBUSTNESS_2_EXTENSION_NAME)) {
-      extensions.push_back(VK_KHR_ROBUSTNESS_2_EXTENSION_NAME);
+    if (pipe->has_device_extension("VK_KHR_robustness2")) {
+      extensions.push_back("VK_KHR_robustness2");
     } else {
       extensions.push_back(VK_EXT_ROBUSTNESS_2_EXTENSION_NAME);
     }
