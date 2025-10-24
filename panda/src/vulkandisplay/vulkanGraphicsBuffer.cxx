@@ -162,9 +162,9 @@ begin_frame(FrameMode mode, Thread *current_thread) {
     attach._tc->set_active(true);
 
     VkImageLayout layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-    VkAccessFlags write_access_mask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-    VkAccessFlags read_access_mask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
-    VkPipelineStageFlags stage_mask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    VkAccessFlags2 write_access_mask = VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT;
+    VkAccessFlags2 read_access_mask = VK_ACCESS_2_COLOR_ATTACHMENT_READ_BIT;
+    VkPipelineStageFlags2 stage_mask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT;
 
     if (attach._plane == RTP_stencil || attach._plane == RTP_depth ||
         attach._plane == RTP_depth_stencil) {
@@ -173,10 +173,10 @@ begin_frame(FrameMode mode, Thread *current_thread) {
       vkgsg->_fb_depth_tc = attach._tc;
 
       layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-      stage_mask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT
-                 | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
-      write_access_mask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-      read_access_mask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
+      stage_mask = VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT
+                 | VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT;
+      write_access_mask = VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+      read_access_mask = VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
 
       if (get_clear_depth_active()) {
         depth_attachment.clearValue.depthStencil.depth = get_clear_depth();
@@ -245,18 +245,18 @@ begin_frame(FrameMode mode, Thread *current_thread) {
     attach._tc->mark_used_this_frame(frame_data);
 
     VkImageLayout layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-    VkAccessFlags write_access_mask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-    VkAccessFlags read_access_mask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
-    VkPipelineStageFlags stage_mask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    VkAccessFlags write_access_mask = VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT;
+    VkAccessFlags read_access_mask = VK_ACCESS_2_COLOR_ATTACHMENT_READ_BIT;
+    VkPipelineStageFlags stage_mask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT;
 
     if (attach._plane == RTP_stencil || attach._plane == RTP_depth ||
         attach._plane == RTP_depth_stencil) {
       vkgsg->_fb_depth_tc = attach._tc;
       layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-      stage_mask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT
-                 | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
-      write_access_mask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-      read_access_mask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
+      stage_mask = VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT
+                 | VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT;
+      write_access_mask = VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+      read_access_mask = VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
     }
     else if (attach._plane == RTP_color) {
       vkgsg->_fb_color_tc = attach._tc;
@@ -314,18 +314,18 @@ end_frame(FrameMode mode, Thread *current_thread) {
       attach._tc->_layout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
 
       // This seems to squelch a validation warning, not sure about this yet
-      attach._tc->_write_stage_mask |= VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+      attach._tc->_write_stage_mask |= VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT;
     }*/
 
     for (Attachment &attach : _attachments) {
       if (attach._plane == RTP_stencil || attach._plane == RTP_depth ||
           attach._plane == RTP_depth_stencil) {
-        attach._tc->_write_stage_mask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT
-                                      | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
-        attach._tc->_write_access_mask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+        attach._tc->_write_stage_mask = VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT
+                                      | VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT;
+        attach._tc->_write_access_mask = VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
       } else {
-        attach._tc->_write_stage_mask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-        attach._tc->_write_access_mask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        attach._tc->_write_stage_mask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT;
+        attach._tc->_write_access_mask = VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT;
       }
       attach._tc->_read_stage_mask = 0;
       attach._tc->_write_seq = vkgsg->_render_cmd._seq;
@@ -465,7 +465,7 @@ setup_render_pass() {
   dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
   dependency.dstSubpass = 0;
   dependency.srcStageMask = 0;
-  dependency.dstStageMask = VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT;
+  dependency.dstStageMask = VK_PIPELINE_STAGE_2_ALL_GRAPHICS_BIT;
   dependency.srcAccessMask = 0;
   dependency.dstAccessMask = 0;
   dependency.dependencyFlags = 0;
@@ -495,10 +495,10 @@ setup_render_pass() {
       attach.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
     }
 
-    dependency.srcStageMask |= VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    dependency.srcAccessMask |= VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-    dependency.dstAccessMask |= VK_ACCESS_COLOR_ATTACHMENT_READ_BIT |
-                                VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    dependency.srcStageMask |= VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT;
+    dependency.srcAccessMask |= VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT;
+    dependency.dstAccessMask |= VK_ACCESS_2_COLOR_ATTACHMENT_READ_BIT |
+                                VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT;
 
     color_reference.attachment = ai++;
     have_color_reference = true;
@@ -534,17 +534,17 @@ setup_render_pass() {
       attach.stencilStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
     }
 
-    dependency.srcStageMask |= VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
-    dependency.dstStageMask |= VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-    dependency.srcAccessMask |= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-    dependency.dstAccessMask |= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
+    dependency.srcStageMask |= VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT;
+    dependency.dstStageMask |= VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT;
+    dependency.srcAccessMask |= VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+    dependency.dstAccessMask |= VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
 
     depth_reference.attachment = ai++;
     have_depth_reference = true;
   }
 
   if (dependency.srcStageMask == 0) {
-    dependency.srcStageMask = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+    dependency.srcStageMask = VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT;
   }
 
   VkSubpassDescription subpass;

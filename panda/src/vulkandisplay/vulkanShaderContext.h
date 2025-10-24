@@ -148,7 +148,7 @@ private:
     PT(ShaderInputBinding) _binding;
     small_vector<ResourceId, 1> _resource_ids;
     VkShaderStageFlags _stage_mask = 0;
-    VkPipelineStageFlags _pipeline_stage_mask = 0;
+    VkPipelineStageFlags2 _pipeline_stage_mask = 0;
     ShaderType::Access _access = ShaderType::Access::READ_WRITE;
   };
   pvector<Descriptor> _tattr_descriptors;

@@ -150,6 +150,14 @@ reset() {
   enabled_features.pNext = &v_1_2_features;
 #endif
 
+  // synchronization2 from 1.3 core
+  VkPhysicalDeviceSynchronization2Features sync2_features = {
+    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES,
+    enabled_features.pNext,
+    VK_TRUE,
+  };
+  enabled_features.pNext = &sync2_features;
+
   VkPhysicalDeviceDynamicRenderingFeatures dr_features = {
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES,
     enabled_features.pNext,
@@ -336,6 +344,7 @@ reset() {
   _vkCmdDraw = (PFN_vkCmdDraw)vkGetDeviceProcAddr(_device, "vkCmdDraw");
   _vkCmdDrawIndexed = (PFN_vkCmdDrawIndexed)vkGetDeviceProcAddr(_device, "vkCmdDrawIndexed");
   _vkCmdPushConstants = (PFN_vkCmdPushConstants)vkGetDeviceProcAddr(_device, "vkCmdPushConstants");
+  _vkCmdWriteTimestamp2 = (PFN_vkCmdWriteTimestamp2)vkGetDeviceProcAddr(_device, "vkCmdWriteTimestamp2");
   _vkUpdateDescriptorSets = (PFN_vkUpdateDescriptorSets)vkGetDeviceProcAddr(_device, "vkUpdateDescriptorSets");
 
   if (_supports_dynamic_rendering) {
@@ -999,7 +1008,7 @@ allocate_memory(VulkanMemoryBlock &block, const VkMemoryRequirements &reqs,
  */
 VulkanTextureContext *VulkanGraphicsStateGuardian::
 use_texture(Texture *texture, VkImageLayout layout,
-            VkPipelineStageFlags stage_mask, VkAccessFlags access_mask,
+            VkPipelineStageFlags2 stage_mask, VkAccessFlags2 access_mask,
             bool discard) {
   nassertr(_render_cmd, nullptr);
 
@@ -1644,8 +1653,8 @@ upload_texture(VulkanTextureContext *tc, CompletionToken token) {
     // Issue a command to transition the image into a layout optimal for
     // transferring into.
     _transfer_cmd.add_barrier(tc, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                              VK_PIPELINE_STAGE_TRANSFER_BIT,
-                              VK_ACCESS_TRANSFER_WRITE_BIT);
+                              VK_PIPELINE_STAGE_2_TRANSFER_BIT,
+                              VK_ACCESS_2_TRANSFER_WRITE_BIT);
 
     // Schedule a copy from our staging buffer to the image.
     VkBufferImageCopy region = {};
@@ -2498,8 +2507,8 @@ release_index_buffer(IndexBufferContext *context) {
  * Prepares the buffer for the given usage of the buffer.
  */
 VulkanBufferContext *VulkanGraphicsStateGuardian::
-use_shader_buffer(ShaderBuffer *buffer, VkPipelineStageFlags stage_mask,
-                  VkAccessFlags access_mask) {
+use_shader_buffer(ShaderBuffer *buffer, VkPipelineStageFlags2 stage_mask,
+                  VkAccessFlags2 access_mask) {
   nassertr(_render_cmd, nullptr);
 
   VulkanBufferContext *bc;
@@ -2579,25 +2588,32 @@ prepare_shader_buffer(ShaderBuffer *data) {
     }
     _data_transferred_pcollector.add_level(data_size);
 
-    VkBufferMemoryBarrier barrier;
+    VkBufferMemoryBarrier2 barrier;
     barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
     barrier.pNext = nullptr;
-    barrier.srcAccessMask = use_staging_buffer ? VK_ACCESS_TRANSFER_WRITE_BIT : VK_ACCESS_HOST_WRITE_BIT;
-    barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+    barrier.srcStageMask = use_staging_buffer ? VK_PIPELINE_STAGE_2_TRANSFER_BIT : VK_PIPELINE_STAGE_2_HOST_BIT;
+    barrier.srcAccessMask = use_staging_buffer ? VK_ACCESS_2_TRANSFER_WRITE_BIT : VK_ACCESS_2_HOST_WRITE_BIT;
+    barrier.dstStageMask = VK_PIPELINE_STAGE_2_VERTEX_SHADER_BIT
+                         | VK_PIPELINE_STAGE_2_TESSELLATION_CONTROL_SHADER_BIT
+                         | VK_PIPELINE_STAGE_2_TESSELLATION_EVALUATION_SHADER_BIT
+                         | VK_PIPELINE_STAGE_2_GEOMETRY_SHADER_BIT
+                         | VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT
+                         | VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT;
+    barrier.dstAccessMask = VK_ACCESS_2_SHADER_READ_BIT;
     barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
     barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
     barrier.buffer = bc->_buffer;
     barrier.offset = 0;
     barrier.size = VK_WHOLE_SIZE;
-    vkCmdPipelineBarrier(_transfer_cmd,
-                         use_staging_buffer ? VK_PIPELINE_STAGE_TRANSFER_BIT : VK_PIPELINE_STAGE_HOST_BIT,
-                         VK_PIPELINE_STAGE_VERTEX_SHADER_BIT |
-                         VK_PIPELINE_STAGE_TESSELLATION_CONTROL_SHADER_BIT |
-                         VK_PIPELINE_STAGE_TESSELLATION_EVALUATION_SHADER_BIT |
-                         VK_PIPELINE_STAGE_GEOMETRY_SHADER_BIT |
-                         VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT |
-                         VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-                         0, 0, nullptr, 1, &barrier, 0, nullptr);
+
+    VkDependencyInfo info = {
+      VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
+      nullptr, 0, // pNext, dependencyFlags
+      0, nullptr, // memory barriers
+      1, &barrier, // buffer barriers
+      0, nullptr, // image barriers
+    };
+    vkCmdPipelineBarrier2(_transfer_cmd, &info);
   }
 
   //bc->enqueue_lru(&_prepared_objects->_graphics_memory_lru);
@@ -2655,7 +2671,7 @@ issue_timer_query(int pstats_index) {
   uint32_t query = get_next_timer_query(pstats_index);
 
   bool is_end = pstats_index & 0x8000;
-  vkCmdWriteTimestamp(_render_cmd, is_end ? VK_PIPELINE_STAGE_ALL_COMMANDS_BIT : VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, _timer_query_pool, query);
+  _vkCmdWriteTimestamp2(_render_cmd, is_end ? VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT : VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT, _timer_query_pool, query);
 }
 
 /**
@@ -3135,7 +3151,7 @@ begin_frame(Thread *current_thread, VkSemaphore wait_for) {
       // Issue the first timer query on the transfer command buffer, since that
       // marks the first command we will submit belonging to this frame.
       uint32_t query = get_next_timer_query(0);
-      vkCmdWriteTimestamp(_transfer_cmd, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, _timer_query_pool, query);
+      _vkCmdWriteTimestamp2(_transfer_cmd, VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT, _timer_query_pool, query);
     }
 #endif
   }
@@ -3183,7 +3199,7 @@ begin_frame(Thread *current_thread, VkSemaphore wait_for) {
     _transfer_end_query = get_next_timer_query(_wait_semaphore_pcollector.get_index());
     _transfer_end_query_pool = _timer_query_pool;
     uint32_t query = get_next_timer_query(_wait_semaphore_pcollector.get_index() | 0x8000);
-    vkCmdWriteTimestamp(_render_cmd, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, _timer_query_pool, query);
+    _vkCmdWriteTimestamp2(_render_cmd, VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT, _timer_query_pool, query);
   } else {
     _transfer_end_query_pool = VK_NULL_HANDLE;
   }
@@ -3204,7 +3220,7 @@ end_frame(Thread *current_thread, VkSemaphore signal_done) {
 
 #ifdef DO_PSTATS
   if (_transfer_end_query_pool != VK_NULL_HANDLE) {
-    vkCmdWriteTimestamp(_transfer_cmd, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+    _vkCmdWriteTimestamp2(_transfer_cmd, VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT,
                         _transfer_end_query_pool, _transfer_end_query);
     _transfer_end_query_pool = VK_NULL_HANDLE;
   }
@@ -3764,16 +3780,16 @@ end_command_buffer(VulkanCommandBuffer &&cmd, VkSemaphore signal_done) {
       _pending_submissions.push_back({VK_NULL_HANDLE, VK_NULL_HANDLE, 0u, 1u});
     }
 
-    vkCmdPipelineBarrier(_pending_command_buffers.back(),
-                         cmd._barrier_src_stage_mask,
-                         cmd._barrier_dst_stage_mask,
-                         0, 0, nullptr,
-                         cmd._buffer_barriers.size(), cmd._buffer_barriers.data(),
-                         cmd._image_barriers.size(), cmd._image_barriers.data());
-    cmd._buffer_barriers.clear();
-    cmd._image_barriers.clear();
-    cmd._barrier_src_stage_mask = 0;
-    cmd._barrier_dst_stage_mask = 0;
+    VkDependencyInfo info = {
+      VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
+      nullptr, // pNext
+      0, // dependencyFlags
+      0, // memoryBarrierCount
+      nullptr, // pMemoryBarriers
+      (uint32_t)cmd._buffer_barriers.size(), cmd._buffer_barriers.data(),
+      (uint32_t)cmd._image_barriers.size(), cmd._image_barriers.data(),
+    };
+    vkCmdPipelineBarrier2(_pending_command_buffers.back(), &info);
   }
 
   size_t i = _pending_command_buffers.size();
@@ -3839,23 +3855,27 @@ flush(VkFence fence) {
 
   PStatTimer timer(_flush_pcollector);
 
-  // We may need to wait until the attachments are available for writing.
-  // TOP_OF_PIPE placates the validation layer, not sure why it's needed.
-  static const VkPipelineStageFlags wait_stage_mask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+  VkCommandBufferSubmitInfo *cb_infos = (VkCommandBufferSubmitInfo *)alloca(sizeof(VkCommandBufferSubmitInfo) * _pending_command_buffers.size());
+  for (size_t i = 0; i < _pending_command_buffers.size(); ++i) {
+    cb_infos[i] = {VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO, nullptr, _pending_command_buffers[i], 0u};
+  }
 
-  VkSubmitInfo *submit_infos = (VkSubmitInfo *)alloca(sizeof(VkSubmitInfo) * _pending_submissions.size());
+  VkSemaphoreSubmitInfo *sem_infos = (VkSemaphoreSubmitInfo *)alloca(sizeof(VkSemaphoreSubmitInfo) * _pending_submissions.size() * 2);
+  size_t sem_i = 0;
+
+  VkSubmitInfo2 *submit_infos = (VkSubmitInfo2 *)alloca(sizeof(VkSubmitInfo2) * _pending_submissions.size());
   for (size_t i = 0; i < _pending_submissions.size(); ++i) {
     auto &pending = _pending_submissions[i];
-    VkSubmitInfo &submit_info = submit_infos[i];
+    VkSubmitInfo2 &submit_info = submit_infos[i];
     submit_info.pNext = nullptr;
-    submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-    submit_info.waitSemaphoreCount = 0;
-    submit_info.pWaitSemaphores = nullptr;
-    submit_info.pWaitDstStageMask = nullptr;
-    submit_info.commandBufferCount = pending._num_command_buffers;
-    submit_info.pCommandBuffers = &_pending_command_buffers[pending._first_command_buffer];
-    submit_info.signalSemaphoreCount = 0;
-    submit_info.pSignalSemaphores = nullptr;
+    submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO_2;
+    submit_info.flags = 0;
+    submit_info.waitSemaphoreInfoCount = 0;
+    submit_info.pWaitSemaphoreInfos = nullptr;
+    submit_info.commandBufferInfoCount = pending._num_command_buffers;
+    submit_info.pCommandBufferInfos = &cb_infos[pending._first_command_buffer];
+    submit_info.signalSemaphoreInfoCount = 0;
+    submit_info.pSignalSemaphoreInfos = nullptr;
 
 #ifndef NDEBUG
     if (vulkandisplay_cat.is_spam()) {
@@ -3878,16 +3898,30 @@ flush(VkFence fence) {
 #endif
 
     if (pending._wait_semaphore != VK_NULL_HANDLE) {
-      submit_info.waitSemaphoreCount = 1;
-      submit_info.pWaitSemaphores = &pending._wait_semaphore;
-      submit_info.pWaitDstStageMask = &wait_stage_mask;
+      // We may need to wait until the attachments are available for writing.
+      // TOP_OF_PIPE placates the validation layer, not sure why it's needed.
+      VkSemaphoreSubmitInfo &sem_info = sem_infos[sem_i++];
+      sem_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO;
+      sem_info.pNext = nullptr;
+      sem_info.semaphore = pending._wait_semaphore;
+      sem_info.stageMask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT;
+      sem_info.deviceIndex = 0;
 
+      submit_info.waitSemaphoreInfoCount = 1;
+      submit_info.pWaitSemaphoreInfos = &sem_info;
       frame_data._pending_destroy_semaphores.push_back(pending._wait_semaphore);
     }
 
     if (pending._signal_semaphore != VK_NULL_HANDLE) {
-      submit_info.signalSemaphoreCount = 1;
-      submit_info.pSignalSemaphores = &pending._signal_semaphore;
+      VkSemaphoreSubmitInfo &sem_info = sem_infos[sem_i++];
+      sem_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO;
+      sem_info.pNext = nullptr;
+      sem_info.semaphore = pending._signal_semaphore;
+      sem_info.stageMask = VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT; //FIXME
+      sem_info.deviceIndex = 0;
+
+      submit_info.signalSemaphoreInfoCount = 1;
+      submit_info.pSignalSemaphoreInfos = &sem_info;
     }
   }
 
@@ -3898,7 +3932,7 @@ flush(VkFence fence) {
   }
 #endif
 
-  VkResult err = vkQueueSubmit(_queue, _pending_submissions.size(), submit_infos, fence);
+  VkResult err = vkQueueSubmit2(_queue, _pending_submissions.size(), submit_infos, fence);
   if (err) {
     vulkan_error(err, "Error submitting command buffers");
     if (err == VK_ERROR_DEVICE_LOST) {
@@ -4199,7 +4233,7 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
 
   VulkanTextureContext *tc;
   tc = use_texture(tex, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                   VK_PIPELINE_STAGE_TRANSFER_BIT, VK_ACCESS_TRANSFER_WRITE_BIT,
+                   VK_PIPELINE_STAGE_2_TRANSFER_BIT, VK_ACCESS_2_TRANSFER_WRITE_BIT,
                    true);
   nassertr(tc != nullptr, false);
 
@@ -4213,8 +4247,8 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
   // Issue a command to transition the image into a layout optimal for
   // transferring from.
   _render_cmd.add_barrier(fbtc, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                          VK_PIPELINE_STAGE_TRANSFER_BIT,
-                          VK_ACCESS_TRANSFER_READ_BIT);
+                          VK_PIPELINE_STAGE_2_TRANSFER_BIT,
+                          VK_ACCESS_2_TRANSFER_READ_BIT);
 
   if (fbtc->_format == tc->_format) {
     // The formats are the same.  This is just an image copy.
@@ -4343,8 +4377,8 @@ do_extract_image(VulkanTextureContext *tc, Texture *tex, int view, int z, Screen
   // Issue a command to transition the image into a layout optimal for
   // transferring from.
   cmd.add_barrier(tc, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                  VK_PIPELINE_STAGE_TRANSFER_BIT,
-                  VK_ACCESS_TRANSFER_READ_BIT);
+                  VK_PIPELINE_STAGE_2_TRANSFER_BIT,
+                  VK_ACCESS_2_TRANSFER_READ_BIT);
 
   if (tc->_image != VK_NULL_HANDLE) {
     VkBufferImageCopy region;
@@ -4410,20 +4444,27 @@ do_extract_buffer(VulkanBufferContext *bc, vector_uchar &data) {
       return false;
     }
 
-    VkBufferMemoryBarrier barrier;
+    VkBufferMemoryBarrier2 barrier;
     barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
     barrier.pNext = nullptr;
-    barrier.srcAccessMask = VK_ACCESS_MEMORY_WRITE_BIT;
-    barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+    barrier.srcStageMask = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT;
+    barrier.srcAccessMask = VK_ACCESS_2_MEMORY_WRITE_BIT;
+    barrier.dstStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
+    barrier.dstAccessMask = VK_ACCESS_2_TRANSFER_READ_BIT;
     barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
     barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
     barrier.buffer = bc->_buffer;
     barrier.offset = 0;
     barrier.size = VK_WHOLE_SIZE;
-    vkCmdPipelineBarrier(_transfer_cmd,
-                         VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
-                         VK_PIPELINE_STAGE_TRANSFER_BIT,
-                         0, 0, nullptr, 1, &barrier, 0, nullptr);
+
+    VkDependencyInfo info = {
+      VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
+      nullptr, 0, // pNext, dependencyFlags
+      0, nullptr, // memory barriers
+      1, &barrier, // buffer barriers
+      0, nullptr, // image barriers
+    };
+    vkCmdPipelineBarrier2(_transfer_cmd, &info);
 
     VkBufferCopy region;
     region.srcOffset = 0;
@@ -4432,30 +4473,36 @@ do_extract_buffer(VulkanBufferContext *bc, vector_uchar &data) {
     vkCmdCopyBuffer(_transfer_cmd, bc->_buffer, tmp_buffer, 1, &region);
 
     // Issue a new barrier to make the copy visible on the host.
-    barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-    barrier.dstAccessMask = VK_ACCESS_HOST_READ_BIT;
+    barrier.srcStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
+    barrier.srcAccessMask = VK_ACCESS_2_TRANSFER_WRITE_BIT;
+    barrier.dstStageMask = VK_PIPELINE_STAGE_2_HOST_BIT;
+    barrier.dstAccessMask = VK_ACCESS_2_HOST_READ_BIT;
     barrier.buffer = tmp_buffer;
     barrier.offset = 0;
     barrier.size = VK_WHOLE_SIZE;
-    vkCmdPipelineBarrier(_transfer_cmd,
-                         VK_PIPELINE_STAGE_TRANSFER_BIT,
-                         VK_PIPELINE_STAGE_HOST_BIT,
-                         0, 0, nullptr, 1, &barrier, 0, nullptr);
+    vkCmdPipelineBarrier2(_transfer_cmd, &info);
   } else {
-    VkBufferMemoryBarrier barrier;
+    VkBufferMemoryBarrier2 barrier;
     barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
     barrier.pNext = nullptr;
-    barrier.srcAccessMask = VK_ACCESS_MEMORY_WRITE_BIT;
-    barrier.dstAccessMask = VK_ACCESS_HOST_READ_BIT;
+    barrier.srcStageMask = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT;
+    barrier.srcAccessMask = VK_ACCESS_2_MEMORY_WRITE_BIT;
+    barrier.dstStageMask = VK_PIPELINE_STAGE_2_HOST_BIT;
+    barrier.dstAccessMask = VK_ACCESS_2_HOST_READ_BIT;
     barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
     barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
     barrier.buffer = bc->_buffer;
     barrier.offset = 0;
     barrier.size = VK_WHOLE_SIZE;
-    vkCmdPipelineBarrier(_transfer_cmd,
-                         VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
-                         VK_PIPELINE_STAGE_HOST_BIT,
-                         0, 0, nullptr, 1, &barrier, 0, nullptr);
+
+    VkDependencyInfo info = {
+      VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
+      nullptr, 0, // pNext, dependencyFlags
+      0, nullptr, // memory barriers
+      1, &barrier, // buffer barriers
+      0, nullptr, // image barriers
+    };
+    vkCmdPipelineBarrier2(_transfer_cmd, &info);
   }
 
   VkFence fence = create_fence();
@@ -5518,29 +5565,29 @@ update_lattr_descriptor_set(VkDescriptorSet ds, const LightAttrib *attr) {
 
     // We don't know at this point which stages is using them, and finding out
     // would require duplication of descriptor sets, so we flag all stages.
-    VkPipelineStageFlags stage_flags = 0
-      | VK_PIPELINE_STAGE_VERTEX_SHADER_BIT
-      | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT
-      | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT
+    VkPipelineStageFlags2 stage_flags = 0
+      | VK_PIPELINE_STAGE_2_VERTEX_SHADER_BIT
+      | VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT
+      | VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT
       ;
 
     if (_supported_shader_caps & ShaderModule::C_tessellation_shader) {
-      //stage_flags |= VK_PIPELINE_STAGE_TESSELLATION_CONTROL_SHADER_BIT;
-      //stage_flags |= VK_PIPELINE_STAGE_TESSELLATION_EVALUATION_SHADER_BIT;
+      //stage_flags |= VK_PIPELINE_STAGE_2_TESSELLATION_CONTROL_SHADER_BIT;
+      //stage_flags |= VK_PIPELINE_STAGE_2_TESSELLATION_EVALUATION_SHADER_BIT;
     }
     if (_supported_shader_caps & ShaderModule::C_geometry_shader) {
-      //stage_flags |= VK_PIPELINE_STAGE_GEOMETRY_SHADER_BIT;
+      //stage_flags |= VK_PIPELINE_STAGE_2_GEOMETRY_SHADER_BIT;
     }
 
     VulkanTextureContext *tc;
     tc = use_texture(texture, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                     stage_flags, VK_ACCESS_SHADER_READ_BIT);
+                     stage_flags, VK_ACCESS_2_SHADER_READ_BIT);
 
     if (tc == nullptr) {
       // We can't bind this because we're currently rendering into it.
       texture = dummy;
       tc = use_texture(texture, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                       stage_flags, VK_ACCESS_SHADER_READ_BIT);
+                       stage_flags, VK_ACCESS_2_SHADER_READ_BIT);
     }
 
     VkDescriptorImageInfo &image_info = image_infos[i];

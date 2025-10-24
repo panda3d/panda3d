@@ -20,16 +20,12 @@ VulkanCommandBuffer(VulkanCommandBuffer &&from) noexcept :
   _seq(from._seq),
   _wait_semaphore(from._wait_semaphore),
   _image_barriers(std::move(from._image_barriers)),
-  _buffer_barriers(std::move(from._buffer_barriers)),
-  _barrier_src_stage_mask(from._barrier_src_stage_mask),
-  _barrier_dst_stage_mask(from._barrier_dst_stage_mask) {
+  _buffer_barriers(std::move(from._buffer_barriers)) {
   from._cmd = VK_NULL_HANDLE;
   from._seq = 0;
   from._wait_semaphore = VK_NULL_HANDLE;
   from._image_barriers.clear();
   from._buffer_barriers.clear();
-  from._barrier_src_stage_mask = 0;
-  from._barrier_dst_stage_mask = 0;
 }
 
 /**
@@ -51,14 +47,10 @@ operator = (VulkanCommandBuffer &&from) noexcept {
   _wait_semaphore = from._wait_semaphore;
   _image_barriers = std::move(from._image_barriers);
   _buffer_barriers = std::move(from._buffer_barriers);
-  _barrier_src_stage_mask = from._barrier_src_stage_mask;
-  _barrier_dst_stage_mask = from._barrier_dst_stage_mask;
   from._cmd = VK_NULL_HANDLE;
   from._seq = 0;
   from._wait_semaphore = VK_NULL_HANDLE;
   from._image_barriers.clear();
   from._buffer_barriers.clear();
-  from._barrier_src_stage_mask = 0;
-  from._barrier_dst_stage_mask = 0;
   return *this;
 }

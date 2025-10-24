@@ -57,8 +57,8 @@ public:
                        VkFlags required_flags, bool linear);
 
   VulkanTextureContext *use_texture(Texture *texture, VkImageLayout layout,
-                                    VkPipelineStageFlags stage_mask,
-                                    VkAccessFlags access_mask,
+                                    VkPipelineStageFlags2 stage_mask,
+                                    VkAccessFlags2 access_mask,
                                     bool discard=false);
   virtual TextureContext *prepare_texture(Texture *tex);
   bool create_texture(VulkanTextureContext *vtc);
@@ -91,8 +91,8 @@ public:
   virtual void release_index_buffer(IndexBufferContext *ibc);
 
   VulkanBufferContext *use_shader_buffer(ShaderBuffer *buffer,
-                                         VkPipelineStageFlags stage_mask,
-                                         VkAccessFlags access_mask);
+                                         VkPipelineStageFlags2 stage_mask,
+                                         VkAccessFlags2 access_mask);
   virtual BufferContext *prepare_shader_buffer(ShaderBuffer *data);
   virtual void release_shader_buffer(BufferContext *bc);
   virtual bool extract_shader_buffer_data(ShaderBuffer *buffer, vector_uchar &data);
@@ -377,6 +377,7 @@ private:
   PFN_vkCmdSetPatchControlPointsEXT _vkCmdSetPatchControlPointsEXT;
   PFN_vkCmdSetPrimitiveRestartEnable _vkCmdSetPrimitiveRestartEnable;
   PFN_vkCmdSetPrimitiveTopology _vkCmdSetPrimitiveTopology;
+  PFN_vkCmdWriteTimestamp2 _vkCmdWriteTimestamp2;
   PFN_vkUpdateDescriptorSets _vkUpdateDescriptorSets;
 
   friend class VulkanGraphicsBuffer;

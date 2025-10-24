@@ -79,11 +79,11 @@ public:
 
   // The "current" layout and details of the last write
   VkImageLayout _layout = VK_IMAGE_LAYOUT_UNDEFINED;
-  VkAccessFlags _write_access_mask = 0;
-  VkPipelineStageFlags _write_stage_mask = 0;
+  VkAccessFlags2 _write_access_mask = 0;
+  VkPipelineStageFlags2 _write_stage_mask = 0;
 
   // Which stages we've already synchronized with the last write.
-  VkPipelineStageFlags _read_stage_mask = 0;
+  VkPipelineStageFlags2 _read_stage_mask = 0;
 
   // If you're wondering why there is no _read_access_mask, read this:
   // https://github.com/KhronosGroup/Vulkan-Docs/issues/131

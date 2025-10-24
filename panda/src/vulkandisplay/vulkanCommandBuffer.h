@@ -41,11 +41,11 @@ public:
   }
 
   void add_barrier(VulkanTextureContext *tc, VkImageLayout layout,
-                   VkPipelineStageFlags stage_mask,
-                   VkAccessFlags access_mask = 0);
+                   VkPipelineStageFlags2 stage_mask,
+                   VkAccessFlags2 access_mask = 0);
   void add_barrier(VulkanBufferContext *bc,
-                   VkPipelineStageFlags stage_mask,
-                   VkAccessFlags access_mask = 0);
+                   VkPipelineStageFlags2 stage_mask,
+                   VkAccessFlags2 access_mask = 0);
 
 public:
   VkCommandBuffer _cmd = VK_NULL_HANDLE;
@@ -58,10 +58,8 @@ public:
 
   // These barriers need to be issued BEFORE the command buffer (usually the
   // barrier is added to the previous command buffer).
-  pvector<VkImageMemoryBarrier> _image_barriers;
-  pvector<VkBufferMemoryBarrier> _buffer_barriers;
-  VkPipelineStageFlags _barrier_src_stage_mask = 0;
-  VkPipelineStageFlags _barrier_dst_stage_mask = 0;
+  pvector<VkImageMemoryBarrier2> _image_barriers;
+  pvector<VkBufferMemoryBarrier2> _buffer_barriers;
 };
 
 #include "vulkanCommandBuffer.I"

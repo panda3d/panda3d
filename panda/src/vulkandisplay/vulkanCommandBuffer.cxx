@@ -23,24 +23,24 @@
  */
 void VulkanCommandBuffer::
 add_barrier(VulkanTextureContext *tc, VkImageLayout layout,
-            VkPipelineStageFlags dst_stage_mask,
-            VkAccessFlags dst_access_mask) {
+            VkPipelineStageFlags2 dst_stage_mask,
+            VkAccessFlags2 dst_access_mask) {
   nassertv(_cmd != VK_NULL_HANDLE);
 
   // Are we writing to the texture?
-  VkAccessFlags write_mask = (dst_access_mask &
-    (VK_ACCESS_SHADER_WRITE_BIT |
-     VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
-     VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT |
-     VK_ACCESS_TRANSFER_WRITE_BIT |
-     VK_ACCESS_HOST_WRITE_BIT |
-     VK_ACCESS_MEMORY_WRITE_BIT));
+  VkAccessFlags2 write_mask = (dst_access_mask &
+    (VK_ACCESS_2_SHADER_WRITE_BIT |
+     VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT |
+     VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT |
+     VK_ACCESS_2_TRANSFER_WRITE_BIT |
+     VK_ACCESS_2_HOST_WRITE_BIT |
+     VK_ACCESS_2_MEMORY_WRITE_BIT));
 
   nassertv(tc->_write_seq <= _seq);
   nassertv((write_mask == 0 || tc->_read_seq <= _seq));
 
-  VkPipelineStageFlags src_stage_mask = tc->_write_stage_mask;
-  VkAccessFlags src_access_mask = tc->_write_access_mask;
+  VkPipelineStageFlags2 src_stage_mask = tc->_write_stage_mask;
+  VkAccessFlags2 src_access_mask = tc->_write_access_mask;
 
   bool is_write = (tc->_layout != layout || write_mask != 0);
   if (is_write) {
@@ -50,7 +50,7 @@ add_barrier(VulkanTextureContext *tc, VkImageLayout layout,
 
     if (src_stage_mask == 0) {
       // Can't specify a source stage mask of zero.
-      src_stage_mask = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+      src_stage_mask = VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT;
     }
   }
   else if (src_stage_mask == 0) {
@@ -70,11 +70,13 @@ add_barrier(VulkanTextureContext *tc, VkImageLayout layout,
     }
   }
 
-  VkImageMemoryBarrier img_barrier;
+  VkImageMemoryBarrier2 img_barrier;
   if (tc->_image != VK_NULL_HANDLE) {
-    img_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+    img_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
     img_barrier.pNext = nullptr;
+    img_barrier.srcStageMask = src_stage_mask;
     img_barrier.srcAccessMask = src_access_mask;
+    img_barrier.dstStageMask = dst_stage_mask;
     img_barrier.dstAccessMask = dst_access_mask;
     img_barrier.oldLayout = tc->_layout;
     img_barrier.newLayout = layout;
@@ -88,11 +90,13 @@ add_barrier(VulkanTextureContext *tc, VkImageLayout layout,
     img_barrier.subresourceRange.layerCount = tc->_array_layers;
   }
 
-  VkBufferMemoryBarrier buf_barrier;
+  VkBufferMemoryBarrier2 buf_barrier;
   if (tc->_buffer != VK_NULL_HANDLE) {
-    buf_barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+    buf_barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2;
     buf_barrier.pNext = nullptr;
+    buf_barrier.srcStageMask = src_stage_mask;
     buf_barrier.srcAccessMask = src_access_mask;
+    buf_barrier.dstStageMask = dst_stage_mask;
     buf_barrier.dstAccessMask = dst_access_mask;
     buf_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
     buf_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
@@ -133,15 +137,19 @@ add_barrier(VulkanTextureContext *tc, VkImageLayout layout,
       // Already exists, this barrier, just modify it.
       if (tc->_image != VK_NULL_HANDLE) {
         nassertv(tc->_image_barrier_index <= _image_barriers.size());
-        VkImageMemoryBarrier &existing_barrier = _image_barriers[tc->_image_barrier_index];
+        VkImageMemoryBarrier2 &existing_barrier = _image_barriers[tc->_image_barrier_index];
+        existing_barrier.srcStageMask |= img_barrier.srcStageMask;
         existing_barrier.srcAccessMask |= img_barrier.srcAccessMask;
+        existing_barrier.dstStageMask |= img_barrier.dstStageMask;
         existing_barrier.dstAccessMask |= img_barrier.dstAccessMask;
       }
       if (tc->_buffer != VK_NULL_HANDLE) {
         nassertv(tc->_buffer_barrier_index <= _buffer_barriers.size());
-        VkBufferMemoryBarrier &existing_barrier = _buffer_barriers[tc->_buffer_barrier_index];
-        existing_barrier.srcAccessMask |= buf_barrier.srcAccessMask;
-        existing_barrier.dstAccessMask |= buf_barrier.dstAccessMask;
+        VkBufferMemoryBarrier2 &existing_barrier = _buffer_barriers[tc->_buffer_barrier_index];
+        existing_barrier.srcStageMask |= img_barrier.srcStageMask;
+        existing_barrier.srcAccessMask |= img_barrier.srcAccessMask;
+        existing_barrier.dstStageMask |= img_barrier.dstStageMask;
+        existing_barrier.dstAccessMask |= img_barrier.dstAccessMask;
       }
     } else {
       if (tc->_image != VK_NULL_HANDLE) {
@@ -154,15 +162,21 @@ add_barrier(VulkanTextureContext *tc, VkImageLayout layout,
       }
       tc->_pooled_barrier_exists = true;
     }
-    _barrier_src_stage_mask |= src_stage_mask;
-    _barrier_dst_stage_mask |= dst_stage_mask;
   }
   else {
     // We already have an access done in this CB, issue the barrier now.
-    vkCmdPipelineBarrier(_cmd, src_stage_mask, dst_stage_mask, 0,
-                         0, nullptr,
-                         (tc->_buffer != VK_NULL_HANDLE), &buf_barrier,
-                         (tc->_image != VK_NULL_HANDLE), &img_barrier);
+    VkDependencyInfo info = {
+      VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
+      nullptr, // pNext
+      0, // dependencyFlags
+      0, // memoryBarrierCount
+      nullptr, // pMemoryBarriers
+      tc->_buffer != VK_NULL_HANDLE,
+      &buf_barrier,
+      tc->_image != VK_NULL_HANDLE,
+      &img_barrier,
+    };
+    vkCmdPipelineBarrier2(_cmd, &info);
 
     tc->_pooled_barrier_exists = false;
   }
@@ -182,9 +196,9 @@ add_barrier(VulkanTextureContext *tc, VkImageLayout layout,
     // another read later from a different (earlier) stage, which is why we
     // don't zero out _write_stage_mask.  We can just check _read_stage_mask
     // the next time to see what we have already synchronized with the write.
-    tc->_read_stage_mask |= dst_stage_mask & ~VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+    tc->_read_stage_mask |= dst_stage_mask & ~VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT;
 
-    if (dst_stage_mask & (VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT | VK_PIPELINE_STAGE_ALL_COMMANDS_BIT)) {
+    if (dst_stage_mask & (VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT | VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT)) {
       // Actually, looks like we've synchronized all stages.  We still do need
       // to keep _read_stage_mask, since a subsequent write still needs to
       // wait for this read to complete.
@@ -200,22 +214,22 @@ add_barrier(VulkanTextureContext *tc, VkImageLayout layout,
  * Note that these barriers may be done BEFORE waiting on the semaphore.
  */
 void VulkanCommandBuffer::
-add_barrier(VulkanBufferContext *bc, VkPipelineStageFlags dst_stage_mask,
-            VkAccessFlags dst_access_mask) {
+add_barrier(VulkanBufferContext *bc, VkPipelineStageFlags2 dst_stage_mask,
+            VkAccessFlags2 dst_access_mask) {
   nassertv(_cmd != VK_NULL_HANDLE);
 
   // Are we writing to the buffer?
-  VkAccessFlags write_mask = (dst_access_mask &
-    (VK_ACCESS_SHADER_WRITE_BIT |
-     VK_ACCESS_TRANSFER_WRITE_BIT |
-     VK_ACCESS_HOST_WRITE_BIT |
-     VK_ACCESS_MEMORY_WRITE_BIT));
+  VkAccessFlags2 write_mask = (dst_access_mask &
+    (VK_ACCESS_2_SHADER_WRITE_BIT |
+     VK_ACCESS_2_TRANSFER_WRITE_BIT |
+     VK_ACCESS_2_HOST_WRITE_BIT |
+     VK_ACCESS_2_MEMORY_WRITE_BIT));
 
   nassertv(bc->_write_seq <= _seq);
   nassertv((write_mask == 0 || bc->_read_seq <= _seq));
 
-  VkPipelineStageFlags src_stage_mask = bc->_write_stage_mask;
-  VkAccessFlags src_access_mask = bc->_write_access_mask;
+  VkPipelineStageFlags2 src_stage_mask = bc->_write_stage_mask;
+  VkAccessFlags2 src_access_mask = bc->_write_access_mask;
 
   if (write_mask != 0) {
     // Before a layout transition or a write, all stages that previously read
@@ -224,7 +238,7 @@ add_barrier(VulkanBufferContext *bc, VkPipelineStageFlags dst_stage_mask,
 
     if (src_stage_mask == 0) {
       // Can't specify a source stage mask of zero.
-      src_stage_mask = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+      src_stage_mask = VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT;
     }
   }
   else if (src_stage_mask == 0) {
@@ -244,10 +258,12 @@ add_barrier(VulkanBufferContext *bc, VkPipelineStageFlags dst_stage_mask,
     }
   }
 
-  VkBufferMemoryBarrier buf_barrier;
-  buf_barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+  VkBufferMemoryBarrier2 buf_barrier;
+  buf_barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2;
   buf_barrier.pNext = nullptr;
+  buf_barrier.srcStageMask = src_stage_mask;
   buf_barrier.srcAccessMask = src_access_mask;
+  buf_barrier.dstStageMask = dst_stage_mask;
   buf_barrier.dstAccessMask = dst_access_mask;
   buf_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
   buf_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
@@ -278,21 +294,31 @@ add_barrier(VulkanBufferContext *bc, VkPipelineStageFlags dst_stage_mask,
     if (bc->_read_seq == _seq && bc->_pooled_barrier_exists) {
       // Already exists, this barrier, just modify it.
       nassertv(bc->_buffer_barrier_index <= _buffer_barriers.size());
-      VkBufferMemoryBarrier &existing_barrier = _buffer_barriers[bc->_buffer_barrier_index];
+      VkBufferMemoryBarrier2 &existing_barrier = _buffer_barriers[bc->_buffer_barrier_index];
+      existing_barrier.srcStageMask |= buf_barrier.srcStageMask;
       existing_barrier.srcAccessMask |= buf_barrier.srcAccessMask;
+      existing_barrier.dstStageMask |= buf_barrier.dstStageMask;
       existing_barrier.dstAccessMask |= buf_barrier.dstAccessMask;
     } else {
       bc->_buffer_barrier_index = _buffer_barriers.size();
       _buffer_barriers.push_back(std::move(buf_barrier));
       bc->_pooled_barrier_exists = true;
     }
-    _barrier_src_stage_mask |= src_stage_mask;
-    _barrier_dst_stage_mask |= dst_stage_mask;
   }
   else {
     // We already have an access done in this CB, issue the barrier now.
-    vkCmdPipelineBarrier(_cmd, src_stage_mask, dst_stage_mask, 0,
-                         0, nullptr, 1, &buf_barrier, 0, nullptr);
+    VkDependencyInfo info = {
+      VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
+      nullptr, // pNext
+      0, // dependencyFlags
+      0, // memoryBarrierCount
+      nullptr, // pMemoryBarriers
+      1, // bufferMemoryBarrierCount
+      &buf_barrier, // pBufferMemoryBarriers
+      0, // imageMemoryBarrierCount
+      nullptr, // pImageMemoryBarriers
+    };
+    vkCmdPipelineBarrier2(_cmd, &info);
 
     bc->_pooled_barrier_exists = false;
   }
@@ -311,9 +337,9 @@ add_barrier(VulkanBufferContext *bc, VkPipelineStageFlags dst_stage_mask,
     // another read later from a different (earlier) stage, which is why we
     // don't zero out _write_stage_mask.  We can just check _read_stage_mask
     // the next time to see what we have already synchronized with the write.
-    bc->_read_stage_mask |= dst_stage_mask & ~VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+    bc->_read_stage_mask |= dst_stage_mask & ~VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT;
 
-    if (dst_stage_mask & (VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT | VK_PIPELINE_STAGE_ALL_COMMANDS_BIT)) {
+    if (dst_stage_mask & (VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT | VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT)) {
       // Actually, looks like we've synchronized all stages.  We still do need
       // to keep _read_stage_mask, since a subsequent write still needs to
       // wait for this read to complete.

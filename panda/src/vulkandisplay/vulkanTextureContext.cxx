@@ -173,7 +173,7 @@ clear_color_image(VulkanCommandBuffer &cmd, const VkClearColorValue &value) {
   discard();
 
   cmd.add_barrier(this, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                  VK_PIPELINE_STAGE_TRANSFER_BIT, VK_ACCESS_TRANSFER_WRITE_BIT);
+                  VK_PIPELINE_STAGE_2_TRANSFER_BIT, VK_ACCESS_2_TRANSFER_WRITE_BIT);
 
   VkImageSubresourceRange range;
   range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -196,7 +196,7 @@ clear_depth_stencil_image(VulkanCommandBuffer &cmd, const VkClearDepthStencilVal
   discard();
 
   cmd.add_barrier(this, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                  VK_PIPELINE_STAGE_TRANSFER_BIT, VK_ACCESS_TRANSFER_WRITE_BIT);
+                  VK_PIPELINE_STAGE_2_TRANSFER_BIT, VK_ACCESS_2_TRANSFER_WRITE_BIT);
 
   VkImageSubresourceRange range;
   range.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
@@ -216,7 +216,7 @@ clear_buffer(VulkanCommandBuffer &cmd, uint32_t fill) {
 
   discard();
   cmd.add_barrier(this, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                  VK_PIPELINE_STAGE_TRANSFER_BIT, VK_ACCESS_TRANSFER_WRITE_BIT);
+                  VK_PIPELINE_STAGE_2_TRANSFER_BIT, VK_ACCESS_2_TRANSFER_WRITE_BIT);
 
   vkCmdFillBuffer(cmd, _buffer, 0, VK_WHOLE_SIZE, fill);
 }

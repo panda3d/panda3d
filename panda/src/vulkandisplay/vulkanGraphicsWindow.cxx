@@ -201,7 +201,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   color_attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 
   // Reset this to reflect getting this texture fresh from the present engine.
-  color_tc->_write_stage_mask = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+  color_tc->_write_stage_mask = VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT;
   color_tc->_write_access_mask = 0;
   color_tc->_read_stage_mask = 0;
 
@@ -214,15 +214,15 @@ begin_frame(FrameMode mode, Thread *current_thread) {
     color_tc->_write_seq = vkgsg->_render_cmd._seq;
   }
   vkgsg->_render_cmd.add_barrier(color_tc, color_attachment.imageLayout,
-                                 VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-                                 VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
+                                 VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
+                                 VK_ACCESS_2_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT);
   /*if (color_tc->_layout != color_attachment.imageLayout ||
-      (color_tc->_write_stage_mask & ~VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT) != 0 ||
-      (color_tc->_read_stage_mask & ~VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT) != 0) {
+      (color_tc->_write_stage_mask & ~VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT) != 0 ||
+      (color_tc->_read_stage_mask & ~VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT) != 0) {
     frame_data.add_initial_barrier(color_tc,
       color_attachment.imageLayout,
-      VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-      VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
+      VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
+      VK_ACCESS_2_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT);
   }*/
 
   VkRenderingAttachmentInfo depth_attachment = {VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
@@ -260,18 +260,18 @@ begin_frame(FrameMode mode, Thread *current_thread) {
     }
 
     /*if (_depth_stencil_tc->_layout != VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL ||
-        (_depth_stencil_tc->_write_stage_mask & ~VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT) != 0 ||
-        (_depth_stencil_tc->_read_stage_mask & ~VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT) != 0) {
+        (_depth_stencil_tc->_write_stage_mask & ~VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT) != 0 ||
+        (_depth_stencil_tc->_read_stage_mask & ~VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT) != 0) {
       frame_data.add_initial_barrier(_depth_stencil_tc,
         VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-        VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
-        VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT);
+        VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT,
+        VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT);
     }*/
 
     vkgsg->_render_cmd.add_barrier(_depth_stencil_tc,
       VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-      VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
-      VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT);
+      VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT,
+      VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT);
   }
 
   vkgsg->_vkCmdBeginRendering(cmd, &render_info);
@@ -309,20 +309,20 @@ begin_frame(FrameMode mode, Thread *current_thread) {
     }
 
     if (color_tc->_layout != VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL ||
-        (color_tc->_write_stage_mask & ~VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT) != 0 ||
-        (color_tc->_read_stage_mask & ~VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT) != 0) {
+        (color_tc->_write_stage_mask & ~VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT) != 0 ||
+        (color_tc->_read_stage_mask & ~VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT) != 0) {
       frame_data.add_initial_barrier(color_tc,
         VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-        VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
+        VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
+        VK_ACCESS_2_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT);
     }
   }
   else {
     // This transition will be made when the render pass ends.
     color_tc->_layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-    color_tc->_read_stage_mask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    color_tc->_write_stage_mask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    color_tc->_write_access_mask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    color_tc->_read_stage_mask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT;
+    color_tc->_write_stage_mask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT;
+    color_tc->_write_access_mask = VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT;
 
     LColor clear_color = get_clear_color();
     clears[0].color.float32[0] = clear_color[0];
@@ -339,20 +339,20 @@ begin_frame(FrameMode mode, Thread *current_thread) {
     // Transition the depth-stencil image to a consistent state.
     if (!get_clear_depth_active() || !get_clear_stencil_active()) {
       if (_depth_stencil_tc->_layout != VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL ||
-          (_depth_stencil_tc->_write_stage_mask & ~VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT) != 0 ||
-          (_depth_stencil_tc->_read_stage_mask & ~VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT) != 0) {
+          (_depth_stencil_tc->_write_stage_mask & ~VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT) != 0 ||
+          (_depth_stencil_tc->_read_stage_mask & ~VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT) != 0) {
         frame_data.add_initial_barrier(_depth_stencil_tc,
           VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-          VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
-          VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT);
+          VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT,
+          VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT);
       }
     }
     else {
       // This transition will be made when the first subpass is started.
       _depth_stencil_tc->_layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-      _depth_stencil_tc->_write_access_mask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-      _depth_stencil_tc->_write_stage_mask = VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
-      _depth_stencil_tc->_read_stage_mask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+      _depth_stencil_tc->_write_access_mask = VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+      _depth_stencil_tc->_write_stage_mask = VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT;
+      _depth_stencil_tc->_read_stage_mask = VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT;
     }
 
     if (get_clear_depth_active() || get_clear_stencil_active()) {
@@ -394,14 +394,14 @@ end_frame(FrameMode mode, Thread *current_thread) {
 
     // The driver implicitly transitioned this to the final layout.
     buffer._tc->_layout = _final_layout;*/
-    //buffer._tc->mark_written(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-    //                         VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
+    //buffer._tc->mark_written(VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
+    //                         VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT);
 
     if (_depth_stencil_tc != nullptr) {
       //_depth_stencil_tc->_layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
       //_depth_stencil_tc->mark_written(
-      //  VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
-      //  VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT);
+      //  VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT,
+      //  VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT);
     }
 
     // Now we can do copy-to-texture, now that the render pass has ended.
@@ -413,7 +413,7 @@ end_frame(FrameMode mode, Thread *current_thread) {
     //if (buffer._tc->_layout != VK_IMAGE_LAYOUT_PRESENT_SRC_KHR) {
     vkgsg->_render_cmd.add_barrier(buffer._tc,
                                    VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-                                   VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+                                   VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT,
                                    0);
     //}
   }
@@ -829,11 +829,11 @@ setup_render_pass() {
   VkSubpassDependency dependency;
   dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
   dependency.dstSubpass = 0;
-  dependency.srcStageMask = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-  dependency.dstStageMask = VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT;
+  dependency.srcStageMask = VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT;
+  dependency.dstStageMask = VK_PIPELINE_STAGE_2_ALL_GRAPHICS_BIT;
   dependency.srcAccessMask = 0;
-  dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT
-                           | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+  dependency.dstAccessMask = VK_ACCESS_2_COLOR_ATTACHMENT_READ_BIT
+                           | VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT;
   dependency.dependencyFlags = 0;
 
   size_t i = 1;
@@ -866,10 +866,10 @@ setup_render_pass() {
     subpass.pDepthStencilAttachment = &depth_reference;
     ++i;
 
-    dependency.srcStageMask = VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
-    dependency.dstStageMask |= VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-    dependency.srcAccessMask |= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-    dependency.dstAccessMask |= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
+    dependency.srcStageMask = VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT;
+    dependency.dstStageMask |= VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT;
+    dependency.srcAccessMask |= VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+    dependency.dstAccessMask |= VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
   }
 
   // Also create an attachment reference for the resolve target.
@@ -1243,7 +1243,7 @@ create_swapchain() {
     }*/
 
     // Don't start rendering until the image has been acquired.
-    //buffer._tc->mark_written(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0);
+    //buffer._tc->mark_written(VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT, 0);
   }
 
   // Create a semaphore for signalling the availability of an image.
