@@ -4829,7 +4829,7 @@ if not PkgSkip("VULKAN"):
     TargetAdd('libp3vulkandisplay.dll', opts=['MODULE', 'VULKAN'])
   elif GetTarget() == 'darwin':
     TargetAdd('libp3vulkandisplay.dll', input='p3cocoadisplay_composite1.obj')
-    TargetAdd('libp3vulkandisplay.dll', opts=['MODULE', 'VULKAN', 'CARBON'])
+    TargetAdd('libp3vulkandisplay.dll', opts=['MODULE', 'VULKAN', 'CARBON', 'QUARTZ'])
   else:
     TargetAdd('libp3vulkandisplay.dll', input='p3x11display_composite1.obj')
     TargetAdd('libp3vulkandisplay.dll', opts=['MODULE', 'VULKAN', 'X11', 'XRANDR', 'XF86DGA', 'XCURSOR'])
