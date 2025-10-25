@@ -4530,7 +4530,9 @@ do_draw_primitive_with_topology(const GeomPrimitivePipelineReader *reader,
 
   if (_supports_extended_dynamic_state2) {
     _vkCmdSetPrimitiveTopology(_render_cmd, topology);
+#ifndef __APPLE__
     _vkCmdSetPrimitiveRestartEnable(_render_cmd, primitive_restart_enable && reader->is_indexed());
+#endif
   } else {
     VkPipeline pipeline = _current_sc->get_pipeline(this, _state_rs, _format, topology, 0, _fb_config);
     nassertr(pipeline != VK_NULL_HANDLE, false);
@@ -5148,6 +5150,10 @@ make_pipeline(VulkanShaderContext *sc,
   assembly_info.pNext = nullptr;
   assembly_info.flags = 0;
   assembly_info.topology = key._topology;
+#ifdef __APPLE__
+  // MoltenVK doesn't support disabling primitive restart, squelch warning.
+  assembly_info.primitiveRestartEnable = VK_TRUE;
+#else
   if (_supports_extended_dynamic_state2) {
     // This is enabled dynamically if needed.
     assembly_info.primitiveRestartEnable = VK_FALSE;
@@ -5159,6 +5165,7 @@ make_pipeline(VulkanShaderContext *sc,
       key._topology == VK_PRIMITIVE_TOPOLOGY_LINE_STRIP_WITH_ADJACENCY ||
       key._topology == VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP_WITH_ADJACENCY);
   }
+#endif
 
   VkPipelineTessellationStateCreateInfo tess_info;
   tess_info.sType = VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO;
@@ -5349,8 +5356,12 @@ make_pipeline(VulkanShaderContext *sc,
   else if (key._topology != VK_PRIMITIVE_TOPOLOGY_POINT_LIST &&
            _supports_extended_dynamic_state2) {
     dynamic_states[2] = VK_DYNAMIC_STATE_PRIMITIVE_TOPOLOGY_EXT;
+#ifdef __APPLE__
+    num_dynamic_states = 3;
+#else
     dynamic_states[3] = VK_DYNAMIC_STATE_PRIMITIVE_RESTART_ENABLE_EXT;
     num_dynamic_states = 4;
+#endif
   }
 
   VkPipelineDynamicStateCreateInfo dynamic_info;
