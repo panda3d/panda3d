@@ -575,8 +575,19 @@ reset() {
   }
   _uniform_buffer_allocator = CircularAllocator(uniform_buffer_size, limits.minUniformBufferOffsetAlignment);
 
-  // If we have only one heap, it's safe to assume we're on a UMA system.
-  _has_unified_memory = (pipe->_memory_properties.memoryHeapCount == 1);
+  // If we have only one heap, it's safe to assume we're on a UMA system,
+  // but also double-check that there is a memory type which has device-local
+  // and host-visible access simultaneously.
+  _has_unified_memory = false;
+  if (pipe->_memory_properties.memoryHeapCount == 1) {
+    for (uint32_t i = 0; i < pipe->_memory_properties.memoryTypeCount; ++i) {
+      const VkMemoryType &mem_type = pipe->_memory_properties.memoryTypes[i];
+      if ((mem_type.propertyFlags & (VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)) == (VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)) {
+        _has_unified_memory = true;
+        break;
+      }
+    }
+  }
 
   // Create a staging buffer for CPU-to-GPU uploads.
   VkDeviceSize staging_buffer_size = vulkan_staging_buffer_size;
@@ -2185,11 +2196,17 @@ prepare_vertex_buffer(GeomVertexArrayData *array_data) {
   CPT(GeomVertexArrayDataHandle) handle = array_data->get_handle();
   VkDeviceSize data_size = handle->get_data_size_bytes();
 
+  VkMemoryPropertyFlagBits mem_flags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+  if (_has_unified_memory) {
+    // On UMA systems, we can write directly to device local buffers.
+    mem_flags = (VkMemoryPropertyFlagBits)(mem_flags | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+  }
+
   VkBuffer buffer;
   VulkanMemoryBlock block;
   if (!create_buffer(data_size, buffer, block,
                      VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-                     VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)) {
+                     mem_flags)) {
     vulkandisplay_cat.error()
       << "Failed to create vertex buffer.\n";
     return nullptr;
@@ -2334,11 +2351,17 @@ prepare_index_buffer(GeomPrimitive *primitive) {
     return nullptr;
   }
 
+  VkMemoryPropertyFlagBits mem_flags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+  if (_has_unified_memory) {
+    // On UMA systems, we can write directly to device local buffers.
+    mem_flags = (VkMemoryPropertyFlagBits)(mem_flags | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+  }
+
   VkBuffer buffer;
   VulkanMemoryBlock block;
   if (!create_buffer(data_size, buffer, block,
                      VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-                     VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)) {
+                     mem_flags)) {
     vulkandisplay_cat.error()
       << "Failed to create index buffer.\n";
     return nullptr;
@@ -4458,6 +4481,7 @@ do_extract_buffer(VulkanBufferContext *bc, vector_uchar &data) {
     barrier.size = VK_WHOLE_SIZE;
     _transfer_cmd.add_barrier(barrier);
   } else {
+    // Actually, we can read the buffer directly.
     VkBufferMemoryBarrier2 barrier;
     barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2;
     barrier.pNext = nullptr;
@@ -4482,7 +4506,7 @@ do_extract_buffer(VulkanBufferContext *bc, vector_uchar &data) {
 
   data.resize(num_bytes);
   {
-    VulkanMemoryBlock &block = (_has_unified_memory ? bc->_block : tmp_block);
+    VulkanMemoryBlock &block = (bc->_host_visible ? bc->_block : tmp_block);
     VulkanMemoryMapping mapping = block.map();
     block.invalidate();
     memcpy(&data[0], mapping, num_bytes);
