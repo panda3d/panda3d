@@ -453,7 +453,7 @@ private:
  */
 class EXPCL_PANDA_GOBJ ShaderType::Resource : public ShaderType {
 public:
-  virtual int get_num_resources() const { return 1; }
+  virtual int get_num_resources() const override { return 1; }
 
   virtual bool contains_opaque_type() const override { return true; }
 
@@ -613,7 +613,7 @@ private:
 
 protected:
   virtual void write_datagram(BamWriter *manager, Datagram &dg) override;
-  virtual int complete_pointers(TypedWritable **plist, BamReader *manager);
+  virtual int complete_pointers(TypedWritable **plist, BamReader *manager) override;
   static TypedWritable *make_from_bam(const FactoryParams &params);
 
 public:

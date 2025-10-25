@@ -165,10 +165,10 @@ public:
 
   virtual void fetch_data(const State &state, void *into, bool packed) const override;
 
-  virtual ResourceId get_resource_id(int index) const;
+  virtual ResourceId get_resource_id(int index) const override;
   virtual PT(Texture) fetch_texture(const State &state,
                                     ResourceId index,
-                                    SamplerState &sampler, int &view) const;
+                                    SamplerState &sampler, int &view) const override;
 
 private:
   void fetch_light(const State &state, const NodePath &np, void *into) const;
@@ -211,10 +211,10 @@ public:
 
   virtual int get_state_dep() const override;
 
-  virtual ResourceId get_resource_id(int index) const;
+  virtual ResourceId get_resource_id(int index) const override;
   virtual PT(Texture) fetch_texture(const State &state,
                                     ResourceId resource_id,
-                                    SamplerState &sampler, int &view) const;
+                                    SamplerState &sampler, int &view) const override;
 
 protected:
   size_t const _count;
@@ -233,14 +233,14 @@ public:
 
   virtual int get_state_dep() const override;
 
-  virtual ResourceId get_resource_id(int index) const;
+  virtual ResourceId get_resource_id(int index) const override;
   virtual PT(Texture) fetch_texture(const State &state,
                                     ResourceId resource_id,
-                                    SamplerState &sampler, int &view) const;
+                                    SamplerState &sampler, int &view) const override;
   virtual PT(Texture) fetch_texture_image(const State &state,
                                           ResourceId resource_id,
                                           ShaderType::Access &access,
-                                          int &z, int &n) const;
+                                          int &z, int &n) const override;
 
 protected:
   CPT(InternalName) const _input;
@@ -257,9 +257,9 @@ public:
 
   virtual int get_state_dep() const override;
 
-  virtual ResourceId get_resource_id(int index) const;
+  virtual ResourceId get_resource_id(int index) const override;
   virtual PT(ShaderBuffer) fetch_shader_buffer(const State &state,
-                                               ResourceId resource_id) const;
+                                               ResourceId resource_id) const override;
 
 protected:
   CPT(InternalName) const _input;
@@ -338,16 +338,16 @@ public:
 
   virtual void fetch_data(const State &state, void *into, bool packed) const override;
 
-  virtual ResourceId get_resource_id(int index) const;
+  virtual ResourceId get_resource_id(int index) const override;
   virtual PT(Texture) fetch_texture(const State &state,
                                     ResourceId index,
-                                    SamplerState &sampler, int &view) const;
+                                    SamplerState &sampler, int &view) const override;
   virtual PT(Texture) fetch_texture_image(const State &state,
                                           ResourceId index,
                                           ShaderType::Access &access,
-                                          int &z, int &n) const;
+                                          int &z, int &n) const override;
   virtual PT(ShaderBuffer) fetch_shader_buffer(const State &state,
-                                               ResourceId resource_id) const;
+                                               ResourceId resource_id) const override;
 
 private:
   void r_collect_members(const InternalName *name, const ShaderType *type, size_t offset = 0);

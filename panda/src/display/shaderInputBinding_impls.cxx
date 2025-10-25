@@ -624,10 +624,9 @@ make_slider_table(const ShaderType *type) {
     const SliderTable *table = state.gsg->get_data_reader()->get_slider_table();
     float *sliders = (float *)into;
     memset(sliders, 0, num_elements * sizeof(float));
-    size_t i = 0;
     if (table != nullptr) {
       size_t num_transforms = std::min((size_t)num_elements, table->get_num_sliders());
-      for (size_t i = 0; i < num_elements; ++i) {
+      for (size_t i = 0; i < num_transforms; ++i) {
         sliders[i] = table->get_slider(i)->get_slider();
       }
     }
