@@ -51,7 +51,13 @@ public:
   pvector(pvector<Type> &&from) noexcept : base_class(std::move(from)) {};
   explicit pvector(size_type n, TypeHandle type_handle = pvector_type_handle) : base_class(n, Type(), allocator(type_handle)) { }
   explicit pvector(size_type n, const Type &value, TypeHandle type_handle = pvector_type_handle) : base_class(n, value, allocator(type_handle)) { }
+#ifdef __APPLE__
+  pvector(const Type *begin, const Type *end, TypeHandle type_handle = pvector_type_handle) : base_class(allocator(type_handle)) {
+    this->insert(this->end(), begin, end);
+  }
+#else
   pvector(const Type *begin, const Type *end, TypeHandle type_handle = pvector_type_handle) : base_class(begin, end, allocator(type_handle)) { }
+#endif
   pvector(std::initializer_list<Type> init, TypeHandle type_handle = pvector_type_handle) : base_class(std::move(init), allocator(type_handle)) { }
 
   pvector<Type> &operator =(const pvector<Type> &copy) {
