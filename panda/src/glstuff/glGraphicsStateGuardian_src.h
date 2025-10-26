@@ -1236,6 +1236,7 @@ public:
   int _texture_fetch_barrier_counter = 0;
   int _shader_image_access_barrier_counter = 0;
   int _texture_update_barrier_counter = 0;
+  int _buffer_update_barrier_counter = 0;
   int _framebuffer_barrier_counter = 0;
   int _shader_storage_barrier_counter = 0;
 #endif

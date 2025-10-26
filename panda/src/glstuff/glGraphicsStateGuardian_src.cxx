@@ -6749,6 +6749,11 @@ issue_memory_barrier(GLbitfield barriers) {
     GLCAT.spam(false) << " texture_update";
   }
 
+  if (barriers & GL_BUFFER_UPDATE_BARRIER_BIT) {
+    ++_buffer_update_barrier_counter;
+    GLCAT.spam(false) << " buffer_update";
+  }
+
   if (barriers & GL_FRAMEBUFFER_BARRIER_BIT) {
     ++_framebuffer_barrier_counter;
     GLCAT.spam(false) << " framebuffer";
@@ -7004,6 +7009,14 @@ extract_texture_data(Texture *tex) {
   bool success = true;
   // Make sure the error stack is cleared out before we begin.
   report_my_gl_errors();
+
+  // Makes sure that textures aren't still bound to the shader (which is
+  // partly necessary to make sure mark_incoherent() is called).
+  if (_texture_binding_shader_context != 0) {
+    _texture_binding_shader_context->disable_shader_texture_bindings();
+    _texture_binding_shader = nullptr;
+    _texture_binding_shader_context = nullptr;
+  }
 
   TextureContext *tc = tex->prepare_now(get_prepared_objects(), this);
   nassertr(tc != nullptr, false);
@@ -8350,9 +8363,13 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
   }
 
 #ifndef OPENGLES_1
-  if (gtc->needs_barrier(GL_TEXTURE_UPDATE_BARRIER_BIT, true)) {
+  GLbitfield barriers = GL_TEXTURE_UPDATE_BARRIER_BIT;
+  if (target == GL_TEXTURE_BUFFER) {
+    barriers |= GL_BUFFER_UPDATE_BARRIER_BIT;
+  }
+  if (gtc->needs_barrier(barriers, true)) {
     // Make sure that any reads and writes to this texture have been synced.
-    issue_memory_barrier(GL_TEXTURE_UPDATE_BARRIER_BIT);
+    issue_memory_barrier(barriers);
   }
 #endif
 
@@ -14570,8 +14587,12 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps,
 #ifndef OPENGLES_1
   if (needs_reload || !image.is_null()) {
     // Make sure that any reads and writes to this texture have been synced.
-    if (gtc->needs_barrier(GL_TEXTURE_UPDATE_BARRIER_BIT, true)) {
-      issue_memory_barrier(GL_TEXTURE_UPDATE_BARRIER_BIT);
+    GLbitfield barriers = GL_TEXTURE_UPDATE_BARRIER_BIT;
+    if (texture_type == Texture::TT_buffer_texture) {
+      barriers |= GL_BUFFER_UPDATE_BARRIER_BIT;
+    }
+    if (gtc->needs_barrier(barriers, true)) {
+      issue_memory_barrier(barriers);
     }
   }
 #endif
@@ -15875,8 +15896,12 @@ do_extract_texture_data(CLP(TextureContext) *gtc, int view) {
 
 #ifndef OPENGLES_1
   // Make sure any incoherent writes to the texture have been synced.
-  if (gtc->needs_barrier(GL_TEXTURE_UPDATE_BARRIER_BIT, false)) {
-    issue_memory_barrier(GL_TEXTURE_UPDATE_BARRIER_BIT);
+  GLbitfield barriers = GL_TEXTURE_UPDATE_BARRIER_BIT;
+  if (target == GL_TEXTURE_BUFFER) {
+    barriers |= GL_BUFFER_UPDATE_BARRIER_BIT;
+  }
+  if (gtc->needs_barrier(barriers, false)) {
+    issue_memory_barrier(barriers);
   }
 #endif
 
@@ -15918,17 +15943,19 @@ do_extract_texture_data(CLP(TextureContext) *gtc, int view) {
 
   GLint width = gtc->_width, height = gtc->_height, depth = gtc->_depth;
 #ifndef OPENGLES
-  glGetTexLevelParameteriv(page_target, 0, GL_TEXTURE_WIDTH, &width);
-  if (target != GL_TEXTURE_1D) {
-    glGetTexLevelParameteriv(page_target, 0, GL_TEXTURE_HEIGHT, &height);
-  }
+  if (target != GL_TEXTURE_BUFFER) {
+    glGetTexLevelParameteriv(page_target, 0, GL_TEXTURE_WIDTH, &width);
+    if (target != GL_TEXTURE_1D) {
+      glGetTexLevelParameteriv(page_target, 0, GL_TEXTURE_HEIGHT, &height);
+    }
 
-  if (_supports_3d_texture && target == GL_TEXTURE_3D) {
-    glGetTexLevelParameteriv(page_target, 0, GL_TEXTURE_DEPTH, &depth);
-  } else if (target == GL_TEXTURE_2D_ARRAY || target == GL_TEXTURE_CUBE_MAP_ARRAY) {
-    glGetTexLevelParameteriv(page_target, 0, GL_TEXTURE_DEPTH, &depth);
-  } else if (target == GL_TEXTURE_CUBE_MAP) {
-    depth = 6;
+    if (_supports_3d_texture && target == GL_TEXTURE_3D) {
+      glGetTexLevelParameteriv(page_target, 0, GL_TEXTURE_DEPTH, &depth);
+    } else if (target == GL_TEXTURE_2D_ARRAY || target == GL_TEXTURE_CUBE_MAP_ARRAY) {
+      glGetTexLevelParameteriv(page_target, 0, GL_TEXTURE_DEPTH, &depth);
+    } else if (target == GL_TEXTURE_CUBE_MAP) {
+      depth = 6;
+    }
   }
 #endif
   clear_my_gl_errors();

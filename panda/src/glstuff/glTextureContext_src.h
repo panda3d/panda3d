@@ -104,6 +104,8 @@ public:
   int _shader_image_write_barrier_counter = -1;
   int _texture_read_barrier_counter = -1;
   int _texture_write_barrier_counter = -1;
+  int _buffer_read_barrier_counter = -1;
+  int _buffer_write_barrier_counter = -1;
   int _framebuffer_read_barrier_counter = -1;
   int _framebuffer_write_barrier_counter = -1;
 
