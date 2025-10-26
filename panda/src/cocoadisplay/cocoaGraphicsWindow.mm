@@ -1013,6 +1013,15 @@ unbind_context() {
 }
 
 /**
+ * Returns the window's backing scale factor.
+ */
+CGFloat CocoaGraphicsWindow::
+get_backing_scale_factor() const {
+  // This is Objective-C code so we can't put it in the .I file.
+  return _window.backingScaleFactor;
+}
+
+/**
  * Returns an appropriate CGDisplayModeRef for the given width and height, or
  * NULL if none was found.
  */

@@ -58,6 +58,8 @@ public:
   virtual void update_context();
   virtual void unbind_context();
 
+  CGFloat get_backing_scale_factor() const;
+
   void handle_move_event();
   void handle_resize_event();
   void handle_minimize_event(bool minimized);

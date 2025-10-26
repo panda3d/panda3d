@@ -15,6 +15,8 @@
 #include "vulkanGraphicsStateGuardian.h"
 
 #ifdef HAVE_COCOA
+#include "config_cocoadisplay.h"
+
 #include <objc/objc.h>
 #include <objc/message.h>
 #endif
@@ -615,9 +617,16 @@ open_window() {
   err = vkCreateWin32SurfaceKHR(vkpipe->_instance, &surface_info, nullptr, &_surface);
 
 #elif defined(HAVE_COCOA)
+  CGFloat contents_scale = 1;
+  if (dpi_aware) {
+    contents_scale = get_backing_scale_factor();
+  }
+
   CAMetalLayer *layer;
   layer = ((CAMetalLayer *(*)(objc_class *cls, SEL sel))objc_msgSend)(objc_getClass("CAMetalLayer"), sel_registerName("layer"));
   ((void (*)(id self, SEL sel, id delegate))objc_msgSend)((id)layer, sel_registerName("setDelegate:"), _view);
+  ((void (*)(id self, SEL sel, CGFloat))objc_msgSend)((id)layer, sel_registerName("setContentsScale:"), contents_scale);
+  ((void (*)(id self, SEL sel, BOOL))objc_msgSend)((id)layer, sel_registerName("setDisplaySyncEnabled:"), sync_video);
   ((void (*)(id self, SEL sel, BOOL arg))objc_msgSend)(_view, sel_registerName("setWantsLayer:"), TRUE);
   ((void (*)(id self, SEL sel, id arg))objc_msgSend)(_view, sel_registerName("setLayer:"), (id)layer);
 
@@ -1256,7 +1265,11 @@ create_swapchain() {
   _flip_ready = false;
   err = vkAcquireNextImageKHR(vkgsg->_device, _swapchain, UINT64_MAX,
                               _image_available, VK_NULL_HANDLE, &_image_index);
-  if (err) {
+  if (err == VK_SUBOPTIMAL_KHR) {
+    vulkandisplay_cat.error()
+      << "Swap chain is suboptimal for VulkanGraphicsWindow " << this << "\n";
+  }
+  else if (err) {
     vulkan_error(err, "Failed to acquire swapchain image");
     if (err == VK_ERROR_DEVICE_LOST) {
       vkgsg->mark_new();
