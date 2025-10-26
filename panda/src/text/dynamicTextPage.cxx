@@ -55,6 +55,7 @@ DynamicTextPage(DynamicTextFont *font, int page_number) :
   // edges at all.
   set_wrap_u(text_wrap_mode);
   set_wrap_v(text_wrap_mode);
+  set_wrap_w(text_wrap_mode);
   set_border_color(font->get_bg());
 
   // Fill the page with the font's background color.

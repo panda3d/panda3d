@@ -208,6 +208,7 @@ setup_shadow_map() {
   _shadow_map->set_clear_color(LColor(1));
   _shadow_map->set_wrap_u(SamplerState::WM_clamp);
   _shadow_map->set_wrap_v(SamplerState::WM_clamp);
+  _shadow_map->set_wrap_w(SamplerState::WM_clamp);
   _shadow_map->set_minfilter(SamplerState::FT_shadow);
   _shadow_map->set_magfilter(SamplerState::FT_shadow);
 }

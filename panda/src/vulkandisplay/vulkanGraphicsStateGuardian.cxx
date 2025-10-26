@@ -497,7 +497,7 @@ reset() {
     sampler_info.compareEnable = VK_TRUE;
     sampler_info.compareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
     sampler_info.minLod = 0;
-    sampler_info.maxLod = 0.25;
+    sampler_info.maxLod = VK_LOD_CLAMP_NONE;
     sampler_info.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
     sampler_info.unnormalizedCoordinates = VK_FALSE;
 

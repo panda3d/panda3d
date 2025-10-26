@@ -181,6 +181,7 @@ make_spot(int pixel_width, PN_stdfloat full_radius, LColor &fg, LColor &bg) {
   tex->set_border_color(bg);
   tex->set_wrap_u(SamplerState::WM_border_color);
   tex->set_wrap_v(SamplerState::WM_border_color);
+  tex->set_wrap_w(SamplerState::WM_border_color);
 
   tex->set_minfilter(SamplerState::FT_linear);
   tex->set_magfilter(SamplerState::FT_linear);
