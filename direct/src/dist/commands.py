@@ -301,6 +301,7 @@ class build_apps(setuptools.Command):
         self.android_min_sdk_version = 21
         self.android_max_sdk_version = None
         self.android_target_sdk_version = 30
+        self.android_manifest_file = None
         self.gui_apps = {}
         self.console_apps = {}
         self.macos_main_app = None
@@ -623,8 +624,12 @@ class build_apps(setuptools.Command):
 
                 self.build_assets(platform, data_dir)
 
-                # Generate an AndroidManifest.xml
-                self.generate_android_manifest(os.path.join(build_dir, 'AndroidManifest.xml'))
+                # Generate an AndroidManifest.xml if none was provided
+                manifest_path = os.path.join(build_dir, 'AndroidManifest.xml')
+                if self.android_manifest_file:
+                    self.copy(self.android_manifest_file, manifest_path)
+                else:
+                    self.generate_android_manifest(manifest_path)
             else:
                 self.build_binaries(platform, build_dir, build_dir)
                 self.build_assets(platform, build_dir)
