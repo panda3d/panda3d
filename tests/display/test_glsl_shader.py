@@ -344,9 +344,9 @@ def test_glsl_ssbo_array(env):
     assert(test_ns[1].inside[0].value == 1234567);
     assert(test_ns[2].inside[0].value == -1234567);
     """
-    run_glsl_test(gsg, code, preamble,
-                  {'test[0]': unused, 'test[1]': buffer1, 'test[2]': buffer2},
-                  version=430)
+    env.run_glsl(code, preamble,
+                 {'test[0]': unused, 'test[1]': buffer1, 'test[2]': buffer2},
+                 version=430)
 
 
 def test_glsl_ssbo_runtime_length(env):
