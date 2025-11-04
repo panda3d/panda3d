@@ -611,7 +611,8 @@ class build_apps(setuptools.Command):
                         # Conventional name for icon on Android.
                         basename = 'ic_launcher.png'
                     else:
-                        basename = f'ic_{appname}.png'
+                        appname_sane = appname.replace(' ', '_')
+                        basename = f'ic_{appname_sane}.png'
 
                     res_dir = os.path.join(build_dir, 'res')
                     icon.writeSize(48, os.path.join(res_dir, 'mipmap-mdpi-v4', basename))
@@ -873,6 +874,8 @@ class build_apps(setuptools.Command):
             application.set('android:icon', '@mipmap/ic_launcher')
 
         for appname in self.gui_apps:
+            appname_sane = appname.replace(' ', '_')
+
             activity = ET.SubElement(application, 'activity')
             activity.set('android:name', 'org.panda3d.android.PythonActivity')
             activity.set('android:label', appname)
@@ -885,11 +888,11 @@ class build_apps(setuptools.Command):
 
             act_icon = self.icon_objects.get(appname)
             if act_icon and act_icon is not app_icon:
-                activity.set('android:icon', '@mipmap/ic_' + appname)
+                activity.set('android:icon', '@mipmap/ic_' + appname_sane)
 
             meta_data = ET.SubElement(activity, 'meta-data')
             meta_data.set('android:name', 'android.app.lib_name')
-            meta_data.set('android:value', appname)
+            meta_data.set('android:value', appname_sane)
 
             intent_filter = ET.SubElement(activity, 'intent-filter')
             ET.SubElement(intent_filter, 'action').set('android:name', 'android.intent.action.MAIN')
@@ -1134,7 +1137,8 @@ class build_apps(setuptools.Command):
             elif platform.startswith('android'):
                 if not use_console:
                     stub_name = 'libdeploy-stubw.so'
-                    target_name = 'lib' + target_name + '.so'
+                    appname_sane = appname.replace(' ', '_')
+                    target_name = 'lib' + appname_sane + '.so'
 
             if platform.startswith('win'):
                 stub_name += '.exe'
