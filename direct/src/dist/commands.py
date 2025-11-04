@@ -300,7 +300,7 @@ class build_apps(setuptools.Command):
         self.android_version_code = 1
         self.android_min_sdk_version = 21
         self.android_max_sdk_version = None
-        self.android_target_sdk_version = 30
+        self.android_target_sdk_version = 36
         self.android_manifest_file = None
         self.gui_apps = {}
         self.console_apps = {}
@@ -876,6 +876,7 @@ class build_apps(setuptools.Command):
             activity.set('android:configChanges', 'layoutDirection|locale|grammaticalGender|fontScale|fontWeightAdjustment|orientation|uiMode|screenLayout|screenSize|smallestScreenSize|keyboard|keyboardHidden|navigation')
             activity.set('android:launchMode', 'singleInstance')
             activity.set('android:preferMinimalPostProcessing', 'true')
+            activity.set('android:exported', 'true')
 
             act_icon = self.icon_objects.get(appname)
             if act_icon and act_icon is not app_icon:
