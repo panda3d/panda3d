@@ -118,7 +118,8 @@ void android_main(struct android_app *app) {
   PT(Thread) current_thread = Thread::bind_thread(thread_name, "android_app");
 
   android_cat.info()
-    << "New native activity started on " << *current_thread << "\n";
+    << "New native activity started on " << *current_thread
+    << " (" << current_thread << ")\n";
 
   // Fetch the data directory.
   jmethodID get_appinfo = env->GetMethodID(activity_class, "getApplicationInfo", "()Landroid/content/pm/ApplicationInfo;");

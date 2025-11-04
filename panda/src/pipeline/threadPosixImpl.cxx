@@ -33,7 +33,12 @@
 static JavaVM *java_vm = nullptr;
 #endif
 
+// See comment in header file.
+#ifdef ANDROID
+static __thread Thread *_current_thread = nullptr;
+#else
 __thread Thread *ThreadPosixImpl::_current_thread = nullptr;
+#endif
 static patomic_flag _main_thread_known = ATOMIC_FLAG_INIT;
 
 /**
@@ -51,6 +56,10 @@ ThreadPosixImpl::
   if (!_detached) {
     pthread_detach(_thread);
     _detached = true;
+  }
+
+  if (_current_thread == _parent_obj) {
+    _current_thread = nullptr;
   }
 
   _mutex.unlock();
@@ -332,7 +341,9 @@ root_func(void *data) {
 #ifdef ANDROID
     // We cannot let the thread end without detaching it.
     if (self->_jni_env != nullptr) {
-      java_vm->DetachCurrentThread();
+      if (java_vm != nullptr) {
+        java_vm->DetachCurrentThread();
+      }
       self->_jni_env = nullptr;
     }
 #endif
@@ -341,6 +352,8 @@ root_func(void *data) {
     // might delete the parent object, and in turn, delete the ThreadPosixImpl
     // object.
     unref_delete(self->_parent_obj);
+
+    _current_thread = nullptr;
   }
 
   return nullptr;
@@ -359,6 +372,17 @@ init_current_thread() {
   }
   return thread;
 }
+
+#ifdef ANDROID
+/**
+ *
+ */
+Thread *ThreadPosixImpl::
+do_get_current_thread() {
+  Thread *thread = _current_thread;
+  return (thread != nullptr) ? thread : init_current_thread();
+}
+#endif  // ANDROID
 
 #ifdef ANDROID
 /**
