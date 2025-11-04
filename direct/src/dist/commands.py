@@ -627,6 +627,11 @@ class build_apps(setuptools.Command):
                 # Generate an AndroidManifest.xml if none was provided
                 manifest_path = os.path.join(build_dir, 'AndroidManifest.xml')
                 if self.android_manifest_file:
+                    try:
+                        self.check_android_manifest(self.android_manifest_file)
+                    except Exception as e:
+                        self.announce(f"Failed to use provided manifest file from {self.android_manifest_file}", distutils.log.FATAL)
+                        raise
                     self.copy(self.android_manifest_file, manifest_path)
                 else:
                     self.generate_android_manifest(manifest_path)
@@ -894,6 +899,38 @@ class build_apps(setuptools.Command):
         tree = ET.ElementTree(manifest)
         with open(path, 'wb') as fh:
             tree.write(fh, encoding='utf-8', xml_declaration=True)
+
+    def check_android_manifest(self, path):
+        """ Checks that the user-provided manifest file seems OK. """
+
+        # This function doesn't aim to check everything as it's the user's
+        # responsibility, just a basic sanity check, but if we change anything
+        # in our own generation logic then it would be good to check those
+        # things here and warn if anything needs to be updated.
+
+        import xml.etree.ElementTree as ET
+
+        android = '{http://schemas.android.com/apk/res/android}'
+
+        tree = ET.parse(path)
+        root = tree.getroot()
+        if root.tag != 'manifest':
+            raise RuntimeError(f"Expected <manifest> in {path}")
+
+        if root.attrib['package'] != self.application_id:
+            raise RuntimeError(f"<manifest> package attribute does not match given application_id {self.application_id}")
+
+        apps = root.findall('application')
+        if len(apps) != 1:
+            raise RuntimeError("<manifest> must contain exactly one <application>")
+
+        application = apps[0]
+        for activity in application.iter('activity'):
+            if f'{android}name' not in activity.attrib:
+                raise RuntimeError("<activity> element must have android:name attribute")
+
+            if self.android_target_sdk_version >= 31 and f'{android}exported' not in activity.attrib:
+                raise RuntimeError("<activity> element must have android:exported attribute when targeting Android API 31+")
 
     def build_binaries(self, platform, binary_dir, data_dir=None):
         """ Builds the binary data for the given platform. """
