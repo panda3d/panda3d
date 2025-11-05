@@ -42,7 +42,7 @@ jobs:
           double: NO
 
         #- profile: macos-coverage-unity-xcode
-        #  os: macOS-13
+        #  os: macOS-15
         #  config: Coverage
         #  unity: YES
         #  generator: Xcode
@@ -53,7 +53,7 @@ jobs:
         #  double: NO
 
         - profile: macos-nometa-standard-makefile
-          os: macOS-13
+          os: macOS-15
           config: Standard
           unity: NO
           generator: Unix Makefiles
@@ -372,7 +372,7 @@ jobs:
     if: "!contains(github.event.head_commit.message, '[skip ci]') && !contains(github.event.head_commit.message, '[ci skip]')"
     strategy:
       matrix:
-        os: [ubuntu-22.04, windows-2022, macOS-13]
+        os: [ubuntu-22.04, windows-2022, macOS-15]
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v5
