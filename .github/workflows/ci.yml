@@ -110,7 +110,7 @@ jobs:
 
     - name: Set up XCode (macOS)
       if: runner.os == 'macOS'
-      run: sudo xcode-select -s /Applications/Xcode_14.3.1.app/Contents/Developer
+      run: sudo xcode-select -s /Applications/Xcode_16.app/Contents/Developer
 
     - name: Install dependencies (Ubuntu)
       if: startsWith(matrix.os, 'ubuntu')
@@ -400,7 +400,7 @@ jobs:
 
     - name: Set up XCode (macOS)
       if: runner.os == 'macOS'
-      run: sudo xcode-select -s /Applications/Xcode_14.3.1.app/Contents/Developer
+      run: sudo xcode-select -s /Applications/Xcode_16.app/Contents/Developer
 
     - name: Set up Python 3.13
       uses: actions/setup-python@v6
