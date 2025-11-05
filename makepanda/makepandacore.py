@@ -3426,6 +3426,10 @@ def GetExtensionSuffix():
         abi = GetPythonABI()
         arch = GetTargetArch()
         return '.{0}-{1}-emscripten.so'.format(abi, arch)
+    elif target == 'android':
+        abi = GetPythonABI()
+        triple = ANDROID_TRIPLE.rstrip('0123456789')
+        return '.{0}-{1}.so'.format(abi, triple)
     elif CrossCompiling():
         return '.{0}.so'.format(GetPythonABI())
     else:
