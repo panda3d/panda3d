@@ -5973,7 +5973,7 @@ if PkgSkip("PYTHON") == 0:
 #
 # Build the test runner for static builds
 #
-if GetLinkAllStatic():
+if GetLinkAllStatic() or GetTarget() == 'android':
     if GetTarget() == 'emscripten':
         LinkFlag('RUN_TESTS_FLAGS', '-s NODERAWFS')
         LinkFlag('RUN_TESTS_FLAGS', '-s ASSERTIONS=2')
@@ -5994,15 +5994,16 @@ if GetLinkAllStatic():
     OPTS=['DIR:tests', 'PYTHON', 'RUN_TESTS_FLAGS', 'SUBSYSTEM:CONSOLE']
     PyTargetAdd('run_tests-main.obj', opts=OPTS, input='main.c')
     PyTargetAdd('run_tests.exe', input='run_tests-main.obj')
-    PyTargetAdd('run_tests.exe', input='core.pyd')
-    if not PkgSkip('DIRECT'):
-        PyTargetAdd('run_tests.exe', input='direct.pyd')
-    if not PkgSkip('PANDAPHYSICS'):
-        PyTargetAdd('run_tests.exe', input='physics.pyd')
-    if not PkgSkip('EGG'):
-        PyTargetAdd('run_tests.exe', input='egg.pyd')
-    if not PkgSkip('BULLET'):
-        PyTargetAdd('run_tests.exe', input='bullet.pyd')
+    if GetLinkAllStatic():
+        PyTargetAdd('run_tests.exe', input='core.pyd')
+        if not PkgSkip('DIRECT'):
+            PyTargetAdd('run_tests.exe', input='direct.pyd')
+        if not PkgSkip('PANDAPHYSICS'):
+            PyTargetAdd('run_tests.exe', input='physics.pyd')
+        if not PkgSkip('EGG'):
+            PyTargetAdd('run_tests.exe', input='egg.pyd')
+        if not PkgSkip('BULLET'):
+            PyTargetAdd('run_tests.exe', input='bullet.pyd')
     PyTargetAdd('run_tests.exe', input=COMMON_PANDA_LIBS)
     PyTargetAdd('run_tests.exe', opts=['PYTHON', 'BULLET', 'RUN_TESTS_FLAGS'])
 
