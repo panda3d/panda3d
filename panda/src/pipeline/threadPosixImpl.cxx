@@ -223,12 +223,15 @@ bind_thread(Thread *thread) {
 
 #ifdef ANDROID
 /**
- * Attaches the thread to the Java virtual machine.  If this returns true, a
- * JNIEnv pointer can be acquired using get_jni_env().
+ * Attaches the thread to the Java virtual machine.  On success, returns a
+ * JNIEnv pointer; returns nullptr otherwise, in which case the application
+ * might not be running inside a Java VM.
  */
-bool ThreadPosixImpl::
+JNIEnv *ThreadPosixImpl::
 attach_java_vm() {
-  assert(java_vm != nullptr);
+  if (java_vm == nullptr) {
+    return nullptr;
+  }
 
   JNIEnv *env;
   std::string thread_name = _parent_obj->get_name();
@@ -241,10 +244,10 @@ attach_java_vm() {
       << "Failed to attach Java VM to thread "
       << _parent_obj->get_name() << "!\n";
     _jni_env = nullptr;
-    return false;
+    return nullptr;
   }
   _jni_env = env;
-  return true;
+  return env;
 }
 
 /**
@@ -317,7 +320,7 @@ root_func(void *data) {
 
 #ifdef ANDROID
     // Attach the Java VM to allow calling Java functions in this thread.
-    self->attach_java_vm();
+    JNIEnv *jni_env = self->attach_java_vm();
 #endif
 
     self->_parent_obj->thread_main();
@@ -340,11 +343,11 @@ root_func(void *data) {
 
 #ifdef ANDROID
     // We cannot let the thread end without detaching it.
-    if (self->_jni_env != nullptr) {
+    if (jni_env != nullptr) {
       if (java_vm != nullptr) {
         java_vm->DetachCurrentThread();
       }
-      self->_jni_env = nullptr;
+      jni_env = nullptr;
     }
 #endif
 

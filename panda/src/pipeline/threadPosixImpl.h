@@ -59,7 +59,7 @@ public:
 
 #ifdef ANDROID
   INLINE JNIEnv *get_jni_env() const;
-  bool attach_java_vm();
+  JNIEnv *attach_java_vm();
   static void bind_java_thread();
 #endif
 
