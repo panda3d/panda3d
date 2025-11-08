@@ -300,7 +300,7 @@ class build_apps(setuptools.Command):
         self.android_version_code = 1
         self.android_min_sdk_version = 21
         self.android_max_sdk_version = None
-        self.android_target_sdk_version = 36
+        self.android_target_sdk_version = 35
         self.android_manifest_file = None
         self.gui_apps = {}
         self.console_apps = {}

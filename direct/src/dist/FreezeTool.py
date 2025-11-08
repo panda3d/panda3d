@@ -1970,6 +1970,9 @@ class Freezer:
         elif self.platform.endswith('_aarch64') or self.platform.endswith('_arm64'):
             # Most arm64 operating systems are configured with 16 KiB pages.
             blob_align = 16384
+        elif self.platform.replace('-', '_') == 'android_x86_64':
+            # Android nowadays requires 16 KiB pages on 64-bit Intel as well.
+            blob_align = 16384
         else:
             # Align to page size, so that it can be mmapped.
             blob_align = 4096

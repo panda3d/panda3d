@@ -1906,6 +1906,11 @@ def CompileLink(dll, obj, opts):
                 cmd += " -march=armv7-a -Wl,--fix-cortex-a8"
             elif arch == 'mips':
                 cmd += ' -mips32'
+
+            if arch.endswith('64'):
+                # See https://developer.android.com/guide/practices/page-sizes
+                cmd += ' -Wl,-z,max-page-size=16384'
+
             cmd += ' -lc -lm'
 
         elif GetTarget() == 'emscripten':

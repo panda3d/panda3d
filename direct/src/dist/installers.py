@@ -251,7 +251,7 @@ def create_aab(command, basename, build_dir):
             entry.entry_id.id = entry_id
             entry.name = res_name
 
-            for density, tag in (160, 'mdpi'), (240, 'hdpi'), (320, 'xhdpi'), (480, 'xxhdpi'), (640, 'xxxhdpi'):
+            for density, tag in (120, 'ldpi'), (160, 'mdpi'), (240, 'hdpi'), (320, 'xhdpi'), (480, 'xxhdpi'), (640, 'xxxhdpi'):
                 path = f'res/mipmap-{tag}-v4/{res_name}.png'
                 if (build_dir_fn / path).exists():
                     bundle.add_subfile('base/' + path, build_dir_fn / path, 0)
