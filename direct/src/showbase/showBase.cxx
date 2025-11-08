@@ -21,7 +21,6 @@ extern "C" { void CPSEnableForegroundOperation(ProcessSerialNumber* psn); }
 
 #include "showBase.h"
 
-#include "throw_event.h"
 #include "graphicsWindow.h"
 #include "renderBuffer.h"
 #include "camera.h"
@@ -43,22 +42,6 @@ using std::min;
 
 ConfigureDef(config_showbase);
 ConfigureFn(config_showbase) {
-}
-
-ConfigVariableSearchPath particle_path
-("particle-path",
- PRC_DESC("The directories to search for particle files to be loaded."));
-
-ConfigVariableSearchPath &
-get_particle_path() {
-  return particle_path;
-}
-
-// Throw the "NewFrame" event in the C++ world.  Some of the lerp code depends
-// on receiving this.
-void
-throw_new_frame() {
-  throw_event("NewFrame");
 }
 
 // Initialize the application for making a Gui-based app, such as wx.  At the

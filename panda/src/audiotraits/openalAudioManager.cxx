@@ -156,11 +156,10 @@ OpenALAudioManager() {
       // We managed to get a device open.
       alcGetError(_device); // clear errors
 
-      ALCboolean is_hrtf_present = alcIsExtensionPresent(_device, "ALC_SOFT_HRTF");
-
       ALCint attrs[3] = {0};
 
 #ifndef HAVE_OPENAL_FRAMEWORK
+      ALCboolean is_hrtf_present = alcIsExtensionPresent(_device, "ALC_SOFT_HRTF");
       if (is_hrtf_present) {
         attrs[0] = ALC_HRTF_SOFT;
         attrs[1] = audio_want_hrtf.get_value() ? ALC_TRUE : ALC_FALSE;

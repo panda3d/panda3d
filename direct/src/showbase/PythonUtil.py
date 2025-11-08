@@ -233,7 +233,7 @@ if __debug__:
 
     #-----------------------------------------------------------------------------
 
-    def traceFunctionCall(frame):
+    def traceFunctionCall(frame: types.FrameType) -> str:
         """
         return a string that shows the call frame with calling arguments.
         e.g.
@@ -274,7 +274,7 @@ if __debug__:
                 r+="*** undefined ***"
         return r+')'
 
-    def traceParentCall():
+    def traceParentCall() -> str:
         return traceFunctionCall(sys._getframe(2))
 
     def printThisCall():
@@ -1002,7 +1002,7 @@ def lineupPos(i, num, spacing):
     return pos - ((float(spacing) * (num-1))/2.)
 
 
-def formatElapsedSeconds(seconds):
+def formatElapsedSeconds(seconds: float) -> str:
     """
     Returns a string of the form "mm:ss" or "hh:mm:ss" or "n days",
     representing the indicated elapsed time in seconds.
@@ -1408,14 +1408,16 @@ def _getSafeReprNotify():
     return safeReprNotify
 
 
-def safeRepr(obj):
+def safeRepr(obj: object) -> str:
     global dtoolSuperBase
     if dtoolSuperBase is None:
         _getDtoolSuperBase()
+    assert dtoolSuperBase is not None
 
     global safeReprNotify
     if safeReprNotify is None:
         _getSafeReprNotify()
+    assert safeReprNotify is not None
 
     if isinstance(obj, dtoolSuperBase):
         # repr of C++ object could crash, particularly if the object has been deleted
@@ -1447,7 +1449,12 @@ def safeReprTypeOnFail(obj):
         return '<** FAILED REPR OF %s instance at %s **>' % (obj.__class__.__name__, hex(id(obj)))
 
 
-def fastRepr(obj, maxLen=200, strFactor=10, _visitedIds=None):
+def fastRepr(
+    obj: object,
+    maxLen: int = 200,
+    strFactor: int = 10,
+    _visitedIds: set[int] | None = None,
+) -> str:
     """ caps the length of iterable types, so very large objects will print faster.
     also prevents infinite recursion """
     try:
@@ -1456,9 +1463,9 @@ def fastRepr(obj, maxLen=200, strFactor=10, _visitedIds=None):
         if id(obj) in _visitedIds:
             return '<ALREADY-VISITED %s>' % itype(obj)
         if type(obj) in (tuple, list):
+            assert isinstance(obj, (tuple, list))
             s = ''
-            s += {tuple: '(',
-                  list:  '[',}[type(obj)]
+            s += '(' if type(obj) == tuple else '['
             if maxLen is not None and len(obj) > maxLen:
                 o = obj[:maxLen]
                 ellips = '...'
@@ -1471,8 +1478,7 @@ def fastRepr(obj, maxLen=200, strFactor=10, _visitedIds=None):
                 s += ', '
             _visitedIds.remove(id(obj))
             s += ellips
-            s += {tuple: ')',
-                  list:  ']',}[type(obj)]
+            s += ')' if type(obj) == tuple else ']'
             return s
         elif type(obj) is dict:
             s = '{'
@@ -1624,7 +1630,7 @@ class Sync:
                               self._name, self._series, self._value)
 
 
-def itype(obj):
+def itype(obj: object) -> type | str:
     # version of type that gives more complete information about instance types
     global dtoolSuperBase
     t = type(obj)
@@ -1632,6 +1638,7 @@ def itype(obj):
     # check if this is a C++ object
     if dtoolSuperBase is None:
         _getDtoolSuperBase()
+    assert dtoolSuperBase is not None
     if isinstance(obj, dtoolSuperBase):
         return "<type 'instance' of %s>" % (obj.__class__)
     return t

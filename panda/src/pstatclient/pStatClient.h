@@ -234,6 +234,9 @@ private:
   size_t _threads_size {0};  // size of the allocated array
   patomic<int> _num_threads {0};   // number of in-use elements within the array
 
+  // See pStatClient_ext.cxx.
+  pmap<void *, int> _python_type_collectors;
+
   mutable PStatClientImpl *_impl;
 
   static PStatCollector _heap_total_size_pcollector;

@@ -97,7 +97,6 @@ reload_implicit_pages() {
   }
   _implicit_pages.clear();
 
-#ifndef ANDROID
   // If we are running inside a deployed application, see if it exposes
   // information about how the PRC data should be initialized.
   struct BlobInfo {
@@ -129,11 +128,13 @@ reload_implicit_pages() {
 //  const BlobInfo *blobinfo = (const BlobInfo *)dlsym(RTLD_SELF, "blobinfo");
 #elif defined(__EMSCRIPTEN__)
   const BlobInfo *blobinfo = nullptr;
+#elif defined(ANDROID)
+  const BlobInfo *blobinfo = nullptr;
 #else
   const BlobInfo *blobinfo = (const BlobInfo *)dlsym(dlopen(nullptr, RTLD_NOW), "blobinfo");
 #endif
   if (blobinfo == nullptr) {
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__) && !defined(ANDROID)
     // Clear the error flag.
     dlerror();
 #endif
@@ -482,7 +483,6 @@ reload_implicit_pages() {
       }
     }
   }
-#endif  // ANDROID
 
   if (!_loaded_implicit) {
     config_initialized();
@@ -491,6 +491,21 @@ reload_implicit_pages() {
 
   _currently_loading = false;
   invalidate_cache();
+
+  // These important variables are updated here to avoid recursion, since
+  // they may be accessed by the PRC system.
+  ConfigVariableBool notify_timestamp
+    ("notify-timestamp", false,
+     PRC_DESC("Set true to output the date & time with each notify message."));
+  NotifyCategory::_notify_timestamp = notify_timestamp;
+
+#ifndef NDEBUG
+  ConfigVariableBool check_debug_notify_protect
+    ("check-debug-notify-protect", false,
+     PRC_DESC("Set true to issue a warning message if a debug or spam "
+              "notify output is not protected within an if statement."));
+  NotifyCategory::_check_debug_notify_protect = check_debug_notify_protect;
+#endif
 
 #ifdef USE_PANDAFILESTREAM
   // Update this very low-level config variable here, for lack of any better

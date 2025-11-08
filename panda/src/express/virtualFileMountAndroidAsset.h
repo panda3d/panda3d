@@ -74,7 +74,6 @@ private:
 
   private:
     AAsset *_asset;
-    off_t _offset;
 
     friend class VirtualFileMountAndroidAsset;
   };

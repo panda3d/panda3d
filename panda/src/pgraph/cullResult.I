@@ -43,7 +43,11 @@ alloc_object(CullableObject &&object) {
   if (page->_size >= page->_capacity) {
     page = new_page();
   }
-  return new (page->_memory + sizeof(CullableObject) * (page->_size++)) CullableObject(std::move(object));
+  void *ptr = page->_memory + sizeof(CullableObject) * (page->_size++);
+#ifdef DO_MEMORY_USAGE
+  //memory_hook->mark_pointer(ptr, sizeof(CullableObject), nullptr);
+#endif
+  return new (ptr) CullableObject(std::move(object));
 }
 
 /**

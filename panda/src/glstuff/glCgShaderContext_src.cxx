@@ -388,14 +388,17 @@ valid() {
  * all of the shader's input parameters.
  */
 void CLP(CgShaderContext)::
-bind() {
+bind(GraphicsStateGuardian *gsg) {
+  CLP(GraphicsStateGuardian) *glgsg = (CLP(GraphicsStateGuardian) *)gsg;
+  _glgsg = glgsg;
+
   if (_cg_program != 0) {
     // Bind the shaders.
     cgGLEnableProgramProfiles(_cg_program);
     cgGLBindProgram(_cg_program);
 
     cg_report_errors();
-    _glgsg->report_my_gl_errors();
+    glgsg->report_my_gl_errors();
   }
 }
 

@@ -305,21 +305,44 @@ try_load_file(const Filename &pathname, const LoaderOptions &options,
       (options.get_flags() & LoaderOptions::LF_no_disk_cache) == 0) {
     // See if the model can be found in the on-disk cache, if it is active.
     record = cache->lookup(pathname, "bam");
-    if (record != nullptr) {
-      if (record->has_data()) {
-        if (report_errors) {
-          loader_cat.info()
-            << "Model " << pathname << " found in disk cache.\n";
+    if (record != nullptr && record->has_data()) {
+      PT(PandaNode) result = DCAST(PandaNode, record->get_data());
+
+      ModelRoot *model_root = nullptr;
+      if (result != nullptr && result->is_of_type(ModelRoot::get_class_type())) {
+        model_root = DCAST(ModelRoot, result.p());
+
+        if (requested_type != nullptr &&
+            model_root->get_loader_type() != requested_type->get_type()) {
+          result.clear();
+          if (report_errors) {
+            loader_cat.info()
+              << "Model " << pathname << " found in disk cache, but using "
+              << "unexpected loader " << model_root->get_loader_type()
+              << " (expected " << requested_type->get_type() << ").\n";
+          }
         }
-        PT(PandaNode) result = DCAST(PandaNode, record->get_data());
+      }
+
+      if (result != nullptr) {
+        if (report_errors) {
+          TypeHandle loaded_type = model_root->get_loader_type();
+          if (loaded_type != TypeHandle::none()) {
+            loader_cat.info()
+              << "Model " << pathname << " found in disk cache (loaded using "
+              << loaded_type << ").\n";
+          } else {
+            loader_cat.info()
+              << "Model " << pathname << " found in disk cache.\n";
+          }
+        }
 
         if (premunge_data) {
           SceneGraphReducer sgr;
           sgr.premunge(result, RenderState::make_empty());
         }
 
-        if (result->is_of_type(ModelRoot::get_class_type())) {
-          ModelRoot *model_root = DCAST(ModelRoot, result.p());
+        if (model_root != nullptr) {
           model_root->set_fullpath(pathname);
           model_root->set_timestamp(record->get_source_timestamp());
 
@@ -336,8 +359,7 @@ try_load_file(const Filename &pathname, const LoaderOptions &options,
         return result;
       }
     }
-
-    if (loader_cat.is_debug()) {
+    else if (loader_cat.is_debug()) {
       loader_cat.debug()
         << "Model " << pathname << " not found in cache.\n";
     }
@@ -354,6 +376,10 @@ try_load_file(const Filename &pathname, const LoaderOptions &options,
     result = requested_type->load_file(pathname, options, record);
   }
   if (result != nullptr) {
+    if (result->is_of_type(ModelRoot::get_class_type())) {
+      ((ModelRoot *)result.p())->set_loader_type(requested_type->get_type());
+    }
+
     if (record != nullptr) {
       // Store the loaded model in the model cache.
       record->set_data(result);

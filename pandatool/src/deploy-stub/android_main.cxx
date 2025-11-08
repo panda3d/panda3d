@@ -118,7 +118,8 @@ void android_main(struct android_app *app) {
   PT(Thread) current_thread = Thread::bind_thread(thread_name, "android_app");
 
   android_cat.info()
-    << "New native activity started on " << *current_thread << "\n";
+    << "New native activity started on " << *current_thread
+    << " (" << current_thread << ")\n";
 
   // Fetch the data directory.
   jmethodID get_appinfo = env->GetMethodID(activity_class, "getApplicationInfo", "()Landroid/content/pm/ApplicationInfo;");
@@ -299,10 +300,9 @@ void android_main(struct android_app *app) {
     // We still need to keep an event loop going until Android gives us leave
     // to end the process.
     while (!app->destroyRequested) {
-      int looper_id;
-      struct android_poll_source *source;
-      auto result = ALooper_pollOnce(-1, &looper_id, nullptr, (void **)&source);
-      if (looper_id == LOOPER_ID_MAIN) {
+      struct android_poll_source *source = nullptr;
+      int ident = ALooper_pollOnce(-1, nullptr, nullptr, (void **)&source);
+      if (ident == LOOPER_ID_MAIN) {
         int8_t cmd = android_app_read_cmd(app);
         android_app_pre_exec_cmd(app, cmd);
         android_app_post_exec_cmd(app, cmd);

@@ -24,8 +24,11 @@ set_encryption_password(PyObject *encryption_password) const {
   // Have we been passed a string?
   if (PyUnicode_Check(encryption_password)) {
     const char *pass_str = PyUnicode_AsUTF8AndSize(encryption_password, &pass_len);
+    if (pass_str == NULL) {
+      return NULL;
+    }
     _this->set_encryption_password(std::string(pass_str, pass_len));
-    return Dtool_Return_None();
+    Py_RETURN_NONE;
   }
 
   // Have we been passed a bytes object?
@@ -46,7 +49,7 @@ set_encryption_password(PyObject *encryption_password) const {
     }
 
     _this->set_encryption_password(std::string(pass_str, pass_len));
-    return Dtool_Return_None();
+    Py_RETURN_NONE;
   }
 
   return Dtool_Raise_BadArgumentsError(

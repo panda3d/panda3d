@@ -416,7 +416,7 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
   if (_glgsg->_current_shader_context == nullptr) {
     _glgsg->_glUseProgram(0);
   } else {
-    _glgsg->_current_shader_context->bind();
+    _glgsg->_current_shader_context->bind(_glgsg);
   }
 
   _mat_part_cache = new LVecBase4f[_shader->cp_get_mat_cache_size()];
@@ -2192,15 +2192,18 @@ valid() {
  * all of the shader's input parameters.
  */
 void CLP(ShaderContext)::
-bind() {
+bind(GraphicsStateGuardian *gsg) {
+  CLP(GraphicsStateGuardian) *glgsg = (CLP(GraphicsStateGuardian) *)gsg;
+  _glgsg = glgsg;
+
   if (!_validated) {
-    _glgsg->_glValidateProgram(_glsl_program);
+    glgsg->_glValidateProgram(_glsl_program);
     glsl_report_program_errors(_glsl_program, false);
     _validated = true;
   }
 
   if (!_shader->get_error_flag()) {
-    _glgsg->_glUseProgram(_glsl_program);
+    glgsg->_glUseProgram(_glsl_program);
   }
 
   if (GLCAT.is_spam()) {
@@ -2208,7 +2211,7 @@ bind() {
                  << _shader->get_filename() << "\n";
   }
 
-  _glgsg->report_my_gl_errors();
+  glgsg->report_my_gl_errors();
 }
 
 /**

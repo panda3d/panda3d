@@ -27,6 +27,7 @@
 #endif
 
 #ifdef ANDROID
+#include <sys/stat.h>
 #include <android/log.h>
 #include "androidLogStream.h"
 #endif
@@ -34,6 +35,18 @@
 #ifdef __EMSCRIPTEN__
 #include "emscriptenLogStream.h"
 #endif
+
+#ifndef NDEBUG
+#ifdef PHAVE_EXECINFO_H
+#include <execinfo.h>  // for backtrace()
+#include <dlfcn.h>
+#include <cxxabi.h>
+#endif
+
+#ifdef _WIN32
+#include <dbghelp.h>
+#endif
+#endif  // NDEBUG
 
 using std::cerr;
 using std::cout;
@@ -348,15 +361,16 @@ assert_failure(const char *expression, int line,
     << expression << " at line " << line << " of " << source_file;
   string message = message_str.str();
 
-  if (!_assert_failed) {
+  Notify *self = ptr();
+  if (!self->_assert_failed) {
     // We only save the first assertion failure message, as this is usually
     // the most meaningful when several occur in a row.
-    _assert_failed = true;
-    _assert_error_message = message;
+    self->_assert_failed = true;
+    self->_assert_error_message = message;
   }
 
-  if (has_assert_handler()) {
-    return (*_assert_handler)(expression, line, source_file);
+  if (self->has_assert_handler()) {
+    return (*self->_assert_handler)(expression, line, source_file);
   }
 
 #ifdef ANDROID
@@ -379,6 +393,33 @@ assert_failure(const char *expression, int line,
   if (assert_abort) {
     // Make sure the error message has been flushed to the output.
     nout.flush();
+
+    // Capture and list a stack trace.
+#ifdef NDEBUG
+#elif defined(PHAVE_EXECINFO_H)
+    void *trace[64];
+    int size = backtrace(trace, 64);
+    if (size > 0) {
+      // Remove the frame(s) corresponding to the current function.
+      void **tracep = trace;
+      void *return_addr = __builtin_return_address(0);
+      for (int i = 0; i < size; ++i) {
+        if (trace[i] == return_addr) {
+          tracep = trace + (i + 1);
+          size -= i + 1;
+          break;
+        }
+      }
+      write_backtrace(tracep, size);
+    }
+#elif defined(_WIN32)
+    const ULONG max_size = 62;
+    void *trace[max_size];
+    int size = CaptureStackBackTrace(1, max_size, trace, nullptr);
+    if (size > 0) {
+      write_backtrace(trace, size);
+    }
+#endif
 
 #ifdef _MSC_VER
     // How to trigger an exception in VC++ that offers to take us into the
@@ -409,6 +450,141 @@ assert_failure(const char *expression, int line,
   }
 
   return true;
+}
+
+/**
+ *
+ */
+void Notify::
+write_backtrace(void **trace, int size) {
+  std::ostream &out = nout;
+
+#ifdef NDEBUG
+#elif defined(PHAVE_EXECINFO_H)
+  char namebuf[128];
+
+  for (int i = 0; i < size; ++i) {
+    void *addr = trace[i];
+    Dl_info info;
+    if (dladdr((char *)addr - 1, &info) != 0) {
+      const char *name = nullptr;
+
+      if (info.dli_sname != nullptr) {
+        int status = 0;
+        size_t size = 0;
+        char *demangled = nullptr;
+        if (info.dli_sname[0] == '_') {
+          size = sizeof(namebuf) - 1;
+          demangled = abi::__cxa_demangle(info.dli_sname, namebuf, &size, &status);
+        }
+        if (status == 0 && demangled != nullptr) {
+          namebuf[size] = 0;
+          name = demangled;
+          //if (strncmp(name, "Notify::assert_failure", 22) == 0) {
+            //continue;
+          //}
+        } else {
+          name = info.dli_sname;
+        }
+      }
+
+      out << "[" << addr << "] ";
+
+      if (info.dli_fname != nullptr) {
+        const char *slash = strrchr(info.dli_fname, '/');
+        out << std::left << std::setw(30) << (slash ? slash + 1 : info.dli_fname) << " ";
+      }
+
+      if (name != nullptr) {
+        out << name;
+      } else {
+        out << info.dli_saddr;
+      }
+
+      int offset = reinterpret_cast<uintptr_t>(addr) - reinterpret_cast<uintptr_t>(info.dli_saddr);
+      if (offset > 0) {
+        out << " + " << offset;
+      }
+      out << "\n";
+    } else {
+      out << "[" << addr << "]\n";
+    }
+  }
+#elif defined(_WIN32)
+  HMODULE handle = LoadLibraryA("dbghelp.dll");
+  if (!handle) {
+    return;
+  }
+
+  auto pSymInitialize = (BOOL (WINAPI *)(HANDLE, PCSTR, BOOL))GetProcAddress(handle, "SymInitialize");
+  auto pSymCleanup = (BOOL (WINAPI *)(HANDLE))GetProcAddress(handle, "SymCleanup");
+  auto pSymFromAddr = (BOOL (WINAPI *)(HANDLE, DWORD64, DWORD64 *, PSYMBOL_INFO))GetProcAddress(handle, "SymFromAddr");
+  auto pSymGetModuleInfo64 = (BOOL (WINAPI *)(HANDLE, DWORD64, PIMAGEHLP_MODULE64))GetProcAddress(handle, "SymGetModuleInfo64");
+  auto pSymGetLineFromAddr64 = (BOOL (WINAPI *)(HANDLE, DWORD64, PDWORD, PIMAGEHLP_LINE64))GetProcAddress(handle, "SymGetLineFromAddr64");
+  if (!pSymInitialize || !pSymCleanup || !pSymFromAddr) {
+    FreeLibrary(handle);
+    return;
+  }
+
+  HANDLE process = GetCurrentProcess();
+  pSymInitialize(process, nullptr, TRUE);
+
+  for (int i = 0; i < size; ++i) {
+    DWORD64 addr = (DWORD64)trace[i];
+
+    alignas(SYMBOL_INFO) char buffer[sizeof(SYMBOL_INFO) + 256] = {0};
+    SYMBOL_INFO *symbol = (SYMBOL_INFO *)buffer;
+    symbol->SizeOfStruct = sizeof(SYMBOL_INFO);
+    symbol->MaxNameLen = 255;
+
+    out << "[" << (void *)addr << "]";
+
+    // Show the name of the library.
+    IMAGEHLP_MODULE64 module;
+    module.SizeOfStruct = sizeof(module);
+    const char *basename = "???";
+    if (pSymGetModuleInfo64 && pSymGetModuleInfo64(process, addr, &module)) {
+      const char *slash = strrchr(module.ImageName, '\\');
+      basename = (slash ? slash + 1 : module.ImageName);
+    }
+
+    // Look up the symbol name.  If the reported name comes from the export
+    // table and the address is way off, ignore it, it's probably not right.
+    if (pSymFromAddr(process, addr, nullptr, symbol) &&
+        ((symbol->Flags & SYMFLAG_EXPORT) == 0 || addr - (DWORD64)symbol->Address < 0x4000)) {
+
+      out << " " << std::left << std::setw(30) << basename << " " << symbol->Name;
+
+      DWORD64 offset = addr - (DWORD64)(symbol->Address);
+      if (offset > 0) {
+        out << " + " << offset;
+      }
+
+      // Look up filename + line number if available.
+      IMAGEHLP_LINE64 line;
+      DWORD displacement = 0;
+      line.SizeOfStruct = sizeof(line);
+      if (pSymGetLineFromAddr64(process, addr, &displacement, &line)) {
+        const char *slash = strrchr(line.FileName, '\\');
+        const char *basename = (slash ? slash + 1 : line.FileName);
+
+        out << " (" << basename << ":" << line.LineNumber;
+        //if (displacement > 0) {
+        //  out << " + " << displacement;
+        //}
+        out << ")";
+      }
+    } else {
+      out << " " << basename;
+    }
+    out << "\n";
+  }
+
+  pSymCleanup(process);
+  FreeLibrary(handle);
+#endif
+
+  out.flush();
 }
 
 /**
@@ -460,22 +636,7 @@ config_initialized() {
   // notify-output even after the initial import of Panda3D modules.  However,
   // it cannot be changed after the first time it is set.
 
-#if defined(ANDROID)
-  // Android redirects stdio and stderr to /dev/null,
-  // but does provide its own logging system.  We use a special
-  // type of stream that redirects it to Android's log system.
-
-  Notify *ptr = Notify::ptr();
-
-  for (int severity = 0; severity <= NS_fatal; ++severity) {
-    int priority = ANDROID_LOG_UNKNOWN;
-    if (severity != NS_unspecified) {
-      priority = severity + 1;
-    }
-    ptr->_log_streams[severity] = new AndroidLogStream(priority);
-  }
-
-#elif defined(__EMSCRIPTEN__)
+#if defined(__EMSCRIPTEN__)
   // We have no writable filesystem in JavaScript.  Instead, we set up a
   // special stream that logs straight into the Javascript console.
 
@@ -540,11 +701,38 @@ config_initialized() {
         }
 #endif  // BUILD_IPHONE
       }
+
 #ifdef ANDROID
+      for (int severity = 0; severity <= NS_fatal; ++severity) {
+        ptr->_log_streams[severity] = ptr->_ostream_ptr;
+      }
+
     } else {
-      // By default, we always redirect the notify stream to the Android log.
+      // By default, we always redirect the notify stream to the Android log,
+      // except if we are running from the adb shell.  We decide this based
+      // on whether stderr is redirected to /dev/null.
       Notify *ptr = Notify::ptr();
-      ptr->set_ostream_ptr(new AndroidLogStream(ANDROID_LOG_INFO), true);
+      struct stat a, b;
+      if (fstat(STDERR_FILENO, &a) == 0 && stat("/dev/null", &b) == 0 &&
+          a.st_dev == b.st_dev && a.st_ino == b.st_ino) {
+        // Android redirects stdio and stderr to /dev/null,
+        // but does provide its own logging system.  We use a special
+        // type of stream that redirects it to Android's log system.
+        for (int severity = 0; severity <= NS_fatal; ++severity) {
+          int priority = ANDROID_LOG_UNKNOWN;
+          if (severity != NS_unspecified) {
+            priority = severity + 1;
+          }
+          ptr->_log_streams[severity] = new AndroidLogStream(priority);
+        }
+        ptr->set_ostream_ptr(new AndroidLogStream(ANDROID_LOG_INFO), true);
+      } else {
+        // Running from the terminal, set all the log streams to point to the
+        // same output.
+        for (int severity = 0; severity <= NS_fatal; ++severity) {
+          ptr->_log_streams[severity] = &cerr;
+        }
+      }
 #endif
     }
   }

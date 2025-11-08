@@ -19,6 +19,8 @@
 #include "savedContext.h"
 #include "shader.h"
 
+class GraphicsStateGuardian;
+
 /**
  * The ShaderContext is meant to contain the compiled version of a shader
  * string.  ShaderContext is an abstract base class, there will be a subclass
@@ -38,7 +40,7 @@ public:
                                        const TransformState *) {};
 
   INLINE virtual bool valid() { return false; }
-  INLINE virtual void bind() {};
+  INLINE virtual void bind(GraphicsStateGuardian *gsg) {};
   INLINE virtual void unbind() {};
   INLINE virtual void issue_parameters(int altered) {};
   INLINE virtual void disable_shader_vertex_arrays() {};
