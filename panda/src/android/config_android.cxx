@@ -28,6 +28,9 @@ jmethodID jni_PandaActivity_createBitmap;
 jmethodID jni_PandaActivity_compressBitmap;
 jmethodID jni_PandaActivity_showToast;
 
+jclass    jni_Activity;
+jmethodID jni_Activity_setTitle;
+
 jclass   jni_BitmapFactory_Options;
 jfieldID jni_BitmapFactory_Options_outWidth;
 jfieldID jni_BitmapFactory_Options_outHeight;
@@ -80,6 +83,11 @@ jint JNI_OnLoad(JavaVM *jvm, void *reserved) {
   jni_PandaActivity_showToast = env->GetMethodID(jni_PandaActivity,
                    "showToast", "(Ljava/lang/String;I)V");
 
+  jni_Activity = env->FindClass("android/app/Activity");
+  jni_Activity = (jclass) env->NewGlobalRef(jni_Activity);
+  jni_Activity_setTitle = env->GetMethodID(jni_Activity,
+              "setTitle", "(Ljava/lang/CharSequence;)V");
+
   jni_BitmapFactory_Options = env->FindClass("android/graphics/BitmapFactory$Options");
   jni_BitmapFactory_Options = (jclass) env->NewGlobalRef(jni_BitmapFactory_Options);
 
@@ -118,6 +126,7 @@ void JNI_OnUnload(JavaVM *jvm, void *reserved) {
   nassertv(env != nullptr);
 
   env->DeleteGlobalRef(jni_PandaActivity);
+  env->DeleteGlobalRef(jni_Activity);
   env->DeleteGlobalRef(jni_BitmapFactory_Options);
 
   // These will no longer work without JNI, so unregister them.
@@ -133,6 +142,21 @@ void JNI_OnUnload(JavaVM *jvm, void *reserved) {
     tr->unregister_type(&file_type_webp);
 #endif
   }
+}
+
+/**
+ * Sets the window title of the activity.
+ */
+void android_set_title(ANativeActivity *activity, const std::string &title) {
+  nassertv(jni_Activity_setTitle);
+
+  Thread *thread = Thread::get_current_thread();
+  JNIEnv *env = thread->get_jni_env();
+  nassertv(env != nullptr);
+
+  jstring jmsg = env->NewStringUTF(title.c_str());
+  env->CallVoidMethod(activity->clazz, jni_Activity_setTitle, jmsg);
+  env->DeleteLocalRef(jmsg);
 }
 
 /**
