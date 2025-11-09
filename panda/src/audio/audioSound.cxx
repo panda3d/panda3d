@@ -13,6 +13,7 @@
  */
 
 #include "audioSound.h"
+#include "vector_string.h"
 
 using std::ostream;
 
@@ -200,7 +201,7 @@ operator << (ostream &out, AudioSound::SoundStatus status) {
 /**
  * Get the comment attached to this AudioSound as a list of strings.
  */
-std::vector<std::string> AudioSound::
+vector_string AudioSound::
 get_raw_comment() const {
   return {};
 }

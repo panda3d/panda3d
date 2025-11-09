@@ -19,6 +19,7 @@
 #include "movieAudioCursor.h"
 #include "trueClock.h"
 #include "openalAudioManager.h"
+#include "vector_string.h"
 
 // OSX uses the OpenAL framework
 #ifdef HAVE_OPENAL_FRAMEWORK
@@ -117,7 +118,7 @@ public:
 
   void finished();
 
-  std::vector<std::string> get_raw_comment() const;
+  vector_string get_raw_comment() const;
 
 private:
   OpenALAudioSound(OpenALAudioManager* manager,
@@ -216,7 +217,7 @@ private:
   PN_stdfloat _cone_outer_angle;
   PN_stdfloat _cone_outer_gain;
 
-  std::vector<std::string> _comment;
+  vector_string _comment;
 
 public:
   static TypeHandle get_class_type() {

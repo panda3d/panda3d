@@ -12,6 +12,7 @@
  */
 
 #include "movieAudioCursor.h"
+#include "vector_string.h"
 
 TypeHandle MovieAudioCursor::_type_handle;
 
@@ -171,7 +172,7 @@ ready() const {
 /**
  *
  */
-std::vector<std::string> MovieAudioCursor::
+vector_string MovieAudioCursor::
 get_raw_comment() const {
   return {};
 }
