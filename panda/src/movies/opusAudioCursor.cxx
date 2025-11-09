@@ -168,7 +168,7 @@ OpusAudioCursor(OpusAudio *src, istream *stream) :
 
   _is_valid = true;
 
-  const OpusTags* tag = op_tags(_op, -1);
+  const OpusTags *tag = op_tags(_op, -1);
   _comment = parse_opus_comments(tag);
 }
 
@@ -284,6 +284,9 @@ read_samples(int n, int16_t *data) {
   return n;
 }
 
+/**
+ *
+ */
 std::vector<std::string> OpusAudioCursor::
 get_raw_comment() const {
   return _comment;

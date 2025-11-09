@@ -141,16 +141,18 @@ PUBLISHED:
   enum SoundStatus { BAD, READY, PLAYING };
   virtual SoundStatus status() const = 0;
 
-  virtual void output(std::ostream &out) const;
-  virtual void write(std::ostream &out) const;
-
-  bool has_comment(std::string key) const;
-  std::string get_comment(std::string key) const;
+  bool has_comment(std::string &key) const;
+  std::string get_comment(std::string &key) const;
   MAKE_MAP_PROPERTY(comments, has_comment, get_comment);
+
+  virtual std::vector<string> get_raw_comment() const;
 
   int get_num_raw_comments() const;
   std::string get_raw_comment(int index) const;
   MAKE_SEQ_PROPERTY(raw_comments, get_num_raw_comments, get_raw_comment);
+
+  virtual void output(std::ostream &out) const;
+  virtual void write(std::ostream &out) const;
 
 PUBLISHED:
   MAKE_PROPERTY(time, get_time, set_time);
@@ -181,8 +183,6 @@ public:
     return get_class_type();
   }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
-
-  virtual std::vector<std::string> get_raw_comment() const;
 
 private:
   static TypeHandle _type_handle;
