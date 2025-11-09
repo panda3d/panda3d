@@ -203,7 +203,7 @@ operator << (ostream &out, AudioSound::SoundStatus status) {
  */
 vector_string AudioSound::
 get_raw_comment() const {
-  return {};
+  return vector_string();
 }
 
 /**

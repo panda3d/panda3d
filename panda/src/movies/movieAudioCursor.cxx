@@ -174,5 +174,5 @@ ready() const {
  */
 vector_string MovieAudioCursor::
 get_raw_comment() const {
-  return {};
+  return vector_string();
 }
