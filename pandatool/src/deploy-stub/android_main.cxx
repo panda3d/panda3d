@@ -67,11 +67,16 @@ static void *map_blob(const char *path, off_t offset, size_t size) {
   FILE *runtime = fopen(path, "rb");
   assert(runtime != NULL);
 
-  void *blob = (void *)mmap(0, size, PROT_READ, MAP_PRIVATE, fileno(runtime), offset);
+  // Align the offset down to the page size boundary.
+  size_t page_size = getpagesize();
+  off_t aligned = offset & ~((off_t)page_size - 1);
+  size_t delta = (size_t)(offset - aligned);
+
+  void *blob = (void *)mmap(0, size + delta, PROT_READ, MAP_PRIVATE, fileno(runtime), aligned);
   assert(blob != MAP_FAILED);
 
   fclose(runtime);
-  return blob;
+  return (void *)((uintptr_t)blob + delta);
 }
 
 /**
@@ -188,9 +193,9 @@ void android_main(struct android_app *app) {
   ExecutionEnvironment::set_binary_name(lib_path);
 
   // Nowadays we store the blob in a raw resource.
-  methodID = env->GetMethodID(activity_class, "mapBlobFromResource", "()J");
+  methodID = env->GetMethodID(activity_class, "mapBlobFromResource", "(J)J");
   assert(methodID != nullptr);
-  void *blob = (void *)env->CallLongMethod(activity->clazz, methodID);
+  void *blob = (void *)env->CallLongMethod(activity->clazz, methodID, blobinfo.blob_offset);
 
   if (blob == nullptr) {
     // Try the old method otherwise.
@@ -198,6 +203,18 @@ void android_main(struct android_app *app) {
   }
   env->ReleaseStringUTFChars(lib_path_jstr, lib_path);
   assert(blob != nullptr);
+
+  // This should always be aligned, but just in case...
+  void *blob_copy = nullptr;
+  if ((((uintptr_t)blob) & (sizeof(void *) - 1)) != 0) {
+    android_cat.warning()
+      << "Blob with offset " << blobinfo.blob_offset
+      << " and size " << blobinfo.blob_size << " is not aligned!\n";
+
+    blob_copy = malloc(blobinfo.blob_size);
+    memcpy(blob_copy, blob, blobinfo.blob_size);
+    blob = blob_copy;
+  }
 
   assert(blobinfo.num_pointers <= MAX_NUM_POINTERS);
   for (uint32_t i = 0; i < blobinfo.num_pointers; ++i) {
@@ -241,16 +258,24 @@ void android_main(struct android_app *app) {
   // We did a read-only mmap, so we have to create a copy of this table.
   // First count how many modules there are.
   struct _frozen *src_moddef = (struct _frozen *)blobinfo.pointers[0];
-  size_t num_modules = 0;
-  while (src_moddef->name) {
-    num_modules++;
-    src_moddef++;
+  struct _frozen *dst_moddef;
+  struct _frozen *new_modules = nullptr;
+  if (blob_copy != nullptr) {
+    // We already made a copy, so we can just write to this.
+    dst_moddef = src_moddef;
+  } else {
+    size_t num_modules = 0;
+    while (src_moddef->name) {
+      num_modules++;
+      src_moddef++;
+    }
+
+    new_modules = (struct _frozen *)malloc(sizeof(struct _frozen) * (num_modules + 1));
+    memcpy(new_modules, blobinfo.pointers[0], sizeof(struct _frozen) * (num_modules + 1));
+    dst_moddef = new_modules;
   }
+  PyImport_FrozenModules = dst_moddef;
 
-  struct _frozen *new_modules = (struct _frozen *)malloc(sizeof(struct _frozen) * (num_modules + 1));
-  memcpy(new_modules, blobinfo.pointers[0], sizeof(struct _frozen) * (num_modules + 1));
-
-  struct _frozen *dst_moddef = new_modules;
   while (dst_moddef->name) {
     dst_moddef->name = (char *)((uintptr_t)dst_moddef->name + (uintptr_t)blob);
     if (dst_moddef->code != nullptr) {
@@ -259,7 +284,6 @@ void android_main(struct android_app *app) {
     //__android_log_print(ANDROID_LOG_DEBUG, "Panda3D", "MOD: %s %p %d\n", dst_moddef->name, (void*)dst_moddef->code, dst_moddef->size);
     dst_moddef++;
   }
-  PyImport_FrozenModules = new_modules;
 
   PyPreConfig preconfig;
   PyPreConfig_InitIsolatedConfig(&preconfig);
@@ -357,8 +381,14 @@ void android_main(struct android_app *app) {
     cp_mgr->delete_explicit_page(page);
   }
 
-  free(new_modules);
+  PyImport_FrozenModules = nullptr;
+  if (new_modules != nullptr) {
+    free(new_modules);
+  }
   unmap_blob(blob);
+  if (blob_copy != nullptr) {
+    free(blob_copy);
+  }
 
   // Detach the thread before exiting.
   activity->vm->DetachCurrentThread();

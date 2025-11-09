@@ -31,6 +31,10 @@ Java_org_panda3d_android_PandaActivity_nativeMmap(JNIEnv* env, jclass, jint fd, 
   off_t aligned = off & ~((off_t)page_size - 1);
   size_t delta = (size_t)(off - aligned);
 
-  void *ptr = mmap(nullptr, (size_t)len, PROT_READ, MAP_PRIVATE, fd, aligned);
-  return (jlong)((uintptr_t)ptr + delta);
+  void *ptr = mmap(nullptr, (size_t)len + delta, PROT_READ, MAP_PRIVATE, fd, aligned);
+  if (ptr != MAP_FAILED && ptr != nullptr) {
+    return (jlong)((uintptr_t)ptr + delta);
+  } else {
+    return (jlong)0;
+  }
 }

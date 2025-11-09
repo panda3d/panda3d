@@ -84,7 +84,7 @@ public class PandaActivity extends NativeActivity {
     /**
      * Maps the blob to memory and returns the pointer.
      */
-    public long mapBlobFromResource() {
+    public long mapBlobFromResource(long offset) {
         int resourceId = 0;
         try {
             ActivityInfo ai = getPackageManager().getActivityInfo(
@@ -100,7 +100,7 @@ public class PandaActivity extends NativeActivity {
 
             AssetFileDescriptor afd = getResources().openRawResourceFd(resourceId);
             ParcelFileDescriptor pfd = afd.getParcelFileDescriptor();
-            long off = afd.getStartOffset();
+            long off = afd.getStartOffset() + offset;
             long len = afd.getLength();
             return nativeMmap(pfd.getFd(), off, len);
         } catch (Exception e) {
