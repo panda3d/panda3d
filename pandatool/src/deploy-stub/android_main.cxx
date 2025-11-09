@@ -27,8 +27,6 @@
 #include <sys/mman.h>
 #include <android/log.h>
 
-#include <thread>
-
 // Leave room for future expansion.
 #define MAX_NUM_POINTERS 24
 
