@@ -18,6 +18,7 @@
 #include "namable.h"
 #include "texture.h"
 #include "pointerTo.h"
+#include "vector_string.h"
 class MovieAudio;
 
 /**
@@ -49,7 +50,7 @@ PUBLISHED:
   virtual void seek(double offset);
   void read_samples(int n, Datagram *dg);
   vector_uchar read_samples(int n);
-  virtual std::vector<std::string> get_raw_comment() const;
+  virtual vector_string get_raw_comment() const;
 
 public:
   virtual int read_samples(int n, int16_t *data);

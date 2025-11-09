@@ -20,6 +20,7 @@
 #include "pointerTo.h"
 #include "filterProperties.h"
 #include "luse.h"
+#include "vector_string.h"
 
 class AudioManager;
 
@@ -145,7 +146,7 @@ PUBLISHED:
   std::string get_comment(std::string &key) const;
   MAKE_MAP_PROPERTY(comments, has_comment, get_comment);
 
-  virtual std::vector<string> get_raw_comment() const;
+  virtual vector_string get_raw_comment() const;
 
   int get_num_raw_comments() const;
   std::string get_raw_comment(int index) const;

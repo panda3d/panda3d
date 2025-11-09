@@ -16,6 +16,7 @@
 
 #include "pandabase.h"
 #include "movieAudioCursor.h"
+#include "vector_string.h"
 
 #ifdef HAVE_VORBIS
 
@@ -33,7 +34,7 @@ PUBLISHED:
   explicit VorbisAudioCursor(VorbisAudio *src, std::istream *stream);
   virtual ~VorbisAudioCursor();
   virtual void seek(double offset);
-  std::vector<std::string> get_raw_comment() const;
+  vector_string get_raw_comment() const;
 
 public:
   virtual int read_samples(int n, int16_t *data);
@@ -52,7 +53,7 @@ protected:
   OggVorbis_File _ov;
 #endif
   int _bitstream;
-  std::vector<std::string> _comment;
+  vector_string _comment;
 
 public:
   static TypeHandle get_class_type() {

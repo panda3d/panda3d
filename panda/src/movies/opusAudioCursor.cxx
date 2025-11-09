@@ -17,6 +17,7 @@
 
 #include "opusAudio.h"
 #include "virtualFileSystem.h"
+#include "vector_string.h"
 
 #ifdef HAVE_OPUS
 
@@ -121,10 +122,10 @@ static const OpusFileCallbacks callbacks = {cb_read, cb_seek, cb_tell, nullptr};
 
 TypeHandle OpusAudioCursor::_type_handle;
 
-std::vector<std::string>
+vector_string
 parse_opus_comments(const OpusTags *com) {
   // Blatant copy from vorbis code because they're the same struct
-  std::vector<std::string> comments;
+  vector_string comments;
   for (int cnum = 0; cnum < com->comments; ++cnum) {
     std::string tag(com->user_comments[cnum], com->comment_lengths[cnum]);
     comments.push_back(tag);
@@ -287,7 +288,7 @@ read_samples(int n, int16_t *data) {
 /**
  *
  */
-std::vector<std::string> OpusAudioCursor::
+vector_string OpusAudioCursor::
 get_raw_comment() const {
   return _comment;
 }

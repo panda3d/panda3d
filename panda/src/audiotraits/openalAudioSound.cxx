@@ -16,6 +16,7 @@
 #include "throw_event.h"
 #include "openalAudioSound.h"
 #include "openalAudioManager.h"
+#include "vector_string.h"
 
 TypeHandle OpenALAudioSound::_type_handle;
 
@@ -1057,7 +1058,7 @@ status() const {
 /**
  * Returns the comments attached to this audio file.
  */
-std::vector<std::string> OpenALAudioSound::
+vector_string OpenALAudioSound::
 get_raw_comment() const {
   return _comment;
 }

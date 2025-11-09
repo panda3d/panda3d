@@ -17,6 +17,7 @@
 
 #include "vorbisAudio.h"
 #include "virtualFileSystem.h"
+#include "vector_string.h"
 
 #ifdef HAVE_VORBIS
 
@@ -24,9 +25,9 @@ using std::istream;
 
 TypeHandle VorbisAudioCursor::_type_handle;
 
-std::vector<std::string>
+vector_string
 parse_vorbis_comments(vorbis_comment *com) {
-  std::vector<std::string> comments;
+  vector_string comments;
   for (int cnum = 0; cnum < com->comments; ++cnum) {
     std::string tag(com->user_comments[cnum], com->comment_lengths[cnum]);
     comments.push_back(tag);
@@ -329,7 +330,7 @@ cb_tell_func(void *datasource) {
 /**
  *
  */
-std::vector<std::string> VorbisAudioCursor::
+vector_string VorbisAudioCursor::
 get_raw_comment() const {
   return _comment;
 }
