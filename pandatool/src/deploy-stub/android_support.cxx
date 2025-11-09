@@ -6,19 +6,20 @@
  * license.  You should have received a copy of this license along
  * with this source code in a file named "LICENSE."
  *
- * @file android_support.c
+ * @file android_support.cxx
  * @author rdb
  * @date 2021-12-10
  */
+
+#include <android/log.h>
+#include "android_native_app_glue.h"
+#include "config_android.h"
 
 #undef _POSIX_C_SOURCE
 #undef _XOPEN_SOURCE
 #define PY_SSIZE_T_CLEAN 1
 
 #include "Python.h"
-#include <android/log.h>
-#include "android_native_app_glue.h"
-#include "config_android.h"
 
 /**
  * Writes a message to the Android log.
