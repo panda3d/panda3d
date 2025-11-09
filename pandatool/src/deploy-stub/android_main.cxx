@@ -32,6 +32,14 @@
 // Leave room for future expansion.
 #define MAX_NUM_POINTERS 24
 
+/* Stored in the flags field of the blobinfo structure below. */
+enum Flags {
+  F_log_append = 1,
+  F_log_filename_strftime = 2,
+  F_keep_docstrings = 4,
+  F_python_verbose = 8,
+};
+
 // Define an exposed symbol where we store the offset to the module data.
 extern "C" {
   __attribute__((__visibility__("default"), used))
@@ -282,6 +290,10 @@ void android_main(struct android_app *app) {
   config.module_search_paths_set = 1; // Leave sys.path empty
   PyConfig_SetBytesString(&config, &config.platlibdir, libdir);
   env->ReleaseStringUTFChars(libdir_jstr, libdir);
+
+  if (blobinfo.flags & F_python_verbose) {
+    config.verbose = 1;
+  }
 
   status = Py_InitializeFromConfig(&config);
   PyConfig_Clear(&config);

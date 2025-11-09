@@ -35,6 +35,7 @@ enum Flags {
   F_log_append = 1,
   F_log_filename_strftime = 2,
   F_keep_docstrings = 4,
+  F_python_verbose = 8,
 };
 
 /* Define an exposed symbol where we store the offset to the module data. */
@@ -415,6 +416,10 @@ int Py_FrozenMain(int argc, char **argv)
       Py_OptimizeFlag = 2;
     }
 #endif
+
+    if (blobinfo.flags & F_python_verbose) {
+      Py_VerboseFlag = 1;
+    }
 
 #ifndef NDEBUG
     if ((p = Py_GETENV("PYTHONINSPECT")) && *p != '\0')
