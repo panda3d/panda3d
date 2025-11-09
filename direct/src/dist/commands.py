@@ -192,14 +192,14 @@ SITE_PY_ANDROID = """
 # module.
 import sys, os
 from importlib import _bootstrap, _bootstrap_external
+from android_support import log_write as android_log_write
+from android_support import find_library
 
 class AndroidExtensionFinder:
     @classmethod
     def find_spec(cls, fullname, path=None, target=None):
-        soname = 'libpy.' + fullname + '.so'
-        path = os.path.join(sys.platlibdir, soname)
-
-        if os.path.exists(path):
+        path = find_library('py.' + fullname)
+        if path:
             loader = _bootstrap_external.ExtensionFileLoader(fullname, path)
             return _bootstrap.ModuleSpec(fullname, loader, origin=path)
 
@@ -209,8 +209,6 @@ sys.meta_path.append(AndroidExtensionFinder)
 
 from _frozen_importlib import _imp, FrozenImporter
 from io import RawIOBase, TextIOWrapper
-
-from android_log import write as android_log_write
 
 
 sys.frozen = True
@@ -869,7 +867,7 @@ class build_apps(setuptools.Command):
         if category:
             application.set('android:appCategory', category)
         application.set('android:debuggable', ('false', 'true')[self.android_debuggable])
-        application.set('android:extractNativeLibs', 'true')
+        application.set('android:extractNativeLibs', 'false')
         application.set('android:hardwareAccelerated', 'true')
 
         app_icon = self.icon_objects.get('*', self.icon_objects.get(self.macos_main_app))

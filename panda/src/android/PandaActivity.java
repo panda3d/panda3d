@@ -132,7 +132,7 @@ public class PandaActivity extends NativeActivity {
     /**
      * Returns the path to some other native library.
      */
-    public String findLibraryPath(String libname) {
+    public String findLibrary(String libname) {
         BaseDexClassLoader classLoader = (BaseDexClassLoader)getClassLoader();
         return classLoader.findLibrary(libname);
     }

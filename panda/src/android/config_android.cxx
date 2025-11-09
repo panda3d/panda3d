@@ -27,6 +27,7 @@ jmethodID jni_PandaActivity_readBitmap;
 jmethodID jni_PandaActivity_createBitmap;
 jmethodID jni_PandaActivity_compressBitmap;
 jmethodID jni_PandaActivity_showToast;
+jmethodID jni_PandaActivity_findLibrary;
 
 jclass    jni_Activity;
 jmethodID jni_Activity_setTitle;
@@ -82,6 +83,9 @@ jint JNI_OnLoad(JavaVM *jvm, void *reserved) {
 
   jni_PandaActivity_showToast = env->GetMethodID(jni_PandaActivity,
                    "showToast", "(Ljava/lang/String;I)V");
+
+  jni_PandaActivity_findLibrary = env->GetMethodID(jni_PandaActivity,
+                   "findLibrary", "(Ljava/lang/String;)Ljava/lang/String;");
 
   jni_Activity = env->FindClass("android/app/Activity");
   jni_Activity = (jclass) env->NewGlobalRef(jni_Activity);
@@ -142,6 +146,28 @@ void JNI_OnUnload(JavaVM *jvm, void *reserved) {
     tr->unregister_type(&file_type_webp);
 #endif
   }
+}
+
+/**
+ *
+ */
+Filename android_find_library(ANativeActivity *activity, const std::string &lib) {
+  Thread *thread = Thread::get_current_thread();
+  JNIEnv *env = thread->get_jni_env();
+  nassertr(env != nullptr, Filename());
+
+  jstring jlib = env->NewStringUTF(lib.c_str());
+  jstring jresult = (jstring)env->CallObjectMethod(activity->clazz, jni_PandaActivity_findLibrary, jlib);
+  env->DeleteLocalRef(jlib);
+
+  Filename result;
+  if (jresult != nullptr) {
+    const char *c_str = env->GetStringUTFChars(jresult, nullptr);
+    result = c_str;
+    env->ReleaseStringUTFChars(jresult, c_str);
+  }
+
+  return result;
 }
 
 /**

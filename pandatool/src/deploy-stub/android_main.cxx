@@ -50,8 +50,8 @@ extern "C" {
   } blobinfo = {(uint64_t)-1};
 }
 
-// Defined in android_log.c
-extern "C" PyObject *PyInit_android_log();
+// Defined in android_support.cxx
+extern "C" PyObject *PyInit_android_support();
 
 /**
  * Maps the binary blob at the given memory address to memory, and returns the
@@ -250,7 +250,7 @@ void android_main(struct android_app *app) {
     if (dst_moddef->code != nullptr) {
       dst_moddef->code = (unsigned char *)((uintptr_t)dst_moddef->code + (uintptr_t)blob);
     }
-    __android_log_print(ANDROID_LOG_DEBUG, "Panda3D", "MOD: %s %p %d\n", dst_moddef->name, (void*)dst_moddef->code, dst_moddef->size);
+    //__android_log_print(ANDROID_LOG_DEBUG, "Panda3D", "MOD: %s %p %d\n", dst_moddef->name, (void*)dst_moddef->code, dst_moddef->size);
     dst_moddef++;
   }
   PyImport_FrozenModules = new_modules;
@@ -265,10 +265,10 @@ void android_main(struct android_app *app) {
     return;
   }
 
-  // Register the android_log module.
-  if (PyImport_AppendInittab("android_log", &PyInit_android_log) < 0) {
+  // Register the android_support module.
+  if (PyImport_AppendInittab("android_support", &PyInit_android_support) < 0) {
     android_cat.error()
-      << "Failed to register android_log module.\n";
+      << "Failed to register android_support module.\n";
     env->ReleaseStringUTFChars(libdir_jstr, libdir);
     return;
   }
@@ -279,6 +279,7 @@ void android_main(struct android_app *app) {
   config.buffered_stdio = 0;
   config.configure_c_stdio = 0;
   config.write_bytecode = 0;
+  config.module_search_paths_set = 1; // Leave sys.path empty
   PyConfig_SetBytesString(&config, &config.platlibdir, libdir);
   env->ReleaseStringUTFChars(libdir_jstr, libdir);
 

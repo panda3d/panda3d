@@ -5967,10 +5967,10 @@ if PkgSkip("PYTHON") == 0:
         TargetAdd('classes.dex', input='org/jnius/NativeInvocationHandler.class')
 
         PyTargetAdd('deploy-stubw_android_main.obj', opts=OPTS, input='android_main.cxx')
-        PyTargetAdd('deploy-stubw_android_log.obj', opts=OPTS, input='android_log.c')
+        PyTargetAdd('deploy-stubw_android_support.obj', opts=OPTS, input='android_support.cxx')
         PyTargetAdd('libdeploy-stubw.dll', input='android_native_app_glue.obj')
         PyTargetAdd('libdeploy-stubw.dll', input='deploy-stubw_android_main.obj')
-        PyTargetAdd('libdeploy-stubw.dll', input='deploy-stubw_android_log.obj')
+        PyTargetAdd('libdeploy-stubw.dll', input='deploy-stubw_android_support.obj')
         PyTargetAdd('libdeploy-stubw.dll', input=COMMON_PANDA_LIBS)
         PyTargetAdd('libdeploy-stubw.dll', input='libp3android.dll')
         PyTargetAdd('libdeploy-stubw.dll', opts=['DEPLOYSTUB', 'ANDROID'])

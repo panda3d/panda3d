@@ -232,10 +232,10 @@ def create_aab(command, basename, build_dir):
     config.optimizations.splits_config.Clear()
     if axml.extract_native_libs:
         config.optimizations.uncompress_native_libraries.enabled = False
-        config.optimizations.uncompress_native_libraries.alignment = \
-            UncompressNativeLibraries.PageAlignment.PAGE_ALIGNMENT_16K
     else:
         config.optimizations.uncompress_native_libraries.enabled = True
+        config.optimizations.uncompress_native_libraries.alignment = \
+            UncompressNativeLibraries.PageAlignment.PAGE_ALIGNMENT_16K
     config.compression.uncompressed_glob.append('res/raw/**')
     bundle.add_subfile('BundleConfig.pb', p3d.StringStream(config.SerializeToString()), 9)
 
