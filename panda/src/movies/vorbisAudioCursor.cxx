@@ -326,6 +326,9 @@ cb_tell_func(void *datasource) {
   return stream->tellg();
 }
 
+/**
+ *
+ */
 std::vector<std::string> VorbisAudioCursor::
 get_raw_comment() const {
   return _comment;

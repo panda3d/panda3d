@@ -89,9 +89,7 @@ OpenALAudioSound(OpenALAudioManager *manager,
     }
   }
 
-  // Not doing this results in a segmentation fault when running get_comment()
-  // due to release_sound_data deleting _sd
-  _comment = _sd->_comment;
+  _comment = std::move(_sd->_comment);
   release_sound_data(false);
 }
 
@@ -1097,6 +1095,9 @@ status() const {
   }
 }
 
+/**
+ * Returns the comments attached to this audio file.
+ */
 std::vector<std::string> OpenALAudioSound::
 get_raw_comment() const {
   return _comment;
