@@ -61,7 +61,7 @@ static void *map_blob(const char *path, off_t offset, size_t size) {
   FILE *runtime = fopen(path, "rb");
   assert(runtime != NULL);
 
-  void *blob = (void *)mmap(0, size, PROT_READ | PROT_WRITE, MAP_PRIVATE, fileno(runtime), offset);
+  void *blob = (void *)mmap(0, size, PROT_READ, MAP_PRIVATE, fileno(runtime), offset);
   assert(blob != MAP_FAILED);
 
   fclose(runtime);
@@ -181,10 +181,17 @@ void android_main(struct android_app *app) {
   android_cat.info() << "Path to native library: " << lib_path << "\n";
   ExecutionEnvironment::set_binary_name(lib_path);
 
-  // Map the blob to memory
-  void *blob = map_blob(lib_path, (off_t)blobinfo.blob_offset, (size_t)blobinfo.blob_size);
+  // Nowadays we store the blob in a raw resource.
+  methodID = env->GetMethodID(activity_class, "mapBlobFromResource", "()J");
+  assert(methodID != nullptr);
+  void *blob = (void *)env->CallLongMethod(activity->clazz, methodID);
+
+  if (blob == nullptr) {
+    // Try the old method otherwise.
+    blob = map_blob(lib_path, (off_t)blobinfo.blob_offset, (size_t)blobinfo.blob_size);
+  }
   env->ReleaseStringUTFChars(lib_path_jstr, lib_path);
-  assert(blob != NULL);
+  assert(blob != nullptr);
 
   assert(blobinfo.num_pointers <= MAX_NUM_POINTERS);
   for (uint32_t i = 0; i < blobinfo.num_pointers; ++i) {
@@ -225,17 +232,28 @@ void android_main(struct android_app *app) {
   get_model_path().append_directory(asset_dir);
 
   // Offset the pointers in the module table using the base mmap address.
-  struct _frozen *moddef = (struct _frozen *)blobinfo.pointers[0];
-  while (moddef->name) {
-    moddef->name = (char *)((uintptr_t)moddef->name + (uintptr_t)blob);
-    if (moddef->code != nullptr) {
-      moddef->code = (unsigned char *)((uintptr_t)moddef->code + (uintptr_t)blob);
-    }
-    //__android_log_print(ANDROID_LOG_DEBUG, "Panda3D", "MOD: %s %p %d\n", moddef->name, (void*)moddef->code, moddef->size);
-    moddef++;
+  // We did a read-only mmap, so we have to create a copy of this table.
+  // First count how many modules there are.
+  struct _frozen *src_moddef = (struct _frozen *)blobinfo.pointers[0];
+  size_t num_modules = 0;
+  while (src_moddef->name) {
+    num_modules++;
+    src_moddef++;
   }
 
-  PyImport_FrozenModules = (struct _frozen *)blobinfo.pointers[0];
+  struct _frozen *new_modules = (struct _frozen *)malloc(sizeof(struct _frozen) * (num_modules + 1));
+  memcpy(new_modules, blobinfo.pointers[0], sizeof(struct _frozen) * (num_modules + 1));
+
+  struct _frozen *dst_moddef = new_modules;
+  while (dst_moddef->name) {
+    dst_moddef->name = (char *)((uintptr_t)dst_moddef->name + (uintptr_t)blob);
+    if (dst_moddef->code != nullptr) {
+      dst_moddef->code = (unsigned char *)((uintptr_t)dst_moddef->code + (uintptr_t)blob);
+    }
+    __android_log_print(ANDROID_LOG_DEBUG, "Panda3D", "MOD: %s %p %d\n", dst_moddef->name, (void*)dst_moddef->code, dst_moddef->size);
+    dst_moddef++;
+  }
+  PyImport_FrozenModules = new_modules;
 
   PyPreConfig preconfig;
   PyPreConfig_InitIsolatedConfig(&preconfig);
@@ -328,6 +346,7 @@ void android_main(struct android_app *app) {
     cp_mgr->delete_explicit_page(page);
   }
 
+  free(new_modules);
   unmap_blob(blob);
 
   // Detach the thread before exiting.

@@ -587,6 +587,10 @@ class build_apps(setuptools.Command):
                 data_dir = os.path.join(build_dir, 'assets')
                 os.makedirs(data_dir, exist_ok=True)
 
+                res_dir = os.path.join(build_dir, 'res')
+                res_raw_dir = os.path.join(res_dir, 'raw')
+                os.makedirs(res_raw_dir, exist_ok=True)
+
                 for abi in self.android_abis:
                     lib_dir = os.path.join(build_dir, 'lib', abi)
                     os.makedirs(lib_dir, exist_ok=True)
@@ -603,7 +607,7 @@ class build_apps(setuptools.Command):
 
                     # We end up copying the data multiple times to the same
                     # directory, but that's probably fine for now.
-                    self.build_binaries(platform + suffix, lib_dir, data_dir)
+                    self.build_binaries(platform + suffix, lib_dir, data_dir, res_raw_dir)
 
                 # Write out the icons to the res directory.
                 for appname, icon in self.icon_objects.items():
@@ -614,7 +618,6 @@ class build_apps(setuptools.Command):
                         appname_sane = appname.replace(' ', '_')
                         basename = f'ic_{appname_sane}.png'
 
-                    res_dir = os.path.join(build_dir, 'res')
                     icon.writeSize(48, os.path.join(res_dir, 'mipmap-mdpi-v4', basename))
                     icon.writeSize(72, os.path.join(res_dir, 'mipmap-hdpi-v4', basename))
                     icon.writeSize(96, os.path.join(res_dir, 'mipmap-xhdpi-v4', basename))
@@ -894,6 +897,10 @@ class build_apps(setuptools.Command):
             meta_data.set('android:name', 'android.app.lib_name')
             meta_data.set('android:value', appname_sane)
 
+            meta_data = ET.SubElement(activity, 'meta-data')
+            meta_data.set('android:name', 'org.panda3d.android.BLOB_RESOURCE')
+            meta_data.set('android:resource', '@raw/' + appname_sane + '.so')
+
             intent_filter = ET.SubElement(activity, 'intent-filter')
             ET.SubElement(intent_filter, 'action').set('android:name', 'android.intent.action.MAIN')
             ET.SubElement(intent_filter, 'category').set('android:name', 'android.intent.category.LAUNCHER')
@@ -937,7 +944,7 @@ class build_apps(setuptools.Command):
             if self.android_target_sdk_version >= 31 and f'{android}exported' not in activity.attrib:
                 raise RuntimeError("<activity> element must have android:exported attribute when targeting Android API 31+")
 
-    def build_binaries(self, platform, binary_dir, data_dir=None):
+    def build_binaries(self, platform, binary_dir, data_dir=None, blob_dir=None):
         """ Builds the binary data for the given platform. """
 
         use_wheels = True
@@ -1133,6 +1140,7 @@ class build_apps(setuptools.Command):
 
             stub_name = 'deploy-stub'
             target_name = appname
+            appname_sane = appname
             if platform.startswith('win') or 'macosx' in platform:
                 if not use_console:
                     stub_name = 'deploy-stubw'
@@ -1172,6 +1180,14 @@ class build_apps(setuptools.Command):
             if not self.log_filename or '%' not in self.log_filename:
                 use_strftime = False
 
+            blob_path = None
+            if blob_dir is not None:
+                if platform.startswith('android'):
+                    # Not really a .so file, but it forces bundletool to align it
+                    blob_path = os.path.join(blob_dir, appname_sane + '.so')
+                else:
+                    blob_path = os.path.join(blob_dir, appname_sane)
+
             target_path = os.path.join(binary_dir, target_name)
             freezer.generateRuntimeFromStub(target_path, stub_file, use_console, {
                 'prc_data': prcexport if self.embed_prc_data else None,
@@ -1185,7 +1201,7 @@ class build_apps(setuptools.Command):
                 'prc_executable_args_envvar': None,
                 'main_dir': None,
                 'log_filename': self.expand_path(self.log_filename, platform),
-            }, self.log_append, use_strftime)
+            }, self.log_append, use_strftime, blob_path)
             stub_file.close()
 
             if temp_file:

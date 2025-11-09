@@ -3,7 +3,7 @@
 import xml.etree.ElementTree as ET
 
 from ._proto.targeting_pb2 import Abi
-from ._proto.config_pb2 import BundleConfig # pylint: disable=unused-import
+from ._proto.config_pb2 import BundleConfig, UncompressNativeLibraries # pylint: disable=unused-import
 from ._proto.files_pb2 import NativeLibraries # pylint: disable=unused-import
 from ._proto.Resources_pb2 import ResourceTable # pylint: disable=unused-import
 from ._proto.Resources_pb2 import XmlNode
@@ -199,6 +199,7 @@ ANDROID_ATTRIBUTES = {
     'pageSizeCompat': bool_resource(0x010106ab),
     'pathPattern': str_resource(0x101002c),
     'preferMinimalPostProcessing': bool_resource(0x101060c),
+    'resource': ref_resource(0x01010025),
     'required': bool_resource(0x101028e),
     'resizeableActivity': bool_resource(0x10104f6),
     'scheme': str_resource(0x1010027),
@@ -222,6 +223,7 @@ class AndroidManifest:
         self.root = XmlNode()
         self.resource_types = []
         self.resources = {}
+        self.extract_native_libs = None
 
     def parse_xml(self, data):
         parser = ET.XMLParser(target=self)
@@ -241,6 +243,15 @@ class AndroidManifest:
 
         element = node.element
         element.name = tag
+
+        if tag == 'application':
+            value = attribs.get('{http://schemas.android.com/apk/res/android}extractNativeLibs')
+            if value == 'false':
+                self.extract_native_libs = False
+            elif value == 'true':
+                self.extract_native_libs = True
+            else:
+                print(f'Warning: invalid value for android:extractNativeLibs: {value}')
 
         self._stack.append(element)
 
