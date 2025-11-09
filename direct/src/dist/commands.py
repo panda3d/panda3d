@@ -1150,6 +1150,17 @@ class build_apps(setuptools.Command):
                     appname_sane = appname.replace(' ', '_')
                     target_name = 'lib' + appname_sane + '.so'
 
+                if use_wheels:
+                    dexfile = os.path.join(binary_dir, '..', '..', 'classes.dex')
+                    self.copy(os.path.join(p3dwhlfn, 'deploy_libs', 'classes.dex'), dexfile)
+
+                    # Can this wheel load the blob as a raw resource?
+                    with open(dexfile, 'rb') as fh:
+                        supports_blob_resource = b'org.panda3d.android.BLOB_RESOURCE' in fh.read()
+
+                    assert supports_blob_resource, \
+                        "Please use a newer Panda3D wheel to build for Android using this version of build_apps"
+
             if platform.startswith('win'):
                 stub_name += '.exe'
                 target_name += '.exe'
@@ -1315,11 +1326,6 @@ class build_apps(setuptools.Command):
             target_path = os.path.join(binary_dir, basename)
             search_path = get_search_path_for(source_path)
             self.copy_with_dependencies(source_path, target_path, search_path)
-
-        # Copy classes.dex on Android
-        if use_wheels and platform.startswith('android'):
-            self.copy(os.path.join(p3dwhlfn, 'deploy_libs', 'classes.dex'),
-                      os.path.join(binary_dir, '..', '..', 'classes.dex'))
 
         # Extract any other data files from dependency packages.
         if data_dir is None:
