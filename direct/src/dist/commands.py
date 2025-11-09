@@ -900,6 +900,8 @@ class build_apps(setuptools.Command):
             ET.SubElement(intent_filter, 'category').set('android:name', 'android.intent.category.LEANBACK_LAUNCHER')
 
         tree = ET.ElementTree(manifest)
+        if sys.version_info >= (3, 9):
+            ET.indent(tree)
         with open(path, 'wb') as fh:
             tree.write(fh, encoding='utf-8', xml_declaration=True)
 
