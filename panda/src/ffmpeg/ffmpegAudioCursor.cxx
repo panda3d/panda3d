@@ -521,7 +521,7 @@ get_raw_comment() const {
     std::string comment(tag->key);
     comment.append("=");
     comment.append(tag->value);
-    comment_strings.push_back(comment);
+    comment_strings.push_back(std::move(comment));
   }
   return comment_strings;
 }
