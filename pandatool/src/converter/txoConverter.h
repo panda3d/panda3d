@@ -16,29 +16,25 @@
 
 #include "pandatoolbase.h"
 #include "programBase.h"
-#include "filename.h"
-#include "withOutputFile.h"
-#include "textureAttrib.h"
-#include "pvector.h"
 
 /**
  *
  */
 class TxoConverter : public ProgramBase, public WithOutputFile {
-    public:
-        TxoConverter();
+public:
+  TxoConverter();
     
-        void run();
-    
-    protected:
-        virtual bool handle_args(Args &args);
-    
-    private:
-        void convert_txo(Texture *tex);
+  void run();
 
-        Filename _image_filename;
-        bool _got_rgb_filename;
-        Filename _rgb_filename;
+  protected:
+  virtual bool handle_args(Args &args);
+
+  private:
+  void convert_txo(Texture *tex);
+
+  Filename _image_filename;
+  bool _got_rgb_filename;
+  Filename _rgb_filename;
 };
 
 #endif
