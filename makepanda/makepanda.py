@@ -485,6 +485,8 @@ elif not CrossCompiling():
 else:
     if target_arch == 'amd64':
         target_arch = 'x86_64'
+    if target_arch == 'arm' and target == 'android':
+        target_arch = 'armv7a'
     PLATFORM = '{0}-{1}'.format(target, target_arch)
 
 
@@ -1371,19 +1373,19 @@ def CompileCxx(obj,src,opts):
                 cmd += ' -gcc-toolchain ' + SDK["ANDROID_GCC_TOOLCHAIN"].replace('\\', '/')
             cmd += ' -ffunction-sections -funwind-tables'
             cmd += ' -target ' + SDK["ANDROID_TRIPLE"]
-            if arch == 'armv7a':
+            if arch in ('armv7a', 'arm'):
                 cmd += ' -march=armv7-a -mfloat-abi=softfp -mfpu=vfpv3-d16'
-            elif arch == 'arm':
-                cmd += ' -march=armv5te -mtune=xscale -msoft-float'
+            #elif arch == 'arm':
+            #    cmd += ' -march=armv5te -mtune=xscale -msoft-float'
             elif arch == 'mips':
                 cmd += ' -mips32'
             elif arch == 'mips64':
                 cmd += ' -fintegrated-as'
             elif arch == 'x86':
-                cmd += ' -march=i686 -mssse3 -mfpmath=sse -m32'
+                cmd += ' -march=i686 -mssse3 -mfpmath=sse'
                 cmd += ' -mstackrealign'
             elif arch == 'x86_64':
-                cmd += ' -march=x86-64 -msse4.2 -mpopcnt -m64'
+                cmd += ' -march=x86-64 -msse4.2 -mpopcnt'
 
             cmd += " -Wa,--noexecstack"
 
@@ -1649,6 +1651,9 @@ def CompileImod(wobj, wsrc, opts):
     importmod = GetValueOption(opts, "IMPORT:")
     if importmod:
         cmd += ' -import ' + importmod
+    initfunc = GetValueOption(opts, "INIT:")
+    if initfunc:
+        cmd += ' -init ' + initfunc
     for x in wsrc: cmd += ' ' + BracketNameWithQuotes(x)
     oscmd(cmd)
     CompileCxx(wobj,woutc,opts)
@@ -1897,16 +1902,25 @@ def CompileLink(dll, obj, opts):
                 cmd += ' -gcc-toolchain ' + SDK["ANDROID_GCC_TOOLCHAIN"].replace('\\', '/')
             cmd += " -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now"
             cmd += ' -target ' + SDK["ANDROID_TRIPLE"]
-            if arch == 'armv7a':
+            if arch in ('armv7a', 'arm'):
                 cmd += " -march=armv7-a -Wl,--fix-cortex-a8"
             elif arch == 'mips':
                 cmd += ' -mips32'
+
+            if arch.endswith('64'):
+                # See https://developer.android.com/guide/practices/page-sizes
+                cmd += ' -Wl,-z,max-page-size=16384'
+
             cmd += ' -lc -lm'
 
         elif GetTarget() == 'emscripten':
-            cmd += " -s WARN_ON_UNDEFINED_SYMBOLS=1"
+            cmd += " -s WARN_ON_UNDEFINED_SYMBOLS=1 -mbulk-memory"
+
             if GetOrigExt(dll) == ".exe":
                 cmd += " -s EXIT_RUNTIME=1"
+
+                if dll.endswith(".js") and "SUBSYSTEM:WINDOWS" not in opts:
+                    cmd += " --pre-js dtool/src/dtoolutil/console_preamble.js"
 
         else:
             cmd += " -pthread"
@@ -2072,13 +2086,23 @@ def CompileJava(target, src, opts):
     if GetHost() == 'android':
         cmd = "ecj "
     else:
-        cmd = "javac -bootclasspath " + BracketNameWithQuotes(SDK["ANDROID_JAR"]) + " "
+        cmd = "javac "
+        home = os.environ.get('JAVA_HOME')
+        if home:
+            javac_path = os.path.join(home, 'bin', 'javac')
+            if GetHost() == 'windows':
+                javac_path += '.exe'
+            if os.path.isfile(javac_path):
+                cmd = BracketNameWithQuotes(javac_path) + " "
+
+        cmd += "-Xlint:deprecation "
 
     optlevel = GetOptimizeOption(opts)
     if optlevel >= 4:
         cmd += "-debug:none "
 
-    cmd += "-cp " + GetOutputDir() + "/classes "
+    classpath = BracketNameWithQuotes(SDK["ANDROID_JAR"] + ":" + GetOutputDir() + "/classes")
+    cmd += "-cp " + classpath + " "
     cmd += "-d " + GetOutputDir() + "/classes "
     cmd += BracketNameWithQuotes(src)
     oscmd(cmd)
@@ -2405,6 +2429,7 @@ DTOOL_CONFIG=[
     ("PHAVE_DIRENT_H",                 'UNDEF',                  '1'),
     ("PHAVE_UCONTEXT_H",               'UNDEF',                  '1'),
     ("PHAVE_STDINT_H",                 '1',                      '1'),
+    ("PHAVE_EXECINFO_H",               'UNDEF',                  '1'),
     ("HAVE_RTTI",                      '1',                      '1'),
     ("HAVE_X11",                       'UNDEF',                  '1'),
     ("IS_LINUX",                       'UNDEF',                  '1'),
@@ -2541,6 +2566,7 @@ def WriteConfigSettings():
         dtool_config["PHAVE_GLOB_H"] = 'UNDEF'
         dtool_config["PHAVE_LOCKF"] = 'UNDEF'
         dtool_config["HAVE_VIDEO4LINUX"] = 'UNDEF'
+        dtool_config["PHAVE_EXECINFO_H"] = 'UNDEF'
 
     if (GetTarget() == "emscripten"):
         # There are no threads in JavaScript, so don't bother using them.
@@ -2553,6 +2579,7 @@ def WriteConfigSettings():
         dtool_config["PHAVE_LINUX_INPUT_H"] = 'UNDEF'
         dtool_config["HAVE_X11"] = 'UNDEF'
         dtool_config["HAVE_GLX"] = 'UNDEF'
+        dtool_config["PHAVE_EXECINFO_H"] = 'UNDEF'
 
         # There are no environment vars either, or default prc files.
         prc_parameters["DEFAULT_PRC_DIR"] = 'UNDEF'
@@ -4012,7 +4039,9 @@ TargetAdd('libp3pgui.in', opts=['IMOD:panda3d.core', 'ILIB:libp3pgui', 'SRCDIR:p
 # DIRECTORY: panda/src/pnmimagetypes/
 #
 
-OPTS=['DIR:panda/src/pnmimagetypes', 'DIR:panda/src/pnmimage', 'BUILDING:PANDA', 'PNG', 'ZLIB', 'JPEG', 'TIFF', 'OPENEXR', 'EXCEPTIONS']
+OPTS=['DIR:panda/src/pnmimagetypes', 'DIR:panda/src/pnmimage', 'BUILDING:PANDA', 'PNG', 'ZLIB', 'JPEG', 'TIFF', 'OPENEXR']
+if not PkgSkip('OPENEXR') and GetTarget() != 'emscripten':
+    OPTS.append('EXCEPTIONS')
 TargetAdd('p3pnmimagetypes_composite1.obj', opts=OPTS, input='p3pnmimagetypes_composite1.cxx')
 TargetAdd('p3pnmimagetypes_composite2.obj', opts=OPTS, input='p3pnmimagetypes_composite2.cxx')
 
@@ -4156,7 +4185,7 @@ if GetTarget() != "emscripten":
 if PkgSkip("FREETYPE")==0:
     PyTargetAdd('core_module.obj', input='libp3pnmtext.in')
 
-PyTargetAdd('core_module.obj', opts=['IMOD:panda3d.core', 'ILIB:core'])
+PyTargetAdd('core_module.obj', opts=['IMOD:panda3d.core', 'ILIB:core', 'INIT:pyenv_init'])
 
 PyTargetAdd('core.pyd', input='libp3dtoolbase_igate.obj')
 PyTargetAdd('core.pyd', input='p3dtoolbase_typeHandle_ext.obj')
@@ -4916,11 +4945,13 @@ if GetTarget() == 'android':
     TargetAdd('org/panda3d/android/NativeIStream.class', opts=OPTS, input='NativeIStream.java')
     TargetAdd('org/panda3d/android/NativeOStream.class', opts=OPTS, input='NativeOStream.java')
     TargetAdd('org/panda3d/android/PandaActivity.class', opts=OPTS, input='PandaActivity.java')
+    TargetAdd('org/panda3d/android/PandaActivity$1.class', opts=OPTS+['DEPENDENCYONLY'], input='PandaActivity.java')
     TargetAdd('org/panda3d/android/PythonActivity.class', opts=OPTS, input='PythonActivity.java')
 
     TargetAdd('classes.dex', input='org/panda3d/android/NativeIStream.class')
     TargetAdd('classes.dex', input='org/panda3d/android/NativeOStream.class')
     TargetAdd('classes.dex', input='org/panda3d/android/PandaActivity.class')
+    TargetAdd('classes.dex', input='org/panda3d/android/PandaActivity$1.class')
     TargetAdd('classes.dex', input='org/panda3d/android/PythonActivity.class')
 
     TargetAdd('p3android_composite1.obj', opts=OPTS, input='p3android_composite1.cxx')
@@ -5936,10 +5967,10 @@ if PkgSkip("PYTHON") == 0:
         TargetAdd('classes.dex', input='org/jnius/NativeInvocationHandler.class')
 
         PyTargetAdd('deploy-stubw_android_main.obj', opts=OPTS, input='android_main.cxx')
-        PyTargetAdd('deploy-stubw_android_log.obj', opts=OPTS, input='android_log.c')
+        PyTargetAdd('deploy-stubw_android_support.obj', opts=OPTS, input='android_support.cxx')
         PyTargetAdd('libdeploy-stubw.dll', input='android_native_app_glue.obj')
         PyTargetAdd('libdeploy-stubw.dll', input='deploy-stubw_android_main.obj')
-        PyTargetAdd('libdeploy-stubw.dll', input='deploy-stubw_android_log.obj')
+        PyTargetAdd('libdeploy-stubw.dll', input='deploy-stubw_android_support.obj')
         PyTargetAdd('libdeploy-stubw.dll', input=COMMON_PANDA_LIBS)
         PyTargetAdd('libdeploy-stubw.dll', input='libp3android.dll')
         PyTargetAdd('libdeploy-stubw.dll', opts=['DEPLOYSTUB', 'ANDROID'])
@@ -5947,7 +5978,7 @@ if PkgSkip("PYTHON") == 0:
 #
 # Build the test runner for static builds
 #
-if GetLinkAllStatic():
+if GetLinkAllStatic() or GetTarget() == 'android':
     if GetTarget() == 'emscripten':
         LinkFlag('RUN_TESTS_FLAGS', '-s NODERAWFS')
         LinkFlag('RUN_TESTS_FLAGS', '-s ASSERTIONS=2')
@@ -5965,18 +5996,19 @@ if GetLinkAllStatic():
     if not PkgSkip('BULLET'):
         DefSymbol('RUN_TESTS_FLAGS', 'HAVE_BULLET')
 
-    OPTS=['DIR:tests', 'PYTHON', 'RUN_TESTS_FLAGS']
+    OPTS=['DIR:tests', 'PYTHON', 'RUN_TESTS_FLAGS', 'SUBSYSTEM:CONSOLE']
     PyTargetAdd('run_tests-main.obj', opts=OPTS, input='main.c')
     PyTargetAdd('run_tests.exe', input='run_tests-main.obj')
-    PyTargetAdd('run_tests.exe', input='core.pyd')
-    if not PkgSkip('DIRECT'):
-        PyTargetAdd('run_tests.exe', input='direct.pyd')
-    if not PkgSkip('PANDAPHYSICS'):
-        PyTargetAdd('run_tests.exe', input='physics.pyd')
-    if not PkgSkip('EGG'):
-        PyTargetAdd('run_tests.exe', input='egg.pyd')
-    if not PkgSkip('BULLET'):
-        PyTargetAdd('run_tests.exe', input='bullet.pyd')
+    if GetLinkAllStatic():
+        PyTargetAdd('run_tests.exe', input='core.pyd')
+        if not PkgSkip('DIRECT'):
+            PyTargetAdd('run_tests.exe', input='direct.pyd')
+        if not PkgSkip('PANDAPHYSICS'):
+            PyTargetAdd('run_tests.exe', input='physics.pyd')
+        if not PkgSkip('EGG'):
+            PyTargetAdd('run_tests.exe', input='egg.pyd')
+        if not PkgSkip('BULLET'):
+            PyTargetAdd('run_tests.exe', input='bullet.pyd')
     PyTargetAdd('run_tests.exe', input=COMMON_PANDA_LIBS)
     PyTargetAdd('run_tests.exe', opts=['PYTHON', 'BULLET', 'RUN_TESTS_FLAGS'])
 

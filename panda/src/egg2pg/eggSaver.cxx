@@ -1229,34 +1229,16 @@ apply_state_properties(EggRenderMode *egg_render_mode, const RenderState *state)
  */
 bool EggSaver::
 apply_tags(EggGroup *egg_group, PandaNode *node) {
-  std::ostringstream strm;
-  char delimiter = '\n';
-  string delimiter_str(1, delimiter);
-  node->list_tags(strm, delimiter_str);
-
-  string data = strm.str();
-  if (data.empty()) {
-    return false;
-  }
-
   bool any_applied = false;
 
-  size_t p = 0;
-  size_t q = data.find(delimiter);
-  while (q != string::npos) {
-    string tag = data.substr(p, q);
-    if (apply_tag(egg_group, node, tag)) {
+  vector_string keys;
+  node->get_tag_keys(keys);
+
+  for (size_t i = 0; i < keys.size(); ++i) {
+    if (apply_tag(egg_group, node, keys[i])) {
       any_applied = true;
     }
-    p = q + 1;
-    q = data.find(delimiter, p);
   }
-
-  string tag = data.substr(p);
-  if (apply_tag(egg_group, node, tag)) {
-    any_applied = true;
-  }
-
   return any_applied;
 }
 

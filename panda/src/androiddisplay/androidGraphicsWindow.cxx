@@ -15,6 +15,7 @@
 #include "androidGraphicsStateGuardian.h"
 #include "config_androiddisplay.h"
 #include "androidGraphicsPipe.h"
+#include "config_android.h"
 
 #include "graphicsPipe.h"
 #include "keyboardButton.h"
@@ -181,16 +182,14 @@ process_events() {
   GraphicsWindow::process_events();
 
   // Read all pending events.
-  int looper_id;
-  int events;
-  struct android_poll_source* source;
+  struct android_poll_source *source;
 
-  // Loop until all events are read.
-  while ((looper_id = ALooper_pollAll(0, nullptr, &events, (void**)&source)) >= 0) {
-    // Process this event.
-    if (source != nullptr) {
-      source->process(_app, source);
-    }
+  auto result = ALooper_pollOnce(0, nullptr, nullptr, (void **)&source);
+  nassertv(result != ALOOPER_POLL_ERROR);
+
+  // Process this event.
+  if (source != nullptr) {
+    source->process(_app, source);
   }
 }
 
@@ -233,6 +232,11 @@ set_properties_now(WindowProperties &properties) {
 
     _properties.set_fullscreen(properties.get_fullscreen());
     properties.clear_fullscreen();
+  }
+
+  if (properties.has_title()) {
+    android_set_title(_app->activity, properties.get_title());
+    properties.clear_title();
   }
 }
 
@@ -437,14 +441,15 @@ ns_handle_command(int32_t command) {
     case APP_CMD_WINDOW_RESIZED:
       properties.set_size(ANativeWindow_getWidth(_app->window),
                           ANativeWindow_getHeight(_app->window));
+      system_changed_properties(properties);
       break;
     case APP_CMD_WINDOW_REDRAW_NEEDED:
       break;
     case APP_CMD_CONTENT_RECT_CHANGED:
-      properties.set_origin(_app->contentRect.left, _app->contentRect.top);
+      /*properties.set_origin(_app->contentRect.left, _app->contentRect.top);
       properties.set_size(_app->contentRect.right - _app->contentRect.left,
                           _app->contentRect.bottom - _app->contentRect.top);
-      system_changed_properties(properties);
+      system_changed_properties(properties);*/
       break;
     case APP_CMD_GAINED_FOCUS:
       properties.set_foreground(true);

@@ -19,11 +19,6 @@
 
 #include <Python.h>
 
-#ifdef __EMSCRIPTEN__
-#include <emscripten/emscripten.h>
-#include <emscripten/em_asm.h>
-#endif
-
 #include "pandabase.h"
 
 #ifdef LINK_ALL_STATIC
@@ -54,43 +49,6 @@ int main(int argc, char **argv) {
   PyStatus status;
   PyConfig config;
   PyConfig_InitPythonConfig(&config);
-
-#ifdef __EMSCRIPTEN__
-  // getenv does not work with emscripten, instead read the PYTHONPATH and
-  // PYTHONHOME from the process.env variable if we're running in node.js.
-  char path[4096], home[4096];
-  path[0] = 0;
-  home[0] = 0;
-
-  EM_ASM({
-    if (typeof process === 'object' && typeof process.env === 'object') {
-      var path = process.env.PYTHONPATH;
-      var home = process.env.PYTHONHOME;
-      if (path) {
-        if (process.platform === 'win32') {
-          path = path.replace(/;/g, ':');
-        }
-        stringToUTF8(path, $0, $1);
-      }
-      if (home) {
-        stringToUTF8(home, $2, $3);
-      }
-    }
-  }, path, sizeof(path), home, sizeof(home));
-
-  if (path[0] != 0) {
-    status = PyConfig_SetBytesString(&config, &config.pythonpath_env, path);
-    if (PyStatus_Exception(status)) {
-      goto exception;
-    }
-  }
-  if (home[0] != 0) {
-    status = PyConfig_SetBytesString(&config, &config.home, home);
-    if (PyStatus_Exception(status)) {
-      goto exception;
-    }
-  }
-#endif
 
   PyConfig_SetBytesString(&config, &config.run_module, "pytest");
   config.parse_argv = 0;
@@ -151,6 +109,11 @@ int main(int argc, char **argv) {
 #ifdef __EMSCRIPTEN__
   // Default fd capturing doesn't work on emscripten
   PyRun_SimpleString("import sys; sys.argv.insert(1, '--capture=sys')");
+#endif
+
+#ifdef ANDROID
+  // No caching on Android
+  PyRun_SimpleString("import sys; sys.argv.insert(1, '-o cache_dir=/dev/null')");
 #endif
 
   return Py_RunMain();

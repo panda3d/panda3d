@@ -76,10 +76,12 @@ PUBLISHED:
 public:
   static ios_fmtflags get_literal_flag();
 
-  bool assert_failure(const std::string &expression, int line,
-                      const char *source_file);
-  bool assert_failure(const char *expression, int line,
-                      const char *source_file);
+  static bool assert_failure(const std::string &expression, int line,
+                             const char *source_file);
+  static bool assert_failure(const char *expression, int line,
+                             const char *source_file);
+
+  static void write_backtrace(void **trace, int size);
 
   static NotifySeverity string_severity(const std::string &string);
 
@@ -100,7 +102,7 @@ private:
   Categories _categories;
 
 #if defined(ANDROID)
-  AndroidLogStream *_log_streams[NS_fatal + 1];
+  std::ostream *_log_streams[NS_fatal + 1];
 #elif defined(__EMSCRIPTEN__)
   EmscriptenLogStream *_log_streams[NS_fatal + 1];
 #endif
@@ -204,7 +206,7 @@ private:
 #define nassertr(condition, return_value) \
   { \
     if (_nassert_check(condition)) { \
-      if (Notify::ptr()->assert_failure(#condition, __LINE__, __FILE__)) { \
+      if (Notify::assert_failure(#condition, __LINE__, __FILE__)) { \
         return return_value; \
       } \
     } \
@@ -213,7 +215,7 @@ private:
 #define nassertv(condition) \
   { \
     if (_nassert_check(condition)) { \
-      if (Notify::ptr()->assert_failure(#condition, __LINE__, __FILE__)) { \
+      if (Notify::assert_failure(#condition, __LINE__, __FILE__)) { \
         return; \
       } \
     } \
@@ -221,12 +223,12 @@ private:
 
 #define nassertd(condition) \
   if (_nassert_check(condition) && \
-      Notify::ptr()->assert_failure(#condition, __LINE__, __FILE__))
+      Notify::assert_failure(#condition, __LINE__, __FILE__))
 
 #define nassertr_always(condition, return_value) nassertr(condition, return_value)
 #define nassertv_always(condition) nassertv(condition)
 
-#define nassert_raise(message) Notify::ptr()->assert_failure(message, __LINE__, __FILE__)
+#define nassert_raise(message) Notify::assert_failure(message, __LINE__, __FILE__)
 
 #endif  // NDEBUG
 

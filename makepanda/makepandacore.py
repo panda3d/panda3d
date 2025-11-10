@@ -357,11 +357,11 @@ def SetTarget(target, arch=None):
 
     elif target == 'android' or target.startswith('android-'):
         if arch is None:
-            # If compiling on Android, default to same architecture.  Otherwise, arm.
+            # If compiling on Android, default to same architecture.
             if host == 'android':
                 arch = host_arch
             else:
-                arch = 'armv7a'
+                exit('Specify an Android architecture using --arch')
 
         if arch == 'aarch64':
             arch = 'arm64'
@@ -371,12 +371,9 @@ def SetTarget(target, arch=None):
         target, _, api = target.partition('-')
         if api:
             ANDROID_API = int(api)
-        elif arch in ('mips64', 'arm64', 'x86_64'):
-            # 64-bit platforms were introduced in Android 21.
-            ANDROID_API = 21
         else:
             # Default to the lowest API level still supported by Google.
-            ANDROID_API = 19
+            ANDROID_API = 21
 
         # Determine the prefix for our gcc tools, eg. arm-linux-androideabi-gcc
         global ANDROID_ABI, ANDROID_TRIPLE
@@ -592,8 +589,8 @@ def GetInterrogateDir():
             return INTERROGATE_DIR
 
         dir = os.path.join(GetOutputDir(), "tmp", "interrogate")
-        if not os.path.isdir(os.path.join(dir, "panda3d_interrogate-0.4.0.dist-info")):
-            oscmd("\"%s\" -m pip install --force-reinstall --upgrade -t \"%s\" panda3d-interrogate==0.4.0" % (sys.executable, dir))
+        if not os.path.isdir(os.path.join(dir, "panda3d_interrogate-0.7.1.dist-info")):
+            oscmd("\"%s\" -m pip install --force-reinstall --upgrade -t \"%s\" panda3d-interrogate==0.7.1" % (sys.executable, dir))
 
         INTERROGATE_DIR = dir
 
@@ -669,11 +666,12 @@ def oscmd(cmd, ignoreError = False, cwd=None):
         print(GetColor("blue") + cmd.split(" ", 1)[0] + " " + GetColor("magenta") + cmd.split(" ", 1)[1] + GetColor())
     sys.stdout.flush()
 
+    if cmd[0] == '"':
+        exe = cmd[1 : cmd.index('"', 1)]
+    else:
+        exe = cmd.split()[0]
+
     if sys.platform == "win32":
-        if cmd[0] == '"':
-            exe = cmd[1 : cmd.index('"', 1)]
-        else:
-            exe = cmd.split()[0]
         exe_path = LocateBinary(exe)
         if exe_path is None:
             exit("Cannot find "+exe+" on search path")
@@ -709,7 +707,7 @@ def oscmd(cmd, ignoreError = False, cwd=None):
             exit("")
 
     if res != 0 and not ignoreError:
-        if "interrogate" in cmd.split(" ", 1)[0] and GetVerbose():
+        if "interrogate" in exe and "interrogate_module" not in exe and GetVerbose():
             print(ColorText("red", "Interrogate failed, retrieving debug output..."))
             sys.stdout.flush()
             verbose_cmd = cmd.split(" ", 1)[0] + " -vv " + cmd.split(" ", 1)[1]
@@ -1422,6 +1420,9 @@ def GetThirdpartyDir():
     elif (target == 'android'):
         THIRDPARTYDIR = base + "/android-libs-%s/" % (target_arch)
 
+        if target_arch == 'armv7a' and not os.path.isdir(THIRDPARTYDIR):
+            THIRDPARTYDIR = base + "/android-libs-arm/"
+
     elif (target == 'emscripten'):
         THIRDPARTYDIR = base + "/emscripten-libs/"
 
@@ -1846,7 +1847,7 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
             DefSymbol(target_pkg, d, v)
         return
 
-    elif not custom_loc and GetHost() == "darwin" and framework is not None:
+    elif not custom_loc and GetHost() == "darwin" and GetTarget() == "darwin" and framework is not None:
         prefix = SDK["MACOSX"]
         if (os.path.isdir(prefix + "/Library/Frameworks/%s.framework" % framework) or
             os.path.isdir(prefix + "/System/Library/Frameworks/%s.framework" % framework) or
@@ -2472,7 +2473,7 @@ def SdkLocateMacOSX(archs = []):
         # Prefer pre-10.14 for now so that we can keep building FMOD.
         sdk_versions += ["10.13", "10.12"]
 
-    sdk_versions += ["14.0", "13.3", "13.1", "13.0", "12.3", "11.3", "11.1", "11.0"]
+    sdk_versions += ["15.5", "15.4", "15.2", "15.1", "15.0", "14.5", "14.4", "14.2", "14.0", "13.3", "13.1", "13.0", "12.3", "11.3", "11.1", "11.0"]
 
     if 'arm64' not in archs:
         sdk_versions += ["10.15", "10.14"]
@@ -2481,16 +2482,20 @@ def SdkLocateMacOSX(archs = []):
         sdkname = "MacOSX" + version
         if os.path.exists("/Library/Developer/CommandLineTools/SDKs/%s.sdk" % sdkname):
             SDK["MACOSX"] = "/Library/Developer/CommandLineTools/SDKs/%s.sdk" % sdkname
-            return
         elif os.path.exists("/Developer/SDKs/%s.sdk" % sdkname):
             SDK["MACOSX"] = "/Developer/SDKs/%s.sdk" % sdkname
-            return
         elif os.path.exists("/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/%s.sdk" % sdkname):
             SDK["MACOSX"] = "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/%s.sdk" % sdkname
-            return
         elif xcode_dir and os.path.exists("%s/Platforms/MacOSX.platform/Developer/SDKs/%s.sdk" % (xcode_dir, sdkname)):
             SDK["MACOSX"] = "%s/Platforms/MacOSX.platform/Developer/SDKs/%s.sdk" % (xcode_dir, sdkname)
-            return
+        else:
+            continue
+
+        if GetVerbose():
+            print("Using macOS %s SDK located at %s" % (version, SDK["MACOSX"]))
+        else:
+            print("Using macOS %s SDK" % version)
+        return
 
     exit("Couldn't find any suitable MacOSX SDK!")
 
@@ -2615,6 +2620,8 @@ def SdkLocateAndroid():
     # We need to redistribute the C++ standard library.
     stdlibc = os.path.join(ndk_root, 'sources', 'cxx-stl', 'llvm-libc++')
     stl_lib = os.path.join(stdlibc, 'libs', abi, 'libc++_shared.so')
+    if not os.path.isfile(stl_lib):
+        stl_lib = os.path.join(prebuilt_dir, 'sysroot', 'usr', 'lib', ANDROID_TRIPLE.rstrip('0123456789'), 'libc++_shared.so')
     CopyFile(os.path.join(GetOutputDir(), 'lib', 'libc++_shared.so'), stl_lib)
 
     # The Android support library polyfills C++ features not available in the
@@ -3419,6 +3426,10 @@ def GetExtensionSuffix():
         abi = GetPythonABI()
         arch = GetTargetArch()
         return '.{0}-{1}-emscripten.so'.format(abi, arch)
+    elif target == 'android':
+        abi = GetPythonABI()
+        triple = ANDROID_TRIPLE.rstrip('0123456789')
+        return '.{0}-{1}.so'.format(abi, triple)
     elif CrossCompiling():
         return '.{0}.so'.format(GetPythonABI())
     else:

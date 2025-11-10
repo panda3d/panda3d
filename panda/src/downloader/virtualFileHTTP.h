@@ -39,6 +39,7 @@ public:
 
   virtual VirtualFileSystem *get_file_system() const;
   virtual Filename get_filename() const;
+  URLSpec get_url() const;
 
   virtual bool has_file() const;
   virtual bool is_directory() const;
@@ -53,6 +54,9 @@ public:
 
   virtual bool read_file(std::string &result, bool auto_unwrap) const;
   virtual bool read_file(vector_uchar &result, bool auto_unwrap) const;
+
+PUBLISHED:
+  MAKE_PROPERTY(url, get_url);
 
 private:
   bool fetch_file(std::ostream *buffer_stream) const;

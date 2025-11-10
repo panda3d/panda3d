@@ -40,7 +40,7 @@ class GeomMunger;
  */
 class EXPCL_PANDA_PGRAPH CullableObject {
 public:
-  INLINE CullableObject();
+  INLINE CullableObject() = default;
   INLINE CullableObject(CPT(Geom) geom, CPT(RenderState) state,
                         CPT(TransformState) internal_transform);
 

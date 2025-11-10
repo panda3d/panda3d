@@ -1,11 +1,14 @@
 """Defines the IntervalManager class as well as the global instance of
 this class, ivalMgr."""
 
+from __future__ import annotations
+
 __all__ = ['IntervalManager', 'ivalMgr']
 
 from panda3d.core import EventQueue
-from panda3d.direct import CIntervalManager, Dtool_BorrowThisReference
+from panda3d.direct import CInterval, CIntervalManager, Dtool_BorrowThisReference
 from direct.showbase import EventManager
+from . import Interval
 import fnmatch
 
 class IntervalManager(CIntervalManager):
@@ -15,7 +18,7 @@ class IntervalManager(CIntervalManager):
     # the Python extensions is to add support for Python-based
     # intervals (like MetaIntervals).
 
-    def __init__(self, globalPtr = 0):
+    def __init__(self, globalPtr: bool = False) -> None:
         # Pass globalPtr == 1 to the constructor to trick it into
         # "constructing" a Python wrapper around the global
         # CIntervalManager object.
@@ -28,8 +31,8 @@ class IntervalManager(CIntervalManager):
         self.eventQueue = EventQueue()
         self.MyEventmanager = EventManager.EventManager(self.eventQueue)
         self.setEventQueue(self.eventQueue)
-        self.ivals = []
-        self.removedIvals = {}
+        self.ivals: list[Interval.Interval | CInterval | None] = []
+        self.removedIvals: dict = {}
 
     def addInterval(self, interval):
         index = self.addCInterval(interval, 1)
@@ -86,7 +89,7 @@ class IntervalManager(CIntervalManager):
             ival.pause()
         return len(ivals)
 
-    def step(self):
+    def step(self) -> None:
         # This method should be called once per frame to perform all
         # of the per-frame processing on the active intervals.
         # Call C++ step, then do the Python stuff.
@@ -101,7 +104,7 @@ class IntervalManager(CIntervalManager):
         CIntervalManager.interrupt(self)
         self.__doPythonCallbacks()
 
-    def __doPythonCallbacks(self):
+    def __doPythonCallbacks(self) -> None:
         # This method does all of the required Python post-processing
         # after performing some C++-level action.
         # It is important to call all of the python callbacks on the
@@ -137,4 +140,4 @@ class IntervalManager(CIntervalManager):
         self.ivals[index] = interval
 
 #: The global IntervalManager object.
-ivalMgr = IntervalManager(1)
+ivalMgr = IntervalManager(True)

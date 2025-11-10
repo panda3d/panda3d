@@ -63,6 +63,8 @@ private:
   unsigned int _flags;
   unsigned int _pitch;
 
+  GraphicsWindowInputDevice *_input;
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

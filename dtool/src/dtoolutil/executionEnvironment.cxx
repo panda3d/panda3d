@@ -125,12 +125,18 @@ static const char *const libp3dtool_filenames[] = {
 
 #if defined(__EMSCRIPTEN__) && !defined(CPPPARSER)
 extern "C" void EMSCRIPTEN_KEEPALIVE
-_set_env_var(ExecutionEnvironment *ptr, const char *var, const char *value) {
+_set_env_var(const char *var, const char *value) {
+  ExecutionEnvironment *ptr = ExecutionEnvironment::get_ptr();
   ptr->_variables[std::string(var)] = std::string(value);
+}
+
+extern "C" void EMSCRIPTEN_KEEPALIVE
+_set_binary_name(const char *path) {
+  ExecutionEnvironment::set_binary_name(std::string(path));
 }
 #endif
 
-// Linux with GNU libc does have global argvargc variables, but we can't
+// Linux with GNU libc does have global argv/argc variables, but we can't
 // safely access them at stat init time--at least, not in libc5. (It does seem
 // to work with glibc2, however.)
 
@@ -584,17 +590,10 @@ read_environment_variables() {
     }
   }
 #elif defined(__EMSCRIPTEN__)
-  // We only have environment variables if we're running in node.js.
-#ifndef CPPPARSER
-  EM_ASM({
-    if (typeof process === 'object' && typeof process.env === 'object') {
-      for (var variable in process.env) {
-        __set_env_var($0, stringToUTF8OnStack(variable),
-                          stringToUTF8OnStack(process.env[variable]));
-      }
-    }
-  }, this);
-#endif
+  // The environment variables get loaded in by the .js file before main()
+  // using the _set_env_var exported function, defined above.  Trying to load
+  // env vars at static init time otherwise makes some optimizations more
+  // difficult, notably wasm-ctor-eval/wizer.
 
 #elif defined(HAVE_PROC_SELF_ENVIRON)
   // In some cases, we may have a file called procselfenviron that may be read

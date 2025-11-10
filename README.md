@@ -181,22 +181,21 @@ Although it's possible to build Panda3D on an Android device using the
 [termux](https://termux.com/) shell, the recommended route is to cross-compile
 .whl files using the SDK and NDK, which can then be used by the `build_apps`
 command to build a Python application into an .apk or .aab bundle.  You will
-need to get the latest thirdparty packages, which can be obtained from the
-artifacts page of the last successful run here:
+need to get the latest thirdparty packages, which can be obtained from here:
 
-https://github.com/rdb/panda3d-thirdparty/actions?query=branch%3Amain+is%3Asuccess+event%3Apush
+https://rdb.name/thirdparty-android.tar.gz
 
-This does not include Python at the moment, which can be extracted from
-[this archive](https://rdb.name/thirdparty-android.tar.gz) instead.
+This includes a copy of Python 3.13 compiled for Android.  You will need to
+use Python 3.13 on the host as well.
 
 These commands show how to compile wheels for the supported Android ABIs:
 
 ```bash
 export ANDROID_SDK_ROOT=/home/rdb/local/android
-python3.8 makepanda/makepanda.py --everything --outputdir built-droid-arm64 --arch arm64 --target android-21 --threads 6 --wheel
-python3.8 makepanda/makepanda.py --everything --outputdir built-droid-armv7a --arch armv7a --target android-19 --threads 6 --wheel
-python3.8 makepanda/makepanda.py --everything --outputdir built-droid-x86_64 --arch x86_64 --target android-21 --threads 6 --wheel
-python3.8 makepanda/makepanda.py --everything --outputdir built-droid-x86 --arch x86 --target android-19 --threads 6 --wheel
+python3.13 makepanda/makepanda.py --everything --outputdir built-droid-arm64 --arch arm64 --target android-21 --threads 6 --wheel
+python3.13 makepanda/makepanda.py --everything --outputdir built-droid-armv7a --arch arm --target android-21 --threads 6 --wheel
+python3.13 makepanda/makepanda.py --everything --outputdir built-droid-x86_64 --arch x86_64 --target android-21 --threads 6 --wheel
+python3.13 makepanda/makepanda.py --everything --outputdir built-droid-x86 --arch x86 --target android-21 --threads 6 --wheel
 ```
 
 It is now possible to use the generated wheels with `build_apps`, as explained
@@ -229,8 +228,8 @@ information as possible to help the developers track down the issue, such as
 your version of Panda3D, operating system, architecture, and any code and
 models that are necessary for the developers to reproduce the issue.
 
-If you're not sure whether you've encountered a bug, feel free to ask about
-it in the forums or the IRC channel first.
+If you're unsure whether you've encountered a bug, feel free to ask in the [forums](https://discourse.panda3d.org) or the [IRC channel](https://web.libera.chat/#panda3d) before opening an issue.
+
 
 Supporting the Project
 ======================
@@ -239,9 +238,12 @@ If you would like to support the project financially, visit
 [our campaign on OpenCollective](https://opencollective.com/panda3d).  Your
 contributions help us accelerate the development of Panda3D.
 
-For the list of backers, see the [BACKERS.md](BACKERS.md) file or visit the
-[Sponsors page](https://www.panda3d.org/sponsors) on our web site.  Thank you
-to everyone who has donated!
+For the complete list of backers, see the [BACKERS.md](BACKERS.md) file or
+visit the [Sponsors page](https://www.panda3d.org/sponsors) on our web site.
+Thank you to everyone who has donated!
+
+[<img src="https://www.panda3d.org/wp-content/uploads/2024/08/Route4MeLogo1185x300-2-1-1024x259.png" alt="Route4Me" height="48">](https://route4me.com/)
+[<img src="https://www.lambdatest.com/blue-logo.png" alt="LambdaTest" height="48">](https://www.lambdatest.com/?utm_source=panda3d&utm_medium=sponsor)
 
 <a href="https://opencollective.com/panda3d" target="_blank">
   <img src="https://opencollective.com/panda3d/contribute/button@2x.png?color=blue" width=300 />

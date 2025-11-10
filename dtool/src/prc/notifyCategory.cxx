@@ -21,6 +21,9 @@
 #include <time.h>  // for strftime().
 #include <assert.h>
 
+bool NotifyCategory::_notify_timestamp = false;
+bool NotifyCategory::_check_debug_notify_protect = false;
+
 long NotifyCategory::_server_delta = 0;
 
 /**
@@ -55,7 +58,7 @@ std::ostream &NotifyCategory::
 out(NotifySeverity severity, bool prefix) const {
   if (is_on(severity)) {
     if (prefix) {
-      if (get_notify_timestamp()) {
+      if (_notify_timestamp) {
         // Format a timestamp to include as a prefix as well.
         time_t now = time(nullptr) + _server_delta;
         struct tm atm;
@@ -79,7 +82,7 @@ out(NotifySeverity severity, bool prefix) const {
       return Notify::out(severity);
     }
 
-  } else if (severity <= NS_debug && get_check_debug_notify_protect()) {
+  } else if (severity <= NS_debug && _check_debug_notify_protect) {
     // Someone issued a debug Notify output statement without protecting it
     // within an if statement.  This can cause a significant runtime
     // performance hit, since it forces the iostream library to fully format
@@ -171,37 +174,4 @@ update_severity_cache() {
   }
 
   mark_cache_valid(_local_modified);
-}
-
-/**
- * Returns the value of the notify-timestamp ConfigVariable.  This is defined
- * using a method accessor rather than a static ConfigVariableBool, to protect
- * against the variable needing to be accessed at static init time.
- */
-bool NotifyCategory::
-get_notify_timestamp() {
-  static ConfigVariableBool *notify_timestamp = nullptr;
-  if (notify_timestamp == nullptr) {
-    notify_timestamp = new ConfigVariableBool
-      ("notify-timestamp", false,
-       "Set true to output the date & time with each notify message.");
-  }
-  return *notify_timestamp;
-}
-
-/**
- * Returns the value of the check-debug-notify-protect ConfigVariable.  This
- * is defined using a method accessor rather than a static ConfigVariableBool,
- * to protect against the variable needing to be accessed at static init time.
- */
-bool NotifyCategory::
-get_check_debug_notify_protect() {
-  static ConfigVariableBool *check_debug_notify_protect = nullptr;
-  if (check_debug_notify_protect == nullptr) {
-    check_debug_notify_protect = new ConfigVariableBool
-      ("check-debug-notify-protect", false,
-       "Set true to issue a warning message if a debug or spam "
-       "notify output is not protected within an if statement.");
-  }
-  return *check_debug_notify_protect;
 }

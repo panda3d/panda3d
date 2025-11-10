@@ -148,6 +148,9 @@ make_output(const std::string &name,
         (flags & (BF_require_parasite | BF_require_window)) != 0) {
       return nullptr;
     }
+    if (host->get_engine() != engine) {
+      return nullptr;
+    }
     // Early failure - if we are sure that this buffer WONT meet specs, we can
     // bail out early.
     if ((flags & BF_fb_props_optional) == 0) {

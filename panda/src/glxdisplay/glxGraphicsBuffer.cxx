@@ -166,7 +166,8 @@ open_buffer() {
     // with the old gsg.
     DCAST_INTO_R(glxgsg, _gsg, false);
 
-    if (!glxgsg->_context_has_pbuffer ||
+    if (glxgsg->get_engine() != _engine ||
+        !glxgsg->_context_has_pbuffer ||
         !glxgsg->get_fb_properties().subsumes(_fb_properties)) {
       // We need a new pixel format, and hence a new GSG.
       glxgsg = new glxGraphicsStateGuardian(_engine, _pipe, glxgsg);

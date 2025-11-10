@@ -20,7 +20,7 @@ jobs:
 
         include:
         - profile: ubuntu-bionic-double-standard-unity-makefile
-          os: ubuntu-20.04
+          os: ubuntu-22.04
           config: Standard
           unity: YES
           generator: Unix Makefiles
@@ -31,7 +31,7 @@ jobs:
           double: YES
 
         - profile: ubuntu-bionic-coverage-ninja
-          os: ubuntu-20.04
+          os: ubuntu-22.04
           config: Coverage
           unity: NO
           generator: Ninja
@@ -42,7 +42,7 @@ jobs:
           double: NO
 
         #- profile: macos-coverage-unity-xcode
-        #  os: macOS-13
+        #  os: macOS-15
         #  config: Coverage
         #  unity: YES
         #  generator: Xcode
@@ -53,7 +53,7 @@ jobs:
         #  double: NO
 
         - profile: macos-nometa-standard-makefile
-          os: macOS-13
+          os: macOS-15
           config: Standard
           unity: NO
           generator: Unix Makefiles
@@ -88,7 +88,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
       with:
         fetch-depth: 10
 
@@ -110,7 +110,7 @@ jobs:
 
     - name: Set up XCode (macOS)
       if: runner.os == 'macOS'
-      run: sudo xcode-select -s /Applications/Xcode_14.3.1.app/Contents/Developer
+      run: sudo xcode-select -s /Applications/Xcode_16.app/Contents/Developer
 
     - name: Install dependencies (Ubuntu)
       if: startsWith(matrix.os, 'ubuntu')
@@ -193,7 +193,7 @@ jobs:
 
     - name: Setup Python (Python 3.8)
       if: contains(matrix.python, 'YES')
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6
       with:
         python-version: '3.8'
     - name: Configure (Python 3.8)
@@ -225,7 +225,7 @@ jobs:
 
     - name: Setup Python (Python 3.9)
       if: contains(matrix.python, 'YES')
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6
       with:
         python-version: '3.9'
     - name: Configure (Python 3.9)
@@ -257,7 +257,7 @@ jobs:
 
     - name: Setup Python (Python 3.10)
       if: contains(matrix.python, 'YES')
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6
       with:
         python-version: '3.10'
     - name: Configure (Python 3.10)
@@ -289,7 +289,7 @@ jobs:
 
     - name: Setup Python (Python 3.11)
       if: contains(matrix.python, 'YES')
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6
       with:
         python-version: '3.11'
     - name: Configure (Python 3.11)
@@ -321,7 +321,7 @@ jobs:
 
     - name: Setup Python (Python 3.12)
       if: contains(matrix.python, 'YES')
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6
       with:
         python-version: '3.12'
     - name: Configure (Python 3.12)
@@ -372,12 +372,12 @@ jobs:
     if: "!contains(github.event.head_commit.message, '[skip ci]') && !contains(github.event.head_commit.message, '[ci skip]')"
     strategy:
       matrix:
-        os: [ubuntu-20.04, windows-2019, macOS-13]
+        os: [ubuntu-22.04, windows-2022, macOS-15]
     runs-on: ${{ matrix.os }}
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - name: Install dependencies (Ubuntu)
-      if: matrix.os == 'ubuntu-20.04'
+      if: matrix.os == 'ubuntu-22.04'
       run: |
         sudo apt-get update
         sudo apt-get install build-essential bison flex libfreetype6-dev libgl1-mesa-dev libjpeg-dev libode-dev libopenal-dev libpng-dev libssl-dev libvorbis-dev libx11-dev libxcursor-dev libxrandr-dev nvidia-cg-toolkit zlib1g-dev
@@ -400,16 +400,16 @@ jobs:
 
     - name: Set up XCode (macOS)
       if: runner.os == 'macOS'
-      run: sudo xcode-select -s /Applications/Xcode_14.3.1.app/Contents/Developer
+      run: sudo xcode-select -s /Applications/Xcode_16.app/Contents/Developer
 
     - name: Set up Python 3.13
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6
       with:
         python-version: '3.13'
     - name: Build Python 3.13
       shell: bash
       run: |
-        python makepanda/makepanda.py --git-commit=${{github.sha}} --outputdir=built --everything --no-eigen --python-incdir="$pythonLocation/include" --python-libdir="$pythonLocation/lib" --verbose --threads=4 --windows-sdk=10 --msvc-version=14.2
+        python makepanda/makepanda.py --git-commit=${{github.sha}} --outputdir=built --everything --no-eigen --python-incdir="$pythonLocation/include" --python-libdir="$pythonLocation/lib" --verbose --threads=4 --windows-sdk=10 --msvc-version=14.3
     - name: Test Python 3.13
       shell: bash
       run: |
@@ -417,13 +417,13 @@ jobs:
         PYTHONPATH=built LD_LIBRARY_PATH=built/lib:$pythonLocation/lib DYLD_LIBRARY_PATH=built/lib python -m pytest
 
     - name: Set up Python 3.12
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6
       with:
         python-version: '3.12'
     - name: Build Python 3.12 (double)
       shell: bash
       run: |
-        python makepanda/makepanda.py --override STDFLOAT_DOUBLE=1 --git-commit=${{github.sha}} --outputdir=built_dbl --everything --no-eigen --python-incdir="$pythonLocation/include" --python-libdir="$pythonLocation/lib" --verbose --threads=4 --windows-sdk=10 --msvc-version=14.2
+        python makepanda/makepanda.py --override STDFLOAT_DOUBLE=1 --git-commit=${{github.sha}} --outputdir=built_dbl --everything --no-eigen --python-incdir="$pythonLocation/include" --python-libdir="$pythonLocation/lib" --verbose --threads=4 --windows-sdk=10 --msvc-version=14.3
     - name: Test Python 3.12 (double)
       shell: bash
       run: |
@@ -435,13 +435,13 @@ jobs:
         python makepanda/makepackage.py --verbose --lzma --outputdir=built_dbl
 
     - name: Set up Python 3.11
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6
       with:
         python-version: '3.11'
     - name: Build Python 3.11
       shell: bash
       run: |
-        python makepanda/makepanda.py --git-commit=${{github.sha}} --outputdir=built --everything --no-eigen --python-incdir="$pythonLocation/include" --python-libdir="$pythonLocation/lib" --verbose --threads=4 --windows-sdk=10 --msvc-version=14.2
+        python makepanda/makepanda.py --git-commit=${{github.sha}} --outputdir=built --everything --no-eigen --python-incdir="$pythonLocation/include" --python-libdir="$pythonLocation/lib" --verbose --threads=4 --windows-sdk=10 --msvc-version=14.3
     - name: Test Python 3.11
       shell: bash
       run: |
@@ -449,13 +449,13 @@ jobs:
         PYTHONPATH=built LD_LIBRARY_PATH=built/lib:$pythonLocation/lib DYLD_LIBRARY_PATH=built/lib python -m pytest
 
     - name: Set up Python 3.10
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6
       with:
         python-version: '3.10'
     - name: Build Python 3.10
       shell: bash
       run: |
-        python makepanda/makepanda.py --git-commit=${{github.sha}} --outputdir=built --everything --no-eigen --python-incdir="$pythonLocation/include" --python-libdir="$pythonLocation/lib" --verbose --threads=4 --windows-sdk=10 --msvc-version=14.2
+        python makepanda/makepanda.py --git-commit=${{github.sha}} --outputdir=built --everything --no-eigen --python-incdir="$pythonLocation/include" --python-libdir="$pythonLocation/lib" --verbose --threads=4 --windows-sdk=10 --msvc-version=14.3
     - name: Test Python 3.10
       shell: bash
       run: |
@@ -463,13 +463,13 @@ jobs:
         PYTHONPATH=built LD_LIBRARY_PATH=built/lib:$pythonLocation/lib DYLD_LIBRARY_PATH=built/lib python -m pytest
 
     - name: Set up Python 3.9
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6
       with:
         python-version: '3.9'
     - name: Build Python 3.9
       shell: bash
       run: |
-        python makepanda/makepanda.py --git-commit=${{github.sha}} --outputdir=built --everything --no-eigen --python-incdir="$pythonLocation/include" --python-libdir="$pythonLocation/lib" --verbose --threads=4 --windows-sdk=10 --msvc-version=14.2
+        python makepanda/makepanda.py --git-commit=${{github.sha}} --outputdir=built --everything --no-eigen --python-incdir="$pythonLocation/include" --python-libdir="$pythonLocation/lib" --verbose --threads=4 --windows-sdk=10 --msvc-version=14.3
     - name: Test Python 3.9
       shell: bash
       run: |
@@ -477,13 +477,13 @@ jobs:
         PYTHONPATH=built LD_LIBRARY_PATH=built/lib:$pythonLocation/lib DYLD_LIBRARY_PATH=built/lib python -m pytest
 
     - name: Set up Python 3.8
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6
       with:
         python-version: '3.8'
     - name: Build Python 3.8
       shell: bash
       run: |
-        python makepanda/makepanda.py --git-commit=${{github.sha}} --outputdir=built --everything --no-eigen --python-incdir="$pythonLocation/include" --python-libdir="$pythonLocation/lib" --verbose --threads=4 --windows-sdk=10 --msvc-version=14.2
+        python makepanda/makepanda.py --git-commit=${{github.sha}} --outputdir=built --everything --no-eigen --python-incdir="$pythonLocation/include" --python-libdir="$pythonLocation/lib" --verbose --threads=4 --windows-sdk=10 --msvc-version=14.3
     - name: Test Python 3.8
       shell: bash
       run: |
@@ -498,7 +498,7 @@ jobs:
     if: "!contains(github.event.head_commit.message, '[skip ci]') && !contains(github.event.head_commit.message, '[ci skip]')"
     runs-on: ubuntu-24.04
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
 
     - name: Install dependencies
       run: |
@@ -508,7 +508,7 @@ jobs:
     - name: Setup emsdk
       uses: mymindstorm/setup-emsdk@v14
       with:
-        version: 3.1.70
+        version: 4.0.2
         actions-cache-folder: 'emsdk-cache'
 
     - name: Restore Python build cache
@@ -516,19 +516,19 @@ jobs:
       uses: actions/cache/restore@v4
       with:
         path: ~/python
-        key: cache-emscripten-python-3.12.7
+        key: cache-emscripten-python-3.12.8
 
     - name: Build Python 3.12
       if: steps.cache-emscripten-python-restore.outputs.cache-hit != 'true'
       run: |
-        wget https://www.python.org/ftp/python/3.12.7/Python-3.12.7.tar.xz
-        tar -xJf Python-3.12.7.tar.xz
-        (cd Python-3.12.7 && EM_CONFIG=$EMSDK/.emscripten python3 Tools/wasm/wasm_build.py emscripten-browser)
-        (cd Python-3.12.7/builddir/emscripten-browser && make install DESTDIR=~/python)
-        cp Python-3.12.7/builddir/emscripten-browser/Modules/_hacl/libHacl_Hash_SHA2.a ~/python/usr/local/lib
-        cp Python-3.12.7/builddir/emscripten-browser/Modules/_decimal/libmpdec/libmpdec.a ~/python/usr/local/lib
-        cp Python-3.12.7/builddir/emscripten-browser/Modules/expat/libexpat.a ~/python/usr/local/lib
-        rm -rf Python-3.12.7
+        wget https://www.python.org/ftp/python/3.12.8/Python-3.12.8.tar.xz
+        tar -xJf Python-3.12.8.tar.xz
+        (cd Python-3.12.8 && EM_CONFIG=$EMSDK/.emscripten python3 Tools/wasm/wasm_build.py emscripten-browser)
+        (cd Python-3.12.8/builddir/emscripten-browser && make install DESTDIR=~/python)
+        cp Python-3.12.8/builddir/emscripten-browser/Modules/_hacl/libHacl_Hash_SHA2.a ~/python/usr/local/lib
+        cp Python-3.12.8/builddir/emscripten-browser/Modules/_decimal/libmpdec/libmpdec.a ~/python/usr/local/lib
+        cp Python-3.12.8/builddir/emscripten-browser/Modules/expat/libexpat.a ~/python/usr/local/lib
+        rm -rf Python-3.12.8
 
     - name: Save Python build cache
       id: cache-emscripten-python-save
@@ -552,3 +552,156 @@ jobs:
       shell: bash
       run: |
         PYTHONHOME=~/python/usr/local PYTHONPATH=built node built/bin/run_tests.js tests
+
+  android:
+    if: "!contains(github.event.head_commit.message, '[skip ci]') && !contains(github.event.head_commit.message, '[ci skip]')"
+
+    strategy:
+      fail-fast: false
+
+      matrix:
+        include:
+        - android-abi: arm64-v8a
+          android-arch: arm64
+          android-triple: aarch64-linux-android
+          ndk-version: 29.0.14206865
+          runner: ubuntu-latest
+
+        - android-abi: armeabi-v7a
+          android-arch: arm
+          android-triple: arm-linux-androideabi
+          ndk-version: 29.0.14206865
+          runner: ubuntu-latest
+
+        - android-abi: x86_64
+          android-arch: x86_64
+          android-triple: x86_64-linux-android
+          ndk-version: 29.0.14206865
+          runner: ubuntu-latest
+
+        - android-abi: x86
+          android-arch: x86
+          android-triple: i686-linux-android
+          ndk-version: 29.0.14206865
+          runner: ubuntu-latest
+
+    runs-on: ${{ matrix.runner }}
+    steps:
+    - uses: actions/checkout@v5
+
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v3
+      with:
+        packages: 'tools platform-tools platforms;android-21 ndk;${{ matrix.ndk-version }}'
+
+    - name: Set up Android NDK
+      run: |
+        echo "ANDROID_NDK_ROOT=$ANDROID_SDK_ROOT/ndk/${{ matrix.ndk-version }}" >> $GITHUB_ENV
+
+    - uses: actions/setup-python@v6
+      with:
+        python-version: '3.13'
+
+    - name: Restore Python build cache
+      id: cache-android-python-restore
+      uses: actions/cache/restore@v4
+      with:
+        path: ~/python-prefix
+        key: cache-android-python-3.13.9-${{ matrix.android-abi }}-ndk${{ matrix.ndk-version }}
+
+    - name: Build Python 3.13
+      if: steps.cache-android-python-restore.outputs.cache-hit != 'true'
+      run: |
+        wget https://www.python.org/ftp/python/3.13.9/Python-3.13.9.tar.xz
+        tar -xJf Python-3.13.9.tar.xz
+        sed -i.bak "s/aarch64-linux-android/${{ matrix.android-triple }}/" Python-3.13.9/Android/android.py
+        sed -i.bak "s/ndk_version=[0-9.]\{1,\}/ndk_version=${{ matrix.ndk-version }}/" Python-3.13.9/Android/android-env.sh
+        (cd Python-3.13.9/Android && python3 android.py build ${{ matrix.android-triple }})
+        cp -R Python-3.13.9/cross-build/${{ matrix.android-triple }}/prefix ~/python-prefix
+        rm -rf Python-3.13.9
+
+    - name: Save Python build cache
+      id: cache-android-python-save
+      if: steps.cache-android-python-restore.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v4
+      with:
+        path: ~/python-prefix
+        key: ${{ steps.cache-android-python-restore.outputs.cache-primary-key }}
+
+    - name: Restore thirdparty build cache
+      id: cache-android-thirdparty-restore
+      uses: actions/cache/restore@v4
+      with:
+        path: ./thirdparty
+        key: cache-android-thirdparty-935c80380ca171e08587c570e9dad678d29db3c8-${{ matrix.android-abi }}-ndk${{ matrix.ndk-version }}
+
+    - name: Install yasm
+      if: steps.cache-android-thirdparty-restore.outputs.cache-hit != 'true'
+      run: ${{runner.os == 'macOS' && 'brew' || 'sudo apt-get'}} install yasm
+
+    - name: Build thirdparty packages
+      if: steps.cache-android-thirdparty-restore.outputs.cache-hit != 'true'
+      run: |
+        git clone --revision=935c80380ca171e08587c570e9dad678d29db3c8 --depth=1 https://github.com/rdb/panda3d-thirdparty.git thirdparty
+        cd thirdparty
+        cmake -B build \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK_ROOT/build/cmake/android.toolchain.cmake \
+          -DCMAKE_ANDROID_ARCH_ABI=${{ matrix.android-abi }} \
+          -DCMAKE_ANDROID_ARCH=${{ matrix.android-arch }} \
+          -DCMAKE_SYSTEM_VERSION=21 \
+          -DANDROID_ABI=${{ matrix.android-abi }} \
+          -DANDROID_PLATFORM=android-21 \
+          -DBUILD_FCOLLADA=OFF \
+          -DBUILD_OPENSSL=OFF \
+          -DBUILD_VRPN=OFF \
+          -DBUILD_ARTOOLKIT=OFF
+        cmake --build build --config Release -j4
+        rm -rf build
+
+    - name: Save thirdparty build cache
+      id: cache-android-thirdparty-save
+      if: steps.cache-android-thirdparty-restore.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v4
+      with:
+        path: ./thirdparty
+        key: ${{ steps.cache-android-thirdparty-restore.outputs.cache-primary-key }}
+
+    - name: Build for Android
+      shell: bash
+      run: |
+        python makepanda/makepanda.py --git-commit=${{github.sha}} --target android-21 --python-incdir=~/python-prefix/include --python-libdir=~/python-prefix/lib --arch ${{ matrix.android-arch }} --everything --no-openssl --no-tinydisplay --no-pandatool --verbose --threads=4
+
+    - name: Install test dependencies
+      shell: bash
+      run: |
+        python -m pip install -t ~/python-prefix/lib/python3.13/site-packages -r requirements-test.txt
+
+    - name: Enable KVM group perms
+      if: startsWith(matrix.runner, 'ubuntu')
+      run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+    - name: Setup Android Emulator and Run Tests
+      if: startsWith(matrix.android-abi, 'x86')
+      uses: reactivecircus/android-emulator-runner@v2
+      with:
+        api-level: 27
+        arch: ${{ matrix.android-abi }}
+        target: default
+        profile: pixel_6
+        script: |
+          adb shell "rm -rf /data/local/tmp/panda3d-tests"
+          adb push built/bin/run_tests /data/local/tmp/panda3d-tests/run_tests
+          adb shell "mkdir /data/local/tmp/panda3d-tests/lib"
+          adb push built/lib/*.so /data/local/tmp/panda3d-tests/lib
+          adb push ~/python-prefix/lib/*.so /data/local/tmp/panda3d-tests/lib
+          adb push ~/python-prefix/lib/python3.13 /data/local/tmp/panda3d-tests/lib/python3.13
+          adb push built/panda3d /data/local/tmp/panda3d-tests/lib/python3.13/site-packages/
+          adb push built/direct /data/local/tmp/panda3d-tests/lib/python3.13/site-packages/
+          adb push built/models /data/local/tmp/panda3d-tests/models
+          adb push built/etc /data/local/tmp/panda3d-tests/etc
+          adb push tests /data/local/tmp/panda3d-tests/tests
+          adb shell "cd /data/local/tmp/panda3d-tests && LD_LIBRARY_PATH=/data/local/tmp/panda3d-tests/lib PYTHONPATH=/data/local/tmp/panda3d-tests/lib/python3.13/site-packages ./run_tests -v tests"

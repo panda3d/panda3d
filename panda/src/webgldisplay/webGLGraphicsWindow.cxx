@@ -20,6 +20,13 @@
 #include "pointerData.h"
 #include <emscripten.h>
 
+#ifndef CPPPARSER
+extern "C" void EMSCRIPTEN_KEEPALIVE
+_canvas_resized(WebGLGraphicsWindow *window, double width, double height) {
+  window->on_resize(width, height);
+}
+#endif
+
 TypeHandle WebGLGraphicsWindow::_type_handle;
 
 /**
@@ -171,8 +178,9 @@ set_properties_now(WindowProperties &properties) {
   const char *target = "#canvas";
 
   if (properties.has_size()) {
-    emscripten_set_canvas_element_size(target, properties.get_x_size(), properties.get_y_size());
     _properties.set_size(properties.get_size());
+    emscripten_set_canvas_element_size(target, properties.get_x_size(), properties.get_y_size());
+    emscripten_set_element_css_size(target, properties.get_x_size(), properties.get_y_size());
     properties.clear_size();
     set_size_and_recalc(_properties.get_x_size(), _properties.get_y_size());
     throw_event(get_window_event(), this);
@@ -238,6 +246,16 @@ set_properties_now(WindowProperties &properties) {
     // though, we can't hide the cursor.
     properties.clear_cursor_hidden();
   }
+
+  if (properties.get_foreground()) {
+    EM_ASM_({
+      var canvas = document.getElementById('canvas');
+      if (canvas) {
+        canvas.focus();
+      }
+    });
+    properties.clear_foreground();
+  }
 }
 
 /**
@@ -249,6 +267,14 @@ close_window() {
     emscripten_webgl_make_context_current(0);
     _gsg.clear();
   }
+
+  EM_ASM({
+    var canvas = document.getElementById('canvas');
+    if (canvas && canvas._p3d_resizeObserver) {
+      canvas._p3d_resizeObserver.disconnect();
+      delete canvas._p3d_resizeObserver;
+    }
+  });
 
   // Clear the assigned callbacks.
   const char *target = "#canvas";
@@ -307,11 +333,22 @@ open_window() {
     return false;
   }
 
-  if (_properties.has_size() && _properties.get_size() != LVecBase2i(1, 1)) {
+  // For now, always use the size specified in the CSS, except when fixed size
+  // has been specified, or the CSS has no size
+  double css_width, css_height;
+  emscripten_get_element_css_size(target, &css_width, &css_height);
+
+  if (_properties.has_size() && (_properties.get_fixed_size() || css_width == 0.0 || css_height == 0.0)) {
     emscripten_set_canvas_element_size(target, _properties.get_x_size(), _properties.get_y_size());
+    emscripten_set_element_css_size(target, _properties.get_x_size(), _properties.get_y_size());
   } else {
-    int width, height;
-    emscripten_get_canvas_element_size(target, &width, &height);
+    int width = (int)css_width;
+    int height = (int)css_height;
+    if (width == 0 || height == 0) {
+      emscripten_get_canvas_element_size(target, &width, &height);
+    } else {
+      emscripten_set_canvas_element_size(target, width, height);
+    }
     _properties.set_size(width, height);
 
     EmscriptenFullscreenChangeEvent event;
@@ -369,7 +406,61 @@ open_window() {
 
   emscripten_set_wheel_callback(target, user_data, false, &on_wheel_event);
 
+  // Emscripten has no working resize handler for the canvas element, we'll
+  // have to create our own
+  EM_ASM({
+    var canvas = document.getElementById('canvas');
+    if (canvas) {
+      var observer = new ResizeObserver(function(entries) {
+        var entry = entries[0];
+        if (entry) {
+          var width = entry.contentRect.width;
+          var height = entry.contentRect.height;
+          if (width != 0 && height != 0) {
+            __canvas_resized($0, entry.contentRect.width, entry.contentRect.height);
+          }
+        }
+      });
+      observer.observe(canvas);
+      if (canvas._p3d_resizeObserver) {
+        canvas._p3d_resizeObserver.disconnect();
+      }
+      canvas._p3d_resizeObserver = observer;
+    }
+  }, this);
+
+  if (!_properties.has_foreground() || _properties.get_foreground()) {
+    _properties.set_foreground(EM_ASM_INT({
+      var canvas = document.getElementById('canvas');
+      if (canvas) {
+        canvas.focus();
+
+        return document.activeElement === canvas;
+      } else {
+        return false;
+      }
+    }));
+  }
+
   return true;
+}
+
+/**
+ *
+ */
+void WebGLGraphicsWindow::
+on_resize(double width, double height) {
+  if (_properties.get_fixed_size()) {
+    return;
+  }
+
+  const char *target = "#canvas";
+
+  LVecBase2i size((int)width, (int)height);
+  emscripten_set_canvas_element_size(target, size[0], size[1]);
+  if (_properties.get_size() != size) {
+    system_changed_properties(WindowProperties::size(size));
+  }
 }
 
 /**
@@ -472,9 +563,9 @@ on_keyboard_event(int type, const EmscriptenKeyboardEvent *event, void *user_dat
     // it does the right thing.  We grab the first unicode code point.
     // Unfortunately, this doesn't seem to handle dead keys on Firefox.
     int keycode = 0;
-    EM_ASM_({
-      stringToUTF32(String.fromCharCode($0), $1, 4);
-    }, event->charCode, &keycode);
+    keycode = EM_ASM_INT({
+      return String.fromCharCode($0).codePointAt(0);
+    }, event->charCode);
 
     if (keycode != 0) {
       device->keystroke(keycode);

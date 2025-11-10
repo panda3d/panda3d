@@ -41,6 +41,10 @@ register_with_read_factory() {
 void ModelRoot::
 write_datagram(BamWriter *manager, Datagram &dg) {
   ModelNode::write_datagram(manager, dg);
+
+  if (manager->get_file_minor_ver() >= 46) {
+    manager->write_handle(dg, _loader_type);
+  }
 }
 
 /**
@@ -67,4 +71,10 @@ make_from_bam(const FactoryParams &params) {
 void ModelRoot::
 fillin(DatagramIterator &scan, BamReader *manager) {
   ModelNode::fillin(scan, manager);
+
+  if (manager->get_file_minor_ver() >= 46) {
+    _loader_type = manager->read_handle(scan);
+  } else {
+    _loader_type = TypeHandle::none();
+  }
 }

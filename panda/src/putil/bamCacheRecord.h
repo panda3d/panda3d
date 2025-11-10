@@ -93,6 +93,7 @@ private:
   time_t _recorded_time;
   std::streamsize _record_size;  // this is accurate only in the index file.
   time_t _source_timestamp;  // Not record to the cache file.
+  TypeHandle _loader_type;
 
   class DependentFile {
   public:

@@ -54,6 +54,12 @@ public:
   void set_shader_inputs(PyObject *args, PyObject *kwargs);
 
   PyObject *get_tight_bounds(const NodePath &other = NodePath()) const;
+
+  void set_collide_owner(PyObject *owner);
+
+private:
+  static void r_set_collide_owner(PandaNode *node, PyObject *weakref);
+  static void r_clear_collide_owner(PandaNode *node);
 };
 
 BEGIN_PUBLISH
