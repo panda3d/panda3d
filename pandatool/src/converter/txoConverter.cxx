@@ -8,13 +8,12 @@
  *
  * @file txoConverter.cxx
  * @author RegDogg
- * @date 2025-04-09
+ * @date 2025-11-10
  */
 
 #include "txoConverter.h"
 #include "pnmFileTypeRegistry.h"
 #include "pnmFileType.h"
-#include "filename.h"
 
 /**
  *

@@ -8,7 +8,7 @@
  *
  * @file txoConverter.h
  * @author RegDogg
- * @date 2025-04-09
+ * @date 2025-11-10
  */
 
 #ifndef TXOCONVERTER_H
@@ -16,6 +16,9 @@
 
 #include "pandatoolbase.h"
 #include "programBase.h"
+#include "filename.h"
+#include "withOutputFile.h"
+#include "textureAttrib.h"
 
 /**
  *
