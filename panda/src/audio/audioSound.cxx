@@ -211,8 +211,8 @@ get_raw_comment() const {
  * i.e. "author". Case-sensitive.
  */
 bool AudioSound::
-has_comment(std::string &key) const {
-  for (std::string &st : get_raw_comment()) {
+has_comment(const std::string &key) const {
+  for (const std::string &st : get_raw_comment()) {
     if (st.rfind(key + "=", 0) == 0) {
       return true;
     }
@@ -225,8 +225,8 @@ has_comment(std::string &key) const {
  * returns an empty string.
  */
 std::string AudioSound::
-get_comment(std::string &key) const {
-  for (std::string &st : get_raw_comment()) {
+get_comment(const std::string &key) const {
+  for (const std::string &st : get_raw_comment()) {
     if (st.rfind(key + "=", 0) == 0) {
       return st.substr(key.length() + 1);
     }

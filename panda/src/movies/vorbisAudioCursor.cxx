@@ -30,7 +30,7 @@ parse_vorbis_comments(vorbis_comment *com) {
   vector_string comments;
   for (int cnum = 0; cnum < com->comments; ++cnum) {
     std::string tag(com->user_comments[cnum], com->comment_lengths[cnum]);
-    comments.push_back(tag);
+    comments.push_back(std::move(tag));
   }
   return comments;
 }

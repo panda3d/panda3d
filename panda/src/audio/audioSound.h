@@ -142,8 +142,8 @@ PUBLISHED:
   enum SoundStatus { BAD, READY, PLAYING };
   virtual SoundStatus status() const = 0;
 
-  bool has_comment(std::string &key) const;
-  std::string get_comment(std::string &key) const;
+  bool has_comment(const std::string &key) const;
+  std::string get_comment(const std::string &key) const;
   MAKE_MAP_PROPERTY(comments, has_comment, get_comment);
 
   virtual vector_string get_raw_comment() const;
