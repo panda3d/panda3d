@@ -633,7 +633,7 @@ jobs:
       uses: actions/cache/restore@v4
       with:
         path: ./thirdparty
-        key: cache-android-thirdparty-afc7ad98aee90da0f2f6bad826a41f9b71e0cdd0-${{ matrix.android-abi }}-ndk${{ matrix.ndk-version }}
+        key: cache-android-thirdparty-935c80380ca171e08587c570e9dad678d29db3c8-${{ matrix.android-abi }}-ndk${{ matrix.ndk-version }}
 
     - name: Install yasm
       if: steps.cache-android-thirdparty-restore.outputs.cache-hit != 'true'
@@ -642,7 +642,7 @@ jobs:
     - name: Build thirdparty packages
       if: steps.cache-android-thirdparty-restore.outputs.cache-hit != 'true'
       run: |
-        git clone --revision=afc7ad98aee90da0f2f6bad826a41f9b71e0cdd0 --depth=1 https://github.com/rdb/panda3d-thirdparty.git thirdparty
+        git clone --revision=935c80380ca171e08587c570e9dad678d29db3c8 --depth=1 https://github.com/rdb/panda3d-thirdparty.git thirdparty
         cd thirdparty
         cmake -B build \
           -DCMAKE_BUILD_TYPE=Release \
