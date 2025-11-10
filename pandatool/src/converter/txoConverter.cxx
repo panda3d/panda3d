@@ -121,7 +121,7 @@ handle_args(ProgramBase::Args &args) {
     return false;
   }
 
-  if (!(_output_filename.get_extension() == "txo")) {
+  if ((_output_filename.get_extension() != "txo")) {
     nout << "Output filename " << _output_filename << " must end in .txo\n";
     return false;
   }
