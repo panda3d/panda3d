@@ -25,6 +25,9 @@ using std::istream;
 
 TypeHandle VorbisAudioCursor::_type_handle;
 
+/**
+ *
+ */
 vector_string
 parse_vorbis_comments(vorbis_comment *com) {
   vector_string comments;
