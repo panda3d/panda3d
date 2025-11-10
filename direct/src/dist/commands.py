@@ -192,14 +192,14 @@ SITE_PY_ANDROID = """
 # module.
 import sys, os
 from importlib import _bootstrap, _bootstrap_external
+from android_support import log_write as android_log_write
+from android_support import find_library
 
 class AndroidExtensionFinder:
     @classmethod
     def find_spec(cls, fullname, path=None, target=None):
-        soname = 'libpy.' + fullname + '.so'
-        path = os.path.join(sys.platlibdir, soname)
-
-        if os.path.exists(path):
+        path = find_library('py.' + fullname)
+        if path:
             loader = _bootstrap_external.ExtensionFileLoader(fullname, path)
             return _bootstrap.ModuleSpec(fullname, loader, origin=path)
 
@@ -209,8 +209,6 @@ sys.meta_path.append(AndroidExtensionFinder)
 
 from _frozen_importlib import _imp, FrozenImporter
 from io import RawIOBase, TextIOWrapper
-
-from android_log import write as android_log_write
 
 
 sys.frozen = True
@@ -300,7 +298,7 @@ class build_apps(setuptools.Command):
         self.android_version_code = 1
         self.android_min_sdk_version = 21
         self.android_max_sdk_version = None
-        self.android_target_sdk_version = 36
+        self.android_target_sdk_version = 35
         self.android_manifest_file = None
         self.gui_apps = {}
         self.console_apps = {}
@@ -587,6 +585,10 @@ class build_apps(setuptools.Command):
                 data_dir = os.path.join(build_dir, 'assets')
                 os.makedirs(data_dir, exist_ok=True)
 
+                res_dir = os.path.join(build_dir, 'res')
+                res_raw_dir = os.path.join(res_dir, 'raw')
+                os.makedirs(res_raw_dir, exist_ok=True)
+
                 for abi in self.android_abis:
                     lib_dir = os.path.join(build_dir, 'lib', abi)
                     os.makedirs(lib_dir, exist_ok=True)
@@ -603,7 +605,7 @@ class build_apps(setuptools.Command):
 
                     # We end up copying the data multiple times to the same
                     # directory, but that's probably fine for now.
-                    self.build_binaries(platform + suffix, lib_dir, data_dir)
+                    self.build_binaries(platform + suffix, lib_dir, data_dir, res_raw_dir)
 
                 # Write out the icons to the res directory.
                 for appname, icon in self.icon_objects.items():
@@ -614,7 +616,6 @@ class build_apps(setuptools.Command):
                         appname_sane = appname.replace(' ', '_')
                         basename = f'ic_{appname_sane}.png'
 
-                    res_dir = os.path.join(build_dir, 'res')
                     icon.writeSize(48, os.path.join(res_dir, 'mipmap-mdpi-v4', basename))
                     icon.writeSize(72, os.path.join(res_dir, 'mipmap-hdpi-v4', basename))
                     icon.writeSize(96, os.path.join(res_dir, 'mipmap-xhdpi-v4', basename))
@@ -866,7 +867,7 @@ class build_apps(setuptools.Command):
         if category:
             application.set('android:appCategory', category)
         application.set('android:debuggable', ('false', 'true')[self.android_debuggable])
-        application.set('android:extractNativeLibs', 'true')
+        application.set('android:extractNativeLibs', 'false')
         application.set('android:hardwareAccelerated', 'true')
 
         app_icon = self.icon_objects.get('*', self.icon_objects.get(self.macos_main_app))
@@ -894,12 +895,18 @@ class build_apps(setuptools.Command):
             meta_data.set('android:name', 'android.app.lib_name')
             meta_data.set('android:value', appname_sane)
 
+            meta_data = ET.SubElement(activity, 'meta-data')
+            meta_data.set('android:name', 'org.panda3d.android.BLOB_RESOURCE')
+            meta_data.set('android:resource', '@raw/' + appname_sane + '.so')
+
             intent_filter = ET.SubElement(activity, 'intent-filter')
             ET.SubElement(intent_filter, 'action').set('android:name', 'android.intent.action.MAIN')
             ET.SubElement(intent_filter, 'category').set('android:name', 'android.intent.category.LAUNCHER')
             ET.SubElement(intent_filter, 'category').set('android:name', 'android.intent.category.LEANBACK_LAUNCHER')
 
         tree = ET.ElementTree(manifest)
+        if sys.version_info >= (3, 9):
+            ET.indent(tree)
         with open(path, 'wb') as fh:
             tree.write(fh, encoding='utf-8', xml_declaration=True)
 
@@ -935,7 +942,7 @@ class build_apps(setuptools.Command):
             if self.android_target_sdk_version >= 31 and f'{android}exported' not in activity.attrib:
                 raise RuntimeError("<activity> element must have android:exported attribute when targeting Android API 31+")
 
-    def build_binaries(self, platform, binary_dir, data_dir=None):
+    def build_binaries(self, platform, binary_dir, data_dir=None, blob_dir=None):
         """ Builds the binary data for the given platform. """
 
         use_wheels = True
@@ -1131,6 +1138,7 @@ class build_apps(setuptools.Command):
 
             stub_name = 'deploy-stub'
             target_name = appname
+            appname_sane = appname
             if platform.startswith('win') or 'macosx' in platform:
                 if not use_console:
                     stub_name = 'deploy-stubw'
@@ -1139,6 +1147,17 @@ class build_apps(setuptools.Command):
                     stub_name = 'libdeploy-stubw.so'
                     appname_sane = appname.replace(' ', '_')
                     target_name = 'lib' + appname_sane + '.so'
+
+                if use_wheels:
+                    dexfile = os.path.join(binary_dir, '..', '..', 'classes.dex')
+                    self.copy(os.path.join(p3dwhlfn, 'deploy_libs', 'classes.dex'), dexfile)
+
+                    # Can this wheel load the blob as a raw resource?
+                    with open(dexfile, 'rb') as fh:
+                        supports_blob_resource = b'org.panda3d.android.BLOB_RESOURCE' in fh.read()
+
+                    assert supports_blob_resource, \
+                        "Please use a newer Panda3D wheel to build for Android using this version of build_apps"
 
             if platform.startswith('win'):
                 stub_name += '.exe'
@@ -1170,6 +1189,14 @@ class build_apps(setuptools.Command):
             if not self.log_filename or '%' not in self.log_filename:
                 use_strftime = False
 
+            blob_path = None
+            if blob_dir is not None:
+                if platform.startswith('android'):
+                    # Not really a .so file, but it forces bundletool to align it
+                    blob_path = os.path.join(blob_dir, appname_sane + '.so')
+                else:
+                    blob_path = os.path.join(blob_dir, appname_sane)
+
             target_path = os.path.join(binary_dir, target_name)
             freezer.generateRuntimeFromStub(target_path, stub_file, use_console, {
                 'prc_data': prcexport if self.embed_prc_data else None,
@@ -1183,7 +1210,7 @@ class build_apps(setuptools.Command):
                 'prc_executable_args_envvar': None,
                 'main_dir': None,
                 'log_filename': self.expand_path(self.log_filename, platform),
-            }, self.log_append, use_strftime)
+            }, self.log_append, use_strftime, blob_path)
             stub_file.close()
 
             if temp_file:
@@ -1297,11 +1324,6 @@ class build_apps(setuptools.Command):
             target_path = os.path.join(binary_dir, basename)
             search_path = get_search_path_for(source_path)
             self.copy_with_dependencies(source_path, target_path, search_path)
-
-        # Copy classes.dex on Android
-        if use_wheels and platform.startswith('android'):
-            self.copy(os.path.join(p3dwhlfn, 'deploy_libs', 'classes.dex'),
-                      os.path.join(binary_dir, '..', '..', 'classes.dex'))
 
         # Extract any other data files from dependency packages.
         if data_dir is None:

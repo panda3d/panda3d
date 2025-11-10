@@ -80,6 +80,8 @@ PUBLISHED:
 
   void list_index(std::ostream &out, int indent_level = 0) const;
 
+  void clear();
+
   INLINE static BamCache *get_global_ptr();
   INLINE static void consider_flush_global_index();
   INLINE static void flush_global_index();
@@ -104,7 +106,7 @@ private:
   void merge_index(BamCacheIndex *new_index);
   void rebuild_index();
   INLINE void mark_index_stale();
-
+  void reset_in_memory_index(); 
   void add_to_index(const BamCacheRecord *record);
   void remove_from_index(const Filename &source_filename);
 

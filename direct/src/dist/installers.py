@@ -207,7 +207,7 @@ def create_aab(command, basename, build_dir):
     and use it to convert an .aab into an .apk.
     """
 
-    from ._android import AndroidManifest, AbiAlias, BundleConfig, NativeLibraries, ResourceTable
+    from ._android import AndroidManifest, AbiAlias, BundleConfig, NativeLibraries, ResourceTable, UncompressNativeLibraries
 
     bundle_fn = p3d.Filename.from_os_specific(command.dist_dir) / (basename + '.aab')
     build_dir_fn = p3d.Filename.from_os_specific(build_dir)
@@ -230,7 +230,13 @@ def create_aab(command, basename, build_dir):
     config = BundleConfig()
     config.bundletool.version = '1.1.0'
     config.optimizations.splits_config.Clear()
-    config.optimizations.uncompress_native_libraries.enabled = False
+    if axml.extract_native_libs:
+        config.optimizations.uncompress_native_libraries.enabled = False
+    else:
+        config.optimizations.uncompress_native_libraries.enabled = True
+        config.optimizations.uncompress_native_libraries.alignment = \
+            UncompressNativeLibraries.PageAlignment.PAGE_ALIGNMENT_16K
+    config.compression.uncompressed_glob.append('res/raw/**')
     bundle.add_subfile('BundleConfig.pb', p3d.StringStream(config.SerializeToString()), 9)
 
     resources = ResourceTable()
@@ -251,13 +257,25 @@ def create_aab(command, basename, build_dir):
             entry.entry_id.id = entry_id
             entry.name = res_name
 
-            for density, tag in (160, 'mdpi'), (240, 'hdpi'), (320, 'xhdpi'), (480, 'xxhdpi'), (640, 'xxxhdpi'):
-                path = f'res/mipmap-{tag}-v4/{res_name}.png'
-                if (build_dir_fn / path).exists():
-                    bundle.add_subfile('base/' + path, build_dir_fn / path, 0)
-                    config_value = entry.config_value.add()
-                    config_value.config.density = density
-                    config_value.value.item.file.path = path
+            if type_name == 'raw':
+                path = f'res/raw/{res_name}'
+                if not (build_dir_fn / path).exists():
+                    command.announce(
+                        f'\tRaw resource {path} was not found on disk', distutils.log.ERROR)
+                    return
+
+                # These are aligned to page size for mmap.
+                bundle.add_subfile('base/' + path, build_dir_fn / path, 0, 16384)
+                config_value = entry.config_value.add()
+                config_value.value.item.file.path = path
+            else:
+                for density, tag in (120, 'ldpi'), (160, 'mdpi'), (240, 'hdpi'), (320, 'xhdpi'), (480, 'xxhdpi'), (640, 'xxxhdpi'):
+                    path = f'res/mipmap-{tag}-v4/{res_name}.png'
+                    if (build_dir_fn / path).exists():
+                        bundle.add_subfile('base/' + path, build_dir_fn / path, 0)
+                        config_value = entry.config_value.add()
+                        config_value.config.density = density
+                        config_value.value.item.file.path = path
 
     bundle.add_subfile('base/resources.pb', p3d.StringStream(resources.SerializeToString()), 9)
 
@@ -273,13 +291,25 @@ def create_aab(command, basename, build_dir):
     # Add the classes.dex.
     bundle.add_subfile('base/dex/classes.dex', build_dir_fn / 'classes.dex', 9)
 
-    # Add libraries, compressed.
+    # Add libraries, compressed, unless extractNativeLibs is false, in which
+    # case they have to be aligned to page boundaries (16 KiB on 64-bit).
+    lib_compress = 9 if axml.extract_native_libs else 0
+
     for abi in os.listdir(os.path.join(build_dir, 'lib')):
         abi_dir = os.path.join(build_dir, 'lib', abi)
 
+        if axml.extract_native_libs:
+            lib_align = 0
+        elif '64' in abi:
+            lib_align = 16384
+        else:
+            lib_align = 4096
+
         for lib in os.listdir(abi_dir):
             if lib.startswith('lib') and lib.endswith('.so'):
-                bundle.add_subfile(f'base/lib/{abi}/{lib}', build_dir_fn / 'lib' / abi / lib, 9)
+                bundle.add_subfile(f'base/lib/{abi}/{lib}',
+                                   build_dir_fn / 'lib' / abi / lib,
+                                   lib_compress, lib_align)
 
     # Add assets, compressed.
     assets_dir = os.path.join(build_dir, 'assets')
