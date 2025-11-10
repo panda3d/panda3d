@@ -122,6 +122,9 @@ static const OpusFileCallbacks callbacks = {cb_read, cb_seek, cb_tell, nullptr};
 
 TypeHandle OpusAudioCursor::_type_handle;
 
+/**
+ *
+ */
 vector_string
 parse_opus_comments(const OpusTags *com) {
   // Blatant copy from vorbis code because they're the same struct
