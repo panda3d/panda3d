@@ -48,36 +48,36 @@ TxoConverter() : WithOutputFile(true, false, true) {
  */
 void TxoConverter::
 run() {
-    nassertv(has_output_filename());
-    Filename fullpath = Filename(_image_filename.get_fullpath());
+  nassertv(has_output_filename());
+  Filename fullpath = Filename(_image_filename.get_fullpath());
 
-    nout << "Reading " << fullpath << "...\n";
+  nout << "Reading " << fullpath << "...\n";
 
-    PNMFileType *type = PNMFileTypeRegistry::get_global_ptr()->get_type_from_extension(fullpath);
+  PNMFileType *type = PNMFileTypeRegistry::get_global_ptr()->get_type_from_extension(fullpath);
+  if (type == nullptr) {
+    nout << "Cannot determine type of image file " << fullpath << ".\n";
+    nout << "Currently supported image types:\n";
+    PNMFileTypeRegistry::get_global_ptr()->write(nout, 2);
+    nout << "\n";
+    return;
+  }
+
+  PT(Texture) tex = new Texture("original image");
+
+  if (_got_rgb_filename) {
+    PNMFileType *type = PNMFileTypeRegistry::get_global_ptr()->get_type_from_extension(_rgb_filename);
     if (type == nullptr) {
-      nout << "Cannot determine type of image file " << fullpath << ".\n";
-      nout << "Currently supported image types:\n";
-      PNMFileTypeRegistry::get_global_ptr()->write(nout, 2);
-      nout << "\n";
+      nout << "Image file type '" << _rgb_filename << "' is unknown.\n";
       return;
     }
+    tex->read(_image_filename, _rgb_filename.get_fullpath(), 0, 0, LoaderOptions());
+  }
+  else {
+    tex->read(_image_filename, LoaderOptions());
+  }
+  tex->get_ram_image();
 
-    PT(Texture) tex = new Texture("original image");
-
-    if (_got_rgb_filename) {
-      PNMFileType *type = PNMFileTypeRegistry::get_global_ptr()->get_type_from_extension(_rgb_filename);
-      if (type == nullptr) {
-        nout << "Image file type '" << _rgb_filename << "' is unknown.\n";
-        return;
-      }
-      tex->read(_image_filename, _rgb_filename.get_fullpath(), 0, 0, LoaderOptions());
-    }
-    else {
-      tex->read(_image_filename, LoaderOptions());
-    }
-    tex->get_ram_image();
-
-    convert_txo(tex);
+  convert_txo(tex);
 
 }
 
