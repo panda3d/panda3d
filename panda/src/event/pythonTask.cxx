@@ -53,15 +53,18 @@ PythonTask(PyObject *func_or_coro, const std::string &name) :
     _function = func_or_coro;
     Py_INCREF(_function);
 #if PY_VERSION_HEX >= 0x03050000
-  } else if (PyCoro_CheckExact(func_or_coro)) {
-    // We also allow passing in a coroutine, because why not.
+  } else if (PyCoro_CheckExact(func_or_coro) ||
+             PyGen_CheckExact(func_or_coro) ||
+             PyType_IsSubtype(Py_TYPE(func_or_coro), &PyCoro_Type)) {
+    // We also allow passing in a coroutine.
     _generator = func_or_coro;
     Py_INCREF(_generator);
-#endif
+#else
   } else if (PyGen_CheckExact(func_or_coro)) {
     // Something emulating a coroutine.
     _generator = func_or_coro;
     Py_INCREF(_generator);
+#endif
   } else {
     nassert_raise("Invalid function passed to PythonTask");
   }
@@ -528,7 +531,7 @@ do_python_task() {
         Py_DECREF(str);
         Py_DECREF(str2);
       }
-      if (PyCoro_CheckExact(result)) {
+      if (PyObject_TypeCheck(result, &PyCoro_Type)) {
         // If a coroutine, am_await is possible but senseless, since we can
         // just call send(None) on the coroutine itself.
         _generator = result;
@@ -624,7 +627,7 @@ do_python_task() {
       }
 
 #if PY_VERSION_HEX >= 0x03050000
-    } else if (result == Py_None && PyCoro_CheckExact(_generator)) {
+    } else if (result == Py_None && PyObject_TypeCheck(_generator, &PyCoro_Type)) {
       // Bare yield from a coroutine means to try again next frame.
       Py_DECREF(result);
       return DS_cont;

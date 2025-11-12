@@ -396,7 +396,7 @@ gather(PyObject *args) {
         continue;
       }
 #if PY_VERSION_HEX >= 0x03050000
-    } else if (PyCoro_CheckExact(item)) {
+    } else if (PyObject_TypeCheck(item, &PyCoro_Type)) {
       // We allow passing in a coroutine instead of a future.  This causes it
       // to be scheduled as a task on the current task manager.
       PT(AsyncTask) task = new PythonTask(item);
