@@ -1249,7 +1249,8 @@ if (COMPILER=="GCC"):
 
     if GetTarget() == 'darwin':
         LibName("ALWAYS", "-framework AppKit")
-        LibName("AGL", "-framework AGL")
+        if SDK["OSXTARGET"] < (26, 0):
+            LibName("AGL", "-framework AGL")
         LibName("CARBON", "-framework Carbon")
         LibName("COCOA", "-framework Cocoa")
         # Fix for a bug in OSX Leopard:
@@ -5616,9 +5617,10 @@ if not RUNTIME and not PkgSkip("TINYDISPLAY"):
   TargetAdd('p3tinydisplay_ztriangle_4.obj', opts=OPTS, input='ztriangle_4.cxx')
   TargetAdd('p3tinydisplay_ztriangle_table.obj', opts=OPTS, input='ztriangle_table.cxx')
   if GetTarget() == 'darwin':
-    TargetAdd('p3tinydisplay_tinyOsxGraphicsWindow.obj', opts=OPTS, input='tinyOsxGraphicsWindow.mm')
-    TargetAdd('libp3tinydisplay.dll', input='p3tinydisplay_tinyOsxGraphicsWindow.obj')
-    TargetAdd('libp3tinydisplay.dll', opts=['CARBON', 'AGL', 'COCOA'])
+    if frozenset(OSX_ARCHS) - frozenset(('x86_64', 'arm64')):
+      TargetAdd('p3tinydisplay_tinyOsxGraphicsWindow.obj', opts=OPTS, input='tinyOsxGraphicsWindow.mm')
+      TargetAdd('libp3tinydisplay.dll', input='p3tinydisplay_tinyOsxGraphicsWindow.obj')
+      TargetAdd('libp3tinydisplay.dll', opts=['CARBON', 'AGL', 'COCOA'])
   elif GetTarget() == 'windows':
     TargetAdd('libp3tinydisplay.dll', input='libp3windisplay.dll')
     TargetAdd('libp3tinydisplay.dll', opts=['WINIMM', 'WINGDI', 'WINKERNEL', 'WINOLDNAMES', 'WINUSER', 'WINMM'])
