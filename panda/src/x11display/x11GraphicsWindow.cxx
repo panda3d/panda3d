@@ -2445,46 +2445,6 @@ cleanup:
 }
 
 /**
- *
- */
-int x11GraphicsWindow::
-xim_preedit_start(XIC ic, XPointer client_data, XPointer call_data) {
-  x11GraphicsWindow *window = (x11GraphicsWindow *)client_data;
-  return window->handle_preedit_start();
-}
-
-/**
- *
- */
-void x11GraphicsWindow::
-xim_preedit_draw(XIC ic, XPointer client_data,
-                 XIMPreeditDrawCallbackStruct *call_data) {
-  x11GraphicsWindow *window = (x11GraphicsWindow *)client_data;
-  nassertv_always(call_data != nullptr);
-  window->handle_preedit_draw(*call_data);
-}
-
-/**
- *
- */
-void x11GraphicsWindow::
-xim_preedit_caret(XIC ic, XPointer client_data,
-                  XIMPreeditCaretCallbackStruct *call_data) {
-  x11GraphicsWindow *window = (x11GraphicsWindow *)client_data;
-  nassertv_always(call_data != nullptr);
-  window->handle_preedit_caret(*call_data);
-}
-
-/**
- *
- */
-void x11GraphicsWindow::
-xim_preedit_done(XIC ic, XPointer client_data, XPointer call_data) {
-  x11GraphicsWindow *window = (x11GraphicsWindow *)client_data;
-  window->handle_preedit_done();
-}
-
-/**
  * Enables detectable auto-repeat if supported by the X server.
  */
 void x11GraphicsWindow::
