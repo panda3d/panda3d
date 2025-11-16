@@ -122,6 +122,50 @@ public:
 #define ALLOC_DELETED_CHAIN_DEF(Type)                        \
   DeletedChain< Type > Type::_deleted_chain;
 
+#elif defined(DO_MEMORY_USAGE)
+
+#define ALLOC_DELETED_CHAIN(Type)                            \
+  inline void *operator new(size_t size) RETURNS_ALIGNED(MEMORY_HOOK_ALIGNMENT) { \
+    void *ptr = PANDA_MALLOC_SINGLE(size);                   \
+    get_type_handle(Type).inc_memory_usage(TypeHandle::MC_singleton, sizeof(Type)); \
+    return ptr;                                              \
+  }                                                          \
+  inline void *operator new(size_t size, void *ptr) {        \
+    (void) size;                                             \
+    return ptr;                                              \
+  }                                                          \
+  inline void operator delete(void *ptr) {                   \
+    if (ptr != nullptr) {                                    \
+      get_type_handle(Type).dec_memory_usage(TypeHandle::MC_singleton, sizeof(Type)); \
+      PANDA_FREE_SINGLE(ptr);                                \
+    }                                                        \
+  }                                                          \
+  inline void operator delete(void *, void *) {              \
+  }                                                          \
+  inline void *operator new[](size_t size) RETURNS_ALIGNED(MEMORY_HOOK_ALIGNMENT) { \
+    void *ptr = PANDA_MALLOC_SINGLE(size);                   \
+    get_type_handle(Type).inc_memory_usage(TypeHandle::MC_array, sizeof(Type)); \
+    return ptr;                                              \
+  }                                                          \
+  inline void *operator new[](size_t size, void *ptr) {      \
+    (void) size;                                             \
+    return ptr;                                              \
+  }                                                          \
+  inline void operator delete[](void *ptr) {                 \
+    if (ptr != nullptr) {                                    \
+      get_type_handle(Type).dec_memory_usage(TypeHandle::MC_array, sizeof(Type)); \
+      PANDA_FREE_SINGLE(ptr);                                \
+    }                                                        \
+  }                                                          \
+  inline void operator delete[](void *, void *) {            \
+  }                                                          \
+  inline static bool validate_ptr(const void *ptr) {         \
+    return (ptr != nullptr);                                 \
+  }
+
+#define ALLOC_DELETED_CHAIN_DECL(Type) ALLOC_DELETED_CHAIN(Type)
+#define ALLOC_DELETED_CHAIN_DEF(Type)
+
 #else  // USE_DELETED_CHAIN
 
 #define ALLOC_DELETED_CHAIN(Type)                            \

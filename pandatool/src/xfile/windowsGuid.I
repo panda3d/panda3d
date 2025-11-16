@@ -15,14 +15,6 @@
  *
  */
 INLINE WindowsGuid::
-WindowsGuid() {
-  memset(this, 0, sizeof(WindowsGuid));
-}
-
-/**
- *
- */
-INLINE WindowsGuid::
 WindowsGuid(unsigned long data1,
             unsigned short data2, unsigned short data3,
             unsigned char b1, unsigned char b2, unsigned char b3,
@@ -40,22 +32,6 @@ WindowsGuid(unsigned long data1,
   _b7(b7),
   _b8(b8)
 {
-}
-
-/**
- *
- */
-INLINE WindowsGuid::
-WindowsGuid(const WindowsGuid &copy) {
-  (*this) = copy;
-}
-
-/**
- *
- */
-INLINE void WindowsGuid::
-operator = (const WindowsGuid &copy) {
-  memcpy(this, &copy, sizeof(WindowsGuid));
 }
 
 /**

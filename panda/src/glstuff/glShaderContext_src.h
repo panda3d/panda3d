@@ -42,7 +42,7 @@ public:
   bool get_sampler_texture_type(int &out, GLenum param_type);
 
   bool valid(void) override;
-  void bind() override;
+  void bind(GraphicsStateGuardian *gsg) override;
   void unbind() override;
 
   void set_state_and_transform(const RenderState *state,

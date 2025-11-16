@@ -2438,7 +2438,7 @@ reset() {
 
 #ifndef OPENGLES
   // Check for SSBOs.
-  if (is_at_least_gl_version(4, 3) || has_extension("ARB_shader_storage_buffer_object")) {
+  if (is_at_least_gl_version(4, 3) || has_extension("GL_ARB_shader_storage_buffer_object")) {
     _supports_shader_buffers = true;
     _glGetProgramInterfaceiv = (PFNGLGETPROGRAMINTERFACEIVPROC)
        get_extension_func("glGetProgramInterfaceiv");
@@ -8717,7 +8717,7 @@ do_issue_shader() {
         // If it's a different type of shader, make sure to unbind the old.
         _current_shader_context->unbind();
       }
-      context->bind();
+      context->bind(this);
       _current_shader = shader;
     }
 
@@ -14480,8 +14480,8 @@ upload_texture(CLP(TextureContext) *gtc, bool force, bool uses_mipmaps,
 }
 
 /**
- * Loads a texture image, or one page of a cube map image, from system RAM to
- * texture memory.
+ * Loads a texture image, or one view of a multiview texture, from system RAM
+ * to texture memory.
  */
 bool CLP(GraphicsStateGuardian)::
 upload_texture_view(CLP(TextureContext) *gtc, int view, bool needs_reload,

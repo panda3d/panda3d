@@ -66,11 +66,11 @@ PUBLISHED:
   INLINE bool get_record_timestamp() const;
 
   std::string add_subfile(const std::string &subfile_name, const Filename &filename,
-                          int compression_level);
+                          int compression_level, size_t data_alignment=0);
   std::string add_subfile(const std::string &subfile_name, std::istream *subfile_data,
-                          int compression_level);
+                          int compression_level, size_t data_alignment=0);
   std::string update_subfile(const std::string &subfile_name, const Filename &filename,
-                             int compression_level);
+                             int compression_level, size_t data_alignment=0);
 
 #ifdef HAVE_OPENSSL
   bool add_jar_signature(const Filename &certificate, const Filename &pkey,
@@ -152,7 +152,8 @@ private:
   class Subfile {
   public:
     Subfile() = default;
-    Subfile(const std::string &name, int compression_level);
+    Subfile(const std::string &name, int compression_level,
+            size_t data_alignment=0);
 
     INLINE bool operator < (const Subfile &other) const;
 
@@ -160,7 +161,7 @@ private:
     bool read_header(std::istream &read);
     bool verify_data(std::istream &read);
     bool write_index(std::ostream &write, std::streampos &fpos);
-    bool write_header(std::ostream &write, std::streampos &fpos);
+    bool write_header(std::ostream &write, std::streampos &fpos, size_t data_alignment=0);
     bool write_data(std::ostream &write, std::istream *read,
                     std::streampos &fpos, int compression_level);
     INLINE bool is_compressed() const;
@@ -180,6 +181,7 @@ private:
     std::string _comment;
     int _flags = SF_data_descriptor;
     CompressionMethod _compression_method = CM_store;
+    size_t _data_alignment = 0;
   };
 
   void add_new_subfile(Subfile *subfile, int compression_level);

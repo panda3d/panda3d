@@ -1,6 +1,7 @@
 """PANDA3D Particle Panel"""
 
 # Import Tkinter, Pmw, and the floater code from this directory tree.
+from panda3d.core import ConfigVariableSearchPath, Point2, Point3, Vec3, Vec4
 from direct.tkwidgets.AppShell import AppShell
 import os, Pmw
 from direct.tkwidgets.Dial import AngleDial
@@ -15,6 +16,10 @@ import seParticleEffect
 
 from tkinter.filedialog import *
 from tkinter.simpledialog import askstring
+
+
+particlePath = ConfigVariableSearchPath("particle-path",
+    "The directories to search for particle files to be loaded.")
 
 
 class ParticlePanel(AppShell):
@@ -1041,7 +1046,7 @@ class ParticlePanel(AppShell):
 
     def loadParticleEffectFromFile(self):
         # Find path to particle directory
-        pPath = getParticlePath()
+        pPath = particlePath
         if pPath.getNumDirectories() > 0:
             if repr(pPath.getDirectory(0)) == '.':
                 path = '.'
@@ -1070,7 +1075,7 @@ class ParticlePanel(AppShell):
 
     def saveParticleEffectToFile(self):
         # Find path to particle directory
-        pPath = getParticlePath()
+        pPath = particlePath
         if pPath.getNumDirectories() > 0:
             if repr(pPath.getDirectory(0)) == '.':
                 path = '.'

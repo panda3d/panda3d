@@ -108,7 +108,7 @@ receive_update(PyObject *distobj, DatagramIterator &di) const {
   int field_id = packer.raw_unpack_uint16();
   DCField *field = _this->get_field_by_index(field_id);
   if (field == nullptr) {
-    ostringstream strm;
+    std::ostringstream strm;
     strm
         << "Received update for field " << field_id << ", not in class "
         << _this->get_name();

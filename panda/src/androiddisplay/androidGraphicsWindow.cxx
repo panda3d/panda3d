@@ -15,6 +15,7 @@
 #include "androidGraphicsStateGuardian.h"
 #include "config_androiddisplay.h"
 #include "androidGraphicsPipe.h"
+#include "config_android.h"
 
 #include "graphicsPipe.h"
 #include "keyboardButton.h"
@@ -231,6 +232,11 @@ set_properties_now(WindowProperties &properties) {
 
     _properties.set_fullscreen(properties.get_fullscreen());
     properties.clear_fullscreen();
+  }
+
+  if (properties.has_title()) {
+    android_set_title(_app->activity, properties.get_title());
+    properties.clear_title();
   }
 }
 

@@ -19,6 +19,8 @@
 #include "config_androiddisplay.h"
 #include "frameBufferProperties.h"
 
+extern IMPORT_CLASS struct android_app *panda_android_app;
+
 TypeHandle AndroidGraphicsPipe::_type_handle;
 
 /**
@@ -121,6 +123,9 @@ make_output(const std::string &name,
   // First thing to try: an eglGraphicsWindow
 
   if (retry == 0) {
+    if (panda_android_app == nullptr) {
+      return nullptr;
+    }
     if (((flags&BF_require_parasite)!=0)||
         ((flags&BF_refuse_window)!=0)||
         ((flags&BF_resizeable)!=0)||

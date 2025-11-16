@@ -40,6 +40,10 @@ public:
 private:
   static int trace_callback(PyObject *py_thread, PyFrameObject *frame,
                             int what, PyObject *arg);
+
+#if PY_VERSION_HEX >= 0x030D0000 // 3.13
+  static int ref_trace_callback(PyObject *obj, PyRefTracerEvent event, void *data);
+#endif
 };
 
 #include "pStatClient_ext.I"
