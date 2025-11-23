@@ -94,7 +94,7 @@ encode_wchar(char32_t ch, TextEncoder::Encoding encoding) {
  * given encoding.
  */
 PyObject *Extension<TextEncoder>::
-encode_wtext(const wstring &wtext, TextEncoder::Encoding encoding) {
+encode_wtext(const std::wstring &wtext, TextEncoder::Encoding encoding) {
   std::string value = TextEncoder::encode_wtext(wtext, encoding);
   return PyBytes_FromStringAndSize((char *)value.data(), (Py_ssize_t)value.size());
 }

@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from collections.abc import Iterator
+
 from panda3d.core import ConfigVariableBool, ConfigVariableDouble, ClockObject
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.task.TaskManagerGlobal import taskMgr
@@ -17,28 +21,28 @@ class JobManager:
     # there's one task for the JobManager, all jobs run in this task
     TaskName = 'jobManager'
 
-    def __init__(self, timeslice=None):
+    def __init__(self, timeslice: float | None = None) -> None:
         # how long do we run per frame
         self._timeslice = timeslice
         # store the jobs in these structures to allow fast lookup by various keys
         # priority -> jobId -> job
-        self._pri2jobId2job = {}
+        self._pri2jobId2job: dict[int, dict[int, Job]] = {}
         # priority -> chronological list of jobIds
-        self._pri2jobIds = {}
+        self._pri2jobIds: dict[int, list[int]] = {}
         # jobId -> priority
-        self._jobId2pri = {}
+        self._jobId2pri: dict[int, int] = {}
         # how many timeslices to give each job; this is used to efficiently implement
         # the relative job priorities
-        self._jobId2timeslices = {}
+        self._jobId2timeslices: dict[int, int] = {}
         # how much time did the job use beyond the allotted timeslice, used to balance
         # out CPU usage
-        self._jobId2overflowTime = {}
-        self._useOverflowTime = None
+        self._jobId2overflowTime: dict[int, float] = {}
+        self._useOverflowTime: bool | None = None
         # this is a generator that we use to give high-priority jobs more timeslices,
         # it yields jobIds in a sequence that includes high-priority jobIds more often
         # than low-priority
-        self._jobIdGenerator = None
-        self._highestPriority = Job.Priorities.Normal
+        self._jobIdGenerator: Iterator[int] | None = None
+        self._highestPriority: int = Job.Priorities.Normal  # type: ignore[attr-defined]
 
     def destroy(self):
         taskMgr.remove(JobManager.TaskName)

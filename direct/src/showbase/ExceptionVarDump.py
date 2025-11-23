@@ -35,7 +35,7 @@ def _varDump__init__(self, *args, **kArgs):
 sReentry = 0
 
 
-def _varDump__print(exc):
+def _varDump__print(exc) -> None:
     global sReentry
     global notify
     if sReentry > 0:
@@ -176,7 +176,7 @@ def _excepthookDumpVars(eType, eValue, tb):
     oldExcepthook(eType, eValue, origTb)
 
 
-def install(log, upload):
+def install(log: bool, upload: bool) -> None:
     """Installs the exception hook."""
     global oldExcepthook
     global wantStackDumpLog
@@ -192,8 +192,8 @@ def install(log, upload):
         # thrown by the interpreter don't get created until the
         # stack has been unwound and an except block has been reached
         if not hasattr(Exception, '_moved__init__'):
-            Exception._moved__init__ = Exception.__init__
-            Exception.__init__ = _varDump__init__
+            Exception._moved__init__ = Exception.__init__  # type: ignore[attr-defined]
+            Exception.__init__ = _varDump__init__  # type: ignore[method-assign]
     else:
         if sys.excepthook is not _excepthookDumpVars:
             oldExcepthook = sys.excepthook

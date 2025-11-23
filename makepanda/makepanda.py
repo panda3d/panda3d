@@ -1382,10 +1382,10 @@ def CompileCxx(obj,src,opts):
             elif arch == 'mips64':
                 cmd += ' -fintegrated-as'
             elif arch == 'x86':
-                cmd += ' -march=i686 -mssse3 -mfpmath=sse -m32'
+                cmd += ' -march=i686 -mssse3 -mfpmath=sse'
                 cmd += ' -mstackrealign'
             elif arch == 'x86_64':
-                cmd += ' -march=x86-64 -msse4.2 -mpopcnt -m64'
+                cmd += ' -march=x86-64 -msse4.2 -mpopcnt'
 
             cmd += " -Wa,--noexecstack"
 
@@ -1906,6 +1906,11 @@ def CompileLink(dll, obj, opts):
                 cmd += " -march=armv7-a -Wl,--fix-cortex-a8"
             elif arch == 'mips':
                 cmd += ' -mips32'
+
+            if arch.endswith('64'):
+                # See https://developer.android.com/guide/practices/page-sizes
+                cmd += ' -Wl,-z,max-page-size=16384'
+
             cmd += ' -lc -lm'
 
         elif GetTarget() == 'emscripten':
@@ -2424,6 +2429,7 @@ DTOOL_CONFIG=[
     ("PHAVE_DIRENT_H",                 'UNDEF',                  '1'),
     ("PHAVE_UCONTEXT_H",               'UNDEF',                  '1'),
     ("PHAVE_STDINT_H",                 '1',                      '1'),
+    ("PHAVE_EXECINFO_H",               'UNDEF',                  '1'),
     ("HAVE_RTTI",                      '1',                      '1'),
     ("HAVE_X11",                       'UNDEF',                  '1'),
     ("IS_LINUX",                       'UNDEF',                  '1'),
@@ -2560,6 +2566,7 @@ def WriteConfigSettings():
         dtool_config["PHAVE_GLOB_H"] = 'UNDEF'
         dtool_config["PHAVE_LOCKF"] = 'UNDEF'
         dtool_config["HAVE_VIDEO4LINUX"] = 'UNDEF'
+        dtool_config["PHAVE_EXECINFO_H"] = 'UNDEF'
 
     if (GetTarget() == "emscripten"):
         # There are no threads in JavaScript, so don't bother using them.
@@ -2572,6 +2579,7 @@ def WriteConfigSettings():
         dtool_config["PHAVE_LINUX_INPUT_H"] = 'UNDEF'
         dtool_config["HAVE_X11"] = 'UNDEF'
         dtool_config["HAVE_GLX"] = 'UNDEF'
+        dtool_config["PHAVE_EXECINFO_H"] = 'UNDEF'
 
         # There are no environment vars either, or default prc files.
         prc_parameters["DEFAULT_PRC_DIR"] = 'UNDEF'
@@ -5959,10 +5967,10 @@ if PkgSkip("PYTHON") == 0:
         TargetAdd('classes.dex', input='org/jnius/NativeInvocationHandler.class')
 
         PyTargetAdd('deploy-stubw_android_main.obj', opts=OPTS, input='android_main.cxx')
-        PyTargetAdd('deploy-stubw_android_log.obj', opts=OPTS, input='android_log.c')
+        PyTargetAdd('deploy-stubw_android_support.obj', opts=OPTS, input='android_support.cxx')
         PyTargetAdd('libdeploy-stubw.dll', input='android_native_app_glue.obj')
         PyTargetAdd('libdeploy-stubw.dll', input='deploy-stubw_android_main.obj')
-        PyTargetAdd('libdeploy-stubw.dll', input='deploy-stubw_android_log.obj')
+        PyTargetAdd('libdeploy-stubw.dll', input='deploy-stubw_android_support.obj')
         PyTargetAdd('libdeploy-stubw.dll', input=COMMON_PANDA_LIBS)
         PyTargetAdd('libdeploy-stubw.dll', input='libp3android.dll')
         PyTargetAdd('libdeploy-stubw.dll', opts=['DEPLOYSTUB', 'ANDROID'])
@@ -5970,7 +5978,7 @@ if PkgSkip("PYTHON") == 0:
 #
 # Build the test runner for static builds
 #
-if GetLinkAllStatic():
+if GetLinkAllStatic() or GetTarget() == 'android':
     if GetTarget() == 'emscripten':
         LinkFlag('RUN_TESTS_FLAGS', '-s NODERAWFS')
         LinkFlag('RUN_TESTS_FLAGS', '-s ASSERTIONS=2')
@@ -5991,15 +5999,16 @@ if GetLinkAllStatic():
     OPTS=['DIR:tests', 'PYTHON', 'RUN_TESTS_FLAGS', 'SUBSYSTEM:CONSOLE']
     PyTargetAdd('run_tests-main.obj', opts=OPTS, input='main.c')
     PyTargetAdd('run_tests.exe', input='run_tests-main.obj')
-    PyTargetAdd('run_tests.exe', input='core.pyd')
-    if not PkgSkip('DIRECT'):
-        PyTargetAdd('run_tests.exe', input='direct.pyd')
-    if not PkgSkip('PANDAPHYSICS'):
-        PyTargetAdd('run_tests.exe', input='physics.pyd')
-    if not PkgSkip('EGG'):
-        PyTargetAdd('run_tests.exe', input='egg.pyd')
-    if not PkgSkip('BULLET'):
-        PyTargetAdd('run_tests.exe', input='bullet.pyd')
+    if GetLinkAllStatic():
+        PyTargetAdd('run_tests.exe', input='core.pyd')
+        if not PkgSkip('DIRECT'):
+            PyTargetAdd('run_tests.exe', input='direct.pyd')
+        if not PkgSkip('PANDAPHYSICS'):
+            PyTargetAdd('run_tests.exe', input='physics.pyd')
+        if not PkgSkip('EGG'):
+            PyTargetAdd('run_tests.exe', input='egg.pyd')
+        if not PkgSkip('BULLET'):
+            PyTargetAdd('run_tests.exe', input='bullet.pyd')
     PyTargetAdd('run_tests.exe', input=COMMON_PANDA_LIBS)
     PyTargetAdd('run_tests.exe', opts=['PYTHON', 'BULLET', 'RUN_TESTS_FLAGS'])
 

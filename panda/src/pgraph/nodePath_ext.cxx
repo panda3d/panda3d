@@ -56,10 +56,9 @@ PyObject *Extension<NodePath>::
 __deepcopy__(PyObject *self, PyObject *memo) const {
   extern struct Dtool_PyTypedObject Dtool_NodePath;
 
-  // Borrowed reference.
   PyObject *dupe;
-  if (PyDict_GetItemRef(memo, self, &dupe) > 0) {
-    // Already in the memo dictionary.
+  if (PyDict_GetItemRef(memo, self, &dupe) != 0) {
+    // Already in the memo dictionary (or an error happened).
     return dupe;
   }
 

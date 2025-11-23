@@ -34,7 +34,7 @@ sort_time() {
  */
 bool PStatFrameData::
 write_datagram(Datagram &destination, PStatClient *client) const {
-  if (_time_data.size() >= 65536 || _level_data.size() >= 65536) {
+  if (_time_data.size() >= INT_MAX || _level_data.size() >= INT_MAX) {
     pstats_cat.info()
       << "Dropping frame with " << _time_data.size()
       << " time measurements and " << _level_data.size()
@@ -63,7 +63,7 @@ write_datagram(Datagram &destination, PStatClient *client) const {
     ptr += 2;
   }
 
-  *(uint32_t *)ptr = __builtin_bswap16(_level_data.size());
+  *(uint32_t *)ptr = __builtin_bswap32(_level_data.size());
   ptr += 2;
 
   for (const DataPoint &dp : _level_data) {

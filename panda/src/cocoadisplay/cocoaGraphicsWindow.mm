@@ -774,7 +774,10 @@ set_properties_now(WindowProperties &properties) {
     if (!_properties.get_fullscreen()) {
       // We use the view, not the window, to convert the frame size, expressed
       // in pixels, into points as the "dpi awareness" is managed by the view.
-      NSSize size = [_view convertSizeFromBacking:NSMakeSize(width, height)];
+      NSSize size = NSMakeSize(width, height);
+      if (dpi_aware) {
+        size = [_view convertSizeFromBacking:NSMakeSize(width, height)];
+      }
       if (_window != nil) {
         [_window setContentSize:size];
       }
@@ -782,7 +785,8 @@ set_properties_now(WindowProperties &properties) {
 
       if (cocoadisplay_cat.is_debug()) {
         cocoadisplay_cat.debug()
-          << "Setting size to " << width << ", " << height << "\n";
+          << "Setting size to " << width << " x " << height
+          << " (scaled to " << size.width << " x " << size.height << ")\n";
       }
 
       // Cocoa doesn't send an event, and the other resize-window handlers
@@ -1379,7 +1383,11 @@ handle_resize_event() {
     [_view setFrameSize:contentRect.size];
   }
 
-  NSRect frame = [_view convertRectToBacking:[_view bounds]];
+  NSRect frame = [_view bounds];
+
+  if (dpi_aware) {
+    frame = [_view convertRectToBacking:frame];
+  }
 
   WindowProperties properties;
   bool changed = false;

@@ -121,15 +121,22 @@ x11GraphicsPipe(const std::string &display) :
   _is_valid = true;
 
   // Dynamically load the xf86dga extension.
-  void *xf86dga = dlopen("libXxf86dga.so.1", RTLD_NOW | RTLD_LOCAL);
-  if (xf86dga != nullptr) {
+  if (!x_support_xf86dga) {
+    _XF86DGADirectVideo = nullptr;
+    if (x11display_cat.is_debug()) {
+      x11display_cat.debug()
+        << "XFree86-DGA support is disabled"
+        << "; relative mouse mode may not work.\n";
+    }
+  } else if (void *xf86dga = dlopen("libXxf86dga.so.1", RTLD_NOW | RTLD_LOCAL)) {
     pfn_XF86DGAQueryVersion _XF86DGAQueryVersion = (pfn_XF86DGAQueryVersion)dlsym(xf86dga, "XF86DGAQueryVersion");
     _XF86DGADirectVideo = (pfn_XF86DGADirectVideo)dlsym(xf86dga, "XF86DGADirectVideo");
 
     int major_ver, minor_ver;
     if (_XF86DGAQueryVersion == nullptr || _XF86DGADirectVideo == nullptr) {
       x11display_cat.warning()
-        << "libXxf86dga.so.1 does not provide required functions; relative mouse mode may not work.\n";
+        << "libXxf86dga.so.1 does not provide required functions"
+        << "; relative mouse mode may not work.\n";
 
     } else if (!_XF86DGAQueryVersion(_display, &major_ver, &minor_ver)) {
       _XF86DGADirectVideo = nullptr;
@@ -138,13 +145,19 @@ x11GraphicsPipe(const std::string &display) :
     _XF86DGADirectVideo = nullptr;
     if (x11display_cat.is_debug()) {
       x11display_cat.debug()
-        << "cannot dlopen libXxf86dga.so.1; relative mouse mode may not work.\n";
+        << "cannot dlopen libXxf86dga.so.1"
+        << "; relative mouse mode may not work.\n";
     }
   }
 
   // Dynamically load the XCursor extension.
-  void *xcursor = dlopen("libXcursor.so.1", RTLD_NOW | RTLD_LOCAL);
-  if (xcursor != nullptr) {
+  if (!x_support_xcursor) {
+    _xcursor_size = -1;
+    if (x11display_cat.is_debug()) {
+      x11display_cat.debug()
+        << "XCursor support is disabled; cursor changing will not work.\n";
+    }
+  } else if (void *xcursor = dlopen("libXcursor.so.1", RTLD_NOW | RTLD_LOCAL)) {
     pfn_XcursorGetDefaultSize _XcursorGetDefaultSize = (pfn_XcursorGetDefaultSize)dlsym(xcursor, "XcursorGetDefaultSize");
     _XcursorXcFileLoadImages = (pfn_XcursorXcFileLoadImages)dlsym(xcursor, "XcursorXcFileLoadImages");
     _XcursorImagesLoadCursor = (pfn_XcursorImagesLoadCursor)dlsym(xcursor, "XcursorImagesLoadCursor");
@@ -175,8 +188,14 @@ x11GraphicsPipe(const std::string &display) :
   }
 
   // Dynamically load the XRandr extension.
-  void *xrandr = dlopen("libXrandr.so.2", RTLD_NOW | RTLD_LOCAL);
-  if (xrandr != nullptr) {
+  if (!x_support_xrandr) {
+    _have_xrandr = false;
+    if (x11display_cat.is_debug()) {
+      x11display_cat.debug()
+        << "XRandR support is disabled; resolution setting will not work.\n";
+    }
+  }
+  else if (void *xrandr = dlopen("libXrandr.so.2", RTLD_NOW | RTLD_LOCAL)) {
     pfn_XRRQueryExtension _XRRQueryExtension = (pfn_XRRQueryExtension)dlsym(xrandr, "XRRQueryExtension");
     pfn_XRRQueryVersion _XRRQueryVersion = (pfn_XRRQueryVersion)dlsym(xrandr, "XRRQueryVersion");
 
@@ -238,7 +257,8 @@ x11GraphicsPipe(const std::string &display) :
 
   // Dynamically load the XInput2 extension.
   int ev, err;
-  if (XQueryExtension(_display, "XInputExtension", &_xi_opcode, &ev, &err)) {
+  if (x_support_xinput2 &&
+      XQueryExtension(_display, "XInputExtension", &_xi_opcode, &ev, &err)) {
     void *xi = dlopen("libXi.so.6", RTLD_NOW | RTLD_LOCAL);
     if (xi != nullptr) {
       pfn_XIQueryVersion _XIQueryVersion = (pfn_XIQueryVersion)dlsym(xi, "XIQueryVersion");
@@ -272,6 +292,8 @@ x11GraphicsPipe(const std::string &display) :
           << "cannot dlopen libXi.so.1; relative mouse mode will not work.\n";
       }
     }
+  } else {
+    _XISelectEvents = nullptr;
   }
 
   // Use Xrandr to fill in the supported resolution list.

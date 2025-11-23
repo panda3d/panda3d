@@ -63,13 +63,13 @@ static PyObject *get_done_result(const AsyncFuture *future) {
       // If it's an AsyncGatheringFuture, get the result for each future.
       const AsyncGatheringFuture *gather = (const AsyncGatheringFuture *)future;
       Py_ssize_t num_futures = (Py_ssize_t)gather->get_num_futures();
-      PyObject *results = PyTuple_New(num_futures);
+      PyObject *results = PyList_New(num_futures);
 
       for (Py_ssize_t i = 0; i < num_futures; ++i) {
         PyObject *result = get_done_result(gather->get_future((size_t)i));
         if (result != nullptr) {
           // This steals a reference.
-          PyTuple_SET_ITEM(results, i, result);
+          PyList_SET_ITEM(results, i, result);
         } else {
           Py_DECREF(results);
           return nullptr;
@@ -145,9 +145,30 @@ static PyObject *gen_next_asyncfuture(PyObject *self) {
   else {
     PyObject *result = get_done_result(future);
     if (result != nullptr) {
-      PyErr_SetObject(PyExc_StopIteration, result);
-      // PyErr_SetObject increased the reference count, so we no longer need our reference.
+      // See python/cpython#101578 - PyErr_SetObject has a special case where
+      // it interprets a tuple specially, so we bypass that by creating the
+      // exception directly.
+#if PY_VERSION_HEX >= 0x030C0000 // 3.12
+      PyObject *exc = PyObject_CallOneArg(PyExc_StopIteration, result);
       Py_DECREF(result);
+      if (LIKELY(exc != nullptr)) {
+        // This function steals a reference to exc.
+        PyErr_SetRaisedException(exc);
+      }
+#else
+      if (PyTuple_Check(result)) {
+        PyObject *exc = PyObject_CallOneArg(PyExc_StopIteration, result);
+        Py_DECREF(result);
+        if (LIKELY(exc != nullptr)) {
+          PyErr_SetObject(PyExc_StopIteration, exc);
+          Py_DECREF(exc);
+        }
+      } else {
+        PyErr_SetObject(PyExc_StopIteration, result);
+        // PyErr_SetObject increased the reference count, so we no longer need our reference.
+        Py_DECREF(result);
+      }
+#endif
     }
     return nullptr;
   }

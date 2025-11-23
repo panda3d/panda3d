@@ -17,6 +17,7 @@
 
 #include "pStatCollector.h"
 #include "config_pstatclient.h"
+#include "reMutexHolder.h"
 
 #ifndef CPPPARSER
 #include "frameobject.h"
@@ -32,6 +33,9 @@ static pmap<PyMethodDef *, int> _c_method_collectors;
 
 // Parent collector for all Python profiling collectors.
 static PStatCollector code_collector("App:Python");
+
+// Parent collector for all Python ref tracer collectors.
+static PStatCollector refs_collector("Python objects");
 
 /**
  * Walks up the type hierarchy to find the class where the method originates.
@@ -263,8 +267,30 @@ client_connect(std::string hostname, int port) {
         _extra_index = _PyEval_RequestCodeExtraIndex(nullptr);
       }
       PyEval_SetProfile(&trace_callback, arg);
-      _python_profiler_enabled = false;
+      _python_profiler_enabled = true;
     }
+
+    // We require 3.13.3 or 3.14a6, since those versions fix an important bug
+    // with the ref tracer; prior versions did not always send destroy events.
+#if PY_VERSION_HEX >= 0x030D0000
+#if PY_VERSION_HEX >= 0x030E0000
+    if (Py_Version >= 0x030E00A6)
+#else
+    if (Py_Version >= 0x030D0300)
+#endif
+    {
+      if (pstats_python_ref_tracer) {
+        PyRefTracer_SetTracer(&ref_trace_callback, _this);
+      }
+    }
+    else
+#endif
+    if (pstats_python_ref_tracer) {
+      pstats_cat.warning()
+        << "The pstats-python-ref-tracer feature requires at least "
+           "Python 3.13.3 or Python 3.14a6.\n";
+    }
+
     return true;
   }
   else if (_python_profiler_enabled) {
@@ -284,6 +310,13 @@ client_disconnect() {
     PyEval_SetProfile(nullptr, nullptr);
     _python_profiler_enabled = false;
   }
+
+#if PY_VERSION_HEX >= 0x030D0000 // 3.13
+  void *data;
+  if (PyRefTracer_GetTracer(&data) == &ref_trace_callback && data == _this) {
+    PyRefTracer_SetTracer(nullptr, nullptr);
+  }
+#endif
 }
 
 /**
@@ -364,5 +397,113 @@ trace_callback(PyObject *py_thread, PyFrameObject *frame, int what, PyObject *ar
 
   return 0;
 }
+
+/**
+ * Callback passed to PyRefTracer_SetTracer.
+ */
+#if PY_VERSION_HEX >= 0x030D0000 // 3.13
+int Extension<PStatClient>::
+ref_trace_callback(PyObject *obj, PyRefTracerEvent event, void *data) {
+  PStatClient *client = (PStatClient *)data;
+  if (!client->client_is_connected()) {
+    return 0;
+  }
+
+  PyTypeObject *cls = Py_TYPE(obj);
+
+#ifdef Py_GIL_DISABLED
+  // With GIL disabled, the GIL is no longer protecting the cache, so we
+  // have to do that ourselves.
+  client->_lock.acquire();
+#endif
+
+  int collector_index;
+  auto it = client->_python_type_collectors.find(cls);
+  if (it != client->_python_type_collectors.end()) {
+    collector_index = it->second;
+#ifdef Py_GIL_DISABLED
+    client->_lock.release();
+#endif
+  }
+  else {
+#ifdef Py_GIL_DISABLED
+    client->_lock.release();
+#endif
+    char buffer[1024];
+    size_t len;
+
+    if (cls == &PyDict_Type || cls == &PyUnicode_Type) {
+      // Prevents recursion due to PyDict_GetItemStringRef
+      len = snprintf(buffer, sizeof(buffer), "builtins:%s", cls->tp_name);
+    }
+    else {
+      const char *dot = strrchr(cls->tp_name, '.');
+      if (dot != nullptr) {
+        // The module name is included in the type name.
+        len = snprintf(buffer, sizeof(buffer), "%s", cls->tp_name);
+      } else {
+        // If there's no module name, we need to get it from __module__.
+        PyObject *py_mod_name = nullptr;
+        const char *mod_name = nullptr;
+        if (cls->tp_dict != nullptr &&
+            PyDict_GetItemStringRef(cls->tp_dict, "__module__", &py_mod_name) > 0) {
+          if (PyUnicode_Check(py_mod_name)) {
+            mod_name = PyUnicode_AsUTF8(py_mod_name);
+          } else {
+            // Might be a descriptor.
+            Py_DECREF(py_mod_name);
+            py_mod_name = PyObject_GetAttrString(obj, "__module__");
+            if (py_mod_name != nullptr) {
+              if (PyUnicode_Check(py_mod_name)) {
+                mod_name = PyUnicode_AsUTF8(py_mod_name);
+              }
+            }
+            else PyErr_Clear();
+          }
+        }
+        else PyErr_Clear();
+
+        if (mod_name == nullptr) {
+          // Is it a built-in, like int or dict?
+          PyObject *builtins = PyEval_GetBuiltins();
+          if (PyDict_GetItemString(builtins, cls->tp_name) == (PyObject *)cls) {
+            mod_name = "builtins";
+          } else {
+            mod_name = "<unknown>";
+          }
+        }
+        len = snprintf(buffer, sizeof(buffer), "%s:%s", mod_name, cls->tp_name);
+        Py_XDECREF(py_mod_name);
+      }
+    }
+
+    for (size_t i = 0; i < len; ++i) {
+      if (buffer[i] == '.') {
+        buffer[i] = ':';
+      }
+    }
+
+    std::string collector_name(buffer, len);
+
+#ifdef Py_GIL_DISABLED
+    ReMutexHolder holder(client->_lock);
+#endif
+    collector_index = client->make_collector_with_relname(refs_collector.get_index(), collector_name).get_index();
+    client->_python_type_collectors[cls] = collector_index;
+  }
+
+  switch (event) {
+  case PyRefTracer_CREATE:
+    client->add_level(collector_index, 0, 1);
+    break;
+
+  case PyRefTracer_DESTROY:
+    client->add_level(collector_index, 0, -1);
+    break;
+  }
+
+  return 0;
+}
+#endif
 
 #endif  // HAVE_PYTHON && DO_PSTATS
