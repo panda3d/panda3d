@@ -23,6 +23,8 @@
 #include "throw_event.h"
 #include "nativeWindowHandle.h"
 
+#include "virtualFileSystem.h"
+#include "virtualFile.h"
 #include <tchar.h>
 
 #ifndef WM_DPICHANGED
@@ -3072,39 +3074,54 @@ get_icon(const Filename &filename) {
   }
 
   // If it wasn't found, resolve the filename and search for that.
-
-  // Since we have to use a Windows call to load the image from a filename, we
-  // can't load a virtual file and we can't use the virtual file system.
   Filename resolved = filename;
-  if (!resolved.resolve_filename(get_model_path())) {
-    // The filename doesn't exist along the search path.
-    if (resolved.is_fully_qualified() && resolved.exists()) {
-      // But it does exist locally, so accept it.
+  if ((resolved.resolve_filename(get_model_path())) || (resolved.is_fully_qualified() && resolved.exists())) {
+    // The filename exists in the search path or locally, accepted.
 
-    } else {
+    fi = _icon_filenames.find(resolved);
+    if (fi != _icon_filenames.end()) {
+      _icon_filenames[filename] = (*fi).second;
+      return (HICON)((*fi).second);
+    }
+
+    Filename os = resolved.to_os_specific();
+
+    HANDLE h = LoadImage(nullptr, os.c_str(),
+                        IMAGE_ICON, 0, 0, LR_LOADFROMFILE | LR_DEFAULTSIZE);
+    if (h == 0) {
       windisplay_cat.warning()
-        << "Could not find icon filename " << filename << "\n";
+        << "windows icon filename '" << os << "' could not be loaded!!\n";
       return 0;
     }
-  }
-  fi = _icon_filenames.find(resolved);
-  if (fi != _icon_filenames.end()) {
-    _icon_filenames[filename] = (*fi).second;
-    return (HICON)((*fi).second);
-  }
 
-  Filename os = resolved.to_os_specific();
-
-  HANDLE h = LoadImage(nullptr, os.c_str(),
-                       IMAGE_ICON, 0, 0, LR_LOADFROMFILE | LR_DEFAULTSIZE);
-  if (h == 0) {
+    _icon_filenames[filename] = h;
+    _icon_filenames[resolved] = h;
+    return (HICON)h;
+  } else {
     windisplay_cat.warning()
-      << "windows icon filename '" << os << "' could not be loaded!!\n";
+      << "Could not find icon filename " << filename << " locally, checking VFS.\n";
   }
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+  PT(VirtualFile) vfile = vfs->get_file(filename);
+  if (vfile != nullptr) {
+    std::string vfile_data = vfile->read_file(0);
+    long fsize = vfile_data.length();
 
-  _icon_filenames[filename] = h;
-  _icon_filenames[resolved] = h;
-  return (HICON)h;
+    int offset = LookupIconIdFromDirectoryEx((PBYTE)vfile_data.data(), TRUE, 0, 0, LR_DEFAULTCOLOR);
+    if (offset != 0) {
+      HICON hIcon = CreateIconFromResourceEx((PBYTE)vfile_data.data() + offset, fsize - offset, TRUE, 0x30000, 0, 0, LR_DEFAULTCOLOR);
+      _icon_filenames[filename] = hIcon;
+      return hIcon;
+    } else {
+      windisplay_cat.warning()
+        << "windows icon filename '" << filename << "' could not be loaded from VFS!!\n";
+      return 0;
+    }
+  } else {
+    windisplay_cat.warning()
+      << "Could not find icon filename " << filename << " in VFS\n";
+    return 0;
+  }
 }
 
 /**
@@ -3129,31 +3146,53 @@ get_cursor(const Filename &filename) {
   // Since we have to use a Windows call to load the image from a filename, we
   // can't load a virtual file and we can't use the virtual file system.
   Filename resolved = filename;
-  if (!resolved.resolve_filename(get_model_path())) {
-    // The filename doesn't exist.
+  if ((resolved.resolve_filename(get_model_path())) || (resolved.is_fully_qualified() && resolved.exists())) {
+    // The filename exists in the search path or locally, accepted.
+
+    fi = _cursor_filenames.find(resolved);
+    if (fi != _cursor_filenames.end()) {
+      _cursor_filenames[filename] = (*fi).second;
+      return (HCURSOR)((*fi).second);
+    }
+
+    Filename os = resolved.to_os_specific();
+
+    HANDLE h = LoadImage(nullptr, os.c_str(),
+                        IMAGE_CURSOR, 0, 0, LR_LOADFROMFILE);
+    if (h == 0) {
+      windisplay_cat.warning()
+        << "windows cursor filename '" << os << "' could not be loaded!!\n";
+      show_error_message();
+    }
+
+    _cursor_filenames[filename] = h;
+    _cursor_filenames[resolved] = h;
+    return (HCURSOR)h;
+  } else {
     windisplay_cat.warning()
-      << "Could not find cursor filename " << filename << "\n";
+      << "Could not find cursor filename " << filename << " locally, checking VFS.\n";
+  }
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+  PT(VirtualFile) vfile = vfs->get_file(filename);
+  if (vfile != nullptr) {
+    std::string vfile_data = vfile->read_file(0);
+    long fsize = vfile_data.length();
+
+    int offset = LookupIconIdFromDirectoryEx((PBYTE)vfile_data.data(), TRUE, 0, 0, LR_DEFAULTCOLOR);
+    if (offset != 0) {
+      HCURSOR hCursor = CreateIconFromResourceEx((PBYTE)vfile_data.data() + offset, fsize - offset, TRUE, 0x30000, 0, 0, LR_DEFAULTCOLOR);
+      _cursor_filenames[filename] = hCursor;
+      return hCursor;
+    } else {
+      windisplay_cat.warning()
+        << "windows cursor filename '" << filename << "' could not be loaded from VFS!!\n";
+      return 0;
+    }
+  } else {
+    windisplay_cat.warning()
+      << "Could not find cursor filename " << filename << " in VFS\n";
     return 0;
-  }
-  fi = _cursor_filenames.find(resolved);
-  if (fi != _cursor_filenames.end()) {
-    _cursor_filenames[filename] = (*fi).second;
-    return (HCURSOR)((*fi).second);
-  }
-
-  Filename os = resolved.to_os_specific();
-
-  HANDLE h = LoadImage(nullptr, os.c_str(),
-                       IMAGE_CURSOR, 0, 0, LR_LOADFROMFILE);
-  if (h == 0) {
-    windisplay_cat.warning()
-      << "windows cursor filename '" << os << "' could not be loaded!!\n";
-    show_error_message();
-  }
-
-  _cursor_filenames[filename] = h;
-  _cursor_filenames[resolved] = h;
-  return (HCURSOR)h;
+  }  
 }
 
 static HCURSOR get_cursor(const Filename &filename);
