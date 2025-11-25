@@ -3178,9 +3178,9 @@ get_cursor(const Filename &filename) {
     std::string vfile_data = vfile->read_file(0);
     long fsize = vfile_data.length();
 
-    int offset = LookupIconIdFromDirectoryEx((PBYTE)vfile_data.data(), TRUE, 0, 0, LR_DEFAULTCOLOR);
+    int offset = LookupIconIdFromDirectoryEx((PBYTE)vfile_data.data(), FALSE, 0, 0, LR_DEFAULTCOLOR);
     if (offset != 0) {
-      HCURSOR hCursor = CreateIconFromResourceEx((PBYTE)vfile_data.data() + offset, fsize - offset, TRUE, 0x30000, 0, 0, LR_DEFAULTCOLOR);
+      HCURSOR hCursor = CreateIconFromResourceEx((PBYTE)vfile_data.data() + offset, fsize - offset, FALSE, 0x30000, 0, 0, LR_DEFAULTCOLOR);
       _cursor_filenames[filename] = hCursor;
       return hCursor;
     } else {
