@@ -13,14 +13,18 @@ We have completed the **Discovery Phase** (Phase 1) and are entering **Refactori
 *   **API**: Keep `PathFind` class for compatibility but allow it to delegate to the new `NavMesh`.
 
 ## Active Tasks
-From `navmesh-tasks.md` Phase 2:
-1.  [x] **Audit existing AI code**: Check `contrib/src/ai` for integration points (Completed).
-2.  [x] **Design APIs**: Formalize `NavMeshSettings` and `NavMesh` headers (Completed).
-3.  [x] **Build System**: Create `panda/src/navmesh/CMakeLists.txt` skeleton (Completed).
-4.  [ ] **Error Handling**: Define policy for generation failures (warnings vs exceptions).
-5.  [ ] **Testing**: Implement unit tests for new module.
+From `navmesh-tasks.md` Phase 2 (Completed):
+1.  [x] **Audit existing AI code**: Check `contrib/src/ai` for integration points.
+2.  [x] **Design APIs**: Formalize `NavMeshSettings` and `NavMesh` headers.
+3.  [x] **Build System**: Create `panda/src/navmesh/CMakeLists.txt` skeleton.
+4.  [x] **Error Handling**: Define policy for generation failures.
+5.  [x] **Testing**: Implement unit tests for new module.
 
-## Considerations
+## Next Steps
+Phase 3: Implementation.
+1.  Implement `NavMeshBuilder` logic (geometry extraction + Recast integration).
+2.  Implement `NavMesh` logic (Detour integration).
+3.  Implement Python bindings.
 *   **Build Time**: Adding Recast source might increase build times slightly; need to ensure it's efficient.
 *   **Migration**: Users of the old CSV system should not break; we need a clear deprecation or coexistence strategy.
 *   **Legacy Code**: Existing `PathFind` class has memory leaks and uses raw pointers. New implementation will be parallel and clean.

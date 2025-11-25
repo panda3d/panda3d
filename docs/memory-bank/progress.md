@@ -12,14 +12,14 @@
 *   [x] Integration Strategy (Core module, extending PathFind).
 *   [x] Build System Analysis.
 
-### 2. Refactoring & Stabilization [IN PROGRESS]
+### 2. Refactoring & Stabilization [COMPLETED]
 *   [x] Audit existing AI module.
 *   [x] Define C++ Interfaces.
 *   [x] Setup CMake module structure.
-*   [ ] Create Unit Test harness (`tests/navmesh`).
+*   [x] Create Unit Test harness (`tests/navmesh`).
 
-### 3. Implementation [PENDING]
-*   [ ] `NavMeshSettings` implementation.
+### 3. Implementation [IN PROGRESS]
+*   [ ] `NavMeshSettings` implementation [COMPLETED]
 *   [ ] `NavMeshBuilder` (Geometry extraction + Recast).
 *   [ ] `NavMesh` (Detour wrapper).
 *   [ ] Python Bindings.
