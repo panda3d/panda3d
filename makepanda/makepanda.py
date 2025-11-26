@@ -5285,6 +5285,19 @@ if not PkgSkip("PANDATOOL"):
         TargetAdd('egg2bam.exe', opts=['ADVAPI', 'FFTW'])
 
 #
+# DIRECTORY: pandatool/src/converter/
+#
+
+if not PkgSkip("PANDATOOL"):
+    OPTS=['DIR:pandatool/src/converter']
+    TargetAdd('txo-converter_txoConverter.obj', opts=OPTS, input='txoConverter.cxx')
+    TargetAdd('txo-converter.exe', input='txo-converter_txoConverter.obj')
+    TargetAdd('txo-converter.exe', input='libp3progbase.lib')
+    TargetAdd('txo-converter.exe', input='libp3pandatoolbase.lib')
+    TargetAdd('txo-converter.exe', input=COMMON_PANDA_LIBS)
+    TargetAdd('txo-converter.exe', opts=['ADVAPI', 'FFTW'])
+
+#
 # DIRECTORY: pandatool/src/daeegg/
 #
 if not PkgSkip("PANDATOOL") and not PkgSkip("FCOLLADA") and not PkgSkip("EGG"):
