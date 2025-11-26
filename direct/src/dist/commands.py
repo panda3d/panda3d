@@ -79,6 +79,10 @@ def _model_to_bam(_build_cmd, srcpath, dstpath):
 
     _register_python_loaders()
 
+    if src_fn.get_extension() == 'egg' and zipfile.is_zipfile(src_fn.to_os_specific()):
+        _build_cmd.warn('Skipping %s as it appears to be a Python .egg archive, was this included by mistake?' % (src_fn.to_os_specific()))
+        return
+
     loader = p3d.Loader.get_global_ptr()
     options = p3d.LoaderOptions(p3d.LoaderOptions.LF_report_errors |
                                 p3d.LoaderOptions.LF_no_ram_cache)
