@@ -84,8 +84,8 @@ dclass DistributedSmoothNode: DistributedNode {
 
   suggestResync(uint32 avId, int16 timestampA, int16 timestampB,
                 int32 serverTimeSec, uint16 serverTimeUSec,
-                uint16 / 100 uncertainty);
+                int16 / 100 uncertainty);
   returnResync(uint32 avId, int16 timestampB,
                int32 serverTimeSec, uint16 serverTimeUSec,
-               uint16 / 100 uncertainty);
+               int16 / 100 uncertainty);
 }; 
