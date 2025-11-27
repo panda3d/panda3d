@@ -188,8 +188,9 @@ build_apps = direct.dist.commands:finalize_distribution_options
   endif()
 
   # NavMesh
-  add_python_module(panda3d.navmesh navmesh IMPORT panda3d.core COMPONENT NavMeshPython)
+  add_python_module(panda3d.navmesh p3navmesh IMPORT panda3d.core COMPONENT NavMeshPython)
   export_targets(NavMeshPython NAMESPACE "Panda3D::Python::" COMPONENT NavMeshDevel)
+  export_targets(NavMesh COMPONENT NavMeshDevel)
 
   if(HAVE_EGG)
     add_python_module(panda3d.egg p3egg p3egg2pg LINK pandaegg IMPORT panda3d.core COMPONENT EggPython)
