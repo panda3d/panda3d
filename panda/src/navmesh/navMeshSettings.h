@@ -80,6 +80,9 @@ PUBLISHED:
   INLINE void set_detail_sample_max_error(PN_stdfloat error);
   INLINE PN_stdfloat get_detail_sample_max_error() const;
 
+  // Validate the settings
+  bool validate() const;
+
   void output(std::ostream &out) const;
 
 private:

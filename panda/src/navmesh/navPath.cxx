@@ -30,18 +30,25 @@ NavPath::
 }
 
 /**
+ * Returns the total length of the path.
+ */
+PN_stdfloat NavPath::
+get_length() const {
+  if (_waypoints.empty()) {
+    return 0.0f;
+  }
+  
+  PN_stdfloat length = 0.0f;
+  for (size_t i = 1; i < _waypoints.size(); ++i) {
+    length += (_waypoints[i] - _waypoints[i-1]).length();
+  }
+  return length;
+}
+
+/**
  * Adds a point to the path.
  */
 void NavPath::
 add_point(const LPoint3 &point) {
-  _points.push_back(point);
+  _waypoints.push_back(point);
 }
-
-/**
- * Output method
- */
-void NavPath::
-output(std::ostream &out) const {
-  out << "NavPath(" << _points.size() << " points)";
-}
-

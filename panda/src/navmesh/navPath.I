@@ -12,27 +12,18 @@
  */
 
 /**
- * Returns the number of waypoints in the path.
+ * Returns the number of points in the path.
  */
 INLINE int NavPath::
 get_num_points() const {
-  return _points.size();
+  return _waypoints.size();
 }
 
 /**
  * Returns the point at the given index.
  */
 INLINE LPoint3 NavPath::
-get_point(int n) const {
-  nassertr(n >= 0 && n < (int)_points.size(), LPoint3::zero());
-  return _points[n];
+get_point(int i) const {
+  nassertr(i >= 0 && i < (int)_waypoints.size(), LPoint3::zero());
+  return _waypoints[i];
 }
-
-/**
- * Returns true if the path is valid (has points).
- */
-INLINE bool NavPath::
-is_valid() const {
-  return !_points.empty();
-}
-

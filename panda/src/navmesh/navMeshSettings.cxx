@@ -12,6 +12,7 @@
  */
 
 #include "navMeshSettings.h"
+#include "config_navmesh.h"
 
 TypeHandle NavMeshSettings::_type_handle;
 
@@ -20,20 +21,20 @@ TypeHandle NavMeshSettings::_type_handle;
  */
 NavMeshSettings::
 NavMeshSettings() {
-  // Default values based on Recast defaults
-  _cell_size = 0.3f;
-  _cell_height = 0.2f;
-  _agent_height = 2.0f;
-  _agent_radius = 0.6f;
-  _agent_max_climb = 0.9f;
-  _agent_max_slope = 45.0f;
-  _region_min_size = 8.0f;
-  _region_merge_size = 20.0f;
-  _edge_max_len = 12.0f;
-  _edge_max_error = 1.3f;
-  _verts_per_poly = 6;
-  _detail_sample_dist = 6.0f;
-  _detail_sample_max_error = 1.0f;
+  // Initialize from ConfigVariables
+  _cell_size = navmesh_cell_size;
+  _cell_height = navmesh_cell_height;
+  _agent_height = navmesh_agent_height;
+  _agent_radius = navmesh_agent_radius;
+  _agent_max_climb = navmesh_agent_max_climb;
+  _agent_max_slope = navmesh_agent_max_slope;
+  _region_min_size = navmesh_region_min_size;
+  _region_merge_size = navmesh_region_merge_size;
+  _edge_max_len = navmesh_edge_max_len;
+  _edge_max_error = navmesh_edge_max_error;
+  _verts_per_poly = navmesh_verts_per_poly;
+  _detail_sample_dist = navmesh_detail_sample_dist;
+  _detail_sample_max_error = navmesh_detail_sample_max_error;
 }
 
 /**
@@ -62,6 +63,42 @@ NavMeshSettings(const NavMeshSettings &copy) :
  */
 NavMeshSettings::
 ~NavMeshSettings() {
+}
+
+/**
+ * Validates the settings.
+ */
+bool NavMeshSettings::
+validate() const {
+  if (_cell_size <= 0.0f) {
+    navmesh_cat.error() << "NavMeshSettings: cell_size must be > 0\n";
+    return false;
+  }
+  if (_cell_height <= 0.0f) {
+    navmesh_cat.error() << "NavMeshSettings: cell_height must be > 0\n";
+    return false;
+  }
+  if (_agent_height < 0.0f) {
+    navmesh_cat.error() << "NavMeshSettings: agent_height must be >= 0\n";
+    return false;
+  }
+  if (_agent_radius < 0.0f) {
+    navmesh_cat.error() << "NavMeshSettings: agent_radius must be >= 0\n";
+    return false;
+  }
+  if (_agent_max_climb < 0.0f) {
+    navmesh_cat.error() << "NavMeshSettings: agent_max_climb must be >= 0\n";
+    return false;
+  }
+  if (_agent_max_slope < 0.0f || _agent_max_slope > 90.0f) {
+    navmesh_cat.error() << "NavMeshSettings: agent_max_slope must be between 0 and 90\n";
+    return false;
+  }
+  if (_verts_per_poly < 3) {
+    navmesh_cat.error() << "NavMeshSettings: verts_per_poly must be >= 3\n";
+    return false;
+  }
+  return true;
 }
 
 /**
