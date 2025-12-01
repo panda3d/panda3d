@@ -21,6 +21,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <fcntl.h>
+#include <time.h>
 
 #if PY_MAJOR_VERSION >= 3
 #  include <locale.h>
