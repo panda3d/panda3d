@@ -301,7 +301,10 @@ class build_apps(setuptools.Command):
             # manylinux1 is not offered for Python 3.10 anymore
             self.platforms[0] = 'manylinux2010_x86_64'
 
-        if sys.version_info >= (3, 13):
+        if sys.version_info >= (3, 14):
+            # This version of Python is only available for 10.15+.
+            self.platforms[1] = 'macosx_10_15_x86_64'
+        elif sys.version_info >= (3, 13):
             # This version of Python is only available for 10.13+.
             self.platforms[1] = 'macosx_10_13_x86_64'
         elif sys.version_info >= (3, 8):
@@ -587,8 +590,14 @@ class build_apps(setuptools.Command):
             subprocess.check_call([sys.executable, '-m', 'pip'] + pip_args)
         except:
             # Display a more helpful message for these common issues.
-            if platform.startswith('macosx_10_9_') and sys.version_info >= (3, 13):
-                new_platform = platform.replace('macosx_10_9_', 'macosx_10_13_')
+            if platform.startswith('macosx_10_13_') and sys.version_info >= (3, 14):
+                new_platform = platform.replace('macosx_10_13_', 'macosx_10_15_')
+                self.announce('This error likely occurs because {} is not a supported target as of Python 3.14.\nChange the target platform to {} instead.'.format(platform, new_platform), distutils.log.ERROR)
+            elif platform.startswith('macosx_10_9_') and sys.version_info >= (3, 13):
+                if sys.version_info >= (3, 14):
+                    new_platform = platform.replace('macosx_10_9_', 'macosx_10_15_')
+                else:
+                    new_platform = platform.replace('macosx_10_9_', 'macosx_10_13_')
                 self.announce('This error likely occurs because {} is not a supported target as of Python 3.13.\nChange the target platform to {} instead.'.format(platform, new_platform), distutils.log.ERROR)
             elif platform.startswith('manylinux2010_') and sys.version_info >= (3, 11):
                 new_platform = platform.replace('manylinux2010_', 'manylinux2014_')
@@ -597,7 +606,9 @@ class build_apps(setuptools.Command):
                 new_platform = platform.replace('manylinux1_', 'manylinux2014_')
                 self.announce('This error likely occurs because {} is not a supported target as of Python 3.10.\nChange the target platform to {} instead.'.format(platform, new_platform), distutils.log.ERROR)
             elif platform.startswith('macosx_10_6_') and sys.version_info >= (3, 8):
-                if sys.version_info >= (3, 13):
+                if sys.version_info >= (3, 14):
+                    new_platform = platform.replace('macosx_10_6_', 'macosx_10_15_')
+                elif sys.version_info >= (3, 13):
                     new_platform = platform.replace('macosx_10_6_', 'macosx_10_13_')
                 else:
                     new_platform = platform.replace('macosx_10_6_', 'macosx_10_9_')
