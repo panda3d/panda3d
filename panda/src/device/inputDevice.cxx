@@ -26,10 +26,12 @@ InputDevice::
 InputDevice(const std::string &name, DeviceClass dev_class) :
   _name(name),
   _device_class(dev_class),
-  _is_connected(true)
+  _is_connected(true),
+  _axis_update_enabled(true)
 {
   _button_events = new ButtonEventList;
   _pointer_events = new PointerEventList;
+  _axis_events = new AxisEventList;
 }
 
 /**
@@ -93,6 +95,29 @@ get_pointer_events() {
   LightMutexHolder holder(_lock);
   PT(PointerEventList) result = new PointerEventList;
   swap(_pointer_events, result);
+  return result;
+}
+
+/**
+ * Returns true if this device has a pending axis event (a axis movement),
+ * or false otherwise.  If this returns true, the particular event may be
+ * extracted via get_axis_event().
+ */
+bool InputDevice::
+has_axis_event() const {
+  LightMutexHolder holder(_lock);
+  return !_axis_events.is_null() && _axis_events->get_num_events() > 0;
+}
+
+/**
+ * Returns a AxisEventList containing all the recent axis events.
+ * Clears the list.
+ */
+PT(AxisEventList) InputDevice::
+get_axis_events() {
+  LightMutexHolder holder(_lock);
+  PT(AxisEventList) result = new AxisEventList;
+  swap(_axis_events, result);
   return result;
 }
 
@@ -340,6 +365,10 @@ void InputDevice::
 axis_changed(int index, int state) {
   nassertv(_lock.debug_is_locked());
   nassertv(index >= 0);
+
+  if (!_axis_update_enabled)
+    return;
+
   if ((size_t)index >= _axes.size()) {
     _axes.resize((size_t)index + 1u, AxisState());
   }
@@ -359,7 +388,18 @@ axis_changed(int index, int state) {
 
   _axes[index].value = value;
   _axes[index].known = true;
+
+  _axis_events->add_event(AxisEvent(index, value));
 }
+
+/**
+* Enable or disables axis updates from the implementation. Used during playback of axis data to avoid interference.
+*/
+void InputDevice::
+enable_axis_updates(bool enable) {
+  _axis_update_enabled = enable;
+}
+
 
 /**
  * Records that a tracker movement has taken place.
