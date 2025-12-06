@@ -115,6 +115,7 @@ hiddenImports = {
     'scipy.stats._stats': ['scipy.special.cython_special'],
     'setuptools.monkey': ['setuptools.msvc'],
     'shapely._geometry_helpers': ['shapely._geos'],
+    'jnius': ['jnius_config'],
 }
 
 if sys.version_info >= (3,):
