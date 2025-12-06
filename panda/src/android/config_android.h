@@ -44,4 +44,9 @@ EXPORT_CLASS Filename android_find_library(ANativeActivity *activity, const std:
 EXPORT_CLASS void android_set_title(ANativeActivity *activity, const std::string &title);
 EXPORT_CLASS void android_show_toast(ANativeActivity *activity, const std::string &message, int duration);
 
+// Used to support pyjnius
+extern "C" {
+  EXPORT_CLASS void *SDL_AndroidGetJNIEnv(void);
+};
+
 #endif

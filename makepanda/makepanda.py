@@ -4948,6 +4948,7 @@ if GetTarget() == 'android':
     TargetAdd('org/panda3d/android/PandaActivity$1.class', opts=OPTS+['DEPENDENCYONLY'], input='PandaActivity.java')
     TargetAdd('org/panda3d/android/PandaActivity$2.class', opts=OPTS+['DEPENDENCYONLY'], input='PandaActivity.java')
     TargetAdd('org/panda3d/android/PythonActivity.class', opts=OPTS, input='PythonActivity.java')
+    TargetAdd('org/panda3d/android/PythonActivity$ActivityResultListener.class', opts=OPTS+['DEPENDENCYONLY'], input='PythonActivity.java')
 
     TargetAdd('classes.dex', input='org/panda3d/android/NativeIStream.class')
     TargetAdd('classes.dex', input='org/panda3d/android/NativeOStream.class')
@@ -4955,6 +4956,7 @@ if GetTarget() == 'android':
     TargetAdd('classes.dex', input='org/panda3d/android/PandaActivity$1.class')
     TargetAdd('classes.dex', input='org/panda3d/android/PandaActivity$2.class')
     TargetAdd('classes.dex', input='org/panda3d/android/PythonActivity.class')
+    TargetAdd('classes.dex', input='org/panda3d/android/PythonActivity$ActivityResultListener.class')
 
     TargetAdd('p3android_composite1.obj', opts=OPTS, input='p3android_composite1.cxx')
     TargetAdd('libp3android.dll', input='p3android_composite1.obj')

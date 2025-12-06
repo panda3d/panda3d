@@ -193,3 +193,10 @@ void android_show_toast(ANativeActivity *activity, const std::string &message, i
   env->CallVoidMethod(activity->clazz, jni_PandaActivity_showToast, jmsg, (jint)duration);
   env->DeleteLocalRef(jmsg);
 }
+
+/**
+ * Returns the JNIEnv pointer corresponding to the current thread.
+ */
+void *SDL_AndroidGetJNIEnv() {
+  return Thread::get_current_thread()->get_jni_env();
+}
