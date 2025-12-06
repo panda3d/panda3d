@@ -27,10 +27,8 @@ jmethodID jni_PandaActivity_readBitmap;
 jmethodID jni_PandaActivity_createBitmap;
 jmethodID jni_PandaActivity_compressBitmap;
 jmethodID jni_PandaActivity_showToast;
+jmethodID jni_PandaActivity_setWindowTitle;
 jmethodID jni_PandaActivity_findLibrary;
-
-jclass    jni_Activity;
-jmethodID jni_Activity_setTitle;
 
 jclass   jni_BitmapFactory_Options;
 jfieldID jni_BitmapFactory_Options_outWidth;
@@ -81,16 +79,14 @@ jint JNI_OnLoad(JavaVM *jvm, void *reserved) {
   jni_PandaActivity_compressBitmap = env->GetStaticMethodID(jni_PandaActivity,
                    "compressBitmap", "(Landroid/graphics/Bitmap;IIJ)Z");
 
+  jni_PandaActivity_setWindowTitle = env->GetMethodID(jni_PandaActivity,
+                   "setWindowTitle", "(Ljava/lang/CharSequence;)V");
+
   jni_PandaActivity_showToast = env->GetMethodID(jni_PandaActivity,
                    "showToast", "(Ljava/lang/String;I)V");
 
   jni_PandaActivity_findLibrary = env->GetMethodID(jni_PandaActivity,
                    "findLibrary", "(Ljava/lang/String;)Ljava/lang/String;");
-
-  jni_Activity = env->FindClass("android/app/Activity");
-  jni_Activity = (jclass) env->NewGlobalRef(jni_Activity);
-  jni_Activity_setTitle = env->GetMethodID(jni_Activity,
-              "setTitle", "(Ljava/lang/CharSequence;)V");
 
   jni_BitmapFactory_Options = env->FindClass("android/graphics/BitmapFactory$Options");
   jni_BitmapFactory_Options = (jclass) env->NewGlobalRef(jni_BitmapFactory_Options);
@@ -130,7 +126,6 @@ void JNI_OnUnload(JavaVM *jvm, void *reserved) {
   nassertv(env != nullptr);
 
   env->DeleteGlobalRef(jni_PandaActivity);
-  env->DeleteGlobalRef(jni_Activity);
   env->DeleteGlobalRef(jni_BitmapFactory_Options);
 
   // These will no longer work without JNI, so unregister them.
@@ -174,14 +169,14 @@ Filename android_find_library(ANativeActivity *activity, const std::string &lib)
  * Sets the window title of the activity.
  */
 void android_set_title(ANativeActivity *activity, const std::string &title) {
-  nassertv(jni_Activity_setTitle);
+  nassertv(jni_PandaActivity_setWindowTitle);
 
   Thread *thread = Thread::get_current_thread();
   JNIEnv *env = thread->get_jni_env();
   nassertv(env != nullptr);
 
   jstring jmsg = env->NewStringUTF(title.c_str());
-  env->CallVoidMethod(activity->clazz, jni_Activity_setTitle, jmsg);
+  env->CallVoidMethod(activity->clazz, jni_PandaActivity_setWindowTitle, jmsg);
   env->DeleteLocalRef(jmsg);
 }
 

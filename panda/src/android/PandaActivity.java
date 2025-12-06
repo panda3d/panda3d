@@ -160,6 +160,18 @@ public class PandaActivity extends NativeActivity {
     }
 
     /**
+     * Sets the window title.
+     */
+    public void setWindowTitle(final CharSequence title) {
+        final PandaActivity activity = this;
+        runOnUiThread(new Runnable() {
+            public void run() {
+                activity.setTitle(title);
+            }
+        });
+    }
+
+    /**
      * Shows a pop-up notification.
      */
     public void showToast(final String text, final int duration) {

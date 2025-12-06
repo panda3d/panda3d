@@ -33,10 +33,8 @@ extern jmethodID jni_PandaActivity_readBitmapHeader;
 extern jmethodID jni_PandaActivity_readBitmap;
 extern jmethodID jni_PandaActivity_createBitmap;
 extern jmethodID jni_PandaActivity_compressBitmap;
+extern jmethodID jni_PandaActivity_setWindowTitle;
 extern jmethodID jni_PandaActivity_showToast;
-
-extern jclass    jni_Activity;
-extern jmethodID jni_Activity_setTitle;
 
 extern jclass   jni_BitmapFactory_Options;
 extern jfieldID jni_BitmapFactory_Options_outWidth;
