@@ -201,11 +201,22 @@ def getline(filename, lineno, module_globals=None):
     return ''
 
 def clearcache():
-    global cache
-    cache = {}
+    cache.clear()
 
 def getlines(filename, module_globals=None):
     return []
+
+def _getline_from_code(filename, lineno):
+    return ''
+
+def _make_key(code):
+    return (code.co_filename, code.co_qualname, code.co_firstlineno)
+
+def _getlines_from_code(code):
+    return []
+
+def _source_unavailable(filename):
+    return True
 
 def checkcache(filename=None):
     pass
