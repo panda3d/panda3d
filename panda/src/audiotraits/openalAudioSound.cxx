@@ -14,6 +14,7 @@
 
 // Panda Headers
 #include "throw_event.h"
+#include "coordinateSystem.h"
 #include "openalAudioSound.h"
 #include "openalAudioManager.h"
 
@@ -745,13 +746,53 @@ length() const {
 void OpenALAudioSound::
 set_3d_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx, PN_stdfloat vy, PN_stdfloat vz) {
   ReMutexHolder holder(OpenALAudioManager::_lock);
-  _location[0] = px;
-  _location[1] = pz;
-  _location[2] = -py;
+  CoordinateSystem cs = get_default_coordinate_system();
 
-  _velocity[0] = vx;
-  _velocity[1] = vz;
-  _velocity[2] = -vy;
+  switch (cs) {
+  case CS_yup_right:
+    _location[0] = px;
+    _location[1] = py;
+    _location[2] = pz;
+
+    _velocity[0] = vx;
+    _velocity[1] = vy;
+    _velocity[2] = vz;
+    break;
+
+  case CS_zup_right:
+    _location[0] = px;
+    _location[1] = pz;
+    _location[2] = -py;
+
+    _velocity[0] = vx;
+    _velocity[1] = vz;
+    _velocity[2] = -vy;
+    break;
+
+  case CS_yup_left:
+    _location[0] = px;
+    _location[1] = py;
+    _location[2] = -pz;
+
+    _velocity[0] = vx;
+    _velocity[1] = vy;
+    _velocity[2] = -vz;
+    break;
+
+  case CS_zup_left:
+    _location[0] = px;
+    _location[1] = pz;
+    _location[2] = py;
+
+    _velocity[0] = vx;
+    _velocity[1] = vz;
+    _velocity[2] = vy;
+    break;
+
+  default:
+    nassert_raise("invalid coordinate system");
+    return;
+  }
 
   if (is_playing()) {
     _manager->make_current();
