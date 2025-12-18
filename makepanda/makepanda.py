@@ -1427,7 +1427,7 @@ def CompileCxx(obj,src,opts):
                 if optlevel >= 4 or target == "android":
                     cmd += " -fno-rtti"
 
-        if ('SSE2' in opts or not PkgSkip("SSE2")) and not arch.startswith("arm") and arch != 'aarch64':
+        if ('SSE2' in opts or not PkgSkip("SSE2")) and arch.find('86') > 0:
             if GetTarget() != "emscripten":
                 cmd += " -msse2"
 

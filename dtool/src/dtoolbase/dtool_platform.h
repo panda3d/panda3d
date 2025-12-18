@@ -96,6 +96,9 @@
 #elif defined(__arm__)
 #define DTOOL_PLATFORM "linux_arm"
 
+#elif defined(__riscv)
+#define DTOOL_PLATFORM "linux_riscv"
+
 #elif defined(__ppc__)
 #define DTOOL_PLATFORM "linux_ppc"
 
