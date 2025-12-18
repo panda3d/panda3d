@@ -454,6 +454,12 @@ patomic_notify_one(volatile uint32_t *value) {
 #elif defined(_WIN32)
   _patomic_wake_one_func((void *)value);
 #elif defined(__APPLE__)
+#ifndef __arm64__
+  if (UNLIKELY(__ulock_wake == nullptr || __ulock_wait == nullptr)) {
+    _patomic_notify_all(value);
+    return;
+  }
+#endif
   __ulock_wake(UL_COMPARE_AND_WAIT, (void *)value, 0);
 #elif defined(HAVE_POSIX_THREADS)
   _patomic_notify_all(value);
@@ -472,6 +478,12 @@ patomic_notify_all(volatile uint32_t *value) {
 #elif defined(_WIN32)
   _patomic_wake_all_func((void *)value);
 #elif defined(__APPLE__)
+#ifndef __arm64__
+  if (UNLIKELY(__ulock_wake == nullptr || __ulock_wait == nullptr)) {
+    _patomic_notify_all(value);
+    return;
+  }
+#endif
   __ulock_wake(UL_COMPARE_AND_WAIT | ULF_WAKE_ALL, (void *)value, 0);
 #elif defined(HAVE_POSIX_THREADS)
   _patomic_notify_all(value);
