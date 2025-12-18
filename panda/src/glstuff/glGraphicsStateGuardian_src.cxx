@@ -7010,6 +7010,7 @@ extract_texture_data(Texture *tex) {
   // Make sure the error stack is cleared out before we begin.
   report_my_gl_errors();
 
+#ifndef OPENGLES_1
   // Makes sure that textures aren't still bound to the shader (which is
   // partly necessary to make sure mark_incoherent() is called).
   if (_texture_binding_shader_context != 0) {
@@ -7017,6 +7018,7 @@ extract_texture_data(Texture *tex) {
     _texture_binding_shader = nullptr;
     _texture_binding_shader_context = nullptr;
   }
+#endif
 
   TextureContext *tc = tex->prepare_now(get_prepared_objects(), this);
   nassertr(tc != nullptr, false);
