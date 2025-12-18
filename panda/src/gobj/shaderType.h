@@ -393,10 +393,12 @@ private:
  */
 class EXPCL_PANDA_GOBJ ShaderType::Array final : public ShaderType {
 public:
-  INLINE Array(const ShaderType *element_type, uint32_t num_elements);
+  INLINE Array(const ShaderType *element_type, uint32_t num_elements,
+               uint32_t stride_bytes = 0);
 
   INLINE const ShaderType *get_element_type() const;
   INLINE uint32_t get_num_elements() const;
+  INLINE uint32_t get_stride_bytes() const;
 
   virtual bool unwrap_array(const ShaderType *&element_type, uint32_t &num_elements) const override;
 
@@ -412,7 +414,6 @@ public:
   virtual void output_signature(std::ostream &out) const override;
   virtual int compare_to_impl(const ShaderType &other) const override;
 
-  uint32_t get_stride_bytes() const;
   virtual uint32_t get_align_bytes() const override;
   virtual uint32_t get_size_bytes() const override;
   virtual int get_num_interface_locations() const override;
@@ -424,10 +425,12 @@ public:
 PUBLISHED:
   MAKE_PROPERTY(element_type, get_element_type);
   MAKE_PROPERTY(num_elements, get_num_elements);
+  MAKE_PROPERTY(stride_bytes, get_stride_bytes);
 
 private:
   const ShaderType *_element_type;
   uint32_t _num_elements;
+  uint32_t _stride_bytes = 0;
 
 protected:
   virtual void write_datagram(BamWriter *manager, Datagram &dg) override;

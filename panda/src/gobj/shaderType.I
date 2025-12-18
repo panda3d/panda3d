@@ -171,9 +171,10 @@ has_member(const std::string &name) const {
  * Constructs an array type from a base type and number of elements.
  */
 INLINE ShaderType::Array::
-Array(const ShaderType *element_type, uint32_t num_elements) :
+Array(const ShaderType *element_type, uint32_t num_elements, uint32_t stride_bytes) :
   _element_type(element_type),
-  _num_elements(num_elements) {
+  _num_elements(num_elements),
+  _stride_bytes(stride_bytes) {
 }
 
 /**
@@ -190,6 +191,14 @@ get_element_type() const {
 INLINE uint32_t ShaderType::Array::
 get_num_elements() const {
   return _num_elements;
+}
+
+/**
+ * Returns the array stride in bytes, or 0 if this was not specified.
+ */
+INLINE uint32_t ShaderType::Array::
+get_stride_bytes() const {
+  return _stride_bytes;
 }
 
 /**

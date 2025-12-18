@@ -403,7 +403,7 @@ parse_instruction(spv::Op opcode, const uint32_t *args, uint32_t nargs, uint32_t
   case spv::OpTypeArray:
     if (_defs[args[1]]._type != nullptr) {
       record_type(args[0], ShaderType::register_type(
-        ShaderType::Array(_defs[args[1]]._type, _defs[args[2]]._constant)));
+        ShaderType::Array(_defs[args[1]]._type, _defs[args[2]]._constant, _defs[args[0]]._array_stride)));
     }
     _defs[args[0]]._type_id = args[1];
     break;
@@ -411,7 +411,7 @@ parse_instruction(spv::Op opcode, const uint32_t *args, uint32_t nargs, uint32_t
   case spv::OpTypeRuntimeArray:
     if (_defs[args[1]]._type != nullptr) {
       record_type(args[0], ShaderType::register_type(
-        ShaderType::Array(_defs[args[1]]._type, 0)));
+        ShaderType::Array(_defs[args[1]]._type, 0, _defs[args[0]]._array_stride)));
     }
     _defs[args[0]]._type_id = args[1];
     break;

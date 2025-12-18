@@ -1090,19 +1090,11 @@ compare_to_impl(const ShaderType &other) const {
   if (_element_type != other_array._element_type) {
     return _element_type < other_array._element_type ? -1 : 1;
   }
+  if (_stride_bytes != other_array._stride_bytes) {
+    return _stride_bytes < other_array._stride_bytes ? -1 : 1;
+  }
   return (_num_elements > other_array._num_elements)
        - (_num_elements < other_array._num_elements);
-}
-
-/**
- * Returns the array stride in bytes.
- */
-uint32_t ShaderType::Array::
-get_stride_bytes() const {
-  // Array stride is always (at least) 16 bytes in std140 / DX9, even though
-  // this is (indeed) incredibly wasteful for arrays of scalars.
-  uint32_t size = _element_type->get_size_bytes();
-  return (size + 15) & ~15;
 }
 
 /**
@@ -1123,7 +1115,14 @@ get_size_bytes() const {
   // Arrays have padding at the end so that the next member is aligned to a
   // 16-byte boundary.  This implies that a float may directly follow a vec3,
   // but not a vec3[1]!  I didn't make up these rules.
-  return get_stride_bytes() * _num_elements;
+  uint32_t stride_bytes = _stride_bytes;
+  if (stride_bytes == 0) {
+    // Array stride is always (at least) 16 bytes in std140 / DX9, even though
+    // this is (indeed) incredibly wasteful for arrays of scalars.
+    uint32_t size = _element_type->get_size_bytes();
+    stride_bytes = (size + 15) & ~15;
+  }
+  return stride_bytes * _num_elements;
 }
 
 /**
@@ -1151,6 +1150,7 @@ void ShaderType::Array::
 write_datagram(BamWriter *manager, Datagram &dg) {
   manager->write_pointer(dg, _element_type);
   dg.add_uint32(_num_elements);
+  dg.add_uint32(_stride_bytes);
 }
 
 /**
@@ -1179,7 +1179,11 @@ make_from_bam(const FactoryParams &params) {
 
   manager->read_pointer(scan);
   uint32_t num_elements = scan.get_uint32();
-  ShaderType *type = new ShaderType::Array(nullptr, num_elements);
+  uint32_t stride_bytes = 0;
+  if (scan.get_remaining_size() >= 4) {
+    stride_bytes = scan.get_uint32();
+  }
+  ShaderType *type = new ShaderType::Array(nullptr, num_elements, stride_bytes);
 
   manager->register_change_this(change_this, type);
   return type;
