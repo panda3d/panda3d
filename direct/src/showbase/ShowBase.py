@@ -3396,6 +3396,7 @@ class ShowBase(DirectObject.DirectObject):
     remove_camera_frustum = removeCameraFrustum
     save_cube_map = saveCubeMap
     save_sphere_map = saveSphereMap
+    user_exit = userExit
     start_wx = startWx
     start_tk = startTk
     start_direct = startDirect
