@@ -6837,6 +6837,12 @@ release_shader_buffer(BufferContext *bc) {
     _current_sbuffer_index = 0;
   }
 
+  for (GLuint &index : _current_sbuffer_base) {
+    if (index == gbc->_index) {
+      index = 0;
+    }
+  }
+
   _glDeleteBuffers(1, &gbc->_index);
   report_my_gl_errors();
 
