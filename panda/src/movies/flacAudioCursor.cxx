@@ -25,10 +25,10 @@ extern "C" {
  * Callback passed to dr_flac to implement file I/O via the VirtualFileSystem.
  */
 static size_t cb_read_proc(void *user, void *buffer, size_t size) {
-  std::istream *stream = (std::istream *)user;
-  nassertr(stream != nullptr, false);
+  std::istream *stream = static_cast<std::istream *>(user);
+  nassertr(stream != nullptr, 0);
 
-  stream->read((char *)buffer, size);
+  stream->read(static_cast<char *>(buffer), size);
 
   if (stream->eof()) {
     // Gracefully handle EOF.
@@ -39,24 +39,34 @@ static size_t cb_read_proc(void *user, void *buffer, size_t size) {
 }
 
 /**
- * Callback passed to dr_flac to implement file I/O via the VirtualFileSystem.
+ * Callback passed to dr_flac to implement file seeking via the VirtualFileSystem.
  */
-static bool cb_seek_proc(void *user, int offset) {
-  std::istream *stream = (std::istream *)user;
-  nassertr(stream != nullptr, false);
+static drflac_bool32 cb_seek_proc(void* user, int offset, drflac_seek_origin origin) {
+  std::istream* stream = static_cast<std::istream*>(user);
+  nassertr(stream != nullptr, DRFLAC_FALSE);
 
-  stream->seekg(offset, std::ios::cur);
-  return !stream->fail();
+  std::ios_base::seekdir dir;
+  switch (origin) {
+    case drflac_seek_origin_start:
+      dir = std::ios_base::beg;
+      break;
+    case drflac_seek_origin_current:
+      dir = std::ios_base::cur;
+      break;
+    default:
+      return DRFLAC_FALSE;
+  }
+
+  stream->seekg(offset, dir);
+  return !stream->fail() ? DRFLAC_TRUE : DRFLAC_FALSE;
 }
 
 TypeHandle FlacAudioCursor::_type_handle;
 
 /**
- * Reads the .wav header from the indicated stream.  This leaves the read
- * pointer positioned at the start of the data.
+ * Constructor for FlacAudioCursor. Initializes the FLAC stream and sets the audio properties.
  */
-FlacAudioCursor::
-FlacAudioCursor(FlacAudio *src, std::istream *stream) :
+FlacAudioCursor::FlacAudioCursor(FlacAudio *src, std::istream *stream) :
   MovieAudioCursor(src),
   _is_valid(false),
   _drflac(nullptr),
@@ -65,30 +75,27 @@ FlacAudioCursor(FlacAudio *src, std::istream *stream) :
   nassertv(stream != nullptr);
   nassertv(stream->good());
 
-  _drflac = drflac_open(&cb_read_proc, &cb_seek_proc, (void *)stream);
+  _drflac = drflac_open(&cb_read_proc, &cb_seek_proc, static_cast<void*>(stream), nullptr);
 
   if (_drflac == nullptr) {
-    movies_cat.error()
-      << "Failed to open FLAC file.\n";
+    movies_cat.error() << "Failed to open FLAC file.\n";
     _is_valid = false;
+    return;
   }
 
-  _length = (_drflac->totalSampleCount / _drflac->channels) / (double)_drflac->sampleRate;
-
+  _length = (_drflac->totalPCMFrameCount) / static_cast<double>(_drflac->sampleRate);
   _audio_channels = _drflac->channels;
   _audio_rate = _drflac->sampleRate;
 
   _can_seek = true;
   _can_seek_fast = _can_seek;
-
   _is_valid = true;
 }
 
 /**
- * xxx
+ * Destructor for FlacAudioCursor. Closes the FLAC stream and associated resources.
  */
-FlacAudioCursor::
-~FlacAudioCursor() {
+FlacAudioCursor::~FlacAudioCursor() {
   if (_drflac != nullptr) {
     drflac_close(_drflac);
   }
@@ -98,30 +105,22 @@ FlacAudioCursor::
 }
 
 /**
- * Seeks to a target location.  Afterward, the packet_time is guaranteed to be
- * less than or equal to the specified time.
+ * Seeks to a specific time in the FLAC file. Updates internal states to reflect the new position.
  */
-void FlacAudioCursor::
-seek(double t) {
+void FlacAudioCursor::seek(double t) {
   t = std::max(t, 0.0);
-
-  uint64_t sample = t * _drflac->sampleRate;
-
-  if (drflac_seek_to_sample(_drflac, sample * _drflac->channels)) {
-    _last_seek = sample / (double)_drflac->sampleRate;
+  uint64_t target_frame = static_cast<uint64_t>(t * _drflac->sampleRate);
+  if (drflac_seek_to_pcm_frame(_drflac, target_frame)) {
+    _last_seek = target_frame / static_cast<double>(_drflac->sampleRate);
     _samples_read = 0;
   }
 }
 
 /**
- * Read audio samples from the stream.  N is the number of samples you wish to
- * read.  Your buffer must be equal in size to N * channels.  Multiple-channel
- * audio will be interleaved.
+ * Reads audio samples from the FLAC stream. Returns the number of samples read per channel.
  */
-int FlacAudioCursor::
-read_samples(int n, int16_t *data) {
-  int desired = n * _audio_channels;
-  n = drflac_read_s16(_drflac, desired, data) / _audio_channels;
-  _samples_read += n;
-  return n;
+int FlacAudioCursor::read_samples(int n, int16_t* data) {
+  uint64_t frames_read = drflac_read_pcm_frames_s16(_drflac, static_cast<drflac_uint64>(n), data);
+  _samples_read += frames_read;
+  return static_cast<int>(frames_read);
 }
