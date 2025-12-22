@@ -2755,7 +2755,7 @@ enable_detectable_auto_repeat() {
   if (!x_detectable_auto_repeat) {
     return;
   }
-  
+
   Bool supported;
   if (XkbSetDetectableAutoRepeat(_display, True, &supported)) {
     x11display_cat.info() << "Detectable auto-repeat enabled.\n";
