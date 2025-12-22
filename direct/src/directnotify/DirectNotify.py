@@ -42,25 +42,25 @@ class DirectNotify:
         """
         return list(self.__categories.keys())
 
-    def getCategory(self, categoryName: str) -> Notifier.Notifier | None:
+    def getCategory(self, name: str) -> Notifier.Notifier | None:
         """getCategory(self, string)
         Return the category with given name if present, None otherwise
         """
-        return self.__categories.get(categoryName, None)
+        return self.__categories.get(name, None)
 
-    def newCategory(self, categoryName: str, logger: Logger.Logger | None = None) -> Notifier.Notifier:
+    def newCategory(self, name: str, logger: Logger.Logger | None = None) -> Notifier.Notifier:
         """newCategory(self, string)
-        Make a new notify category named categoryName. Return new category
+        Make a new notify category named name. Return new category
         if no such category exists, else return existing category
         """
-        if categoryName not in self.__categories:
-            self.__categories[categoryName] = Notifier.Notifier(categoryName, logger)
-            self.setDconfigLevel(categoryName)
-        notifier = self.getCategory(categoryName)
+        if name not in self.__categories:
+            self.__categories[name] = Notifier.Notifier(name, logger)
+            self.setDconfigLevel(name)
+        notifier = self.getCategory(name)
         assert notifier is not None
         return notifier
 
-    def setDconfigLevel(self, categoryName: str) -> None:
+    def setDconfigLevel(self, name: str) -> None:
         """
         Check to see if this category has a dconfig variable
         to set the notify severity and then set that level. You cannot
@@ -71,7 +71,7 @@ class DirectNotify:
         # we're running before ShowBase has finished initializing
         from panda3d.core import ConfigVariableString
 
-        dconfigParam = ("notify-level-" + categoryName)
+        dconfigParam = ("notify-level-" + name)
         cvar = ConfigVariableString(dconfigParam, "")
         level = cvar.getValue()
 
@@ -82,11 +82,11 @@ class DirectNotify:
         if not level:
             level = 'error'
 
-        category = self.getCategory(categoryName)
-        assert category is not None, f'failed to find category: {categoryName!r}'
+        category = self.getCategory(name)
+        assert category is not None, f'failed to find category: {name!r}'
         # Note - this print statement is making it difficult to
         # achieve "no output unless there's an error" operation - Josh
-        # print ("Setting DirectNotify category: " + categoryName +
+        # print ("Setting DirectNotify category: " + name +
         #        " to severity: " + level)
         if level == "error":
             category.setWarning(False)
@@ -106,7 +106,7 @@ class DirectNotify:
             category.setDebug(True)
         else:
             print("DirectNotify: unknown notify level: " + str(level)
-                   + " for category: " + str(categoryName))
+                   + " for category: " + str(name))
 
     def setDconfigLevels(self) -> None:
         for categoryName in self.getCategories():
@@ -129,3 +129,12 @@ class DirectNotify:
 
     def giveNotify(self, cls) -> None:
         cls.notify = self.newCategory(cls.__name__)
+
+    get_categories = getCategories
+    get_category = getCategory
+    new_category = newCategory
+    set_dconfig_level = setDconfigLevel
+    set_dconfig_levels = setDconfigLevels
+    set_verbose = setVerbose
+    popup_controls = popupControls
+    give_notify = giveNotify
