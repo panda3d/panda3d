@@ -13,6 +13,7 @@ This maintenance release fixes some minor defects and stability issues.
 * Egg: Add limited forward compatibility for metallic-roughness textures
 * OpenGL: fix error blitting depth texture on macOS (#1719)
 * OpenGL: fix SSBO support not being detected in certain situations
+* GLSL: Add p3d_MetallicRoughnessTexture input mapped to M_metallic_roughness
 * X11: Add config variable to enable detection of autorepeat key events (#1735)
 * GUI: Fix bug with PGSliderBar dragging (#1722)
 * Minor thread safety things for free-threaded Python builds

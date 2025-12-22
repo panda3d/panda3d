@@ -65,6 +65,9 @@ PUBLISHED:
     M_normal_gloss,
 
     M_emission,
+
+    // Forward compatibility alias.
+    M_metallic_roughness = M_selector,
   };
 
   enum CombineMode {
