@@ -491,6 +491,10 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
     case TextureStage::M_emission:
       info._flags = ShaderKey::TF_map_emission;
       break;
+    case TextureStage::M_occlusion:
+    case TextureStage::M_occlusion_metallic_roughness:
+      info._flags = ShaderKey::TF_map_occlusion;
+      break;
     default:
       break;
     }
@@ -557,9 +561,13 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
 
   // Decide whether to separate ambient and diffuse calculations.
   if (have_ambient) {
-    if (key._material_flags & Material::F_ambient) {
+    if (key._texture_flags & ShaderKey::TF_map_occlusion) {
       key._have_separate_ambient = true;
-    } else {
+    }
+    else if (key._material_flags & Material::F_ambient) {
+      key._have_separate_ambient = true;
+    }
+    else {
       if (key._material_flags & Material::F_diffuse) {
         key._have_separate_ambient = true;
       } else {
@@ -1599,6 +1607,13 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
       text << "\t result *= saturate(2 * (tex" << map_index_glow << ".a - 0.5));\n";
     }
     if (key._have_separate_ambient) {
+      // Apply occlusion textures.
+      for (size_t i = 0; i < key._textures.size(); ++i) {
+        ShaderKey::TextureInfo &tex = key._textures[i];
+        if (tex._flags & ShaderKey::TF_map_occlusion) {
+          text << "\t tot_ambient *= tex" << i << ".r;\n";
+        }
+      }
       if (key._material_flags & Material::F_ambient) {
         text << "\t result += tot_ambient * attr_material[0];\n";
       } else if (key._color_type == ColorAttrib::T_vertex) {

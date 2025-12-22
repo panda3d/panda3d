@@ -232,9 +232,10 @@ public:
     STO_stage_add_i,
     STO_stage_normal_i,
     STO_stage_height_i,
-    STO_stage_selector_i,
+    STO_stage_metallic_roughness_i,
     STO_stage_gloss_i,
     STO_stage_emission_i,
+    STO_stage_occlusion_i,
   };
 
   enum ShaderArgClass {

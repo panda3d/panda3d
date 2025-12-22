@@ -712,9 +712,11 @@ make_texture_layer(const NodePath &render,
   case TextureStage::M_glow:
   case TextureStage::M_gloss:
   case TextureStage::M_height:
-  case TextureStage::M_selector:
+  case TextureStage::M_metallic_roughness:
   case TextureStage::M_normal_gloss:
   case TextureStage::M_emission:
+  case TextureStage::M_occlusion:
+  case TextureStage::M_occlusion_metallic_roughness:
     // Don't know what to do with these funny modes.  We should probably raise
     // an exception or something.  Fall through for now.
 

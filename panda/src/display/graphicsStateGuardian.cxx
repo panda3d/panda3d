@@ -2496,7 +2496,7 @@ fetch_specified_texture(Shader::ShaderTexSpec &spec, SamplerState &sampler,
       return default_normal_height_tex;
     }
 
-  case Shader::STO_stage_selector_i:
+  case Shader::STO_stage_metallic_roughness_i:
     {
       const TextureAttrib *texattrib;
       if (_target_rs->get_attrib(texattrib)) {
@@ -2505,7 +2505,8 @@ fetch_specified_texture(Shader::ShaderTexSpec &spec, SamplerState &sampler,
           TextureStage *stage = texattrib->get_on_stage(i);
           TextureStage::Mode mode = stage->get_mode();
 
-          if (mode == TextureStage::M_selector) {
+          if (mode == TextureStage::M_metallic_roughness ||
+              mode == TextureStage::M_occlusion_metallic_roughness) {
             if (si++ == spec._stage) {
               sampler = texattrib->get_on_sampler(stage);
               view += stage->get_tex_view_offset();
@@ -2527,6 +2528,28 @@ fetch_specified_texture(Shader::ShaderTexSpec &spec, SamplerState &sampler,
           TextureStage::Mode mode = stage->get_mode();
 
           if (mode == TextureStage::M_emission) {
+            if (si++ == spec._stage) {
+              sampler = texattrib->get_on_sampler(stage);
+              view += stage->get_tex_view_offset();
+              return texattrib->get_on_texture(stage);
+            }
+          }
+        }
+      }
+    }
+    break;
+
+  case Shader::STO_stage_occlusion_i:
+    {
+      const TextureAttrib *texattrib;
+      if (_target_rs->get_attrib(texattrib)) {
+        int si = 0;
+        for (int i = 0; i < texattrib->get_num_on_stages(); ++i) {
+          TextureStage *stage = texattrib->get_on_stage(i);
+          TextureStage::Mode mode = stage->get_mode();
+
+          if (mode == TextureStage::M_occlusion ||
+              mode == TextureStage::M_occlusion_metallic_roughness) {
             if (si++ == spec._stage) {
               sampler = texattrib->get_on_sampler(stage);
               view += stage->get_tex_view_offset();

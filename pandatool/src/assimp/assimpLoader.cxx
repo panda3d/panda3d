@@ -58,6 +58,10 @@
 #define AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_ROUGHNESS_FACTOR "$mat.gltf.pbrMetallicRoughness.roughnessFactor", 0, 0
 #endif
 
+#ifndef AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_METALLICROUGHNESS_TEXTURE
+#define AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_METALLICROUGHNESS_TEXTURE aiTextureType_UNKNOWN, 0
+#endif
+
 #ifndef AI_MATKEY_GLTF_ALPHAMODE
 #define AI_MATKEY_GLTF_ALPHAMODE "$mat.gltf.alphaMode", 0, 0
 #endif
@@ -325,11 +329,13 @@ load_texture(size_t index) {
 
 /**
  * Converts an aiMaterial into a RenderState.
+ * The dummy argument exists so we can pass a MATKEY macro into this function
+ * instead of just a texture type.
  */
 void AssimpLoader::
-load_texture_stage(const aiMaterial &mat, const aiTextureType &ttype,
-                   TextureStage::Mode mode, CPT(TextureAttrib) &tattr,
-                   CPT(TexMatrixAttrib) &tmattr) {
+load_texture_stage(const aiMaterial &mat, TextureStage::Mode mode,
+                   CPT(TextureAttrib) &tattr, CPT(TexMatrixAttrib) &tmattr,
+                   const aiTextureType &ttype, unsigned int dummy) {
   aiString path;
   aiTextureMapping mapping;
   unsigned int uvindex;
@@ -596,20 +602,33 @@ load_material(size_t index) {
   // And let's not forget the textures!
   CPT(TextureAttrib) tattr = DCAST(TextureAttrib, TextureAttrib::make());
   CPT(TexMatrixAttrib) tmattr;
-  load_texture_stage(mat, aiTextureType_DIFFUSE, TextureStage::M_modulate, tattr, tmattr);
+  load_texture_stage(mat, TextureStage::M_modulate, tattr, tmattr, aiTextureType_DIFFUSE);
 
-  // Check for an ORM map, from the glTF/OBJ importer.  glTF also puts it in the
-  // LIGHTMAP slot, despite only having the lightmap in the red channel, so we
-  // have to ignore it.
-  if (mat.GetTextureCount(aiTextureType_UNKNOWN) > 0) {
-    load_texture_stage(mat, aiTextureType_UNKNOWN, TextureStage::M_selector, tattr, tmattr);
+  // Check for an ORM map, from the glTF/OBJ importer.  glTF also erroneously
+  // puts an occlusion texture in the LIGHTMAP slot.
+  aiString roughness_path, occlusion_path;
+  aiTextureMapping roughness_mapping, occlusion_mapping;
+  unsigned int roughness_uv, occlusion_uv;
+  if (AI_SUCCESS == mat.GetTexture(AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_METALLICROUGHNESS_TEXTURE, &roughness_path, &roughness_mapping, &roughness_uv)) {
+    if (AI_SUCCESS == mat.GetTexture(aiTextureType_LIGHTMAP, 0, &occlusion_path, &occlusion_mapping, &occlusion_uv)) {
+      if (roughness_path == occlusion_path &&
+          roughness_mapping == occlusion_mapping &&
+          roughness_uv == occlusion_uv) {
+        load_texture_stage(mat, TextureStage::M_occlusion_metallic_roughness, tattr, tmattr, AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_METALLICROUGHNESS_TEXTURE);
+      } else {
+        load_texture_stage(mat, TextureStage::M_metallic_roughness, tattr, tmattr, AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_METALLICROUGHNESS_TEXTURE);
+        load_texture_stage(mat, TextureStage::M_occlusion, tattr, tmattr, aiTextureType_LIGHTMAP);
+      }
+    } else {
+      load_texture_stage(mat, TextureStage::M_metallic_roughness, tattr, tmattr, AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_METALLICROUGHNESS_TEXTURE);
+    }
   } else {
-    load_texture_stage(mat, aiTextureType_LIGHTMAP, TextureStage::M_modulate, tattr, tmattr);
+    load_texture_stage(mat, TextureStage::M_modulate, tattr, tmattr, aiTextureType_LIGHTMAP);
   }
 
-  load_texture_stage(mat, aiTextureType_NORMALS, TextureStage::M_normal, tattr, tmattr);
-  load_texture_stage(mat, aiTextureType_EMISSIVE, TextureStage::M_emission, tattr, tmattr);
-  load_texture_stage(mat, aiTextureType_HEIGHT, TextureStage::M_height, tattr, tmattr);
+  load_texture_stage(mat, TextureStage::M_normal, tattr, tmattr, aiTextureType_NORMALS);
+  load_texture_stage(mat, TextureStage::M_emission, tattr, tmattr, aiTextureType_EMISSIVE);
+  load_texture_stage(mat, TextureStage::M_height, tattr, tmattr, aiTextureType_HEIGHT);
   if (tattr->get_num_on_stages() > 0) {
     state = state->add_attrib(tattr);
   }

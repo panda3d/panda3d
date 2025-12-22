@@ -852,14 +852,20 @@ convert_primitive(const GeomVertexData *vertex_data,
         case TextureStage::M_height:
           egg_tex->set_env_type(EggTexture::ET_height);
           break;
-        case TextureStage::M_selector:
-          egg_tex->set_env_type(EggTexture::ET_selector);
+        case TextureStage::M_metallic_roughness:
+          egg_tex->set_env_type(EggTexture::ET_metallic_roughness);
           break;
         case TextureStage::M_normal_gloss:
           egg_tex->set_env_type(EggTexture::ET_normal_gloss);
           break;
         case TextureStage::M_emission:
           egg_tex->set_env_type(EggTexture::ET_emission);
+          break;
+        case TextureStage::M_occlusion:
+          egg_tex->set_env_type(EggTexture::ET_occlusion);
+          break;
+        case TextureStage::M_occlusion_metallic_roughness:
+          egg_tex->set_env_type(EggTexture::ET_occlusion_metallic_roughness);
           break;
         default:
           break;

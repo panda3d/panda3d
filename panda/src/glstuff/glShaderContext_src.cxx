@@ -1043,14 +1043,18 @@ reflect_uniform(int i, char *name_buffer, GLsizei name_buflen) {
         else if (noprefix.compare(7, string::npos, "Height") == 0) {
           bind._part = Shader::STO_stage_height_i;
         }
-        else if (noprefix.compare(7, string::npos, "Selector") == 0) {
-          bind._part = Shader::STO_stage_selector_i;
+        else if (noprefix.compare(7, string::npos, "MetallicRoughness") == 0 ||
+                 noprefix.compare(7, string::npos, "Selector") == 0) {
+          bind._part = Shader::STO_stage_metallic_roughness_i;
         }
         else if (noprefix.compare(7, string::npos, "Gloss") == 0) {
           bind._part = Shader::STO_stage_gloss_i;
         }
         else if (noprefix.compare(7, string::npos, "Emission") == 0) {
           bind._part = Shader::STO_stage_emission_i;
+        }
+        else if (noprefix.compare(7, string::npos, "Occlusion") == 0) {
+          bind._part = Shader::STO_stage_occlusion_i;
         }
         else {
           GLCAT.error()

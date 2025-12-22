@@ -367,3 +367,31 @@ def test_color_transparency_no_light(color_region, shader_attrib):
     )
     result = render_color_pixel(color_region, state)
     assert result.x == pytest.approx(1.0, 0.1)
+
+
+def test_texture_occlusion(color_region):
+    shader_attrib = core.ShaderAttrib.make_default().set_shader_auto(True)
+
+    tex = core.Texture("occlusion")
+    tex.set_clear_color((0.5, 1.0, 1.0, 1.0))
+    stage = core.TextureStage("occlusion")
+    stage.set_mode(core.TextureStage.M_occlusion)
+    texture_attrib = core.TextureAttrib.make().add_on_stage(stage, tex)
+
+    mat = core.Material()
+    mat.diffuse = (0, 1, 0, 1)
+    mat.ambient = (0, 0, 1, 1)
+    material_attrib = core.MaterialAttrib.make(mat)
+
+    alight = core.AmbientLight("ambient")
+    alight.set_color((0, 0, 1, 1))
+    light_attrib = core.LightAttrib.make().add_on_light(core.NodePath(alight))
+
+    state = core.RenderState.make(
+        shader_attrib,
+        material_attrib,
+        texture_attrib,
+        light_attrib
+    )
+    result = render_color_pixel(color_region, state)
+    assert result.z == pytest.approx(0.5, 0.05)

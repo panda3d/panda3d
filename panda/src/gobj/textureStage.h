@@ -61,10 +61,14 @@ PUBLISHED:
     M_glow,         // Rarely used: modulate_glow  is more efficient.
     M_gloss,        // Rarely used: modulate_gloss is more efficient.
     M_height,       // Rarely used: normal_height  is more efficient.
-    M_selector,
+    M_metallic_roughness, // metalness in B, roughness in G
     M_normal_gloss,
 
     M_emission,
+    M_occlusion, // In red channel
+    M_occlusion_metallic_roughness,
+
+    M_selector = M_metallic_roughness,
   };
 
   enum CombineMode {
