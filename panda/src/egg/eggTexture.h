@@ -108,6 +108,11 @@ PUBLISHED:
     ET_selector,
     ET_normal_gloss,
     ET_emission,
+
+    // Forward compatibility with Panda 1.11
+    ET___occlusion,
+    ET___occlusion_metallic_roughness,
+    ET___metallic_roughness,
   };
   enum CombineMode {
     CM_unspecified,

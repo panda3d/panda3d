@@ -876,6 +876,10 @@ load_textures() {
  */
 bool EggLoader::
 load_texture(TextureDef &def, EggTexture *egg_tex) {
+  if (egg_tex->get_env_type() == EggTexture::ET___occlusion) {
+    return false;
+  }
+
   // Check to see if we should reduce the number of channels in the texture.
   int wanted_channels = 0;
   bool wanted_alpha = false;
@@ -1533,6 +1537,8 @@ make_texture_stage(const EggTexture *egg_tex) {
     break;
 
   case EggTexture::ET_selector:
+  case EggTexture::ET___metallic_roughness:
+  case EggTexture::ET___occlusion_metallic_roughness:
     stage->set_mode(TextureStage::M_selector);
     break;
 

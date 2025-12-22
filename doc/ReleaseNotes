@@ -10,6 +10,7 @@ This maintenance release fixes some minor defects and stability issues.
 * Fix linecache error when distributing for newer Python versions
 * Fix `await AsyncFuture.gather()` returning first item instead of tuple (#1738)
 * Fix use-after-free in collision system with transform cache disabled (#1733)
+* Egg: Add limited forward compatibility for metallic-roughness textures
 * OpenGL: fix error blitting depth texture on macOS (#1719)
 * OpenGL: fix SSBO support not being detected in certain situations
 * X11: Add config variable to enable detection of autorepeat key events (#1735)
