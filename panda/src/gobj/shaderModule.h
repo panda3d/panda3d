@@ -70,19 +70,35 @@ public:
   INLINE const Filename &get_source_filename() const;
   INLINE void set_source_filename(const Filename &);
 
+#ifdef CPPPARSER
+  INLINE SpecializationConstant get_spec_constant(size_t i) const;
+#else
   INLINE const SpecializationConstant &get_spec_constant(size_t i) const;
+#endif
   INLINE size_t get_num_spec_constants() const;
 
   INLINE size_t get_num_inputs() const;
+#ifdef CPPPARSER
+  INLINE Variable get_input(size_t i) const;
+#else
   INLINE const Variable &get_input(size_t i) const;
+#endif
   INLINE int find_input(CPT_InternalName name) const;
 
   INLINE size_t get_num_outputs() const;
+#ifdef CPPPARSER
+  INLINE Variable get_output(size_t i) const;
+#else
   INLINE const Variable &get_output(size_t i) const;
+#endif
   INLINE int find_output(CPT_InternalName name) const;
 
   INLINE size_t get_num_parameters() const;
+#ifdef CPPPARSER
+  INLINE Variable get_parameter(size_t i) const;
+#else
   INLINE const Variable &get_parameter(size_t i) const;
+#endif
   INLINE int find_parameter(CPT_InternalName name) const;
 
   typedef pmap<CPT_InternalName, Variable *> VariablesByName;
