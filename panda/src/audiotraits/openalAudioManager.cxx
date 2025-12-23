@@ -440,6 +440,7 @@ get_sound_data(MovieAudio *movie, int mode) {
   sd->_rate     = stream->audio_rate();
   sd->_channels = stream->audio_channels();
   sd->_length   = stream->length();
+  sd->_comment  = stream->get_raw_comment();
   audio_debug("Creating: " << sd->_movie->get_filename().get_basename());
   audio_debug("  - Rate: " << sd->_rate);
   audio_debug("  - Channels: " << sd->_channels);
