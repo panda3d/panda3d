@@ -56,6 +56,7 @@ public:
 #endif
   };
 
+PUBLISHED:
   enum class Access {
     NONE = 0,
     READ_ONLY = 1,
@@ -63,11 +64,6 @@ public:
     READ_WRITE = 3,
   };
 
-private:
-  typedef pset<const ShaderType *, indirect_compare_to<const ShaderType *> > Registry;
-  static Registry *_registered_types;
-
-PUBLISHED:
   class Void;
   class Scalar;
   class Vector;
@@ -88,6 +84,9 @@ PUBLISHED:
   static const ShaderType::Scalar *float_type;
   static const ShaderType::Scalar *double_type;
   static const ShaderType::Sampler *sampler_type;
+
+  MAKE_PROPERTY(align_bytes, get_align_bytes);
+  MAKE_PROPERTY(size_bytes, get_size_bytes);
 
 public:
   virtual bool is_aggregate_type() const { return false; }
@@ -118,6 +117,10 @@ public:
   static void register_with_read_factory();
   virtual bool require_fully_complete() const override;
   static TypedWritable *change_this(TypedWritable *old_ptr, BamReader *manager);
+
+private:
+  typedef pset<const ShaderType *, indirect_compare_to<const ShaderType *> > Registry;
+  static Registry *_registered_types;
 
 public:
   static TypeHandle get_class_type() {
