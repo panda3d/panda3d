@@ -216,7 +216,7 @@ class ShaderEnvironment:
         assert result
 
     def run_glsl(self, body, preamble="", inputs={}, version=420, exts=set(),
-                 state=core.RenderState.make_empty()):
+                 state=core.RenderState.make_empty(), options=None):
         """ Runs a GLSL test on the given GSG.  The given body is executed in the
         main function and should call assert().  The preamble should contain all
         of the shader inputs. """
@@ -234,6 +234,7 @@ class ShaderEnvironment:
 
         version = version or 420
         exts = exts | {'GL_ARB_compute_shader', 'GL_ARB_shader_image_load_store'}
+        options = options or core.CompilerOptions()
 
         extensions = ''
         for ext in exts:
@@ -246,11 +247,11 @@ class ShaderEnvironment:
 
         if use_compute:
             code = GLSL_COMPUTE_TEMPLATE.format(version=version, extensions=extensions, preamble=preamble, body=body)
-            shader = core.Shader.make_compute(core.Shader.SL_GLSL, code)
+            shader = core.Shader.make_compute(core.Shader.SL_GLSL, code, options=options)
         else:
             vertex_code = GLSL_VERTEX_TEMPLATE.format(version=version, extensions=extensions, preamble=preamble, body=body)
             code = GLSL_FRAGMENT_TEMPLATE.format(version=version, extensions=extensions, preamble=preamble, body=body)
-            shader = core.Shader.make(core.Shader.SL_GLSL, vertex_code, code)
+            shader = core.Shader.make(core.Shader.SL_GLSL, vertex_code, code, options=options)
 
         if not shader:
             pytest.fail("error compiling shader:\n" + code)

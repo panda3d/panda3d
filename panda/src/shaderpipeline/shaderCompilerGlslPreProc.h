@@ -31,6 +31,8 @@ public:
   virtual SourceLanguages get_languages() const override;
   virtual PT(ShaderModule) compile_now(Stage stage, std::istream &in,
                                        const Filename &fullpath,
+                                       const CompilerOptions &options,
+                                       std::ostream *output_log = nullptr,
                                        BamCacheRecord *record = nullptr) const override;
 
 private:
@@ -48,8 +50,9 @@ private:
                             int depth) const;
   bool r_preprocess_source(State &state, std::istream &in,
                            const std::string &fn, const Filename &full_fn,
-                           BamCacheRecord *record = nullptr, int fileno = 0,
-                           int depth = 0) const;
+                           const std::string &preamble,
+                           BamCacheRecord *record = nullptr,
+                           int fileno = 0, int depth = 0) const;
 
 public:
   static TypeHandle get_class_type() {

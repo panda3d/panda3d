@@ -168,7 +168,8 @@ get_languages() const {
  */
 PT(ShaderModule) ShaderCompilerGlslang::
 compile_now(ShaderModule::Stage stage, std::istream &in,
-            const Filename &fullpath, BamCacheRecord *record) const {
+            const Filename &fullpath, const CompilerOptions &options,
+            std::ostream *output_log, BamCacheRecord *record) const {
 
   vector_uchar code;
   if (!VirtualFile::simple_read_file(&in, code)) {
@@ -229,7 +230,7 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
     static ShaderCompilerGlslPreProc preprocessor;
 
     std::istringstream stream(std::string((const char *)&code[0], code.size()));
-    return preprocessor.compile_now(stage, stream, fullpath, record);
+    return preprocessor.compile_now(stage, stream, fullpath, options, output_log, record);
   }
 
   static bool is_initialized = false;
@@ -274,42 +275,50 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
   shader.setEntryPoint("main");
 
   // If it's marked as a Cg shader, we compile it with the HLSL front-end.
-  if (is_cg) {
-    messages = (EShMessages)(messages | EShMsgHlslDX9Compatible | EShMsgHlslLegalization);
+  std::string preamble;
+  {
+    std::ostringstream preamble_stream;
+    if (is_cg) {
+      messages = (EShMessages)(messages | EShMsgHlslDX9Compatible | EShMsgHlslLegalization);
 
-    const char *source_entry_point;
-    switch (stage) {
-    case ShaderModule::Stage::VERTEX:
-      source_entry_point = "vshader";
-      break;
-    case ShaderModule::Stage::GEOMETRY:
-      source_entry_point = "gshader";
-      break;
-    case ShaderModule::Stage::FRAGMENT:
-      source_entry_point = "fshader";
-      break;
-    default:
-      shader_cat.error()
-        << "Cg does not support " << stage << " shaders.\n";
-      return nullptr;
+      const char *source_entry_point;
+      switch (stage) {
+      case ShaderModule::Stage::VERTEX:
+        source_entry_point = "vshader";
+        break;
+      case ShaderModule::Stage::GEOMETRY:
+        source_entry_point = "gshader";
+        break;
+      case ShaderModule::Stage::FRAGMENT:
+        source_entry_point = "fshader";
+        break;
+      default:
+        shader_cat.error()
+          << "Cg does not support " << stage << " shaders.\n";
+        return nullptr;
+      }
+      shader.setSourceEntryPoint(source_entry_point);
+
+      // Generate a special preamble to define some functions that Cg defines but
+      // HLSL doesn't.  This is sourced from cg_preamble.hlsl.
+      extern const char cg_preamble[];
+      preamble_stream << cg_preamble;
+
+      // We map some sampler types to DX10 syntax, but those use separate
+      // samplers/images, so we need to ask glslang to combine these back.
+      shader.setTextureSamplerTransformMode(EShTexSampTransUpgradeTextureRemoveSampler);
+
+      shader.setEnvInput(glslang::EShSource::EShSourceHlsl, (EShLanguage)stage, glslang::EShClient::EShClientOpenGL, 120);
+    } else {
+      shader.setEnvInput(glslang::EShSource::EShSourceGlsl, (EShLanguage)stage, glslang::EShClient::EShClientOpenGL, 450);
+
+      preamble_stream << "#extension GL_GOOGLE_cpp_style_line_directive : require\n";
     }
-    shader.setSourceEntryPoint(source_entry_point);
-
-    // Generate a special preamble to define some functions that Cg defines but
-    // HLSL doesn't.  This is sourced from cg_preamble.hlsl.
-    extern const char cg_preamble[];
-    shader.setPreamble(cg_preamble);
-
-    // We map some sampler types to DX10 syntax, but those use separate
-    // samplers/images, so we need to ask glslang to combine these back.
-    shader.setTextureSamplerTransformMode(EShTexSampTransUpgradeTextureRemoveSampler);
-
-    shader.setEnvInput(glslang::EShSource::EShSourceHlsl, (EShLanguage)stage, glslang::EShClient::EShClientOpenGL, 120);
-  } else {
-    shader.setEnvInput(glslang::EShSource::EShSourceGlsl, (EShLanguage)stage, glslang::EShClient::EShClientOpenGL, 450);
-
-    shader.setPreamble("#extension GL_GOOGLE_cpp_style_line_directive : require\n");
+    options.write_defines(preamble_stream);
+    preamble = std::move(preamble_stream).str();
   }
+  shader.setPreamble(preamble.c_str());
+
   shader.setEnvClient(glslang::EShClient::EShClientOpenGL, glslang::EShTargetOpenGL_450);
   shader.setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_0);
 
@@ -320,9 +329,14 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
 
   Includer includer(record);
   if (!shader.parse(GetDefaultResources(), 110, false, messages, includer)) {
-    shader_cat.error()
-      << "Failed to parse " << filename << ":\n"
-      << shader.getInfoLog();
+    if (output_log != nullptr) {
+      *output_log << shader.getInfoLog();
+    }
+    if (!options.get_suppress_log()) {
+      shader_cat.error()
+        << "Failed to parse " << filename << ":\n"
+        << shader.getInfoLog();
+    }
     return nullptr;
   }
 
@@ -354,9 +368,14 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
 
     std::string messages = logger.getAllMessages();
     if (!messages.empty()) {
-      shader_cat.warning()
-        << "Compilation to SPIR-V produced the following messages:\n"
-        << messages;
+      if (output_log != nullptr) {
+        *output_log << messages;
+      }
+      if (!options.get_suppress_log()) {
+        shader_cat.warning()
+          << "Compilation to SPIR-V produced the following messages:\n"
+          << messages;
+      }
     }
   }
 
@@ -373,23 +392,39 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
   }
 
   // Run it through the optimizer.
-  spvtools::Optimizer opt(SPV_ENV_UNIVERSAL_1_0);
-  opt.SetMessageConsumer(log_message);
-  opt.RegisterPerformancePasses();
-
-  if (is_cg) {
-    opt.RegisterLegalizationPasses();
-  }
-
-  // We skip validation because of the `uniform bool` bug, see SPIRV-Tools#3387
   std::vector<uint32_t> optimized;
-  spvtools::ValidatorOptions validator_options;
-  if (!opt.Run(stream.get_data(), stream.get_data_size(), &optimized,
-               validator_options, true)) {
-    return nullptr;
+  if (is_cg || options.get_optimize() != CompilerOptions::Optimize::NONE) {
+    spvtools::Optimizer opt(SPV_ENV_UNIVERSAL_1_0);
+    opt.SetMessageConsumer(log_message);
+
+    switch (options.get_optimize()) {
+    case CompilerOptions::Optimize::NONE:
+      break;
+
+    case CompilerOptions::Optimize::PERFORMANCE:
+      opt.RegisterPerformancePasses();
+      break;
+
+    case CompilerOptions::Optimize::SIZE:
+      opt.RegisterSizePasses();
+      break;
+    }
+
+    if (is_cg) {
+      opt.RegisterLegalizationPasses();
+    }
+
+    // We skip validation because of the `uniform bool` bug, see SPIRV-Tools#3387
+    spvtools::ValidatorOptions validator_options;
+    if (!opt.Run(stream.get_data(), stream.get_data_size(), &optimized,
+                 validator_options, true)) {
+      return nullptr;
+    }
+  } else {
+    optimized = stream;
   }
 
-  return new ShaderModuleSpirV(stage, std::move(optimized), record);
+  return new ShaderModuleSpirV(stage, std::move(optimized), options, record);
 }
 
 /**

@@ -162,7 +162,7 @@ get_compiled(unsigned int &format, string &binary) const {
  * success or failure.
  */
 bool Shader::
-read(const ShaderFile &sfile, BamCacheRecord *record) {
+read(const ShaderFile &sfile, const CompilerOptions &options, BamCacheRecord *record) {
   _text._separate = sfile._separate;
 
   PT(BamCacheRecord) record2;
@@ -177,27 +177,27 @@ read(const ShaderFile &sfile, BamCacheRecord *record) {
 
     // Read the various stages in order.
     if (!sfile._vertex.empty() &&
-        !do_read_source(Stage::VERTEX, sfile._vertex, record)) {
+        !do_read_source(Stage::VERTEX, sfile._vertex, options, record)) {
       return false;
     }
     if (!sfile._tess_control.empty() &&
-        !do_read_source(Stage::TESS_CONTROL, sfile._tess_control, record)) {
+        !do_read_source(Stage::TESS_CONTROL, sfile._tess_control, options, record)) {
       return false;
     }
     if (!sfile._tess_evaluation.empty() &&
-        !do_read_source(Stage::TESS_EVALUATION, sfile._tess_evaluation, record)) {
+        !do_read_source(Stage::TESS_EVALUATION, sfile._tess_evaluation, options, record)) {
       return false;
     }
     if (!sfile._geometry.empty() &&
-        !do_read_source(Stage::GEOMETRY, sfile._geometry, record)) {
+        !do_read_source(Stage::GEOMETRY, sfile._geometry, options, record)) {
       return false;
     }
     if (!sfile._fragment.empty() &&
-        !do_read_source(Stage::FRAGMENT, sfile._fragment, record)) {
+        !do_read_source(Stage::FRAGMENT, sfile._fragment, options, record)) {
       return false;
     }
     if (!sfile._compute.empty() &&
-        !do_read_source(Stage::COMPUTE, sfile._compute, record)) {
+        !do_read_source(Stage::COMPUTE, sfile._compute, options, record)) {
       return false;
     }
     _filename = sfile;
@@ -256,23 +256,24 @@ read(const ShaderFile &sfile, BamCacheRecord *record) {
     ShaderCompiler *compiler = registry->get_compiler_for_language(SL_Cg);
     nassertr(compiler != nullptr, false);
 
+    CompilerOptions options;
     std::istringstream in(source);
 
-    PT(ShaderModule) vertex = compiler->compile_now(Stage::VERTEX, in, fullpath, record);
+    PT(ShaderModule) vertex = compiler->compile_now(Stage::VERTEX, in, fullpath, options, nullptr, record);
     if (vertex == nullptr || !add_module(std::move(vertex))) {
       return false;
     }
     if (source.find("gshader") != string::npos) {
       in.clear();
       in.seekg(0);
-      PT(ShaderModule) geometry = compiler->compile_now(Stage::GEOMETRY, in, fullpath, record);
+      PT(ShaderModule) geometry = compiler->compile_now(Stage::GEOMETRY, in, fullpath, options, nullptr, record);
       if (geometry == nullptr || !add_module(std::move(geometry))) {
         return false;
       }
     }
     in.clear();
     in.seekg(0);
-    PT(ShaderModule) fragment = compiler->compile_now(Stage::FRAGMENT, in, fullpath, record);
+    PT(ShaderModule) fragment = compiler->compile_now(Stage::FRAGMENT, in, fullpath, options, nullptr, record);
     if (fragment == nullptr || !add_module(std::move(fragment))) {
       return false;
     }
@@ -307,7 +308,7 @@ read(const ShaderFile &sfile, BamCacheRecord *record) {
  * success or failure.
  */
 bool Shader::
-load(const ShaderFile &sbody, BamCacheRecord *record) {
+load(const ShaderFile &sbody, const CompilerOptions &options, BamCacheRecord *record) {
   _filename = ShaderFile("created-shader");
   _fullpath = Filename();
   _text._separate = sbody._separate;
@@ -320,27 +321,27 @@ load(const ShaderFile &sbody, BamCacheRecord *record) {
     }
 
     if (!sbody._vertex.empty() &&
-        !do_load_source(Stage::VERTEX, sbody._vertex, record)) {
+        !do_load_source(Stage::VERTEX, sbody._vertex, options, record)) {
       return false;
     }
     if (!sbody._tess_control.empty() &&
-        !do_load_source(Stage::TESS_CONTROL, sbody._tess_control, record)) {
+        !do_load_source(Stage::TESS_CONTROL, sbody._tess_control, options, record)) {
       return false;
     }
     if (!sbody._tess_evaluation.empty() &&
-        !do_load_source(Stage::TESS_EVALUATION, sbody._tess_evaluation, record)) {
+        !do_load_source(Stage::TESS_EVALUATION, sbody._tess_evaluation, options, record)) {
       return false;
     }
     if (!sbody._geometry.empty() &&
-        !do_load_source(Stage::GEOMETRY, sbody._geometry, record)) {
+        !do_load_source(Stage::GEOMETRY, sbody._geometry, options, record)) {
       return false;
     }
     if (!sbody._fragment.empty() &&
-        !do_load_source(Stage::FRAGMENT, sbody._fragment, record)) {
+        !do_load_source(Stage::FRAGMENT, sbody._fragment, options, record)) {
       return false;
     }
     if (!sbody._compute.empty() &&
-        !do_load_source(Stage::COMPUTE, sbody._compute, record)) {
+        !do_load_source(Stage::COMPUTE, sbody._compute, options, record)) {
       return false;
     }
 
@@ -352,14 +353,14 @@ load(const ShaderFile &sbody, BamCacheRecord *record) {
     }
     _language = SL_Cg;
 
-    if (!do_load_source(Stage::VERTEX, sbody._shared, record)) {
+    if (!do_load_source(Stage::VERTEX, sbody._shared, options, record)) {
       return false;
     }
-    if (!do_load_source(Stage::FRAGMENT, sbody._shared, record)) {
+    if (!do_load_source(Stage::FRAGMENT, sbody._shared, options, record)) {
       return false;
     }
     if (sbody._shared.find("gshader") != string::npos &&
-        !do_load_source(Stage::GEOMETRY, sbody._shared, record)) {
+        !do_load_source(Stage::GEOMETRY, sbody._shared, options, record)) {
       return false;
     }
 
@@ -387,12 +388,12 @@ load(const ShaderFile &sbody, BamCacheRecord *record) {
  * it 'invalid'.
  */
 bool Shader::
-do_read_source(Stage stage, const Filename &fn, BamCacheRecord *record) {
+do_read_source(Stage stage, const Filename &fn, const CompilerOptions &options, BamCacheRecord *record) {
   ShaderCompilerRegistry *registry = ShaderCompilerRegistry::get_global_ptr();
   ShaderCompiler *compiler = registry->get_compiler_for_language(_language);
   nassertr(compiler != nullptr, false);
 
-  PT(ShaderModule) module = compiler->compile_now(stage, fn, record);
+  PT(ShaderModule) module = compiler->compile_now(stage, fn, options, nullptr, record);
   if (!module) {
     return false;
   }
@@ -419,12 +420,13 @@ do_read_source(Stage stage, const Filename &fn, BamCacheRecord *record) {
  */
 bool Shader::
 do_read_source(ShaderModule::Stage stage, std::istream &in,
-               const Filename &fullpath, BamCacheRecord *record) {
+               const Filename &fullpath, const CompilerOptions &options,
+               BamCacheRecord *record) {
   ShaderCompilerRegistry *registry = ShaderCompilerRegistry::get_global_ptr();
   ShaderCompiler *compiler = registry->get_compiler_for_language(_language);
   nassertr(compiler != nullptr, false);
 
-  PT(ShaderModule) module = compiler->compile_now(stage, in, fullpath, record);
+  PT(ShaderModule) module = compiler->compile_now(stage, in, fullpath, options, nullptr, record);
   if (!module) {
     return false;
   }
@@ -441,9 +443,10 @@ do_read_source(ShaderModule::Stage stage, std::istream &in,
  * it 'invalid'.
  */
 bool Shader::
-do_load_source(ShaderModule::Stage stage, const std::string &source, BamCacheRecord *record) {
+do_load_source(ShaderModule::Stage stage, const std::string &source,
+               const CompilerOptions &options, BamCacheRecord *record) {
   std::istringstream in(source);
-  return do_read_source(stage, in, Filename("created-shader"), record);
+  return do_read_source(stage, in, Filename("created-shader"), options, record);
 }
 
 /**
@@ -677,7 +680,7 @@ check_modified() const {
  * Loads the shader with the given filename.
  */
 PT(Shader) Shader::
-load(const Filename &file, SourceLanguage lang) {
+load(const Filename &file, SourceLanguage lang, const CompilerOptions &options) {
   ShaderFile sfile(file);
   ShaderTable::const_iterator i = _load_table.find(sfile);
   if (i != _load_table.end() && (lang == SL_none || lang == i->second->_language)) {
@@ -695,7 +698,7 @@ load(const Filename &file, SourceLanguage lang) {
   }
 
   PT(Shader) shader = new Shader(lang);
-  if (!shader->read(sfile)) {
+  if (!shader->read(sfile, options)) {
     return nullptr;
   }
 
@@ -717,7 +720,8 @@ load(const Filename &file, SourceLanguage lang) {
 PT(Shader) Shader::
 load(SourceLanguage lang, const Filename &vertex,
      const Filename &fragment, const Filename &geometry,
-     const Filename &tess_control, const Filename &tess_evaluation) {
+     const Filename &tess_control, const Filename &tess_evaluation,
+     const CompilerOptions &options) {
   ShaderFile sfile(vertex, fragment, geometry, tess_control, tess_evaluation);
   ShaderTable::const_iterator i = _load_table.find(sfile);
   if (i != _load_table.end() && (lang == SL_none || lang == i->second->_language)) {
@@ -735,7 +739,7 @@ load(SourceLanguage lang, const Filename &vertex,
   }
 
   PT(Shader) shader = new Shader(lang);
-  if (!shader->read(sfile)) {
+  if (!shader->read(sfile, options)) {
     return nullptr;
   }
 
@@ -755,7 +759,8 @@ load(SourceLanguage lang, const Filename &vertex,
  * Loads a compute shader.
  */
 PT(Shader) Shader::
-load_compute(SourceLanguage lang, const Filename &fn) {
+load_compute(SourceLanguage lang, const Filename &fn,
+             const CompilerOptions &options) {
   if (lang != SL_GLSL) {
     shader_cat.error()
       << "Only GLSL compute shaders are currently supported.\n";
@@ -803,7 +808,7 @@ load_compute(SourceLanguage lang, const Filename &fn) {
   }
 
   PT(Shader) shader = new Shader(lang);
-  if (!shader->read(sfile, record)) {
+  if (!shader->read(sfile, options, record)) {
     return nullptr;
   }
 
@@ -829,7 +834,7 @@ load_compute(SourceLanguage lang, const Filename &fn) {
  * Loads the shader, using the string as shader body.
  */
 PT(Shader) Shader::
-make(string body, SourceLanguage lang) {
+make(string body, SourceLanguage lang, const CompilerOptions &options) {
   if (lang == SL_GLSL) {
     shader_cat.error()
       << "GLSL shaders must have separate shader bodies!\n";
@@ -854,7 +859,7 @@ make(string body, SourceLanguage lang) {
   }
 
   PT(Shader) shader = new Shader(lang);
-  if (!shader->load(sbody)) {
+  if (!shader->load(sbody, options)) {
     return nullptr;
   }
 
@@ -888,7 +893,7 @@ make(string body, SourceLanguage lang) {
  */
 PT(Shader) Shader::
 make(SourceLanguage lang, string vertex, string fragment, string geometry,
-     string tess_control, string tess_evaluation) {
+     string tess_control, string tess_evaluation, const CompilerOptions &options) {
   if (lang == SL_none) {
     shader_cat.error()
       << "Shader::make() requires an explicit shader language.\n";
@@ -910,7 +915,7 @@ make(SourceLanguage lang, string vertex, string fragment, string geometry,
 
   PT(Shader) shader = new Shader(lang);
   shader->_filename = ShaderFile("created-shader");
-  if (!shader->load(sbody)) {
+  if (!shader->load(sbody, options)) {
     return nullptr;
   }
 
@@ -931,7 +936,7 @@ make(SourceLanguage lang, string vertex, string fragment, string geometry,
  * Loads the compute shader from the given string.
  */
 PT(Shader) Shader::
-make_compute(SourceLanguage lang, string body) {
+make_compute(SourceLanguage lang, string body, const CompilerOptions &options) {
   if (lang != SL_GLSL) {
     shader_cat.error()
       << "Only GLSL compute shaders are currently supported.\n";
@@ -954,7 +959,7 @@ make_compute(SourceLanguage lang, string body) {
 
   PT(Shader) shader = new Shader(lang);
   shader->_filename = ShaderFile("created-shader");
-  if (!shader->load(sbody)) {
+  if (!shader->load(sbody, options)) {
     return nullptr;
   }
 
@@ -1253,7 +1258,8 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   for (const LinkedModule &linked_module : _modules) {
     CPT(ShaderModule) module = linked_module._module.get_read_pointer();
 
-    Filename fn = module->get_source_filename();
+    Filename fn;
+    //Filename fn = module->get_source_filename();
     dg.add_string(fn);
 
     if (fn.empty()) {
@@ -1353,7 +1359,8 @@ fillin(DatagramIterator &scan, BamReader *manager) {
     Filename fn = scan.get_string();
     if (!fn.empty()) {
       // Compile this module from a source file.
-      do_read_source(stage, fn, nullptr);
+      //FIXME: store options
+      do_read_source(stage, fn, CompilerOptions(), nullptr);
     }
     else {
       // This module was embedded.

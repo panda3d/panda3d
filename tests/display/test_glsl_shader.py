@@ -21,6 +21,40 @@ def test_glsl_test_fail(env):
         env.run_glsl("assert(false);")
 
 
+def test_glsl_preproc_error(env):
+    "Make sure that preprocessor errors result in failed compilation."
+
+    preamble = """
+    #error THIS IS EXPECTED TO ERROR
+    """
+
+    with pytest.raises(Failed):
+        env.run_glsl("assert(true);", preamble)
+
+
+def test_glsl_defines(env):
+    preamble = """
+    #ifdef TEST_UNDEFINED
+    #error TEST_UNDEFINED is defined
+    #endif
+
+    #if TEST_DEFINED != 1
+    #error TEST_DEFINED != 1
+    #endif
+
+    #if TEST_DEFINED_2 != 2
+    #error TEST_DEFINED_2 != 2
+    #endif
+    """
+    options = core.CompilerOptions()
+    options.define('TEST_DEFINED')
+    options.define('TEST_DEFINED_2', '2')
+    options.define('TEST_UNDEFINED')
+    options.undef('TEST_UNDEFINED')
+
+    env.run_glsl("assert(true);", preamble, options=options)
+
+
 def test_glsl_sampler(env):
     tex1 = core.Texture("tex1-ubyte-rgba8")
     tex1.setup_1d_texture(1, core.Texture.T_unsigned_byte, core.Texture.F_rgba8)

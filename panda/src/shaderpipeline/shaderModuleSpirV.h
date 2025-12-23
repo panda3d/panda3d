@@ -24,6 +24,7 @@
 
 #include <spirv-tools/libspirv.h>
 
+class CompilerOptions;
 class ShaderType;
 
 /**
@@ -36,7 +37,9 @@ private:
   ShaderModuleSpirV(Stage stage);
 
 public:
-  ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, BamCacheRecord *record = nullptr);
+  ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words,
+                    const CompilerOptions &options = CompilerOptions(),
+                    BamCacheRecord *record = nullptr);
   virtual ~ShaderModuleSpirV();
 
   virtual PT(CopyOnWriteObject) make_cow_copy() override;
