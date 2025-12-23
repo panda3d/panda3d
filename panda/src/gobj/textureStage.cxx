@@ -519,14 +519,20 @@ operator << (ostream &out, TextureStage::Mode mode) {
   case TextureStage::M_height:
     return out << "height";
 
-  case TextureStage::M_selector:
-    return out << "selector";
+  case TextureStage::M_metallic_roughness:
+    return out << "metallic_roughness";
 
   case TextureStage::M_normal_gloss:
     return out << "normal_gloss";
 
   case TextureStage::M_emission:
     return out << "emission";
+
+  case TextureStage::M_occlusion:
+    return out << "occlusion";
+
+  case TextureStage::M_occlusion_metallic_roughness:
+    return out << "occlusion_metallic_roughness";
   }
 
   return out << "**invalid Mode(" << (int)mode << ")**";

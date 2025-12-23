@@ -33,12 +33,20 @@ extern jmethodID jni_PandaActivity_readBitmapHeader;
 extern jmethodID jni_PandaActivity_readBitmap;
 extern jmethodID jni_PandaActivity_createBitmap;
 extern jmethodID jni_PandaActivity_compressBitmap;
+extern jmethodID jni_PandaActivity_setWindowTitle;
 extern jmethodID jni_PandaActivity_showToast;
 
 extern jclass   jni_BitmapFactory_Options;
 extern jfieldID jni_BitmapFactory_Options_outWidth;
 extern jfieldID jni_BitmapFactory_Options_outHeight;
 
+EXPORT_CLASS Filename android_find_library(ANativeActivity *activity, const std::string &lib);
+EXPORT_CLASS void android_set_title(ANativeActivity *activity, const std::string &title);
 EXPORT_CLASS void android_show_toast(ANativeActivity *activity, const std::string &message, int duration);
+
+// Used to support pyjnius
+extern "C" {
+  EXPORT_CLASS void *SDL_AndroidGetJNIEnv(void);
+};
 
 #endif

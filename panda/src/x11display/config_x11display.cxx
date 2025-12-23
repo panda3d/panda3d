@@ -113,7 +113,7 @@ ConfigVariableBool x_send_startup_notification
           "that it no longer needs to display a spinning mouse cursor."));
 
 ConfigVariableBool x_detectable_auto_repeat
-("x-detectable-auto-repeat", false,
+("x-detectable-auto-repeat", true,
  PRC_DESC("Set this true to enable detectable auto-repeat for keyboard input."));
 
 /**

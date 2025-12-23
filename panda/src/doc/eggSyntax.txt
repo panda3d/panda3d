@@ -339,7 +339,10 @@ appear before they are referenced.
      *GLOW
      *GLOSS
      *HEIGHT
-     *SELECTOR
+     *EMISSION
+     *METALLIC_ROUGHNESS
+     *OCCLUSION
+     *OCCLUSION_METALLIC_ROUGHNESS
 
     The default environment type is MODULATE, which means the texture
     color is multiplied with the base polygon (or vertex) color.  This

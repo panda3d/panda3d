@@ -110,7 +110,7 @@ new_buffer(int &fd, size_t &mmap_size, string &filename,
   mmap_size = temp._mmap_size;
 
   // Ensure the disk file is large enough.
-  size_t zero_size = 1024;
+  const size_t zero_size = 1024;
   char zero[zero_size];
   memset(zero, 0, zero_size);
   for (size_t bi = 0; bi < mmap_size; bi += zero_size) {

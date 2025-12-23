@@ -25,14 +25,12 @@
  */
 class WindowsGuid {
 public:
-  INLINE WindowsGuid();
+  constexpr WindowsGuid() = default;
   INLINE WindowsGuid(unsigned long data1,
                      unsigned short data2, unsigned short data3,
                      unsigned char b1, unsigned char b2, unsigned char b3,
                      unsigned char b4, unsigned char b5, unsigned char b6,
                      unsigned char b7, unsigned char b8);
-  INLINE WindowsGuid(const WindowsGuid &copy);
-  INLINE void operator = (const WindowsGuid &copy);
 
   INLINE bool operator == (const WindowsGuid &other) const;
   INLINE bool operator != (const WindowsGuid &other) const;
@@ -45,10 +43,10 @@ public:
   void output(std::ostream &out) const;
 
 private:
-  unsigned long _data1;
-  unsigned short _data2;
-  unsigned short _data3;
-  unsigned char _b1, _b2, _b3, _b4, _b5, _b6, _b7, _b8;
+  unsigned long _data1 = 0;
+  unsigned short _data2 = 0;
+  unsigned short _data3 = 0;
+  unsigned char _b1 = 0, _b2 = 0, _b3 = 0, _b4 = 0, _b5 = 0, _b6 = 0, _b7 = 0, _b8 = 0;
 };
 
 INLINE std::ostream &operator << (std::ostream &out, const WindowsGuid &guid);

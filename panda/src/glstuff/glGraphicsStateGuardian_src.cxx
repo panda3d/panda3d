@@ -7906,6 +7906,12 @@ release_shader_buffer(BufferContext *bc) {
     _current_sbuffer_index = 0;
   }
 
+  for (GLuint &index : _current_sbuffer_base) {
+    if (index == gbc->_index) {
+      index = 0;
+    }
+  }
+
   _glDeleteBuffers(1, &gbc->_index);
   report_my_gl_errors();
 
@@ -7943,6 +7949,12 @@ release_shader_buffers(const pvector<BufferContext *> &contexts) {
       }
       _glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
       _current_sbuffer_index = 0;
+    }
+
+    for (GLuint &index : _current_sbuffer_base) {
+      if (index == gbc->_index) {
+        index = 0;
+      }
     }
 
     if (debug) {

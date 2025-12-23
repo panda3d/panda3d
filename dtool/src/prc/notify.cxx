@@ -27,6 +27,7 @@
 #endif
 
 #ifdef ANDROID
+#include <sys/stat.h>
 #include <android/log.h>
 #include "androidLogStream.h"
 #endif
@@ -635,22 +636,7 @@ config_initialized() {
   // notify-output even after the initial import of Panda3D modules.  However,
   // it cannot be changed after the first time it is set.
 
-#if defined(ANDROID)
-  // Android redirects stdio and stderr to /dev/null,
-  // but does provide its own logging system.  We use a special
-  // type of stream that redirects it to Android's log system.
-
-  Notify *ptr = Notify::ptr();
-
-  for (int severity = 0; severity <= NS_fatal; ++severity) {
-    int priority = ANDROID_LOG_UNKNOWN;
-    if (severity != NS_unspecified) {
-      priority = severity + 1;
-    }
-    ptr->_log_streams[severity] = new AndroidLogStream(priority);
-  }
-
-#elif defined(__EMSCRIPTEN__)
+#if defined(__EMSCRIPTEN__)
   // We have no writable filesystem in JavaScript.  Instead, we set up a
   // special stream that logs straight into the Javascript console.
 
@@ -715,11 +701,38 @@ config_initialized() {
         }
 #endif  // BUILD_IPHONE
       }
+
 #ifdef ANDROID
+      for (int severity = 0; severity <= NS_fatal; ++severity) {
+        ptr->_log_streams[severity] = ptr->_ostream_ptr;
+      }
+
     } else {
-      // By default, we always redirect the notify stream to the Android log.
+      // By default, we always redirect the notify stream to the Android log,
+      // except if we are running from the adb shell.  We decide this based
+      // on whether stderr is redirected to /dev/null.
       Notify *ptr = Notify::ptr();
-      ptr->set_ostream_ptr(new AndroidLogStream(ANDROID_LOG_INFO), true);
+      struct stat a, b;
+      if (fstat(STDERR_FILENO, &a) == 0 && stat("/dev/null", &b) == 0 &&
+          a.st_dev == b.st_dev && a.st_ino == b.st_ino) {
+        // Android redirects stdio and stderr to /dev/null,
+        // but does provide its own logging system.  We use a special
+        // type of stream that redirects it to Android's log system.
+        for (int severity = 0; severity <= NS_fatal; ++severity) {
+          int priority = ANDROID_LOG_UNKNOWN;
+          if (severity != NS_unspecified) {
+            priority = severity + 1;
+          }
+          ptr->_log_streams[severity] = new AndroidLogStream(priority);
+        }
+        ptr->set_ostream_ptr(new AndroidLogStream(ANDROID_LOG_INFO), true);
+      } else {
+        // Running from the terminal, set all the log streams to point to the
+        // same output.
+        for (int severity = 0; severity <= NS_fatal; ++severity) {
+          ptr->_log_streams[severity] = &cerr;
+        }
+      }
 #endif
     }
   }

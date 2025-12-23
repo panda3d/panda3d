@@ -618,6 +618,9 @@ determine_page_size() const {
 
   _page_size = (size_t)sysinfo.dwPageSize;
 
+#elif defined(ANDROID)
+  _page_size = getpagesize();
+
 #else
   // Posix case.
   _page_size = sysconf(_SC_PAGESIZE);

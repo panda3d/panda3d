@@ -2497,7 +2497,7 @@ def SdkLocateMacOSX(archs = []):
         # Prefer pre-10.14 for now so that we can keep building FMOD.
         sdk_versions += ["10.13", "10.12"]
 
-    sdk_versions += ["14.0", "13.3", "13.1", "13.0", "12.3", "11.3", "11.1", "11.0"]
+    sdk_versions += ["15.5", "15.4", "15.2", "15.1", "15.0", "14.5", "14.4", "14.2", "14.0", "13.3", "13.1", "13.0", "12.3", "11.3", "11.1", "11.0"]
 
     if 'arm64' not in archs:
         sdk_versions += ["10.15", "10.14"]
@@ -2506,16 +2506,20 @@ def SdkLocateMacOSX(archs = []):
         sdkname = "MacOSX" + version
         if os.path.exists("/Library/Developer/CommandLineTools/SDKs/%s.sdk" % sdkname):
             SDK["MACOSX"] = "/Library/Developer/CommandLineTools/SDKs/%s.sdk" % sdkname
-            return
         elif os.path.exists("/Developer/SDKs/%s.sdk" % sdkname):
             SDK["MACOSX"] = "/Developer/SDKs/%s.sdk" % sdkname
-            return
         elif os.path.exists("/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/%s.sdk" % sdkname):
             SDK["MACOSX"] = "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/%s.sdk" % sdkname
-            return
         elif xcode_dir and os.path.exists("%s/Platforms/MacOSX.platform/Developer/SDKs/%s.sdk" % (xcode_dir, sdkname)):
             SDK["MACOSX"] = "%s/Platforms/MacOSX.platform/Developer/SDKs/%s.sdk" % (xcode_dir, sdkname)
-            return
+        else:
+            continue
+
+        if GetVerbose():
+            print("Using macOS %s SDK located at %s" % (version, SDK["MACOSX"]))
+        else:
+            print("Using macOS %s SDK" % version)
+        return
 
     exit("Couldn't find any suitable MacOSX SDK!")
 
@@ -3446,6 +3450,10 @@ def GetExtensionSuffix():
         abi = GetPythonABI()
         arch = GetTargetArch()
         return '.{0}-{1}-emscripten.so'.format(abi, arch)
+    elif target == 'android':
+        abi = GetPythonABI()
+        triple = ANDROID_TRIPLE.rstrip('0123456789')
+        return '.{0}-{1}.so'.format(abi, triple)
     elif CrossCompiling():
         return '.{0}.so'.format(GetPythonABI())
     else:

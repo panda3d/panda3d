@@ -2451,8 +2451,10 @@ make_binding_glsl(const InternalName *name, const ShaderType *type) {
           mode_mask = (1 << TextureStage::M_height)
                     | (1 << TextureStage::M_normal_height);
         }
-        else if (pieces[1].compare(7, string::npos, "Selector") == 0) {
-          mode_mask = (1 << TextureStage::M_selector);
+        else if (pieces[1].compare(7, string::npos, "MetallicRoughness") == 0 ||
+                 pieces[1].compare(7, string::npos, "Selector") == 0) {
+          mode_mask = (1 << TextureStage::M_metallic_roughness)
+                    | (1 << TextureStage::M_occlusion_metallic_roughness);
         }
         else if (pieces[1].compare(7, string::npos, "Gloss") == 0) {
           mode_mask = (1 << TextureStage::M_gloss)
@@ -2461,6 +2463,10 @@ make_binding_glsl(const InternalName *name, const ShaderType *type) {
         }
         else if (pieces[1].compare(7, string::npos, "Emission") == 0) {
           mode_mask = (1 << TextureStage::M_emission);
+        }
+        else if (pieces[1].compare(7, string::npos, "Occlusion") == 0) {
+          mode_mask = (1 << TextureStage::M_occlusion)
+                    | (1 << TextureStage::M_occlusion_metallic_roughness);
         }
         else {
           return report_parameter_error(name, type, "unrecognized parameter name");

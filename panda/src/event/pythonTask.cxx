@@ -53,12 +53,10 @@ PythonTask(PyObject *func_or_coro, const std::string &name) :
   if (func_or_coro == Py_None || PyCallable_Check(func_or_coro)) {
     _function = Py_NewRef(func_or_coro);
   }
-  else if (PyCoro_CheckExact(func_or_coro)) {
-    // We also allow passing in a coroutine, because why not.
-    _generator = Py_NewRef(func_or_coro);
-  }
-  else if (PyGen_CheckExact(func_or_coro)) {
-    // Something emulating a coroutine.
+  else if (PyCoro_CheckExact(func_or_coro) ||
+           PyGen_CheckExact(func_or_coro) ||
+           PyType_IsSubtype(Py_TYPE(func_or_coro), &PyCoro_Type)) {
+    // We also allow passing in a coroutine or something emulating it.
     _generator = Py_NewRef(func_or_coro);
   }
   else {
@@ -620,7 +618,7 @@ do_python_task() {
         Py_DECREF(str);
         Py_DECREF(str2);
       }
-      if (PyCoro_CheckExact(result)) {
+      if (PyObject_TypeCheck(result, &PyCoro_Type)) {
         // If a coroutine, am_await is possible but senseless, since we can
         // just call send(None) on the coroutine itself.
         _generator = result;
@@ -747,7 +745,7 @@ do_python_task() {
       }
 
     } else if (result == Py_None) {
-      // Bare yield means to continue next frame.
+      // Bare yield from a coroutine means to continue next frame.
       Py_DECREF(result);
       return DS_cont;
 

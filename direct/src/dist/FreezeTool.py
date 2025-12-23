@@ -102,6 +102,7 @@ defaultHiddenImports = {
     'scipy.stats._stats': ['scipy.special.cython_special'],
     'setuptools.monkey': ['setuptools.msvc'],
     'shapely._geometry_helpers': ['shapely._geos'],
+    'jnius': ['jnius_config'],
 }
 
 
@@ -114,7 +115,7 @@ ignoreImports = {
     'toml.encoder': ['numpy'],
     'py._builtin': ['__builtin__'],
 
-    'site': ['android_log'],
+    'site': ['android_support'],
 }
 
 if sys.version_info >= (3, 8):
@@ -139,11 +140,22 @@ def getline(filename, lineno, module_globals=None):
     return ''
 
 def clearcache():
-    global cache
-    cache = {}
+    cache.clear()
 
 def getlines(filename, module_globals=None):
     return []
+
+def _getline_from_code(filename, lineno):
+    return ''
+
+def _make_key(code):
+    return (code.co_filename, code.co_qualname, code.co_firstlineno)
+
+def _getlines_from_code(code):
+    return []
+
+def _source_unavailable(filename):
+    return True
 
 def checkcache(filename=None):
     pass
@@ -1237,8 +1249,12 @@ class Freezer:
                 pass
 
         # Check if any new modules we found have "hidden" imports
-        for origName in list(self.mf.modules.keys()):
+        checkHiddenImports = set(self.mf.modules.keys())
+        while checkHiddenImports:
+            origName = next(iter(checkHiddenImports))
+            checkHiddenImports.discard(origName)
             hidden = self.hiddenImports.get(origName, [])
+            preModules = frozenset(self.mf.modules.keys())
             for modname in hidden:
                 if modname.endswith('.*'):
                     mdefs = self._gatherSubmodules(modname, implicit = True)
@@ -1252,6 +1268,9 @@ class Freezer:
                         self.__loadModule(self.ModuleDef(modname, implicit = True))
                     except ImportError:
                         pass
+            addedModules = set(self.mf.modules.keys())
+            addedModules -= preModules
+            checkHiddenImports |= addedModules
 
         # Special case for sysconfig, which depends on a platform-specific
         # sysconfigdata module on POSIX systems.
@@ -1835,7 +1854,8 @@ class Freezer:
         return target
 
     def generateRuntimeFromStub(self, target, stub_file, use_console, fields={},
-                                log_append=False, log_filename_strftime=False):
+                                log_append=False, log_filename_strftime=False,
+                                blob_path=None):
         self.__replacePaths()
 
         # We must have a __main__ module to make an exe file.
@@ -1970,6 +1990,9 @@ class Freezer:
         elif self.platform.endswith('_aarch64') or self.platform.endswith('_arm64'):
             # Most arm64 operating systems are configured with 16 KiB pages.
             blob_align = 16384
+        elif self.platform.replace('-', '_') == 'android_x86_64':
+            # Android nowadays requires 16 KiB pages on 64-bit Intel as well.
+            blob_align = 16384
         else:
             # Align to page size, so that it can be mmapped.
             blob_align = 4096
@@ -1980,29 +2003,33 @@ class Freezer:
             pad = (blob_align - (blob_size & (blob_align - 1)))
             blob_size += pad
 
-        # TODO: Support creating custom sections in universal binaries.
-        append_blob = True
-        if self.platform.startswith('macosx') and len(bitnesses) == 1:
-            # If our deploy-stub has a __PANDA segment, we know we're meant to
-            # put our blob there rather than attach it to the end.
-            load_commands = self._parse_macho_load_commands(stub_data)
-            if b'__PANDA' in load_commands.keys():
-                append_blob = False
-
-        if self.platform.startswith("macosx") and not append_blob:
-            # Take this time to shift any Mach-O structures around to fit our
-            # blob. We don't need to worry about aligning the offset since the
-            # compiler already took care of that when creating the segment.
-            blob_offset = self._shift_macho_structures(stub_data, load_commands, blob_size)
+        if blob_path is not None:
+            # We'll be writing the blob to a separate location.
+            blob_offset = 0
         else:
-            # Add padding before the blob if necessary.
-            blob_offset = len(stub_data)
-            if (blob_offset & (blob_align - 1)) != 0:
-                pad = (blob_align - (blob_offset & (blob_align - 1)))
-                stub_data += (b'\0' * pad)
-                blob_offset += pad
-            assert (blob_offset % blob_align) == 0
-            assert blob_offset == len(stub_data)
+            # TODO: Support creating custom sections in universal binaries.
+            append_blob = True
+            if self.platform.startswith('macosx') and len(bitnesses) == 1:
+                # If our deploy-stub has a __PANDA segment, we know we're meant to
+                # put our blob there rather than attach it to the end.
+                load_commands = self._parse_macho_load_commands(stub_data)
+                if b'__PANDA' in load_commands.keys():
+                    append_blob = False
+
+            if self.platform.startswith("macosx") and not append_blob:
+                # Take this time to shift any Mach-O structures around to fit our
+                # blob. We don't need to worry about aligning the offset since the
+                # compiler already took care of that when creating the segment.
+                blob_offset = self._shift_macho_structures(stub_data, load_commands, blob_size)
+            else:
+                # Add padding before the blob if necessary.
+                blob_offset = len(stub_data)
+                if (blob_offset & (blob_align - 1)) != 0:
+                    pad = (blob_align - (blob_offset & (blob_align - 1)))
+                    stub_data += (b'\0' * pad)
+                    blob_offset += pad
+                assert (blob_offset % blob_align) == 0
+                assert blob_offset == len(stub_data)
 
         # Calculate the offsets for the variables.  These are pointers,
         # relative to the beginning of the blob.
@@ -2088,13 +2115,19 @@ class Freezer:
             blob += struct.pack('<Q', blob_offset)
 
         with open(target, 'wb') as f:
-            if append_blob:
+            if blob_path is not None:
+                f.write(stub_data)
+            elif append_blob:
                 f.write(stub_data)
                 assert f.tell() == blob_offset
                 f.write(blob)
             else:
                 stub_data[blob_offset:blob_offset + blob_size] = blob
                 f.write(stub_data)
+
+        if blob_path is not None:
+            with open(blob_path, 'wb') as f:
+                f.write(blob)
 
         os.chmod(target, 0o755)
         return target

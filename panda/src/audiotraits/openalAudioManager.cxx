@@ -156,11 +156,10 @@ OpenALAudioManager() {
       // We managed to get a device open.
       alcGetError(_device); // clear errors
 
-      ALCboolean is_hrtf_present = alcIsExtensionPresent(_device, "ALC_SOFT_HRTF");
-
       ALCint attrs[3] = {0};
 
 #ifndef HAVE_OPENAL_FRAMEWORK
+      ALCboolean is_hrtf_present = alcIsExtensionPresent(_device, "ALC_SOFT_HRTF");
       if (is_hrtf_present) {
         attrs[0] = ALC_HRTF_SOFT;
         attrs[1] = audio_want_hrtf.get_value() ? ALC_TRUE : ALC_FALSE;
@@ -716,21 +715,85 @@ get_active() const {
 void OpenALAudioManager::
 audio_3d_set_listener_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx, PN_stdfloat vy, PN_stdfloat vz, PN_stdfloat fx, PN_stdfloat fy, PN_stdfloat fz, PN_stdfloat ux, PN_stdfloat uy, PN_stdfloat uz) {
   ReMutexHolder holder(_lock);
-  _position[0] = px;
-  _position[1] = pz;
-  _position[2] = -py;
+  CoordinateSystem cs = get_default_coordinate_system();
 
-  _velocity[0] = vx;
-  _velocity[1] = vz;
-  _velocity[2] = -vy;
+  switch (cs) {
+  case CS_yup_right:
+    _position[0] = px;
+    _position[1] = py;
+    _position[2] = pz;
 
-  _forward_up[0] = fx;
-  _forward_up[1] = fz;
-  _forward_up[2] = -fy;
+    _velocity[0] = vx;
+    _velocity[1] = vy;
+    _velocity[2] = vz;
 
-  _forward_up[3] = ux;
-  _forward_up[4] = uz;
-  _forward_up[5] = -uy;
+    _forward_up[0] = fx;
+    _forward_up[1] = fy;
+    _forward_up[2] = fz;
+
+    _forward_up[3] = ux;
+    _forward_up[4] = uy;
+    _forward_up[5] = uz;
+    break;
+
+  case CS_zup_right:
+    _position[0] = px;
+    _position[1] = pz;
+    _position[2] = -py;
+
+    _velocity[0] = vx;
+    _velocity[1] = vz;
+    _velocity[2] = -vy;
+
+    _forward_up[0] = fx;
+    _forward_up[1] = fz;
+    _forward_up[2] = -fy;
+
+    _forward_up[3] = ux;
+    _forward_up[4] = uz;
+    _forward_up[5] = -uy;
+    break;
+
+  case CS_yup_left:
+    _position[0] = px;
+    _position[1] = py;
+    _position[2] = -pz;
+
+    _velocity[0] = vx;
+    _velocity[1] = vy;
+    _velocity[2] = -vz;
+
+    _forward_up[0] = fx;
+    _forward_up[1] = fy;
+    _forward_up[2] = -fz;
+
+    _forward_up[3] = ux;
+    _forward_up[4] = uy;
+    _forward_up[5] = -uz;
+    break;
+
+  case CS_zup_left:
+    _position[0] = px;
+    _position[1] = pz;
+    _position[2] = py;
+
+    _velocity[0] = vx;
+    _velocity[1] = vz;
+    _velocity[2] = vy;
+
+    _forward_up[0] = fx;
+    _forward_up[1] = fz;
+    _forward_up[2] = fy;
+
+    _forward_up[3] = ux;
+    _forward_up[4] = uz;
+    _forward_up[5] = uy;
+    break;
+
+  default:
+    nassert_raise("invalid coordinate system");
+    return;
+  }
 
 
   make_current();
@@ -750,21 +813,85 @@ audio_3d_set_listener_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz,
 void OpenALAudioManager::
 audio_3d_get_listener_attributes(PN_stdfloat *px, PN_stdfloat *py, PN_stdfloat *pz, PN_stdfloat *vx, PN_stdfloat *vy, PN_stdfloat *vz, PN_stdfloat *fx, PN_stdfloat *fy, PN_stdfloat *fz, PN_stdfloat *ux, PN_stdfloat *uy, PN_stdfloat *uz) {
   ReMutexHolder holder(_lock);
-  *px = _position[0];
-  *py = -_position[2];
-  *pz = _position[1];
+    CoordinateSystem cs = get_default_coordinate_system();
 
-  *vx = _velocity[0];
-  *vy = -_velocity[2];
-  *vz = _velocity[1];
+  switch (cs) {
+  case CS_yup_right:
+    *px = _position[0];
+    *py = _position[1];
+    *pz = _position[2];
 
-  *fx = _forward_up[0];
-  *fy = -_forward_up[2];
-  *fz = _forward_up[1];
+    *vx = _velocity[0];
+    *vy = _velocity[1];
+    *vz = _velocity[2];
 
-  *ux = _forward_up[3];
-  *uy = -_forward_up[5];
-  *uz = _forward_up[4];
+    *fx = _forward_up[0];
+    *fy = _forward_up[1];
+    *fz = _forward_up[2];
+
+    *ux = _forward_up[3];
+    *uy = _forward_up[4];
+    *uz = _forward_up[5];
+    break;
+
+  case CS_zup_right:
+    *px = _position[0];
+    *py = -_position[2];
+    *pz = _position[1];
+
+    *vx = _velocity[0];
+    *vy = -_velocity[2];
+    *vz = _velocity[1];
+
+    *fx = _forward_up[0];
+    *fy = -_forward_up[2];
+    *fz = _forward_up[1];
+
+    *ux = _forward_up[3];
+    *uy = -_forward_up[5];
+    *uz = _forward_up[4];
+    break;
+
+  case CS_yup_left:
+    *px = _position[0];
+    *py = _position[1];
+    *pz = -_position[2];
+
+    *vx = _velocity[0];
+    *vy = _velocity[1];
+    *vz = -_velocity[2];
+
+    *fx = _forward_up[0];
+    *fy = _forward_up[1];
+    *fz = -_forward_up[2];
+
+    *ux = _forward_up[3];
+    *uy = _forward_up[4];
+    *uz = -_forward_up[5];
+    break;
+
+  case CS_zup_left:
+    *px = _position[0];
+    *py = _position[2];
+    *pz = _position[1];
+
+    *vx = _velocity[0];
+    *vy = _velocity[2];
+    *vz = _velocity[1];
+
+    *fx = _forward_up[0];
+    *fy = _forward_up[2];
+    *fz = _forward_up[1];
+
+    *ux = _forward_up[3];
+    *uy = _forward_up[5];
+    *uz = _forward_up[4];
+    break;
+
+  default:
+    nassert_raise("invalid coordinate system");
+    return;
+  }
 }
 
 /**

@@ -1579,8 +1579,8 @@ make_texture_stage(const EggTexture *egg_tex) {
     stage->set_mode(TextureStage::M_height);
     break;
 
-  case EggTexture::ET_selector:
-    stage->set_mode(TextureStage::M_selector);
+  case EggTexture::ET_metallic_roughness:
+    stage->set_mode(TextureStage::M_metallic_roughness);
     break;
 
   case EggTexture::ET_normal_gloss:
@@ -1589,6 +1589,14 @@ make_texture_stage(const EggTexture *egg_tex) {
 
   case EggTexture::ET_emission:
     stage->set_mode(TextureStage::M_emission);
+    break;
+
+  case EggTexture::ET_occlusion:
+    stage->set_mode(TextureStage::M_occlusion);
+    break;
+
+  case EggTexture::ET_occlusion_metallic_roughness:
+    stage->set_mode(TextureStage::M_occlusion_metallic_roughness);
     break;
 
   case EggTexture::ET_unspecified:
