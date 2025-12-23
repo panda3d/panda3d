@@ -14,6 +14,7 @@
 #include "x11GraphicsWindow.h"
 #include "config_x11display.h"
 #include "x11GraphicsPipe.h"
+#include "X11/cursorfont.h"
 
 #include "graphicsPipe.h"
 #include "keyboardButton.h"
@@ -569,7 +570,7 @@ process_events() {
     // pointer.  See GitHub bug #280.
     if (_properties.get_mouse_mode() == WindowProperties::M_confined) {
       X11_Cursor cursor = None;
-      if (_properties.get_cursor_hidden()) {
+      if (_properties.get_cursor_type() == WindowProperties::CT_hidden) {
         x11GraphicsPipe *x11_pipe;
         DCAST_INTO_V(x11_pipe, _pipe);
         cursor = x11_pipe->get_hidden_cursor();
@@ -604,7 +605,7 @@ process_events() {
       if (properties.get_foreground()) {
         // Window is going to the foreground, re-grab the pointer
         X11_Cursor cursor = None;
-        if (_properties.get_cursor_hidden()) {
+        if (_properties.get_cursor_type() == WindowProperties::CT_hidden) {
             cursor = x11_pipe->get_hidden_cursor();
         }
 
@@ -942,31 +943,43 @@ set_properties_now(WindowProperties &properties) {
 
   // We hide the cursor by setting it to an invisible pixmap.  We can also
   // load a custom cursor from a file.
-  if (properties.has_cursor_hidden() || properties.has_cursor_filename()) {
-    if (properties.has_cursor_hidden()) {
-      _properties.set_cursor_hidden(properties.get_cursor_hidden());
-      properties.clear_cursor_hidden();
-    }
+  if (properties.has_cursor_filename() || properties.has_cursor_type()) {
+    //First apply in local properties
     Filename cursor_filename;
     if (properties.has_cursor_filename()) {
       cursor_filename = properties.get_cursor_filename();
       _properties.set_cursor_filename(cursor_filename);
       properties.clear_cursor_filename();
     }
-    Filename filename = properties.get_cursor_filename();
-    _properties.set_cursor_filename(filename);
-
-    if (_properties.get_cursor_hidden()) {
-      XDefineCursor(_display, _xwindow, x11_pipe->get_hidden_cursor());
-
-    } else if (!cursor_filename.empty()) {
-      // Note that if the cursor fails to load, cursor will be None
-      X11_Cursor cursor = get_cursor(cursor_filename);
-      XDefineCursor(_display, _xwindow, cursor);
-
-    } else {
-      XDefineCursor(_display, _xwindow, None);
+    WindowProperties::CursorType cursor_type;
+    if (properties.has_cursor_type()) {
+      cursor_type = properties.get_cursor_type();
+      _properties.set_cursor_type(cursor_type);
+      properties.clear_cursor_type();
     }
+
+    //Then use file if no type set, or custom type is set
+    X11_Cursor cursor;
+    if (!_properties.has_cursor_type()) {
+        cursor = get_cursor(_properties.get_cursor_filename());
+    } else {
+    //If another type is set, set it instead
+        switch(_properties.get_cursor_type()) {
+        case WindowProperties::CT_default:
+            cursor = XCreateFontCursor(_display, XC_left_ptr); break;
+        case WindowProperties::CT_cross:
+          cursor = XCreateFontCursor(_display, XC_crosshair); break;
+        case WindowProperties::CT_hand:
+          cursor = XCreateFontCursor(_display, XC_hand1); break;
+        case WindowProperties::CT_text:
+          cursor = XCreateFontCursor(_display, XC_xterm); break;
+        case WindowProperties::CT_hidden:
+          cursor = x11_pipe->get_hidden_cursor(); break;
+        case WindowProperties::CT_custom:
+          cursor = get_cursor(_properties.get_cursor_filename()); break;
+        }
+    }
+    XDefineCursor(_display, _xwindow, cursor);
 
     // Regrab the mouse if we changed the cursor, otherwise it won't update.
     if (!properties.has_mouse_mode() &&
@@ -1004,7 +1017,7 @@ set_properties_now(WindowProperties &properties) {
       if (!_dga_mouse_enabled) {
         if (x11_pipe->supports_relative_mouse()) {
           X11_Cursor cursor = None;
-          if (_properties.get_cursor_hidden()) {
+          if (_properties.get_cursor_type() == WindowProperties::CT_hidden) {
             x11GraphicsPipe *x11_pipe;
             DCAST_INTO_V(x11_pipe, _pipe);
             cursor = x11_pipe->get_hidden_cursor();
@@ -1049,7 +1062,7 @@ set_properties_now(WindowProperties &properties) {
           _raw_mouse_enabled = false;
         }
         X11_Cursor cursor = None;
-        if (_properties.get_cursor_hidden()) {
+        if (_properties.get_cursor_type() == WindowProperties::CT_hidden) {
           cursor = x11_pipe->get_hidden_cursor();
         }
 
@@ -1251,7 +1264,7 @@ open_window() {
     }
   }
 
-  if (_properties.get_cursor_hidden()) {
+  if (_properties.get_cursor_type() == WindowProperties::CT_hidden) {
     XDefineCursor(_display, _xwindow, x11_pipe->get_hidden_cursor());
 
   } else if (_properties.has_cursor_filename() && !_properties.get_cursor_filename().empty()) {
