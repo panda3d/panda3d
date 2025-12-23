@@ -16,6 +16,9 @@ def check_result(fut, expected):
     if fut.result() != expected:
         return False
 
+    if sys.version_info < (3, 5):
+        return False
+
     # Make sure that await also returns the values properly
     with pytest.raises(StopIteration) as e:
         next(fut.__await__())
