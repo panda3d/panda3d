@@ -194,14 +194,6 @@ get_num_elements() const {
 }
 
 /**
- * Returns the array stride in bytes, or 0 if this was not specified.
- */
-INLINE uint32_t ShaderType::Array::
-get_stride_bytes() const {
-  return _stride_bytes;
-}
-
-/**
  * Constructs an image type.
  */
 INLINE ShaderType::Image::

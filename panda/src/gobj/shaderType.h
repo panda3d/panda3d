@@ -401,7 +401,7 @@ public:
 
   INLINE const ShaderType *get_element_type() const;
   INLINE uint32_t get_num_elements() const;
-  INLINE uint32_t get_stride_bytes() const;
+  uint32_t get_stride_bytes() const;
 
   virtual bool unwrap_array(const ShaderType *&element_type, uint32_t &num_elements) const override;
 

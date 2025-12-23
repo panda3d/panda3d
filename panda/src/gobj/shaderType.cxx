@@ -958,6 +958,22 @@ make_from_bam(const FactoryParams &params) {
 }
 
 /**
+ * Returns the array stride in bytes.
+ */
+uint32_t ShaderType::Array::
+get_stride_bytes() const {
+  if (_stride_bytes != 0) {
+    return _stride_bytes;
+  } else {
+    // By default we assume std140 / DX9 conventions, where array stride is
+    // always (at least) 16 bytes, even though this is (indeed) incredibly
+    // wasteful for arrays of scalars.
+    uint32_t size = _element_type->get_size_bytes();
+    return (size + 15) & ~15;
+  }
+}
+
+/**
  * If this type is an array, puts the element type in the first argument and the
  * number of elements in the second argument, and returns true.  If not, puts
  * the current type in the first argument, and 1 in the second argument, and
@@ -1115,14 +1131,7 @@ get_size_bytes() const {
   // Arrays have padding at the end so that the next member is aligned to a
   // 16-byte boundary.  This implies that a float may directly follow a vec3,
   // but not a vec3[1]!  I didn't make up these rules.
-  uint32_t stride_bytes = _stride_bytes;
-  if (stride_bytes == 0) {
-    // Array stride is always (at least) 16 bytes in std140 / DX9, even though
-    // this is (indeed) incredibly wasteful for arrays of scalars.
-    uint32_t size = _element_type->get_size_bytes();
-    stride_bytes = (size + 15) & ~15;
-  }
-  return stride_bytes * _num_elements;
+  return get_stride_bytes() * _num_elements;
 }
 
 /**
