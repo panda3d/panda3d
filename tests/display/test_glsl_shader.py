@@ -7,6 +7,8 @@ from _pytest.outcomes import Failed
 
 SHADERS_DIR = core.Filename.from_os_specific(os.path.dirname(__file__))
 
+core.BamCache.get_global_ptr().set_cache_compiled_shaders(False)
+
 
 def test_glsl_test(env):
     "Test to make sure that the GLSL tests work correctly."
