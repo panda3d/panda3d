@@ -2333,11 +2333,17 @@ reset() {
   // TransformState::make_identity()); want gsg to pass all state settings
   // down so any non-matching defaults we set here get overwritten
 
-  nassertv(_screen->_d3d9 != nullptr);
+  _shader_model = SM_00;
+  _supports_hlsl = false;
+  _supported_shader_caps = 0;
+  _supports_geometry_instancing = false;
+  _max_vertex_shader_parameter_vectors = 0;
 
-  if (_d3d_device == nullptr) {
+  if (_screen == nullptr || _d3d_device == nullptr) {
     return;
   }
+
+  nassertv(_screen->_d3d9 != nullptr);
 
   D3DCAPS9 d3d_caps;
   _d3d_device->GetDeviceCaps(&d3d_caps);

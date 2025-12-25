@@ -127,6 +127,9 @@ make_output(const std::string &name,
   // Second thing to try: a wdxGraphicsBuffer9
 
   if (retry == 1) {
+    if (wdxgsg == nullptr) {
+      return nullptr;
+    }
     if ((!support_render_texture)||
         ((flags&BF_require_parasite)!=0)||
         ((flags&BF_require_window)!=0)||
@@ -202,6 +205,12 @@ init() {
   }
 
   Init_D3DFORMAT_map();
+
+  if (__d3d9->GetAdapterCount() == 0) {
+    wdxdisplay9_cat.error()
+      << "No available D3D9 devices found.\n";
+    goto error;
+  }
 
   if (dx_count_all_cards_memory){
     return find_all_card_memavails();
