@@ -9,7 +9,7 @@ def test_missing_file(audiomgr):
     assert str(sound).startswith("NullAudioSound")
 
 
-@pytest.mark.parametrize("extension", ["ogg", "opus", "mp3"])
+@pytest.mark.parametrize("extension", ["ogg", "opus", "mp3", "flac"])
 def test_comments(audiomgr, extension):
     if "openal" not in str(audiomgr).lower():
         # NULL audio manager (as well as fmod) don't support comment reading

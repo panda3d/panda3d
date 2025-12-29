@@ -72,6 +72,22 @@ static drflac_bool32 cb_tell_proc(void *user, drflac_int64 *pCursor) {
   return !stream->fail() ? DRFLAC_TRUE : DRFLAC_FALSE;
 }
 
+/**
+ * Callback passed to dr_flac to process metadata found inside flac files.
+ */
+void cb_meta_proc(void* pUserData, drflac_metadata* pMetadata) {
+  FlacAudioCursor* cursor = static_cast<FlacAudioCursor*>(pUserData);
+  if (pMetadata->type == DRFLAC_METADATA_BLOCK_TYPE_VORBIS_COMMENT) {
+    drflac_vorbis_comment_iterator iter;
+    drflac_init_vorbis_comment_iterator(&iter, pMetadata->data.vorbis_comment.commentCount, pMetadata->data.vorbis_comment.pComments);
+    const char* next_comment;
+    drflac_uint32 comment_length;
+    while ((next_comment = drflac_next_vorbis_comment(&iter, &comment_length)) != nullptr) {
+      cursor->raw_comment.push_back({ next_comment, comment_length });
+    }
+  }
+}
+
 TypeHandle FlacAudioCursor::_type_handle;
 
 /**
@@ -83,12 +99,13 @@ FlacAudioCursor(FlacAudio *src, std::istream *stream) :
   MovieAudioCursor(src),
   _is_valid(false),
   _drflac(nullptr),
-  _stream(stream)
+  _stream(stream),
+  raw_comment()
 {
   nassertv(stream != nullptr);
   nassertv(stream->good());
 
-  _drflac = drflac_open(&cb_read_proc, &cb_seek_proc, &cb_tell_proc, (void *)stream, nullptr);
+  _drflac = drflac_open_with_metadata_distinct(&cb_read_proc, &cb_seek_proc, &cb_tell_proc, &cb_meta_proc, (void *)stream, (void *)this, nullptr);
 
   if (_drflac == nullptr) {
     movies_cat.error()
@@ -146,4 +163,12 @@ read_samples(int n, int16_t *data) {
   n = (int)drflac_read_pcm_frames_s16(_drflac, n, data);
   _samples_read += n;
   return n;
+}
+
+/**
+ *
+ */
+vector_string FlacAudioCursor::
+get_raw_comment() const {
+  return raw_comment;
 }

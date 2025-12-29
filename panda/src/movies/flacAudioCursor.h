@@ -16,6 +16,7 @@
 
 #include "pandabase.h"
 #include "movieAudioCursor.h"
+#include "vector_string.h"
 
 #define DR_FLAC_NO_STDIO
 extern "C" {
@@ -31,6 +32,8 @@ class FlacAudio;
  * @since 1.10.0
  */
 class EXPCL_PANDA_MOVIES FlacAudioCursor : public MovieAudioCursor {
+  friend void cb_meta_proc(void* pUserData, drflac_metadata* pMetadata);
+
 PUBLISHED:
   explicit FlacAudioCursor(FlacAudio *src, std::istream *stream);
   virtual ~FlacAudioCursor();
@@ -58,9 +61,11 @@ public:
     return get_class_type();
   }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+  vector_string get_raw_comment() const;
 
 private:
   static TypeHandle _type_handle;
+  vector_string raw_comment;
 };
 
 #include "flacAudioCursor.I"
