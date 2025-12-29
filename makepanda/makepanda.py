@@ -310,7 +310,7 @@ def parseopts(args):
     if GetTarget() == 'windows':
         if not MSVC_VERSION:
             print("No MSVC version specified. Defaulting to 14.1 (Visual Studio 2017).")
-            MSVC_VERSION = (14, 1)
+            MSVC_VERSION = (14, 3)
         else:
             try:
                 MSVC_VERSION = tuple(int(d) for d in MSVC_VERSION.split('.'))[:2]
