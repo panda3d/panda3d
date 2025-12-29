@@ -32,6 +32,9 @@ class FlacAudio;
  * @since 1.10.0
  */
 class EXPCL_PANDA_MOVIES FlacAudioCursor : public MovieAudioCursor {
+  friend drflac_bool32 cb_tell_proc(void* pUserData, drflac_int64 *pCursor);
+  friend drflac_bool32 cb_seek_proc(void* pUserData, int offset, drflac_seek_origin origin);
+  friend size_t cb_read_proc(void* pUserData, void *buffer, size_t size);
   friend void cb_meta_proc(void* pUserData, drflac_metadata* pMetadata);
 
 PUBLISHED:

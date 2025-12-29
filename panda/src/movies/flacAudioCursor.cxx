@@ -24,8 +24,8 @@ extern "C" {
 /**
  * Callback passed to dr_flac to implement file I/O via the VirtualFileSystem.
  */
-static size_t cb_read_proc(void *user, void *buffer, size_t size) {
-  std::istream *stream = (std::istream *)user;
+size_t cb_read_proc(void *user, void *buffer, size_t size) {
+  std::istream *stream = static_cast<FlacAudioCursor*>(user)->_stream;
   nassertr(stream != nullptr, 0);
 
   stream->read((char *)buffer, size);
@@ -41,8 +41,8 @@ static size_t cb_read_proc(void *user, void *buffer, size_t size) {
 /**
  * Callback passed to dr_flac to implement file seeking via the VirtualFileSystem.
  */
-static drflac_bool32 cb_seek_proc(void* user, int offset, drflac_seek_origin origin) {
-  std::istream* stream = static_cast<std::istream*>(user);
+drflac_bool32 cb_seek_proc(void* user, int offset, drflac_seek_origin origin) {
+  std::istream* stream = static_cast<FlacAudioCursor*>(user)->_stream;
   nassertr(stream != nullptr, DRFLAC_FALSE);
 
   std::ios_base::seekdir dir;
@@ -64,8 +64,8 @@ static drflac_bool32 cb_seek_proc(void* user, int offset, drflac_seek_origin ori
 /**
  * Callback passed to dr_flac to report the current stream position.
  */
-static drflac_bool32 cb_tell_proc(void *user, drflac_int64 *pCursor) {
-  std::istream *stream = (std::istream *)user;
+drflac_bool32 cb_tell_proc(void *user, drflac_int64 *pCursor) {
+  std::istream *stream = static_cast<FlacAudioCursor*>(user)->_stream;
   nassertr(stream != nullptr, DRFLAC_FALSE);
 
   *pCursor = (drflac_int64)stream->tellg();
@@ -105,7 +105,7 @@ FlacAudioCursor(FlacAudio *src, std::istream *stream) :
   nassertv(stream != nullptr);
   nassertv(stream->good());
 
-  _drflac = drflac_open_with_metadata_distinct(&cb_read_proc, &cb_seek_proc, &cb_tell_proc, &cb_meta_proc, (void *)stream, (void *)this, nullptr);
+  _drflac = drflac_open_with_metadata(&cb_read_proc, &cb_seek_proc, &cb_tell_proc, &cb_meta_proc, (void *)this, nullptr);
 
   if (_drflac == nullptr) {
     movies_cat.error()
