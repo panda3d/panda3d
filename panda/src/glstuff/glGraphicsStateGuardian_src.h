@@ -399,6 +399,8 @@ public:
   CLP(BufferContext) *apply_shader_buffer(GLuint base, ShaderBuffer *buffer);
   virtual void release_shader_buffer(BufferContext *bc);
   virtual void release_shader_buffers(const pvector<BufferContext *> &contexts);
+  virtual bool update_shader_buffer_data(ShaderBuffer *buffer, size_t start,
+                                         size_t size, const unsigned char *data);
   virtual bool extract_shader_buffer_data(ShaderBuffer *buffer, vector_uchar &data,
                                           size_t start, size_t size);
 #endif
@@ -1019,6 +1021,7 @@ public:
   PFNGLGENERATETEXTUREMIPMAPPROC _glGenerateTextureMipmap;
   PFNGLBINDTEXTUREUNITPROC _glBindTextureUnit;
   PFNGLMAPNAMEDBUFFERRANGEPROC _glMapNamedBufferRange;
+  PFNGLNAMEDBUFFERSUBDATAPROC _glNamedBufferSubData;
   PFNGLGETNAMEDBUFFERSUBDATAPROC _glGetNamedBufferSubData;
 #endif
 

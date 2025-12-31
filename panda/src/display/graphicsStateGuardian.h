@@ -326,6 +326,8 @@ public:
   virtual BufferContext *prepare_shader_buffer(ShaderBuffer *data);
   virtual void release_shader_buffer(BufferContext *ibc);
   virtual void release_shader_buffers(const pvector<BufferContext *> &contexts);
+  virtual bool update_shader_buffer_data(ShaderBuffer *buffer, size_t start,
+                                         size_t size, const unsigned char *data);
   virtual bool extract_shader_buffer_data(ShaderBuffer *buffer, vector_uchar &data,
                                           size_t start = 0, size_t size = (size_t)-1);
 

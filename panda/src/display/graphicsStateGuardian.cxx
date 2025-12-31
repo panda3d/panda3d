@@ -768,6 +768,19 @@ release_shader_buffers(const pvector<BufferContext *> &contexts) {
 
 /**
  * This method should only be called by the GraphicsEngine.  Do not call it
+ * directly; call GraphicsEngine::update_shader_buffer_data() instead.
+ *
+ * This method will be called in the draw thread to upload data to (a part of)
+ * the shader buffer from the CPU.
+ */
+bool GraphicsStateGuardian::
+update_shader_buffer_data(ShaderBuffer *buffer, size_t start, size_t size,
+                          const unsigned char *data) {
+  return false;
+}
+
+/**
+ * This method should only be called by the GraphicsEngine.  Do not call it
  * directly; call GraphicsEngine::extract_texture_data() instead.
  *
  * This method will be called in the draw thread to download the buffer's

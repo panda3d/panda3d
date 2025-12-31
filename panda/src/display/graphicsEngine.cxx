@@ -1162,6 +1162,28 @@ extract_shader_buffer_data(ShaderBuffer *buffer, GraphicsStateGuardian *gsg,
 }
 
 /**
+ * Updates shader buffer data from the CPU.  This may be a subsection of the
+ * buffer.  Returns true on success.
+ *
+ * Updating is only allowed for buffers with usage hint set to UH_dynamic.
+ */
+bool GraphicsEngine::
+update_shader_buffer_data(ShaderBuffer *buffer, GraphicsStateGuardian *gsg,
+                          const vector_uchar &data, size_t offset) {
+  if (buffer->get_usage_hint() != GeomEnums::UH_dynamic) {
+    display_cat.error()
+      << "Cannot update ShaderBuffer with usage hint " << buffer->get_usage_hint() << "\n";
+    return false;
+  }
+
+  const unsigned char *data_ptr = data.data();
+  const size_t data_size = data.size();
+  return run_on_draw_thread([=] () {
+    return gsg->update_shader_buffer_data(buffer, offset, data_size, data_ptr);
+  });
+}
+
+/**
  * Asks the indicated GraphicsStateGuardian to dispatch the compute shader in
  * the given ShaderAttrib using the given work group counts.  This can act as
  * an interface for running a one-off compute shader, without having to store
