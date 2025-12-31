@@ -2834,6 +2834,9 @@ reset() {
         get_extension_func("glMapNamedBufferRange");
     }
 
+    _glGetNamedBufferSubData = (PFNGLGETNAMEDBUFFERSUBDATAPROC)
+      get_extension_func("glGetNamedBufferSubData");
+
     _supports_dsa = true;
   } else {
     _supports_dsa = false;
@@ -7786,12 +7789,14 @@ extract_shader_buffer_data(ShaderBuffer *buffer, vector_uchar &data,
     _glMemoryBarrier(GL_BUFFER_UPDATE_BARRIER_BIT);
   }
 
-  _glBindBuffer(GL_SHADER_STORAGE_BUFFER, gbc->_index);
-
-  _glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, start, data.size(), &data[0]);
-
-  _glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-  _current_sbuffer_index = 0;
+  if (_supports_dsa) {
+    _glGetNamedBufferSubData(gbc->_index, start, data.size(), &data[0]);
+  } else {
+    _glBindBuffer(GL_SHADER_STORAGE_BUFFER, gbc->_index);
+    _glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, start, data.size(), &data[0]);
+    _glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+    _current_sbuffer_index = 0;
+  }
   report_my_gl_errors();
 
   return true;
