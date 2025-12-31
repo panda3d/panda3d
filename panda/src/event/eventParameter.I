@@ -63,6 +63,11 @@ EventParameter(const std::string &value) : _ptr(new EventStoreString(value)) { }
 INLINE EventParameter::
 EventParameter(const std::wstring &value) : _ptr(new EventStoreWstring(value)) { }
 
+/**
+ * Defines an EventParameter that stores a bytes value.
+ */
+INLINE EventParameter::
+EventParameter(const vector_uchar &value) : _ptr(new ParamBytes(value)) { }
 
 /**
  *
@@ -183,6 +188,28 @@ INLINE std::wstring EventParameter::
 get_wstring_value() const {
   nassertr(is_wstring(), std::wstring());
   return ((const EventStoreWstring *)_ptr.p())->get_value();
+}
+
+/**
+ * Returns true if the EventParameter stores a binary bytes value, false
+ * otherwise.
+ */
+INLINE bool EventParameter::
+is_bytes() const {
+  if (is_empty()) {
+    return false;
+  }
+  return _ptr->is_of_type(ParamBytes::get_class_type());
+}
+
+/**
+ * Retrieves the value stored in the EventParameter.  It is only valid to call
+ * this if is_bytes() has already returned true.
+ */
+INLINE vector_uchar EventParameter::
+get_bytes_value() const {
+  nassertr(is_bytes(), vector_uchar());
+  return ((const ParamBytes *)_ptr.p())->get_value();
 }
 
 /**

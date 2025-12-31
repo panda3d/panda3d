@@ -76,6 +76,8 @@ class EventManager:
             return eventParameter.getStringValue()
         elif eventParameter.isWstring():
             return eventParameter.getWstringValue()
+        elif hasattr(eventParameter, 'isBytes') and eventParameter.isBytes():
+            return eventParameter.getBytesValue()
         elif eventParameter.isTypedRefCount():
             return eventParameter.getTypedRefCountValue()
         elif eventParameter.isEmpty():

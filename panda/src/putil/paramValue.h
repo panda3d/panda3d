@@ -22,6 +22,7 @@
 #include "bamReader.h"
 #include "bamWriter.h"
 #include "luse.h"
+#include "vector_uchar.h"
 
 /**
  * A non-template base class of ParamValue (below), which serves mainly to
@@ -152,6 +153,7 @@ private:
 
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_PUTIL, EXPTP_PANDA_PUTIL, ParamValue<std::string>);
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_PUTIL, EXPTP_PANDA_PUTIL, ParamValue<std::wstring>);
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_PUTIL, EXPTP_PANDA_PUTIL, ParamValue<vector_uchar>);
 
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_PUTIL, EXPTP_PANDA_PUTIL, ParamValue<LVecBase2d>);
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_PUTIL, EXPTP_PANDA_PUTIL, ParamValue<LVecBase2f>);
@@ -173,6 +175,7 @@ EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_PUTIL, EXPTP_PANDA_PUTIL, ParamValue<LMatrix4f
 
 typedef ParamValue<std::string> ParamString;
 typedef ParamValue<std::wstring> ParamWstring;
+typedef ParamValue<vector_uchar> ParamBytes;
 
 typedef ParamValue<LVecBase2d> ParamVecBase2d;
 typedef ParamValue<LVecBase2f> ParamVecBase2f;
