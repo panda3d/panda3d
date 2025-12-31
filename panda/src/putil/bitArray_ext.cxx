@@ -20,6 +20,29 @@
  */
 void Extension<BitArray>::
 __init__(PyObject *init_value) {
+#if PY_VERSION_HEX >= 0x030e0000  // Python 3.14
+  BitArray::WordType word = 0;
+  Py_ssize_t result = PyLong_AsNativeBytes(init_value, &word, sizeof(word), Py_ASNATIVEBYTES_LITTLE_ENDIAN | Py_ASNATIVEBYTES_UNSIGNED_BUFFER | Py_ASNATIVEBYTES_REJECT_NEGATIVE);
+  if (result < 0) {
+    return;
+  }
+
+  if ((size_t)result <= sizeof(BitArray::WordType)) {
+    // It fit in a single word
+    _this->_array.clear();
+    if (word != 0) {
+      _this->_array.push_back(word);
+    }
+  } else {
+    // Requires multiple words.
+    size_t num_words = ((size_t)result + sizeof(BitArray::WordType) - 1) / sizeof(BitArray::WordType);
+    _this->_array.resize(num_words);
+
+    if (PyLong_AsNativeBytes(init_value, &_this->_array[0], num_words * sizeof(BitArray::WordType), Py_ASNATIVEBYTES_LITTLE_ENDIAN | Py_ASNATIVEBYTES_UNSIGNED_BUFFER | Py_ASNATIVEBYTES_REJECT_NEGATIVE) <= 0) {
+      return;
+    }
+  }
+#else
   if (!PyLong_Check(init_value) || !PyLong_IsNonNegative(init_value)) {
     PyErr_SetString(PyExc_ValueError, "BitArray constructor requires a positive integer");
     return;
@@ -38,6 +61,7 @@ __init__(PyObject *init_value) {
 #endif
       );
   }
+#endif
 }
 
 /**
@@ -55,19 +79,34 @@ __getstate__() const {
   }
 
   if (_this->_highest_bits == 0) {
+#if PY_VERSION_HEX >= 0x030e0000  // Python 3.14
+    return PyLong_FromUnsignedNativeBytes(
+      &_this->_array[0], _this->_array.size() * sizeof(BitArray::WordType),
+      Py_ASNATIVEBYTES_LITTLE_ENDIAN);
+#else
     return _PyLong_FromByteArray(
       (const unsigned char *)&_this->_array[0],
       _this->_array.size() * sizeof(BitArray::WordType),
       1, 0);
+#endif
   } else {
     // This is an infinite array, so we invert it to make it a finite array and
     // store it as an inverted long.
     BitArray copy(*_this);
     copy.invert_in_place();
+#if PY_VERSION_HEX >= 0x030e0000  // Python 3.14
+    PyObject *state = PyLong_FromUnsignedNativeBytes(
+      &copy._array[0], copy._array.size() * sizeof(BitArray::WordType),
+      Py_ASNATIVEBYTES_LITTLE_ENDIAN);
+#else
     PyObject *state = _PyLong_FromByteArray(
       (const unsigned char *)&copy._array[0],
       copy._array.size() * sizeof(BitArray::WordType),
       1, 0);
+#endif
+    if (state == nullptr) {
+      return nullptr;
+    }
     PyObject *inverted = PyNumber_Invert(state);
     Py_DECREF(state);
     return inverted;
