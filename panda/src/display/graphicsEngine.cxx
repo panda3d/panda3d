@@ -1145,15 +1145,16 @@ extract_texture_data(Texture *tex, GraphicsStateGuardian *gsg) {
  *
  * This is mainly useful for debugging.  It is a very slow call because it
  * introduces a pipeline stall both of Panda's pipeline and the graphics
- * pipeline.
+ * pipeline.  This is even when only a small amount of data is downloaded.
  *
  * The return value is empty if some kind of error occurred.
  */
 vector_uchar GraphicsEngine::
-extract_shader_buffer_data(ShaderBuffer *buffer, GraphicsStateGuardian *gsg) {
+extract_shader_buffer_data(ShaderBuffer *buffer, GraphicsStateGuardian *gsg,
+                           size_t start, size_t size) {
   return run_on_draw_thread([=] () {
     vector_uchar data;
-    if (!gsg->extract_shader_buffer_data(buffer, data)) {
+    if (!gsg->extract_shader_buffer_data(buffer, data, start, size)) {
       data.clear();
     }
     return data;

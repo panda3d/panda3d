@@ -774,7 +774,8 @@ release_shader_buffers(const pvector<BufferContext *> &contexts) {
  * current contents synchronously.
  */
 bool GraphicsStateGuardian::
-extract_shader_buffer_data(ShaderBuffer *buffer, vector_uchar &data) {
+extract_shader_buffer_data(ShaderBuffer *buffer, vector_uchar &data,
+                           size_t start, size_t size) {
   return false;
 }
 

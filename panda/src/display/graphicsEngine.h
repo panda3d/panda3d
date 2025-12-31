@@ -115,7 +115,8 @@ PUBLISHED:
   BLOCKING void flip_frame();
 
   bool extract_texture_data(Texture *tex, GraphicsStateGuardian *gsg);
-  vector_uchar extract_shader_buffer_data(ShaderBuffer *buffer, GraphicsStateGuardian *gsg);
+  vector_uchar extract_shader_buffer_data(ShaderBuffer *buffer, GraphicsStateGuardian *gsg,
+                                          size_t start = 0, size_t size = (size_t)-1);
   void dispatch_compute(const LVecBase3i &work_groups,
                         const RenderState *state,
                         GraphicsStateGuardian *gsg);

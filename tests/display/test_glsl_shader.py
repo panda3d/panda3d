@@ -301,7 +301,7 @@ def test_glsl_uimage(gsg):
 def test_glsl_ssbo(gsg):
     from struct import pack, unpack
     num1 = pack('<i', 1234567)
-    num2 = pack('<i', -1234567)
+    num2 = pack('<ii', -1234567, 867451)
     buffer1 = core.ShaderBuffer("buffer1", num1, core.GeomEnums.UH_static)
     buffer2 = core.ShaderBuffer("buffer2", num2, core.GeomEnums.UH_static)
 
@@ -311,11 +311,13 @@ def test_glsl_ssbo(gsg):
     };
     layout(std430, binding=1) buffer buffer2 {
         int value2;
+        int value3;
     };
     """
     code = """
     assert(value1 == 1234567);
     assert(value2 == -1234567);
+    assert(value3 == 867451);
     value1 = 98765;
     value2 = 5343525;
     """
@@ -328,7 +330,10 @@ def test_glsl_ssbo(gsg):
     assert unpack('<i', data1[:4]) == (98765, )
 
     data2 = gsg.get_engine().extract_shader_buffer_data(buffer2, gsg)
-    assert unpack('<i', data2[:4]) == (5343525, )
+    assert unpack('<ii', data2[:8]) == (5343525, 867451)
+
+    data3 = gsg.get_engine().extract_shader_buffer_data(buffer2, gsg, 4, 8)
+    assert unpack('<i', data3[:4]) == (867451, )
 
 
 def test_glsl_int(gsg):

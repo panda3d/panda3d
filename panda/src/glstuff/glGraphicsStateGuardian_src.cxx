@@ -7766,14 +7766,21 @@ release_shader_buffers(const pvector<BufferContext *> &contexts) {
  * current contents synchronously.
  */
 bool CLP(GraphicsStateGuardian)::
-extract_shader_buffer_data(ShaderBuffer *buffer, vector_uchar &data) {
+extract_shader_buffer_data(ShaderBuffer *buffer, vector_uchar &data,
+                           size_t start, size_t size) {
   BufferContext *bc = buffer->prepare_now(get_prepared_objects(), this);
   if (bc == nullptr || !bc->is_of_type(CLP(BufferContext)::get_class_type())) {
     return false;
   }
   CLP(BufferContext) *gbc = DCAST(CLP(BufferContext), bc);
 
-  data.resize(buffer->get_data_size_bytes());
+  size_t total_size = buffer->get_data_size_bytes();
+  if (start >= total_size) {
+    data.clear();
+    return true;
+  }
+
+  data.resize(std::min(total_size - start, size));
 
   if (_glMemoryBarrier != nullptr) {
     _glMemoryBarrier(GL_BUFFER_UPDATE_BARRIER_BIT);
@@ -7781,7 +7788,7 @@ extract_shader_buffer_data(ShaderBuffer *buffer, vector_uchar &data) {
 
   _glBindBuffer(GL_SHADER_STORAGE_BUFFER, gbc->_index);
 
-  _glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, data.size(), &data[0]);
+  _glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, start, data.size(), &data[0]);
 
   _glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
   _current_sbuffer_index = 0;
