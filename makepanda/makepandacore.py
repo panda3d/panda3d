@@ -589,8 +589,8 @@ def GetInterrogateDir():
             return INTERROGATE_DIR
 
         dir = os.path.join(GetOutputDir(), "tmp", "interrogate")
-        if not os.path.isdir(os.path.join(dir, "panda3d_interrogate-0.7.1.dist-info")):
-            oscmd("\"%s\" -m pip install --force-reinstall --upgrade -t \"%s\" panda3d-interrogate==0.7.1" % (sys.executable, dir))
+        if not os.path.isdir(os.path.join(dir, "panda3d_interrogate-0.8.1.dist-info")):
+            oscmd("\"%s\" -m pip install --force-reinstall --upgrade -t \"%s\" panda3d-interrogate==0.8.1" % (sys.executable, dir))
 
         INTERROGATE_DIR = dir
 
