@@ -7845,6 +7845,60 @@ extract_shader_buffer_data(ShaderBuffer *buffer, vector_uchar &data,
 
 #ifndef OPENGLES
 /**
+ * Asynchronous version of extract_shader_buffer_data.  It is the caller's
+ * responsibility that the data argument outlasts the token.
+ */
+void CLP(GraphicsStateGuardian)::
+async_extract_shader_buffer_data(ShaderBuffer *buffer, vector_uchar &data,
+                                 size_t start, size_t size, CompletionToken token) {
+  BufferContext *bc = buffer->prepare_now(get_prepared_objects(), this);
+  if (bc == nullptr || !bc->is_of_type(CLP(BufferContext)::get_class_type())) {
+    token.complete(false);
+    return;
+  }
+
+  CLP(BufferContext) *gbc = DCAST(CLP(BufferContext), bc);
+
+  size_t total_size = buffer->get_data_size_bytes();
+  if (start >= total_size) {
+    data.clear();
+    token.complete(true);
+    return;
+  }
+
+  size = std::min(total_size - start, size);
+
+  GLuint staging_buffer = 0;
+  void *mapped_ptr = nullptr;
+
+  bind_new_client_buffer(staging_buffer, mapped_ptr, GL_COPY_WRITE_BUFFER, size);
+  if (_glMemoryBarrier != nullptr) {
+    _glMemoryBarrier(GL_BUFFER_UPDATE_BARRIER_BIT);
+  }
+
+  _glBindBuffer(GL_SHADER_STORAGE_BUFFER, gbc->_index);
+  _glCopyBufferSubData(GL_SHADER_STORAGE_BUFFER, GL_COPY_WRITE_BUFFER, start, 0, size);
+  _glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+  _glBindBuffer(GL_COPY_READ_BUFFER, 0);
+  _current_sbuffer_index = 0;
+
+  if (_supports_buffer_storage && _glMemoryBarrier != nullptr) {
+    _glMemoryBarrier(GL_CLIENT_MAPPED_BUFFER_BARRIER_BIT);
+  }
+
+  insert_fence([=, &data, token = std::move(token)] (bool success) mutable {
+    if (success) {
+      data = vector_uchar((const unsigned char *)mapped_ptr, (const unsigned char *)mapped_ptr + size);
+      token.complete(true);
+    } else {
+      token.complete(false);
+    }
+  });
+}
+#endif
+
+#ifndef OPENGLES
+/**
  * Begins a new occlusion query.  After this call, you may call
  * begin_draw_primitives() and draw_triangles()/draw_whatever() repeatedly.
  * Eventually, you should call end_occlusion_query() before the end of the

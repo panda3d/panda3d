@@ -33,6 +33,26 @@ output(std::ostream &out) const {
 }
 
 /**
+ * Asynchronously requests to read the given subset of the data on the CPU.
+ */
+PT(AsyncFuture) ShaderBuffer::
+extract_data(PreparedGraphicsObjects *prepared_objects, size_t start, size_t size) {
+  PT(AsyncFuture) future = new AsyncFuture;
+  PT(ParamBytes) bytes = new ParamBytes(vector_uchar());
+
+  prepared_objects->enqueue_call([=, bytes = std::move(bytes)] (GraphicsStateGuardianBase *gsg) {
+    gsg->async_extract_shader_buffer_data(this, (vector_uchar &)bytes->get_value(), start, size, [future = std::move(future), bytes = std::move(bytes)] (bool success) {
+      if (success) {
+        future->set_result(bytes);
+      } else {
+        future->set_result(nullptr);
+      }
+    });
+  });
+  return future;
+}
+
+/**
  * Indicates that the data should be enqueued to be prepared in the indicated
  * prepared_objects at the beginning of the next frame.  This will ensure the
  * data is already loaded into the GSG if it is expected to be rendered soon.

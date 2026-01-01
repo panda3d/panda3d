@@ -330,6 +330,9 @@ public:
                                          size_t size, const unsigned char *data);
   virtual bool extract_shader_buffer_data(ShaderBuffer *buffer, vector_uchar &data,
                                           size_t start = 0, size_t size = (size_t)-1);
+  virtual void async_extract_shader_buffer_data(ShaderBuffer *buffer, vector_uchar &data,
+                                                size_t start = 0, size_t size = (size_t)-1,
+                                                CompletionToken token = CompletionToken());
 
   virtual void begin_occlusion_query();
   virtual PT(OcclusionQueryContext) end_occlusion_query();

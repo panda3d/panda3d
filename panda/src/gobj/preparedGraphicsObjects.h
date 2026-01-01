@@ -31,6 +31,10 @@
 #include "adaptiveLru.h"
 #include "asyncFuture.h"
 
+#ifndef CPPPARSER
+#include <functional>
+#endif
+
 class TextureContext;
 class SamplerContext;
 class GeomContext;
@@ -160,6 +164,12 @@ PUBLISHED:
                             GraphicsStateGuardianBase *gsg);
 
 public:
+#ifndef CPPPARSER
+  typedef std::function<void (GraphicsStateGuardianBase *gsg)> EnqueuedCall;
+
+  void enqueue_call(EnqueuedCall &&call);
+#endif
+
   /**
    * This is a handle to an enqueued object, from which the result can be
    * obtained upon completion.
@@ -281,6 +291,7 @@ private:
   Buffers _prepared_shader_buffers;
   pvector<BufferContext *> _released_shader_buffers;
   EnqueuedShaderBuffers _enqueued_shader_buffers;
+  pvector<EnqueuedCall> _enqueued_calls;
 
   BufferCache _vertex_buffer_cache;
   BufferCacheLRU _vertex_buffer_cache_lru;

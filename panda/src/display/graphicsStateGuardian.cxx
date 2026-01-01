@@ -793,6 +793,16 @@ extract_shader_buffer_data(ShaderBuffer *buffer, vector_uchar &data,
 }
 
 /**
+ * Asynchronous version of extract_shader_buffer_data.  It is the caller's
+ * responsibility that the data argument outlasts the token.
+ */
+void GraphicsStateGuardian::
+async_extract_shader_buffer_data(ShaderBuffer *buffer, vector_uchar &data,
+                                 size_t start, size_t size, CompletionToken token) {
+  token.complete(extract_shader_buffer_data(buffer, data, start, size));
+}
+
+/**
  * Begins a new occlusion query.  After this call, you may call
  * begin_draw_primitives() and draw_triangles()/draw_whatever() repeatedly.
  * Eventually, you should call end_occlusion_query() before the end of the
