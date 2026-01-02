@@ -396,7 +396,7 @@ jobs:
         tar -xf panda3d-1.10.16-tools-mac.tar.gz
         mv panda3d-1.10.16/thirdparty thirdparty
         rmdir panda3d-1.10.16
-        (cd thirdparty/darwin-libs-a && rm -rf rocket openal)
+        (cd thirdparty/darwin-libs-a && rm -rf rocket)
 
     - name: Set up XCode (macOS)
       if: runner.os == 'macOS'
