@@ -123,7 +123,7 @@ set_args(PyObject *args) {
  * exception.
  */
 PyObject *PythonThread::
-call_python_func(PyObject *function, PyObject *args) {
+call_python_func(PyObject *function, PyObject **args, size_t nargsf) {
   Thread *current_thread = get_current_thread();
 
   // Create a new Python thread state data structure, so Python can properly
@@ -132,7 +132,7 @@ call_python_func(PyObject *function, PyObject *args) {
 
   if (current_thread == get_main_thread()) {
     // In the main thread, just call the function.
-    result = PyObject_Call(function, args, nullptr);
+    result = _PyObject_Vectorcall(function, args, nargsf, nullptr);
 
     if (result == nullptr) {
       if (PyErr_Occurred() && PyErr_ExceptionMatches(PyExc_SystemExit)) {
@@ -189,7 +189,7 @@ call_python_func(PyObject *function, PyObject *args) {
     PyThreadState_Swap(new_thread_state);
 
     // Call the user's function.
-    result = PyObject_Call(function, args, nullptr);
+    result = _PyObject_Vectorcall(function, args, nargsf, nullptr);
     if (result == nullptr && PyErr_Occurred()) {
       // We got an exception.  Move the exception from the current thread into
       // the main thread, so it can be handled there.
@@ -230,7 +230,7 @@ call_python_func(PyObject *function, PyObject *args) {
     gstate = PyGILState_Ensure();
 
     // Call the user's function.
-    result = PyObject_Call(function, args, nullptr);
+    result = _PyObject_Vectorcall(function, args, nargsf, nullptr);
     if (result == nullptr && PyErr_Occurred()) {
       // We got an exception.  Move the exception from the current thread into
       // the main thread, so it can be handled there.
@@ -275,7 +275,9 @@ call_python_func(PyObject *function, PyObject *args) {
  */
 void PythonThread::
 thread_main() {
-  _result = call_python_func(_function, _args);
+  PyObject **args = &PyTuple_GET_ITEM(_args, 0);
+  Py_ssize_t nargs = PyTuple_GET_SIZE(_args);
+  _result = call_python_func(_function, args, (size_t)nargs);
 }
 
 #endif  // HAVE_PYTHON

@@ -36,7 +36,8 @@ public:
   PyObject *get_args() const;
   void set_args(PyObject *);
 
-  static PyObject *call_python_func(PyObject *function, PyObject *args);
+  static PyObject *call_python_func(PyObject *function, PyObject **args,
+                                    size_t nargsf);
 
 PUBLISHED:
   MAKE_PROPERTY(args, get_args, set_args);

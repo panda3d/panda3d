@@ -101,17 +101,19 @@ pre_load(const Filename &orig_filename, const Filename &orig_alpha_filename,
 #endif
 
   // Wrap the arguments.
-  PyObject *args = Py_BuildValue("(OOiiNO)",
-    DTool_CreatePyInstance((void *)&orig_filename, Dtool_Filename, false, true),
-    DTool_CreatePyInstance((void *)&orig_alpha_filename, Dtool_Filename, false, true),
-    primary_file_num_channels,
-    alpha_file_channel,
-    PyBool_FromLong(read_mipmaps),
-    DTool_CreatePyInstance((void *)&options, Dtool_LoaderOptions, false, true)
-  );
+  PyObject *args[7];
+  args[1] = DTool_CreatePyInstance((void *)&orig_filename, Dtool_Filename, false, true);
+  args[2] = DTool_CreatePyInstance((void *)&orig_alpha_filename, Dtool_Filename, false, true);
+  args[3] = PyLong_FromLong(primary_file_num_channels);
+  args[4] = PyLong_FromLong(alpha_file_channel);
+  args[5] = PyBool_FromLong(read_mipmaps);
+  args[6] = DTool_CreatePyInstance((void *)&options, Dtool_LoaderOptions, false, true);
 
-  PyObject *result = PythonThread::call_python_func(_pre_load_func, args);
-  Py_DECREF(args);
+  PyObject *result = PythonThread::call_python_func(_pre_load_func, args + 1, 6 | PY_VECTORCALL_ARGUMENTS_OFFSET);
+
+  for (size_t i = 1; i < 7; ++i) {
+    Py_DECREF(args[i]);
+  }
 
   PT(Texture) tex;
   if (result != nullptr) {
@@ -162,11 +164,11 @@ post_load(Texture *tex) {
 #endif
 
   // Wrap the arguments.
-  PyObject *args = PyTuple_Pack(1,
-    DTool_CreatePyInstance(tex, Dtool_Texture, true, false)
-  );
-  PyObject *result = PythonThread::call_python_func(_post_load_func, args);
-  Py_DECREF(args);
+  PyObject *args[2];
+  args[1] = DTool_CreatePyInstance(tex, Dtool_Texture, true, false);
+
+  PyObject *result = PythonThread::call_python_func(_post_load_func, args + 1, 1 | PY_VECTORCALL_ARGUMENTS_OFFSET);
+  Py_DECREF(args[1]);
 
   PT(Texture) result_tex;
   if (result != nullptr) {

@@ -114,7 +114,7 @@ private:
 
 private:
   PyObject *_function;
-  PyObject *_args;
+  pvector<PyObject *> _args;
   PyObject *_upon_death;
   PyObject *_owner;
 
