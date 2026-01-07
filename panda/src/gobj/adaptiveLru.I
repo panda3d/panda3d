@@ -134,7 +134,10 @@ get_lru() const {
  */
 INLINE void AdaptiveLruPage::
 dequeue_lru() {
-  enqueue_lru(nullptr);
+  if (_lru != nullptr) {
+    _lru->do_remove_page(this);
+    _lru = nullptr;
+  }
 }
 
 /**
