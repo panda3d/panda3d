@@ -652,7 +652,7 @@ do_python_task() {
       PyObject *func = PyObject_GetAttrString(_generator, "throw");
       if (func != nullptr) {
         PyObject *exc = PyObject_CallNoArgs(exc_type);
-        result = PyObject_CallFunctionObjArgs(func, exc, nullptr);
+        result = PyObject_CallOneArg(func, exc);
         Py_DECREF(exc);
         Py_DECREF(func);
       } else {
