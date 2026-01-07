@@ -1910,6 +1910,39 @@ handle_wheel_event(double x, double y) {
   }
 }
 
+// private convenience method
+static GesturePhase gesture_phase_from_event_phase(NSEventPhase eventPhase) {
+  GesturePhase phase = GesturePhase::UNKNOWN;
+  switch (eventPhase) {
+  case NSEventPhaseBegan:
+    phase = GesturePhase::BEGAN; break;
+  case NSEventPhaseChanged:
+  case NSEventPhaseStationary:
+    phase = GesturePhase::CHANGED; break;
+  case NSEventPhaseEnded:
+    phase = GesturePhase::ENDED; break;
+  case NSEventPhaseCancelled:
+    phase = GesturePhase::CANCELLED; break;
+  default:
+    break;
+  }
+  return phase;
+}
+
+void CocoaGraphicsWindow::
+handle_magnify(double magnification, NSEventPhase eventPhase) {
+  GesturePhase phase = gesture_phase_from_event_phase(eventPhase);
+  _input->magnify_gesture(magnification, phase);
+}
+
+void CocoaGraphicsWindow::
+handle_rotate(double rotation, NSEventPhase eventPhase) {
+  GesturePhase phase = gesture_phase_from_event_phase(eventPhase);
+  _input->rotate_gesture(rotation, phase);
+}
+
+
+
 /**
  * Returns a ButtonMap containing the association between raw buttons and
  * virtual buttons.

@@ -51,6 +51,7 @@ MouseWatcher(const string &name) :
   _xy_input = define_input("xy", EventStoreVec2::get_class_type());
   _button_events_input = define_input("button_events", ButtonEventList::get_class_type());
   _pointer_events_input = define_input("pointer_events", PointerEventList::get_class_type());
+  _gesture_events_input = define_input("gesture_events", GestureEventList::get_class_type());
 
   _pixel_xy_output = define_output("pixel_xy", EventStoreVec2::get_class_type());
   _pixel_size_output = define_output("pixel_size", EventStoreVec2::get_class_type());
@@ -892,11 +893,45 @@ throw_event_pattern(const string &pattern, const MouseWatcherRegion *region,
     }
   }
 
+  tform_cat.info() << button_name << " event empty? " << event.empty() << "\n";
+
   if (!event.empty()) {
     throw_event(event, EventParameter(region), EventParameter(button_name));
     if (_eh != nullptr)
       throw_event_directly(*_eh, event, EventParameter(region),
                            EventParameter(button_name));
+  }
+}
+
+
+void MouseWatcher::
+throw_gesture_event(const GestureEvent &ge) {
+  string event_suffix = "";
+
+  switch (ge._phase) {
+  case GesturePhase::BEGAN:
+    event_suffix = "_began"; break;
+  case GesturePhase::ENDED:
+    event_suffix = "_ended"; break;
+  case GesturePhase::CANCELLED:
+    event_suffix = "_cancelled"; break;
+  default:
+    break;
+  }
+
+  switch (ge._type) {
+  case GestureType::MAGNIFICATION:
+    throw_event("magnification" + event_suffix, EventParameter(ge._gestureData.magnification));
+    break;
+  case GestureType::ROTATION:
+    throw_event("rotation" + event_suffix, EventParameter(ge._gestureData.rotation));
+    break;
+  case GestureType::SWIPE:
+    throw_event("swipe" + event_suffix, EventParameter(ge._gestureData.swipe.deltaX), EventParameter(ge._gestureData.swipe.deltaY));
+    break;
+  default:
+    tform_cat.error()
+          << "Unknown gesture type: " << static_cast<std::underlying_type<GestureType>::type>(ge._type) << "\n";
   }
 }
 
@@ -1440,6 +1475,19 @@ do_transmit_data(DataGraphTraverser *trav, const DataNodeTransmit &input,
     // released a button (particularly likely with a touchscreen input that's
     // emulating a mouse).
     set_no_mouse();
+  }
+
+  if (input.has_data(_gesture_events_input)) {
+    tform_cat.info() << "Gesture event input!\n";
+    const GestureEventList *this_gesture_events;
+    DCAST_INTO_V(this_gesture_events, input.get_data(_gesture_events_input).get_ptr());
+
+    int num_events = this_gesture_events->get_num_events();
+    for (int i = 0; i < num_events; i++) {
+      const GestureEvent &ge = this_gesture_events->get_event(i);
+      throw_gesture_event(ge);
+    }
+
   }
 
   // Now check the inactivity timer.

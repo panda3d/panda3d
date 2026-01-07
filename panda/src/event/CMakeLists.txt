@@ -31,6 +31,7 @@ set(P3EVENT_SOURCES
   genericAsyncTask.cxx
   pointerEvent.cxx
   pointerEventList.cxx
+  gestureEvent.cxx
   config_event.cxx event.cxx eventHandler.cxx
   eventParameter.cxx eventQueue.cxx eventReceiver.cxx
   pt_Event.cxx

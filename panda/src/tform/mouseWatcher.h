@@ -32,6 +32,7 @@
 #include "clockObject.h"
 #include "pvector.h"
 #include "displayRegion.h"
+#include "gestureEvent.h"
 
 class MouseWatcherParameter;
 class DisplayRegion;
@@ -176,6 +177,8 @@ protected:
                            const MouseWatcherRegion *region,
                            const ButtonHandle &button);
 
+  void throw_gesture_event(const GestureEvent &ge);
+
   void move();
   void press(ButtonHandle button, bool keyrepeat);
   void release(ButtonHandle button);
@@ -277,6 +280,7 @@ private:
   int _xy_input;
   int _button_events_input;
   int _pointer_events_input;
+  int _gesture_events_input;
 
   // outputs
   int _pixel_xy_output;
