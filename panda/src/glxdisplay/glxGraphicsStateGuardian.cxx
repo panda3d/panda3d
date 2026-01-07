@@ -303,6 +303,8 @@ choose_pixel_format(const FrameBufferProperties &properties,
   GLXFBConfig *configs =
     _glXChooseFBConfig(_display, _screen, attrib_list, &num_configs);
 
+  bool need_alpha = properties.get_alpha_bits() != 0;
+
   if (configs != nullptr) {
     bool context_has_pbuffer, context_has_pixmap, slow;
     int quality, i;
@@ -325,6 +327,18 @@ choose_pixel_format(const FrameBufferProperties &properties,
       }
       if (need_pixmap && !context_has_pixmap) {
         continue;
+      }
+
+      if (need_alpha) {
+        _visuals = _glXGetVisualFromFBConfig(_display, configs[i]);
+        if (!_visuals) continue;
+
+        XRenderPictFormat* pict_format = XRenderFindVisualFormat(_display, _visuals->visual);
+        if (!pict_format) continue;
+        if (pict_format->direct.alphaMask == 0) continue;
+
+        XFree(_visuals);
+        _visuals = nullptr;
       }
 
       if (quality > best_quality) {
