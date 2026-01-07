@@ -122,7 +122,7 @@ class LerpPosInterval(LerpNodePathInterval):
     def privDoEvent(self, t, event):
         # This function is only used if Python functors were passed in
         # for some of the input parameters.
-        if self.paramSetup and event == CInterval.ETInitialize:
+        if self.paramSetup and (event == CInterval.ETInitialize or event == CInterval.ETInstant):
             self.setupParam(self.setEndPos, self.endPos)
             self.setupParam(self.setStartPos, self.startPos)
         LerpNodePathInterval.privDoEvent(self, t, event)
@@ -153,7 +153,7 @@ class LerpHprInterval(LerpNodePathInterval):
     def privDoEvent(self, t, event):
         # This function is only used if Python functors were passed in
         # for some of the input parameters.
-        if self.paramSetup and event == CInterval.ETInitialize:
+        if self.paramSetup and (event == CInterval.ETInitialize or event == CInterval.ETInstant):
             self.setupParam(self.setEndHpr, self.endHpr)
             self.setupParam(self.setStartHpr, self.startHpr)
             self.setupParam(self.setStartQuat, self.startQuat)
@@ -192,7 +192,7 @@ class LerpQuatInterval(LerpNodePathInterval):
     def privDoEvent(self, t, event):
         # This function is only used if Python functors were passed in
         # for some of the input parameters.
-        if self.paramSetup and event == CInterval.ETInitialize:
+        if self.paramSetup and (event == CInterval.ETInitialize or event == CInterval.ETInstant):
             self.setupParam(self.setEndQuat, self.endQuat)
             self.setupParam(self.setStartHpr, self.startHpr)
             self.setupParam(self.setStartQuat, self.startQuat)
@@ -219,7 +219,7 @@ class LerpScaleInterval(LerpNodePathInterval):
     def privDoEvent(self, t, event):
         # This function is only used if Python functors were passed in
         # for some of the input parameters.
-        if self.paramSetup and event == CInterval.ETInitialize:
+        if self.paramSetup and (event == CInterval.ETInitialize or event == CInterval.ETInstant):
             self.setupParam(self.setEndScale, self.endScale)
             self.setupParam(self.setStartScale, self.startScale)
         LerpNodePathInterval.privDoEvent(self, t, event)
@@ -245,7 +245,7 @@ class LerpShearInterval(LerpNodePathInterval):
     def privDoEvent(self, t, event):
         # This function is only used if Python functors were passed in
         # for some of the input parameters.
-        if self.paramSetup and event == CInterval.ETInitialize:
+        if self.paramSetup and (event == CInterval.ETInitialize or event == CInterval.ETInstant):
             self.setupParam(self.setEndShear, self.endShear)
             self.setupParam(self.setStartShear, self.startShear)
         LerpNodePathInterval.privDoEvent(self, t, event)
@@ -280,7 +280,7 @@ class LerpPosHprInterval(LerpNodePathInterval):
     def privDoEvent(self, t, event):
         # This function is only used if Python functors were passed in
         # for some of the input parameters.
-        if self.paramSetup and event == CInterval.ETInitialize:
+        if self.paramSetup and (event == CInterval.ETInitialize or event == CInterval.ETInstant):
             self.setupParam(self.setEndPos, self.endPos)
             self.setupParam(self.setStartPos, self.startPos)
             self.setupParam(self.setEndHpr, self.endHpr)
@@ -326,7 +326,7 @@ class LerpPosQuatInterval(LerpNodePathInterval):
     def privDoEvent(self, t, event):
         # This function is only used if Python functors were passed in
         # for some of the input parameters.
-        if self.paramSetup and event == CInterval.ETInitialize:
+        if self.paramSetup and (event == CInterval.ETInitialize or event == CInterval.ETInstant):
             self.setupParam(self.setEndPos, self.endPos)
             self.setupParam(self.setStartPos, self.startPos)
             self.setupParam(self.setEndQuat, self.endQuat)
@@ -365,7 +365,7 @@ class LerpHprScaleInterval(LerpNodePathInterval):
     def privDoEvent(self, t, event):
         # This function is only used if Python functors were passed in
         # for some of the input parameters.
-        if self.paramSetup and event == CInterval.ETInitialize:
+        if self.paramSetup and (event == CInterval.ETInitialize or event == CInterval.ETInstant):
             self.setupParam(self.setEndHpr, self.endHpr)
             self.setupParam(self.setStartHpr, self.startHpr)
             self.setupParam(self.setStartQuat, self.startQuat)
@@ -414,7 +414,7 @@ class LerpQuatScaleInterval(LerpNodePathInterval):
     def privDoEvent(self, t, event):
         # This function is only used if Python functors were passed in
         # for some of the input parameters.
-        if self.paramSetup and event == CInterval.ETInitialize:
+        if self.paramSetup and (event == CInterval.ETInitialize or event == CInterval.ETInstant):
             self.setupParam(self.setEndQuat, self.endQuat)
             self.setupParam(self.setStartHpr, self.startHpr)
             self.setupParam(self.setStartQuat, self.startQuat)
@@ -459,7 +459,7 @@ class LerpPosHprScaleInterval(LerpNodePathInterval):
     def privDoEvent(self, t, event):
         # This function is only used if Python functors were passed in
         # for some of the input parameters.
-        if self.paramSetup and event == CInterval.ETInitialize:
+        if self.paramSetup and (event == CInterval.ETInitialize or event == CInterval.ETInstant):
             self.setupParam(self.setEndPos, self.endPos)
             self.setupParam(self.setStartPos, self.startPos)
             self.setupParam(self.setEndHpr, self.endHpr)
@@ -516,7 +516,7 @@ class LerpPosQuatScaleInterval(LerpNodePathInterval):
     def privDoEvent(self, t, event):
         # This function is only used if Python functors were passed in
         # for some of the input parameters.
-        if self.paramSetup and event == CInterval.ETInitialize:
+        if self.paramSetup and (event == CInterval.ETInitialize or event == CInterval.ETInstant):
             self.setupParam(self.setEndPos, self.endPos)
             self.setupParam(self.setStartPos, self.startPos)
             self.setupParam(self.setEndQuat, self.endQuat)
@@ -569,7 +569,7 @@ class LerpPosHprScaleShearInterval(LerpNodePathInterval):
     def privDoEvent(self, t, event):
         # This function is only used if Python functors were passed in
         # for some of the input parameters.
-        if self.paramSetup and event == CInterval.ETInitialize:
+        if self.paramSetup and (event == CInterval.ETInitialize or event == CInterval.ETInstant):
             self.setupParam(self.setEndPos, self.endPos)
             self.setupParam(self.setStartPos, self.startPos)
             self.setupParam(self.setEndHpr, self.endHpr)
@@ -636,7 +636,7 @@ class LerpPosQuatScaleShearInterval(LerpNodePathInterval):
     def privDoEvent(self, t, event):
         # This function is only used if Python functors were passed in
         # for some of the input parameters.
-        if self.paramSetup and event == CInterval.ETInitialize:
+        if self.paramSetup and (event == CInterval.ETInitialize or event == CInterval.ETInstant):
             self.setupParam(self.setEndPos, self.endPos)
             self.setupParam(self.setStartPos, self.startPos)
             self.setupParam(self.setEndQuat, self.endQuat)
