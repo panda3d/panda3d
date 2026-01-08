@@ -1,0 +1,29 @@
+# box creation parameters (do not remove value type comments):
+
+
+center = 0. 0. 0.                       # float tuple
+width = 2.                              # float
+depth = 3.                              # float
+height = 1.                             # float
+segments width  = 2                     # dict int
+segments depth  = 4                     # dict int
+segments height = 3                     # dict int
+open_sides = left top back              # string tuple
+thickness = .45                         # float
+inverted = False                        # bool
+vertex_color = None                     # float tuple
+has_uvs = True                          # bool
+tex_units left = 6. 6.                  # dict float tuple
+tex_units right = 4. 4.                 # dict float tuple
+tex_units back = 5. 3.5                 # dict float tuple
+tex_units front = 3. 3.                 # dict float tuple
+tex_units bottom = 5. 5.                # dict float tuple
+tex_units top = 5. 5.                   # dict float tuple
+tex_units inner_bottom = 5. 5.          # dict float tuple
+tex_units inner_front = 3. 5.           # dict float tuple
+tex_units inner_right = 5. 3.           # dict float tuple
+tex_rotation bottom = 20.               # dict float
+tex_scale right = .5 .35                # dict float tuple
+tex_scale back = 1. .7                  # dict float tuple
+tex_offset back = -.05 0.               # dict float tuple
+tex_rotation inner_bottom = -45.        # dict float
