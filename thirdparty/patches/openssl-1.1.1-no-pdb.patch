@@ -1,0 +1,42 @@
+diff -ur a/Configurations/10-main.conf b/Configurations/10-main.conf
+--- a/Configurations/10-main.conf	2022-02-06 14:31:32.462948300 +0100
++++ b/Configurations/10-main.conf	2022-02-06 14:33:43.177248800 +0100
+@@ -13,7 +13,7 @@
+         } elsif ($disabled{asm}) {
+             # assembler is still used to compile uplink shim
+             $vc_win64a_info = { AS        => "ml64",
+-                                ASFLAGS   => "/nologo /Zi",
++                                ASFLAGS   => "/nologo",
+                                 asflags   => "/c /Cp /Cx",
+                                 asoutflag => "/Fo" };
+         } else {
+@@ -41,7 +41,7 @@
+         } elsif ($disabled{asm}) {
+             # not actually used, uplink shim is inlined into C code
+             $vc_win32_info = { AS        => "ml",
+-                               ASFLAGS   => "/nologo /Zi",
++                               ASFLAGS   => "/nologo",
+                                asflags   => "/Cp /coff /c /Cx",
+                                asoutflag => "/Fo",
+                                perlasm_scheme => "win32" };
+@@ -1231,7 +1231,7 @@
+                                 "UNICODE", "_UNICODE",
+                                 "_CRT_SECURE_NO_DEPRECATE",
+                                 "_WINSOCK_DEPRECATED_NO_WARNINGS"),
+-        lib_cflags       => add("/Zi /Fdossl_static.pdb"),
++        lib_cflags       => add(""),
+         lib_defines      => add("L_ENDIAN"),
+         dso_cflags       => "/Zi /Fddso.pdb",
+         bin_cflags       => "/Zi /Fdapp.pdb",
+diff -ur a/Configurations/windows-makefile.tmpl b/Configurations/windows-makefile.tmpl
+--- a/Configurations/windows-makefile.tmpl	2022-02-06 14:31:32.549466200 +0100
++++ b/Configurations/windows-makefile.tmpl	2022-02-06 14:33:04.742492300 +0100
+@@ -424,8 +424,6 @@
+ 				       "$(INSTALLTOP)\include\openssl"
+ 	@"$(PERL)" "$(SRCDIR)\util\mkdir-p.pl" "$(libdir)"
+ 	@"$(PERL)" "$(SRCDIR)\util\copy.pl" $(INSTALL_LIBS) "$(libdir)"
+-	@if "$(SHLIBS)"=="" \
+-	 "$(PERL)" "$(SRCDIR)\util\copy.pl" ossl_static.pdb "$(libdir)"
+ 
+ uninstall_dev:
+ 
