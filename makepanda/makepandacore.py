@@ -284,7 +284,7 @@ def GetHost():
         return 'darwin'
     elif sys.platform.startswith('linux'):
         try:
-            # Python seems to offer no built-in way to check this.
+            # Python versions before 3.13 reported android as "linux"
             osname = subprocess.check_output(["uname", "-o"])
             if osname.strip().lower() == b'android':
                 return 'android'
@@ -294,6 +294,9 @@ def GetHost():
             return 'linux'
     elif sys.platform.startswith('freebsd'):
         return 'freebsd'
+    # Handle for Python >= 3.13
+    elif sys.platform == 'android':
+        return 'android'
     else:
         exit('Unrecognized sys.platform: %s' % (sys.platform))
 
