@@ -42,6 +42,7 @@ class EXPCL_PANDA_DISPLAY MouseAndKeyboard : public DataNode {
 PUBLISHED:
   explicit MouseAndKeyboard(GraphicsWindow *window, int device, const std::string &name);
   void set_source(GraphicsWindow *window, int device);
+  bool ignore_input = false;
 
 protected:
   // Inherited from DataNode
