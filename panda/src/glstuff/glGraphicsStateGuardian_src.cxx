@@ -1337,10 +1337,12 @@ reset() {
   if (is_at_least_gl_version(4, 3) || has_extension("GL_ARB_clear_buffer_object")) {
     _glClearBufferData = (PFNGLCLEARBUFFERDATAPROC)
       get_extension_func("glClearBufferData");
+    _glClearBufferSubData = (PFNGLCLEARBUFFERSUBDATAPROC)
+      get_extension_func("glClearBufferSubData");
 
-    if (_glClearBufferData == nullptr) {
+    if (_glClearBufferData == nullptr || _glClearBufferSubData == nullptr) {
       GLCAT.warning()
-        << "GL_ARB_clear_buffer_object advertised as supported by OpenGL runtime, but could not get pointers to extension function.\n";
+        << "GL_ARB_clear_buffer_object advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
     } else {
       _supports_clear_buffer = true;
     }
@@ -2836,6 +2838,10 @@ reset() {
 
     _glNamedBufferSubData = (PFNGLNAMEDBUFFERSUBDATAPROC)
       get_extension_func("glNamedBufferSubData");
+    _glClearNamedBufferSubData = (PFNGLCLEARNAMEDBUFFERSUBDATAPROC)
+      get_extension_func("glClearNamedBufferSubData");
+    _glCopyNamedBufferSubData = (PFNGLCOPYNAMEDBUFFERSUBDATAPROC)
+      get_extension_func("glCopyNamedBufferSubData");
     _glGetNamedBufferSubData = (PFNGLGETNAMEDBUFFERSUBDATAPROC)
       get_extension_func("glGetNamedBufferSubData");
 
@@ -7771,7 +7777,7 @@ release_shader_buffers(const pvector<BufferContext *> &contexts) {
  * directly; call GraphicsEngine::update_shader_buffer_data() instead.
  *
  * This method will be called in the draw thread to upload data to (a part of)
- * the shader buffer from the CPU.
+ * the shader buffer from the CPU.  If data is null, clears the buffer instead.
  */
 bool CLP(GraphicsStateGuardian)::
 update_shader_buffer_data(ShaderBuffer *buffer, size_t start, size_t size,
@@ -7788,13 +7794,24 @@ update_shader_buffer_data(ShaderBuffer *buffer, size_t start, size_t size,
     _glMemoryBarrier(GL_BUFFER_UPDATE_BARRIER_BIT);
   }
 
-  if (_supports_dsa) {
-    _glNamedBufferSubData(gbc->_index, start, size, data);
+  if (data != nullptr) {
+    if (_supports_dsa) {
+      _glNamedBufferSubData(gbc->_index, start, size, data);
+    } else {
+      _glBindBuffer(GL_SHADER_STORAGE_BUFFER, gbc->_index);
+      _glBufferSubData(GL_SHADER_STORAGE_BUFFER, start, size, data);
+      _glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+      _current_sbuffer_index = 0;
+    }
   } else {
-    _glBindBuffer(GL_SHADER_STORAGE_BUFFER, gbc->_index);
-    _glBufferSubData(GL_SHADER_STORAGE_BUFFER, start, size, data);
-    _glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-    _current_sbuffer_index = 0;
+    if (_supports_dsa) {
+      _glClearNamedBufferSubData(gbc->_index, GL_R8, start, size, GL_RED, GL_UNSIGNED_BYTE, nullptr);
+    } else {
+      _glBindBuffer(GL_SHADER_STORAGE_BUFFER, gbc->_index);
+      _glClearBufferSubData(GL_SHADER_STORAGE_BUFFER, GL_R8, start, size, GL_RED, GL_UNSIGNED_BYTE, nullptr);
+      _glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+      _current_sbuffer_index = 0;
+    }
   }
   report_my_gl_errors();
 
@@ -7879,7 +7896,7 @@ async_extract_shader_buffer_data(ShaderBuffer *buffer, vector_uchar &data,
   _glBindBuffer(GL_SHADER_STORAGE_BUFFER, gbc->_index);
   _glCopyBufferSubData(GL_SHADER_STORAGE_BUFFER, GL_COPY_WRITE_BUFFER, start, 0, size);
   _glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-  _glBindBuffer(GL_COPY_READ_BUFFER, 0);
+  _glBindBuffer(GL_COPY_WRITE_BUFFER, 0);
   _current_sbuffer_index = 0;
 
   if (_supports_buffer_storage && _glMemoryBarrier != nullptr) {
@@ -15824,14 +15841,14 @@ do_extract_texture_data(CLP(TextureContext) *gtc, int view) {
 #endif
   }
 
+  GLint width = gtc->_width, height = gtc->_height, depth = gtc->_depth;
+
+#ifndef OPENGLES
   GLenum page_target = target;
   if (target == GL_TEXTURE_CUBE_MAP) {
     // We need a particular page to get the level parameter from.
     page_target = GL_TEXTURE_CUBE_MAP_POSITIVE_X;
   }
-
-  GLint width = gtc->_width, height = gtc->_height, depth = gtc->_depth;
-#ifndef OPENGLES
   glGetTexLevelParameteriv(page_target, 0, GL_TEXTURE_WIDTH, &width);
   if (target != GL_TEXTURE_1D) {
     glGetTexLevelParameteriv(page_target, 0, GL_TEXTURE_HEIGHT, &height);
@@ -16819,6 +16836,9 @@ map_read_buffer(GLenum target, GLuint buffer, size_t size) {
 #endif
 
   _glBindBuffer(target, 0);
+  if (target == GL_SHADER_STORAGE_BUFFER) {
+    _current_sbuffer_index = 0;
+  }
   return mapped_ptr;
 }
 

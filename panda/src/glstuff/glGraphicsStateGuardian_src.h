@@ -888,6 +888,7 @@ public:
   bool _supports_clear_buffer;
 #ifndef OPENGLES
   PFNGLCLEARBUFFERDATAPROC _glClearBufferData;
+  PFNGLCLEARBUFFERSUBDATAPROC _glClearBufferSubData;
 #endif
 
   PFNGLCOMPRESSEDTEXIMAGE1DPROC _glCompressedTexImage1D;
@@ -1025,7 +1026,11 @@ public:
   PFNGLBINDTEXTUREUNITPROC _glBindTextureUnit;
   PFNGLMAPNAMEDBUFFERRANGEPROC _glMapNamedBufferRange;
   PFNGLNAMEDBUFFERSUBDATAPROC _glNamedBufferSubData;
+  PFNGLCLEARNAMEDBUFFERSUBDATAPROC _glClearNamedBufferSubData;
+  PFNGLCOPYNAMEDBUFFERSUBDATAPROC _glCopyNamedBufferSubData;
   PFNGLGETNAMEDBUFFERSUBDATAPROC _glGetNamedBufferSubData;
+#else
+  static const bool _supports_dsa = false;
 #endif
 
 #ifndef OPENGLES_1
