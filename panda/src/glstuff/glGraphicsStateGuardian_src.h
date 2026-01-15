@@ -669,9 +669,9 @@ protected:
   void check_nonresident_texture(BufferContextChain &chain);
   bool do_extract_texture_data(CLP(TextureContext) *gtc, int view);
   bool extract_texture_image(PTA_uchar &image, size_t &page_size,
-           Texture *tex, GLenum target, GLenum page_target,
-           Texture::ComponentType type,
-           Texture::CompressionMode compression, int n);
+                             Texture *tex, GLenum target,
+                             Texture::ComponentType type,
+                             Texture::CompressionMode compression, int n);
 
 #ifdef SUPPORT_FIXED_FUNCTION
   void do_point_size();

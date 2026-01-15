@@ -16384,8 +16384,7 @@ do_extract_texture_data(CLP(TextureContext) *gtc, int view) {
   PTA_uchar image;
   size_t page_size = 0;
 
-  if (!extract_texture_image(image, page_size, tex, target, page_target,
-                             type, compression, 0)) {
+  if (!extract_texture_image(image, page_size, tex, target, type, compression, 0)) {
     return false;
   }
 
@@ -16403,8 +16402,7 @@ do_extract_texture_data(CLP(TextureContext) *gtc, int view) {
 
   // Also get the mipmap levels.
   for (int n = 1; n < gtc->_num_levels; ++n) {
-    if (!extract_texture_image(image, page_size, tex, target, page_target,
-                               type, compression, n)) {
+    if (!extract_texture_image(image, page_size, tex, target, type, compression, n)) {
       return false;
     }
     if (num_views == 1) {
@@ -16424,7 +16422,7 @@ do_extract_texture_data(CLP(TextureContext) *gtc, int view) {
  */
 bool CLP(GraphicsStateGuardian)::
 extract_texture_image(PTA_uchar &image, size_t &page_size,
-                      Texture *tex, GLenum target, GLenum page_target,
+                      Texture *tex, GLenum target,
                       Texture::ComponentType type,
                       Texture::CompressionMode compression, int n) {
 #ifdef OPENGLES  // Extracting texture data unsupported in OpenGL ES.
@@ -16453,8 +16451,8 @@ extract_texture_image(PTA_uchar &image, size_t &page_size,
 
     if (compression != Texture::CM_off) {
       GLint image_size;
-      glGetTexLevelParameteriv(page_target, n,
-                                  GL_TEXTURE_COMPRESSED_IMAGE_SIZE, &image_size);
+      glGetTexLevelParameteriv(GL_TEXTURE_CUBE_MAP_POSITIVE_X, n,
+                               GL_TEXTURE_COMPRESSED_IMAGE_SIZE, &image_size);
       nassertr(image_size <= (int)page_size, false);
       page_size = image_size;
     }
@@ -16462,7 +16460,7 @@ extract_texture_image(PTA_uchar &image, size_t &page_size,
     image = PTA_uchar::empty_array(page_size * 6);
 
     for (int z = 0; z < 6; ++z) {
-      page_target = GL_TEXTURE_CUBE_MAP_POSITIVE_X + z;
+      GLenum page_target = GL_TEXTURE_CUBE_MAP_POSITIVE_X + z;
 
       if (compression == Texture::CM_off) {
         glGetTexImage(page_target, n, external_format, pixel_type,
