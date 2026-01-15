@@ -25,8 +25,8 @@ class CLP(GraphicsStateGuardian);
  */
 class EXPCL_GL CLP(SamplerContext) : public SamplerContext {
 public:
-  INLINE CLP(SamplerContext)(CLP(GraphicsStateGuardian) *glgsg,
-                             const SamplerState &sampler);
+  CLP(SamplerContext)(CLP(GraphicsStateGuardian) *glgsg,
+                      const SamplerState &sampler);
   ALLOC_DELETED_CHAIN(CLP(SamplerContext));
 
   virtual ~CLP(SamplerContext)();

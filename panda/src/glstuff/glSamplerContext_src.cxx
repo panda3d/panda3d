@@ -20,7 +20,7 @@ TypeHandle CLP(SamplerContext)::_type_handle;
 /**
  *
  */
-INLINE CLP(SamplerContext)::
+CLP(SamplerContext)::
 CLP(SamplerContext)(CLP(GraphicsStateGuardian) *glgsg,
   const SamplerState &sampler) :
   SamplerContext(sampler)
