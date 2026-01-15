@@ -31,3 +31,13 @@ void SavedContext::
 write(std::ostream &out, int indent_level) const {
   indent(out, indent_level) << *this << "\n";
 }
+
+/**
+ * Returns an implementation-defined handle or pointer that can be used
+ * to interface directly with the underlying API.
+ * Returns 0 if the underlying implementation does not support this.
+ */
+uint64_t SavedContext::
+get_native_id() const {
+  return 0;
+}

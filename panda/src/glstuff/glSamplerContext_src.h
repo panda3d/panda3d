@@ -33,6 +33,8 @@ public:
   virtual void evict_lru();
   void reset_data();
 
+  virtual uint64_t get_native_id() const;
+
   // This is the GL "name" of the sampler object.
   GLuint _index;
 

@@ -27,6 +27,8 @@ public:
 
   virtual void evict_lru();
 
+  virtual uint64_t get_native_id() const;
+
   CLP(GraphicsStateGuardian) *_glgsg;
 
   // This is the GL "name" of the data object.
