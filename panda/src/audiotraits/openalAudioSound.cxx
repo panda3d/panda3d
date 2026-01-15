@@ -1099,7 +1099,7 @@ status() const {
 /**
  * Returns the comments attached to this audio file.
  */
-vector_string OpenALAudioSound::
+const vector_string& OpenALAudioSound::
 get_raw_comment() const {
   return _comment;
 }

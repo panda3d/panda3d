@@ -146,7 +146,7 @@ PUBLISHED:
   std::string get_comment(const std::string &key) const;
   MAKE_MAP_PROPERTY(comments, has_comment, get_comment);
 
-  virtual vector_string get_raw_comment() const;
+  virtual const vector_string& get_raw_comment() const;
 
   int get_num_raw_comments() const;
   std::string get_raw_comment(int index) const;

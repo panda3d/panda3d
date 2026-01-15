@@ -118,7 +118,7 @@ public:
 
   void finished();
 
-  vector_string get_raw_comment() const;
+  const vector_string& get_raw_comment() const;
 
 private:
   OpenALAudioSound(OpenALAudioManager* manager,
