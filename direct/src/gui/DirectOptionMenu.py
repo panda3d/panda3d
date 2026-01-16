@@ -50,6 +50,10 @@ class DirectOptionMenu(DirectButton):
         DirectButton.__init__(self, parent)
         # Record any user specified frame size
         self.initFrameSize = self['frameSize']
+        if 'text' in kw:
+            self.__textWasSet = True
+        else:
+            self.__textWasSet = False
         # Create a small rectangular marker to distinguish this button
         # as a popup menu button
         self.popupMarker = self.createcomponent(
@@ -194,7 +198,9 @@ class DirectOptionMenu(DirectButton):
         # Adjust popup menu button to fit all items (or use user specified
         # frame size
         bounds[1] += pmw
-        self['frameSize'] = (bounds[0], bounds[1], bounds[2], bounds[3])
+        # If the text was set, then we presumably don't want to resize the frame!
+        if not self.__textWasSet:
+            self['frameSize'] = (bounds[0], bounds[1], bounds[2], bounds[3])
         # Set initial state
         self.hidePopupMenu()
 
@@ -222,8 +228,11 @@ class DirectOptionMenu(DirectButton):
         xPos = (b[1] - b[0])/2.0 - fb[0]
         self.popupMenu.setX(self, xPos)
         # Try to set height to line up selected item with button
-        self.popupMenu.setZ(
-            self, self.minZ + (self.selectedIndex + 1)*self.maxHeight)
+        if self.__textWasSet:
+            self.popupMenu.setZ(b[2])
+        else:
+            self.popupMenu.setZ(
+                self, self.minZ + (self.selectedIndex + 1)*self.maxHeight)
         # Make sure the whole popup menu is visible
         pos = self.popupMenu.getPos(ShowBaseGlobal.render2d)
         scale = self.popupMenu.getScale(ShowBaseGlobal.render2d)
@@ -295,7 +304,8 @@ class DirectOptionMenu(DirectButton):
         if newIndex is not None:
             self.selectedIndex = newIndex
             item = self['items'][self.selectedIndex]
-            self['text'] = item
+            if not self.__textWasSet:
+                self['text'] = item
             if fCommand and self['command']:
                 # Pass any extra args to command
                 self['command'](*[item] + self['extraArgs'])
