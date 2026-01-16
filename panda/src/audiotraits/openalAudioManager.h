@@ -21,6 +21,7 @@
 #include "pset.h"
 #include "movieAudioCursor.h"
 #include "reMutex.h"
+#include "vector_string.h"
 
 // OSX uses the OpenAL framework
 #ifdef HAVE_OPENAL_FRAMEWORK
@@ -173,6 +174,8 @@ private:
     int                  _channels;
     int                  _client_count;
     ExpirationQueue::iterator _expire;
+
+    vector_string _comment;
   };
 
 

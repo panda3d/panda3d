@@ -12,6 +12,7 @@
  */
 
 #include "movieAudioCursor.h"
+#include "vector_string.h"
 
 TypeHandle MovieAudioCursor::_type_handle;
 
@@ -166,4 +167,12 @@ seek(double offset) {
 int MovieAudioCursor::
 ready() const {
   return 0x40000000;
+}
+
+/**
+ *
+ */
+vector_string MovieAudioCursor::
+get_raw_comment() const {
+  return vector_string();
 }
