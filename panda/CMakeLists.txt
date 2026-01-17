@@ -66,6 +66,8 @@ add_subdirectory(src/tinydisplay)
 # For other components
 # bullet
 add_subdirectory(src/bullet)
+# navmesh
+add_subdirectory(src/navmesh)
 # ode
 add_subdirectory(src/ode)
 # physics
@@ -184,6 +186,11 @@ build_apps = direct.dist.commands:finalize_distribution_options
 
     export_targets(BulletPython NAMESPACE "Panda3D::Python::" COMPONENT BulletDevel)
   endif()
+
+  # NavMesh
+  add_python_module(panda3d.navmesh p3navmesh IMPORT panda3d.core COMPONENT NavMeshPython)
+  export_targets(NavMeshPython NAMESPACE "Panda3D::Python::" COMPONENT NavMeshDevel)
+  export_targets(NavMesh COMPONENT NavMeshDevel)
 
   if(HAVE_EGG)
     add_python_module(panda3d.egg p3egg p3egg2pg LINK pandaegg IMPORT panda3d.core COMPONENT EggPython)

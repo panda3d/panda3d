@@ -18,6 +18,7 @@
 #include "aiCharacter.h"
 #include "aiPathFinder.h"
 #include "boundingSphere.h"
+#include "navMesh.h" // Defines NavMeshPoly
 
 class AICharacter;
 
@@ -32,8 +33,14 @@ public:
   AICharacter *_ai_char;
   PathFinder *_path_finder_obj;
 
-  NavMesh _nav_mesh;
-  NavMesh _stage_mesh;
+  // New NavMesh Integration
+  PT(NavMeshPoly) _polygon_mesh;
+
+  // Legacy Grid Mesh
+  // Note: NavMesh here refers to the typedef vector<vector<Node*>> 
+  // defined in aiPathFinder.h
+  ::NavMesh _nav_mesh;
+  ::NavMesh _stage_mesh;
 
   int _grid_size;
   NodePath _path_find_target;
@@ -49,6 +56,9 @@ public:
 
   void clear_path();
   void trace_path(Node* src);
+
+  // New method to set the NavMesh object
+  void set_nav_mesh(PT(NavMeshPoly) mesh);
 
   void create_nav_mesh(const char* navmesh_filename);
   void assign_neighbor_nodes(const char* navmesh_filename);
