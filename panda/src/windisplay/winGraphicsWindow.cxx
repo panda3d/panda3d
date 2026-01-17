@@ -374,30 +374,42 @@ set_properties_now(WindowProperties &properties) {
     }
   }
 
-  if (properties.has_cursor_hidden()) {
-    bool hide_cursor = properties.get_cursor_hidden();
-    _properties.set_cursor_hidden(hide_cursor);
-    if (_cursor_window == this) {
-      hide_or_show_cursor(hide_cursor);
+  if (properties.has_cursor_type() || properties.has_cursor_filename()) {
+    if (properties.has_cursor_filename()) {
+        Filename filename = properties.get_cursor_filename();
+        _properties.set_cursor_filename(filename);
+        properties.clear_cursor_filename();
     }
 
-    properties.clear_cursor_hidden();
-  }
-
-  if (properties.has_cursor_filename()) {
-    Filename filename = properties.get_cursor_filename();
-    _properties.set_cursor_filename(filename);
-
-    _cursor = get_cursor(filename);
-    if (_cursor == 0) {
-      _cursor = LoadCursor(nullptr, IDC_ARROW);
+    if(properties.has_cursor_type()) {
+        WindowProperties::CursorType cursor_type = properties.get_cursor_type();
+        _properties.set_cursor_type(cursor_type);
+        properties.clear_cursor_type();
     }
 
-    if (_cursor_window == this) {
-      SetCursor(_cursor);
+    HCURSOR cursor;
+    if (!_properties.has_cursor_type()) {
+        cursor = get_cursor(_properties.get_cursor_filename());
+        SetCursor(cursor);
+        hide_or_show_cursor(false);
+    } else if (_properties.get_cursor_type() == WindowProperties::CT_hidden) {
+        hide_or_show_cursor(true);
+    } else {
+        switch(_properties.get_cursor_type()) {
+        case WindowProperties::CT_default:
+          cursor = LoadCursor(nullptr, IDC_ARROW); break;
+        case WindowProperties::CT_cross:
+          cursor = LoadCursor(nullptr, IDC_CROSS); break;
+        case WindowProperties::CT_hand:
+          cursor = LoadCursor(nullptr, IDC_HAND); break;
+        case WindowProperties::CT_text:
+          cursor = LoadCursor(nullptr, IDC_IBEAM); break;
+        case WindowProperties::CT_custom:
+            cursor = get_cursor(_properties.get_cursor_filename()); break;
+        }
+        SetCursor(cursor);
+        hide_or_show_cursor(false);
     }
-
-    properties.clear_cursor_filename();
   }
 
   if (properties.has_z_order()) {
@@ -2491,7 +2503,7 @@ update_cursor_window(WinGraphicsWindow *to_window) {
 
   } else {
     const WindowProperties &to_props = to_window->get_properties();
-    hide_cursor = to_props.get_cursor_hidden();
+    hide_cursor = (to_props.get_cursor_type() == WindowProperties::CT_hidden);
 
     // We are entering a graphics window; we should save and disable the
     // Win2000 effects.  These don't work at all well over a 3-D window.
@@ -2523,7 +2535,7 @@ update_cursor_window(WinGraphicsWindow *to_window) {
 /**
  * Hides or shows the mouse cursor according to the indicated parameter.  This
  * is normally called when the mouse wanders into or out of a window with the
- * cursor_hidden properties.
+ * CT_hidden cursor type.
  */
 void WinGraphicsWindow::
 hide_or_show_cursor(bool hide_cursor) {

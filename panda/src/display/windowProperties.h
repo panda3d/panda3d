@@ -162,13 +162,6 @@ PUBLISHED:
   INLINE void clear_open();
   MAKE_PROPERTY2(open, has_open, get_open, set_open, clear_open);
 
-  INLINE void set_cursor_hidden(bool cursor_hidden);
-  INLINE bool get_cursor_hidden() const;
-  INLINE bool has_cursor_hidden() const;
-  INLINE void clear_cursor_hidden();
-  MAKE_PROPERTY2(cursor_hidden, has_cursor_hidden, get_cursor_hidden,
-                                set_cursor_hidden, clear_cursor_hidden);
-
   INLINE void set_icon_filename(const Filename &icon_filename);
 #ifdef CPPPARSER
   INLINE Filename get_icon_filename() const;
@@ -190,6 +183,23 @@ PUBLISHED:
   INLINE void clear_cursor_filename();
   MAKE_PROPERTY2(cursor_filename, has_cursor_filename, get_cursor_filename,
                                   set_cursor_filename, clear_cursor_filename);
+
+  enum CursorType
+  {
+    CT_hidden,
+    CT_default,
+    CT_cross,
+    CT_hand,
+    CT_text,
+    CT_custom,
+  };
+
+  INLINE void set_cursor_type(const CursorType cursor_type);
+  INLINE CursorType get_cursor_type() const;
+  INLINE bool has_cursor_type() const;
+  INLINE void clear_cursor_type();
+  MAKE_PROPERTY2(cursor_type, has_cursor_type, get_cursor_type,
+                              set_cursor_type, clear_cursor_type);
 
   INLINE void set_z_order(ZOrder z_order);
   INLINE ZOrder get_z_order() const;
@@ -224,15 +234,15 @@ private:
     S_foreground           = 0x00020,
     S_minimized            = 0x00040,
     S_open                 = 0x00080,
-    S_cursor_hidden        = 0x00100,
-    S_fixed_size           = 0x00200,
-    S_z_order              = 0x00400,
-    S_icon_filename        = 0x00800,
-    S_cursor_filename      = 0x01000,
-    S_mouse_mode           = 0x02000,
-    S_parent_window        = 0x04000,
-    S_raw_mice             = 0x08000,
-    S_maximized            = 0x10000,
+    S_fixed_size           = 0x00100,
+    S_z_order              = 0x00200,
+    S_icon_filename        = 0x00400,
+    S_cursor_filename      = 0x00800,
+    S_mouse_mode           = 0x01000,
+    S_parent_window        = 0x02000,
+    S_raw_mice             = 0x04000,
+    S_maximized            = 0x08000,
+    S_cursor_type          = 0x10000,
   };
 
   // This bitmask represents the true/false settings for various boolean flags
@@ -244,7 +254,6 @@ private:
     F_minimized      = S_minimized,
     F_maximized      = S_maximized,
     F_open           = S_open,
-    F_cursor_hidden  = S_cursor_hidden,
     F_fixed_size     = S_fixed_size,
     F_raw_mice       = S_raw_mice,
   };
@@ -256,6 +265,7 @@ private:
   std::string _title;
   Filename _cursor_filename;
   Filename _icon_filename;
+  CursorType _cursor_type;
   ZOrder _z_order;
   int _flags;
   PT(WindowHandle) _parent_window;
