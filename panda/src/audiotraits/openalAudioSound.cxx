@@ -17,6 +17,7 @@
 #include "coordinateSystem.h"
 #include "openalAudioSound.h"
 #include "openalAudioManager.h"
+#include "vector_string.h"
 
 TypeHandle OpenALAudioSound::_type_handle;
 
@@ -88,6 +89,8 @@ OpenALAudioSound(OpenALAudioManager *manager,
       audio_warning("stereo sound " << movie->get_filename() << " will not be spatialized");
     }
   }
+
+  _comment = std::move(_sd->_comment);
   release_sound_data(false);
 }
 
@@ -1091,4 +1094,12 @@ status() const {
   } else {
     return AudioSound::PLAYING;
   }
+}
+
+/**
+ * Returns the comments attached to this audio file.
+ */
+const vector_string& OpenALAudioSound::
+get_raw_comment() const {
+  return _comment;
 }

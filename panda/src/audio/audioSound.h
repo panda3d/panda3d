@@ -20,6 +20,7 @@
 #include "pointerTo.h"
 #include "filterProperties.h"
 #include "luse.h"
+#include "vector_string.h"
 
 class AudioManager;
 
@@ -140,6 +141,16 @@ PUBLISHED:
 
   enum SoundStatus { BAD, READY, PLAYING };
   virtual SoundStatus status() const = 0;
+
+  bool has_comment(const std::string &key) const;
+  std::string get_comment(const std::string &key) const;
+  MAKE_MAP_PROPERTY(comments, has_comment, get_comment);
+
+  virtual const vector_string& get_raw_comment() const;
+
+  int get_num_raw_comments() const;
+  std::string get_raw_comment(int index) const;
+  MAKE_SEQ_PROPERTY(raw_comments, get_num_raw_comments, get_raw_comment);
 
   virtual void output(std::ostream &out) const;
   virtual void write(std::ostream &out) const;

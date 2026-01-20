@@ -1381,6 +1381,15 @@ prepare_shader_buffer_now(ShaderBuffer *data, GraphicsStateGuardianBase *gsg) {
 }
 
 /**
+ * Schedules the given function to be called during the next begin_frame().
+ */
+void PreparedGraphicsObjects::
+enqueue_call(EnqueuedCall &&call) {
+  ReMutexHolder holder(_lock);
+  _enqueued_calls.push_back(std::move(call));
+}
+
+/**
  * Creates a new future for the given object.
  */
 PreparedGraphicsObjects::EnqueuedObject::
@@ -1601,6 +1610,12 @@ begin_frame(GraphicsStateGuardianBase *gsg, Thread *current_thread) {
   }
 
   _enqueued_shader_buffers.clear();
+
+  for (EnqueuedCall &call : _enqueued_calls) {
+    std::move(call)(gsg);
+  }
+
+  _enqueued_calls.clear();
 }
 
 /**

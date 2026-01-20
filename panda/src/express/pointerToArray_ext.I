@@ -106,6 +106,9 @@ __init__(PyObject *self, PyObject *source) {
   // We need to initialize the this pointer before we can call push_back.
   DtoolInstance_INIT_PTR(self, this->_this);
 
+  PyObject *args[3];
+  args[1] = self;
+
   Py_BEGIN_CRITICAL_SECTION(source);
   Py_ssize_t size = PySequence_Size(source);
   this->_this->reserve(size);
@@ -114,7 +117,8 @@ __init__(PyObject *self, PyObject *source) {
     if (item == nullptr) {
       break;
     }
-    PyObject *result = PyObject_CallFunctionObjArgs(push_back, self, item, nullptr);
+    args[2] = item;
+    PyObject *result = _PyObject_Vectorcall(push_back, args + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET, nullptr);
     Py_DECREF(item);
     if (result == nullptr) {
       // Unable to add item--probably it wasn't of the appropriate type.

@@ -41,15 +41,14 @@ static TypedWritable *factory_callback(const FactoryParams &params){
   BamReader *manager;
   parse_params(params, scan, manager);
 
-  PyObject *py_scan = DTool_CreatePyInstance(&scan, Dtool_DatagramIterator, false, false);
-  PyObject *py_manager = DTool_CreatePyInstance(manager, Dtool_BamReader, false, false);
-  PyObject *args = PyTuple_Pack(2, py_scan, py_manager);
+  PyObject *args[3];
+  args[1] = DTool_CreatePyInstance(&scan, Dtool_DatagramIterator, false, false);
+  args[2] = DTool_CreatePyInstance(manager, Dtool_BamReader, false, false);
 
   // Now call the Python function.
-  PyObject *result = PythonThread::call_python_func(func, args);
-  Py_DECREF(args);
-  Py_DECREF(py_scan);
-  Py_DECREF(py_manager);
+  PyObject *result = PythonThread::call_python_func(func, args + 1, 2 | PY_VECTORCALL_ARGUMENTS_OFFSET);
+  Py_DECREF(args[1]);
+  Py_DECREF(args[2]);
 
   if (result == nullptr) {
     util_cat.error()

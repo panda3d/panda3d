@@ -284,7 +284,7 @@ def GetHost():
         return 'darwin'
     elif sys.platform.startswith('linux'):
         try:
-            # Python seems to offer no built-in way to check this.
+            # Python versions before 3.13 reported android as "linux"
             osname = subprocess.check_output(["uname", "-o"])
             if osname.strip().lower() == b'android':
                 return 'android'
@@ -294,6 +294,9 @@ def GetHost():
             return 'linux'
     elif sys.platform.startswith('freebsd'):
         return 'freebsd'
+    # Handle for Python >= 3.13
+    elif sys.platform == 'android':
+        return 'android'
     else:
         exit('Unrecognized sys.platform: %s' % (sys.platform))
 
@@ -589,8 +592,8 @@ def GetInterrogateDir():
             return INTERROGATE_DIR
 
         dir = os.path.join(GetOutputDir(), "tmp", "interrogate")
-        if not os.path.isdir(os.path.join(dir, "panda3d_interrogate-0.8.0.dist-info")):
-            oscmd("\"%s\" -m pip install --force-reinstall --upgrade -t \"%s\" panda3d-interrogate==0.8.0" % (sys.executable, dir))
+        if not os.path.isdir(os.path.join(dir, "panda3d_interrogate-0.8.1.dist-info")):
+            oscmd("\"%s\" -m pip install --force-reinstall --upgrade -t \"%s\" panda3d-interrogate==0.8.1" % (sys.executable, dir))
 
         INTERROGATE_DIR = dir
 
@@ -3051,6 +3054,13 @@ def SetupBuildEnvironment(compiler):
             if GetTargetArch() == 'x86_64':
                 libdir += '64'
             SYS_LIB_DIRS += [libdir]
+
+        if sys.platform != "darwin":
+            # Some Linux distributions (eg. Fedora) don't add /usr/local/lib64
+            if ("/usr/lib64" in SYS_LIB_DIRS and
+                "/usr/local/lib64" not in SYS_LIB_DIRS and
+                os.path.isdir("/usr/local/lib64")):
+                SYS_LIB_DIRS.append("/usr/local/lib64")
 
         # Now extract the preprocessor's include directories.
         cmd = GetCXX() + " -x c++ -v -E " + os.devnull

@@ -323,9 +323,9 @@ def test_glsl_ssbo(env):
     from struct import pack, unpack
     num1 = pack('<i', 1234567)
     num2 = pack('<ii', -1234567, 0)
-    buffer1 = core.ShaderBuffer("buffer1", num1, core.GeomEnums.UH_static)
-    buffer2 = core.ShaderBuffer("buffer2", num2, core.GeomEnums.UH_static)
-    buffer3 = core.ShaderBuffer("buffer3", 8, core.GeomEnums.UH_static)
+    buffer1 = core.ShaderBuffer("buffer1", num1, core.GeomEnums.UH_dynamic)
+    buffer2 = core.ShaderBuffer("buffer2", num2, core.GeomEnums.UH_dynamic)
+    buffer3 = core.ShaderBuffer("buffer3", 8, core.GeomEnums.UH_dynamic)
 
     preamble = """
     layout(std430, binding=0) readonly buffer buffer1 {
@@ -348,15 +348,27 @@ def test_glsl_ssbo(env):
     value4 = 5343525;
     value5 = 999;
     """
-    env.run_glsl(code, preamble,
-                  {'buffer1': buffer1, 'buffer2': buffer2, 'buffer3': buffer3},
-                  version=430)
+    inputs = {'buffer1': buffer1, 'buffer2': buffer2, 'buffer3': buffer3}
+    env.run_glsl(code, preamble, inputs, version=430)
 
     data1 = env.engine.extract_shader_buffer_data(buffer2, env.gsg)
     assert unpack('<ii', data1[:8]) == (-1234567, 98765)
 
     data2 = env.engine.extract_shader_buffer_data(buffer3, env.gsg)
     assert unpack('<ii', data2[:8]) == (5343525, 999)
+
+    data3 = env.engine.extract_shader_buffer_data(buffer2, env.gsg, 4, 8)
+    assert unpack('<i', data3[:4]) == (98765, )
+
+    env.engine.update_shader_buffer_data(buffer1, env.gsg, pack('<i', 92573))
+    env.engine.update_shader_buffer_data(buffer2, env.gsg, pack('<i', 64515), 4)
+
+    code = """
+    assert(value1 == 92573);
+    assert(value2 == -1234567);
+    assert(value3 == 64515);
+    """
+    env.run_glsl(code, preamble, inputs, version=430)
 
 
 def test_glsl_ssbo_array(env):

@@ -21,6 +21,7 @@
 #include "texture.h"
 #include "pointerTo.h"
 #include "ffmpegVirtualFile.h"
+#include "vector_string.h"
 
 extern "C" {
   #include <libavcodec/avcodec.h>
@@ -43,6 +44,7 @@ PUBLISHED:
   FfmpegAudioCursor(FfmpegAudio *src);
   virtual ~FfmpegAudioCursor();
   virtual void seek(double offset);
+  vector_string get_raw_comment() const;
 
 public:
   virtual int read_samples(int n, int16_t *data);

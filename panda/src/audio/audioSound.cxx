@@ -13,6 +13,7 @@
  */
 
 #include "audioSound.h"
+#include "vector_string.h"
 
 using std::ostream;
 
@@ -195,4 +196,61 @@ operator << (ostream &out, AudioSound::SoundStatus status) {
   }
 
   return out << "**invalid AudioSound::SoundStatus(" << (int)status << ")**";
+}
+
+static const vector_string empty;
+
+/**
+ * Get the comment attached to this AudioSound as a list of strings.
+ */
+const vector_string& AudioSound::
+get_raw_comment() const {
+  return empty;
+}
+
+/**
+ * Returns true if this AudioSound has a comment with the given key,
+ * i.e. "author". Case-sensitive.
+ */
+bool AudioSound::
+has_comment(const std::string &key) const {
+  for (const std::string &st : get_raw_comment()) {
+    if (st.rfind(key + "=", 0) == 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Returns the value for a given key in the comment. If the key is not present,
+ * returns an empty string.
+ */
+std::string AudioSound::
+get_comment(const std::string &key) const {
+  for (const std::string &st : get_raw_comment()) {
+    if (st.rfind(key + "=", 0) == 0) {
+      return st.substr(key.length() + 1);
+    }
+  }
+  return "";
+}
+
+/**
+ * Returns the number of comments this sound has.
+ */
+int AudioSound::
+get_num_raw_comments() const {
+  return get_raw_comment().size();
+}
+
+/**
+ * Returns the comment at a given index.
+ */
+std::string AudioSound::
+get_raw_comment(int index) const {
+  if (index >= get_num_raw_comments() || index < 0) {
+    return "";
+  }
+  return get_raw_comment()[index];
 }

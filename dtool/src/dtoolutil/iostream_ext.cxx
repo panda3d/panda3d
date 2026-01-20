@@ -134,8 +134,9 @@ readinto(PyObject *b) {
 
   Py_buffer view;
   if (PyObject_GetBuffer(b, &view, PyBUF_CONTIG) == -1) {
-    PyErr_SetString(PyExc_TypeError,
-      "write() requires a contiguous, read-write bytes-like object");
+    PyErr_Format(PyExc_TypeError,
+                 "readinto() requires a contiguous, read-write bytes-like object, not '%.100s'",
+                 Py_TYPE(b)->tp_name);
     return 0;
   }
 
@@ -260,7 +261,9 @@ write(PyObject *b) {
 
   Py_buffer view;
   if (PyObject_GetBuffer(b, &view, PyBUF_CONTIG_RO) == -1) {
-    PyErr_SetString(PyExc_TypeError, "write() requires a contiguous buffer");
+    PyErr_Format(PyExc_TypeError,
+                 "write() requires a bytes-like object, not '%.100s'",
+                 Py_TYPE(b)->tp_name);
     return;
   }
 

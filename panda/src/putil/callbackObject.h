@@ -16,6 +16,7 @@
 
 #include "pandabase.h"
 #include "typedReferenceCount.h"
+#include "pointerTo.h"
 
 class CallbackData;
 

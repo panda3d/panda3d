@@ -332,8 +332,7 @@ add_done_callback(PyObject *self, PyObject *fn) {
   }
 
   PythonTask *task = new PythonTask(fn);
-  Py_DECREF(task->_args);
-  task->_args = PyTuple_Pack(1, self);
+  task->_args.assign(1, Py_NewRef(self));
   task->_append_task = false;
   task->_ignore_return = true;
 

@@ -1262,10 +1262,12 @@ reset() {
   if (is_at_least_gl_version(4, 3) || has_extension("GL_ARB_clear_buffer_object")) {
     _glClearBufferData = (PFNGLCLEARBUFFERDATAPROC)
       get_extension_func("glClearBufferData");
+    _glClearBufferSubData = (PFNGLCLEARBUFFERSUBDATAPROC)
+      get_extension_func("glClearBufferSubData");
 
-    if (_glClearBufferData == nullptr) {
+    if (_glClearBufferData == nullptr || _glClearBufferSubData == nullptr) {
       GLCAT.warning()
-        << "GL_ARB_clear_buffer_object advertised as supported by OpenGL runtime, but could not get pointers to extension function.\n";
+        << "GL_ARB_clear_buffer_object advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
     } else {
       _supports_clear_buffer = true;
     }
@@ -3057,6 +3059,15 @@ reset() {
       _glMapNamedBufferRange = (PFNGLMAPNAMEDBUFFERRANGEPROC)
         get_extension_func("glMapNamedBufferRange");
     }
+
+    _glNamedBufferSubData = (PFNGLNAMEDBUFFERSUBDATAPROC)
+      get_extension_func("glNamedBufferSubData");
+    _glClearNamedBufferSubData = (PFNGLCLEARNAMEDBUFFERSUBDATAPROC)
+      get_extension_func("glClearNamedBufferSubData");
+    _glCopyNamedBufferSubData = (PFNGLCOPYNAMEDBUFFERSUBDATAPROC)
+      get_extension_func("glCopyNamedBufferSubData");
+    _glGetNamedBufferSubData = (PFNGLGETNAMEDBUFFERSUBDATAPROC)
+      get_extension_func("glGetNamedBufferSubData");
 
     _supports_dsa = true;
   } else {
@@ -7822,6 +7833,9 @@ prepare_shader_buffer(ShaderBuffer *data) {
       if (data->get_usage_hint() == GeomEnums::UH_client) {
         flags |= GL_CLIENT_STORAGE_BIT;
       }
+      if (data->get_usage_hint() == GeomEnums::UH_dynamic) {
+        flags |= GL_DYNAMIC_STORAGE_BIT;
+      }
       _glBufferStorage(GL_SHADER_STORAGE_BUFFER, num_bytes, data->get_initial_data(), flags);
     } else
 #endif
@@ -7974,20 +7988,87 @@ release_shader_buffers(const pvector<BufferContext *> &contexts) {
 
 /**
  * This method should only be called by the GraphicsEngine.  Do not call it
- * directly; call GraphicsEngine::extract_texture_data() instead.
+ * directly; call GraphicsEngine::update_shader_buffer_data() instead.
  *
- * This method will be called in the draw thread to download the buffer's
- * current contents synchronously.
+ * This method will be called in the draw thread to upload data to (a part of)
+ * the shader buffer from the CPU.  If data is null, clears the buffer instead.
  */
 bool CLP(GraphicsStateGuardian)::
-extract_shader_buffer_data(ShaderBuffer *buffer, vector_uchar &data) {
+update_shader_buffer_data(ShaderBuffer *buffer, size_t start, size_t size,
+                          const unsigned char *data) {
+  nassertr(buffer->get_usage_hint() == GeomEnums::UH_dynamic, false);
+
   BufferContext *bc = buffer->prepare_now(get_prepared_objects(), this);
   if (bc == nullptr || !bc->is_of_type(CLP(BufferContext)::get_class_type())) {
     return false;
   }
   CLP(BufferContext) *gbc = DCAST(CLP(BufferContext), bc);
 
-  data.resize(buffer->get_data_size_bytes());
+  if (_glMemoryBarrier != nullptr) {
+    _glMemoryBarrier(GL_BUFFER_UPDATE_BARRIER_BIT);
+  }
+
+#ifndef OPENGLES
+  if (_supports_dsa) {
+    if (data != nullptr) {
+      _glNamedBufferSubData(gbc->_index, start, size, data);
+    }
+    else if (_supports_clear_buffer) {
+      _glClearNamedBufferSubData(gbc->_index, GL_R8, start, size, GL_RED, GL_UNSIGNED_BYTE, nullptr);
+    }
+    else {
+      void *null_data = calloc(1, size);
+      _glNamedBufferSubData(gbc->_index, start, size, null_data);
+      free(null_data);
+    }
+  } else
+#endif
+  {
+    _glBindBuffer(GL_SHADER_STORAGE_BUFFER, gbc->_index);
+    if (data != nullptr) {
+      _glBufferSubData(GL_SHADER_STORAGE_BUFFER, start, size, data);
+    }
+#ifndef OPENGLES
+    else if (_supports_clear_buffer) {
+      _glClearBufferSubData(GL_SHADER_STORAGE_BUFFER, GL_R8, start, size, GL_RED, GL_UNSIGNED_BYTE, nullptr);
+    }
+#endif
+    else {
+      void *null_data = calloc(1, size);
+      _glBufferSubData(GL_SHADER_STORAGE_BUFFER, start, size, null_data);
+      free(null_data);
+    }
+    _glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+    _current_sbuffer_index = 0;
+  }
+  report_my_gl_errors();
+
+  return false;
+}
+
+/**
+ * This method should only be called by the GraphicsEngine.  Do not call it
+ * directly; call GraphicsEngine::extract_texture_data() instead.
+ *
+ * This method will be called in the draw thread to download the buffer's
+ * current contents synchronously.
+ */
+bool CLP(GraphicsStateGuardian)::
+extract_shader_buffer_data(ShaderBuffer *buffer, vector_uchar &data,
+                           size_t start, size_t size) {
+  BufferContext *bc = buffer->prepare_now(get_prepared_objects(), this);
+  if (bc == nullptr || !bc->is_of_type(CLP(BufferContext)::get_class_type())) {
+    return false;
+  }
+  CLP(BufferContext) *gbc = DCAST(CLP(BufferContext), bc);
+
+  size_t total_size = buffer->get_data_size_bytes();
+  if (start >= total_size) {
+    data.clear();
+    return true;
+  }
+
+  data.resize(std::min(total_size - start, size));
 
   if (_glMemoryBarrier != nullptr) {
     _glMemoryBarrier(GL_BUFFER_UPDATE_BARRIER_BIT);
@@ -8010,18 +8091,78 @@ extract_shader_buffer_data(ShaderBuffer *buffer, vector_uchar &data) {
   }
   memcpy(&data[0], ptr, data.size());
   _glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
-#else
-  _glBindBuffer(GL_SHADER_STORAGE_BUFFER, gbc->_index);
-  _glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, data.size(), &data[0]);
-#endif
-
   _glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
   _current_sbuffer_index = 0;
+#else
+  if (_supports_dsa) {
+    _glGetNamedBufferSubData(gbc->_index, start, data.size(), &data[0]);
+  } else {
+    _glBindBuffer(GL_SHADER_STORAGE_BUFFER, gbc->_index);
+    _glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, start, data.size(), &data[0]);
+    _glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+    _current_sbuffer_index = 0;
+  }
+#endif
+
   report_my_gl_errors();
 
   return true;
 }
 #endif  // !OPENGLES_1
+
+#ifndef OPENGLES
+/**
+ * Asynchronous version of extract_shader_buffer_data.  It is the caller's
+ * responsibility that the data argument outlasts the token.
+ */
+void CLP(GraphicsStateGuardian)::
+async_extract_shader_buffer_data(ShaderBuffer *buffer, vector_uchar &data,
+                                 size_t start, size_t size, CompletionToken token) {
+  BufferContext *bc = buffer->prepare_now(get_prepared_objects(), this);
+  if (bc == nullptr || !bc->is_of_type(CLP(BufferContext)::get_class_type())) {
+    token.complete(false);
+    return;
+  }
+
+  CLP(BufferContext) *gbc = DCAST(CLP(BufferContext), bc);
+
+  size_t total_size = buffer->get_data_size_bytes();
+  if (start >= total_size) {
+    data.clear();
+    token.complete(true);
+    return;
+  }
+
+  size = std::min(total_size - start, size);
+
+  GLuint staging_buffer = 0;
+  void *mapped_ptr = nullptr;
+
+  bind_new_client_buffer(staging_buffer, mapped_ptr, GL_COPY_WRITE_BUFFER, size);
+  if (_glMemoryBarrier != nullptr) {
+    _glMemoryBarrier(GL_BUFFER_UPDATE_BARRIER_BIT);
+  }
+
+  _glBindBuffer(GL_SHADER_STORAGE_BUFFER, gbc->_index);
+  _glCopyBufferSubData(GL_SHADER_STORAGE_BUFFER, GL_COPY_WRITE_BUFFER, start, 0, size);
+  _glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+  _glBindBuffer(GL_COPY_WRITE_BUFFER, 0);
+  _current_sbuffer_index = 0;
+
+  if (_supports_buffer_storage && _glMemoryBarrier != nullptr) {
+    _glMemoryBarrier(GL_CLIENT_MAPPED_BUFFER_BARRIER_BIT);
+  }
+
+  insert_fence([=, &data, token = std::move(token)] (bool success) mutable {
+    if (success) {
+      data = vector_uchar((const unsigned char *)mapped_ptr, (const unsigned char *)mapped_ptr + size);
+      token.complete(true);
+    } else {
+      token.complete(false);
+    }
+  });
+}
+#endif
 
 #ifndef OPENGLES
 /**
@@ -15949,14 +16090,15 @@ do_extract_texture_data(CLP(TextureContext) *gtc, int view) {
 #endif
   }
 
+  GLint width = gtc->_width, height = gtc->_height, depth = gtc->_depth;
+
+#ifndef OPENGLES
   GLenum page_target = target;
   if (target == GL_TEXTURE_CUBE_MAP) {
     // We need a particular page to get the level parameter from.
     page_target = GL_TEXTURE_CUBE_MAP_POSITIVE_X;
   }
 
-  GLint width = gtc->_width, height = gtc->_height, depth = gtc->_depth;
-#ifndef OPENGLES
   if (target != GL_TEXTURE_BUFFER) {
     glGetTexLevelParameteriv(page_target, 0, GL_TEXTURE_WIDTH, &width);
     if (target != GL_TEXTURE_1D) {
@@ -16494,8 +16636,7 @@ do_extract_texture_data(CLP(TextureContext) *gtc, int view) {
   PTA_uchar image;
   size_t page_size = 0;
 
-  if (!extract_texture_image(image, page_size, tex, target, page_target,
-                             type, compression, 0)) {
+  if (!extract_texture_image(image, page_size, tex, target, type, compression, 0)) {
     return false;
   }
 
@@ -16513,8 +16654,7 @@ do_extract_texture_data(CLP(TextureContext) *gtc, int view) {
 
   // Also get the mipmap levels.
   for (int n = 1; n < gtc->_num_levels; ++n) {
-    if (!extract_texture_image(image, page_size, tex, target, page_target,
-                               type, compression, n)) {
+    if (!extract_texture_image(image, page_size, tex, target, type, compression, n)) {
       return false;
     }
     if (num_views == 1) {
@@ -16534,7 +16674,7 @@ do_extract_texture_data(CLP(TextureContext) *gtc, int view) {
  */
 bool CLP(GraphicsStateGuardian)::
 extract_texture_image(PTA_uchar &image, size_t &page_size,
-                      Texture *tex, GLenum target, GLenum page_target,
+                      Texture *tex, GLenum target,
                       Texture::ComponentType type,
                       Texture::CompressionMode compression, int n) {
 #ifdef OPENGLES  // Extracting texture data unsupported in OpenGL ES.
@@ -16578,8 +16718,8 @@ extract_texture_image(PTA_uchar &image, size_t &page_size,
 
     if (compression != Texture::CM_off) {
       GLint image_size;
-      glGetTexLevelParameteriv(page_target, n,
-                                  GL_TEXTURE_COMPRESSED_IMAGE_SIZE, &image_size);
+      glGetTexLevelParameteriv(GL_TEXTURE_CUBE_MAP_POSITIVE_X, n,
+                               GL_TEXTURE_COMPRESSED_IMAGE_SIZE, &image_size);
       nassertr(image_size <= (int)page_size, false);
       page_size = image_size;
     }
@@ -16587,7 +16727,7 @@ extract_texture_image(PTA_uchar &image, size_t &page_size,
     image = PTA_uchar::empty_array(page_size * 6);
 
     for (int z = 0; z < 6; ++z) {
-      page_target = GL_TEXTURE_CUBE_MAP_POSITIVE_X + z;
+      GLenum page_target = GL_TEXTURE_CUBE_MAP_POSITIVE_X + z;
 
       if (compression == Texture::CM_off) {
         glGetTexImage(page_target, n, external_format, pixel_type,
@@ -16940,6 +17080,9 @@ map_read_buffer(GLenum target, GLuint buffer, size_t size) {
 #endif
 
   _glBindBuffer(target, 0);
+  if (target == GL_SHADER_STORAGE_BUFFER) {
+    _current_sbuffer_index = 0;
+  }
   return mapped_ptr;
 }
 
