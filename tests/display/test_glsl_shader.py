@@ -26,6 +26,9 @@ def test_glsl_test_fail(env):
 def test_glsl_preproc_error(env):
     "Make sure that preprocessor errors result in failed compilation."
 
+    if env.name == "gl-legacy":
+        pytest.skip("preprocessor tests for driver compiler are unreliable")
+
     preamble = """
     #error THIS IS EXPECTED TO ERROR
     """
