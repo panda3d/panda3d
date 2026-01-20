@@ -349,7 +349,11 @@ r_preprocess_source(State &state, std::istream &in, const std::string &fn,
         return false;
       }
       if (!preamble.empty()) {
-        out << preamble << "#line 1\n";
+        // Preamble goes *after* the version line.
+        out << line << "\n";
+        out << preamble << "\n";
+        write_line_directive = true;
+        continue;
       }
     }
     else if (strcmp(directive, "extension") == 0) {
