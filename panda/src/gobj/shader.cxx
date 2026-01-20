@@ -669,7 +669,7 @@ check_modified() const {
   for (const LinkedModule &linked_module : _modules) {
     const ShaderModule *module = linked_module._module.get_read_pointer();
 
-    if (module->_record != nullptr && !module->_record->dependents_unchanged()) {
+    if (module->check_source_modified()) {
       return true;
     }
   }

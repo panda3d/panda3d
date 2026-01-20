@@ -60,6 +60,7 @@ public:
     if (_record != nullptr) {
       _record->add_dependent_file(vf);
     }
+    _source_files.push_back(vf);
 
     return new IncludeResult(vf->get_filename(), (const char *)data->data(), data->size(), data);
   }
@@ -90,6 +91,7 @@ public:
     if (_record != nullptr) {
       _record->add_dependent_file(vf);
     }
+    _source_files.push_back(vf);
 
     return new IncludeResult(vf->get_filename(), (const char *)data->data(), data->size(), data);
   }
@@ -100,6 +102,8 @@ public:
       delete result;
     }
   }
+
+  pvector<PT(VirtualFile)> _source_files;
 
 private:
   BamCacheRecord *_record = nullptr;
@@ -424,7 +428,11 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
     optimized = stream;
   }
 
-  return new ShaderModuleSpirV(stage, std::move(optimized), options, record);
+  PT(ShaderModuleSpirV) module = new ShaderModuleSpirV(stage, std::move(optimized), options);
+  for (const PT(VirtualFile) &vf : includer._source_files) {
+    module->add_source_file(vf);
+  }
+  return module;
 }
 
 /**

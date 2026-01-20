@@ -98,8 +98,9 @@ compile_now(Stage stage, const Filename &fn, const CompilerOptions &options,
 
   if (module != nullptr) {
     module->set_source_filename(fullpath);
+    module->add_source_file(vf);
 
-    if (record2 != nullptr && module != nullptr) {
+    if (record2 != nullptr) {
       // Update the compiled shader module cache.
       record2->set_data(module, module);
       cache->store(record2);

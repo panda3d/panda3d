@@ -12,6 +12,7 @@
  */
 
 #include "shaderModule.h"
+#include "virtualFile.h"
 
 TypeHandle ShaderModule::_type_handle;
 
@@ -44,6 +45,45 @@ ShaderModule(Stage stage) : _stage(stage), _used_caps(C_basic_shader) {
  */
 ShaderModule::
 ~ShaderModule() {
+}
+
+/**
+ * Adds the given file to the list of source files that this module was
+ * compiled from.  This is used by check_source_modified() to detect if any
+ * of the source files have changed since the module was compiled.
+ */
+void ShaderModule::
+add_source_file(const VirtualFile *file) {
+  SourceFile sf;
+  sf._pathname = file->get_filename();
+  sf._timestamp = file->get_timestamp();
+  sf._size = file->get_file_size();
+  _source_files.push_back(std::move(sf));
+}
+
+/**
+ * Returns true if any of the source files that this module was compiled from
+ * have been modified since the module was compiled.
+ */
+bool ShaderModule::
+check_source_modified() const {
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+
+  for (const SourceFile &sf : _source_files) {
+    PT(VirtualFile) file = vfs->get_file(sf._pathname);
+    if (file == nullptr) {
+      // File no longer exists.
+      if (sf._timestamp != 0) {
+        return true;
+      }
+    } else {
+      if (file->get_timestamp() != sf._timestamp ||
+          file->get_file_size() != sf._size) {
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 /**

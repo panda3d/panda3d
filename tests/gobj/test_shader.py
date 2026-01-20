@@ -23,7 +23,6 @@ def ramdir():
     vfs.unmount(mount)
 
 
-@pytest.mark.xfail(sys.platform == "win32", reason="unknown issue")
 def test_shader_load_multi(vfs, ramdir):
     # Try non-existent first.
     shad0 = Shader.load(Shader.SL_GLSL,
@@ -56,7 +55,6 @@ def test_shader_load_multi(vfs, ramdir):
     assert shad2.this != shad1.this
 
 
-@pytest.mark.xfail(sys.platform == "win32", reason="unknown issue")
 def test_shader_load_compute(vfs, ramdir):
     # Try non-existent first.
     shad0 = Shader.load_compute(Shader.SL_GLSL, "/nonexistent.glsl")

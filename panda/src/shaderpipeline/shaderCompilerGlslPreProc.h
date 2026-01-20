@@ -17,6 +17,7 @@
 #include "pandabase.h"
 
 #include "shaderCompiler.h"
+#include "virtualFile.h"
 
 class ShaderModuleGlsl;
 
@@ -40,6 +41,7 @@ private:
     std::ostringstream code;
     std::set<Filename> once_files;
     pvector<Filename> included_files;
+    pvector<PT(VirtualFile)> source_files;
     uint64_t required_caps = 0;
     int cond_nesting = 0;
     int version = 0;

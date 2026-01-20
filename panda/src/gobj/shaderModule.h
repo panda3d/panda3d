@@ -14,11 +14,12 @@
 #ifndef SHADERMODULE_H
 #define SHADERMODULE_H
 
-#include "bamCacheRecord.h"
 #include "copyOnWriteObject.h"
 #include "internalName.h"
 #include "shaderEnums.h"
 #include "shaderType.h"
+
+class VirtualFile;
 
 /**
  * Represents a single shader module in some intermediate representation for
@@ -63,6 +64,9 @@ PUBLISHED:
 public:
   ShaderModule(Stage stage);
   virtual ~ShaderModule();
+
+  void add_source_file(const VirtualFile *file);
+  bool check_source_modified() const;
 
   INLINE Stage get_stage() const;
   INLINE uint64_t get_used_capabilities() const;
@@ -125,11 +129,16 @@ protected:
   void fillin(DatagramIterator &scan, BamReader *manager) override;
 
 protected:
+  struct SourceFile {
+    Filename _pathname;
+    time_t _timestamp;
+    std::streamsize _size;
+  };
+  typedef pvector<SourceFile> SourceFiles;
+
   Stage _stage;
-  PT(BamCacheRecord) _record;
-  //std::pvector<Filename> _source_files;
   Filename _source_filename;
-  //time_t _source_modified = 0;
+  SourceFiles _source_files;
   uint64_t _used_caps = 0;
 
   typedef pvector<Variable> Variables;

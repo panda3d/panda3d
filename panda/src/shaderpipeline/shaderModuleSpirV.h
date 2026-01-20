@@ -38,8 +38,7 @@ private:
 
 public:
   ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words,
-                    const CompilerOptions &options = CompilerOptions(),
-                    BamCacheRecord *record = nullptr);
+                    const CompilerOptions &options = CompilerOptions());
   virtual ~ShaderModuleSpirV();
 
   virtual PT(CopyOnWriteObject) make_cow_copy() override;

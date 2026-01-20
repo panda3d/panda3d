@@ -132,7 +132,9 @@ compile_now(Stage stage, std::istream &in, const Filename &fullpath,
   PT(ShaderModuleGlsl) module = new ShaderModuleGlsl(stage, std::move(code), state.version);
   module->_included_files = std::move(state.included_files);
   module->_used_caps |= state.required_caps;
-  module->_record = record;
+  for (const PT(VirtualFile) &vf : state.source_files) {
+    module->add_source_file(vf);
+  }
   return module;
 }
 
@@ -552,8 +554,7 @@ r_preprocess_include(State &state, const std::string &fn,
   if (record != nullptr) {
     record->add_dependent_file(vf);
   }
-  //module->_source_modified = std::max(module->_source_modified, vf->get_timestamp());
-  //module->_source_files.push_back(full_fn);
+  state.source_files.push_back(vf);
 
   // We give each file an unique index.  This is so that we can identify a
   // particular shader in the error output.  We offset them by 2048 so that
