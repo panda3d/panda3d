@@ -1838,7 +1838,7 @@ fetch_shader_buffer(const State &state, ResourceId resource_id) const {
   const InternalName *name = (const InternalName *)resource_id;
   PT(ShaderBuffer) buffer = state.gsg->get_target_shader_attrib()->get_shader_input_buffer(name);
 #ifndef NDEBUG
-  if (!_shown_error && buffer->get_data_size_bytes() < _min_size) {
+  if (!_shown_error && buffer != nullptr && buffer->get_data_size_bytes() < _min_size) {
     _shown_error = true;
     shader_cat.error()
       << *buffer << " is too small for shader input " << *name
