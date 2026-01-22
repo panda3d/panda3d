@@ -98,12 +98,12 @@ transform_function_op(Instruction op) {
 
     if (_alpha_ref_var_id == 0) {
       if (_spec_constant) {
-        _alpha_ref_var_id = define_spec_constant(ShaderType::float_type, 0);
+        _alpha_ref_var_id = define_spec_constant(ShaderType::FLOAT, 0);
         if (_ref_location >= 0) {
           decorate(_alpha_ref_var_id, spv::DecorationSpecId, (uint32_t)_ref_location);
         }
       } else {
-        _alpha_ref_var_id = define_variable(ShaderType::float_type, spv::StorageClassUniformConstant);
+        _alpha_ref_var_id = define_variable(ShaderType::FLOAT, spv::StorageClassUniformConstant);
         if (_ref_location >= 0) {
           decorate(_alpha_ref_var_id, spv::DecorationLocation, (uint32_t)_ref_location);
         }

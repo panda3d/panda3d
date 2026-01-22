@@ -480,7 +480,7 @@ r_count_locations_bindings(const ShaderType *type,
     return;
   }
 
-  if (type->as_sampled_image() != nullptr || type == ShaderType::void_type) {
+  if (type->as_sampled_image() != nullptr || type == ShaderType::VOID) {
     ++num_locations;
     return;
   }
@@ -651,7 +651,7 @@ r_collect_uniforms(RenderAttrib::PandaCompareFunc alpha_test_mode,
     }
     return;
   }
-  if (type == ShaderType::void_type) {
+  if (type == ShaderType::VOID) {
     // We use this as a placeholder to advance the location by one.
     ++cur_location;
   }
@@ -1350,7 +1350,7 @@ const ShaderType *CLP(ShaderContext)::
 get_param_type(GLenum param_type) {
   switch (param_type) {
   case GL_FLOAT:
-    return ShaderType::float_type;
+    return ShaderType::FLOAT;
 
   case GL_FLOAT_VEC2:
     return ShaderType::register_type(ShaderType::Vector(ShaderType::ST_float, 2));
@@ -1389,7 +1389,7 @@ get_param_type(GLenum param_type) {
     return ShaderType::register_type(ShaderType::Matrix(ShaderType::ST_float, 4, 3));
 
   case GL_INT:
-    return ShaderType::int_type;
+    return ShaderType::INT;
 
   case GL_INT_VEC2:
     return ShaderType::register_type(ShaderType::Vector(ShaderType::ST_int, 2));
@@ -1401,7 +1401,7 @@ get_param_type(GLenum param_type) {
     return ShaderType::register_type(ShaderType::Vector(ShaderType::ST_int, 4));
 
   case GL_BOOL:
-    return ShaderType::bool_type;
+    return ShaderType::BOOL;
 
   case GL_BOOL_VEC2:
     return ShaderType::register_type(ShaderType::Vector(ShaderType::ST_bool, 2));
@@ -1413,7 +1413,7 @@ get_param_type(GLenum param_type) {
     return ShaderType::register_type(ShaderType::Vector(ShaderType::ST_bool, 4));
 
   case GL_UNSIGNED_INT:
-    return ShaderType::uint_type;
+    return ShaderType::UINT;
 
   case GL_UNSIGNED_INT_VEC2:
     return ShaderType::register_type(ShaderType::Vector(ShaderType::ST_uint, 2));
@@ -1426,7 +1426,7 @@ get_param_type(GLenum param_type) {
 
 #ifndef OPENGLES
   case GL_DOUBLE:
-    return ShaderType::double_type;
+    return ShaderType::DOUBLE;
 
   case GL_DOUBLE_VEC2:
     return ShaderType::register_type(ShaderType::Vector(ShaderType::ST_double, 2));

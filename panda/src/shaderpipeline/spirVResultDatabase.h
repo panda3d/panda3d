@@ -71,6 +71,7 @@ public:
     spv::BuiltIn _builtin = spv::BuiltInMax;
     int _flags = 0; // Only readonly/writeonly/deleted
     int _new_index = -1;
+    uint32_t _matrix_stride = 0;
   };
   typedef pvector<MemberDefinition> MemberDefinitions;
 
@@ -151,12 +152,16 @@ public:
 
   void collect_nested_structs(pmap<uint32_t, const ShaderType::Struct *> &result, uint32_t id) const;
 
+  const ShaderType *get_member_type(const MemberDefinition &member_def) const;
+
 private:
+  const ShaderType *r_apply_member_type_decorations(const MemberDefinition &member_def, const ShaderType *type) const;
+
   Definitions _defs;
 
   // Reverse mapping from type to ID.  Excludes types with BuiltIn decoration.
   typedef pmap<const ShaderType *, uint32_t> TypeMap;
-  TypeMap _type_map;
+  mutable TypeMap _type_map;
 };
 
 #include "spirVResultDatabase.I"

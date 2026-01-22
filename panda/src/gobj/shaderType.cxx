@@ -24,6 +24,8 @@ static const char *texture_type_signatures[] = {
 static const char scalar_signatures[] = "?fdiub";
 static const char access_signatures[] = "nrwx";
 
+static const ShaderType::Scalar *scalar_types[ShaderType::ST_bool + 1] = {nullptr};
+
 ShaderType::Registry *ShaderType::_registered_types = nullptr;
 TypeHandle ShaderType::_type_handle;
 TypeHandle ShaderType::Void::_type_handle;
@@ -37,13 +39,13 @@ TypeHandle ShaderType::Sampler::_type_handle;
 TypeHandle ShaderType::SampledImage::_type_handle;
 TypeHandle ShaderType::StorageBuffer::_type_handle;
 
-const ShaderType::Void *ShaderType::void_type;
-const ShaderType::Scalar *ShaderType::bool_type;
-const ShaderType::Scalar *ShaderType::int_type;
-const ShaderType::Scalar *ShaderType::uint_type;
-const ShaderType::Scalar *ShaderType::float_type;
-const ShaderType::Scalar *ShaderType::double_type;
-const ShaderType::Sampler *ShaderType::sampler_type;
+const ShaderType::Void *ShaderType::VOID;
+const ShaderType::Scalar *ShaderType::BOOL;
+const ShaderType::Scalar *ShaderType::INT;
+const ShaderType::Scalar *ShaderType::UINT;
+const ShaderType::Scalar *ShaderType::FLOAT;
+const ShaderType::Scalar *ShaderType::DOUBLE;
+const ShaderType::Sampler *ShaderType::SAMPLER;
 
 /**
  * If this type is an array, puts the element type in the first argument and the
@@ -76,6 +78,14 @@ merge(const ShaderType *other) const {
 }
 
 /**
+ * Returns the Scalar object corresponding to a particular ScalarType.
+ */
+const ShaderType::Scalar *ShaderType::
+get_scalar_type_obj(ScalarType scalar_type) {
+  return scalar_types[scalar_type];
+}
+
+/**
  *
  */
 void ShaderType::
@@ -98,14 +108,19 @@ init_type() {
   ::register_type(SampledImage::_type_handle, "ShaderType::SampledImage", _type_handle);
   ::register_type(StorageBuffer::_type_handle, "ShaderType::StorageBuffer", _type_handle);
 
-  void_type = ShaderType::register_type(ShaderType::Void());
-  bool_type = ShaderType::register_type(ShaderType::Scalar(ST_bool));
-  int_type = ShaderType::register_type(ShaderType::Scalar(ST_int));
-  uint_type = ShaderType::register_type(ShaderType::Scalar(ST_uint));
-  float_type = ShaderType::register_type(ShaderType::Scalar(ST_float));
-  double_type = ShaderType::register_type(ShaderType::Scalar(ST_double));
+  ShaderType::VOID = ShaderType::register_type(ShaderType::Void());
+  ShaderType::BOOL = ShaderType::register_type(ShaderType::Scalar(ST_bool));
+  ShaderType::INT = ShaderType::register_type(ShaderType::Scalar(ST_int));
+  ShaderType::UINT = ShaderType::register_type(ShaderType::Scalar(ST_uint));
+  ShaderType::FLOAT = ShaderType::register_type(ShaderType::Scalar(ST_float));
+  ShaderType::DOUBLE = ShaderType::register_type(ShaderType::Scalar(ST_double));
+  ShaderType::SAMPLER = ShaderType::register_type(ShaderType::Sampler());
 
-  sampler_type = ShaderType::register_type(ShaderType::Sampler());
+  scalar_types[ShaderType::ST_float] = ShaderType::FLOAT;
+  scalar_types[ShaderType::ST_double] = ShaderType::DOUBLE;
+  scalar_types[ShaderType::ST_int] = ShaderType::INT;
+  scalar_types[ShaderType::ST_uint] = ShaderType::UINT;
+  scalar_types[ShaderType::ST_bool] = ShaderType::BOOL;
 }
 
 /**
@@ -207,7 +222,7 @@ compare_to_impl(const ShaderType &other) const {
  */
 TypedWritable *ShaderType::Void::
 make_from_bam(const FactoryParams &params) {
-  return (ShaderType *)ShaderType::void_type;
+  return (ShaderType *)ShaderType::VOID;
 }
 
 /**
@@ -272,7 +287,8 @@ compare_to_impl(const ShaderType &other) const {
 }
 
 /**
- * Returns the alignment in bytes of this type in memory, if applicable.
+ * Returns the base alignment in bytes of this type in memory, if applicable.
+ * Note that in some contexts, stricter alignment rules may apply.
  */
 uint32_t ShaderType::Scalar::
 get_align_bytes() const {
@@ -281,7 +297,7 @@ get_align_bytes() const {
 
 /**
  * Returns the size in bytes of this type in memory, if applicable.  Opaque
- * types will return 0.
+ * types will return 0.  Struct padding to 16-byte boundary is not included.
  */
 uint32_t ShaderType::Scalar::
 get_size_bytes() const {
@@ -310,7 +326,7 @@ make_from_bam(const FactoryParams &params) {
   parse_params(params, scan, manager);
 
   ScalarType scalar_type = (ScalarType)scan.get_uint8();
-  return (ShaderType *)ShaderType::register_type(ShaderType::Scalar(scalar_type));
+  return (ShaderType *)get_scalar_type_obj(scalar_type);
 }
 
 /**
@@ -411,7 +427,8 @@ compare_to_impl(const ShaderType &other) const {
 }
 
 /**
- * Returns the alignment in bytes of this type in memory, if applicable.
+ * Returns the base alignment in bytes of this type in memory, if applicable.
+ * Note that in some contexts, stricter alignment rules may apply.
  */
 uint32_t ShaderType::Vector::
 get_align_bytes() const {
@@ -420,7 +437,7 @@ get_align_bytes() const {
 
 /**
  * Returns the size in bytes of this type in memory, if applicable.  Opaque
- * types will return 0.
+ * types will return 0.  Struct padding to 16-byte boundary is not included.
  */
 uint32_t ShaderType::Vector::
 get_size_bytes() const {
@@ -519,28 +536,29 @@ compare_to_impl(const ShaderType &other) const {
   if (_num_rows != other_matrix._num_rows) {
     return _num_rows < other_matrix._num_rows ? -1 : 1;
   }
-  return (_num_columns > other_matrix._num_columns)
-       - (_num_columns < other_matrix._num_columns);
+  if (_num_columns != other_matrix._num_columns) {
+    return _num_columns < other_matrix._num_columns ? -1 : 1;
+  }
+  return (_row_stride_bytes > other_matrix._row_stride_bytes)
+       - (_row_stride_bytes < other_matrix._row_stride_bytes);
 }
 
 /**
- * Returns the alignment in bytes of this type in memory, if applicable.
+ * Returns the base alignment in bytes of this type in memory, if applicable.
+ * Note that in some contexts, stricter alignment rules may apply.
  */
 uint32_t ShaderType::Matrix::
 get_align_bytes() const {
-  return get_scalar_size_bytes(_scalar_type) * 4;
+  return _row_stride_bytes;
 }
 
 /**
  * Returns the size in bytes of this type in memory, if applicable.  Opaque
- * types will return 0.
+ * types will return 0.  Struct padding to 16-byte boundary is not included.
  */
 uint32_t ShaderType::Matrix::
 get_size_bytes() const {
-  // Pad rows to 16 bytes (std140 rules, but DX9 also expects that)
-  uint32_t row_size = _num_columns * get_scalar_size_bytes(_scalar_type);
-  row_size = (row_size + 15) & ~15;
-  return _num_rows * row_size;
+  return _num_rows * _row_stride_bytes;
 }
 
 /**
@@ -561,6 +579,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   dg.add_uint8(_scalar_type);
   dg.add_uint32(_num_rows);
   dg.add_uint32(_num_columns);
+  dg.add_uint32(_row_stride_bytes);
 }
 
 /**
@@ -578,11 +597,17 @@ make_from_bam(const FactoryParams &params) {
   ScalarType scalar_type = (ScalarType)scan.get_uint8();
   uint32_t num_rows = scan.get_uint32();
   uint32_t num_columns = scan.get_uint32();
-  return (ShaderType *)ShaderType::register_type(ShaderType::Matrix(scalar_type, num_rows, num_columns));
+  uint32_t row_stride_bytes = 0;
+  if (scan.get_remaining_size() >= 4) {
+    row_stride_bytes = scan.get_uint32();
+  }
+  return (ShaderType *)ShaderType::register_type(ShaderType::Matrix(scalar_type, num_rows, num_columns, row_stride_bytes));
 }
 
 /**
- * Adds a member to this struct.
+ * Adds a member to this struct.  The offset will be computed assuming extended
+ * alignment rules (ie. the alignment will be 16 bytes if this member or the
+ * previous one was an aggregate).
  */
 void ShaderType::Struct::
 add_member(const ShaderType *type, std::string name) {
@@ -593,6 +618,9 @@ add_member(const ShaderType *type, std::string name) {
   uint32_t alignment = type->get_align_bytes();
   if (alignment > 0) {
     member.offset += alignment - ((member.offset + (alignment - 1)) % alignment) - 1;
+  }
+  if (type->is_aggregate_type() || (!_members.empty() && _members.back().type->is_aggregate_type())) {
+    member.offset = (member.offset + 15) & ~15;
   }
   _members.push_back(std::move(member));
 }
@@ -851,26 +879,32 @@ compare_to_impl(const ShaderType &other) const {
 }
 
 /**
- * Returns the alignment in bytes of this type in memory, if applicable.
+ * Returns the base alignment in bytes of this type in memory, if applicable.
+ * Note that in some contexts, stricter alignment rules may apply.
  */
 uint32_t ShaderType::Struct::
 get_align_bytes() const {
-  uint32_t align = 16;
+  uint32_t align = 0;
   for (const Member &member : _members) {
     align = std::max(align, member.type->get_align_bytes());
   }
-  return (align + 15) & ~15;
+  // Don't apply alignment to 16 bytes here.  We don't yet know whether this
+  // will be used in a std140 or std430 context.  We will align/pad aggregates
+  // based on context.
+  //return (align + 15) & ~15;
+  return align;
 }
 
 /**
  * Returns the size in bytes of this type in memory, if applicable.  Opaque
- * types will return 0.
+ * types will return 0.  Struct padding to 16-byte boundary is not included.
  */
 uint32_t ShaderType::Struct::
 get_size_bytes() const {
-  // Structs are padded to the base alignment of a vec4.
+  // Pad to base alignment.
   uint32_t size = _members.empty() ? 0 : _members.back().offset + _members.back().type->get_size_bytes();
-  return (size + 15) & ~15;
+  uint32_t align = get_align_bytes();
+  return size + (align - (size % align)) % align;
 }
 
 /**
@@ -955,22 +989,6 @@ make_from_bam(const FactoryParams &params) {
 
   manager->register_change_this(change_this, struct_type);
   return struct_type;
-}
-
-/**
- * Returns the array stride in bytes.
- */
-uint32_t ShaderType::Array::
-get_stride_bytes() const {
-  if (_stride_bytes != 0) {
-    return _stride_bytes;
-  } else {
-    // By default we assume std140 / DX9 conventions, where array stride is
-    // always (at least) 16 bytes, even though this is (indeed) incredibly
-    // wasteful for arrays of scalars.
-    uint32_t size = _element_type->get_size_bytes();
-    return (size + 15) & ~15;
-  }
 }
 
 /**
@@ -1114,17 +1132,25 @@ compare_to_impl(const ShaderType &other) const {
 }
 
 /**
- * Returns the alignment in bytes of this type in memory, if applicable.
+ * Returns the base alignment in bytes of this type in memory, if applicable.
+ * Note that in some contexts, stricter alignment rules may apply.
  */
 uint32_t ShaderType::Array::
 get_align_bytes() const {
   uint32_t align = _element_type->get_align_bytes();
-  return (align + 15) & ~15;
+
+  // Detect whether we're using std140 rules.  A bit hacky.
+  uint32_t stride = get_stride_bytes();
+  uint32_t natural_stride = _element_type->get_size_bytes();
+  if (stride > natural_stride) {
+    align = (align + 15) & ~15;
+  }
+  return align;
 }
 
 /**
  * Returns the size in bytes of this type in memory, if applicable.  Opaque
- * types will return 0.
+ * types will return 0.  Struct padding to 16-byte boundary is not included.
  */
 uint32_t ShaderType::Array::
 get_size_bytes() const {
@@ -1171,6 +1197,9 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = ShaderType::complete_pointers(p_list, manager);
   _element_type = (ShaderType *)p_list[pi++];
   nassertr(_element_type->is_registered(), pi);
+  if (_stride_bytes == 0) {
+    _stride_bytes = (_element_type->get_size_bytes() + 15) & ~15;
+  }
   return pi;
 }
 
@@ -1315,7 +1344,7 @@ compare_to_impl(const ShaderType &other) const {
  */
 TypedWritable *ShaderType::Sampler::
 make_from_bam(const FactoryParams &params) {
-  return (ShaderType *)ShaderType::sampler_type;
+  return (ShaderType *)ShaderType::SAMPLER;
 }
 
 /**

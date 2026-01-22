@@ -93,6 +93,14 @@ get_scalar_type() const {
 }
 
 /**
+ * Returns the base numeric type as a Scalar object.
+ */
+INLINE const ShaderType::Scalar *ShaderType::Vector::
+get_scalar_type_obj() const {
+  return ShaderType::get_scalar_type_obj(_scalar_type);
+}
+
+/**
  * Returns the number of components in this vector.
  */
 INLINE uint32_t ShaderType::Vector::
@@ -106,10 +114,11 @@ get_num_components() const {
  * called "columns" and columns are called "rows".
  */
 INLINE ShaderType::Matrix::
-Matrix(ScalarType scalar_type, uint32_t num_rows, uint32_t num_columns) :
+Matrix(ScalarType scalar_type, uint32_t num_rows, uint32_t num_columns, uint32_t row_stride_bytes) :
   _scalar_type(scalar_type),
   _num_rows(num_rows),
-  _num_columns(num_columns) {
+  _num_columns(num_columns),
+  _row_stride_bytes(row_stride_bytes != 0 ? row_stride_bytes : ((get_scalar_size_bytes(scalar_type) * num_columns + 15) & ~15)) {
 }
 
 /**
@@ -118,6 +127,14 @@ Matrix(ScalarType scalar_type, uint32_t num_rows, uint32_t num_columns) :
 INLINE ShaderType::ScalarType ShaderType::Matrix::
 get_scalar_type() const {
   return _scalar_type;
+}
+
+/**
+ * Returns the base numeric type as a Scalar object.
+ */
+INLINE const ShaderType::Scalar *ShaderType::Matrix::
+get_scalar_type_obj() const {
+  return ShaderType::get_scalar_type_obj(_scalar_type);
 }
 
 /**
@@ -136,6 +153,14 @@ get_num_rows() const {
 INLINE uint32_t ShaderType::Matrix::
 get_num_columns() const {
   return _num_columns;
+}
+
+/**
+ * Returns the number of bytes from the beginning of one row to the next.
+ */
+INLINE uint32_t ShaderType::Matrix::
+get_row_stride_bytes() const {
+  return _row_stride_bytes;
 }
 
 /**
@@ -174,7 +199,7 @@ INLINE ShaderType::Array::
 Array(const ShaderType *element_type, uint32_t num_elements, uint32_t stride_bytes) :
   _element_type(element_type),
   _num_elements(num_elements),
-  _stride_bytes(stride_bytes) {
+  _stride_bytes((stride_bytes != 0 || element_type == nullptr) ? stride_bytes : ((element_type->get_size_bytes() + 15) & ~15)) {
 }
 
 /**
@@ -191,6 +216,14 @@ get_element_type() const {
 INLINE uint32_t ShaderType::Array::
 get_num_elements() const {
   return _num_elements;
+}
+
+/**
+ * Returns the array stride in bytes.
+ */
+INLINE uint32_t ShaderType::Array::
+get_stride_bytes() const {
+  return _stride_bytes;
 }
 
 /**
@@ -217,6 +250,14 @@ get_texture_type() const {
 INLINE ShaderType::ScalarType ShaderType::Image::
 get_sampled_type() const {
   return _sampled_type;
+}
+
+/**
+ * Returns the type of scalar that sampling this image produces as a Scalar.
+ */
+INLINE const ShaderType::Scalar *ShaderType::Image::
+get_sampled_type_obj() const {
+  return ShaderType::get_scalar_type_obj(_sampled_type);
 }
 
 /**
@@ -259,6 +300,14 @@ get_texture_type() const {
 INLINE ShaderType::ScalarType ShaderType::SampledImage::
 get_sampled_type() const {
   return _sampled_type;
+}
+
+/**
+ * Returns the type of scalar that sampling this image produces as a Scalar.
+ */
+INLINE const ShaderType::Scalar *ShaderType::SampledImage::
+get_sampled_type_obj() const {
+  return ShaderType::get_scalar_type_obj(_sampled_type);
 }
 
 /**

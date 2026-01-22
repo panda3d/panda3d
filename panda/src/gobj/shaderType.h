@@ -20,6 +20,9 @@
 #include "stl_compares.h"
 #include "texture.h"
 
+// Defined in Windows headers, conflicts with VOID definition below
+#undef VOID
+
 /**
  * This represents a single type as defined in a shader.  There is only ever a
  * single instance in existence for any particular type.
@@ -33,7 +36,10 @@ public:
   INLINE int compare_to(const ShaderType &other) const;
   virtual int compare_to_impl(const ShaderType &other) const=0;
 
+PUBLISHED:
   virtual void output(std::ostream &out) const=0;
+
+public:
   virtual void output_signature(std::ostream &out) const=0;
 
   virtual uint32_t get_align_bytes() const { return 1; }
@@ -41,6 +47,8 @@ public:
   virtual int get_num_interface_locations() const { return 1; }
   virtual int get_num_resources() const { return 0; }
 
+  // We don't expose this to Python; instead we return appropriate
+  // singletons of ShaderType::Scalar.
   enum ScalarType {
     ST_unknown,
     ST_float,
@@ -76,14 +84,25 @@ PUBLISHED:
   class SampledImage;
   class StorageBuffer;
 
-  // Fundamental types.
-  static const ShaderType::Void *void_type;
-  static const ShaderType::Scalar *bool_type;
-  static const ShaderType::Scalar *int_type;
-  static const ShaderType::Scalar *uint_type;
-  static const ShaderType::Scalar *float_type;
-  static const ShaderType::Scalar *double_type;
-  static const ShaderType::Sampler *sampler_type;
+  // Fundamental types, as singletons, defined as upper-case because they are
+  // essentially enum-like constants (ie. ShaderType.FLOAT from Python).
+#ifdef CPPPARSER
+  static const ShaderType *const VOID;
+  static const ShaderType::Scalar *const BOOL;
+  static const ShaderType::Scalar *const INT;
+  static const ShaderType::Scalar *const UINT;
+  static const ShaderType::Scalar *const FLOAT;
+  static const ShaderType::Scalar *const DOUBLE;
+  static const ShaderType *const SAMPLER;
+#else
+  static const ShaderType::Void *VOID;
+  static const ShaderType::Scalar *BOOL;
+  static const ShaderType::Scalar *INT;
+  static const ShaderType::Scalar *UINT;
+  static const ShaderType::Scalar *FLOAT;
+  static const ShaderType::Scalar *DOUBLE;
+  static const ShaderType::Sampler *SAMPLER;
+#endif
 
   MAKE_PROPERTY(align_bytes, get_align_bytes);
   MAKE_PROPERTY(size_bytes, get_size_bytes);
@@ -102,6 +121,7 @@ public:
   virtual const ShaderType *merge(const ShaderType *other) const;
 
   INLINE static constexpr uint32_t get_scalar_size_bytes(ScalarType scalar_type);
+  static const ShaderType::Scalar *get_scalar_type_obj(ScalarType scalar_type);
 
   virtual const Scalar *as_scalar() const { return nullptr; }
   virtual const Vector *as_vector() const { return nullptr; }
@@ -156,6 +176,7 @@ INLINE std::ostream &operator << (std::ostream &out, const ShaderType &stype) {
 
 /**
  * The void type, invalid for most uses.
+ * Not exposed; Python users can check for ShaderType.VOID instead.
  */
 class EXPCL_PANDA_GOBJ ShaderType::Void final : public ShaderType {
 public:
@@ -212,10 +233,11 @@ protected:
   virtual void write_datagram(BamWriter *manager, Datagram &dg) override;
   static TypedWritable *make_from_bam(const FactoryParams &params);
 
-public:
+PUBLISHED:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
+public:
   virtual TypeHandle get_type() const override {
     return get_class_type();
   }
@@ -235,6 +257,7 @@ public:
   Vector(const Vector &copy) = default;
 
   INLINE ScalarType get_scalar_type() const;
+  INLINE const ShaderType::Scalar *get_scalar_type_obj() const;
   INLINE uint32_t get_num_components() const;
 
   virtual bool contains_scalar_type(ScalarType type) const override;
@@ -249,6 +272,10 @@ public:
 
   virtual void output(std::ostream &out) const override;
   virtual void output_signature(std::ostream &out) const override;
+
+PUBLISHED:
+  MAKE_PROPERTY(scalar_type, get_scalar_type_obj);
+  MAKE_PROPERTY(num_components, get_num_components);
 
 private:
   virtual int compare_to_impl(const ShaderType &other) const override;
@@ -282,11 +309,15 @@ private:
  */
 class EXPCL_PANDA_GOBJ ShaderType::Matrix final : public ShaderType {
 public:
-  INLINE Matrix(ScalarType scalar_type, uint32_t num_rows, uint32_t num_columns);
+  INLINE Matrix(ScalarType scalar_type,
+                uint32_t num_rows, uint32_t num_columns,
+                uint32_t row_stride_bytes=0);
 
   INLINE ScalarType get_scalar_type() const;
+  INLINE const ShaderType::Scalar *get_scalar_type_obj() const;
   INLINE uint32_t get_num_rows() const;
   INLINE uint32_t get_num_columns() const;
+  INLINE uint32_t get_row_stride_bytes() const;
 
   virtual bool contains_scalar_type(ScalarType type) const override;
   virtual bool as_scalar_type(ScalarType &type, uint32_t &num_elements,
@@ -300,6 +331,12 @@ public:
   virtual void output(std::ostream &out) const override;
   virtual void output_signature(std::ostream &out) const override;
 
+PUBLISHED:
+  MAKE_PROPERTY(scalar_type, get_scalar_type_obj);
+  MAKE_PROPERTY(num_rows, get_num_rows);
+  MAKE_PROPERTY(num_columns, get_num_columns);
+  MAKE_PROPERTY(row_stride_bytes, get_row_stride_bytes);
+
 private:
   virtual int compare_to_impl(const ShaderType &other) const override;
 
@@ -309,6 +346,7 @@ private:
   const ScalarType _scalar_type;
   const uint32_t _num_rows;
   const uint32_t _num_columns;
+  const uint32_t _row_stride_bytes;
 
 protected:
   virtual void write_datagram(BamWriter *manager, Datagram &dg) override;
@@ -332,9 +370,21 @@ private:
  * A structure type, with named members.
  */
 class EXPCL_PANDA_GOBJ ShaderType::Struct final : public ShaderType {
-public:
-  struct Member;
+PUBLISHED:
+  struct Member {
+#ifdef CPPPARSER
+  private:
+    // Don't allow constructing from Python
+    Member() = delete;
+    Member(const Member &copy) = delete;
+#endif
+  PUBLISHED:
+    const ShaderType *type;
+    std::string name;
+    uint32_t offset;
+  };
 
+public:
   INLINE size_t get_num_members() const;
   INLINE const Member &get_member(size_t i) const;
   INLINE bool has_member(const std::string &name) const;
@@ -362,12 +412,6 @@ public:
 
 PUBLISHED:
   MAKE_SEQ_PROPERTY(members, get_num_members, get_member);
-
-  struct Member {
-    const ShaderType *type;
-    std::string name;
-    uint32_t offset;
-  };
 
 private:
   pvector<Member> _members;
@@ -401,7 +445,7 @@ public:
 
   INLINE const ShaderType *get_element_type() const;
   INLINE uint32_t get_num_elements() const;
-  uint32_t get_stride_bytes() const;
+  INLINE uint32_t get_stride_bytes() const;
 
   virtual bool unwrap_array(const ShaderType *&element_type, uint32_t &num_elements) const override;
 
@@ -475,6 +519,7 @@ public:
 
   INLINE Texture::TextureType get_texture_type() const;
   INLINE ScalarType get_sampled_type() const;
+  INLINE const ShaderType::Scalar *get_sampled_type_obj() const;
   INLINE Access get_access() const;
   INLINE bool is_writable() const;
 
@@ -488,7 +533,7 @@ public:
 
 PUBLISHED:
   MAKE_PROPERTY(texture_type, get_texture_type);
-  MAKE_PROPERTY(sampled_type, get_sampled_type);
+  MAKE_PROPERTY(sampled_type, get_sampled_type_obj);
   MAKE_PROPERTY(access, get_access);
   MAKE_PROPERTY(writable, is_writable);
 
@@ -517,6 +562,7 @@ private:
 
 /**
  * Sampler state.
+ * Not exposed; Python users can check for ShaderType.SAMPLER instead.
  */
 class EXPCL_PANDA_GOBJ ShaderType::Sampler final : public ShaderType::Resource {
 private:
@@ -556,6 +602,7 @@ public:
 
   INLINE Texture::TextureType get_texture_type() const;
   INLINE ScalarType get_sampled_type() const;
+  INLINE const ShaderType::Scalar *get_sampled_type_obj() const;
   INLINE bool is_shadow() const;
 
   virtual void output(std::ostream &out) const override;
@@ -565,6 +612,11 @@ public:
   virtual bool contains_scalar_type(ScalarType type) const override;
 
   const SampledImage *as_sampled_image() const override { return this; }
+
+PUBLISHED:
+  MAKE_PROPERTY(texture_type, get_texture_type);
+  MAKE_PROPERTY(sampled_type, get_sampled_type_obj);
+  MAKE_PROPERTY(shadow, is_shadow);
 
 private:
   Texture::TextureType _texture_type;
