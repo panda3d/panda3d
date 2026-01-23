@@ -176,6 +176,7 @@ private:
     CLP(BufferContext) *_gbc = nullptr;
     ShaderInputBinding::ResourceId _resource_id;
     GLint _binding_index;
+    bool _writable;
   };
   typedef pvector<StorageBlock> StorageBlocks;
   StorageBlocks _storage_blocks;

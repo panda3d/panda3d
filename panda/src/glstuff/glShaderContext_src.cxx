@@ -656,7 +656,7 @@ r_collect_uniforms(RenderAttrib::PandaCompareFunc alpha_test_mode,
     ++cur_location;
   }
 
-  if (type->as_storage_buffer() != nullptr) {
+  if (const ShaderType::StorageBuffer *sbuffer = type->as_storage_buffer()) {
     // These are an exception, they do not have locations but bindings.
     GLint binding = cur_binding;
     if (binding < 0) {
@@ -679,6 +679,7 @@ r_collect_uniforms(RenderAttrib::PandaCompareFunc alpha_test_mode,
       block._binding = param._binding;
       block._resource_id = param._binding->get_resource_id(resource_index++);
       block._binding_index = binding;
+      block._writable = (sbuffer->get_access() & ShaderType::Access::WRITE_ONLY) != ShaderType::Access::NONE;
       _storage_blocks.push_back(std::move(block));
       _storage_block_bindings |= (1 << binding);
     }
@@ -2520,9 +2521,9 @@ issue_memory_barriers() {
     _glgsg->issue_memory_barrier(GL_SHADER_STORAGE_BARRIER_BIT);
   }
 
-  // We assume that all SSBOs will be written to, for now.
+  // Only mark SSBOs that will be written to.
   for (StorageBlock &block : _storage_blocks) {
-    if (block._gbc != nullptr) {
+    if (block._gbc != nullptr && block._writable) {
       block._gbc->_shader_storage_barrier_counter = _glgsg->_shader_storage_barrier_counter;
     }
   }
