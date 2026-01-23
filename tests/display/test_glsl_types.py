@@ -539,6 +539,14 @@ def test_glsl_array_str():
     assert str(compile_type("mat4[3]")) == "float4x4[3]"
 
 
+def test_glsl_struct_vec4():
+    struct = compile_struct("vec4 a; vec4 b;")
+    assert struct.members[0].offset == 0
+    assert struct.members[1].offset == 16
+    assert struct.align_bytes == 16
+    assert struct.size_bytes == 32
+
+
 def test_glsl_struct_float_array():
     struct = compile_struct("float a; float b[3]; float c;")
     assert struct.members[0].offset == 0

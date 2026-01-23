@@ -908,7 +908,7 @@ uint32_t ShaderType::Struct::
 get_size_bytes() const {
   // Pad to base alignment.
   if (!_members.empty()) {
-    uint32_t size = _members.back().offset;
+    uint32_t size = _members.back().offset + _members.back().type->get_size_bytes();
     uint32_t align = get_align_bytes();
     return size + (align - (size % align)) % align;
   } else {
