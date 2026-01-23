@@ -38,6 +38,8 @@
 #define SPIRV_CROSS_EXCEPTIONS_TO_ASSERTIONS
 #include <spirv_cross/spirv_glsl.hpp>
 
+#undef VOID
+
 using std::dec;
 using std::hex;
 using std::max;

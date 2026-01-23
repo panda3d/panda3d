@@ -13,6 +13,11 @@
 
 #include "shaderType.h"
 
+#ifdef _WIN32
+#pragma push_macro("VOID")
+#undef VOID
+#endif
+
 static const char *texture_type_suffixes[] = {
   "1D", "2D", "3D", "2DArray", "Cube", "Buffer", "CubeArray", "1DArray",
 };
@@ -1545,5 +1550,9 @@ make_from_bam(const FactoryParams &params) {
   manager->register_change_this(change_this, type);
   return type;
 }
+
+#ifdef _WIN32
+#pragma pop_macro("VOID")
+#endif
 
 #endif  // CPPPARSER

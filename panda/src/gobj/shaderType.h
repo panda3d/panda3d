@@ -20,8 +20,10 @@
 #include "stl_compares.h"
 #include "texture.h"
 
-// Defined in Windows headers, conflicts with VOID definition below
+#ifdef _WIN32
+#pragma push_macro("VOID")
 #undef VOID
+#endif
 
 /**
  * This represents a single type as defined in a shader.  There is only ever a
@@ -87,7 +89,7 @@ PUBLISHED:
   // Fundamental types, as singletons, defined as upper-case because they are
   // essentially enum-like constants (ie. ShaderType.FLOAT from Python).
 #ifdef CPPPARSER
-  static const ShaderType *const VOID;
+  //static const ShaderType *const VOID;
   static const ShaderType::Scalar *const BOOL;
   static const ShaderType::Scalar *const INT;
   static const ShaderType::Scalar *const UINT;
@@ -690,6 +692,10 @@ private:
 
 #ifndef CPPPARSER
 #include "shaderType.I"
+#endif
+
+#ifdef _WIN32
+#pragma pop_macro("VOID")
 #endif
 
 #endif  // SHADERTYPE_H

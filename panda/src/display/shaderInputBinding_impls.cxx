@@ -26,6 +26,8 @@
 #include "pointLight.h"
 #include "sphereLight.h"
 
+#undef VOID
+
 using std::string;
 using State = ShaderInputBinding::State;
 

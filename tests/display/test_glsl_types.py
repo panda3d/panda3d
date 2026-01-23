@@ -30,7 +30,7 @@ def compile_struct(members, layout=None):
 
 
 def test_glsl_scalar_singletons():
-    assert isinstance(ShaderType.VOID, ShaderType)
+    #assert isinstance(ShaderType.VOID, ShaderType)
     assert isinstance(ShaderType.BOOL, ShaderType.Scalar)
     assert isinstance(ShaderType.INT, ShaderType.Scalar)
     assert isinstance(ShaderType.UINT, ShaderType.Scalar)
@@ -128,7 +128,7 @@ def test_glsl_types_std140():
 
 
 def test_glsl_scalar_str():
-    assert str(ShaderType.VOID) == "void"
+    #assert str(ShaderType.VOID) == "void"
     assert str(ShaderType.BOOL) == "bool"
     assert str(ShaderType.INT) == "int"
     assert str(ShaderType.UINT) == "uint"
