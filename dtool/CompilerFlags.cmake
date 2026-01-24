@@ -51,6 +51,16 @@ elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GCC")
 
 endif()
 
+# AddressSanitizer
+if(ENABLE_ASAN)
+  if(CMAKE_CXX_COMPILER_ID MATCHES "(AppleClang|Clang|GNU)")
+    add_compile_options(-fsanitize=address -fno-omit-frame-pointer)
+    add_link_options(-fsanitize=address)
+  else()
+    message(FATAL_ERROR "ENABLE_ASAN requires GCC or Clang")
+  endif()
+endif()
+
 # Panda3D is now a C++14 project.
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)

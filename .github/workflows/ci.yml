@@ -40,6 +40,7 @@ jobs:
           python: YES
           eigen: NO
           double: NO
+          asan: YES
 
         #- profile: macos-coverage-unity-xcode
         #  os: macOS-15
@@ -62,6 +63,7 @@ jobs:
           python: YES
           eigen: NO
           double: NO
+          asan: YES
 
         - profile: windows-standard-unity-msvc
           os: windows-2022
@@ -182,6 +184,7 @@ jobs:
         -D HAVE_PYTHON=${{ runner.os != 'Windows' && matrix.python || 'NO' }}
         -D HAVE_EIGEN=${{ matrix.eigen }}
         -D STDFLOAT_DOUBLE=${{ matrix.double }}
+        -D ENABLE_ASAN=${{ matrix.asan || 'NO' }}
         ..
 
     - name: Build (no Python)
@@ -216,10 +219,20 @@ jobs:
       shell: bash
       env:
         PYTHONPATH: ${{ matrix.config }}
+        ASAN_OPTIONS: detect_leaks=0
       run: |
         PYTHON_EXECUTABLE=$(grep 'Python_EXECUTABLE:' CMakeCache.txt | sed 's/.*=//')
         $PYTHON_EXECUTABLE -m pip install -r ../requirements-test.txt
         export COVERAGE_FILE=.coverage.$RANDOM LLVM_PROFILE_FILE=$PWD/pid-%p.profraw
+        if [[ "${{ matrix.asan }}" == "YES" ]]; then
+          if [[ "${{ runner.os }}" == "macOS" ]]; then
+            export DYLD_INSERT_LIBRARIES=$(clang -print-file-name=libclang_rt.asan_osx_dynamic.dylib)
+          elif [[ "${{ matrix.compiler }}" == "Clang" ]]; then
+            export LD_PRELOAD=$(clang -print-file-name=libclang_rt.asan-$(uname -m).so)
+          else
+            export LD_PRELOAD=$(gcc -print-file-name=libasan.so)
+          fi
+        fi
         $PYTHON_EXECUTABLE -m pytest ../tests --cov=.
       # END B
 
@@ -248,10 +261,20 @@ jobs:
       shell: bash
       env:
         PYTHONPATH: ${{ matrix.config }}
+        ASAN_OPTIONS: detect_leaks=0
       run: |
         PYTHON_EXECUTABLE=$(grep 'Python_EXECUTABLE:' CMakeCache.txt | sed 's/.*=//')
         $PYTHON_EXECUTABLE -m pip install -r ../requirements-test.txt
         export COVERAGE_FILE=.coverage.$RANDOM LLVM_PROFILE_FILE=$PWD/pid-%p.profraw
+        if [[ "${{ matrix.asan }}" == "YES" ]]; then
+          if [[ "${{ runner.os }}" == "macOS" ]]; then
+            export DYLD_INSERT_LIBRARIES=$(clang -print-file-name=libclang_rt.asan_osx_dynamic.dylib)
+          elif [[ "${{ matrix.compiler }}" == "Clang" ]]; then
+            export LD_PRELOAD=$(clang -print-file-name=libclang_rt.asan-$(uname -m).so)
+          else
+            export LD_PRELOAD=$(gcc -print-file-name=libasan.so)
+          fi
+        fi
         $PYTHON_EXECUTABLE -m pytest ../tests --cov=.
       # END B
 
@@ -280,10 +303,20 @@ jobs:
       shell: bash
       env:
         PYTHONPATH: ${{ matrix.config }}
+        ASAN_OPTIONS: detect_leaks=0
       run: |
         PYTHON_EXECUTABLE=$(grep 'Python_EXECUTABLE:' CMakeCache.txt | sed 's/.*=//')
         $PYTHON_EXECUTABLE -m pip install -r ../requirements-test.txt
         export COVERAGE_FILE=.coverage.$RANDOM LLVM_PROFILE_FILE=$PWD/pid-%p.profraw
+        if [[ "${{ matrix.asan }}" == "YES" ]]; then
+          if [[ "${{ runner.os }}" == "macOS" ]]; then
+            export DYLD_INSERT_LIBRARIES=$(clang -print-file-name=libclang_rt.asan_osx_dynamic.dylib)
+          elif [[ "${{ matrix.compiler }}" == "Clang" ]]; then
+            export LD_PRELOAD=$(clang -print-file-name=libclang_rt.asan-$(uname -m).so)
+          else
+            export LD_PRELOAD=$(gcc -print-file-name=libasan.so)
+          fi
+        fi
         $PYTHON_EXECUTABLE -m pytest ../tests --cov=.
       # END B
 
@@ -312,10 +345,20 @@ jobs:
       shell: bash
       env:
         PYTHONPATH: ${{ matrix.config }}
+        ASAN_OPTIONS: detect_leaks=0
       run: |
         PYTHON_EXECUTABLE=$(grep 'Python_EXECUTABLE:' CMakeCache.txt | sed 's/.*=//')
         $PYTHON_EXECUTABLE -m pip install -r ../requirements-test.txt
         export COVERAGE_FILE=.coverage.$RANDOM LLVM_PROFILE_FILE=$PWD/pid-%p.profraw
+        if [[ "${{ matrix.asan }}" == "YES" ]]; then
+          if [[ "${{ runner.os }}" == "macOS" ]]; then
+            export DYLD_INSERT_LIBRARIES=$(clang -print-file-name=libclang_rt.asan_osx_dynamic.dylib)
+          elif [[ "${{ matrix.compiler }}" == "Clang" ]]; then
+            export LD_PRELOAD=$(clang -print-file-name=libclang_rt.asan-$(uname -m).so)
+          else
+            export LD_PRELOAD=$(gcc -print-file-name=libasan.so)
+          fi
+        fi
         $PYTHON_EXECUTABLE -m pytest ../tests --cov=.
       # END B
 
@@ -344,10 +387,20 @@ jobs:
       shell: bash
       env:
         PYTHONPATH: ${{ matrix.config }}
+        ASAN_OPTIONS: detect_leaks=0
       run: |
         PYTHON_EXECUTABLE=$(grep 'Python_EXECUTABLE:' CMakeCache.txt | sed 's/.*=//')
         $PYTHON_EXECUTABLE -m pip install -r ../requirements-test.txt
         export COVERAGE_FILE=.coverage.$RANDOM LLVM_PROFILE_FILE=$PWD/pid-%p.profraw
+        if [[ "${{ matrix.asan }}" == "YES" ]]; then
+          if [[ "${{ runner.os }}" == "macOS" ]]; then
+            export DYLD_INSERT_LIBRARIES=$(clang -print-file-name=libclang_rt.asan_osx_dynamic.dylib)
+          elif [[ "${{ matrix.compiler }}" == "Clang" ]]; then
+            export LD_PRELOAD=$(clang -print-file-name=libclang_rt.asan-$(uname -m).so)
+          else
+            export LD_PRELOAD=$(gcc -print-file-name=libasan.so)
+          fi
+        fi
         $PYTHON_EXECUTABLE -m pytest ../tests --cov=.
       # END B
 
