@@ -426,6 +426,14 @@ endif()
 unset(_prefer_mimalloc)
 
 #
+# Sanitizers
+#
+
+option(ENABLE_ASAN
+  "Enable AddressSanitizer for detecting memory errors such as
+buffer overflows, use-after-free, etc. Requires GCC or Clang." OFF)
+
+#
 # This section relates to mobile-device/phone support and options
 #
 

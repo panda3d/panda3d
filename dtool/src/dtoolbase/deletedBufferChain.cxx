@@ -167,8 +167,9 @@ get_deleted_chain(size_t buffer_size) {
 
   static MutexImpl lock;
   lock.lock();
-  static std::set<DeletedBufferChain> deleted_chains;
-  DeletedBufferChain *result = (DeletedBufferChain *)&*deleted_chains.insert(DeletedBufferChain(buffer_size)).first;
+  alignas(std::set<DeletedBufferChain>) static char storage[sizeof(std::set<DeletedBufferChain>)];
+  static auto *deleted_chains = new (storage) std::set<DeletedBufferChain>;
+  DeletedBufferChain *result = (DeletedBufferChain *)&*deleted_chains->insert(DeletedBufferChain(buffer_size)).first;
   lock.unlock();
   return result;
 }

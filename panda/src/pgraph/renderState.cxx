@@ -1849,13 +1849,15 @@ init_states() {
   // _states_lock without a startup race condition.  For the meantime, this is
   // OK because we guarantee that this method is called at static init time,
   // presumably when there is still only one thread in the world.
-  _states_lock = new LightReMutex("RenderState::_states_lock");
+  alignas(LightReMutex) static char storage[sizeof(LightReMutex)];
+  _states_lock = new (storage) LightReMutex("RenderState::_states_lock");
   _cache_stats.init();
   nassertv(Thread::get_current_thread() == Thread::get_main_thread());
 
   // Initialize the empty state object as well.  It is used so often that it
   // is declared globally, and lives forever.
-  RenderState *state = new RenderState;
+  alignas(RenderState) static char state_storage[sizeof(RenderState)];
+  RenderState *state = new (state_storage) RenderState;
   state->local_object();
   state->cache_ref_only();
   state->_saved_entry = _states.store(state, nullptr);

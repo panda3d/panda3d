@@ -230,6 +230,47 @@ is_playing() const {
 }
 
 /**
+ * Returns true if the video own audio is muted.  True by default.
+ */
+bool HTMLVideoTexture::
+is_muted() const {
+  return EM_ASM_INT({
+    return window._htmlVideoData[$0].video.muted;
+  }, this);
+}
+
+/**
+ * Sets whether the video's own audio is muted.
+ */
+void HTMLVideoTexture::
+set_muted(bool muted) {
+  EM_ASM({
+    window._htmlVideoData[$0].video.muted = ($1 !== 0);
+  }, this, muted);
+}
+
+/**
+ * Returns the audio volume of the video element, in the range 0.0 to 1.0.
+ */
+double HTMLVideoTexture::
+get_volume() const {
+  return EM_ASM_DOUBLE({
+    return window._htmlVideoData[$0].video.volume;
+  }, this);
+}
+
+/**
+ * Sets the audio volume in the range 0.0 to 1.0.  Note that you must also
+ * unmute the audio using the muted property.
+ */
+void HTMLVideoTexture::
+set_volume(double volume) {
+  EM_ASM({
+    window._htmlVideoData[$0].video.volume = $1;
+  }, this, volume);
+}
+
+/**
  * A factory function to make a new HTMLVideoTexture, used to pass to the
  * TexturePool.
  */

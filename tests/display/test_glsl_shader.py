@@ -142,11 +142,16 @@ def test_glsl_texture_query_levels(env):
     tex4.setup_3d_texture(8, 4, 2, core.Texture.T_unsigned_byte, core.Texture.F_rgba8)
     tex4.set_minfilter(core.SamplerState.FT_linear_mipmap_linear)
 
+    tex5 = core.Texture("tex5-2d-array")
+    tex5.setup_2d_texture_array(8, 4, 2, core.Texture.T_unsigned_byte, core.Texture.F_rgba8)
+    tex5.set_minfilter(core.SamplerState.FT_linear_mipmap_linear)
+
     preamble = """
     uniform sampler1D tex1[2];
     uniform sampler2D tex2;
     uniform samplerCube tex3;
     uniform sampler3D tex4;
+    uniform sampler2DArray tex5;
     """
     code = """
     assert(textureQueryLevels(tex1[1]) == 1);
@@ -154,8 +159,9 @@ def test_glsl_texture_query_levels(env):
     assert(textureQueryLevels(tex2) == 7);
     assert(textureQueryLevels(tex3) == 5);
     assert(textureQueryLevels(tex4) == 4);
+    assert(textureQueryLevels(tex5) == 4);
     """
-    env.run_glsl(code, preamble, {'tex1[0]': tex1_0, 'tex1[1]': tex1_1, 'tex2': tex2, 'tex3': tex3, 'tex4': tex4}, version=430)
+    env.run_glsl(code, preamble, {'tex1[0]': tex1_0, 'tex1[1]': tex1_1, 'tex2': tex2, 'tex3': tex3, 'tex4': tex4, 'tex5': tex5}, version=430)
 
 
 def test_glsl_isampler(env):

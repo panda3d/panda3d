@@ -15150,6 +15150,7 @@ upload_texture_view(CLP(TextureContext) *gtc, int view, bool needs_reload,
 
     int width = tex->get_expected_mipmap_x_size(n);
     int height = tex->get_expected_mipmap_y_size(n);
+    int depth = tex->get_expected_mipmap_z_size(n);
 
     // we grab the mipmap pointer first, if it is NULL we grab the normal
     // mipmap image pointer which is a PTA_uchar

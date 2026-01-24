@@ -1387,7 +1387,8 @@ init_states() {
   // _states_lock without a startup race condition.  For the meantime, this is
   // OK because we guarantee that this method is called at static init time,
   // presumably when there is still only one thread in the world.
-  _states_lock = new LightReMutex("TransformState::_states_lock");
+  alignas(LightReMutex) static char storage[sizeof(LightReMutex)];
+  _states_lock = new (storage) LightReMutex("TransformState::_states_lock");
   _cache_stats.init();
   nassertv(Thread::get_current_thread() == Thread::get_main_thread());
 

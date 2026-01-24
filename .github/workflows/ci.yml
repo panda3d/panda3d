@@ -29,6 +29,7 @@ jobs:
           python: YES
           eigen: NO
           double: YES
+          asan: YES
 
         - profile: ubuntu-bionic-coverage-ninja
           os: ubuntu-22.04
@@ -40,6 +41,7 @@ jobs:
           python: YES
           eigen: NO
           double: NO
+          asan: YES
 
         #- profile: macos-coverage-unity-xcode
         #  os: macOS-15
@@ -62,6 +64,7 @@ jobs:
           python: YES
           eigen: NO
           double: NO
+          asan: YES
 
         - profile: windows-standard-unity-msvc
           os: windows-2022
@@ -182,7 +185,12 @@ jobs:
         -D HAVE_PYTHON=${{ runner.os != 'Windows' && matrix.python || 'NO' }}
         -D HAVE_EIGEN=${{ matrix.eigen }}
         -D STDFLOAT_DOUBLE=${{ matrix.double }}
+        -D ENABLE_ASAN=${{ matrix.asan || 'NO' }}
         ..
+
+        echo "$PWD/${{ matrix.config }}/bin" >> $GITHUB_PATH
+
+        echo "$PWD/bin" >> $GITHUB_PATH
 
     - name: Build (no Python)
       if: contains(matrix.python, 'NO')
@@ -216,11 +224,12 @@ jobs:
       shell: bash
       env:
         PYTHONPATH: ${{ matrix.config }}
+        ASAN_OPTIONS: detect_leaks=0:detect_odr_violation=0:log_path=asan.log.py38
       run: |
         PYTHON_EXECUTABLE=$(grep 'Python_EXECUTABLE:' CMakeCache.txt | sed 's/.*=//')
         $PYTHON_EXECUTABLE -m pip install -r ../requirements-test.txt
         export COVERAGE_FILE=.coverage.$RANDOM LLVM_PROFILE_FILE=$PWD/pid-%p.profraw
-        $PYTHON_EXECUTABLE -m pytest ../tests --cov=.
+        run_pytest ../tests --cov=.
       # END B
 
     - name: Setup Python (Python 3.9)
@@ -248,11 +257,12 @@ jobs:
       shell: bash
       env:
         PYTHONPATH: ${{ matrix.config }}
+        ASAN_OPTIONS: detect_leaks=0:detect_odr_violation=0:log_path=asan.log.py39
       run: |
         PYTHON_EXECUTABLE=$(grep 'Python_EXECUTABLE:' CMakeCache.txt | sed 's/.*=//')
         $PYTHON_EXECUTABLE -m pip install -r ../requirements-test.txt
         export COVERAGE_FILE=.coverage.$RANDOM LLVM_PROFILE_FILE=$PWD/pid-%p.profraw
-        $PYTHON_EXECUTABLE -m pytest ../tests --cov=.
+        run_pytest ../tests --cov=.
       # END B
 
     - name: Setup Python (Python 3.10)
@@ -280,11 +290,12 @@ jobs:
       shell: bash
       env:
         PYTHONPATH: ${{ matrix.config }}
+        ASAN_OPTIONS: detect_leaks=0:detect_odr_violation=0:log_path=asan.log.py310
       run: |
         PYTHON_EXECUTABLE=$(grep 'Python_EXECUTABLE:' CMakeCache.txt | sed 's/.*=//')
         $PYTHON_EXECUTABLE -m pip install -r ../requirements-test.txt
         export COVERAGE_FILE=.coverage.$RANDOM LLVM_PROFILE_FILE=$PWD/pid-%p.profraw
-        $PYTHON_EXECUTABLE -m pytest ../tests --cov=.
+        run_pytest ../tests --cov=.
       # END B
 
     - name: Setup Python (Python 3.11)
@@ -312,11 +323,12 @@ jobs:
       shell: bash
       env:
         PYTHONPATH: ${{ matrix.config }}
+        ASAN_OPTIONS: detect_leaks=0:detect_odr_violation=0:log_path=asan.log.py311
       run: |
         PYTHON_EXECUTABLE=$(grep 'Python_EXECUTABLE:' CMakeCache.txt | sed 's/.*=//')
         $PYTHON_EXECUTABLE -m pip install -r ../requirements-test.txt
         export COVERAGE_FILE=.coverage.$RANDOM LLVM_PROFILE_FILE=$PWD/pid-%p.profraw
-        $PYTHON_EXECUTABLE -m pytest ../tests --cov=.
+        run_pytest ../tests --cov=.
       # END B
 
     - name: Setup Python (Python 3.12)
@@ -344,12 +356,25 @@ jobs:
       shell: bash
       env:
         PYTHONPATH: ${{ matrix.config }}
+        ASAN_OPTIONS: detect_leaks=0:detect_odr_violation=0:log_path=asan.log.py312
       run: |
         PYTHON_EXECUTABLE=$(grep 'Python_EXECUTABLE:' CMakeCache.txt | sed 's/.*=//')
         $PYTHON_EXECUTABLE -m pip install -r ../requirements-test.txt
         export COVERAGE_FILE=.coverage.$RANDOM LLVM_PROFILE_FILE=$PWD/pid-%p.profraw
-        $PYTHON_EXECUTABLE -m pytest ../tests --cov=.
+        run_pytest ../tests --cov=.
       # END B
+
+    - name: Show ASan errors
+      if: failure() && contains(matrix.asan, 'YES')
+      working-directory: build
+      run: |
+        ls -lAh asan.log.* || true
+        if cat asan.log.* 2>/dev/null | grep -q .; then
+          echo '### Address Sanitizer Report' >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          cat asan.log.* >> $GITHUB_STEP_SUMMARY 2>/dev/null || echo "No ASan errors found"
+          echo '```' >> $GITHUB_STEP_SUMMARY
+        fi
 
     - name: Upload coverage reports
       if: always() && matrix.config == 'Coverage'
@@ -363,6 +388,13 @@ jobs:
 
         python -m pip install coverage
         python -m coverage combine $(find . -name '.coverage.*')
+
+        TOTAL=$(python -m coverage report --format=total)
+        echo '### Coverage Report' >> $GITHUB_STEP_SUMMARY
+        echo "<details><summary>Coverage: <b>${TOTAL}%</b></summary>" >> $GITHUB_STEP_SUMMARY
+        echo '' >> $GITHUB_STEP_SUMMARY
+        python -m coverage report --format=markdown >> $GITHUB_STEP_SUMMARY
+        echo '</details>' >> $GITHUB_STEP_SUMMARY
 
         llvm-profdata merge pid-*.profraw -o coverage.profdata
         llvm-cov show $(grep -Rl LLVM_PROFILE_FILE . | sed 's/^/-object /') -instr-profile=coverage.profdata > coverage.txt
