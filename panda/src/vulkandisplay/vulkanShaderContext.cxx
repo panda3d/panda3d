@@ -20,6 +20,7 @@
 #include "spirVInjectAlphaTestPass.h"
 #include "spirVMakeBlockPass.h"
 #include "spirVRemoveUnusedVariablesPass.h"
+#include "spirVReplaceVariableTypePass.h"
 
 static PStatCollector _update_tattr_descriptor_set_pcollector("Draw:Update Descriptor Sets:TextureAttrib");
 static PStatCollector _update_sattr_descriptor_set_pcollector("Draw:Update Descriptor Sets:ShaderAttrib");
@@ -74,6 +75,7 @@ create_modules(VkDevice device, const ShaderType::Struct *push_constant_block_ty
   ShaderType::Struct shader_input_block_struct;
   ShaderType::Struct other_state_block_struct;
   bool replace_bools = false;
+  bool convert_color_scale = false;
 
   for (size_t pi = 0; pi < _shader->_parameters.size(); ++pi) {
     const Shader::Parameter &param = _shader->_parameters[pi];
@@ -123,10 +125,17 @@ create_modules(VkDevice device, const ShaderType::Struct *push_constant_block_ty
         continue;
       }
       if (param._binding->is_color_scale()) {
-        push_constant_params[1] = param._name.p();
-        _color_scale_stage_mask |= param._stage_mask;
-        _push_constant_stage_mask |= param._stage_mask;
-        continue;
+        // Must be a vec3 or a vec4
+        if (const ShaderType::Vector *vec_type = param._type->as_vector()) {
+          if (vec_type->get_num_components() < 4) {
+            // We'll have to convert this later.
+            convert_color_scale = true;
+          }
+          push_constant_params[1] = param._name.p();
+          _color_scale_stage_mask |= param._stage_mask;
+          _push_constant_stage_mask |= param._stage_mask;
+          continue;
+        }
       }
     }
 
@@ -296,7 +305,12 @@ create_modules(VkDevice device, const ShaderType::Struct *push_constant_block_ty
 
     if (_push_constant_stage_mask != 0) {
       auto ids = spv_module->get_parameter_ids_from_names(push_constant_params);
-      transformer.run(SpirVMakeBlockPass(push_constant_block_type->as_struct(),
+      if (convert_color_scale && ids[1] != 0) {
+        // We'll have to convert this from vec4 to whatever it is.
+        const ShaderType *vec4_type = push_constant_block_type->get_member(1).type;
+        transformer.run(SpirVReplaceVariableTypePass(ids[1], vec4_type, spv::StorageClassUniformConstant));
+      }
+      transformer.run(SpirVMakeBlockPass(push_constant_block_type,
                                          ids, spv::StorageClassPushConstant));
     }
 
