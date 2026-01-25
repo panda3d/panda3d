@@ -72,7 +72,7 @@ public:
   INLINE bool bind_image(VkImage image);
   INLINE bool bind_buffer(VkBuffer buffer);
 
-  INLINE VulkanMemoryMapping map();
+  INLINE VulkanMemoryMapping map(size_t start = 0, size_t size = SIZE_MAX);
   INLINE void *map_persistent();
   INLINE void unmap_persistent();
 

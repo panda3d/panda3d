@@ -157,16 +157,17 @@ bind_buffer(VkBuffer buffer) {
  * entire memory page is enabled for persistent mapping.
  */
 INLINE VulkanMemoryMapping VulkanMemoryBlock::
-map() {
+map(size_t start, size_t size) {
   VulkanMemoryPage *page = (VulkanMemoryPage *)get_allocator();
   VulkanMemoryMapping ptr(page);
   if (page->_persistent_ptr != nullptr) {
-    ptr._data = (char *)page->_persistent_ptr + get_start();
+    ptr._data = (char *)page->_persistent_ptr + get_start() + start;
     return ptr;
   }
   ptr._device = page->_device;
   ptr._memory = page->_memory;
-  VkResult err = vkMapMemory(page->_device, page->_memory, get_start(), get_size(), 0, &ptr._data);
+  VkResult err = vkMapMemory(page->_device, page->_memory, get_start() + start,
+                             std::min(size, get_size() - start), 0, &ptr._data);
   if (err) {
     vulkan_error(err, "Failed to map memory");
     ptr._data = nullptr;

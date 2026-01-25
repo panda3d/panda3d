@@ -8043,6 +8043,9 @@ update_shader_buffer_data(ShaderBuffer *buffer, size_t start, size_t size,
   }
   report_my_gl_errors();
 
+  if (data != nullptr || !_supports_clear_buffer) {
+    _data_transferred_pcollector.add_level(size);
+  }
   return false;
 }
 

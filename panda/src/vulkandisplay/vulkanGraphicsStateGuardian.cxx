@@ -2559,7 +2559,11 @@ prepare_shader_buffer(ShaderBuffer *data) {
   int usage_flags = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
   if (use_staging_buffer) {
     usage_flags |= VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-  } else {
+  }
+  else if (data->get_usage_hint() == GeomEnums::UH_dynamic) {
+    usage_flags |= VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+  }
+  else {
     mem_flags = (VkMemoryPropertyFlagBits)(mem_flags | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
   }
 
@@ -2647,6 +2651,57 @@ release_shader_buffer(BufferContext *context) {
 
 /**
  * This method should only be called by the GraphicsEngine.  Do not call it
+ * directly; call GraphicsEngine::update_shader_buffer_data() instead.
+ *
+ * This method will be called in the draw thread to upload data to (a part of)
+ * the shader buffer from the CPU.  If data is null, clears the buffer instead.
+ */
+bool VulkanGraphicsStateGuardian::
+update_shader_buffer_data(ShaderBuffer *sbuffer, size_t start, size_t size,
+                          const unsigned char *data) {
+  nassertr(sbuffer->get_usage_hint() == GeomEnums::UH_dynamic, false);
+  nassertr(!_render_cmd, false);
+
+  VulkanBufferContext *bc;
+  DCAST_INTO_R(bc, sbuffer->prepare_now(get_prepared_objects(), this), false);
+  bc->set_active(true);
+
+  if (!_transfer_cmd) {
+    _transfer_cmd = begin_command_buffer();
+    nassertr_always(_transfer_cmd, false);
+  }
+
+  // Technically only have to do a barrier for part of the buffer, but we
+  // don't bother with partial tracking at the moment.
+  _transfer_cmd.add_barrier(bc, VK_PIPELINE_STAGE_2_TRANSFER_BIT, VK_ACCESS_2_TRANSFER_WRITE_BIT);
+  _transfer_cmd.flush_barriers();
+
+  if (data != nullptr) {
+    VkBuffer buffer;
+    uint32_t buffer_offset;
+    void *ptr = alloc_staging_buffer(size, buffer, buffer_offset);
+    if (!ptr) {
+      vulkandisplay_cat.error()
+        << "Failed to allocate staging buffer for updating shader buffer.\n";
+      return false;
+    }
+    memcpy(ptr, data, size);
+
+    VkBufferCopy region;
+    region.srcOffset = buffer_offset;
+    region.dstOffset = start;
+    region.size = size;
+    vkCmdCopyBuffer(_transfer_cmd, buffer, bc->_buffer, 1u, &region);
+  } else {
+    vkCmdFillBuffer(_transfer_cmd, bc->_buffer, start, size, 0u);
+  }
+
+  _data_transferred_pcollector.add_level(size);
+  return true;
+}
+
+/**
+ * This method should only be called by the GraphicsEngine.  Do not call it
  * directly; call GraphicsEngine::extract_shader_buffer_data() instead.
  *
  * This method will be called in the draw thread between begin_frame() and
@@ -2654,7 +2709,8 @@ release_shader_buffer(BufferContext *context) {
  * It may not be called between begin_scene() and end_scene().
  */
 bool VulkanGraphicsStateGuardian::
-extract_shader_buffer_data(ShaderBuffer *buffer, vector_uchar &data) {
+extract_shader_buffer_data(ShaderBuffer *buffer, vector_uchar &data,
+                           size_t start, size_t size) {
   nassertr(!_render_cmd, false);
 
   VulkanBufferContext *bc;
@@ -2666,7 +2722,7 @@ extract_shader_buffer_data(ShaderBuffer *buffer, vector_uchar &data) {
     nassertr_always(_transfer_cmd, false);
   }
 
-  return do_extract_buffer(bc, data);
+  return do_extract_buffer(bc, data, start, size);
 }
 
 /**
@@ -4434,14 +4490,14 @@ do_extract_image(VulkanTextureContext *tc, Texture *tex, int view, int z, Screen
  * submitted.  Caller is responsible for reopening that buffer if needed.
  */
 bool VulkanGraphicsStateGuardian::
-do_extract_buffer(VulkanBufferContext *bc, vector_uchar &data) {
-  size_t num_bytes = bc->get_data_size_bytes();
+do_extract_buffer(VulkanBufferContext *bc, vector_uchar &data, size_t start, size_t size) {
+  size = std::min(size, bc->get_data_size_bytes() - start);
 
   // Create a temporary buffer for transferring into.
   VkBuffer tmp_buffer = VK_NULL_HANDLE;
   VulkanMemoryBlock tmp_block;
   if (!bc->_host_visible) {
-    if (!create_buffer(num_bytes, tmp_buffer, tmp_block,
+    if (!create_buffer(size, tmp_buffer, tmp_block,
                        VK_BUFFER_USAGE_TRANSFER_DST_BIT,
                        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)) {
       vulkandisplay_cat.error()
@@ -4454,21 +4510,21 @@ do_extract_buffer(VulkanBufferContext *bc, vector_uchar &data) {
     barrier.pNext = nullptr;
     barrier.srcStageMask = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT;
     barrier.srcAccessMask = VK_ACCESS_2_MEMORY_WRITE_BIT;
-    barrier.dstStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
+    barrier.dstStageMask = VK_PIPELINE_STAGE_2_COPY_BIT;
     barrier.dstAccessMask = VK_ACCESS_2_TRANSFER_READ_BIT;
     barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
     barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
     barrier.buffer = bc->_buffer;
-    barrier.offset = 0;
-    barrier.size = VK_WHOLE_SIZE;
+    barrier.offset = start;
+    barrier.size = size;
 
     _transfer_cmd.add_barrier(barrier);
     _transfer_cmd.flush_barriers();
 
     VkBufferCopy region;
-    region.srcOffset = 0;
+    region.srcOffset = start;
     region.dstOffset = 0;
-    region.size = num_bytes;
+    region.size = size;
     vkCmdCopyBuffer(_transfer_cmd, bc->_buffer, tmp_buffer, 1, &region);
 
     // Issue a new barrier to make the copy visible on the host.
@@ -4492,8 +4548,8 @@ do_extract_buffer(VulkanBufferContext *bc, vector_uchar &data) {
     barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
     barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
     barrier.buffer = bc->_buffer;
-    barrier.offset = 0;
-    barrier.size = VK_WHOLE_SIZE;
+    barrier.offset = start;
+    barrier.size = size;
     _transfer_cmd.add_barrier(barrier);
   }
 
@@ -4504,12 +4560,12 @@ do_extract_buffer(VulkanBufferContext *bc, vector_uchar &data) {
 
   vkDestroyBuffer(_device, tmp_buffer, nullptr);
 
-  data.resize(num_bytes);
+  data.resize(size);
   {
     VulkanMemoryBlock &block = (bc->_host_visible ? bc->_block : tmp_block);
-    VulkanMemoryMapping mapping = block.map();
+    VulkanMemoryMapping mapping = block.map(bc->_host_visible ? start : 0, size);
     block.invalidate();
-    memcpy(&data[0], mapping, num_bytes);
+    memcpy(&data[0], mapping, size);
   }
 
   return true;

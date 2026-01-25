@@ -95,7 +95,10 @@ public:
                                          VkAccessFlags2 access_mask);
   virtual BufferContext *prepare_shader_buffer(ShaderBuffer *data);
   virtual void release_shader_buffer(BufferContext *bc);
-  virtual bool extract_shader_buffer_data(ShaderBuffer *buffer, vector_uchar &data);
+  virtual bool update_shader_buffer_data(ShaderBuffer *buffer, size_t start,
+                                         size_t size, const unsigned char *data);
+  virtual bool extract_shader_buffer_data(ShaderBuffer *buffer, vector_uchar &data,
+                                          size_t start, size_t size);
 
   virtual void issue_timer_query(int pstats_index);
   uint32_t get_next_timer_query(int pstats_index);
@@ -172,7 +175,8 @@ public:
 private:
   bool do_extract_image(VulkanTextureContext *tc, Texture *tex, int view, int z=-1,
                         ScreenshotRequest *request = nullptr);
-  bool do_extract_buffer(VulkanBufferContext *tc, vector_uchar &data);
+  bool do_extract_buffer(VulkanBufferContext *tc, vector_uchar &data,
+                         size_t start, size_t size);
 
   bool do_draw_primitive_with_topology(const GeomPrimitivePipelineReader *reader,
                                       bool force, VkPrimitiveTopology topology,
