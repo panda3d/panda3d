@@ -5268,10 +5268,18 @@ make_pipeline(VulkanShaderContext *sc,
 
   raster_info.cullMode = (VkCullModeFlagBits)key._cull_face_mode;
   raster_info.frontFace = VK_FRONT_FACE_CLOCKWISE; // Flipped
-  raster_info.depthBiasEnable = VK_FALSE;
-  raster_info.depthBiasConstantFactor = 0;
-  raster_info.depthBiasClamp = 0;
-  raster_info.depthBiasSlopeFactor = 0;
+
+  if (key._depth_bias_attrib != nullptr) {
+    raster_info.depthBiasEnable = VK_TRUE;
+    raster_info.depthBiasConstantFactor = key._depth_bias_attrib->get_constant_factor();
+    raster_info.depthBiasClamp = key._depth_bias_attrib->get_clamp();
+    raster_info.depthBiasSlopeFactor = key._depth_bias_attrib->get_slope_factor();
+  } else {
+    raster_info.depthBiasEnable = VK_FALSE;
+    raster_info.depthBiasConstantFactor = 0;
+    raster_info.depthBiasClamp = 0;
+    raster_info.depthBiasSlopeFactor = 0;
+  }
 
   VkPipelineMultisampleStateCreateInfo ms_info;
   ms_info.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;

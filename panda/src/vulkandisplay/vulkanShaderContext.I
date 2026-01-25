@@ -59,7 +59,8 @@ operator ==(const PipelineKey &other) const {
       && _logic_op == other._logic_op
       && _color_blend_attrib == other._color_blend_attrib
       && _transparency_mode == other._transparency_mode
-      && _alpha_test_attrib == other._alpha_test_attrib;
+      && _alpha_test_attrib == other._alpha_test_attrib
+      && _depth_bias_attrib == other._depth_bias_attrib;
 }
 
 /**
@@ -108,6 +109,9 @@ operator < (const PipelineKey &other) const {
   }
   if (_alpha_test_attrib != other._alpha_test_attrib) {
     return _alpha_test_attrib < other._alpha_test_attrib;
+  }
+  if (_depth_bias_attrib != other._depth_bias_attrib) {
+    return _depth_bias_attrib < other._depth_bias_attrib;
   }
   return 0;
 }

@@ -26,6 +26,7 @@
 #include "colorBlendAttrib.h"
 #include "alphaTestAttrib.h"
 #include "transparencyAttrib.h"
+#include "depthBiasAttrib.h"
 
 #include "small_vector.h"
 
@@ -101,6 +102,7 @@ public:
     CPT(ColorBlendAttrib) _color_blend_attrib;
     TransparencyAttrib::Mode _transparency_mode;
     CPT(AlphaTestAttrib) _alpha_test_attrib;
+    CPT(DepthBiasAttrib) _depth_bias_attrib;
   };
 
 private:

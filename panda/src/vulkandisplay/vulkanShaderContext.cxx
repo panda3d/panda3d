@@ -1010,6 +1010,8 @@ get_pipeline(VulkanGraphicsStateGuardian *gsg, const RenderState *state,
     key._alpha_test_attrib = alpha_test;
   }
 
+  state->get_attrib(key._depth_bias_attrib);
+
   PipelineMap::const_iterator it;
   it = _pipeline_map.find(key);
   if (it == _pipeline_map.end()) {
