@@ -253,7 +253,7 @@ create_modules(VkDevice device, const ShaderType::Struct *push_constant_block_ty
         AccessChain chain = tattr_set_params[i];
         if (chain.size() > 0) {
           int index = spv_module->find_parameter(_shader->_parameters[chain._var_id]._name);
-          if (index > 0) {
+          if (index >= 0) {
             chain._var_id = spv_module->get_parameter(index).id;
             auto it = hoist_pass._hoisted_vars.find(chain);
             if (it != hoist_pass._hoisted_vars.end()) {
@@ -269,7 +269,7 @@ create_modules(VkDevice device, const ShaderType::Struct *push_constant_block_ty
         AccessChain chain = lattr_set_params[i];
         if (chain.size() > 0) {
           int index = spv_module->find_parameter(_shader->_parameters[chain._var_id]._name);
-          if (index > 0) {
+          if (index >= 0) {
             chain._var_id = spv_module->get_parameter(index).id;
             auto it = hoist_pass._hoisted_vars.find(chain);
             if (it != hoist_pass._hoisted_vars.end()) {
@@ -285,7 +285,7 @@ create_modules(VkDevice device, const ShaderType::Struct *push_constant_block_ty
         AccessChain chain = sattr_set_params[i];
         if (chain.size() > 0) {
           int index = spv_module->find_parameter(_shader->_parameters[chain._var_id]._name);
-          if (index > 0) {
+          if (index >= 0) {
             chain._var_id = spv_module->get_parameter(index).id;
             auto it = hoist_pass._hoisted_vars.find(chain);
             if (it != hoist_pass._hoisted_vars.end()) {
