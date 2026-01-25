@@ -38,6 +38,7 @@
 #include "shaderModule.h"
 #include "copyOnWritePointer.h"
 #include "shaderInputBinding.h"
+#include "compilerOptions.h"
 
 class BamCacheRecord;
 class ShaderCompiler;
@@ -81,20 +82,26 @@ PUBLISHED:
 PUBLISHED:
   Shader(SourceLanguage lang);
 
-  static PT(Shader) load(const Filename &file, SourceLanguage lang = SL_none);
-  static PT(Shader) make(std::string body, SourceLanguage lang = SL_none);
+  static PT(Shader) load(const Filename &file, SourceLanguage lang = SL_none,
+                         const CompilerOptions &options = CompilerOptions());
+  static PT(Shader) make(std::string body, SourceLanguage lang = SL_none,
+                         const CompilerOptions &options = CompilerOptions());
   static PT(Shader) load(SourceLanguage lang,
                          const Filename &vertex, const Filename &fragment,
                          const Filename &geometry = "",
                          const Filename &tess_control = "",
-                         const Filename &tess_evaluation = "");
-  static PT(Shader) load_compute(SourceLanguage lang, const Filename &fn);
+                         const Filename &tess_evaluation = "",
+                         const CompilerOptions &options = CompilerOptions());
+  static PT(Shader) load_compute(SourceLanguage lang, const Filename &fn,
+                                 const CompilerOptions &options = CompilerOptions());
   static PT(Shader) make(SourceLanguage lang,
                          std::string vertex, std::string fragment,
                          std::string geometry = "",
                          std::string tess_control = "",
-                         std::string tess_evaluation = "");
-  static PT(Shader) make_compute(SourceLanguage lang, std::string body);
+                         std::string tess_evaluation = "",
+                         const CompilerOptions &options = CompilerOptions());
+  static PT(Shader) make_compute(SourceLanguage lang, std::string body,
+                                 const CompilerOptions &options = CompilerOptions());
 
   INLINE Filename get_filename(DeprecatedShaderType type = ST_none) const;
   INLINE void set_filename(DeprecatedShaderType type, const Filename &filename);
@@ -326,12 +333,19 @@ protected:
 private:
   void clear_prepared(PreparedGraphicsObjects *prepared_objects);
 
-  bool read(const ShaderFile &sfile, BamCacheRecord *record = nullptr);
-  bool load(const ShaderFile &sbody, BamCacheRecord *record = nullptr);
-  bool do_read_source(ShaderModule::Stage stage, const Filename &fn, BamCacheRecord *record);
+  bool read(const ShaderFile &sfile,
+            const CompilerOptions &options = CompilerOptions(),
+            BamCacheRecord *record = nullptr);
+  bool load(const ShaderFile &sbody,
+            const CompilerOptions &options = CompilerOptions(),
+            BamCacheRecord *record = nullptr);
+  bool do_read_source(ShaderModule::Stage stage, const Filename &fn,
+                      const CompilerOptions &options, BamCacheRecord *record);
   bool do_read_source(ShaderModule::Stage stage, std::istream &in,
-                      const Filename &fullpath, BamCacheRecord *record);
-  bool do_load_source(ShaderModule::Stage stage, const std::string &source, BamCacheRecord *record);
+                      const Filename &fullpath, const CompilerOptions &options,
+                      BamCacheRecord *record);
+  bool do_load_source(ShaderModule::Stage stage, const std::string &source,
+                      const CompilerOptions &options, BamCacheRecord *record);
 
 public:
   bool link();

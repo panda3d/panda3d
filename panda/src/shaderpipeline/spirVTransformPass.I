@@ -166,7 +166,7 @@ define_float_constant(float constant) {
     uint32_t ui;
   } u;
   u.f = constant;
-  return define_constant(ShaderType::float_type, u.ui);
+  return define_constant(ShaderType::FLOAT, u.ui);
 }
 
 /**

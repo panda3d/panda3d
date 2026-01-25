@@ -38,14 +38,13 @@ TypeHandle ShaderModuleSpirV::_type_handle;
  * - Strips debugging information from the module.
  */
 ShaderModuleSpirV::
-ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, BamCacheRecord *record) :
+ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, const CompilerOptions &options) :
   ShaderModule(stage),
   _instructions(std::move(words))
 {
   if (!_instructions.validate_header()) {
     return;
   }
-  _record = record;
 
   // Check for caps and sanity.
   for (InstructionIterator it = _instructions.begin(); it != _instructions.begin_annotations(); ++it) {
@@ -143,7 +142,9 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, BamCacheRecord *reco
   }
 
   // Remove unused variables before assigning locations.
-  transformer.run(SpirVRemoveUnusedVariablesPass());
+  if (options.get_optimize() != CompilerOptions::Optimize::NONE) {
+    transformer.run(SpirVRemoveUnusedVariablesPass());
+  }
 
   // Add in location decorations for any inputs that are missing it.
   transformer.assign_interface_locations(stage);

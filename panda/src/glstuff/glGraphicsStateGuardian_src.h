@@ -419,7 +419,13 @@ public:
   CLP(BufferContext) *apply_shader_buffer(GLuint base, ShaderBuffer *buffer);
   virtual void release_shader_buffer(BufferContext *bc);
   virtual void release_shader_buffers(const pvector<BufferContext *> &contexts);
-  virtual bool extract_shader_buffer_data(ShaderBuffer *buffer, vector_uchar &data);
+  virtual bool update_shader_buffer_data(ShaderBuffer *buffer, size_t start,
+                                         size_t size, const unsigned char *data);
+  virtual bool extract_shader_buffer_data(ShaderBuffer *buffer, vector_uchar &data,
+                                          size_t start, size_t size);
+  virtual void async_extract_shader_buffer_data(ShaderBuffer *buffer, vector_uchar &data,
+                                                size_t start = 0, size_t size = (size_t)-1,
+                                                CompletionToken token = CompletionToken());
 #endif
 
 #ifndef OPENGLES
@@ -676,9 +682,9 @@ protected:
   void check_nonresident_texture(BufferContextChain &chain);
   bool do_extract_texture_data(CLP(TextureContext) *gtc, int view);
   bool extract_texture_image(PTA_uchar &image, size_t &page_size,
-           Texture *tex, GLenum target, GLenum page_target,
-           Texture::ComponentType type,
-           Texture::CompressionMode compression, int n);
+                             Texture *tex, GLenum target,
+                             Texture::ComponentType type,
+                             Texture::CompressionMode compression, int n);
 
 #ifdef SUPPORT_FIXED_FUNCTION
   void do_point_size();
@@ -888,6 +894,7 @@ public:
   bool _supports_clear_buffer;
 #ifndef OPENGLES
   PFNGLCLEARBUFFERDATAPROC _glClearBufferData;
+  PFNGLCLEARBUFFERSUBDATAPROC _glClearBufferSubData;
 #endif
 
   PFNGLCOMPRESSEDTEXIMAGE1DPROC _glCompressedTexImage1D;
@@ -1024,6 +1031,12 @@ public:
   PFNGLGENERATETEXTUREMIPMAPPROC _glGenerateTextureMipmap;
   PFNGLBINDTEXTUREUNITPROC _glBindTextureUnit;
   PFNGLMAPNAMEDBUFFERRANGEPROC _glMapNamedBufferRange;
+  PFNGLNAMEDBUFFERSUBDATAPROC _glNamedBufferSubData;
+  PFNGLCLEARNAMEDBUFFERSUBDATAPROC _glClearNamedBufferSubData;
+  PFNGLCOPYNAMEDBUFFERSUBDATAPROC _glCopyNamedBufferSubData;
+  PFNGLGETNAMEDBUFFERSUBDATAPROC _glGetNamedBufferSubData;
+#else
+  static const bool _supports_dsa = false;
 #endif
 
 #ifndef OPENGLES_1
@@ -1236,6 +1249,7 @@ public:
   int _texture_fetch_barrier_counter = 0;
   int _shader_image_access_barrier_counter = 0;
   int _texture_update_barrier_counter = 0;
+  int _buffer_update_barrier_counter = 0;
   int _framebuffer_barrier_counter = 0;
   int _shader_storage_barrier_counter = 0;
 #endif

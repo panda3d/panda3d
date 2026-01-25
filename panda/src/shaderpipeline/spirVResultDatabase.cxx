@@ -225,15 +225,15 @@ parse_instruction(spv::Op opcode, const uint32_t *args, uint32_t nargs, uint32_t
     break;
 
   case spv::OpTypeBool:
-    record_type(args[0], ShaderType::bool_type);
+    record_type(args[0], ShaderType::BOOL);
     break;
 
   case spv::OpTypeInt:
     {
       if (args[2]) {
-        record_type(args[0], ShaderType::int_type);
+        record_type(args[0], ShaderType::INT);
       } else {
-        record_type(args[0], ShaderType::uint_type);
+        record_type(args[0], ShaderType::UINT);
       }
     }
     break;
@@ -241,9 +241,9 @@ parse_instruction(spv::Op opcode, const uint32_t *args, uint32_t nargs, uint32_t
   case spv::OpTypeFloat:
     {
       if (nargs >= 2 && args[1] >= 64) {
-        record_type(args[0], ShaderType::double_type);
+        record_type(args[0], ShaderType::DOUBLE);
       } else {
-        record_type(args[0], ShaderType::float_type);
+        record_type(args[0], ShaderType::FLOAT);
       }
     }
     break;
@@ -385,7 +385,7 @@ parse_instruction(spv::Op opcode, const uint32_t *args, uint32_t nargs, uint32_t
 
   case spv::OpTypeSampler:
     // A sampler that's not bound to a particular image.
-    record_type(args[0], ShaderType::sampler_type);
+    record_type(args[0], ShaderType::SAMPLER);
     break;
 
   case spv::OpTypeSampledImage:
@@ -403,7 +403,7 @@ parse_instruction(spv::Op opcode, const uint32_t *args, uint32_t nargs, uint32_t
   case spv::OpTypeArray:
     if (_defs[args[1]]._type != nullptr) {
       record_type(args[0], ShaderType::register_type(
-        ShaderType::Array(_defs[args[1]]._type, _defs[args[2]]._constant)));
+        ShaderType::Array(_defs[args[1]]._type, _defs[args[2]]._constant, _defs[args[0]]._array_stride)));
     }
     _defs[args[0]]._type_id = args[1];
     break;
@@ -411,7 +411,7 @@ parse_instruction(spv::Op opcode, const uint32_t *args, uint32_t nargs, uint32_t
   case spv::OpTypeRuntimeArray:
     if (_defs[args[1]]._type != nullptr) {
       record_type(args[0], ShaderType::register_type(
-        ShaderType::Array(_defs[args[1]]._type, 0)));
+        ShaderType::Array(_defs[args[1]]._type, 0, _defs[args[0]]._array_stride)));
     }
     _defs[args[0]]._type_id = args[1];
     break;
@@ -437,26 +437,7 @@ parse_instruction(spv::Op opcode, const uint32_t *args, uint32_t nargs, uint32_t
           continue;
         }
 
-        const ShaderType *member_type = _defs[member_type_id]._type;
-        if (member_def._flags & (DF_non_writable | DF_non_readable)) {
-          // If an image member has the readonly/writeonly qualifiers,
-          // then we'll inject those back into the type.
-          if (const ShaderType::Image *image = member_type->as_image()) {
-            ShaderType::Access access = image->get_access();
-            if (member_def._flags & DF_non_writable) {
-              access = (access & ShaderType::Access::READ_ONLY);
-            }
-            if (member_def._flags & DF_non_readable) {
-              access = (access & ShaderType::Access::WRITE_ONLY);
-            }
-            if (access != image->get_access()) {
-              member_type = ShaderType::register_type(ShaderType::Image(
-                image->get_texture_type(),
-                image->get_sampled_type(),
-                access));
-            }
-          }
-        }
+        const ShaderType *member_type = get_member_type(member_def);
         if (member_def._offset >= 0) {
           type.add_member(member_type, member_def._name, (uint32_t)member_def._offset);
         } else {
@@ -727,6 +708,10 @@ parse_instruction(spv::Op opcode, const uint32_t *args, uint32_t nargs, uint32_t
 
     case spv::DecorationOffset:
       _defs[args[0]].modify_member(args[1])._offset = args[3];
+      break;
+
+    case spv::DecorationMatrixStride:
+      _defs[args[0]].modify_member(args[1])._matrix_stride = args[3];
       break;
 
     default:
@@ -1351,4 +1336,63 @@ collect_nested_structs(pmap<uint32_t, const ShaderType::Struct *> &result, uint3
   if (type_def._type_id != 0 && type_def._type_id != id) {
     collect_nested_structs(result, type_def._type_id);
   }
+}
+
+/**
+ * Returns the type of a member with any decorations applied.
+ */
+const ShaderType *SpirVResultDatabase::
+get_member_type(const MemberDefinition &member_def) const {
+  const ShaderType *member_type = _defs[member_def._type_id]._type;
+  return r_apply_member_type_decorations(member_def, member_type);
+}
+
+/**
+ * Recursive helper for get_member_type to correctly handle arrays.
+ */
+const ShaderType *SpirVResultDatabase::
+r_apply_member_type_decorations(const MemberDefinition &member_def, const ShaderType *type) const {
+  if (member_def._flags & (DF_non_writable | DF_non_readable)) {
+    // If an image member has the readonly/writeonly qualifiers,
+    // then we'll inject those back into the type.
+    if (const ShaderType::Image *image = type->as_image()) {
+      ShaderType::Access access = image->get_access();
+      if (member_def._flags & DF_non_writable) {
+        access = (access & ShaderType::Access::READ_ONLY);
+      }
+      if (member_def._flags & DF_non_readable) {
+        access = (access & ShaderType::Access::WRITE_ONLY);
+      }
+      if (access != image->get_access()) {
+        return ShaderType::register_type(ShaderType::Image(
+          image->get_texture_type(),
+          image->get_sampled_type(),
+          access));
+      }
+    }
+  }
+
+  if (member_def._matrix_stride > 0) {
+    // Inject matrix stride into the matrix type.
+    if (const ShaderType::Matrix *matrix = type->as_matrix()) {
+      if (matrix->get_row_stride_bytes() != member_def._matrix_stride) {
+        type = ShaderType::register_type(ShaderType::Matrix(matrix->get_scalar_type(), matrix->get_num_rows(), matrix->get_num_columns(), member_def._matrix_stride));
+
+        // Add this variant to the type map, it still refers to the same type
+        // as far as SPIR-V is concerned.
+        _type_map[type] = _type_map[matrix];
+        return type;
+      }
+    }
+  }
+
+  if (const ShaderType::Array *array = type->as_array()) {
+    const ShaderType *element_type = array->get_element_type();
+    const ShaderType *new_element_type = r_apply_member_type_decorations(member_def, element_type);
+    if (element_type != new_element_type) {
+      return ShaderType::register_type(ShaderType::Array(new_element_type, array->get_num_elements(), array->get_stride_bytes()));
+    }
+  }
+
+  return type;
 }

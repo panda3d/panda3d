@@ -960,6 +960,89 @@ do_read_record(const Filename &cache_pathname, bool read_data) {
 }
 
 /**
+ * Clear the model cache.
+ *
+ * Acquires the internal _lock for thread-safety (so callers do NOT need to
+ * hold the lock). If no cache root is configured (_root.empty()), returns
+ * immediately. If the cache is marked _read_only, resets only the in-memory
+ * index and emits a warning message.
+ * If the VirtualFileSystem global pointer is not available, logs an error,
+ * resets only the in-memory index, and returns immediately. Otherwise, scans
+ * the cache root directory and deletes cache files matching the known cache
+ * extensions (.bam, .txo, .sho). Removes the on-disk index file (if known)
+ * or the index reference file and clears the in-memory index reference
+ * contents. Resets the in-memory index to an empty BamCacheIndex. Marks the
+ * index stale and attempts to flush a new, empty on-disk index so other
+ * processes will observe the cleared state.
+ */
+void BamCache::
+clear() {
+  ReMutexHolder holder(_lock);
+
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+
+  if (_root.empty()) {
+    return;
+  }
+
+  // If the cache is read-only, only reset the in-memory index and log.
+  if (_read_only) {
+    util_cat.info() << "BamCache::clear(): cache is read-only; clearing in-memory index only.\n";
+    reset_in_memory_index();
+    return;
+  }
+
+  if (vfs == nullptr) {
+    util_cat.error() << "BamCache::clear(): VFS is not available\n";
+    reset_in_memory_index();
+    return;
+  }
+
+  // Delete cache files (.bam, .txo, .sho) in the cache root directory.
+  PT(VirtualFileList) contents = vfs->scan_directory(_root);
+  if (contents != nullptr) {
+    int num_files = contents->get_num_files();
+    for (int ci = 0; ci < num_files; ++ci) {
+      VirtualFile *file = contents->get_file(ci);
+      Filename filename = file->get_filename();
+      const std::string ext = filename.get_extension();
+
+      if (ext == "bam" || ext == "txo" || ext == "sho") {
+        Filename pathname(_root, filename);
+        if (!vfs->delete_file(pathname)) {
+          util_cat.debug()
+            << "Could not delete cache file " << pathname << "\n";
+        }
+      }
+    }
+  }
+
+  // Remove index files: the index file itself (if known) and the index ref.
+  Filename index_ref_pathname(_root, Filename("index_name.txt"));
+  if (!_index_pathname.empty()) {
+    vfs->delete_file(_index_pathname);
+    _index_pathname = Filename();
+    _index_ref_contents.clear();
+  } else {
+    vfs->delete_file(index_ref_pathname);
+  }
+
+  reset_in_memory_index();
+
+  // Try to write an empty index back to disk: mark stale then flush.
+  mark_index_stale();
+  flush_index();
+}
+
+/* Reset the in-memory cache index to an empty state (caller must hold _lock). */
+void BamCache::
+reset_in_memory_index() {
+  delete _index;
+  _index = new BamCacheIndex;
+  _index_stale_since = 0;
+}
+
+/**
  * Returns the appropriate filename to use for a cache file, given the
  * fullpath string to the source filename.
  */

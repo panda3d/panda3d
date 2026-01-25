@@ -48,7 +48,7 @@ public:
 
   INLINE static void prepare_for_exit();
 
-  INLINE static Thread *get_current_thread();
+  static Thread *get_current_thread();
   static Thread *bind_thread(Thread *thread);
   INLINE static bool is_threading_supported();
   INLINE static bool is_true_threads();
@@ -59,7 +59,7 @@ public:
 
 #ifdef ANDROID
   INLINE JNIEnv *get_jni_env() const;
-  bool attach_java_vm();
+  JNIEnv *attach_java_vm();
   static void bind_java_thread();
 #endif
 
@@ -68,6 +68,10 @@ public:
 private:
   static void *root_func(void *data);
   static Thread *init_current_thread();
+
+#ifdef ANDROID
+  static Thread *do_get_current_thread();
+#endif
 
   // There appears to be a name collision with the word "Status".
   enum PStatus {
@@ -88,7 +92,11 @@ private:
   JNIEnv *_jni_env;
 #endif
 
+  // Android doesn't do TLS correctly across .so boundaries, so we hide the
+  // current thread in the .cxx file.
+#ifndef ANDROID
   static __thread Thread *_current_thread;
+#endif
 };
 
 #include "threadPosixImpl.I"

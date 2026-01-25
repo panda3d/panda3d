@@ -639,10 +639,10 @@ process_events() {
     Atom type;
     int format;
     unsigned long nItem, bytesAfter;
-    unsigned char *new_window_properties = NULL;
+    unsigned char *new_window_properties = nullptr;
     // gather all properties from the active dispplay and window
     XGetWindowProperty(_display, _xwindow, wmState, 0, LONG_MAX, false, AnyPropertyType, &type, &format, &nItem, &bytesAfter, &new_window_properties);
-    if (nItem > 0) {
+    if (nItem > 0 && new_window_properties != nullptr) {
       x11GraphicsPipe *x11_pipe;
       DCAST_INTO_V(x11_pipe, _pipe);
       // run through all found items
@@ -655,6 +655,7 @@ process_events() {
           is_maximized = true;
         }
       }
+      XFree(new_window_properties);
     }
 
     // Debug entry
@@ -1537,6 +1538,9 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
   XSetWMProperties(_display, _xwindow, window_name_p, window_name_p,
                    nullptr, 0, size_hints_p, wm_hints_p, class_hints_p);
 
+  if (window_name_p != nullptr) {
+    XFree(window_name.value);
+  }
   if (size_hints_p != nullptr) {
     XFree(size_hints_p);
   }
@@ -2760,7 +2764,7 @@ enable_detectable_auto_repeat() {
   if (!x_detectable_auto_repeat) {
     return;
   }
-  
+
   Bool supported;
   if (XkbSetDetectableAutoRepeat(_display, True, &supported)) {
     x11display_cat.info() << "Detectable auto-repeat enabled.\n";

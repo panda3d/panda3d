@@ -106,9 +106,12 @@ PUBLISHED:
     ET_glow,
     ET_gloss,
     ET_height,
-    ET_selector,
+    ET_metallic_roughness,
     ET_normal_gloss,
     ET_emission,
+    ET_occlusion,
+    ET_occlusion_metallic_roughness,
+    ET_selector = ET_metallic_roughness,
   };
   enum CombineMode {
     CM_unspecified,

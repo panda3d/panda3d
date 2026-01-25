@@ -1,6 +1,7 @@
 #include "config_android.cxx"
 #include "jni_NativeIStream.cxx"
 #include "jni_NativeOStream.cxx"
+#include "jni_PandaActivity.cxx"
 #include "pnmFileTypeAndroid.cxx"
 #include "pnmFileTypeAndroidReader.cxx"
 #include "pnmFileTypeAndroidWriter.cxx"

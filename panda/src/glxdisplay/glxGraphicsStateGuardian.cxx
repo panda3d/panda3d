@@ -413,6 +413,7 @@ choose_pixel_format(const FrameBufferProperties &properties,
             << ", context_has_pixmap = " << _context_has_pixmap << "\n";
         }
 
+        XFree(configs);
         return;
       }
     }
@@ -423,6 +424,10 @@ choose_pixel_format(const FrameBufferProperties &properties,
     _context = nullptr;
     _visual = nullptr;
     _visuals = nullptr;
+  }
+
+  if (configs != nullptr) {
+    XFree(configs);
   }
 
   glxdisplay_cat.warning()

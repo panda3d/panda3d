@@ -305,19 +305,19 @@ load_file(const Filename &path, const LoaderOptions &options,
 #endif
 
   // Wrap the arguments.
-  PyObject *args = PyTuple_New(3);
-  PyTuple_SET_ITEM(args, 0, DTool_CreatePyInstance((void *)&path, Dtool_Filename, false, true));
-  PyTuple_SET_ITEM(args, 1, DTool_CreatePyInstance((void *)&options, Dtool_LoaderOptions, false, true));
+  PyObject *args[4];
+  args[1] = DTool_CreatePyInstance((void *)&path, Dtool_Filename, false, true);
+  args[2] = DTool_CreatePyInstance((void *)&options, Dtool_LoaderOptions, false, true);
   if (record != nullptr) {
     record->ref();
-    PyTuple_SET_ITEM(args, 2, DTool_CreatePyInstanceTyped((void *)record, Dtool_BamCacheRecord, true, false, record->get_type_index()));
+    args[3] = DTool_CreatePyInstanceTyped((void *)record, Dtool_BamCacheRecord, true, false, record->get_type_index());
   } else {
-    PyTuple_SET_ITEM(args, 2, Py_NewRef(Py_None));
+    args[3] = Py_NewRef(Py_None);
   }
 
   PT(PandaNode) node;
 
-  PyObject *result = PythonThread::call_python_func(_load_func, args);
+  PyObject *result = PythonThread::call_python_func(_load_func, args + 1, 3 | PY_VECTORCALL_ARGUMENTS_OFFSET);
   if (result != nullptr) {
     if (DtoolInstance_Check(result)) {
       node = (PandaNode *)DtoolInstance_UPCAST(result, Dtool_PandaNode);
@@ -325,7 +325,9 @@ load_file(const Filename &path, const LoaderOptions &options,
     Py_DECREF(result);
   }
 
-  Py_DECREF(args);
+  Py_DECREF(args[1]);
+  Py_DECREF(args[2]);
+  Py_DECREF(args[3]);
 
   if (node == nullptr) {
     PyObject *exc_type = PyErr_Occurred();
@@ -372,13 +374,16 @@ save_file(const Filename &path, const LoaderOptions &options,
 #endif
 
   // Wrap the arguments.
-  PyObject *args = PyTuple_New(3);
-  PyTuple_SET_ITEM(args, 0, DTool_CreatePyInstance((void *)&path, Dtool_Filename, false, true));
-  PyTuple_SET_ITEM(args, 1, DTool_CreatePyInstance((void *)&options, Dtool_LoaderOptions, false, true));
-  PyTuple_SET_ITEM(args, 2, DTool_CreatePyInstanceTyped((void *)node, Dtool_PandaNode, true, false, node->get_type_index()));
+  PyObject *args[4];
+  args[1] = DTool_CreatePyInstance((void *)&path, Dtool_Filename, false, true);
+  args[2] = DTool_CreatePyInstance((void *)&options, Dtool_LoaderOptions, false, true);
+  args[3] = DTool_CreatePyInstanceTyped((void *)node, Dtool_PandaNode, true, false, node->get_type_index());
 
-  PyObject *result = PythonThread::call_python_func(_load_func, args);
-  Py_DECREF(args);
+  PyObject *result = PythonThread::call_python_func(_save_func, args + 1, 3 | PY_VECTORCALL_ARGUMENTS_OFFSET);
+  Py_DECREF(args[1]);
+  Py_DECREF(args[2]);
+  Py_DECREF(args[3]);
+
   if (result != nullptr) {
     Py_DECREF(result);
   } else {

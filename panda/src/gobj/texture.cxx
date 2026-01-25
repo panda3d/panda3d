@@ -7613,7 +7613,7 @@ get_ram_image_as(const string &requested_format) {
       // If the image size wasn't a multiple of 4, we may have a handful of
       // pixels left over.  Convert those the slower way.
       uint8_t *tail = (uint8_t *)dst;
-      for (int i = (imgsize & ~0x3); i < imgsize; ++i) {
+      for (size_t i = (imgsize & ~0x3); i < imgsize; ++i) {
         uint32_t v = *src++;
         *tail++ = (v & 0x00ff0000u) >> 16;
         *tail++ = (v & 0x0000ff00u) >> 8;
@@ -7627,8 +7627,8 @@ get_ram_image_as(const string &requested_format) {
 
       // Convert blocks of 4 pixels at a time, so that we can treat both the
       // source and destination as 32-bit integers.
-      int blocks = imgsize >> 2;
-      for (int i = 0; i < blocks; ++i) {
+      size_t blocks = imgsize >> 2;
+      for (size_t i = 0; i < blocks; ++i) {
         uint32_t v0 = *src++;
         uint32_t v1 = *src++;
         uint32_t v2 = *src++;
@@ -7641,7 +7641,7 @@ get_ram_image_as(const string &requested_format) {
       // If the image size wasn't a multiple of 4, we may have a handful of
       // pixels left over.  Convert those the slower way.
       uint8_t *tail = (uint8_t *)dst;
-      for (int i = (imgsize & ~0x3); i < imgsize; ++i) {
+      for (size_t i = (imgsize & ~0x3); i < imgsize; ++i) {
         uint32_t v = *src++;
         *tail++ = (v & 0x000000ffu);
         *tail++ = (v & 0x0000ff00u) >> 8;
@@ -7653,7 +7653,7 @@ get_ram_image_as(const string &requested_format) {
     uint8_t *dst = (uint8_t *)newdata.p();
 
     if (format == "RGB" && cdata->_num_components == 3) {
-      for (int i = 0; i < imgsize; ++i) {
+      for (size_t i = 0; i < imgsize; ++i) {
         *dst++ = src[2];
         *dst++ = src[1];
         *dst++ = src[0];

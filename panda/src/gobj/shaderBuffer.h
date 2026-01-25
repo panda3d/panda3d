@@ -21,6 +21,7 @@
 #include "graphicsStateGuardianBase.h"
 #include "factoryParams.h"
 #include "vector_uchar.h"
+#include "asyncFuture.h"
 
 class BufferContext;
 class PreparedGraphicsObjects;
@@ -50,6 +51,9 @@ public:
 PUBLISHED:
   MAKE_PROPERTY(data_size_bytes, get_data_size_bytes);
   MAKE_PROPERTY(usage_hint, get_usage_hint);
+
+  PT(AsyncFuture) extract_data(PreparedGraphicsObjects *prepared_objects,
+                               size_t start = 0, size_t size = (size_t)-1);
 
   void prepare(PreparedGraphicsObjects *prepared_objects);
   bool is_prepared(PreparedGraphicsObjects *prepared_objects) const;

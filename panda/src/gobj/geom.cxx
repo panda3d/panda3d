@@ -1373,7 +1373,7 @@ compute_internal_bounds(Geom::CData *cdata, Thread *current_thread) const {
     nassertv(!pmax.is_nan());
 
     // Then we put the bounding volume around both of those points.
-    PN_stdfloat avg_box_area;
+    PN_stdfloat avg_box_area {};
     switch (btype) {
     case BoundingVolume::BT_best:
     case BoundingVolume::BT_fastest:

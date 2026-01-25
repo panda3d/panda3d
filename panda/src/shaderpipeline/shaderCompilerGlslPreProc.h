@@ -17,6 +17,7 @@
 #include "pandabase.h"
 
 #include "shaderCompiler.h"
+#include "virtualFile.h"
 
 class ShaderModuleGlsl;
 
@@ -31,6 +32,8 @@ public:
   virtual SourceLanguages get_languages() const override;
   virtual PT(ShaderModule) compile_now(Stage stage, std::istream &in,
                                        const Filename &fullpath,
+                                       const CompilerOptions &options,
+                                       std::ostream *output_log = nullptr,
                                        BamCacheRecord *record = nullptr) const override;
 
 private:
@@ -38,6 +41,7 @@ private:
     std::ostringstream code;
     std::set<Filename> once_files;
     pvector<Filename> included_files;
+    pvector<PT(VirtualFile)> source_files;
     uint64_t required_caps = 0;
     int cond_nesting = 0;
     int version = 0;
@@ -48,8 +52,9 @@ private:
                             int depth) const;
   bool r_preprocess_source(State &state, std::istream &in,
                            const std::string &fn, const Filename &full_fn,
-                           BamCacheRecord *record = nullptr, int fileno = 0,
-                           int depth = 0) const;
+                           const std::string &preamble,
+                           BamCacheRecord *record = nullptr,
+                           int fileno = 0, int depth = 0) const;
 
 public:
   static TypeHandle get_class_type() {

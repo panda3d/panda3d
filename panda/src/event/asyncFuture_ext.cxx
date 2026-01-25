@@ -332,8 +332,7 @@ add_done_callback(PyObject *self, PyObject *fn) {
   }
 
   PythonTask *task = new PythonTask(fn);
-  Py_DECREF(task->_args);
-  task->_args = PyTuple_Pack(1, self);
+  task->_args.assign(1, Py_NewRef(self));
   task->_append_task = false;
   task->_ignore_return = true;
 
@@ -373,7 +372,7 @@ gather(PyObject *args) {
         futures.push_back(fut);
         continue;
       }
-    } else if (PyCoro_CheckExact(item)) {
+    } else if (PyObject_TypeCheck(item, &PyCoro_Type)) {
       // We allow passing in a coroutine instead of a future.  This causes it
       // to be scheduled as a task on the current task manager.
       PT(AsyncTask) task = new PythonTask(item);

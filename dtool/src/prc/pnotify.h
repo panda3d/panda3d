@@ -102,7 +102,7 @@ private:
   Categories _categories;
 
 #if defined(ANDROID)
-  AndroidLogStream *_log_streams[NS_fatal + 1];
+  std::ostream *_log_streams[NS_fatal + 1];
 #elif defined(__EMSCRIPTEN__)
   EmscriptenLogStream *_log_streams[NS_fatal + 1];
 #endif

@@ -15,6 +15,7 @@
 #include "ffmpegAudioCursor.h"
 
 #include "ffmpegAudio.h"
+#include "vector_string.h"
 extern "C" {
   #include <libavutil/dict.h>
   #include <libavutil/opt.h>
@@ -507,4 +508,20 @@ read_samples(int n, int16_t *data) {
   }
   _samples_read += n;
   return n;
+}
+
+/**
+ *
+ */
+vector_string FfmpegAudioCursor::
+get_raw_comment() const {
+  AVDictionaryEntry *tag = nullptr;
+  vector_string comment_strings;
+  while ((tag = av_dict_get(_format_ctx->metadata, "", tag, AV_DICT_IGNORE_SUFFIX))) {
+    std::string comment(tag->key);
+    comment.append("=");
+    comment.append(tag->value);
+    comment_strings.push_back(std::move(comment));
+  }
+  return comment_strings;
 }

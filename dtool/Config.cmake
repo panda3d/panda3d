@@ -265,7 +265,7 @@ if(BUILD_INTERROGATE)
     panda3d-interrogate
 
     GIT_REPOSITORY https://github.com/panda3d/interrogate.git
-    GIT_TAG ccbd5f9d79037a9d53d6dfb1a5e9fdf30f2510c1
+    GIT_TAG 20d2a4533011034eed3321742d4da0f7097d23d8
 
     PREFIX ${_interrogate_dir}
     CMAKE_ARGS
@@ -424,6 +424,14 @@ else()
 endif()
 
 unset(_prefer_mimalloc)
+
+#
+# Sanitizers
+#
+
+option(ENABLE_ASAN
+  "Enable AddressSanitizer for detecting memory errors such as
+buffer overflows, use-after-free, etc. Requires GCC or Clang." OFF)
 
 #
 # This section relates to mobile-device/phone support and options

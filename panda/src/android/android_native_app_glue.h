@@ -168,7 +168,7 @@ struct android_app {
     int msgread;
     int msgwrite;
 
-    pthread_t thread;
+    //pthread_t thread;
 
     struct android_poll_source cmdPollSource;
     struct android_poll_source inputPollSource;

@@ -561,10 +561,10 @@ affects_polygon_alpha() const {
   case ET_height:
   case ET_normal_gloss:
   case ET_emission:
+  case ET_occlusion:
+  case ET_metallic_roughness:
+  case ET_occlusion_metallic_roughness:
     return false;
-
-  case ET_selector:
-    return true;
 
   case ET_unspecified:
     break;
@@ -883,14 +883,21 @@ string_env_type(const string &string) {
   } else if (cmp_nocase_uh(string, "height") == 0) {
     return ET_height;
 
-  } else if (cmp_nocase_uh(string, "selector") == 0) {
-    return ET_selector;
+  } else if (cmp_nocase_uh(string, "metallic_roughness") == 0 ||
+             cmp_nocase_uh(string, "selector") == 0) {
+    return ET_metallic_roughness;
 
   } else if (cmp_nocase_uh(string, "normal_gloss") == 0) {
     return ET_normal_gloss;
 
   } else if (cmp_nocase_uh(string, "emission") == 0) {
     return ET_emission;
+
+  } else if (cmp_nocase_uh(string, "occlusion") == 0) {
+    return ET_occlusion;
+
+  } else if (cmp_nocase_uh(string, "occlusion_metallic_roughness") == 0) {
+    return ET_occlusion_metallic_roughness;
 
   } else {
     return ET_unspecified;
@@ -1321,14 +1328,20 @@ ostream &operator << (ostream &out, EggTexture::EnvType type) {
   case EggTexture::ET_height:
     return out << "height";
 
-  case EggTexture::ET_selector:
-    return out << "selector";
+  case EggTexture::ET_metallic_roughness:
+    return out << "metallic_roughness";
 
   case EggTexture::ET_normal_gloss:
     return out << "normal_gloss";
 
   case EggTexture::ET_emission:
     return out << "emission";
+
+  case EggTexture::ET_occlusion:
+    return out << "occlusion";
+
+  case EggTexture::ET_occlusion_metallic_roughness:
+    return out << "occlusion_metallic_roughness";
   }
 
   nassertr(false, out);

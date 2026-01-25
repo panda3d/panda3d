@@ -1,3 +1,32 @@
+-----------------------  RELEASE 1.10.16  -----------------------
+
+This maintenance release fixes some minor defects and stability issues.
+
+* OpenAL: Support non-default coordinate systems when playing 3D audio
+* Tasks: Coroutine detect now also handles coroutine subclass to support Nuitka
+* Tasks: Now properly handles generators without send()
+* Windows: Fixes a hang when adjusting Z-order in some situations
+* Fix SparseArray methods get_lowest_off_bit() and get_lowest_on_bit()
+* Fix linecache error when distributing for newer Python versions
+* Fix `await AsyncFuture.gather()` returning first item instead of tuple (#1738)
+* Fix use-after-free in collision system with transform cache disabled (#1733)
+* Egg: Add limited forward compatibility for metallic-roughness textures
+* OpenGL: fix error blitting depth texture on macOS (#1719)
+* OpenGL: fix SSBO not being rebound if deleted and recreated immediately
+* OpenGL: fix SSBO support not being detected in certain situations
+* GLSL: Add p3d_MetallicRoughnessTexture input mapped to M_metallic_roughness
+* X11: Add config variable to enable detection of autorepeat key events (#1735)
+* GUI: Fix bug with PGSliderBar dragging (#1722)
+* Minor thread safety things for free-threaded Python builds
+* Add forward compatibility for bam version 6.46
+* Fixes a harmless buffer overflow in pdtoa
+* Fix compilation issues with SDL version of tinydisplay (#1708)
+* bam2egg: Fix issue when having more than two tags (#1725)
+* Fix "Detected leak for ... which interrogate cannot delete." error (#1743)
+* Fix PythonCallbackObject crash upon destruction in some cases
+* PStats: Fix crash when receiving frames out of order
+* PandaFramework::close_framework() now clears task manager of tasks
+
 -----------------------  RELEASE 1.10.15  -----------------------
 
 This release adds support for Python 3.13, and fixes some significant bugs.

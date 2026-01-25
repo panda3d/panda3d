@@ -115,6 +115,48 @@ def test_cg_state_material(env):
     env.run_cg(code, preamble, state=node.get_state())
 
 
+def test_cg_state_color(env):
+    node = core.NodePath("state")
+    node.set_color((1, 2, 3, 4))
+
+    preamble = """
+    uniform float4 attr_color;
+    """
+    code = """
+    assert(attr_color == float4(1, 2, 3, 4));
+    """
+    env.run_cg(code, preamble, state=node.get_state())
+
+    preamble = """
+    uniform float3 attr_color;
+    """
+    code = """
+    assert(attr_color == float3(1, 2, 3));
+    """
+    env.run_cg(code, preamble, state=node.get_state())
+
+
+def test_cg_state_color_scale(env):
+    node = core.NodePath("state")
+    node.set_color_scale((1, 2, 3, 4))
+
+    preamble = """
+    uniform float4 attr_colorscale;
+    """
+    code = """
+    assert(attr_colorscale == float4(1, 2, 3, 4));
+    """
+    env.run_cg(code, preamble, state=node.get_state())
+
+    preamble = """
+    uniform float3 attr_colorscale;
+    """
+    code = """
+    assert(attr_colorscale == float3(1, 2, 3));
+    """
+    env.run_cg(code, preamble, state=node.get_state())
+
+
 def test_cg_state_fog(env):
     fog = core.Fog("fog")
     fog.color = (1, 2, 3, 4)
@@ -139,22 +181,74 @@ def test_cg_state_fog(env):
     env.run_cg(code, preamble, state=node.get_state())
 
 
-def test_cg_texpad_texpix(env):
-    tex = core.Texture("test")
-    tex.setup_2d_texture(16, 32, core.Texture.T_unsigned_byte, core.Texture.F_rgba)
-    tex.auto_texture_scale = core.ATS_pad
-    tex.set_size_padded(10, 30)
+def test_cg_state_ambient(env):
+    alight1 = core.AmbientLight("alight1")
+    alight1.set_color((1, 0, 0, 0))
+
+    alight2 = core.AmbientLight("alight2")
+    alight2.set_color((0, 2, 0, 0))
 
     preamble = """
-    uniform float3 texpad_test;
-    uniform float2 texpix_test;
+    uniform float3 attr_ambient;
     """
     code = """
-    assert(texpad_test == float3(10 * 0.5 / 16, 30 * 0.5 / 32, 0.5));
-    assert(texpix_test == float2(1.0 / 16, 1.0 / 32));
+    assert(attr_ambient == float3(1, 2, 0));
     """
 
-    env.run_cg(code, preamble, inputs={"test": tex})
+    node = core.NodePath("state")
+    node.set_light(node.attach_new_node(alight1))
+    node.set_light(node.attach_new_node(alight2))
+
+    env.run_cg(code, preamble, state=node.get_state())
+
+
+def test_cg_state_light(env):
+    alight1 = core.AmbientLight("alight1")
+    alight1.set_color((1, 0, 0, 0))
+
+    alight2 = core.AmbientLight("alight2")
+    alight2.set_color((0, 2, 0, 0))
+
+    preamble = """
+    uniform float4x4 attr_light0;
+    uniform float4x4 attr_light1;
+    uniform float4 attr_lspec0;
+    uniform float4 attr_lspec1;
+    """
+    code = """
+    assert(attr_light0[0] == float4(1, 2, 3, 4));
+    assert(attr_light0[1] == float4(12, 13, 14, 100));
+    assert(attr_light0[3] == float4(9, 10, 11, 1));
+    assert(attr_light1[0] == float4(15, 16, 17, 18));
+    assert(attr_light1[3] == float4(0, 1, 0, 0));
+    assert(attr_light1[1] == float4(1, 0, 0, 0));
+    assert(attr_lspec0 == float4(5, 6, 7, 8));
+    assert(attr_lspec1 == float4(19, 20, 21, 22));
+    """
+
+    plight = core.PointLight("plight")
+    plight.priority = 0
+    plight.color = (1, 2, 3, 4)
+    plight.specular_color = (5, 6, 7, 8)
+    plight.transform = core.TransformState.make_pos((9, 10, 11))
+    plight.attenuation = (12, 13, 14)
+    plight.get_lens().set_far(100)
+    plight_path = core.NodePath(plight)
+
+    dlight = core.DirectionalLight("dlight")
+    dlight.priority = -1
+    dlight.direction = (0, -1, 0)
+    dlight.color = (15, 16, 17, 18)
+    dlight.specular_color = (19, 20, 21, 22)
+    dlight.transform = core.TransformState.make_pos((23, 24, 25))
+    dlight_path = core.NodePath(dlight)
+
+    lattr = core.LightAttrib.make()
+    lattr = lattr.add_on_light(plight_path)
+    lattr = lattr.add_on_light(dlight_path)
+    state = core.RenderState.make(lattr)
+
+    env.run_cg(code, preamble, state=state)
 
 
 def test_cg_alight(env):
@@ -186,3 +280,37 @@ def test_cg_satten(env):
     """
 
     env.run_cg(code, preamble, inputs={"test": np})
+
+
+def test_cg_texpad_texpix(env):
+    tex = core.Texture("test")
+    tex.setup_2d_texture(16, 32, core.Texture.T_unsigned_byte, core.Texture.F_rgba)
+    tex.auto_texture_scale = core.ATS_pad
+    tex.set_size_padded(10, 30)
+
+    preamble = """
+    uniform float3 texpad_test;
+    uniform float2 texpix_test;
+    """
+    code = """
+    assert(texpad_test == float3(10 * 0.5 / 16, 30 * 0.5 / 32, 0.5));
+    assert(texpix_test == float2(1.0 / 16, 1.0 / 32));
+    """
+
+    env.run_cg(code, preamble, inputs={"test": tex})
+
+
+def test_cg_k(env):
+    inputs = dict(
+        ten=10,
+        vec=(1, 2, 3, 4),
+    )
+    preamble = """
+    uniform int ten;
+    uniform float4 vec;
+    """
+    code = """
+    assert(ten == 10);
+    assert(vec == float4(1, 2, 3, 4));
+    """
+    env.run_cg(code, preamble, inputs)

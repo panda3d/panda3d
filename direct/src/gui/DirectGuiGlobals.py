@@ -17,8 +17,9 @@ from panda3d.core import (
 
 defaultFont = None
 defaultFontFunc = TextNode.getDefaultFont
-defaultClickSound = None
 defaultRolloverSound = None
+defaultClickSound = None
+defaultReleaseSound = None
 defaultDialogGeom = None
 defaultDialogRelief = PGFrameStyle.TBevelOut
 drawOrder = 100
@@ -128,6 +129,13 @@ def getDefaultClickSound():
 def setDefaultClickSound(newSound):
     global defaultClickSound
     defaultClickSound = newSound
+
+def getDefaultReleaseSound():
+    return defaultReleaseSound
+
+def setDefaultReleaseSound(newSound):
+    global defaultReleaseSound
+    defaultReleaseSound = newSound
 
 def getDefaultFont():
     global defaultFont

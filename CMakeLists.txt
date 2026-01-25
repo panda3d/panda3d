@@ -109,6 +109,7 @@ option(BUILD_DIRECT "Build the direct source tree." ON)
 option(BUILD_PANDATOOL "Build the pandatool source tree." ON)
 option(BUILD_CONTRIB "Build the contrib source tree." ON)
 option(BUILD_MODELS "Build/install the built-in models." ON)
+option(BUILD_TESTS "Build unit test runner." ON)
 option(BUILD_TOOLS "Build binary tools." ON)
 
 # Include Panda3D packages
@@ -166,17 +167,8 @@ if(BUILD_MODELS)
     COMPONENT Models DESTINATION ${CMAKE_INSTALL_DATADIR}/panda3d)
 endif()
 
-if(INTERROGATE_PYTHON_INTERFACE)
-  # If we built the Python interface, run the test suite.  Note, we do NOT test
-  # for pytest before adding this test.  If the user doesn't have pytest, we'd
-  # like for the tests to fail.
-
-  # In the Coverage configuration, we also require pytest-cov
-
-  add_test(NAME pytest
-    COMMAND "${PYTHON_EXECUTABLE}" -m pytest "${PROJECT_SOURCE_DIR}/tests"
-    $<$<CONFIG:Coverage>:--cov=.>
-    WORKING_DIRECTORY "${PANDA_OUTPUT_DIR}")
+if(BUILD_TESTS)
+  add_subdirectory(tests "${CMAKE_BINARY_DIR}/tests")
 endif()
 
 # Generate the Panda3DConfig.cmake file so find_package(Panda3D) works, and

@@ -46,8 +46,14 @@ prepare_for_exit() {
 INLINE Thread *ThreadPosixImpl::
 get_current_thread() {
   TAU_PROFILE("Thread *ThreadPosixImpl::get_current_thread()", " ", TAU_USER);
+#ifdef ANDROID
+  // Android doesn't correctly share TLS variables across multiple DSOs, so
+  // we can't inline this.
+  return do_get_current_thread();
+#else
   Thread *thread = _current_thread;
   return (thread != nullptr) ? thread : init_current_thread();
+#endif
 }
 
 /**

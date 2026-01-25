@@ -1,6 +1,7 @@
 from panda3d.core import Shader, VirtualFileSystem, Filename
 import time
 import pytest
+import sys
 
 
 @pytest.fixture(scope="session")

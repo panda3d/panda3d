@@ -67,7 +67,7 @@ __init__(PyObject *path) {
     return;
   }
 
-  PyObject *path_str = PyObject_CallFunctionObjArgs(fspath, path, nullptr);
+  PyObject *path_str = PyObject_CallOneArg(fspath, path);
   Py_DECREF(fspath);
   if (path_str == nullptr) {
     return;

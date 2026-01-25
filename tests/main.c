@@ -111,6 +111,11 @@ int main(int argc, char **argv) {
   PyRun_SimpleString("import sys; sys.argv.insert(1, '--capture=sys')");
 #endif
 
+#ifdef ANDROID
+  // No caching on Android
+  PyRun_SimpleString("import sys; sys.argv.insert(1, '-o cache_dir=/dev/null')");
+#endif
+
   return Py_RunMain();
 
 exception:

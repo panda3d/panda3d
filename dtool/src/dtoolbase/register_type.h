@@ -19,6 +19,9 @@
 #include "typeHandle.h"
 #include "typeRegistry.h"
 
+template<class T>
+class pvector;
+
 /**
  * This inline function is just a convenient way to call
  * TypeRegistry::register_type(), along with zero to four
@@ -88,6 +91,7 @@ extern TypeHandle EXPCL_DTOOL_DTOOLBASE double_type_handle;
 extern TypeHandle EXPCL_DTOOL_DTOOLBASE float_type_handle;
 extern TypeHandle EXPCL_DTOOL_DTOOLBASE string_type_handle;
 extern TypeHandle EXPCL_DTOOL_DTOOLBASE wstring_type_handle;
+extern TypeHandle EXPCL_DTOOL_DTOOLBASE vector_uchar_type_handle;
 
 extern TypeHandle long_p_type_handle;
 extern TypeHandle int_p_type_handle;
@@ -173,6 +177,16 @@ INLINE TypeHandle _get_type_handle(const std::string *) {
 template<>
 INLINE TypeHandle _get_type_handle(const std::wstring *) {
   return wstring_type_handle;
+}
+
+template<class T>
+INLINE TypeHandle _get_type_handle(const pvector<T> *) {
+  return pvector_type_handle;
+}
+
+template<>
+INLINE TypeHandle _get_type_handle(const pvector<unsigned char> *) {
+  return vector_uchar_type_handle;
 }
 
 template<>

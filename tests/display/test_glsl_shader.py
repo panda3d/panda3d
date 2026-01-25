@@ -7,6 +7,8 @@ from _pytest.outcomes import Failed
 
 SHADERS_DIR = core.Filename.from_os_specific(os.path.dirname(__file__))
 
+core.BamCache.get_global_ptr().set_cache_compiled_shaders(False)
+
 
 def test_glsl_test(env):
     "Test to make sure that the GLSL tests work correctly."
@@ -19,6 +21,43 @@ def test_glsl_test_fail(env):
 
     with pytest.raises(Failed):
         env.run_glsl("assert(false);")
+
+
+def test_glsl_preproc_error(env):
+    "Make sure that preprocessor errors result in failed compilation."
+
+    if env.name == "gl-legacy":
+        pytest.skip("preprocessor tests for driver compiler are unreliable")
+
+    preamble = """
+    #error THIS IS EXPECTED TO ERROR
+    """
+
+    with pytest.raises(Failed):
+        env.run_glsl("assert(true);", preamble)
+
+
+def test_glsl_defines(env):
+    preamble = """
+    #ifdef TEST_UNDEFINED
+    #error TEST_UNDEFINED is defined
+    #endif
+
+    #if TEST_DEFINED != 1
+    #error TEST_DEFINED != 1
+    #endif
+
+    #if TEST_DEFINED_2 != 2
+    #error TEST_DEFINED_2 != 2
+    #endif
+    """
+    options = core.CompilerOptions()
+    options.define('TEST_DEFINED')
+    options.define('TEST_DEFINED_2', '2')
+    options.define('TEST_UNDEFINED')
+    options.undef('TEST_UNDEFINED')
+
+    env.run_glsl("assert(true);", preamble, options=options)
 
 
 def test_glsl_sampler(env):
@@ -103,11 +142,16 @@ def test_glsl_texture_query_levels(env):
     tex4.setup_3d_texture(8, 4, 2, core.Texture.T_unsigned_byte, core.Texture.F_rgba8)
     tex4.set_minfilter(core.SamplerState.FT_linear_mipmap_linear)
 
+    tex5 = core.Texture("tex5-2d-array")
+    tex5.setup_2d_texture_array(8, 4, 2, core.Texture.T_unsigned_byte, core.Texture.F_rgba8)
+    tex5.set_minfilter(core.SamplerState.FT_linear_mipmap_linear)
+
     preamble = """
     uniform sampler1D tex1[2];
     uniform sampler2D tex2;
     uniform samplerCube tex3;
     uniform sampler3D tex4;
+    uniform sampler2DArray tex5;
     """
     code = """
     assert(textureQueryLevels(tex1[1]) == 1);
@@ -115,8 +159,9 @@ def test_glsl_texture_query_levels(env):
     assert(textureQueryLevels(tex2) == 7);
     assert(textureQueryLevels(tex3) == 5);
     assert(textureQueryLevels(tex4) == 4);
+    assert(textureQueryLevels(tex5) == 4);
     """
-    env.run_glsl(code, preamble, {'tex1[0]': tex1_0, 'tex1[1]': tex1_1, 'tex2': tex2, 'tex3': tex3, 'tex4': tex4}, version=430)
+    env.run_glsl(code, preamble, {'tex1[0]': tex1_0, 'tex1[1]': tex1_1, 'tex2': tex2, 'tex3': tex3, 'tex4': tex4, 'tex5': tex5}, version=430)
 
 
 def test_glsl_isampler(env):
@@ -287,9 +332,9 @@ def test_glsl_ssbo(env):
     from struct import pack, unpack
     num1 = pack('<i', 1234567)
     num2 = pack('<ii', -1234567, 0)
-    buffer1 = core.ShaderBuffer("buffer1", num1, core.GeomEnums.UH_static)
-    buffer2 = core.ShaderBuffer("buffer2", num2, core.GeomEnums.UH_static)
-    buffer3 = core.ShaderBuffer("buffer3", 8, core.GeomEnums.UH_static)
+    buffer1 = core.ShaderBuffer("buffer1", num1, core.GeomEnums.UH_dynamic)
+    buffer2 = core.ShaderBuffer("buffer2", num2, core.GeomEnums.UH_dynamic)
+    buffer3 = core.ShaderBuffer("buffer3", 8, core.GeomEnums.UH_dynamic)
 
     preamble = """
     layout(std430, binding=0) readonly buffer buffer1 {
@@ -312,15 +357,27 @@ def test_glsl_ssbo(env):
     value4 = 5343525;
     value5 = 999;
     """
-    env.run_glsl(code, preamble,
-                  {'buffer1': buffer1, 'buffer2': buffer2, 'buffer3': buffer3},
-                  version=430)
+    inputs = {'buffer1': buffer1, 'buffer2': buffer2, 'buffer3': buffer3}
+    env.run_glsl(code, preamble, inputs, version=430)
 
     data1 = env.engine.extract_shader_buffer_data(buffer2, env.gsg)
     assert unpack('<ii', data1[:8]) == (-1234567, 98765)
 
     data2 = env.engine.extract_shader_buffer_data(buffer3, env.gsg)
     assert unpack('<ii', data2[:8]) == (5343525, 999)
+
+    data3 = env.engine.extract_shader_buffer_data(buffer2, env.gsg, 4, 8)
+    assert unpack('<i', data3[:4]) == (98765, )
+
+    env.engine.update_shader_buffer_data(buffer1, env.gsg, pack('<i', 92573))
+    env.engine.update_shader_buffer_data(buffer2, env.gsg, pack('<i', 64515), 4)
+
+    code = """
+    assert(value1 == 92573);
+    assert(value2 == -1234567);
+    assert(value3 == 64515);
+    """
+    env.run_glsl(code, preamble, inputs, version=430)
 
 
 def test_glsl_ssbo_array(env):

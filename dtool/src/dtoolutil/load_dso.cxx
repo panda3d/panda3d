@@ -19,11 +19,15 @@ using std::string;
 static Filename resolve_dso(const DSearchPath &path, const Filename &filename) {
   if (filename.is_local()) {
     if ((path.get_num_directories()==1)&&(path.get_directory(0)=="<auto>")) {
+#ifdef ANDROID
+      return filename;
+#else
       // This is a special case, meaning to search in the same directory in
       // which libp3dtool.dll, or the exe, was started from.
       Filename dtoolpath = ExecutionEnvironment::get_dtool_name();
       DSearchPath spath(dtoolpath.get_dirname());
       return spath.find_file(filename);
+#endif
     } else {
       return path.find_file(filename);
     }
@@ -119,7 +123,13 @@ get_dso_symbol(void *handle, const string &name) {
 void *
 load_dso(const DSearchPath &path, const Filename &filename) {
   Filename abspath = resolve_dso(path, filename);
+#ifdef ANDROID
+  // We just try to load it on Android, because we can't verify right now
+  // whether it might just be an unextracted library.
+  if (abspath.empty()) {
+#else
   if (!abspath.is_regular_file()) {
+#endif
     // Make sure the error flag is cleared, to prevent a subsequent call to
     // load_dso_error() from returning a previously stored error.
     dlerror();

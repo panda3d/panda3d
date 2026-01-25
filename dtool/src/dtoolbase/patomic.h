@@ -36,9 +36,6 @@
 // Undocumented API, see https://outerproduct.net/futex-dictionary.html
 #define UL_COMPARE_AND_WAIT 1
 #define ULF_WAKE_ALL 0x00000100
-
-extern "C" int __ulock_wait(uint32_t op, void *addr, uint64_t value, uint32_t timeout);
-extern "C" int __ulock_wake(uint32_t op, void *addr, uint64_t wake_value);
 #endif
 
 #if defined(THREAD_DUMMY_IMPL) || defined(THREAD_SIMPLE_IMPL)
@@ -173,9 +170,17 @@ ALWAYS_INLINE void patomic_notify_all(volatile uint32_t *value);
 EXPCL_DTOOL_DTOOLBASE extern BOOL (__stdcall *_patomic_wait_func)(volatile VOID *, PVOID, SIZE_T, DWORD);
 EXPCL_DTOOL_DTOOLBASE extern void (__stdcall *_patomic_wake_one_func)(PVOID);
 EXPCL_DTOOL_DTOOLBASE extern void (__stdcall *_patomic_wake_all_func)(PVOID);
-#elif !defined(__linux__) && !defined(__APPLE__) && defined(HAVE_POSIX_THREADS)
+#elif defined(__APPLE__) && defined(__arm64__)
+extern "C" int __ulock_wait(uint32_t op, void *addr, uint64_t value, uint32_t timeout);
+extern "C" int __ulock_wake(uint32_t op, void *addr, uint64_t wake_value);
+#elif !defined(__linux__) && defined(HAVE_POSIX_THREADS)
 EXPCL_DTOOL_DTOOLBASE void _patomic_wait(const volatile uint32_t *value, uint32_t old);
 EXPCL_DTOOL_DTOOLBASE void _patomic_notify_all(volatile uint32_t *value);
+#ifdef __APPLE__
+// Use conditionally since we can't count on support before 10.12.
+extern "C" int __ulock_wait(uint32_t op, void *addr, uint64_t value, uint32_t timeout) __attribute__((weak_import));
+extern "C" int __ulock_wake(uint32_t op, void *addr, uint64_t wake_value) __attribute__((weak_import));
+#endif
 #endif
 
 #include "patomic.I"

@@ -63,11 +63,21 @@ get_params(int &first_contact, int &backface_cull) const {
   dGeomRayGetParams(_id, &first_contact, &backface_cull);
 }
 
+INLINE void OdeRayGeom::
+set_first_contact(int first_contact) {
+  dGeomRaySetFirstContact(_id, first_contact);
+}
+
 INLINE int OdeRayGeom::
 get_first_contact() const {
   int fc, bc;
   dGeomRayGetParams(_id, &fc, &bc);
   return fc;
+}
+
+INLINE void OdeRayGeom::
+set_backface_cull(int backface_cull) {
+  dGeomRaySetBackfaceCull(_id, backface_cull);
 }
 
 INLINE int OdeRayGeom::

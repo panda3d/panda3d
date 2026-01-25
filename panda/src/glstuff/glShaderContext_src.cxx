@@ -38,6 +38,8 @@
 #define SPIRV_CROSS_EXCEPTIONS_TO_ASSERTIONS
 #include <spirv_cross/spirv_glsl.hpp>
 
+#undef VOID
+
 using std::dec;
 using std::hex;
 using std::max;
@@ -480,7 +482,7 @@ r_count_locations_bindings(const ShaderType *type,
     return;
   }
 
-  if (type->as_sampled_image() != nullptr || type == ShaderType::void_type) {
+  if (type->as_sampled_image() != nullptr || type == ShaderType::VOID) {
     ++num_locations;
     return;
   }
@@ -651,12 +653,12 @@ r_collect_uniforms(RenderAttrib::PandaCompareFunc alpha_test_mode,
     }
     return;
   }
-  if (type == ShaderType::void_type) {
+  if (type == ShaderType::VOID) {
     // We use this as a placeholder to advance the location by one.
     ++cur_location;
   }
 
-  if (type->as_storage_buffer() != nullptr) {
+  if (const ShaderType::StorageBuffer *sbuffer = type->as_storage_buffer()) {
     // These are an exception, they do not have locations but bindings.
     GLint binding = cur_binding;
     if (binding < 0) {
@@ -679,6 +681,7 @@ r_collect_uniforms(RenderAttrib::PandaCompareFunc alpha_test_mode,
       block._binding = param._binding;
       block._resource_id = param._binding->get_resource_id(resource_index++);
       block._binding_index = binding;
+      block._writable = (sbuffer->get_access() & ShaderType::Access::WRITE_ONLY) != ShaderType::Access::NONE;
       _storage_blocks.push_back(std::move(block));
       _storage_block_bindings |= (1 << binding);
     }
@@ -1350,7 +1353,7 @@ const ShaderType *CLP(ShaderContext)::
 get_param_type(GLenum param_type) {
   switch (param_type) {
   case GL_FLOAT:
-    return ShaderType::float_type;
+    return ShaderType::FLOAT;
 
   case GL_FLOAT_VEC2:
     return ShaderType::register_type(ShaderType::Vector(ShaderType::ST_float, 2));
@@ -1389,7 +1392,7 @@ get_param_type(GLenum param_type) {
     return ShaderType::register_type(ShaderType::Matrix(ShaderType::ST_float, 4, 3));
 
   case GL_INT:
-    return ShaderType::int_type;
+    return ShaderType::INT;
 
   case GL_INT_VEC2:
     return ShaderType::register_type(ShaderType::Vector(ShaderType::ST_int, 2));
@@ -1401,7 +1404,7 @@ get_param_type(GLenum param_type) {
     return ShaderType::register_type(ShaderType::Vector(ShaderType::ST_int, 4));
 
   case GL_BOOL:
-    return ShaderType::bool_type;
+    return ShaderType::BOOL;
 
   case GL_BOOL_VEC2:
     return ShaderType::register_type(ShaderType::Vector(ShaderType::ST_bool, 2));
@@ -1413,7 +1416,7 @@ get_param_type(GLenum param_type) {
     return ShaderType::register_type(ShaderType::Vector(ShaderType::ST_bool, 4));
 
   case GL_UNSIGNED_INT:
-    return ShaderType::uint_type;
+    return ShaderType::UINT;
 
   case GL_UNSIGNED_INT_VEC2:
     return ShaderType::register_type(ShaderType::Vector(ShaderType::ST_uint, 2));
@@ -1426,7 +1429,7 @@ get_param_type(GLenum param_type) {
 
 #ifndef OPENGLES
   case GL_DOUBLE:
-    return ShaderType::double_type;
+    return ShaderType::DOUBLE;
 
   case GL_DOUBLE_VEC2:
     return ShaderType::register_type(ShaderType::Vector(ShaderType::ST_double, 2));
@@ -2520,9 +2523,9 @@ issue_memory_barriers() {
     _glgsg->issue_memory_barrier(GL_SHADER_STORAGE_BARRIER_BIT);
   }
 
-  // We assume that all SSBOs will be written to, for now.
+  // Only mark SSBOs that will be written to.
   for (StorageBlock &block : _storage_blocks) {
-    if (block._gbc != nullptr) {
+    if (block._gbc != nullptr && block._writable) {
       block._gbc->_shader_storage_barrier_counter = _glgsg->_shader_storage_barrier_counter;
     }
   }

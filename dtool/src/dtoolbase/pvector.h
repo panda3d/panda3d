@@ -46,13 +46,16 @@ public:
   typedef std::vector<Type, allocator> base_class;
   typedef typename base_class::size_type size_type;
 
-  explicit pvector(TypeHandle type_handle = pvector_type_handle) : base_class(allocator(type_handle)) { }
+  pvector() : base_class(allocator(get_type_handle(pvector<Type>))) { }
+  explicit pvector(TypeHandle type_handle) : base_class(allocator(type_handle)) { }
   pvector(const pvector<Type> &copy) : base_class(copy) { }
   pvector(pvector<Type> &&from) noexcept : base_class(std::move(from)) {};
-  explicit pvector(size_type n, TypeHandle type_handle = pvector_type_handle) : base_class(n, Type(), allocator(type_handle)) { }
-  explicit pvector(size_type n, const Type &value, TypeHandle type_handle = pvector_type_handle) : base_class(n, value, allocator(type_handle)) { }
-  pvector(const Type *begin, const Type *end, TypeHandle type_handle = pvector_type_handle) : base_class(begin, end, allocator(type_handle)) { }
-  pvector(std::initializer_list<Type> init, TypeHandle type_handle = pvector_type_handle) : base_class(std::move(init), allocator(type_handle)) { }
+  explicit pvector(size_type n, TypeHandle type_handle = get_type_handle(pvector<Type>)) : base_class(n, Type(), allocator(type_handle)) { }
+  explicit pvector(size_type n, const Type &value, TypeHandle type_handle = get_type_handle(pvector<Type>)) : base_class(n, value, allocator(type_handle)) { }
+  pvector(const Type *begin, const Type *end, TypeHandle type_handle = get_type_handle(pvector<Type>)) : base_class(allocator(type_handle)) {
+    this->insert(this->end(), begin, end);
+  }
+  pvector(std::initializer_list<Type> init, TypeHandle type_handle = get_type_handle(pvector<Type>)) : base_class(std::move(init), allocator(type_handle)) { }
 
   pvector<Type> &operator =(const pvector<Type> &copy) {
     base_class::operator =(copy);

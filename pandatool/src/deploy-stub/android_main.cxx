@@ -27,10 +27,16 @@
 #include <sys/mman.h>
 #include <android/log.h>
 
-#include <thread>
-
 // Leave room for future expansion.
 #define MAX_NUM_POINTERS 24
+
+/* Stored in the flags field of the blobinfo structure below. */
+enum Flags {
+  F_log_append = 1,
+  F_log_filename_strftime = 2,
+  F_keep_docstrings = 4,
+  F_python_verbose = 8,
+};
 
 // Define an exposed symbol where we store the offset to the module data.
 extern "C" {
@@ -50,8 +56,8 @@ extern "C" {
   } blobinfo = {(uint64_t)-1};
 }
 
-// Defined in android_log.c
-extern "C" PyObject *PyInit_android_log();
+// Defined in android_support.cxx
+extern "C" PyObject *PyInit_android_support();
 
 /**
  * Maps the binary blob at the given memory address to memory, and returns the
@@ -61,11 +67,16 @@ static void *map_blob(const char *path, off_t offset, size_t size) {
   FILE *runtime = fopen(path, "rb");
   assert(runtime != NULL);
 
-  void *blob = (void *)mmap(0, size, PROT_READ | PROT_WRITE, MAP_PRIVATE, fileno(runtime), offset);
+  // Align the offset down to the page size boundary.
+  size_t page_size = getpagesize();
+  off_t aligned = offset & ~((off_t)page_size - 1);
+  size_t delta = (size_t)(offset - aligned);
+
+  void *blob = (void *)mmap(0, size + delta, PROT_READ, MAP_PRIVATE, fileno(runtime), aligned);
   assert(blob != MAP_FAILED);
 
   fclose(runtime);
-  return blob;
+  return (void *)((uintptr_t)blob + delta);
 }
 
 /**
@@ -118,7 +129,8 @@ void android_main(struct android_app *app) {
   PT(Thread) current_thread = Thread::bind_thread(thread_name, "android_app");
 
   android_cat.info()
-    << "New native activity started on " << *current_thread << "\n";
+    << "New native activity started on " << *current_thread
+    << " (" << current_thread << ")\n";
 
   // Fetch the data directory.
   jmethodID get_appinfo = env->GetMethodID(activity_class, "getApplicationInfo", "()Landroid/content/pm/ApplicationInfo;");
@@ -180,10 +192,29 @@ void android_main(struct android_app *app) {
   android_cat.info() << "Path to native library: " << lib_path << "\n";
   ExecutionEnvironment::set_binary_name(lib_path);
 
-  // Map the blob to memory
-  void *blob = map_blob(lib_path, (off_t)blobinfo.blob_offset, (size_t)blobinfo.blob_size);
+  // Nowadays we store the blob in a raw resource.
+  methodID = env->GetMethodID(activity_class, "mapBlobFromResource", "(J)J");
+  assert(methodID != nullptr);
+  void *blob = (void *)env->CallLongMethod(activity->clazz, methodID, blobinfo.blob_offset);
+
+  if (blob == nullptr) {
+    // Try the old method otherwise.
+    blob = map_blob(lib_path, (off_t)blobinfo.blob_offset, (size_t)blobinfo.blob_size);
+  }
   env->ReleaseStringUTFChars(lib_path_jstr, lib_path);
-  assert(blob != NULL);
+  assert(blob != nullptr);
+
+  // This should always be aligned, but just in case...
+  void *blob_copy = nullptr;
+  if ((((uintptr_t)blob) & (sizeof(void *) - 1)) != 0) {
+    android_cat.warning()
+      << "Blob with offset " << blobinfo.blob_offset
+      << " and size " << blobinfo.blob_size << " is not aligned!\n";
+
+    blob_copy = malloc(blobinfo.blob_size);
+    memcpy(blob_copy, blob, blobinfo.blob_size);
+    blob = blob_copy;
+  }
 
   assert(blobinfo.num_pointers <= MAX_NUM_POINTERS);
   for (uint32_t i = 0; i < blobinfo.num_pointers; ++i) {
@@ -224,17 +255,35 @@ void android_main(struct android_app *app) {
   get_model_path().append_directory(asset_dir);
 
   // Offset the pointers in the module table using the base mmap address.
-  struct _frozen *moddef = (struct _frozen *)blobinfo.pointers[0];
-  while (moddef->name) {
-    moddef->name = (char *)((uintptr_t)moddef->name + (uintptr_t)blob);
-    if (moddef->code != nullptr) {
-      moddef->code = (unsigned char *)((uintptr_t)moddef->code + (uintptr_t)blob);
+  // We did a read-only mmap, so we have to create a copy of this table.
+  // First count how many modules there are.
+  struct _frozen *src_moddef = (struct _frozen *)blobinfo.pointers[0];
+  struct _frozen *dst_moddef;
+  struct _frozen *new_modules = nullptr;
+  if (blob_copy != nullptr) {
+    // We already made a copy, so we can just write to this.
+    dst_moddef = src_moddef;
+  } else {
+    size_t num_modules = 0;
+    while (src_moddef->name) {
+      num_modules++;
+      src_moddef++;
     }
-    //__android_log_print(ANDROID_LOG_DEBUG, "Panda3D", "MOD: %s %p %d\n", moddef->name, (void*)moddef->code, moddef->size);
-    moddef++;
-  }
 
-  PyImport_FrozenModules = (struct _frozen *)blobinfo.pointers[0];
+    new_modules = (struct _frozen *)malloc(sizeof(struct _frozen) * (num_modules + 1));
+    memcpy(new_modules, blobinfo.pointers[0], sizeof(struct _frozen) * (num_modules + 1));
+    dst_moddef = new_modules;
+  }
+  PyImport_FrozenModules = dst_moddef;
+
+  while (dst_moddef->name) {
+    dst_moddef->name = (char *)((uintptr_t)dst_moddef->name + (uintptr_t)blob);
+    if (dst_moddef->code != nullptr) {
+      dst_moddef->code = (unsigned char *)((uintptr_t)dst_moddef->code + (uintptr_t)blob);
+    }
+    //__android_log_print(ANDROID_LOG_DEBUG, "Panda3D", "MOD: %s %p %d\n", dst_moddef->name, (void*)dst_moddef->code, dst_moddef->size);
+    dst_moddef++;
+  }
 
   PyPreConfig preconfig;
   PyPreConfig_InitIsolatedConfig(&preconfig);
@@ -246,10 +295,10 @@ void android_main(struct android_app *app) {
     return;
   }
 
-  // Register the android_log module.
-  if (PyImport_AppendInittab("android_log", &PyInit_android_log) < 0) {
+  // Register the android_support module.
+  if (PyImport_AppendInittab("android_support", &PyInit_android_support) < 0) {
     android_cat.error()
-      << "Failed to register android_log module.\n";
+      << "Failed to register android_support module.\n";
     env->ReleaseStringUTFChars(libdir_jstr, libdir);
     return;
   }
@@ -260,8 +309,13 @@ void android_main(struct android_app *app) {
   config.buffered_stdio = 0;
   config.configure_c_stdio = 0;
   config.write_bytecode = 0;
+  config.module_search_paths_set = 1; // Leave sys.path empty
   PyConfig_SetBytesString(&config, &config.platlibdir, libdir);
   env->ReleaseStringUTFChars(libdir_jstr, libdir);
+
+  if (blobinfo.flags & F_python_verbose) {
+    config.verbose = 1;
+  }
 
   status = Py_InitializeFromConfig(&config);
   PyConfig_Clear(&config);
@@ -299,10 +353,9 @@ void android_main(struct android_app *app) {
     // We still need to keep an event loop going until Android gives us leave
     // to end the process.
     while (!app->destroyRequested) {
-      int looper_id;
-      struct android_poll_source *source;
-      auto result = ALooper_pollOnce(-1, &looper_id, nullptr, (void **)&source);
-      if (looper_id == LOOPER_ID_MAIN) {
+      struct android_poll_source *source = nullptr;
+      int ident = ALooper_pollOnce(-1, nullptr, nullptr, (void **)&source);
+      if (ident == LOOPER_ID_MAIN) {
         int8_t cmd = android_app_read_cmd(app);
         android_app_pre_exec_cmd(app, cmd);
         android_app_post_exec_cmd(app, cmd);
@@ -328,7 +381,14 @@ void android_main(struct android_app *app) {
     cp_mgr->delete_explicit_page(page);
   }
 
+  PyImport_FrozenModules = nullptr;
+  if (new_modules != nullptr) {
+    free(new_modules);
+  }
   unmap_blob(blob);
+  if (blob_copy != nullptr) {
+    free(blob_copy);
+  }
 
   // Detach the thread before exiting.
   activity->vm->DetachCurrentThread();

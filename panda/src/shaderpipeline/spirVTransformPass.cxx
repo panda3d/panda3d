@@ -897,7 +897,7 @@ define_int_constant(int32_t constant) {
     const Definition &def = _db.get_definition(id);
     if (def.is_constant() && !def.is_null_constant() &&
         def._constant == (uint32_t)constant &&
-        (def._type == ShaderType::int_type || (constant >= 0 && def._type == ShaderType::uint_type))) {
+        (def._type == ShaderType::INT || (constant >= 0 && def._type == ShaderType::UINT))) {
       if (is_defined(id)) {
         return id;
       }
@@ -907,7 +907,7 @@ define_int_constant(int32_t constant) {
   }
 
   if (constant_id == 0) {
-    type_id = define_type(ShaderType::int_type);
+    type_id = define_type(ShaderType::INT);
     constant_id = allocate_id();
   }
 
@@ -969,7 +969,7 @@ define_spec_constant(const ShaderType *type, uint32_t def_value) {
   uint32_t type_id = define_type(type);
 
   uint32_t id = allocate_id();
-  if (type == ShaderType::bool_type) {
+  if (type == ShaderType::BOOL) {
     add_definition(def_value ? spv::OpSpecConstantTrue : spv::OpSpecConstantFalse, {type_id, id});
   } else {
     add_definition(spv::OpSpecConstant, {type_id, id, def_value});
@@ -1038,7 +1038,7 @@ r_annotate_struct_layout(uint32_t type_id) {
 
     if (const ShaderType::Matrix *matrix_type = base_type->as_matrix()) {
       // Matrix types need to be explicitly laid out.
-      uint32_t stride = ShaderType::get_scalar_size_bytes(matrix_type->get_scalar_type()) * 4;
+      uint32_t stride = matrix_type->get_row_stride_bytes();
       add_annotation(spv::OpMemberDecorate,
         {type_id, i, spv::DecorationMatrixStride, stride});
       add_annotation(spv::OpMemberDecorate,
@@ -1256,13 +1256,13 @@ op_composite_extract(uint32_t obj_id, std::initializer_list<uint32_t> chain) {
 uint32_t SpirVTransformPass::
 op_compare(spv::Op opcode, uint32_t obj1, uint32_t obj2) {
   uint32_t id = allocate_id();
-  uint32_t type_id = define_type(ShaderType::bool_type);
+  uint32_t type_id = define_type(ShaderType::BOOL);
 
   _new_functions.insert(_new_functions.end(), {(5u << spv::WordCountShift) | opcode, type_id, id, obj1, obj2});
 
   Definition &def = _db.modify_definition(id);
   def._type_id = type_id;
-  def._type = ShaderType::bool_type;
+  def._type = ShaderType::BOOL;
 
   mark_defined(id);
   return id;

@@ -31,6 +31,8 @@ public:
   virtual SourceLanguages get_languages() const override;
   virtual PT(ShaderModule) compile_now(Stage stage, std::istream &in,
                                        const Filename &fullpath,
+                                       const CompilerOptions &options,
+                                       std::ostream *output_log = nullptr,
                                        BamCacheRecord *record = nullptr) const override;
 
 private:

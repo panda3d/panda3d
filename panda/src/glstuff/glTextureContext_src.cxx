@@ -205,6 +205,15 @@ needs_barrier(GLbitfield barrier, bool writing) {
     }
   }
 
+  if (barrier & GL_BUFFER_UPDATE_BARRIER_BIT) {
+    if (_target == GL_TEXTURE_BUFFER) {
+      if ((writing && _glgsg->_buffer_update_barrier_counter == _buffer_read_barrier_counter) ||
+          (_glgsg->_buffer_update_barrier_counter == _buffer_write_barrier_counter)) {
+        return true;
+      }
+    }
+  }
+
   if (barrier & GL_FRAMEBUFFER_BARRIER_BIT) {
     if ((writing && _glgsg->_framebuffer_barrier_counter == _framebuffer_read_barrier_counter) ||
         (_glgsg->_framebuffer_barrier_counter == _framebuffer_write_barrier_counter)) {

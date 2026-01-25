@@ -97,7 +97,6 @@ reload_implicit_pages() {
   }
   _implicit_pages.clear();
 
-#ifndef ANDROID
   // If we are running inside a deployed application, see if it exposes
   // information about how the PRC data should be initialized.
   struct BlobInfo {
@@ -129,11 +128,13 @@ reload_implicit_pages() {
 //  const BlobInfo *blobinfo = (const BlobInfo *)dlsym(RTLD_SELF, "blobinfo");
 #elif defined(__EMSCRIPTEN__)
   const BlobInfo *blobinfo = nullptr;
+#elif defined(ANDROID)
+  const BlobInfo *blobinfo = nullptr;
 #else
   const BlobInfo *blobinfo = (const BlobInfo *)dlsym(dlopen(nullptr, RTLD_NOW), "blobinfo");
 #endif
   if (blobinfo == nullptr) {
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__) && !defined(ANDROID)
     // Clear the error flag.
     dlerror();
 #endif
@@ -482,7 +483,6 @@ reload_implicit_pages() {
       }
     }
   }
-#endif  // ANDROID
 
   if (!_loaded_implicit) {
     config_initialized();

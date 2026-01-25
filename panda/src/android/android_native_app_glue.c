@@ -255,10 +255,19 @@ static struct android_app* android_app_create(ANativeActivity* activity,
     android_app->msgread = msgpipe[0];
     android_app->msgwrite = msgpipe[1];
 
+    // Spawn the app thread in Java so it gets a valid class loader.
+    JNIEnv *env = activity->env;
+    jclass activity_class = (*env)->GetObjectClass(env, activity->clazz);
+    jmethodID method = (*env)->GetMethodID(env, activity_class, "spawnAppThread", "(JJ)V");
+    LOGE("got function pointer: %ld, data: %ld, env: %ld", (jlong)(void *)android_app_entry, (jlong)(void *)android_app, (jlong)(void *)env);
+    (*env)->CallVoidMethod(env, activity->clazz, method, (void *)android_app_entry, (void *)android_app);
+
+    /*
     pthread_attr_t attr;
     pthread_attr_init(&attr);
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
     pthread_create(&android_app->thread, &attr, android_app_entry, android_app);
+    */
 
     // Wait for thread to start.
     pthread_mutex_lock(&android_app->mutex);

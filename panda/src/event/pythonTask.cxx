@@ -37,7 +37,6 @@ PythonTask::
 PythonTask(PyObject *func_or_coro, const std::string &name) :
   AsyncTask(name),
   _function(nullptr),
-  _args(nullptr),
   _upon_death(nullptr),
   _owner(nullptr),
   _exception(nullptr),
@@ -45,6 +44,7 @@ PythonTask(PyObject *func_or_coro, const std::string &name) :
   _exc_traceback(nullptr),
   _generator(nullptr),
   _fut_waiter(nullptr),
+  _append_task(true),
   _ignore_return(false),
   _registered_to_owner(false),
   _retrieved_exception(false) {
@@ -53,19 +53,16 @@ PythonTask(PyObject *func_or_coro, const std::string &name) :
   if (func_or_coro == Py_None || PyCallable_Check(func_or_coro)) {
     _function = Py_NewRef(func_or_coro);
   }
-  else if (PyCoro_CheckExact(func_or_coro)) {
-    // We also allow passing in a coroutine, because why not.
-    _generator = Py_NewRef(func_or_coro);
-  }
-  else if (PyGen_CheckExact(func_or_coro)) {
-    // Something emulating a coroutine.
+  else if (PyCoro_CheckExact(func_or_coro) ||
+           PyGen_CheckExact(func_or_coro) ||
+           PyType_IsSubtype(Py_TYPE(func_or_coro), &PyCoro_Type)) {
+    // We also allow passing in a coroutine or something emulating it.
     _generator = Py_NewRef(func_or_coro);
   }
   else {
     nassert_raise("Invalid function passed to PythonTask");
   }
 
-  set_args(Py_None, true);
   set_upon_death(Py_None);
   set_owner(Py_None);
 
@@ -106,7 +103,9 @@ PythonTask::
 
   // All of these may have already been cleared by __clear__.
   Py_XDECREF(_function);
-  Py_XDECREF(_args);
+  for (PyObject *arg : _args) {
+    Py_DECREF(arg);
+  }
   Py_XDECREF(__dict__);
   Py_XDECREF(_exception);
   Py_XDECREF(_exc_value);
@@ -136,21 +135,23 @@ set_function(PyObject *function) {
  */
 void PythonTask::
 set_args(PyObject *args, bool append_task) {
-  Py_XDECREF(_args);
-  _args = nullptr;
+  pvector<PyObject *> old_args = std::exchange(_args, {});
 
-  if (args == Py_None) {
-    // None means no arguments; create an empty tuple.
-    _args = PyTuple_New(0);
-  } else {
-    if (PySequence_Check(args)) {
-      _args = PySequence_Tuple(args);
+  if (PySequence_Check(args)) {
+    Py_ssize_t len = PySequence_Size(args);
+    _args.resize(len);
+
+    for (Py_ssize_t i = 0; i < len; ++i) {
+      _args[i] = PySequence_GetItem(args, i);
     }
   }
-
-  if (_args == nullptr) {
+  else if (args != Py_None) {
     nassert_raise("Invalid args passed to PythonTask");
-    _args = PyTuple_New(0);
+    return;
+  }
+
+  for (PyObject *old_arg : old_args) {
+    Py_DECREF(old_arg);
   }
 
   _append_task = append_task;
@@ -161,19 +162,18 @@ set_args(PyObject *args, bool append_task) {
  */
 PyObject *PythonTask::
 get_args() {
+  // If we want to append the task, we have to create a new tuple with space
+  // for one more at the end.  We have to do this dynamically each time, to
+  // avoid storing the task itself in its own arguments list, and thereby
+  // creating a cyclical reference.
+
+  size_t num_args = _args.size();
+  PyObject *result = PyTuple_New(num_args + _append_task);
+  for (size_t i = 0; i < num_args; ++i) {
+    PyTuple_SET_ITEM(result, i, Py_NewRef(_args[i]));
+  }
+
   if (_append_task) {
-    // If we want to append the task, we have to create a new tuple with space
-    // for one more at the end.  We have to do this dynamically each time, to
-    // avoid storing the task itself in its own arguments list, and thereby
-    // creating a cyclical reference.
-
-    int num_args = PyTuple_GET_SIZE(_args);
-    PyObject *with_task = PyTuple_New(num_args + 1);
-    for (int i = 0; i < num_args; ++i) {
-      PyObject *item = PyTuple_GET_ITEM(_args, i);
-      PyTuple_SET_ITEM(with_task, i, Py_NewRef(item));
-    }
-
     // Check whether we have a Python wrapper.  This is not the case if the
     // object has been created by C++ and never been exposed to Python code.
     if (__self__ == nullptr) {
@@ -182,12 +182,9 @@ get_args() {
       __self__ = DTool_CreatePyInstance(this, Dtool_PythonTask, true, false);
     }
 
-    PyTuple_SET_ITEM(with_task, num_args, Py_NewRef(__self__));
-    return with_task;
+    PyTuple_SET_ITEM(result, num_args, Py_NewRef(__self__));
   }
-  else {
-    return Py_NewRef(_args);
-  }
+  return result;
 }
 
 /**
@@ -378,7 +375,9 @@ int PythonTask::
 __traverse__(visitproc visit, void *arg) {
   Py_VISIT(__self__);
   Py_VISIT(_function);
-  Py_VISIT(_args);
+  for (PyObject *arg : _args) {
+    Py_VISIT(arg);
+  }
   Py_VISIT(_upon_death);
   Py_VISIT(_owner);
   Py_VISIT(__dict__);
@@ -392,7 +391,12 @@ __traverse__(visitproc visit, void *arg) {
 int PythonTask::
 __clear__() {
   Py_CLEAR(_function);
-  Py_CLEAR(_args);
+  {
+    pvector<PyObject *> old_args = std::exchange(_args, {});
+    for (PyObject *arg : old_args) {
+      Py_DECREF(arg);
+    }
+  }
   Py_CLEAR(_upon_death);
   Py_CLEAR(_owner);
   Py_CLEAR(__dict__);
@@ -592,9 +596,21 @@ do_python_task() {
     // We are calling the function directly.
     nassertr(_function != nullptr, DS_interrupt);
 
-    PyObject *args = get_args();
-    result = PythonThread::call_python_func(_function, args);
-    Py_DECREF(args);
+    size_t nargs = _args.size();
+    PyObject **args = (PyObject **)alloca(sizeof(PyObject *) * (nargs + 2)) + 1;
+    std::copy(_args.begin(), _args.end(), args);
+
+    if (_append_task) {
+      // Check whether we have a Python wrapper.  This is not the case if the
+      // object has been created by C++ and never been exposed to Python code.
+      if (__self__ == nullptr) {
+        // A __self__ instance does not exist, let's create one now.
+        ref();
+        __self__ = DTool_CreatePyInstance(this, Dtool_PythonTask, true, false);
+      }
+      args[nargs++] = __self__;
+    }
+    result = PythonThread::call_python_func(_function, args, nargs | PY_VECTORCALL_ARGUMENTS_OFFSET);
 
     if (result != nullptr && PyGen_Check(result)) {
       // The function has yielded a generator.  We will call into that
@@ -620,7 +636,7 @@ do_python_task() {
         Py_DECREF(str);
         Py_DECREF(str2);
       }
-      if (PyCoro_CheckExact(result)) {
+      if (PyObject_TypeCheck(result, &PyCoro_Type)) {
         // If a coroutine, am_await is possible but senseless, since we can
         // just call send(None) on the coroutine itself.
         _generator = result;
@@ -654,7 +670,7 @@ do_python_task() {
       PyObject *func = PyObject_GetAttrString(_generator, "throw");
       if (func != nullptr) {
         PyObject *exc = PyObject_CallNoArgs(exc_type);
-        result = PyObject_CallFunctionObjArgs(func, exc, nullptr);
+        result = PyObject_CallOneArg(func, exc);
         Py_DECREF(exc);
         Py_DECREF(func);
       } else {
@@ -747,7 +763,7 @@ do_python_task() {
       }
 
     } else if (result == Py_None) {
-      // Bare yield means to continue next frame.
+      // Bare yield from a coroutine means to continue next frame.
       Py_DECREF(result);
       return DS_cont;
 

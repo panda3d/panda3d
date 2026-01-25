@@ -26,6 +26,8 @@
 #include "pointLight.h"
 #include "sphereLight.h"
 
+#undef VOID
+
 using std::string;
 using State = ShaderInputBinding::State;
 
@@ -247,7 +249,7 @@ check_light_struct_member(const string &name, const ShaderType *type) {
   uint32_t min_cols = 3;
   uint32_t max_cols = 4;
   if (name.empty()) {
-    return type == ShaderType::void_type;
+    return type == ShaderType::VOID;
   } else if (name == "color") {
   } else if (name == "specular") {
   } else if (name == "ambient") {
@@ -616,7 +618,7 @@ make_slider_table(const ShaderType *type) {
   const ShaderType *element_type;
   uint32_t num_elements;
   type->unwrap_array(element_type, num_elements);
-  nassertr(element_type == ShaderType::float_type, nullptr);
+  nassertr(element_type == ShaderType::FLOAT, nullptr);
 
   return ShaderInputBinding::make_data(Shader::D_vertex_data,
                                        [=](const State &state, void *into, bool packed) {
@@ -624,10 +626,9 @@ make_slider_table(const ShaderType *type) {
     const SliderTable *table = state.gsg->get_data_reader()->get_slider_table();
     float *sliders = (float *)into;
     memset(sliders, 0, num_elements * sizeof(float));
-    size_t i = 0;
     if (table != nullptr) {
       size_t num_transforms = std::min((size_t)num_elements, table->get_num_sliders());
-      for (size_t i = 0; i < num_elements; ++i) {
+      for (size_t i = 0; i < num_transforms; ++i) {
         sliders[i] = table->get_slider(i)->get_slider();
       }
     }
@@ -639,13 +640,13 @@ make_slider_table(const ShaderType *type) {
  */
 static ShaderInputBinding *
 make_frame_time(const ShaderType *type) {
-  if (type == ShaderType::float_type) {
+  if (type == ShaderType::FLOAT) {
     return ShaderInputBinding::make_data(Shader::D_frame,
                                          [](const State &state, void *into, bool packed) {
       *(float *)into = ClockObject::get_global_clock()->get_frame_time();
     });
   }
-  if (type == ShaderType::double_type) {
+  if (type == ShaderType::DOUBLE) {
     return ShaderInputBinding::make_data(Shader::D_frame,
                                          [](const State &state, void *into, bool packed) {
       *(double *)into = ClockObject::get_global_clock()->get_frame_time();
@@ -804,7 +805,7 @@ make_fog(const ShaderType *type) {
   bool success = true;
   for (size_t i = 0; i < struct_type->get_num_members(); ++i) {
     const ShaderType::Struct::Member &member = struct_type->get_member(i);
-    if (member.type == ShaderType::void_type) {
+    if (member.type == ShaderType::VOID) {
       continue;
     }
 
@@ -887,7 +888,7 @@ make_material(const ShaderType *type) {
   bool success = true;
   for (size_t i = 0; i < struct_type->get_num_members(); ++i) {
     const ShaderType::Struct::Member &member = struct_type->get_member(i);
-    if (member.type == ShaderType::void_type) {
+    if (member.type == ShaderType::VOID) {
       continue;
     }
 
@@ -921,8 +922,8 @@ make_material(const ShaderType *type) {
       roughness_offset = member.offset;
     }
     else if (member.name == "metallic") {
-      if (member.type != ShaderType::bool_type &&
-          member.type != ShaderType::float_type) {
+      if (member.type != ShaderType::BOOL &&
+          member.type != ShaderType::FLOAT) {
         report_parameter_error(fqname, member.type, "expected bool or float");
         success = false;
       }
@@ -1351,7 +1352,7 @@ ShaderLightStructBinding(const ShaderType *type, const InternalName *input) {
 
   for (size_t i = 0; i < struct_type->get_num_members(); ++i) {
     const ShaderType::Struct::Member &member = struct_type->get_member(i);
-    if (member.type == ShaderType::void_type) {
+    if (member.type == ShaderType::VOID) {
       continue;
     }
 
@@ -1859,7 +1860,7 @@ fetch_shader_buffer(const State &state, ResourceId resource_id) const {
   const InternalName *name = (const InternalName *)resource_id;
   PT(ShaderBuffer) buffer = state.gsg->get_target_shader_attrib()->get_shader_input_buffer(name);
 #ifndef NDEBUG
-  if (!_shown_error && buffer->get_data_size_bytes() < _min_size) {
+  if (!_shown_error && buffer != nullptr && buffer->get_data_size_bytes() < _min_size) {
     _shown_error = true;
     shader_cat.error()
       << *buffer << " is too small for shader input " << *name
@@ -2472,8 +2473,10 @@ make_binding_glsl(const InternalName *name, const ShaderType *type) {
           mode_mask = (1 << TextureStage::M_height)
                     | (1 << TextureStage::M_normal_height);
         }
-        else if (pieces[1].compare(7, string::npos, "Selector") == 0) {
-          mode_mask = (1 << TextureStage::M_selector);
+        else if (pieces[1].compare(7, string::npos, "MetallicRoughness") == 0 ||
+                 pieces[1].compare(7, string::npos, "Selector") == 0) {
+          mode_mask = (1 << TextureStage::M_metallic_roughness)
+                    | (1 << TextureStage::M_occlusion_metallic_roughness);
         }
         else if (pieces[1].compare(7, string::npos, "Gloss") == 0) {
           mode_mask = (1 << TextureStage::M_gloss)
@@ -2482,6 +2485,10 @@ make_binding_glsl(const InternalName *name, const ShaderType *type) {
         }
         else if (pieces[1].compare(7, string::npos, "Emission") == 0) {
           mode_mask = (1 << TextureStage::M_emission);
+        }
+        else if (pieces[1].compare(7, string::npos, "Occlusion") == 0) {
+          mode_mask = (1 << TextureStage::M_occlusion)
+                    | (1 << TextureStage::M_occlusion_metallic_roughness);
         }
         else {
           return report_parameter_error(name, type, "unrecognized parameter name");
@@ -2613,7 +2620,7 @@ make_binding_glsl(const InternalName *name, const ShaderType *type) {
       return make_light_ambient(member.type);
     }
     if (pieces[1] == "NumLights") {
-      if (type != ShaderType::int_type) {
+      if (type != ShaderType::INT) {
         return report_parameter_error(name, type, "expected int");
       }
       return ShaderInputBinding::make_data(Shader::D_light,
@@ -2673,7 +2680,7 @@ make_binding_glsl(const InternalName *name, const ShaderType *type) {
       uint32_t num_elements;
       type->unwrap_array(element_type, num_elements);
 
-      if (element_type != ShaderType::float_type) {
+      if (element_type != ShaderType::FLOAT) {
         return report_parameter_error(name, type, "expected float");
       }
 
@@ -2704,13 +2711,13 @@ make_binding_glsl(const InternalName *name, const ShaderType *type) {
       return make_frame_time(type);
     }
     else if (pieces[1] == "DeltaFrameTime") {
-      if (type == ShaderType::float_type) {
+      if (type == ShaderType::FLOAT) {
         return ShaderInputBinding::make_data(Shader::D_frame,
                                              [](const State &state, void *into, bool packed) {
           *(float *)into = ClockObject::get_global_clock()->get_dt();
         });
       }
-      else if (type == ShaderType::double_type) {
+      else if (type == ShaderType::DOUBLE) {
         return ShaderInputBinding::make_data(Shader::D_frame,
                                              [](const State &state, void *into, bool packed) {
           *(double *)into = ClockObject::get_global_clock()->get_dt();
@@ -2721,7 +2728,7 @@ make_binding_glsl(const InternalName *name, const ShaderType *type) {
       }
     }
     else if (pieces[1] == "FrameNumber") {
-      if (type == ShaderType::int_type) {
+      if (type == ShaderType::INT) {
         return ShaderInputBinding::make_data(Shader::D_frame,
                                              [](const State &state, void *into, bool packed) {
           *(int *)into = ClockObject::get_global_clock()->get_frame_count();

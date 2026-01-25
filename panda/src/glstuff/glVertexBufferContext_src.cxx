@@ -47,3 +47,13 @@ evict_lru() {
   update_data_size_bytes(0);
   mark_unloaded();
 }
+
+/**
+ * Returns an implementation-defined handle or pointer that can be used
+ * to interface directly with the underlying API.
+ * Returns 0 if the underlying implementation does not support this.
+ */
+uint64_t CLP(VertexBufferContext)::
+get_native_id() const {
+  return _index;
+}

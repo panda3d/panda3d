@@ -20,6 +20,7 @@
 #include "typedObject.h"
 #include "shader.h"
 #include "shaderModule.h"
+#include "compilerOptions.h"
 
 /**
  * This is the base class for objects to compile various types of shader code.
@@ -31,13 +32,22 @@ protected:
 public:
   virtual ~ShaderCompiler();
 
-PUBLISHED:
+public:
   virtual std::string get_name() const=0;
   virtual SourceLanguages get_languages() const=0;
+
+PUBLISHED:
+  MAKE_PROPERTY(name, get_name);
+  MAKE_PROPERTY(languages, get_languages);
+
   virtual PT(ShaderModule) compile_now(Stage stage, const Filename &path,
+                                       const CompilerOptions &options = CompilerOptions(),
+                                       std::ostream *output_log = nullptr,
                                        BamCacheRecord *record = nullptr) const;
   virtual PT(ShaderModule) compile_now(Stage stage, std::istream &in,
                                        const Filename &fullpath,
+                                       const CompilerOptions &options = CompilerOptions(),
+                                       std::ostream *output_log = nullptr,
                                        BamCacheRecord *record = nullptr) const=0;
 
 public:

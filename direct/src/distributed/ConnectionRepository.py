@@ -1,4 +1,4 @@
-from panda3d.core import DocumentSpec, Filename, HTTPClient, VirtualFileSystem, getModelPath
+from panda3d.core import DocumentSpec, Filename, VirtualFileSystem, getModelPath
 from panda3d.direct import CConnectionRepository, DCPacker
 from direct.task import Task
 from direct.task.TaskManagerGlobal import taskMgr
@@ -590,6 +590,7 @@ class ConnectionRepository(
 
         if self.http is None:
             try:
+                from panda3d.core import HTTPClient
                 self.http = HTTPClient()
             except Exception:
                 pass

@@ -1116,9 +1116,19 @@ add_collector(PStatClient::Collector *collector) {
     // We need to grow the array.  We have to be careful here, because there
     // might be clients accessing the array right now who are not protected by
     // the lock.
-    size_t new_collectors_size = (_collectors_size == 0) ? 128 : _collectors_size * 2;
     CollectorPointer *old_collectors = _collectors.load(std::memory_order_relaxed);
-    CollectorPointer *new_collectors = new CollectorPointer[new_collectors_size];
+    CollectorPointer *new_collectors;
+
+    static const size_t initial_collectors_size = 256;
+    static CollectorPointer initial_collectors[initial_collectors_size];
+    size_t new_collectors_size;
+    if (_collectors_size == 0) {
+      new_collectors_size = initial_collectors_size;
+      new_collectors = initial_collectors;
+    } else {
+      new_collectors_size = _collectors_size * 2;
+      new_collectors = new CollectorPointer[new_collectors_size];
+    }
     if (old_collectors != nullptr) {
       memcpy(new_collectors, old_collectors, num_collectors * sizeof(CollectorPointer));
     }

@@ -23,8 +23,8 @@
 static const int default_strip_chart_width = 400;
 static const int default_strip_chart_height = 200;
 
-static const int minimum_strip_chart_sidebar_width = 116;
-static const int default_strip_chart_sidebar_width = 116;
+static const int minimum_strip_chart_sidebar_width = 128;
+static const int default_strip_chart_sidebar_width = 128;
 
 /**
  *

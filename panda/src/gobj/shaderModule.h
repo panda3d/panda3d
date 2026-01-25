@@ -14,11 +14,12 @@
 #ifndef SHADERMODULE_H
 #define SHADERMODULE_H
 
-#include "bamCacheRecord.h"
 #include "copyOnWriteObject.h"
 #include "internalName.h"
 #include "shaderEnums.h"
 #include "shaderType.h"
+
+class VirtualFile;
 
 /**
  * Represents a single shader module in some intermediate representation for
@@ -64,25 +65,44 @@ public:
   ShaderModule(Stage stage);
   virtual ~ShaderModule();
 
+  void add_source_file(const VirtualFile *file);
+  bool check_source_modified() const;
+
   INLINE Stage get_stage() const;
   INLINE uint64_t get_used_capabilities() const;
 
   INLINE const Filename &get_source_filename() const;
   INLINE void set_source_filename(const Filename &);
 
+#ifdef CPPPARSER
+  INLINE SpecializationConstant get_spec_constant(size_t i) const;
+#else
   INLINE const SpecializationConstant &get_spec_constant(size_t i) const;
+#endif
   INLINE size_t get_num_spec_constants() const;
 
   INLINE size_t get_num_inputs() const;
+#ifdef CPPPARSER
+  INLINE Variable get_input(size_t i) const;
+#else
   INLINE const Variable &get_input(size_t i) const;
+#endif
   INLINE int find_input(CPT_InternalName name) const;
 
   INLINE size_t get_num_outputs() const;
+#ifdef CPPPARSER
+  INLINE Variable get_output(size_t i) const;
+#else
   INLINE const Variable &get_output(size_t i) const;
+#endif
   INLINE int find_output(CPT_InternalName name) const;
 
   INLINE size_t get_num_parameters() const;
+#ifdef CPPPARSER
+  INLINE Variable get_parameter(size_t i) const;
+#else
   INLINE const Variable &get_parameter(size_t i) const;
+#endif
   INLINE int find_parameter(CPT_InternalName name) const;
 
   pvector<uint32_t> get_parameter_ids_from_names(const pvector<const InternalName *> &names) const;
@@ -111,11 +131,16 @@ protected:
   void fillin(DatagramIterator &scan, BamReader *manager) override;
 
 protected:
+  struct SourceFile {
+    Filename _pathname;
+    time_t _timestamp;
+    std::streamsize _size;
+  };
+  typedef pvector<SourceFile> SourceFiles;
+
   Stage _stage;
-  PT(BamCacheRecord) _record;
-  //std::pvector<Filename> _source_files;
   Filename _source_filename;
-  //time_t _source_modified = 0;
+  SourceFiles _source_files;
   uint64_t _used_caps = 0;
 
   typedef pvector<Variable> Variables;

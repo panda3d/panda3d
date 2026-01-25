@@ -81,6 +81,7 @@ get_languages() const {
  */
 PT(ShaderModule) ShaderCompilerGlslPreProc::
 compile_now(Stage stage, std::istream &in, const Filename &fullpath,
+            const CompilerOptions &options, std::ostream *output_log,
             BamCacheRecord *record) const {
   // Create a name that's easier to read in error messages.
   std::string filename;
@@ -96,8 +97,18 @@ compile_now(Stage stage, std::istream &in, const Filename &fullpath,
     }
   }
 
+  std::string preamble;
+  {
+    std::ostringstream preamble_stream;
+    if (options.get_optimize() == CompilerOptions::Optimize::NONE) {
+      preamble_stream << "#pragma optimize(off)\n";
+    }
+    options.write_defines(preamble_stream);
+    preamble = std::move(preamble_stream).str();
+  }
+
   State state;
-  if (!r_preprocess_source(state, in, filename, fullpath, record)) {
+  if (!r_preprocess_source(state, in, filename, fullpath, preamble, record)) {
     return nullptr;
   }
 
@@ -106,15 +117,24 @@ compile_now(Stage stage, std::istream &in, const Filename &fullpath,
       << "GLSL shader " << filename << " does not contain any code!\n";
     return nullptr;
   }
+  std::string code = std::move(state.code).str();
+
   if (!state.version) {
     shader_cat.warning()
       << "GLSL shader " << filename << " does not contain a #version line!\n";
+
+    // If we don't have a version line, it hasn't inserted the preamble.
+    if (!preamble.empty()) {
+      code = preamble + "#line 1\n" + code;
+    }
   }
 
-  PT(ShaderModuleGlsl) module = new ShaderModuleGlsl(stage, state.code.str(), state.version);
+  PT(ShaderModuleGlsl) module = new ShaderModuleGlsl(stage, std::move(code), state.version);
   module->_included_files = std::move(state.included_files);
   module->_used_caps |= state.required_caps;
-  module->_record = record;
+  for (const PT(VirtualFile) &vf : state.source_files) {
+    module->add_source_file(vf);
+  }
   return module;
 }
 
@@ -127,8 +147,8 @@ compile_now(Stage stage, std::istream &in, const Filename &fullpath,
  */
 bool ShaderCompilerGlslPreProc::
 r_preprocess_source(State &state, std::istream &in, const std::string &fn,
-                    const Filename &full_fn, BamCacheRecord *record, int fileno,
-                    int depth) const {
+                    const Filename &full_fn, const std::string &preamble,
+                    BamCacheRecord *record, int fileno, int depth) const {
 
   // Iterate over the lines for things we may need to preprocess.
   std::string line;
@@ -316,11 +336,24 @@ r_preprocess_source(State &state, std::istream &in, const std::string &fn,
       state.cond_nesting--;
     }
     else if (strcmp(directive, "version") == 0) {
+      if (state.version != 0) {
+        shader_cat.error()
+          << "Duplicated #version at line " << lineno << " of file " << fn
+          << ": " << line << "\n";
+        return false;
+      }
       if (sscanf(line.c_str(), " # version %d", &state.version) != 1 || state.version <= 0) {
         shader_cat.error()
           << "Invalid version number at line " << lineno << " of file " << fn
           << ": " << line << "\n";
         return false;
+      }
+      if (!preamble.empty()) {
+        // Preamble goes *after* the version line.
+        out << line << "\n";
+        out << preamble << "\n";
+        write_line_directive = true;
+        continue;
       }
     }
     else if (strcmp(directive, "extension") == 0) {
@@ -525,8 +558,7 @@ r_preprocess_include(State &state, const std::string &fn,
   if (record != nullptr) {
     record->add_dependent_file(vf);
   }
-  //module->_source_modified = std::max(module->_source_modified, vf->get_timestamp());
-  //module->_source_files.push_back(full_fn);
+  state.source_files.push_back(vf);
 
   // We give each file an unique index.  This is so that we can identify a
   // particular shader in the error output.  We offset them by 2048 so that
@@ -545,7 +577,7 @@ r_preprocess_include(State &state, const std::string &fn,
       << "Preprocessing shader include " << fileno << ": " << fn << "\n";
   }
 
-  bool result = r_preprocess_source(state, *source, fn, full_fn, record, fileno, depth);
+  bool result = r_preprocess_source(state, *source, fn, full_fn, std::string(), record, fileno, depth);
   vf->close_read_file(source);
   return result;
 }

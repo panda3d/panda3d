@@ -16,6 +16,7 @@
 
 template class ParamValue<std::string>;
 template class ParamValue<std::wstring>;
+template class ParamValue<vector_uchar>;
 
 template class ParamValue<LVecBase2d>;
 template class ParamValue<LVecBase2f>;

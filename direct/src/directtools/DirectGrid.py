@@ -33,7 +33,7 @@ class DirectGrid(NodePath, DirectObject):
 
         self.centerLines = LineNodePath(self.lines)
         self.centerLines.lineNode.setName('centerLines')
-        self.centerLines.setColor(VBase4(1, 0, 0, 0))
+        self.centerLines.setColor(VBase4(1, 0, 0, 1))
         self.centerLines.setThickness(3)
 
         # Small marker to hilight snap-to-grid point
