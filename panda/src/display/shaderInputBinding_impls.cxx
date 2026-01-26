@@ -1082,7 +1082,7 @@ fetch_data(const State &state, void *into, bool packed) const {
  */
 bool ShaderMatrixComposeBinding::
 is_model_to_apiclip_matrix() const {
-  return !_transpose && _num_cols == 4 &&
+  return !_transpose && _num_rows == 4 && _num_cols == 4 &&
     ((_input0 == Shader::SM_model_to_apiview && _input1 == Shader::SM_apiview_to_apiclip) ||
      (_input0 == Shader::SM_model_to_view && _input1 == Shader::SM_view_to_apiclip));
 }
