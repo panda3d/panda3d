@@ -331,8 +331,8 @@ private:
   VulkanCommandBuffer _transfer_cmd;
   VulkanCommandBuffer _render_cmd;
 
-  uint64_t _next_begin_command_buffer_seq = 0;
-  uint64_t _next_end_command_buffer_seq = 0;
+  uint64_t _next_begin_command_buffer_seq = 1;
+  uint64_t _next_end_command_buffer_seq = 1;
   pvector<VkCommandBuffer> _free_command_buffers; // new and unused
   pvector<VkCommandBuffer> _pending_command_buffers; // ready to submit
   pvector<VkBufferMemoryBarrier2> _pending_buffer_barriers;

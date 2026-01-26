@@ -137,9 +137,15 @@ add_barrier(VulkanTextureContext *tc, VkImageLayout layout,
     } else {
       out << "TC " << tc;
     }
-    out << " on CB #" << _seq << " (last "
-        << ((tc->_read_seq > tc->_write_seq) ? "read on #" : "write on #")
-        << tc->_read_seq << ")\n";
+    out << " on CB #" << _seq;
+
+    if (tc->_read_seq == 0 && tc->_write_seq == 0) {
+      out << " (first use)\n";
+    } else {
+      out << " (last "
+          << ((tc->_read_seq > tc->_write_seq) ? "read on #" : "write on #")
+          << tc->_read_seq << ")\n";
+    }
   }
 #endif
 
@@ -291,13 +297,19 @@ add_barrier(VulkanBufferContext *bc, VkPipelineStageFlags2 dst_stage_mask,
   if (vulkandisplay_cat.is_spam()) {
     const char dst_type = (write_mask != 0) ? 'W' : 'R';
     const char src_type = (src_access_mask != 0) ? 'W' : 'R';
-    vulkandisplay_cat.spam()
+    auto &out = vulkandisplay_cat.spam()
       << (hoist_possible ? "Hoisting " : "Issuing ")
       << dst_type << 'a' << src_type << " barrier for "
       << "SSBO " << *(ShaderBuffer *)bc->get_object()
-      << " on CB #" << _seq << " (last "
-      << ((bc->_read_seq > bc->_write_seq) ? "read on #" : "write on #")
-      << bc->_read_seq << ")\n";
+      << " on CB #" << _seq;
+
+    if (bc->_read_seq == 0 && bc->_write_seq == 0) {
+      out << " (first use)\n";
+    } else {
+      out << " (last "
+          << ((bc->_read_seq > bc->_write_seq) ? "read on #" : "write on #")
+          << bc->_read_seq << ")\n";
+    }
   }
 #endif
 
