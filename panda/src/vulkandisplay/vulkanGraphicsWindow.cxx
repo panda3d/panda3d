@@ -1269,8 +1269,8 @@ create_swapchain() {
   fb_info.layers = 1;*/
 
   for (uint32_t i = 0; i < num_images; ++i) {
-    SwapBuffer &buffer = _swap_buffers[i];
-    /*if (_ms_color_tc != nullptr) {
+    /*SwapBuffer &buffer = _swap_buffers[i];
+    if (_ms_color_tc != nullptr) {
       attach_views[num_views - 1] = buffer._tc->get_image_view(0);
     } else {
       attach_views[0] = buffer._tc->get_image_view(0);
