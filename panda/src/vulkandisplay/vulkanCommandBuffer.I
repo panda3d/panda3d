@@ -66,6 +66,7 @@ operator = (VulkanCommandBuffer &&from) noexcept {
 /**
  * Queues a low-level barrier.  Only use for images not managed by a
  * VulkanTextureContext, otherwise see the other overload.
+ * Note that this will not take effect until flush_barriers() is called.
  */
 INLINE void VulkanCommandBuffer::
 add_barrier(VkImageMemoryBarrier2 barrier) {
@@ -75,6 +76,7 @@ add_barrier(VkImageMemoryBarrier2 barrier) {
 /**
  * Queues a low-level barrier.  Only use for images not managed by a
  * VulkanBufferContext, otherwise see the other overload.
+ * Note that this will not take effect until flush_barriers() is called.
  */
 INLINE void VulkanCommandBuffer::
 add_barrier(VkBufferMemoryBarrier2 barrier) {

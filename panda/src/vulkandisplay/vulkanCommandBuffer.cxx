@@ -121,7 +121,13 @@ add_barrier(VulkanTextureContext *tc, VkImageLayout layout,
     const char src_type = (src_access_mask != 0) ? 'W' : 'R';
     auto &out = vulkandisplay_cat.spam()
       << (hoist_possible ? "Hoisting " : "Issuing ")
-      << dst_type << 'a' << src_type << " barrier for ";
+      << dst_type << 'a' << src_type;
+
+    if (layout != tc->_layout) {
+      out << " (layout " << tc->_layout << "->" << layout << ")";
+    }
+
+    out << " barrier for ";
 
     Texture *tex = tc->get_texture();
     if (tex != nullptr) {

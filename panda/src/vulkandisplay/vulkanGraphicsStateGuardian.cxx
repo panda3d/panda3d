@@ -1749,7 +1749,6 @@ upload_texture(VulkanTextureContext *tc, CompletionToken token) {
     _transfer_cmd.add_barrier(tc, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                               VK_PIPELINE_STAGE_2_TRANSFER_BIT,
                               VK_ACCESS_2_TRANSFER_WRITE_BIT);
-    _transfer_cmd.flush_barriers();
 
     // Schedule a copy from our staging buffer to the image.
     VkBufferImageCopy region = {};
@@ -1784,17 +1783,6 @@ upload_texture(VulkanTextureContext *tc, CompletionToken token) {
     barrier.subresourceRange.baseArrayLayer = 0;
     barrier.subresourceRange.layerCount = tc->_array_layers;
 
-    VkDependencyInfo dep_info = {
-      VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
-      nullptr, // pNext
-      0, // dependencyFlags
-      0, // memoryBarrierCount
-      nullptr, // pMemoryBarriers
-      0, // bufferMemoryBarrierCount
-      nullptr, // pBufferMemoryBarriers
-      1, &barrier,
-    };
-
     SparseArray levels_in_dst_optimal_layout;
     levels_in_dst_optimal_layout.set_range(0, level_offsets.size());
 
@@ -1803,6 +1791,7 @@ upload_texture(VulkanTextureContext *tc, CompletionToken token) {
         // Schedule a copy from the staging buffer.
         region.bufferOffset = (uint32_t)offset;
 
+        _transfer_cmd.flush_barriers();
         vkCmdCopyBufferToImage(_transfer_cmd, buffer, image,
                                VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 
@@ -1815,7 +1804,8 @@ upload_texture(VulkanTextureContext *tc, CompletionToken token) {
         // There's no image for this level, we are supposed to generate it.
         // Transition the previous mipmap level to optimal read layout.
         barrier.subresourceRange.baseMipLevel = blit.srcSubresource.mipLevel;
-        vkCmdPipelineBarrier2(_transfer_cmd, &dep_info);
+        _transfer_cmd.add_barrier(barrier);
+        _transfer_cmd.flush_barriers();
         levels_in_dst_optimal_layout.clear_bit(barrier.subresourceRange.baseMipLevel);
 
         blit.dstSubresource.mipLevel = region.imageSubresource.mipLevel;

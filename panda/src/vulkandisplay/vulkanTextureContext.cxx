@@ -174,6 +174,7 @@ clear_color_image(VulkanCommandBuffer &cmd, const VkClearColorValue &value) {
 
   cmd.add_barrier(this, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                   VK_PIPELINE_STAGE_2_TRANSFER_BIT, VK_ACCESS_2_TRANSFER_WRITE_BIT);
+  cmd.flush_barriers();
 
   VkImageSubresourceRange range;
   range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -197,6 +198,7 @@ clear_depth_stencil_image(VulkanCommandBuffer &cmd, const VkClearDepthStencilVal
 
   cmd.add_barrier(this, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                   VK_PIPELINE_STAGE_2_TRANSFER_BIT, VK_ACCESS_2_TRANSFER_WRITE_BIT);
+  cmd.flush_barriers();
 
   VkImageSubresourceRange range;
   range.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
