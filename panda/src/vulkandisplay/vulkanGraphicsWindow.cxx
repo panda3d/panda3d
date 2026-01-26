@@ -1089,6 +1089,15 @@ create_swapchain() {
   // Now create an image view for each image.
   for (uint32_t i = 0; i < num_images; ++i) {
     SwapBuffer &buffer = _swap_buffers[i];
+
+#ifndef NDEBUG
+    std::string debug_name;
+    if (vkgsg->_vkSetDebugUtilsObjectName != nullptr) {
+      debug_name = get_name() + ":color#" + format_string(i);
+      vkgsg->set_object_name(images[i], debug_name);
+    }
+#endif
+
     buffer._tc = new VulkanTextureContext(pgo);
     buffer._tc->_image = images[i];
     buffer._tc->_format = swapchain_info.imageFormat;
@@ -1122,6 +1131,12 @@ create_swapchain() {
       return false;
     }
 
+#ifndef NDEBUG
+    if (!debug_name.empty()) {
+      vkgsg->set_object_name(image_view, debug_name);
+    }
+#endif
+
     buffer._tc->_image_views.push_back(image_view);
 
     // Create a semaphore that is signalled when we are finished rendering,
@@ -1144,6 +1159,10 @@ create_swapchain() {
       _depth_stencil_tc = nullptr;
       return false;
     }
+
+#ifndef NDEBUG
+    vkgsg->set_object_name(_depth_stencil_tc->_image, get_name() + ":depth-stencil");
+#endif
 
     VkImageViewCreateInfo view_info;
     view_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -1172,6 +1191,10 @@ create_swapchain() {
       return false;
     }
 
+#ifndef NDEBUG
+    vkgsg->set_object_name(depth_stencil_view, get_name() + ":depth-stencil");
+#endif
+
     _depth_stencil_tc->_image_views.push_back(depth_stencil_view);
   }
 
@@ -1187,6 +1210,9 @@ create_swapchain() {
       _ms_color_tc = nullptr;
       return false;
     }
+#ifndef NDEBUG
+    vkgsg->set_object_name(_ms_color_tc->_image, get_name() + ":ms-color");
+#endif
     _ms_color_tc->_aspect_mask = VK_IMAGE_ASPECT_COLOR_BIT;
 
     VkImageViewCreateInfo view_info;
@@ -1211,6 +1237,9 @@ create_swapchain() {
       vulkan_error(err, "Failed to create image view for multisample color");
       return false;
     }
+#ifndef NDEBUG
+    vkgsg->set_object_name(ms_color_view, get_name() + ":ms-color");
+#endif
 
     _ms_color_tc->_image_views.push_back(ms_color_view);
   }

@@ -114,6 +114,8 @@ reset() {
   VulkanGraphicsPipe *pipe;
   DCAST_INTO_V(pipe, get_pipe());
 
+  _vkSetDebugUtilsObjectName = pipe->_vkSetDebugUtilsObjectName;
+
   const VkPhysicalDeviceLimits &limits = pipe->_gpu_properties.limits;
   const VkPhysicalDeviceFeatures &features = pipe->_gpu_features;
 
@@ -507,6 +509,7 @@ reset() {
       vulkan_error(err, "Failed to create shadow sampler object");
       return;
     }
+    set_object_name(_shadow_sampler, "<global shadow map sampler>");
 
     VkSampler immutable_samplers[num_shadow_maps];
     for (size_t i = 0; i < num_shadow_maps; ++i) {
@@ -548,6 +551,8 @@ reset() {
       vulkan_error(err, "Failed to allocate descriptor set for empty light attribute");
       return;
     }
+
+    set_object_name(_empty_lattr_descriptor_set, "<empty light attrib>");
   }
 
   // Create a uniform buffer that we'll use for everything.
@@ -567,6 +572,8 @@ reset() {
     }
     return;
   }
+  set_object_name(_uniform_buffer, "<global uniform buffer>");
+
   _uniform_buffer_ptr = _uniform_buffer_memory.map_persistent();
   if (_uniform_buffer_ptr == nullptr) {
     vulkandisplay_cat.error()
@@ -595,6 +602,7 @@ reset() {
     if (create_buffer(staging_buffer_size, _staging_buffer, _staging_buffer_memory,
                       VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
                       (VkMemoryPropertyFlagBits)(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT))) {
+      set_object_name(_staging_buffer, "<staging buffer>");
       _staging_buffer_ptr = _staging_buffer_memory.map_persistent();
       if (_staging_buffer_ptr != nullptr) {
         _staging_buffer_allocator = CircularAllocator(staging_buffer_size, limits.optimalBufferCopyOffsetAlignment);
@@ -1362,6 +1370,10 @@ create_texture(VulkanTextureContext *tc) {
                       VK_SAMPLE_COUNT_1_BIT, usage, flags)) {
       return false;
     }
+    if (texture->has_name()) {
+      set_object_name(tc->_image, texture->get_name());
+    }
+
     tc->_mipmap_begin = mipmap_begin;
     tc->_mipmap_end = mipmap_end;
     tc->_generate_mipmaps = generate_mipmaps;
@@ -1480,6 +1492,12 @@ create_texture(VulkanTextureContext *tc) {
         return false;
       }
 
+#ifndef NDEBUG
+      if (_vkSetDebugUtilsObjectName != nullptr && texture->has_name()) {
+        set_object_name(image_view, texture->get_name() + ":view#" + format_string(view));
+      }
+#endif
+
       tc->_image_views.push_back(image_view);
       view_info.subresourceRange.baseArrayLayer += num_layers_per_view;
     }
@@ -1513,6 +1531,7 @@ create_texture(VulkanTextureContext *tc) {
                        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)) {
       return false;
     }
+    set_object_name(buffer, texture->get_name());
 
     if (vulkandisplay_cat.is_debug()) {
       vulkandisplay_cat.debug()
@@ -1542,6 +1561,12 @@ create_texture(VulkanTextureContext *tc) {
         vkDestroyBuffer(_device, buffer, nullptr);
         return false;
       }
+
+#ifndef NDEBUG
+      if (_vkSetDebugUtilsObjectName != nullptr && texture->has_name()) {
+        set_object_name(buffer_view, texture->get_name() + ":view#" + format_string(view));
+      }
+#endif
 
       buffer_views.push_back(buffer_view);
       view_info.offset += view_size;
@@ -3212,7 +3237,7 @@ begin_frame(Thread *current_thread, VkSemaphore wait_for) {
 
   // Make sure we have a white texture.
   if (_white_texture.is_null()) {
-    _white_texture = new Texture();
+    _white_texture = new Texture("<white>");
     _white_texture->setup_2d_texture(1, 1, Texture::T_unsigned_byte, Texture::F_rgba8);
     _white_texture->set_clear_color(LColor(1, 1, 1, 1));
     _white_texture->prepare_now(0, get_prepared_objects(), this);
@@ -3690,7 +3715,15 @@ begin_command_buffer(VkSemaphore wait_for) {
   VkResult err;
   err = vkBeginCommandBuffer(handle, &begin_info);
   if (err == VK_SUCCESS) {
-    return VulkanCommandBuffer(handle, _next_begin_command_buffer_seq++, wait_for);
+    auto seq = _next_begin_command_buffer_seq++;
+#ifndef NDEBUG
+    if (_vkSetDebugUtilsObjectName != nullptr) {
+      char name[22];
+      snprintf(name, sizeof(name), "#%llu", (unsigned long long)seq);
+      set_object_name(VK_OBJECT_TYPE_COMMAND_BUFFER, handle, name);
+    }
+#endif
+    return VulkanCommandBuffer(handle, seq, wait_for);
   } else {
     vulkan_error(err, "Can't begin command buffer");
     return VulkanCommandBuffer();

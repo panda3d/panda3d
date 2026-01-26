@@ -769,6 +769,16 @@ create_attachment(RenderTexturePlane plane, VkFormat format, Texture *texture) {
       return false;
     }
 
+#ifndef NDEBUG
+    std::string debug_name;
+    if (plane == RTP_depth || plane == RTP_stencil || plane == RTP_depth_stencil) {
+      debug_name = get_name() + ":depth-stencil";
+    } else {
+      debug_name = get_name() + ":color";
+    }
+    vkgsg->set_object_name(tc->_image, debug_name);
+#endif
+
     VkImageViewCreateInfo view_info;
     view_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     view_info.pNext = nullptr;
@@ -813,6 +823,9 @@ create_attachment(RenderTexturePlane plane, VkFormat format, Texture *texture) {
       delete tc;
       return false;
     }
+#ifndef NDEBUG
+    vkgsg->set_object_name(image_view, debug_name);
+#endif
 
     tc->_image_views.push_back(image_view);
   }

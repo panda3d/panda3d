@@ -234,6 +234,14 @@ public:
   static bool lookup_image_format(VkFormat vk_format, Texture::Format &format,
                                   Texture::ComponentType &type);
 
+  INLINE void set_object_name(VkObjectType type, void *handle, const char *name);
+  INLINE void set_object_name(VkBuffer object, const std::string &name);
+  INLINE void set_object_name(VkBufferView object, const std::string &name);
+  INLINE void set_object_name(VkDescriptorSet object, const std::string &name);
+  INLINE void set_object_name(VkImage object, const std::string &name);
+  INLINE void set_object_name(VkImageView object, const std::string &name);
+  INLINE void set_object_name(VkSampler object, const std::string &name);
+
 public:
   VkDevice _device = VK_NULL_HANDLE;
   uint32_t _graphics_queue_family_index;
@@ -389,6 +397,7 @@ private:
   PFN_vkCmdSetPrimitiveRestartEnable _vkCmdSetPrimitiveRestartEnable;
   PFN_vkCmdSetPrimitiveTopology _vkCmdSetPrimitiveTopology;
   PFN_vkCmdWriteTimestamp2 _vkCmdWriteTimestamp2;
+  PFN_vkSetDebugUtilsObjectNameEXT _vkSetDebugUtilsObjectName;
   PFN_vkUpdateDescriptorSets _vkUpdateDescriptorSets;
 
   friend class VulkanGraphicsBuffer;

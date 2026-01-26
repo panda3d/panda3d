@@ -88,9 +88,9 @@ public:
   VkDeviceSize _max_allocation_size;
   uint32_t _max_inline_uniform_block_size = 0;
 
-private:
   PFN_vkSetDebugUtilsObjectNameEXT _vkSetDebugUtilsObjectName;
 
+private:
   bool _has_surface_ext;
   pmap<std::string, uint32_t> _instance_extensions;
   pmap<std::string, uint32_t> _device_extensions;

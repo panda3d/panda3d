@@ -45,7 +45,7 @@ static Texture *
 get_white_texture() {
   Texture *tex = white_texture.p();
   if (tex == nullptr) {
-    tex = new Texture;
+    tex = new Texture("<white>");
     tex->setup_2d_texture(1, 1, Texture::T_unsigned_byte, Texture::F_rgba);
     tex->set_clear_color(LVecBase4(1, 1, 1, 1));
     tex->set_minfilter(SamplerState::FT_nearest);
