@@ -3405,9 +3405,14 @@ finish_frame(FrameData &frame_data) {
 
 #ifndef NDEBUG
   if (vulkandisplay_cat.is_spam()) {
-    vulkandisplay_cat.spam()
-      << "GPU finished CB #" << frame_data._watermark - 1
-      << ", cleaning up frame data\n";
+    if (frame_data._watermark > 0) {
+      vulkandisplay_cat.spam()
+        << "GPU finished CB #" << frame_data._watermark - 1
+        << ", cleaning up frame data\n";
+    } else {
+      vulkandisplay_cat.spam()
+        << "Cleaning up frame data\n";
+    }
   }
 #endif
 
@@ -3586,6 +3591,7 @@ finish_frame(FrameData &frame_data) {
 
   frame_data._finish_time = 0.0;
   frame_data._wait_for_finish = false;
+  frame_data._watermark = 0;
 
   if (_last_frame_data == &frame_data) {
     _last_frame_data = nullptr;

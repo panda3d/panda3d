@@ -337,8 +337,8 @@ private:
   pvector<VkCommandBuffer> _pending_command_buffers; // ready to submit
   pvector<VkBufferMemoryBarrier2> _pending_buffer_barriers;
   pvector<VkImageMemoryBarrier2> _pending_image_barriers;
-  uint32_t _first_pending_command_buffer_seq = 0;
-  uint32_t _last_pending_command_buffer_seq = 0;
+  uint64_t _first_pending_command_buffer_seq = 0;
+  uint64_t _last_pending_command_buffer_seq = 0;
   struct PendingSubmission {
     VkSemaphore _wait_semaphore;
     VkSemaphore _signal_semaphore;
