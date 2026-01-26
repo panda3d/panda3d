@@ -26,6 +26,7 @@
 #include "colorScaleAttrib.h"
 #include "colorWriteAttrib.h"
 #include "cullFaceAttrib.h"
+#include "depthOffsetAttrib.h"
 #include "depthTestAttrib.h"
 #include "depthWriteAttrib.h"
 #include "lightAttrib.h"
@@ -2962,6 +2963,13 @@ set_state_and_transform(const RenderState *state,
     }
   }
 
+  // Support this deprecated way of specifying depth range.
+  const DepthOffsetAttrib *target_depth_offset;
+  state->get_attrib(target_depth_offset);
+  if (target_depth_offset != _current_depth_range_attrib) {
+    do_issue_depth_range(target_depth_offset);
+  }
+
   //TODO: properly compute altered field.
   uint32_t num_offsets = 0;
   uint32_t offset = 0;
@@ -3053,6 +3061,9 @@ prepare_display_region(DisplayRegionPipelineReader *dr) {
   VkViewport *viewports = (VkViewport *)alloca(sizeof(VkViewport) * count);
   _viewports.resize(count);
 
+  PN_stdfloat min_depth, max_depth;
+  dr->get_depth_range(min_depth, max_depth);
+
   for (int i = 0; i < count; ++i) {
     int x, y, w, h;
     dr->get_region_pixels(i, x, y, w, h);
@@ -3060,8 +3071,8 @@ prepare_display_region(DisplayRegionPipelineReader *dr) {
     viewports[i].y = y;
     viewports[i].width = w;
     viewports[i].height = h;
-    viewports[i].minDepth = 0.0;
-    viewports[i].maxDepth = 1.0;
+    viewports[i].minDepth = min_depth;
+    viewports[i].maxDepth = max_depth;
 
     // Also save this in the _viewports array for later use.
     _viewports[i].offset.x = x;
@@ -3072,8 +3083,9 @@ prepare_display_region(DisplayRegionPipelineReader *dr) {
 
   vkCmdSetViewport(_render_cmd, 0, count, viewports);
   vkCmdSetScissor(_render_cmd, 0, count, &_viewports[0]);
-}
 
+  _current_depth_range_attrib.clear();
+}
 
 /**
  * Given a lens, calculates the appropriate projection matrix for use with
@@ -4654,6 +4666,53 @@ do_draw_primitive(const GeomPrimitivePipelineReader *reader, bool force) {
 }
 
 /**
+ * Issues depth range settings specified in the DepthOffsetAttrib.
+ */
+void VulkanGraphicsStateGuardian::
+do_issue_depth_range(const DepthOffsetAttrib *target_depth_offset) {
+  PN_stdfloat min_value = 0;
+  PN_stdfloat max_value = 1;
+  if (target_depth_offset != nullptr) {
+    min_value = target_depth_offset->get_min_value();
+    max_value = target_depth_offset->get_max_value();
+
+    if (min_value == 0 && max_value == 1) {
+      target_depth_offset = nullptr;
+    }
+  }
+
+  if (_current_depth_range_attrib == target_depth_offset) {
+    return;
+  }
+  _current_depth_range_attrib = target_depth_offset;
+
+  // We have to respecify the entire viewport here.
+  DisplayRegion *dr = _current_display_region;
+  nassertv(dr != nullptr);
+  int count = dr->get_num_regions();
+  VkViewport *viewports = (VkViewport *)alloca(sizeof(VkViewport) * count);
+
+  PN_stdfloat depth_near, depth_far;
+  dr->get_depth_range(depth_near, depth_far);
+
+  min_value = depth_far * min_value + depth_near * (1 - min_value);
+  max_value = depth_far * max_value + depth_near * (1 - max_value);
+
+  for (int i = 0; i < count; ++i) {
+    int x, y, w, h;
+    dr->get_region_pixels(i, x, y, w, h);
+    viewports[i].x = x;
+    viewports[i].y = y;
+    viewports[i].width = w;
+    viewports[i].height = h;
+    viewports[i].minDepth = min_value;
+    viewports[i].maxDepth = max_value;
+  }
+
+  vkCmdSetViewport(_render_cmd, 0, count, viewports);
+}
+
+/**
  * Shared code for creating a buffer and allocating memory for it.
  * @return true on success.
  */
@@ -4962,6 +5021,7 @@ make_pipeline(VulkanShaderContext *sc,
       << " logic_op=" << key._logic_op
       << " transparency_mode=" << key._transparency_mode
       << " alpha_test_attrib=" << key._alpha_test_attrib
+      << " depth_bias_attrib=" << key._depth_bias_attrib
       << "\n";
   }
 

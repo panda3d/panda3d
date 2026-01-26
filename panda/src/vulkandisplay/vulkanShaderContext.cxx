@@ -22,6 +22,8 @@
 #include "spirVRemoveUnusedVariablesPass.h"
 #include "spirVReplaceVariableTypePass.h"
 
+#include "depthOffsetAttrib.h"
+
 static PStatCollector _update_tattr_descriptor_set_pcollector("Draw:Update Descriptor Sets:TextureAttrib");
 static PStatCollector _update_sattr_descriptor_set_pcollector("Draw:Update Descriptor Sets:ShaderAttrib");
 
@@ -1011,6 +1013,22 @@ get_pipeline(VulkanGraphicsStateGuardian *gsg, const RenderState *state,
   }
 
   state->get_attrib(key._depth_bias_attrib);
+
+  const DepthOffsetAttrib *depth_offset;
+  if (state->get_attrib(depth_offset)) {
+    int offset = depth_offset->get_offset();
+    if (offset != 0) {
+      if (key._depth_bias_attrib != nullptr) {
+        key._depth_bias_attrib = DCAST(DepthBiasAttrib, DepthBiasAttrib::make(
+          key._depth_bias_attrib->get_slope_factor() - offset,
+          key._depth_bias_attrib->get_constant_factor() - offset,
+          key._depth_bias_attrib->get_clamp()));
+      } else {
+        key._depth_bias_attrib =
+          DCAST(DepthBiasAttrib, DepthBiasAttrib::make(-offset, -offset));
+      }
+    }
+  }
 
   PipelineMap::const_iterator it;
   it = _pipeline_map.find(key);

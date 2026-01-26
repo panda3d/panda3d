@@ -183,6 +183,8 @@ private:
                                       bool primitive_restart_enable);
   bool do_draw_primitive(const GeomPrimitivePipelineReader *reader, bool force);
 
+  void do_issue_depth_range(const DepthOffsetAttrib *target_depth_offset);
+
 public:
   bool create_buffer(VkDeviceSize size, VkBuffer &buffer, VulkanMemoryBlock &block,
                      int usage_flags, VkMemoryPropertyFlagBits flags);
@@ -307,6 +309,9 @@ private:
   VulkanTextureContext *_fb_depth_tc = nullptr;
   uint32_t _fb_config = 0;
   pvector<FbConfig> _fb_configs;
+
+  // Current depth range as applied by DepthOffsetAttrib
+  CPT(DepthOffsetAttrib) _current_depth_range_attrib;
 
   // Static "null" vertex buffer if nullDescriptor is not supported.
   VkBuffer _null_vertex_buffer = VK_NULL_HANDLE;
