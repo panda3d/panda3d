@@ -3375,9 +3375,9 @@ end_frame(Thread *current_thread, VkSemaphore signal_done) {
 
     _frame_data_head = _frame_data_capacity;
     _frame_data_tail = 0;
+  } else {
+    _last_frame_data = _frame_data;
   }
-
-  _last_frame_data = _frame_data;
   _frame_data = nullptr;
 
   //TODO: delete command buffer, schedule for deletion, or recycle.
