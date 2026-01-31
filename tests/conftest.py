@@ -81,7 +81,7 @@ def gsg(graphics_pipe, graphics_engine):
     from panda3d.core import GraphicsPipe, FrameBufferProperties, WindowProperties
 
     fbprops = FrameBufferProperties()
-    fbprops.force_hardware = True
+    #fbprops.force_hardware = True
 
     buffer = graphics_engine.make_output(
         graphics_pipe,

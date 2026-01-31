@@ -64,7 +64,7 @@ def color_region(request, graphics_pipe):
     engine.set_threading_model("")
 
     host_fbprops = core.FrameBufferProperties()
-    host_fbprops.force_hardware = True
+    #host_fbprops.force_hardware = True
 
     host = engine.make_output(
         graphics_pipe,
@@ -80,7 +80,7 @@ def color_region(request, graphics_pipe):
         pytest.skip("GraphicsPipe cannot make offscreen buffers")
 
     fbprops = core.FrameBufferProperties()
-    fbprops.force_hardware = True
+    #fbprops.force_hardware = True
     fbprops.set_rgba_bits(8, 8, 8, 8)
     fbprops.srgb_color = request.param
 

@@ -10,7 +10,7 @@ def depth_region(request, graphics_pipe):
     engine.set_threading_model("")
 
     host_fbprops = core.FrameBufferProperties()
-    host_fbprops.force_hardware = True
+    #host_fbprops.force_hardware = True
 
     host = engine.make_output(
         graphics_pipe,
@@ -26,7 +26,7 @@ def depth_region(request, graphics_pipe):
         pytest.skip("GraphicsPipe cannot make offscreen buffers")
 
     fbprops = core.FrameBufferProperties()
-    fbprops.force_hardware = True
+    #fbprops.force_hardware = True
     fbprops.depth_bits = request.param
 
     if fbprops.depth_bits >= 32:
