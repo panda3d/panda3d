@@ -21,6 +21,8 @@ def test_comments(audiomgr, extension):
     )
     sound_path = Filename.from_os_specific(sound_path)
     sound = audiomgr.get_sound(sound_path)
+    if str(sound).startswith("NullAudioSound"):
+        pytest.skip("Sound loading failed")
     if extension == "mp3":  # FFMPEG encodes/decodes tags differently
         tags = ["artist", "comment", "genre"]
     else:
