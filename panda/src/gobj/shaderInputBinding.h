@@ -21,9 +21,9 @@
 #include "small_vector.h"
 #include "texture.h"
 #include "shaderBuffer.h"
+#include "luse.h"
 
 class GraphicsStateGuardian;
-class LMatrix4f;
 
 /**
  * Controls how a shader parameter's value is filled in by Panda at runtime.
@@ -50,7 +50,7 @@ public:
   // members without having to modify their signature.
   struct State {
     GraphicsStateGuardian *gsg;
-    LMatrix4f *matrix_cache;
+    LMatrix4 *matrix_cache;
   };
 
   virtual void fetch_data(const State &state, void *into,

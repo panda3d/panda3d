@@ -59,7 +59,7 @@ get_white_texture() {
  * Generate an error message including a description of the specified
  * parameter.  Always returns nullptr.
  */
-static nullptr_t
+static std::nullptr_t
 report_parameter_error(const InternalName *name, const ShaderType *type, const char *msg) {
   shader_cat.error()
     << *type << ' ' << *name << ": " << msg << "\n";
