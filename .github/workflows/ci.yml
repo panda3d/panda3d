@@ -13,7 +13,7 @@ jobs:
         profile:
         - ubuntu-bionic-double-standard-unity-makefile
         - ubuntu-bionic-coverage-ninja
-        #- macos-coverage-unity-xcode
+        - macos-coverage-unity-xcode
         - macos-nometa-standard-makefile
         - windows-standard-unity-msvc
         - windows-nopython-nometa-standard-msvc
@@ -43,16 +43,16 @@ jobs:
           double: NO
           asan: YES
 
-        #- profile: macos-coverage-unity-xcode
-        #  os: macOS-15
-        #  config: Coverage
-        #  unity: YES
-        #  generator: Xcode
-        #  compiler: Default
-        #  metalibs: YES
-        #  python: YES
-        #  eigen: NO
-        #  double: NO
+        - profile: macos-coverage-unity-xcode
+          os: macOS-15
+          config: Coverage
+          unity: YES
+          generator: Xcode
+          compiler: Default
+          metalibs: YES
+          python: YES
+          eigen: NO
+          double: NO
 
         - profile: macos-nometa-standard-makefile
           os: macOS-15
@@ -123,9 +123,10 @@ jobs:
         sudo apt-get install
         build-essential ninja-build clang llvm ccache
         bison flex
-        libeigen3-dev libfreetype6-dev libgl1-mesa-dev libjpeg-dev libode-dev
+        libeigen3-dev libfreetype6-dev libjpeg-dev libode-dev
         libopenal-dev libpng-dev libssl-dev libvorbis-dev libx11-dev
         libxcursor-dev libxrandr-dev nvidia-cg-toolkit zlib1g-dev
+        libgl1-mesa-dev libegl1-mesa-dev libgl1-mesa-dri mesa-utils-extra
         python3-setuptools python3-tk
 
     - name: Cache dependencies (Windows)
@@ -191,6 +192,16 @@ jobs:
         echo "$PWD/${{ matrix.config }}/bin" >> $GITHUB_PATH
 
         echo "$PWD/bin" >> $GITHUB_PATH
+
+    - name: Configure headless OpenGL
+      if: matrix.os == 'ubuntu-24.04'
+      run: |
+        echo "LIBGL_ALWAYS_SOFTWARE=1" >> $GITHUB_ENV
+        echo "EGL_PLATFORM=surfaceless" >> $GITHUB_ENV
+        echo "EGL_LOG_LEVEL=debug" >> $GITHUB_ENV
+        mkdir -p build/etc/panda3d
+        echo "load-display p3headlessgl" >> build/etc/panda3d/10_ci.prc
+        eglinfo || true
 
     - name: Build (no Python)
       if: contains(matrix.python, 'NO')
@@ -412,7 +423,7 @@ jobs:
       if: matrix.os == 'ubuntu-24.04'
       run: |
         sudo apt-get update
-        sudo apt-get install build-essential bison flex libfreetype6-dev libgl1-mesa-dev libjpeg-dev libode-dev libopenal-dev libpng-dev libssl-dev libvorbis-dev libx11-dev libxcursor-dev libxrandr-dev nvidia-cg-toolkit zlib1g-dev
+        sudo apt-get install build-essential bison flex libfreetype6-dev libgl1-mesa-dev libegl1-mesa-dev libgl1-mesa-dri mesa-utils-extra libjpeg-dev libode-dev libopenal-dev libpng-dev libssl-dev libvorbis-dev libx11-dev libxcursor-dev libxrandr-dev nvidia-cg-toolkit zlib1g-dev
     - name: Get thirdparty packages (Windows)
       if: runner.os == 'Windows'
       shell: powershell
@@ -433,6 +444,17 @@ jobs:
     - name: Set up XCode (macOS)
       if: runner.os == 'macOS'
       run: sudo xcode-select -s /Applications/Xcode_16.app/Contents/Developer
+
+    - name: Configure headless OpenGL
+      if: matrix.os == 'ubuntu-24.04'
+      run: |
+        echo "LIBGL_ALWAYS_SOFTWARE=1" >> $GITHUB_ENV
+        echo "EGL_PLATFORM=surfaceless" >> $GITHUB_ENV
+        echo "EGL_LOG_LEVEL=debug" >> $GITHUB_ENV
+        mkdir -p built/etc
+        mkdir -p built_dbl/etc
+        echo "load-display p3headlessgl" >> built/etc/ci.prc
+        echo "load-display p3headlessgl" >> built_dbl/etc/ci.prc
 
     - name: Set up Python 3.13
       uses: actions/setup-python@v6

@@ -152,7 +152,7 @@ get_properties(FrameBufferProperties &properties, NSOpenGLPixelFormat* pixel_for
 void CocoaGLGraphicsStateGuardian::
 choose_pixel_format(const FrameBufferProperties &properties,
                     CGDirectDisplayID display,
-                    bool need_pbuffer) {
+                    bool need_window, bool need_pbuffer) {
 
   _context = nil;
   _fbprops.clear();
@@ -233,6 +233,11 @@ choose_pixel_format(const FrameBufferProperties &properties,
     attribs.push_back(NSOpenGLPFAAccelerated);
   }
 
+  if (!need_window) {
+    // Allow headless.
+    attribs.push_back(NSOpenGLPFAAllowOfflineRenderers);
+  }
+
   // This seems to cause getting a 3.2+ context to fail.
   //attribs.push_back(NSOpenGLPFAWindow);
 
@@ -241,8 +246,10 @@ choose_pixel_format(const FrameBufferProperties &properties,
   }
 
   // Required when going fullscreen, optional when windowed
-  attribs.push_back(NSOpenGLPFAScreenMask);
-  attribs.push_back(CGDisplayIDToOpenGLDisplayMask(display));
+  if (need_window || display != 0) {
+    attribs.push_back(NSOpenGLPFAScreenMask);
+    attribs.push_back(CGDisplayIDToOpenGLDisplayMask(display));
+  }
 
   // Set OpenGL version if a minimum was requested.
   if (gl_version.size() >= 1 && NSAppKitVersionNumber >= NSAppKitVersionNumber10_7) {

@@ -30,7 +30,7 @@ extern struct Dtool_PyTypedObject Dtool_LPoint3f;
 bool Extension<CollisionPolygon>::
 verify_points(PyObject *points) {
   pvector<LPoint3> vec;
-  if (!convert_points(vec, points)) {
+  if (!convert_points(vec, points) || vec.empty()) {
     return false;
   }
 

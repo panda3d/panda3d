@@ -422,7 +422,7 @@ main(int argc, char **argv) {
     Thread *current_thread = Thread::get_current_thread();
     while (framework.do_frame(current_thread)) {
       if (!info_arr.empty() && gridmotiontype) {
-        move_gridded_stuff(gridmotiontype, &info_arr[0], info_arr.size());
+        move_gridded_stuff(gridmotiontype, info_arr.data(), info_arr.size());
       }
     }
   }
