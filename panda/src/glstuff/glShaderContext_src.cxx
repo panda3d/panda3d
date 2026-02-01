@@ -109,9 +109,9 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
   _scratch_space_size = 16;
 
   // Do we have a p3d_Color attribute?
-  for (Shader::ShaderVarSpec &spec : s->_var_spec) {
-    if (spec._name == InternalName::get_color()) {
-      _color_attrib_index = spec._id._location;
+  for (Shader::VertexInputBinding &bind : s->_vertex_inputs) {
+    if (bind._name == InternalName::get_color()) {
+      _color_attrib_index = bind._id._location;
       break;
     }
   }
@@ -846,7 +846,7 @@ reflect_program(GLuint program, SparseArray &active_locations) {
   name_buflen = max(64, name_buflen);
   char *name_buffer = (char *)alloca(name_buflen);
 
-  _shader->_var_spec.clear();
+  _shader->_vertex_inputs.clear();
   for (int i = 0; i < param_count; ++i) {
     reflect_attribute(program, i, name_buffer, name_buflen);
   }
@@ -1979,7 +1979,7 @@ disable_shader_vertex_arrays() {
   //  return;
   //}
 
-  for (const Shader::ShaderVarSpec &bind : _shader->_var_spec) {
+  for (const Shader::VertexInputBinding &bind : _shader->_vertex_inputs) {
     GLint p = bind._id._location;
 
     for (int i = 0; i < bind._elements; ++i) {
@@ -2066,12 +2066,12 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
   } else {
     Geom::NumericType numeric_type;
     int start, stride, num_values;
-    size_t nvarying = _shader->_var_spec.size();
+    size_t nvarying = _shader->_vertex_inputs.size();
 
     GLint max_p = 0;
 
     for (size_t i = 0; i < nvarying; ++i) {
-      const Shader::ShaderVarSpec &bind = _shader->_var_spec[i];
+      const Shader::VertexInputBinding &bind = _shader->_vertex_inputs[i];
       InternalName *name = bind._name;
       int texslot = bind._append_uv;
 

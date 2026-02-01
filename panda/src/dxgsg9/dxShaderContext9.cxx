@@ -198,7 +198,7 @@ compile_module(const ShaderModule *module, DWORD *&data) {
 
   // Bind certain known attributes to specific semantics.
   int texcoord_index = 0;
-  for (const Shader::ShaderVarSpec &spec : _shader->_var_spec) {
+  for (const Shader::VertexInputBinding &spec : _shader->_vertex_inputs) {
     uint32_t idx = (uint32_t)spec._id._location;
     if (spec._name == InternalName::get_vertex()) {
       compiler.add_vertex_attribute_remap({idx, "POSITION"});
@@ -874,7 +874,7 @@ get_vertex_declaration(GSG *gsg, const GeomVertexFormat *format, BitMask32 &used
   size_t const num_arrays = format->get_num_arrays();
   std::vector<D3DVERTEXELEMENT9> elements;
 
-  for (const Shader::ShaderVarSpec &spec : _shader->_var_spec) {
+  for (const Shader::VertexInputBinding &spec : _shader->_vertex_inputs) {
     D3DDECLUSAGE usage;
     if (spec._name == InternalName::get_vertex()) {
       usage = D3DDECLUSAGE_POSITION;

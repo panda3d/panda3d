@@ -52,6 +52,7 @@ PUBLISHED:
   using Stage = ShaderModule::Stage;
   using ScalarType = ShaderType::ScalarType;
 
+  // @deprecated Use Stage enum instead.
   enum DeprecatedShaderType {
     ST_none = 0,
     ST_vertex,
@@ -219,7 +220,10 @@ public:
 
   typedef pvector<MatrixCacheItem> MatrixCacheDesc;
 
-  struct ShaderVarSpec {
+  /**
+   * Describes a vertex attribute input.
+   */
+  struct VertexInputBinding {
     Parameter         _id;
     PT(InternalName)  _name;
     int               _append_uv;
@@ -271,8 +275,6 @@ public:
   size_t add_matrix_cache_item(StateMatrix input, const InternalName *arg, int dep);
   size_t get_matrix_cache_size() const;
 
-  void clear_parameters();
-
   void set_compiled(unsigned int format, const char *data, size_t length);
   bool get_compiled(unsigned int &format, std::string &binary) const;
 
@@ -281,7 +283,7 @@ public:
 
 public:
   pvector<Parameter> _parameters;
-  pvector<ShaderVarSpec> _var_spec;
+  pvector<VertexInputBinding> _vertex_inputs;
 
   MatrixCacheDesc _matrix_cache_desc;
   int _matrix_cache_deps = 0;
