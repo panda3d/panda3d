@@ -82,6 +82,7 @@ PkgListSet(["PYTHON", "DIRECT",                        # Python support
   "EGL",                                               # OpenGL (ES) integration
   "EIGEN",                                             # Linear algebra acceleration
   "OPENAL", "FMODEX",                                  # Audio playback
+  "STEAMAUDIO",                                        # Audio spatialization/effects
   "VORBIS", "OPUS", "FFMPEG", "SWSCALE", "SWRESAMPLE", # Audio decoding
   "ODE", "BULLET", "PANDAPHYSICS",                     # Physics
   "SPEEDTREE",                                         # SpeedTree
@@ -746,6 +747,10 @@ if (COMPILER == "MSVC"):
         if not os.path.isfile(GetThirdpartyDir() + "openal/bin/OpenAL32.dll"):
             # Link OpenAL Soft statically.
             DefSymbol("OPENAL", "AL_LIBTYPE_STATIC")
+    if (PkgSkip("STEAMAUDIO")==0):
+        LibName("STEAMAUDIO", GetThirdpartyDir() + "steamaudio/lib/windows-x64/phonon.lib")
+        IncDirectory("STEAMAUDIO", GetThirdpartyDir() + "steamaudio/include")
+        #DefSymbol("STEAMAUDIO", "STEAMAUDIO_LIBTYPE_STATIC")
     if (PkgSkip("ODE")==0):
         LibName("ODE",      GetThirdpartyDir() + "ode/lib/ode_single.lib")
         DefSymbol("ODE",    "dSINGLE", "")
@@ -864,6 +869,7 @@ if (COMPILER=="GCC"):
     if GetTarget() != 'emscripten':
         # Most of these are provided by emscripten or via emscripten-ports.
         SmartPkgEnable("OPENAL",   "openal",    ("openal"), "AL/al.h", framework = "OpenAL")
+        SmartPkgEnable("STEAMAUDIO",   "steamaudio",    ("steamaudio"), framework = "SteamAudio")
         SmartPkgEnable("EIGEN",    "eigen3",    (), ("Eigen/Dense",), target_pkg = 'ALWAYS')
         SmartPkgEnable("VORBIS",   "vorbisfile",("vorbisfile", "vorbis", "ogg"), ("ogg/ogg.h", "vorbis/vorbisfile.h"))
         SmartPkgEnable("BULLET",   "bullet", ("BulletSoftBody", "BulletDynamics", "BulletCollision", "LinearMath"), ("bullet", "bullet/btBulletDynamicsCommon.h"))
@@ -2465,6 +2471,7 @@ DTOOL_CONFIG=[
     ("HAVE_SQUISH",                    'UNDEF',                  'UNDEF'),
     ("HAVE_COCOA",                     'UNDEF',                  'UNDEF'),
     ("HAVE_OPENAL_FRAMEWORK",          'UNDEF',                  'UNDEF'),
+    ("HAVE_STEAMAUDIO",                'UNDEF',                  'UNDEF'),
     ("USE_TAU",                        'UNDEF',                  'UNDEF'),
     ("PRC_SAVE_DESCRIPTIONS",          '1',                      '1'),
 #    ("_SECURE_SCL",                    '0',                      'UNDEF'),
@@ -2543,6 +2550,8 @@ def WriteConfigSettings():
         dtool_config["PHAVE_SYS_MALLOC_H"] = '1'
         if not os.path.isdir(GetThirdpartyDir() + "openal"):
             dtool_config["HAVE_OPENAL_FRAMEWORK"] = '1'
+        if not os.path.isdir(GetThirdpartyDir() + "steamaudio"):
+            dtool_config["HAVE_STEAMAUDIO"] = '1'
         dtool_config["HAVE_X11"] = 'UNDEF'  # We might have X11, but we don't need it.
         dtool_config["IS_LINUX"] = 'UNDEF'
         dtool_config["HAVE_VIDEO4LINUX"] = 'UNDEF'
@@ -4409,6 +4418,18 @@ if PkgSkip("OPENAL") == 0:
     TargetAdd('libp3openal_audio.dll', input='openal_audio_openal_audio_composite1.obj')
     TargetAdd('libp3openal_audio.dll', input=COMMON_PANDA_LIBS)
     TargetAdd('libp3openal_audio.dll', opts=['MODULE', 'ADVAPI', 'WINUSER', 'WINMM', 'WINSHELL', 'WINOLE', 'OPENAL', 'OPENSLES'])
+
+#
+# DIRECTORY: panda/src/steamaudio/
+#
+if PkgSkip("STEAMAUDIO") == 0:
+    OPTS=['DIR:panda/src/steamaudio', 'BUILDING:STEAM_AUDIO', 'STEAMAUDIO']
+    TargetAdd('steam_audio_steam_audio_composite1.obj', opts=OPTS, input='p3steamAudio_composite1.cxx')
+    TargetAdd('libp3steam_audio.dll', input='steam_audio_steam_audio_composite1.obj')
+    TargetAdd('libp3steam_audio.dll', input=COMMON_PANDA_LIBS)
+    #TargetAdd('libp3steam_audio.dll', ipath = GetThirdpartyDir() + "steamaudio/include")
+    TargetAdd('libp3steam_audio.dll', opts=['MODULE', 'ADVAPI', 'WINUSER', 'WINMM', 'WINSHELL', 'WINOLE', 'STEAMAUDIO'])#which of these does Steam Audio actually need?
+
 
 #
 # DIRECTORY: panda/src/downloadertools/
