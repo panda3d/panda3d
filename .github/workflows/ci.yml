@@ -25,6 +25,11 @@ jobs:
       if: runner.os != 'Windows' && steps.cache-thirdparty-restore.outputs.cache-hit != 'true'
       run: ${{runner.os == 'macOS' && 'brew' || 'sudo apt-get'}} install yasm
 
+    - name: Install Strawberry Perl
+      if: runner.os == 'Windows'
+      shell: powershell
+      run: choco install strawberryperl
+
     - name: Build thirdparty packages
       if: steps.cache-thirdparty-restore.outputs.cache-hit != 'true'
       shell: bash
