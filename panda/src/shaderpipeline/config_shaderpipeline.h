@@ -25,6 +25,6 @@ extern ConfigVariableBool glsl_preprocess;
 extern ConfigVariableBool glsl_force_legacy_pipeline;
 extern ConfigVariableInt glsl_include_recursion_limit;
 
-extern EXPCL_PANDA_SHADERPIPELINE void init_libshaderpipeline();
+extern "C" EXPCL_PANDA_SHADERPIPELINE void init_libshaderpipeline();
 
 #endif

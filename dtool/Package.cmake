@@ -926,6 +926,7 @@ find_package(SPIRV-Tools QUIET)
 
 package_option(SPIRV-Tools
   DEFAULT ON
-  "Enables optimization and validation of compiled shaders.")
+  "Enables optimization and validation of compiled shaders."
+  IMPORTED_AS SPIRV-Tools)
 
 package_status(SPIRV-Tools "spirv-tools")
