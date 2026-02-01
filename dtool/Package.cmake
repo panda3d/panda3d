@@ -923,10 +923,15 @@ package_status(SPIRV-Cross "spirv-cross")
 
 
 find_package(SPIRV-Tools QUIET)
+find_package(SPIRV-Tools-opt QUIET)
+
+if(NOT SPIRV-Tools-opt_FOUND)
+  set(SPIRV-Tools_FOUND NO)
+endif()
 
 package_option(SPIRV-Tools
   DEFAULT ON
   "Enables optimization and validation of compiled shaders."
-  IMPORTED_AS SPIRV-Tools-static)
+  IMPORTED_AS SPIRV-Tools-static SPIRV-Tools-opt)
 
 package_status(SPIRV-Tools "spirv-tools")
