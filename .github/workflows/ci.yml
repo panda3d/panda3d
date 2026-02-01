@@ -32,7 +32,7 @@ jobs:
     - name: Configure
       if: steps.cache-thirdparty-restore.outputs.cache-hit != 'true'
       working-directory: thirdparty
-      run: cmake -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_NVIDIACG=OFF -DBUILD_FFMPEG=OFF
+      run: cmake -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_NVIDIACG=OFF -DBUILD_FFMPEG=OFF -DBUILD_FCOLLADA=OFF
 
     - name: Build
       if: steps.cache-thirdparty-restore.outputs.cache-hit != 'true'
@@ -173,6 +173,12 @@ jobs:
       with:
         path: ./thirdparty
         key: cache-thirdparty-86e12a631d57f229d9b17e4fb134d9f8d53cddee-${{ matrix.os }}
+
+    - name: Require thirdparty build cache hit
+      if: steps.cache-thirdparty-restore.outputs.cache-hit != 'true'
+      run: |
+        echo "::error::Thirdparty cache not found"
+        exit 1
 
     - name: ccache (non-Windows)
       if: runner.os != 'Windows'
@@ -467,6 +473,12 @@ jobs:
         path: ./thirdparty
         key: cache-thirdparty-86e12a631d57f229d9b17e4fb134d9f8d53cddee-${{ matrix.os }}
 
+    - name: Require thirdparty build cache hit
+      if: steps.cache-thirdparty-restore.outputs.cache-hit != 'true'
+      run: |
+        echo "::error::Thirdparty cache not found"
+        exit 1
+
     - name: Configure headless OpenGL
       if: matrix.os == 'ubuntu-24.04'
       run: |
@@ -613,6 +625,30 @@ jobs:
       with:
         path: ~/python
         key: ${{ steps.cache-emscripten-python-restore.outputs.cache-primary-key }}
+
+    - name: Restore thirdparty build cache
+      id: cache-emscripten-thirdparty-restore
+      uses: actions/cache/restore@v5
+      with:
+        path: ./thirdparty
+        key: cache-emscripten-thirdparty-bb4a200c04507a27df42f71689a09d159a24e3f1
+
+    - name: Build thirdparty packages
+      if: steps.cache-emscripten-thirdparty-restore.outputs.cache-hit != 'true'
+      run: |
+        git clone --revision=bb4a200c04507a27df42f71689a09d159a24e3f1 --depth=1 https://github.com/rdb/panda3d-thirdparty.git thirdparty
+        cd thirdparty
+        emcmake cmake -B build -DCMAKE_BUILD_TYPE=Release
+        cmake --build build --config Release -j4 -t glslang -t spirv-cross
+        rm -rf build
+
+    - name: Save thirdparty build cache
+      id: cache-emscripten-thirdparty-save
+      if: steps.cache-emscripten-thirdparty-restore.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v5
+      with:
+        path: ./thirdparty
+        key: ${{ steps.cache-emscripten-thirdparty-restore.outputs.cache-primary-key }}
 
     - name: Build for Emscripten
       shell: bash
