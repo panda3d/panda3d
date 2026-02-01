@@ -93,6 +93,7 @@ if(THIRDPARTY_DIRECTORY)
     FFMPEG
     FMODEx
     Freetype
+    glslang
     HarfBuzz
     JPEG
     LibSquish
@@ -103,6 +104,7 @@ if(THIRDPARTY_DIRECTORY)
     OpenSSL
     OpusFile
     PNG
+    SPIRV-Cross
     SWResample
     SWScale
     TIFF
