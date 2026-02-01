@@ -424,7 +424,7 @@ jobs:
       if: matrix.os == 'ubuntu-24.04'
       run: |
         sudo apt-get update
-        sudo apt-get install build-essential bison flex libfreetype6-dev libgl1-mesa-dev libegl1-mesa-dev libgl1-mesa-dri mesa-utils-extra libjpeg-dev libode-dev libopenal-dev libpng-dev libssl-dev libvorbis-dev libx11-dev libxcursor-dev libxrandr-dev nvidia-cg-toolkit zlib1g-dev
+        sudo apt-get install build-essential bison flex libgl1-mesa-dev libegl1-mesa-dev libgl1-mesa-dri mesa-utils-extra libx11-dev libxcursor-dev libxrandr-dev nvidia-cg-toolkit
 
     - name: Set up XCode (macOS)
       if: runner.os == 'macOS'
@@ -438,7 +438,7 @@ jobs:
         key: cache-thirdparty-86e12a631d57f229d9b17e4fb134d9f8d53cddee-${{ matrix.os }}
 
     - name: Install yasm
-      if: steps.cache-thirdparty-restore.outputs.cache-hit != 'true'
+      if: runner.os != 'Windows' && steps.cache-thirdparty-restore.outputs.cache-hit != 'true'
       run: ${{runner.os == 'macOS' && 'brew' || 'sudo apt-get'}} install yasm
 
     - name: Build thirdparty packages
