@@ -47,7 +47,7 @@ composite_sources(p3shaderpipeline P3SHADERPIPELINE_SOURCES)
 add_component_library(p3shaderpipeline NOINIT SYMBOL BUILDING_PANDA_SHADERPIPELINE
   ${P3SHADERPIPELINE_HEADERS} ${P3SHADERPIPELINE_SOURCES}
   ${CMAKE_CURRENT_BINARY_DIR}/cg_preamble.cxx)
-target_link_libraries(p3shaderpipeline p3gobj PKG::GLSLANG)
+target_link_libraries(p3shaderpipeline p3gobj PKG::GLSLANG PKG::SPIRV-TOOLS)
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Clang)$")
   # Keep symbols from glslang internal.
@@ -57,6 +57,8 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Clang)$")
   target_link_options(p3shaderpipeline PRIVATE "LINKER:--exclude-libs,libOGLCompiler.a")
   target_link_options(p3shaderpipeline PRIVATE "LINKER:--exclude-libs,libHLSL.a")
   target_link_options(p3shaderpipeline PRIVATE "LINKER:--exclude-libs,libglslang-default-resource-limits.a")
+  target_link_options(p3shaderpipeline PRIVATE "LINKER:--exclude-libs,libSPIRV-Tools.a")
+  target_link_options(p3shaderpipeline PRIVATE "LINKER:--exclude-libs,libSPIRV-Tools-opt.a")
 endif()
 
 if(NOT BUILD_METALIBS)

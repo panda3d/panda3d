@@ -105,6 +105,7 @@ if(THIRDPARTY_DIRECTORY)
     OpusFile
     PNG
     SPIRV-Cross
+    SPIRV-Tools
     SWResample
     SWScale
     TIFF
@@ -919,3 +920,12 @@ package_option(SPIRV-Cross
   FOUND_AS SPIRV_CROSS)
 
 package_status(SPIRV-Cross "spirv-cross")
+
+
+find_package(SPIRV-Tools QUIET)
+
+package_option(SPIRV-Tools
+  DEFAULT ON
+  "Enables optimization and validation of compiled shaders.")
+
+package_status(SPIRV-Tools "spirv-tools")
