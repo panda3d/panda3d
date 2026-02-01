@@ -310,9 +310,13 @@ choose_pixel_format(const FrameBufferProperties &properties,
  */
 bool CocoaGLGraphicsStateGuardian::
 make_current() const {
-  lock_context();
+  if (_context == nil) {
+    return false;
+  }
+  CGLContextObj cgl_context = (CGLContextObj)[_context CGLContextObj];
+  CGLLockContext(cgl_context);
   [_context makeCurrentContext];
-  unlock_context();
+  CGLUnlockContext(cgl_context);
   return true;
 }
 
