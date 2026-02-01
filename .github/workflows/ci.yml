@@ -2,9 +2,54 @@ name: Continuous Integration
 on: [push, pull_request]
 
 jobs:
+  thirdparty:
+    name: Build Thirdparty
+    if: "!contains(github.event.head_commit.message, '[skip ci]') && !contains(github.event.head_commit.message, '[ci skip]')"
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2022, macOS-15]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - name: Restore thirdparty build cache
+      id: cache-thirdparty-restore
+      uses: actions/cache/restore@v5
+      with:
+        path: ./thirdparty
+        key: cache-thirdparty-86e12a631d57f229d9b17e4fb134d9f8d53cddee-${{ matrix.os }}
+
+    - name: Install yasm
+      if: runner.os != 'Windows' && steps.cache-thirdparty-restore.outputs.cache-hit != 'true'
+      run: ${{runner.os == 'macOS' && 'brew' || 'sudo apt-get'}} install yasm
+
+    - name: Build thirdparty packages
+      if: steps.cache-thirdparty-restore.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        git clone --revision=86e12a631d57f229d9b17e4fb134d9f8d53cddee --depth=1 https://github.com/rdb/panda3d-thirdparty.git thirdparty
+        cd thirdparty
+        cmake -B build \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DBUILD_NVIDIACG=OFF \
+          -DBUILD_FFMPEG=OFF
+        cmake --build build --config Release -j4
+        rm -rf build
+
+    - name: Save thirdparty build cache
+      id: cache-thirdparty-save
+      if: steps.cache-thirdparty-restore.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v5
+      with:
+        path: ./thirdparty
+        key: ${{ steps.cache-thirdparty-restore.outputs.cache-primary-key }}
+
   cmake:
     name: CMake Buildsystem
     if: "!contains(github.event.head_commit.message, '[skip ci]') && !contains(github.event.head_commit.message, '[ci skip]')"
+    needs: thirdparty
 
     strategy:
       fail-fast: false
@@ -101,19 +146,8 @@ jobs:
     - name: Install dependencies (macOS)
       if: runner.os == 'macOS'
       run: |
-        curl -O https://www.panda3d.org/download/panda3d-1.10.15/panda3d-1.10.15-tools-mac.tar.gz
-        tar -xf panda3d-1.10.15-tools-mac.tar.gz
-        mv panda3d-1.10.15/thirdparty thirdparty
-        rmdir panda3d-1.10.15
-
-        # Temporary hack so that pzip can run, since we are about to remove Cg anyway.
-        install_name_tool -id "$(pwd)/thirdparty/darwin-libs-a/nvidiacg/lib/libCg.dylib" thirdparty/darwin-libs-a/nvidiacg/lib/libCg.dylib
-
         brew install ccache
-
-    - name: Set up XCode (macOS)
-      if: runner.os == 'macOS'
-      run: sudo xcode-select -s /Applications/Xcode_16.app/Contents/Developer
+        sudo xcode-select -s /Applications/Xcode_16.app/Contents/Developer
 
     - name: Install dependencies (Ubuntu)
       if: startsWith(matrix.os, 'ubuntu')
@@ -122,29 +156,16 @@ jobs:
 
         sudo apt-get install
         build-essential ninja-build clang llvm ccache
-        bison flex
-        libeigen3-dev libfreetype6-dev libjpeg-dev libode-dev
-        libopenal-dev libpng-dev libssl-dev libvorbis-dev libx11-dev
-        libxcursor-dev libxrandr-dev nvidia-cg-toolkit zlib1g-dev
+        bison flex libx11-dev libxcursor-dev libxrandr-dev
         libgl1-mesa-dev libegl1-mesa-dev libgl1-mesa-dri mesa-utils-extra
         python3-setuptools python3-tk
 
-    - name: Cache dependencies (Windows)
-      if: runner.os == 'Windows'
-      uses: actions/cache@v5
+    - name: Restore thirdparty build cache
+      id: cache-thirdparty-restore
+      uses: actions/cache/restore@v5
       with:
-        path: thirdparty
-        key: ci-cmake-${{ runner.OS }}-thirdparty-v1.10.15-r1
-    - name: Install dependencies (Windows)
-      if: runner.os == 'Windows'
-      shell: powershell
-      run: |
-        if (!(Test-Path thirdparty/win-libs-vc14-x64)) {
-          $wc = New-Object System.Net.WebClient
-          $wc.DownloadFile("https://www.panda3d.org/download/panda3d-1.10.15/panda3d-1.10.15-tools-win64.zip", "thirdparty-tools.zip")
-          Expand-Archive -Path thirdparty-tools.zip
-          Move-Item -Path thirdparty-tools/panda3d-1.10.15/thirdparty -Destination .
-        }
+        path: ./thirdparty
+        key: cache-thirdparty-86e12a631d57f229d9b17e4fb134d9f8d53cddee-${{ matrix.os }}
 
     - name: ccache (non-Windows)
       if: runner.os != 'Windows'
@@ -413,7 +434,9 @@ jobs:
 
   makepanda:
     if: "!contains(github.event.head_commit.message, '[skip ci]') && !contains(github.event.head_commit.message, '[ci skip]')"
+    needs: thirdparty
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-24.04, windows-2022, macOS-15]
     runs-on: ${{ matrix.os }}
@@ -436,30 +459,6 @@ jobs:
       with:
         path: ./thirdparty
         key: cache-thirdparty-86e12a631d57f229d9b17e4fb134d9f8d53cddee-${{ matrix.os }}
-
-    - name: Install yasm
-      if: runner.os != 'Windows' && steps.cache-thirdparty-restore.outputs.cache-hit != 'true'
-      run: ${{runner.os == 'macOS' && 'brew' || 'sudo apt-get'}} install yasm
-
-    - name: Build thirdparty packages
-      if: steps.cache-thirdparty-restore.outputs.cache-hit != 'true'
-      run: |
-        git clone --revision=86e12a631d57f229d9b17e4fb134d9f8d53cddee --depth=1 https://github.com/rdb/panda3d-thirdparty.git thirdparty
-        cd thirdparty
-        cmake -B build \
-          -DCMAKE_BUILD_TYPE=Release \
-          -DBUILD_NVIDIACG=OFF \
-          -DBUILD_FFMPEG=OFF
-        cmake --build build --config Release -j4
-        rm -rf build
-
-    - name: Save thirdparty build cache
-      id: cache-thirdparty-save
-      if: steps.cache-android-thirdparty-restore.outputs.cache-hit != 'true'
-      uses: actions/cache/save@v5
-      with:
-        path: ./thirdparty
-        key: ${{ steps.cache-android-thirdparty-restore.outputs.cache-primary-key }}
 
     - name: Configure headless OpenGL
       if: matrix.os == 'ubuntu-24.04'
