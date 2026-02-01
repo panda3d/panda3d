@@ -13,6 +13,7 @@
 
 #include "shaderModule.h"
 #include "virtualFile.h"
+#include "virtualFileSystem.h"
 
 TypeHandle ShaderModule::_type_handle;
 
