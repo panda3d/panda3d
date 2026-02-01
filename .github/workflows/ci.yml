@@ -25,23 +25,25 @@ jobs:
       if: runner.os != 'Windows' && steps.cache-thirdparty-restore.outputs.cache-hit != 'true'
       run: ${{runner.os == 'macOS' && 'brew' || 'sudo apt-get'}} install yasm
 
-    - name: Install Strawberry Perl
-      if: runner.os == 'Windows'
-      shell: powershell
-      run: choco install strawberryperl
-
-    - name: Build thirdparty packages
+    - name: Clone thirdparty repository
       if: steps.cache-thirdparty-restore.outputs.cache-hit != 'true'
+      run: git clone --revision=86e12a631d57f229d9b17e4fb134d9f8d53cddee --depth=1 https://github.com/rdb/panda3d-thirdparty.git thirdparty
+
+    - name: Configure
+      if: steps.cache-thirdparty-restore.outputs.cache-hit != 'true'
+      working-directory: thirdparty
+      run: cmake -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_NVIDIACG=OFF -DBUILD_FFMPEG=OFF
+
+    - name: Build
+      if: steps.cache-thirdparty-restore.outputs.cache-hit != 'true'
+      working-directory: thirdparty
+      run: cmake --build build --config Release -j4
+
+    - name: Clean up build directory
+      if: steps.cache-thirdparty-restore.outputs.cache-hit != 'true'
+      working-directory: thirdparty
       shell: bash
-      run: |
-        git clone --revision=86e12a631d57f229d9b17e4fb134d9f8d53cddee --depth=1 https://github.com/rdb/panda3d-thirdparty.git thirdparty
-        cd thirdparty
-        cmake -B build \
-          -DCMAKE_BUILD_TYPE=Release \
-          -DBUILD_NVIDIACG=OFF \
-          -DBUILD_FFMPEG=OFF
-        cmake --build build --config Release -j4
-        rm -rf build
+      run: rm -rf build
 
     - name: Save thirdparty build cache
       id: cache-thirdparty-save
