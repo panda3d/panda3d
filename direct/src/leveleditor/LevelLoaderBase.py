@@ -1,4 +1,4 @@
-import imp
+import importlib.util
 
 
 class LevelLoaderBase:
@@ -30,10 +30,15 @@ class LevelLoaderBase:
 
         if fileName.endswith('.py'):
             fileName = fileName[:-3]
-        file, pathname, description = imp.find_module(fileName, [filePath])
+
         try:
-            module = imp.load_module(fileName, file, pathname, description)
+            spec = importlib.util.spec_from_file_location(fileName, filePath)
+            if spec is None or spec.loader is None:
+                raise ImportError
+
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
             return True
         except Exception:
-            print('failed to load %s'%fileName)
+            print(f'failed to load {fileName}')
             return None

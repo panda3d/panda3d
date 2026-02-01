@@ -7241,6 +7241,22 @@ prepare_shader(Shader *se) {
 void CLP(GraphicsStateGuardian)::
 release_shader(ShaderContext *sc) {
 #ifndef OPENGLES_1
+  if (_vertex_array_shader_context == sc) {
+    _vertex_array_shader = nullptr;
+    _vertex_array_shader_context = nullptr;
+  }
+
+  if (_texture_binding_shader_context == sc) {
+    _texture_binding_shader = nullptr;
+    _texture_binding_shader_context = nullptr;
+  }
+
+  if (_current_shader_context == sc) {
+    ((CLP(ShaderContext) *)sc)->unbind();
+    _current_shader = nullptr;
+    _current_shader_context = nullptr;
+  }
+
   if (sc->is_of_type(CLP(ShaderContext)::get_class_type())) {
     ((CLP(ShaderContext) *)sc)->release_resources(this);
   }
@@ -8043,6 +8059,9 @@ update_shader_buffer_data(ShaderBuffer *buffer, size_t start, size_t size,
   }
   report_my_gl_errors();
 
+  if (data != nullptr || !_supports_clear_buffer) {
+    _data_transferred_pcollector.add_level(size);
+  }
   return false;
 }
 

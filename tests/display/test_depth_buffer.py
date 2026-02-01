@@ -47,8 +47,12 @@ def depth_region(request, graphics_pipe):
     if buffer is None:
         pytest.skip("Cannot make depth buffer")
 
-    if buffer.get_fb_properties().depth_bits != request.param:
-        pytest.skip("Could not make buffer with desired bit count")
+    got_depth_bits = buffer.get_fb_properties().depth_bits
+    if got_depth_bits < 24 and request.param == 16:
+        # We'll accept this - tinydisplay exclusively supports 20-bit depth.
+        pass
+    elif got_depth_bits != request.param:
+        pytest.skip("Could not make buffer with desired depth bit count")
 
     yield buffer.make_display_region()
 

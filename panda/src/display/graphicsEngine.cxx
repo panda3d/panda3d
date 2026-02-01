@@ -1206,6 +1206,7 @@ dispatch_compute(const LVecBase3i &work_groups, const RenderState *state, Graphi
   nassertv(gsg != nullptr);
 
   run_on_draw_thread([=] () {
+    gsg->make_current();
     gsg->push_group_marker(std::string("Compute ") + shader->get_filename(Shader::ST_compute).get_basename());
     gsg->set_state_and_transform(state, TransformState::make_identity());
     gsg->dispatch_compute(work_groups[0], work_groups[1], work_groups[2]);

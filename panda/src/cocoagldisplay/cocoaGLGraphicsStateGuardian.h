@@ -32,12 +32,14 @@ public:
                       NSOpenGLPixelFormat *pixel_format, int virtual_screen);
   void choose_pixel_format(const FrameBufferProperties &properties,
                            CGDirectDisplayID display,
-                           bool need_pbuffer);
+                           bool need_window, bool need_pbuffer);
 
   CocoaGLGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
                                CocoaGLGraphicsStateGuardian *share_with);
 
   virtual ~CocoaGLGraphicsStateGuardian();
+
+  virtual bool make_current() const;
 
   INLINE void lock_context();
   INLINE void unlock_context();

@@ -420,7 +420,7 @@ ZB_clear_viewport(ZBuffer * zb, int clear_z, ZPOINT z, int clear_color, PIXEL co
   if (clear_z) {
     zz = zb->zbuf + xmin + ymin * zb->xsize;
     for (y = 0; y < ysize; ++y) {
-      memset(zz, 0, xsize * sizeof(ZPOINT));
+      memset_l(zz, z, xsize);
       zz += zb->xsize;
     }
   }

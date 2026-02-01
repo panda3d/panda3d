@@ -61,16 +61,15 @@ make_current() const {
   if (_context == (EGLContext)nullptr) {
     return false;
   }
-#ifdef OPENGLES
-  if (!has_extension("GL_OES_surfaceless_context")) {
-    return false;
+  if (eglGetCurrentContext() == _context) {
+    return true;
   }
-#else
-  if (!is_at_least_gl_version(3, 0)) {
-    return false;
+
+  if (_supports_surfaceless) {
+    return eglMakeCurrent(_egl_display, EGL_NO_SURFACE, EGL_NO_SURFACE, _context) != EGL_FALSE;
   }
-#endif
-  return eglMakeCurrent(_egl_display, EGL_NO_SURFACE, EGL_NO_SURFACE, _context);
+
+  return false;
 }
 
 /**
@@ -300,6 +299,13 @@ choose_pixel_format(const FrameBufferProperties &properties,
 void eglGraphicsStateGuardian::
 reset() {
   BaseGraphicsStateGuardian::reset();
+
+#ifdef OPENGLES
+  _supports_surfaceless = has_extension("GL_OES_surfaceless_context") &&
+#else
+  _supports_surfaceless = is_at_least_gl_version(3, 0) &&
+#endif
+    has_extension("EGL_KHR_surfaceless_context");
 
   if (_gl_renderer == "Software Rasterizer") {
     _fbprops.set_force_software(1);

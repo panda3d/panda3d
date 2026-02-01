@@ -348,7 +348,7 @@ compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
   // Now actually compute the bounding volume by putting it around all of our
   // vertices.
 
-  const LPoint3 *vertices_begin = &_vertices[0];
+  const LPoint3 *vertices_begin = _vertices.data();
   const LPoint3 *vertices_end = vertices_begin + _vertices.size();
 
   // Now actually compute the bounding volume by putting it around all

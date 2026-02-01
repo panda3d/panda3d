@@ -33,11 +33,14 @@ public:
 
 PUBLISHED:
   INLINE explicit AudioLoadRequest(AudioManager *audio_manager,
-                                   const std::string &filename,
+                                   const Filename &filename,
+                                   bool positional);
+  INLINE explicit AudioLoadRequest(AudioManager *audio_manager,
+                                   MovieAudio *source,
                                    bool positional);
 
   INLINE AudioManager *get_audio_manager() const;
-  INLINE const std::string &get_filename() const;
+  INLINE const Filename &get_filename() const;
   INLINE bool get_positional() const;
 
   INLINE bool is_ready() const;
@@ -48,7 +51,8 @@ protected:
 
 private:
   PT(AudioManager) _audio_manager;
-  std::string _filename;
+  Filename _filename;
+  PT(MovieAudio) _source;
   bool _positional;
 
 public:

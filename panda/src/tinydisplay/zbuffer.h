@@ -158,6 +158,15 @@ struct ZTextureDef {
   PIXEL border_color;
 };
 
+struct ZBlend {
+  int op_rgb;
+  int op_alpha;
+  unsigned int xor_r;
+  unsigned int xor_g;
+  unsigned int xor_b;
+  unsigned int xor_a;
+};
+
 struct ZBuffer {
   int xsize,ysize;
   int linesize; /* line size, in bytes */
@@ -172,7 +181,8 @@ struct ZBuffer {
   int *ctable;
   ZTextureDef current_textures[MAX_TEXTURE_STAGES];
   int reference_alpha;
-  int blend_r, blend_g, blend_b, blend_a;
+  ZBlend blenda;
+  ZBlend blendb;
   ZB_storePixelFunc store_pix_func;
 };
 
