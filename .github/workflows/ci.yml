@@ -419,31 +419,47 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v6
+
     - name: Install dependencies (Ubuntu)
       if: matrix.os == 'ubuntu-24.04'
       run: |
         sudo apt-get update
         sudo apt-get install build-essential bison flex libfreetype6-dev libgl1-mesa-dev libegl1-mesa-dev libgl1-mesa-dri mesa-utils-extra libjpeg-dev libode-dev libopenal-dev libpng-dev libssl-dev libvorbis-dev libx11-dev libxcursor-dev libxrandr-dev nvidia-cg-toolkit zlib1g-dev
-    - name: Get thirdparty packages (Windows)
-      if: runner.os == 'Windows'
-      shell: powershell
-      run: |
-        $wc = New-Object System.Net.WebClient
-        $wc.DownloadFile("https://www.panda3d.org/download/panda3d-1.10.16/panda3d-1.10.16-tools-win64.zip", "thirdparty-tools.zip")
-        Expand-Archive -Path thirdparty-tools.zip
-        Move-Item -Path thirdparty-tools/panda3d-1.10.16/thirdparty -Destination .
-    - name: Get thirdparty packages (macOS)
-      if: runner.os == 'macOS'
-      run: |
-        curl -O https://www.panda3d.org/download/panda3d-1.10.16/panda3d-1.10.16-tools-mac.tar.gz
-        tar -xf panda3d-1.10.16-tools-mac.tar.gz
-        mv panda3d-1.10.16/thirdparty thirdparty
-        rmdir panda3d-1.10.16
-        (cd thirdparty/darwin-libs-a && rm -rf rocket)
 
     - name: Set up XCode (macOS)
       if: runner.os == 'macOS'
       run: sudo xcode-select -s /Applications/Xcode_16.app/Contents/Developer
+
+    - name: Restore thirdparty build cache
+      id: cache-thirdparty-restore
+      uses: actions/cache/restore@v5
+      with:
+        path: ./thirdparty
+        key: cache-thirdparty-86e12a631d57f229d9b17e4fb134d9f8d53cddee-${{ matrix.os }}
+
+    - name: Install yasm
+      if: steps.cache-thirdparty-restore.outputs.cache-hit != 'true'
+      run: ${{runner.os == 'macOS' && 'brew' || 'sudo apt-get'}} install yasm
+
+    - name: Build thirdparty packages
+      if: steps.cache-thirdparty-restore.outputs.cache-hit != 'true'
+      run: |
+        git clone --revision=86e12a631d57f229d9b17e4fb134d9f8d53cddee --depth=1 https://github.com/rdb/panda3d-thirdparty.git thirdparty
+        cd thirdparty
+        cmake -B build \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DBUILD_NVIDIACG=OFF \
+          -DBUILD_FFMPEG=OFF
+        cmake --build build --config Release -j4
+        rm -rf build
+
+    - name: Save thirdparty build cache
+      id: cache-thirdparty-save
+      if: steps.cache-android-thirdparty-restore.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v5
+      with:
+        path: ./thirdparty
+        key: ${{ steps.cache-android-thirdparty-restore.outputs.cache-primary-key }}
 
     - name: Configure headless OpenGL
       if: matrix.os == 'ubuntu-24.04'
