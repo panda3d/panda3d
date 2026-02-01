@@ -54,7 +54,7 @@ jobs:
     - name: Get Python (Windows)
       if: runner.os == 'Windows' && steps.cache-thirdparty-restore.outputs.cache-hit != 'true'
       working-directory: thirdparty
-      run: .\install-python.ps1 ${{matrix.dir}}
+      run: .\install-python.ps1 win-libs-vc14-x64
 
     - name: Save thirdparty build cache
       id: cache-thirdparty-save
