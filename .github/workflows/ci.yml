@@ -32,7 +32,13 @@ jobs:
     - name: Configure
       if: steps.cache-thirdparty-restore.outputs.cache-hit != 'true'
       working-directory: thirdparty
-      run: cmake -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_NVIDIACG=OFF -DBUILD_FFMPEG=OFF -DBUILD_FCOLLADA=OFF
+      run: >
+        cmake -B build -DCMAKE_BUILD_TYPE=Release
+        -DBUILD_NVIDIACG=OFF
+        -DBUILD_FFMPEG=OFF
+        -DBUILD_FCOLLADA=OFF
+        -DBUILD_OPENSSL=OFF
+        -DBUILD_ARTOOLKIT=OFF
 
     - name: Build
       if: steps.cache-thirdparty-restore.outputs.cache-hit != 'true'
@@ -44,6 +50,11 @@ jobs:
       working-directory: thirdparty
       shell: bash
       run: rm -rf build
+
+    - name: Get Python (Windows)
+      if: runner.os == 'Windows' && steps.cache-thirdparty-restore.outputs.cache-hit != 'true'
+      working-directory: thirdparty
+      run: .\install-python.ps1 ${{matrix.dir}}
 
     - name: Save thirdparty build cache
       id: cache-thirdparty-save
@@ -638,8 +649,8 @@ jobs:
       run: |
         git clone --revision=bb4a200c04507a27df42f71689a09d159a24e3f1 --depth=1 https://github.com/rdb/panda3d-thirdparty.git thirdparty
         cd thirdparty
-        emcmake cmake -B build -DCMAKE_BUILD_TYPE=Release
-        cmake --build build --config Release -j4 -t glslang -t spirv-cross
+        emcmake cmake -B build -DCMAKE_BUILD_TYPE=Release -DDISABLE_ALL=ON -DBUILD_GLSLANG=ON -DBUILD_SPIRV_CROSS=ON -DBUILD_SPIRV_TOOLS=ON
+        cmake --build build --config Release -j4
         rm -rf build
 
     - name: Save thirdparty build cache
