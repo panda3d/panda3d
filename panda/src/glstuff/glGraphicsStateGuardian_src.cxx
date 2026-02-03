@@ -10348,24 +10348,23 @@ query_glsl_version() {
     int requested_version = gl_force_glsl_version;
     if (requested_version > _glsl_version) {
       GLCAT.warning()
-        << "Cannot force GLSL "
+        << "Forcing GLSL "
 #ifdef OPENGLES
            "ES "
 #endif
-           "version higher than supported version " << _glsl_version << "\n";
-    } else {
-      _glsl_version = requested_version;
-
-      if (GLCAT.is_debug()) {
-        GLCAT.debug()
-          << "Forced GLSL "
-#ifdef OPENGLES
-             "ES "
-#endif
-             "version: " << _glsl_version << "\n";
-      }
+           "version higher than reported supported version " << _glsl_version << "\n";
     }
-  } else {
+    if (GLCAT.is_debug()) {
+      GLCAT.debug()
+        << "Forced GLSL "
+#ifdef OPENGLES
+           "ES "
+#endif
+           "version: " << requested_version << "\n";
+    }
+    _glsl_version = requested_version;
+  }
+  else {
     if (GLCAT.is_debug()) {
       GLCAT.debug()
         << "Detected GLSL "
