@@ -271,7 +271,7 @@ jobs:
       shell: bash
       run: >
         cmake -DWANT_PYTHON_VERSION=3.8 -DHAVE_PYTHON=YES
-        -DPython_FIND_REGISTRY=NEVER -DPython_ROOT="$pythonLocation" .
+        -DPython_FIND_REGISTRY=NEVER -DPython_ROOT:PATH="$pythonLocation" .
     - name: Build (Python 3.8)
       if: contains(matrix.python, 'YES')
       # BEGIN A
@@ -304,7 +304,7 @@ jobs:
       shell: bash
       run: >
         cmake -DWANT_PYTHON_VERSION=3.9 -DHAVE_PYTHON=YES
-        -DPython_FIND_REGISTRY=NEVER -DPython_ROOT="$pythonLocation" .
+        -DPython_FIND_REGISTRY=NEVER -DPython_ROOT:PATH="$pythonLocation" .
     - name: Build (Python 3.9)
       if: contains(matrix.python, 'YES')
       # BEGIN A
@@ -337,7 +337,7 @@ jobs:
       shell: bash
       run: >
         cmake -DWANT_PYTHON_VERSION=3.10 -DHAVE_PYTHON=YES
-        -DPython_FIND_REGISTRY=NEVER -DPython_ROOT="$pythonLocation" .
+        -DPython_FIND_REGISTRY=NEVER -DPython_ROOT:PATH="$pythonLocation" .
     - name: Build (Python 3.10)
       if: contains(matrix.python, 'YES')
       # BEGIN A
@@ -370,7 +370,7 @@ jobs:
       shell: bash
       run: >
         cmake -DWANT_PYTHON_VERSION=3.11 -DHAVE_PYTHON=YES
-        -DPython_FIND_REGISTRY=NEVER -DPython_ROOT="$pythonLocation" .
+        -DPython_FIND_REGISTRY=NEVER -DPython_ROOT:PATH="$pythonLocation" .
     - name: Build (Python 3.11)
       if: contains(matrix.python, 'YES')
       # BEGIN A
@@ -403,7 +403,7 @@ jobs:
       shell: bash
       run: >
         cmake -DWANT_PYTHON_VERSION=3.12 -DHAVE_PYTHON=YES
-        -DPython_FIND_REGISTRY=NEVER -DPython_ROOT="$pythonLocation" .
+        -DPython_FIND_REGISTRY=NEVER -DPython_ROOT:PATH="$pythonLocation" .
     - name: Build (Python 3.12)
       if: contains(matrix.python, 'YES')
       # BEGIN A
