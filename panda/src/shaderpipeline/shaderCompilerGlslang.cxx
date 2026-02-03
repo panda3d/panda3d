@@ -233,7 +233,7 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
     // Fall back to GlslPreProc handler.  Cleaner way to do this?
     static ShaderCompilerGlslPreProc preprocessor;
 
-    std::istringstream stream(std::string((const char *)&code[0], code.size()));
+    std::istringstream stream(std::string((const char *)code.data(), code.size()));
     return preprocessor.compile_now(stage, stream, fullpath, options, output_log, record);
   }
 
@@ -440,7 +440,7 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
  */
 bool ShaderCompilerGlslang::
 check_cg_header(const vector_uchar &code) {
-  const char *p = (const char *)&code[0];
+  const char *p = (const char *)code.data();
   const char *end = p + code.size();
   while (p < end && isspace(*p)) {
     // Skip leading whitespace.
@@ -465,8 +465,8 @@ preprocess_glsl(vector_uchar &code, int &glsl_version, const Filename &source_fi
     code.push_back((unsigned char)'\n');
   }
 
-  char *p = (char *)&code[0];
-  char *end = (char *)&code[0] + code.size();
+  char *p = (char *)code.data();
+  char *end = (char *)code.data() + code.size();
   int lineno = 1;
   bool had_include = false;
 
@@ -649,10 +649,10 @@ preprocess_glsl(vector_uchar &code, int &glsl_version, const Filename &source_fi
                     std::back_inserter(inc_code));
 
           // Insert the code bytes and reposition the pointer after it.
-          size_t offset = p - (char *)&code[0];
+          size_t offset = p - (char *)code.data();
           code.insert(code.begin() + offset, inc_code.begin(), inc_code.end());
-          p = (char *)&code[0] + offset + inc_code.size();
-          end = (char *)&code[0] + code.size();
+          p = (char *)code.data() + offset + inc_code.size();
+          end = (char *)code.data() + code.size();
           had_include = true;
           continue;
         }
@@ -716,12 +716,12 @@ preprocess_glsl(vector_uchar &code, int &glsl_version, const Filename &source_fi
           line_str << "#line " << lineno << " \"" << source_filename << "\"\n";
           std::string line = line_str.str();
 
-          size_t offset = p - (char *)&code[0];
+          size_t offset = p - (char *)code.data();
           code.insert(code.begin() + offset, (unsigned char *)line.data(),
                       (unsigned char *)line.data() + line.size());
 
-          p = (char *)&code[0] + offset + line.size();
-          end = (char *)&code[0] + code.size();
+          p = (char *)code.data() + offset + line.size();
+          end = (char *)code.data() + code.size();
           continue;
         }
       }

@@ -1931,12 +1931,12 @@ issue_parameters(int altered) {
 
   if (altered & _uniform_data_deps) {
     if (altered & _matrix_cache_deps) {
-      _glgsg->update_shader_matrix_cache(_shader, &_matrix_cache[0], altered);
+      _glgsg->update_shader_matrix_cache(_shader, _matrix_cache.data(), altered);
     }
 
     ShaderInputBinding::State state;
     state.gsg = _glgsg;
-    state.matrix_cache = &_matrix_cache[0];
+    state.matrix_cache = _matrix_cache.data();
 
     for (const UniformBlock &block : _uniform_blocks) {
       if ((altered & block._dep) == 0) {
@@ -2271,7 +2271,7 @@ update_shader_texture_bindings(ShaderContext *prev) {
 
   ShaderInputBinding::State state;
   state.gsg = _glgsg;
-  state.matrix_cache = &_matrix_cache[0];
+  state.matrix_cache = _matrix_cache.data();
 
   // First bind all the 'image units'; a bit of an esoteric OpenGL feature
   // right now.
@@ -2496,7 +2496,7 @@ update_shader_buffer_bindings(ShaderContext *prev) {
   // Update the shader storage buffer bindings.
   ShaderInputBinding::State state;
   state.gsg = _glgsg;
-  state.matrix_cache = &_matrix_cache[0];
+  state.matrix_cache = _matrix_cache.data();
 
   for (StorageBlock &block : _storage_blocks) {
     PT(ShaderBuffer) buffer = block._binding->fetch_shader_buffer(state, block._resource_id);

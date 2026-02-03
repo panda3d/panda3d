@@ -694,7 +694,7 @@ validate_header() const {
   }
 
   // Validate the header.
-  const uint32_t *words = (const uint32_t *)&_words[0];
+  const uint32_t *words = (const uint32_t *)_words.data();
   if (*words++ != spv::MagicNumber) {
     shader_cat.error()
       << "Invalid SPIR-V file: wrong magic number.\n";
