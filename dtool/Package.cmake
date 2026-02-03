@@ -108,7 +108,7 @@ if(THIRDPARTY_DIRECTORY)
     SPIRV-Tools
     SWResample
     SWScale
-    TIFF
+    Tiff
     VorbisFile
     VRPN
     ZLIB
