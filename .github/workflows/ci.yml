@@ -189,12 +189,7 @@ jobs:
       with:
         path: ./thirdparty
         key: cache-thirdparty-ad5c35eafe6b8aefe58444ed7343a421fe8fcfaa-${{ matrix.os }}
-
-    - name: Require thirdparty build cache hit
-      if: steps.cache-thirdparty-restore.outputs.cache-hit != 'true'
-      run: |
-        echo "::error::Thirdparty cache not found"
-        exit 1
+        fail-on-cache-miss: true
 
     - name: ccache (non-Windows)
       if: runner.os != 'Windows'
@@ -235,6 +230,7 @@ jobs:
         -D BUILD_METALIBS=${{ matrix.metalibs }}
         -D HAVE_PYTHON=${{ runner.os != 'Windows' && matrix.python || 'NO' }}
         -D HAVE_EIGEN=${{ matrix.eigen }}
+        -D HAVE_OPENSSL=OFF
         -D STDFLOAT_DOUBLE=${{ matrix.double }}
         -D ENABLE_ASAN=${{ matrix.asan || 'NO' }}
         ..
@@ -271,7 +267,7 @@ jobs:
       shell: bash
       run: >
         cmake -DWANT_PYTHON_VERSION=3.8 -DHAVE_PYTHON=YES
-        -DPython_FIND_REGISTRY=NEVER -DPython_ROOT:PATH="$pythonLocation" .
+        -DPython_FIND_REGISTRY=NEVER -DPython_ROOT="$pythonLocation" .
     - name: Build (Python 3.8)
       if: contains(matrix.python, 'YES')
       # BEGIN A
@@ -304,7 +300,7 @@ jobs:
       shell: bash
       run: >
         cmake -DWANT_PYTHON_VERSION=3.9 -DHAVE_PYTHON=YES
-        -DPython_FIND_REGISTRY=NEVER -DPython_ROOT:PATH="$pythonLocation" .
+        -DPython_FIND_REGISTRY=NEVER -DPython_ROOT="$pythonLocation" .
     - name: Build (Python 3.9)
       if: contains(matrix.python, 'YES')
       # BEGIN A
@@ -337,7 +333,7 @@ jobs:
       shell: bash
       run: >
         cmake -DWANT_PYTHON_VERSION=3.10 -DHAVE_PYTHON=YES
-        -DPython_FIND_REGISTRY=NEVER -DPython_ROOT:PATH="$pythonLocation" .
+        -DPython_FIND_REGISTRY=NEVER -DPython_ROOT="$pythonLocation" .
     - name: Build (Python 3.10)
       if: contains(matrix.python, 'YES')
       # BEGIN A
@@ -370,7 +366,7 @@ jobs:
       shell: bash
       run: >
         cmake -DWANT_PYTHON_VERSION=3.11 -DHAVE_PYTHON=YES
-        -DPython_FIND_REGISTRY=NEVER -DPython_ROOT:PATH="$pythonLocation" .
+        -DPython_FIND_REGISTRY=NEVER -DPython_ROOT="$pythonLocation" .
     - name: Build (Python 3.11)
       if: contains(matrix.python, 'YES')
       # BEGIN A
@@ -403,7 +399,7 @@ jobs:
       shell: bash
       run: >
         cmake -DWANT_PYTHON_VERSION=3.12 -DHAVE_PYTHON=YES
-        -DPython_FIND_REGISTRY=NEVER -DPython_ROOT:PATH="$pythonLocation" .
+        -DPython_FIND_REGISTRY=NEVER -DPython_ROOT="$pythonLocation" .
     - name: Build (Python 3.12)
       if: contains(matrix.python, 'YES')
       # BEGIN A
@@ -488,12 +484,7 @@ jobs:
       with:
         path: ./thirdparty
         key: cache-thirdparty-ad5c35eafe6b8aefe58444ed7343a421fe8fcfaa-${{ matrix.os }}
-
-    - name: Require thirdparty build cache hit
-      if: steps.cache-thirdparty-restore.outputs.cache-hit != 'true'
-      run: |
-        echo "::error::Thirdparty cache not found"
-        exit 1
+        fail-on-cache-miss: true
 
     - name: Configure headless OpenGL
       if: matrix.os == 'ubuntu-24.04'
