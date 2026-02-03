@@ -6,7 +6,12 @@ from direct.tkpanels.Placer import Placer
 
 
 def test_Placer(tk_toplevel):
-    base = ShowBase()
+    try:
+        base = ShowBase()
+    except Exception as ex:
+        if str(ex) == 'Could not open window.':
+            pytest.skip(str(ex))
+
     base.start_direct()
     root = Pmw.initialise()
     widget = Placer()
