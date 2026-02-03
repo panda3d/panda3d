@@ -1,6 +1,7 @@
 from panda3d import core
 import os
 import struct
+from array import array
 import pytest
 from _pytest.outcomes import Failed
 
@@ -58,6 +59,69 @@ def test_glsl_defines(env):
     options.undef('TEST_UNDEFINED')
 
     env.run_glsl("assert(true);", preamble, options=options)
+
+
+def test_glsl_flat_decoration():
+    def check_flat_decoration(module):
+        from spirv import spv
+        code = array('I', module.code)
+        for i, op in enumerate(code):
+            if op & 0xffff == spv['Op']['OpDecorate'] and code[i + 2] == spv['Decoration']['Flat']:
+                # Got a flat decoration
+                return True
+
+        return False
+
+    reg = core.ShaderCompilerRegistry.get_global_ptr()
+    glsl = reg.get_compiler_for_language(core.Shader.SL_GLSL)
+
+    # Must fail
+    code = core.StringStream(b"""#version 330
+
+    in uint myinput;
+    out vec4 color;
+
+    void main() {
+      color = vec4(float(myinput));
+    }
+    """)
+    module = glsl.compile_now(core.Shader.Stage.FRAGMENT, code, "test1.glsl")
+    assert module is None
+
+    # Must succeed
+    code = core.StringStream(b"""#version 330
+
+    flat in uint myinput;
+    out vec4 color;
+
+    void main() {
+      color = vec4(float(myinput));
+    }
+    """)
+    module = glsl.compile_now(core.Shader.Stage.FRAGMENT, code, "test2.glsl")
+    assert module is not None
+    assert check_flat_decoration(module)
+
+    # Shader without flat on output still gets marked flat
+    shader = core.Shader.make(core.Shader.SL_GLSL, """#version 330
+
+    out uint intvar;
+
+    void main() {
+      intvar = 3u;
+    }
+    """, """#version 330
+
+    flat in uint intvar;
+    out vec4 color;
+
+    void main() {
+      color = vec4(float(intvar));
+    }
+    """)
+
+    assert check_flat_decoration(shader.get_module(core.Shader.Stage.VERTEX))
+    assert check_flat_decoration(shader.get_module(core.Shader.Stage.FRAGMENT))
 
 
 def test_glsl_sampler(env):

@@ -149,6 +149,13 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, const CompilerOption
   // Add in location decorations for any inputs that are missing it.
   transformer.assign_interface_locations(stage);
 
+  // Assign "Flat" decorations on uint and double output variables.  This is
+  // optional in GLSL, but some drivers (Intel on Windows) struggle when the
+  // Flat keyword is present on an input but not on the matching output.
+  if (stage != Stage::FRAGMENT) {
+    transformer.assign_flat_decorations();
+  }
+
   // Get rid of uniform locations and bindings.  The numbering rules are
   // different for each back-end, so we regenerate these later.
   transformer.strip_uniform_locations();

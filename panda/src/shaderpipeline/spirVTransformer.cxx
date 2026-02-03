@@ -266,6 +266,32 @@ assign_locations(pmap<uint32_t, int> remap) {
 }
 
 /**
+ * Assigns missing Flat decoration on uint/double outputs.
+ */
+void SpirVTransformer::
+assign_flat_decorations() {
+  for (uint32_t id = 0; id < get_id_bound(); ++id) {
+    const Definition &def = _db.get_definition(id);
+    if (def.is_variable() && !def.is_builtin() && def._storage_class == spv::StorageClassOutput && (def._flags & SpirVResultDatabase::DF_flat) == 0) {
+      if (def._type->contains_scalar_type(ShaderType::ST_int) ||
+          def._type->contains_scalar_type(ShaderType::ST_uint) ||
+          def._type->contains_scalar_type(ShaderType::ST_double)) {
+        // These must be flat.
+        const ShaderType *unwrapped = def._type;
+        while (const ShaderType::Array *array = unwrapped->as_array()) {
+          unwrapped = array->get_element_type();
+        }
+        //TODO: handle assigning "flat" to struct members.
+        if (unwrapped->as_struct() == nullptr) {
+          _annotations.insert(_annotations.end(), {spv::OpDecorate | (3 << spv::WordCountShift), id, spv::DecorationFlat});
+          _db.modify_definition(id)._flags |= SpirVResultDatabase::DF_flat;
+        }
+      }
+    }
+  }
+}
+
+/**
  * Assigns procedural names consisting of a prefix followed by an index.
  */
 void SpirVTransformer::

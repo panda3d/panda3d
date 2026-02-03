@@ -44,6 +44,7 @@ public:
 
   void assign_interface_locations(ShaderModule::Stage stage);
   void assign_locations(pmap<uint32_t, int> locations);
+  void assign_flat_decorations();
   void assign_procedural_names(const char *prefix, const pmap<uint32_t, int> &suffixes);
   void strip_uniform_locations();
   void strip_bindings();

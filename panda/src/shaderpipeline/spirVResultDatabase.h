@@ -58,6 +58,9 @@ public:
 
     // Set for variables if the size/levels of an image therein was queried.
     DF_queried_image_size_levels = 8192,
+
+    // The "flat" decoration, set for input/output variables or struct members
+    DF_flat = 16384,
   };
 
   /**
@@ -69,7 +72,7 @@ public:
     int _location = -1;
     int _offset = -1;
     spv::BuiltIn _builtin = spv::BuiltInMax;
-    int _flags = 0; // Only readonly/writeonly/deleted
+    int _flags = 0; // Only readonly/writeonly/deleted/flat
     int _new_index = -1;
     uint32_t _matrix_stride = 0;
   };
