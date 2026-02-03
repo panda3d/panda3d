@@ -49,7 +49,7 @@ public:
   virtual bool link_inputs(const ShaderModule *previous, pmap<int, int> &remap) const override;
   virtual void remap_input_locations(const pmap<int, int> &remap) override;
 
-  virtual std::string get_ir() const override;
+  virtual vector_uchar get_code() const override;
 
   class InstructionStream;
 

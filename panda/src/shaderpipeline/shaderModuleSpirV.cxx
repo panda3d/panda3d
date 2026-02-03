@@ -607,9 +607,12 @@ make_cow_copy() {
   return new ShaderModuleSpirV(*this);
 }
 
-std::string ShaderModuleSpirV::
-get_ir() const {
-  return std::string();
+/**
+ * Returns the compiled code of this module.
+ */
+vector_uchar ShaderModuleSpirV::
+get_code() const {
+  return vector_uchar((const unsigned char *)get_data(), (const unsigned char *)(get_data() + get_data_size()));
 }
 
 /**

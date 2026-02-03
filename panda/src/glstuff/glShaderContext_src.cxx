@@ -3014,8 +3014,7 @@ create_shader(GLuint program, const ShaderModule *module, size_t mi,
         << glsl_module->get_source_filename() << "\n";
     }
 
-    std::string text = glsl_module->get_ir();
-    const char *text_str = text.c_str();
+    const char *text_str = glsl_module->_code.c_str();
     _glgsg->_glShaderSource(handle, 1, &text_str, nullptr);
   }
   else {

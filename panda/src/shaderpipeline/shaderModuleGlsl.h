@@ -27,15 +27,16 @@ PUBLISHED:
 public:
   virtual PT(CopyOnWriteObject) make_cow_copy() override;
 
-  virtual std::string get_ir() const override;
+  virtual vector_uchar get_code() const override;
 
   int add_included_file(Filename fn);
   Filename get_filename_from_index(int index) const;
 
-protected:
+public:
   std::string _code;
   int _version = 0;
 
+private:
   static const int _fileno_offset = 2048;
   typedef pvector<Filename> Filenames;
   Filenames _included_files;
