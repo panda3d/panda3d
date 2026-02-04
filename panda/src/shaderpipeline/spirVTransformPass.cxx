@@ -59,7 +59,10 @@ process_preamble(std::vector<uint32_t> &stream) {
         ++i;
       }
 
-      if (transform_entry_point((spv::ExecutionModel)op.args[0], op.args[1], (const char *)&new_args[2], &new_args[interface_begin], new_args.size() - interface_begin)) {
+      const char *name = ((const char *)new_args.data()) + 2;
+      if (transform_entry_point((spv::ExecutionModel)op.args[0], op.args[1], name,
+                                new_args.data() + interface_begin,
+                                new_args.size() - interface_begin)) {
         add_debug(op.opcode, new_args.data(), new_args.size());
       }
     }
