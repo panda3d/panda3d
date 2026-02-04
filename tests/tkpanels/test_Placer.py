@@ -11,6 +11,8 @@ def test_Placer(tk_toplevel):
     except Exception as ex:
         if str(ex) == 'Could not open window.':
             pytest.skip(str(ex))
+        else:
+            raise
 
     base.start_direct()
     root = Pmw.initialise()
