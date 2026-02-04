@@ -23,7 +23,7 @@
 #include <glslang/Public/ResourceLimits.h>
 #include <glslang/SPIRV/GlslangToSpv.h>
 
-#include <spirv-tools/optimizer.hpp>
+#include <spirv-tools/libspirv.h>
 
 /**
  * Interface for processing includes via the VirtualFileSystem.
@@ -113,7 +113,7 @@ private:
  * Message consumer for SPIRV-Tools.
  */
 static void
-log_message(spv_message_level_t level, const char *, const spv_position_t &, const char *msg) {
+log_message(spv_message_level_t level, const char *, const spv_position_t *, const char *msg) {
   NotifySeverity severity = NS_info;
   switch (level) {
   case SPV_MSG_FATAL:
@@ -398,32 +398,44 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
   // Run it through the optimizer.
   std::vector<uint32_t> optimized;
   if (is_cg || options.get_optimize() != CompilerOptions::Optimize::NONE) {
-    spvtools::Optimizer opt(SPV_ENV_UNIVERSAL_1_0);
-    opt.SetMessageConsumer(log_message);
+    spv_optimizer_t *opt = spvOptimizerCreate(SPV_ENV_UNIVERSAL_1_0);
+    spvOptimizerSetMessageConsumer(opt, log_message);
 
     switch (options.get_optimize()) {
     case CompilerOptions::Optimize::NONE:
       break;
 
     case CompilerOptions::Optimize::PERFORMANCE:
-      opt.RegisterPerformancePasses();
+      spvOptimizerRegisterPerformancePasses(opt);
       break;
 
     case CompilerOptions::Optimize::SIZE:
-      opt.RegisterSizePasses();
+      spvOptimizerRegisterSizePasses(opt);
       break;
     }
 
     if (is_cg) {
-      opt.RegisterLegalizationPasses();
+      spvOptimizerRegisterLegalizationPasses(opt);
     }
 
     // We skip validation because of the `uniform bool` bug, see SPIRV-Tools#3387
-    spvtools::ValidatorOptions validator_options;
-    if (!opt.Run(stream.get_data(), stream.get_data_size(), &optimized,
-                 validator_options, true)) {
+    spv_optimizer_options options = spvOptimizerOptionsCreate();
+    spvOptimizerOptionsSetRunValidator(options, false);
+
+    spv_binary optimized_binary;
+    spv_result_t result = spvOptimizerRun(opt, stream.get_data(),
+                                          stream.get_data_size(),
+                                          &optimized_binary, options);
+    spvOptimizerOptionsDestroy(options);
+    spvOptimizerDestroy(opt);
+
+    if (result != SPV_SUCCESS) {
       return nullptr;
     }
+
+    optimized.assign(optimized_binary->code,
+                     optimized_binary->code + optimized_binary->wordCount);
+    spvBinaryDestroy(optimized_binary);
   } else {
     optimized = stream;
   }
