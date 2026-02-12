@@ -314,6 +314,16 @@ def test_color_flat(color_region, shader_attrib, material_attrib):
     result = render_color_pixel(color_region, state)
     assert result.almost_equal(TEST_COLOR, FUZZ)
 
+    # Test it again with a different color to make sure the state changes
+    # work correctly
+    state = core.RenderState.make(
+        core.ColorAttrib.make_flat((0, 1, 0.5, 1)),
+        shader_attrib,
+        material_attrib,
+    )
+    result = render_color_pixel(color_region, state)
+    assert result.almost_equal((0, 1, 0.5, 1), FUZZ)
+
 
 def test_color_vertex(color_region, shader_attrib, material_attrib):
     state = core.RenderState.make(
@@ -497,3 +507,47 @@ def test_texture_occlusion(color_region):
     )
     result = render_color_pixel(color_region, state)
     assert result.z == pytest.approx(0.5, 0.05)
+
+
+def test_alpha_test(color_region, shader_attrib):
+    def passes(mode, alpha):
+        state = core.RenderState.make(
+            core.AlphaTestAttrib.make(mode, 0.5),
+            core.ColorAttrib.make_flat((1, 1, 1, alpha)),
+            shader_attrib,
+        )
+        result = render_color_pixel(color_region, state)
+        return result.x > 0.5
+
+    assert passes(core.TransparencyAttrib.M_none, 0.0)
+    assert passes(core.TransparencyAttrib.M_none, 1.0)
+
+    assert not passes(core.TransparencyAttrib.M_never, 0.0)
+    assert not passes(core.TransparencyAttrib.M_never, 1.0)
+
+    assert passes(core.TransparencyAttrib.M_less, 0.0)
+    assert not passes(core.TransparencyAttrib.M_less, 0.5)
+    assert not passes(core.TransparencyAttrib.M_less, 1.0)
+
+    assert not passes(core.TransparencyAttrib.M_equal, 0.0)
+    assert passes(core.TransparencyAttrib.M_equal, 0.5)
+    assert not passes(core.TransparencyAttrib.M_equal, 1.0)
+
+    assert passes(core.TransparencyAttrib.M_less_equal, 0.0)
+    assert passes(core.TransparencyAttrib.M_less_equal, 0.5)
+    assert not passes(core.TransparencyAttrib.M_less_equal, 1.0)
+
+    assert not passes(core.TransparencyAttrib.M_greater, 0.0)
+    assert not passes(core.TransparencyAttrib.M_greater, 0.5)
+    assert passes(core.TransparencyAttrib.M_greater, 1.0)
+
+    assert passes(core.TransparencyAttrib.M_not_equal, 0.0)
+    assert not passes(core.TransparencyAttrib.M_not_equal, 0.5)
+    assert passes(core.TransparencyAttrib.M_not_equal, 1.0)
+
+    assert not passes(core.TransparencyAttrib.M_greater_equal, 0.0)
+    assert passes(core.TransparencyAttrib.M_greater_equal, 0.5)
+    assert passes(core.TransparencyAttrib.M_greater_equal, 1.0)
+
+    assert passes(core.TransparencyAttrib.M_always, 0.0)
+    assert passes(core.TransparencyAttrib.M_always, 0.0)

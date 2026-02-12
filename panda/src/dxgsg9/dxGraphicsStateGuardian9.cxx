@@ -3141,7 +3141,8 @@ do_issue_shade_model() {
  */
 void DXGraphicsStateGuardian9::
 set_state_and_transform(const RenderState *target,
-                        const TransformState *transform) {
+                        const TransformState *transform,
+                        const InstanceList *instances) {
 #ifndef NDEBUG
   if (gsg_cat.is_spam()) {
     gsg_cat.spam() << "Setting GSG state to " << (void *)target << ":\n";

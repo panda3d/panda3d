@@ -66,14 +66,13 @@ draw(GraphicsStateGuardianBase *gsg, bool force, Thread *current_thread) {
     }
     // Now the callback has taken care of drawing.
   }
-  else if (LIKELY(_instances == nullptr)) {
+  else if (_num_instances == 1 || _instances == nullptr) {
     nassertv(_geom != nullptr);
-    gsg->set_state_and_transform(_state, _internal_transform);
+    gsg->set_state_and_transform(_state, _internal_transform, _instances);
     draw_inline(gsg, force, current_thread);
   }
   else {
-    // It has an instance list left over (not munged into vertex data), which
-    // means the shader doesn't implement instancing.  Just render the object
+    // The GSG doesn't support shader instancing, so we just render the object
     // more than once.
     nassertv(_geom != nullptr);
     GeomPipelineReader geom_reader(_geom, current_thread);
@@ -81,7 +80,7 @@ draw(GraphicsStateGuardianBase *gsg, bool force, Thread *current_thread) {
     data_reader.check_array_readers();
 
     for (const InstanceList::Instance &instance : *_instances) {
-      gsg->set_state_and_transform(_state, _internal_transform->compose(instance.get_transform()));
+      gsg->set_state_and_transform(_state, _internal_transform->compose(instance.get_transform()), nullptr);
       geom_reader.draw(gsg, &data_reader, _num_instances, force);
     }
   }

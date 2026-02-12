@@ -2823,6 +2823,10 @@ reset() {
       _supports_vertex_attrib_divisor = false;
     }
   }
+
+  if (_supports_geometry_instancing && _supports_vertex_attrib_divisor) {
+    _supported_geom_rendering |= GeomEnums::GR_instancing;
+  }
 #endif
 
   // Check if we support indirect draw.
@@ -3039,6 +3043,7 @@ reset() {
 
 #ifndef OPENGLES
   _glMapNamedBufferRange = nullptr;
+  _glUnmapNamedBuffer = nullptr;
 
   if (gl_support_dsa &&
       (is_at_least_gl_version(4, 5) || has_extension("GL_ARB_direct_state_access"))) {
@@ -3059,6 +3064,8 @@ reset() {
       _glMapNamedBufferRange = (PFNGLMAPNAMEDBUFFERRANGEPROC)
         get_extension_func("glMapNamedBufferRange");
     }
+    _glUnmapNamedBuffer = (PFNGLUNMAPNAMEDBUFFERPROC)
+      get_extension_func("glUnmapNamedBuffer");
 
     _glNamedBufferSubData = (PFNGLNAMEDBUFFERSUBDATAPROC)
       get_extension_func("glNamedBufferSubData");
@@ -4923,6 +4930,11 @@ end_frame(Thread *current_thread) {
   _state_shader = nullptr;
 #endif
 
+#ifndef OPENGLES_1
+  // The instance list may be modified between frames.
+  _state_instances = nullptr;
+#endif
+
   // Respecify the active texture next frame, for good measure.
   _active_texture_stage = -1;
 
@@ -5224,7 +5236,16 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   nassertr(_data_reader != nullptr, false);
 
 #ifndef OPENGLES_1
-  _instance_count = _supports_geometry_instancing ? num_instances : 1;
+  // How many instances should we draw?
+  if (_supports_geometry_instancing) {
+    if (_state_instances != nullptr) {
+      _instance_count = _state_instances->size();
+    } else {
+      _instance_count = num_instances;
+    }
+  } else {
+    _instance_count = 1;
+  }
 #endif
 
   _geom_display_list = 0;
@@ -9021,6 +9042,104 @@ apply_fog(Fog *fog) {
 }
 #endif  // SUPPORT_FIXED_FUNCTION
 
+
+/**
+ * Sets up the instance list for the current state.
+ */
+#ifndef OPENGLES_1
+void CLP(GraphicsStateGuardian)::
+do_issue_instances() {
+  const InstanceList *instances = _state_instances;
+
+  size_t num_instances = 1;
+  if (instances != nullptr) {
+    num_instances = instances->size();
+  }
+
+  bool recreate = false;
+  if (num_instances > _instance_buffer_size) {
+    _instance_buffer_size = num_instances;
+
+    if (_supports_buffer_storage) {
+      // Need to delete it if we're using persistent buffer storage.
+      _glDeleteBuffers(1, &_instance_buffer);
+      _instance_buffer = 0;
+    }
+
+    if (_instance_buffer == 0) {
+      _glGenBuffers(1, &_instance_buffer);
+      nassertv(_instance_buffer != 0);
+      recreate = true;
+      //XXX do we need to force a re-bind here?
+    }
+  }
+
+  if (GLCAT.is_debug()) {
+    GLCAT.debug()
+      << "Updating instance buffer with " << num_instances << " instances\n";
+  }
+
+  // Orphan the buffer data.  In the future, we could use a persistently
+  // mapped buffer if supported.
+  size_t size_bytes = _instance_buffer_size * sizeof(float) * 12;
+  void *ptr = map_write_discard_buffer(GL_ARRAY_BUFFER, _instance_buffer, size_bytes, recreate);
+  _current_vbuffer_index = 0;
+  nassertv(ptr != nullptr);
+
+  float *data = (float *)ptr;
+  if (instances != nullptr) {
+    for (size_t i = 0; i < instances->size(); ++i) {
+      LMatrix4f mat = LCAST(float, (*instances)[i].get_mat());
+
+      data[0] = mat[0][0];
+      data[1] = mat[1][0];
+      data[2] = mat[2][0];
+      data[3] = mat[3][0];
+
+      data[4] = mat[0][1];
+      data[5] = mat[1][1];
+      data[6] = mat[2][1];
+      data[7] = mat[3][1];
+
+      data[8] = mat[0][2];
+      data[9] = mat[1][2];
+      data[10] = mat[2][2];
+      data[11] = mat[3][2];
+
+      data += 12;
+    }
+  } else {
+    data[0] = 1;
+    data[1] = 0;
+    data[2] = 0;
+    data[3] = 0;
+
+    data[4] = 0;
+    data[5] = 1;
+    data[6] = 0;
+    data[7] = 0;
+
+    data[8] = 0;
+    data[9] = 0;
+    data[10] = 1;
+    data[11] = 0;
+  }
+
+  _data_transferred_pcollector.add_level(size_bytes);
+
+#ifndef OPENGLES
+  if (_glUnmapNamedBuffer != nullptr) {
+    _glUnmapNamedBuffer(_instance_buffer);
+  } else
+#endif
+  {
+    _glBindBuffer(GL_ARRAY_BUFFER, _instance_buffer);
+    _glUnmapBuffer(GL_ARRAY_BUFFER);
+    _current_vbuffer_index = _instance_buffer;
+  }
+}
+#endif
+
 /**
  * Sends the indicated transform matrix to the graphics API to be applied to
  * future vertices.
@@ -9085,6 +9204,11 @@ do_issue_shader() {
   Shader *shader = (Shader *)_target_shader->get_shader();
 
   RenderAttrib::PandaCompareFunc alpha_test_mode = RenderAttrib::M_none;
+  bool inject_instancing = false;
+
+  if (_state_instances != nullptr && !_target_shader->get_flag(ShaderAttrib::F_hardware_instancing)) {
+    inject_instancing = true;
+  }
 
   // If we don't have a shader, apply the default shader.
   if (!has_fixed_function_pipeline()) {
@@ -9125,7 +9249,8 @@ do_issue_shader() {
       _current_shader_context = 0;
     }
   } else {
-    if (context != _current_shader_context) {
+    if (context != _current_shader_context ||
+        (inject_instancing && !_current_shader_context->_injected_instancing)) {
       // Use a completely different shader than before.  Unbind old shader,
       // bind the new one.
       if (_current_shader_context != nullptr &&
@@ -9133,7 +9258,7 @@ do_issue_shader() {
         // If it's a different type of shader, make sure to unbind the old.
         _current_shader_context->unbind();
       }
-      if (!context->bind(this, alpha_test_mode)) {
+      if (!context->bind(this, alpha_test_mode, inject_instancing)) {
         shader = nullptr;
         context = nullptr;
       }
@@ -13017,7 +13142,8 @@ end_bind_clip_planes() {
  */
 void CLP(GraphicsStateGuardian)::
 set_state_and_transform(const RenderState *target,
-                        const TransformState *transform) {
+                        const TransformState *transform,
+                        const InstanceList *instances) {
   report_my_gl_errors();
 #ifndef NDEBUG
   if (gsg_cat.is_spam()) {
@@ -13037,14 +13163,24 @@ set_state_and_transform(const RenderState *target,
     do_issue_transform();
   }
 
+#ifndef OPENGLES_1
+  if (instances != _state_instances) {
+    _state_instances = instances;
+    do_issue_instances();
+  }
+#endif
+
   if (target == _state_rs && (_state_mask | _inv_state_mask).is_all_on()) {
 #ifndef OPENGLES_1
     if (transform_changed) {
       // The state has not changed, but the transform has. Set the new
       // transform on the shader, if we have one.
       if (_current_shader_context != nullptr) {
+        bool inject_instancing =
+          (instances != nullptr && !_state_shader->get_flag(ShaderAttrib::F_hardware_instancing));
+
         _current_shader_context->set_state_and_transform(_state_rs, transform,
-          _scene_setup->get_camera_transform(), _projection_mat);
+          _scene_setup->get_camera_transform(), _projection_mat, inject_instancing);
       }
     }
 #endif
@@ -13054,7 +13190,6 @@ set_state_and_transform(const RenderState *target,
 
 #ifndef OPENGLES_1
   determine_target_shader();
-  _sattr_instance_count = _target_shader->get_instance_count();
 
   if (_target_shader != _state_shader) {
     do_issue_shader();
@@ -13075,7 +13210,11 @@ set_state_and_transform(const RenderState *target,
 
   // Update all of the state that is bound to the shader program.
   if (_current_shader_context != nullptr) {
-    _current_shader_context->set_state_and_transform(target, transform, _scene_setup->get_camera_transform(), _projection_mat);
+    bool inject_instancing =
+      (instances != nullptr && !_state_shader->get_flag(ShaderAttrib::F_hardware_instancing));
+
+    _current_shader_context->set_state_and_transform(target, transform,
+      _scene_setup->get_camera_transform(), _projection_mat, inject_instancing);
   }
 #endif
 

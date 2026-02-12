@@ -54,10 +54,12 @@ public:
 
   bool valid(void);
   bool bind(CLP(GraphicsStateGuardian) *glgsg,
-            RenderAttrib::PandaCompareFunc alpha_test_mode);
+            RenderAttrib::PandaCompareFunc alpha_test_mode,
+            bool inject_instancing=false);
   void unbind();
 
-  bool compile_for(RenderAttrib::PandaCompareFunc alpha_test_mode);
+  bool compile_for(RenderAttrib::PandaCompareFunc alpha_test_mode,
+                   bool inject_instancing);
 
 private:
   static void r_count_locations_bindings(const ShaderType *type,
@@ -84,7 +86,8 @@ private:
   void set_state_and_transform(const RenderState *state,
                                const TransformState *modelview_transform,
                                const TransformState *camera_transform,
-                               const TransformState *projection_transform);
+                               const TransformState *projection_transform,
+                               bool has_instances);
 
   void issue_parameters(int altered);
   void disable_shader_vertex_arrays();
@@ -104,10 +107,13 @@ private:
 private:
   bool _validated = false;
   bool _inject_alpha_test = false;
+  bool _injected_instancing = false;
   GLuint _program = 0;
+  // M_always itself isn't included since it's the same as M_none
   GLuint _linked_programs[RenderAttrib::M_always] {0u};
   RenderAttrib::PandaCompareFunc _alpha_test_mode = RenderAttrib::M_none;
   GLint _alpha_test_ref_locations[RenderAttrib::M_always];
+  int _force_respecify = 0;
 
   // May exclude the fragment shader if _inject_alpha_test is set.
   struct Module {
@@ -169,6 +175,7 @@ private:
 
   BitMask32 _enabled_attribs;
   GLint _color_attrib_index;
+  GLint _instance_mat_index;
   uint32_t _bind_attrib_locations = 0;
 
   struct StorageBlock {
@@ -189,6 +196,8 @@ private:
   LocationMap _locations;
   LocationMap _bindings;
 
+  pmap<const InternalName *, std::pair<bool, bool> > _model_matrices;
+
   bool _uses_standard_vertex_arrays;
 
 #ifdef DO_PSTATS
@@ -199,8 +208,10 @@ private:
   void report_program_errors(GLuint program, bool fatal);
   GLuint create_shader(GLuint program, const ShaderModule *module, size_t mi,
                        const Shader::ModuleSpecConstants &spec_consts,
-                       RenderAttrib::PandaCompareFunc alpha_test_mode);
-  GLuint compile_and_link(RenderAttrib::PandaCompareFunc alpha_test_mode);
+                       RenderAttrib::PandaCompareFunc alpha_test_mode,
+                       bool inject_instancing=false);
+  GLuint compile_and_link(RenderAttrib::PandaCompareFunc alpha_test_mode,
+                          bool inject_instancing);
   void release_resources(CLP(GraphicsStateGuardian) *glgsg);
 
 public:

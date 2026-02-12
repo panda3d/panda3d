@@ -82,7 +82,8 @@ public:
    ScreenshotRequest *request);
 
   virtual void set_state_and_transform(const RenderState *state,
-                                       const TransformState *transform);
+                                       const TransformState *transform,
+                                       const InstanceList *instances=nullptr);
 
   virtual TextureContext *prepare_texture(Texture *tex);
   virtual bool update_texture(TextureContext *tc, bool force);

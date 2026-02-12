@@ -486,12 +486,16 @@ public:
   INLINE int get_max_vertex_attrib_stride() const;
 
   virtual void set_state_and_transform(const RenderState *state,
-                                       const TransformState *transform);
+                                       const TransformState *transform,
+                                       const InstanceList *instances = nullptr);
 
   void bind_fbo(GLuint fbo);
   void finish();
 
 protected:
+#ifndef OPENGLES_1
+  void do_issue_instances();
+#endif
   void do_issue_transform();
   void do_issue_render_mode();
   void do_issue_antialias();
@@ -1031,6 +1035,7 @@ public:
   PFNGLGENERATETEXTUREMIPMAPPROC _glGenerateTextureMipmap;
   PFNGLBINDTEXTUREUNITPROC _glBindTextureUnit;
   PFNGLMAPNAMEDBUFFERRANGEPROC _glMapNamedBufferRange;
+  PFNGLUNMAPNAMEDBUFFERPROC _glUnmapNamedBuffer;
   PFNGLNAMEDBUFFERSUBDATAPROC _glNamedBufferSubData;
   PFNGLCLEARNAMEDBUFFERSUBDATAPROC _glClearNamedBufferSubData;
   PFNGLCOPYNAMEDBUFFERSUBDATAPROC _glCopyNamedBufferSubData;
@@ -1221,8 +1226,12 @@ public:
   bool _supports_texture_max_level;
 
 #ifndef OPENGLES_1
-  GLsizei _sattr_instance_count;
   GLsizei _instance_count;
+
+  GLuint _instance_buffer = 0;
+  size_t _instance_buffer_size = 0;
+
+  const InstanceList *_state_instances = nullptr;
 #endif
 
   LightMutex _lock;

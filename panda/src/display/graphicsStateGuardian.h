@@ -351,7 +351,8 @@ public:
                                           Thread *current_thread);
 
   virtual void set_state_and_transform(const RenderState *state,
-                                       const TransformState *transform);
+                                       const TransformState *transform,
+                                       const InstanceList *instances=nullptr);
 
   PN_stdfloat compute_distance_to(const LPoint3 &point) const;
 

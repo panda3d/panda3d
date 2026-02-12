@@ -37,7 +37,7 @@ public:
   SpirVInjectAlphaTestPass(Mode mode, int ref_location = -1, bool spec_constant = false) :
     _mode(mode), _ref_location(ref_location), _spec_constant(spec_constant) {}
 
-  virtual bool transform_entry_point(spv::ExecutionModel model, uint32_t id, const char *name, const uint32_t *var_ids, uint16_t num_vars);
+  virtual bool transform_entry_point(spv::ExecutionModel model, uint32_t id, const char *name, pvector<uint32_t> &vars);
   virtual bool begin_function(Instruction op);
   virtual bool transform_function_op(Instruction op);
   virtual void end_function(uint32_t function_id);

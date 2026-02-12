@@ -177,15 +177,24 @@ munge_geom(GraphicsStateGuardianBase *gsg, GeomMunger *munger,
     if (sattr != nullptr) {
       if (_instances != nullptr &&
           sattr->get_flag(ShaderAttrib::F_hardware_instancing)) {
-        // We are under an InstancedNode, and the shader implements hardware.
-        // Munge the instance list into the vertex data.
+        // The shader requests to munge the instance list onto the vertex data.
+        // This is deprecated.
         munge_instances(current_thread);
         _num_instances = _instances->size();
         _instances = nullptr;
-      } else {
-        // No, use the instance count from the ShaderAttrib.
+      }
+      else if (_instances != nullptr && (gsg_bits & Geom::GR_instancing) != 0) {
+        // This isn't really using 1 instance, but the GSG understands to use
+        // the value from the _instances array.
+        _num_instances = 1;
+      }
+      else {
+        // No, use the instance count from the ShaderAttrib.  If there is an
+        // _instances list, draw() will issue separate draw calls for each
+        // instance in that list, since these mechanisms don't combine.
         int count = sattr->get_instance_count();
-        _num_instances = (count > 0) ? (size_t)count : 1;
+        //_num_instances = (count > 0) ? (size_t)count : 1;
+        _num_instances = _instances != nullptr ? _instances->size() : 1;
       }
     } else {
       _num_instances = 1;
@@ -229,6 +238,15 @@ output(std::ostream &out) const {
 void CullableObject::
 munge_instances(Thread *current_thread) {
   PStatTimer timer(_munge_instances_pcollector, current_thread);
+
+  static bool showed_warning = false;
+  if (!showed_warning) {
+    showed_warning = true;
+
+    pgraph_cat.warning()
+      << "Using the F_hardware_instancing flag and manual shader instancing "
+         "is deprecated; use automatic instancing instead.\n";
+  }
 
   PT(GeomVertexData) instanced_data = new GeomVertexData(*_munged_data);
   const GeomVertexArrayFormat *array_format = GeomVertexArrayFormat::get_instance_array_format();

@@ -45,6 +45,7 @@ public:
 
   virtual int get_state_dep() const;
   virtual void setup(Shader *shader);
+  virtual bool has_modelview_matrix(bool &inverse, bool &transpose) const;
 
   // Encapsulates parameters to pass to fetch_data et al, so we can add
   // members without having to modify their signature.

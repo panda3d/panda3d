@@ -150,7 +150,8 @@ public:
   INLINE static DWORD LColor_to_D3DCOLOR(const LColor &cLColor);
 
   virtual void set_state_and_transform(const RenderState *state,
-                                       const TransformState *transform);
+                                       const TransformState *transform,
+                                       const InstanceList *instances=nullptr);
 
   bool check_dx_allocation (HRESULT result, int allocation_size, int attempts);
 

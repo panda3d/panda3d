@@ -54,6 +54,7 @@ class GeomLines;
 class GeomLinestrips;
 class GeomPoints;
 class GeomMunger;
+class InstanceList;
 
 class SceneSetup;
 class PreparedGraphicsObjects;
@@ -188,7 +189,8 @@ public:
                                          Thread *current_thread)=0;
 
   virtual void set_state_and_transform(const RenderState *state,
-                                       const TransformState *transform)=0;
+                                       const TransformState *transform,
+                                       const InstanceList *instances=nullptr)=0;
 
   // This function may only be called during a render traversal; it will
   // compute the distance to the indicated point, assumed to be in eye

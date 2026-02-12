@@ -1696,7 +1696,8 @@ reset() {
  */
 void GraphicsStateGuardian::
 set_state_and_transform(const RenderState *state,
-                        const TransformState *trans) {
+                        const TransformState *trans,
+                        const InstanceList *instances) {
 }
 
 /**

@@ -1539,7 +1539,8 @@ framebuffer_copy_to_ram(Texture *tex, int view, int z,
  */
 void TinyGraphicsStateGuardian::
 set_state_and_transform(const RenderState *target,
-                        const TransformState *transform) {
+                        const TransformState *transform,
+                        const InstanceList *instances) {
 #ifndef NDEBUG
   if (tinydisplay_cat.is_spam()) {
     tinydisplay_cat.spam()
