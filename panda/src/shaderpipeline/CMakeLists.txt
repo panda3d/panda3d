@@ -7,6 +7,7 @@ set(P3SHADERPIPELINE_HEADERS
   spirVFlattenStructPass.h
   spirVHoistStructResourcesPass.h
   spirVInjectAlphaTestPass.h
+  spirVInjectInstancingPass.h
   spirVMakeBlockPass.h
   spirVRemoveUnusedVariablesPass.h
   spirVReplaceVariableTypePass.h
@@ -25,6 +26,7 @@ set(P3SHADERPIPELINE_SOURCES
   spirVFlattenStructPass.cxx
   spirVHoistStructResourcesPass.cxx
   spirVInjectAlphaTestPass.cxx
+  spirVInjectInstancingPass.cxx
   spirVMakeBlockPass.cxx
   spirVRemoveUnusedVariablesPass.cxx
   spirVReplaceVariableTypePass.cxx
