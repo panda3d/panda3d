@@ -2809,7 +2809,6 @@ create_shader(GLuint program, const ShaderModule *module, size_t mi,
   case ShaderModule::Stage::FRAGMENT:
     handle = _glgsg->_glCreateShader(GL_FRAGMENT_SHADER);
     break;
-#ifndef OPENGLES
   case ShaderModule::Stage::GEOMETRY:
     if (_glgsg->get_supports_geometry_shaders()) {
       handle = _glgsg->_glCreateShader(GL_GEOMETRY_SHADER);
@@ -2825,7 +2824,6 @@ create_shader(GLuint program, const ShaderModule *module, size_t mi,
       handle = _glgsg->_glCreateShader(GL_TESS_EVALUATION_SHADER);
     }
     break;
-#endif
   case ShaderModule::Stage::COMPUTE:
     if (_glgsg->get_supports_compute_shaders()) {
       handle = _glgsg->_glCreateShader(GL_COMPUTE_SHADER);
