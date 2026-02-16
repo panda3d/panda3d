@@ -22,6 +22,7 @@
 #include "deletedChain.h"
 #include "paramTexture.h"
 #include "small_vector.h"
+#include "ordered_vector.h"
 
 class CLP(GraphicsStateGuardian);
 
@@ -45,6 +46,8 @@ private:
     pvector<UniformCall> _vectors;
   };
 
+  struct LinkedProgram;
+
 public:
   friend class CLP(GraphicsStateGuardian);
 
@@ -53,13 +56,10 @@ public:
   ALLOC_DELETED_CHAIN(CLP(ShaderContext));
 
   bool valid(void);
-  bool bind(CLP(GraphicsStateGuardian) *glgsg,
-            RenderAttrib::PandaCompareFunc alpha_test_mode,
-            bool inject_instancing=false);
+  bool bind(CLP(GraphicsStateGuardian) *glgsg);
   void unbind();
 
-  bool compile_for(RenderAttrib::PandaCompareFunc alpha_test_mode,
-                   bool inject_instancing);
+  bool compile_variant(int variant);
 
 private:
   static void r_count_locations_bindings(const ShaderType *type,
@@ -67,10 +67,9 @@ private:
                                          GLint &num_ssbo_bindings,
                                          GLint &num_image_bindings);
 
-  void r_collect_uniforms(RenderAttrib::PandaCompareFunc alpha_test_mode,
-                          const Shader::Parameter &param, UniformCalls &calls,
-                          const ShaderType *type, const char *name,
-                          const char *sym, int &location,
+  void r_collect_uniforms(LinkedProgram &linked_program, const Shader::Parameter &param,
+                          UniformCalls &calls, const ShaderType *type,
+                          const char *name, const char *sym, int &cur_location,
                           const SparseArray &active_locations,
                           int &resource_index, int &binding,
                           size_t offset = 0);
@@ -83,18 +82,18 @@ private:
   const ShaderType *get_param_type(GLenum type);
 
   INLINE void set_display_region(const DisplayRegion *display_region);
-  void set_state_and_transform(const RenderState *state,
+  bool set_state_and_transform(const RenderState *state,
                                const TransformState *modelview_transform,
                                const TransformState *camera_transform,
                                const TransformState *projection_transform,
-                               bool has_instances);
+                               bool inject_instancing);
 
   void issue_parameters(int altered);
   void disable_shader_vertex_arrays();
   bool update_shader_vertex_arrays(ShaderContext *prev, bool force);
   void disable_shader_texture_bindings();
-  void update_shader_texture_bindings(ShaderContext *prev);
-  void update_shader_buffer_bindings(ShaderContext *prev);
+  void update_shader_texture_bindings();
+  void update_shader_buffer_bindings();
   void issue_memory_barriers();
 
   bool uses_standard_vertex_arrays(void) {
@@ -106,21 +105,24 @@ private:
 
 private:
   bool _validated = false;
-  bool _inject_alpha_test = false;
-  bool _injected_instancing = false;
-  GLuint _program = 0;
-  // M_always itself isn't included since it's the same as M_none
-  GLuint _linked_programs[RenderAttrib::M_always] {0u};
-  RenderAttrib::PandaCompareFunc _alpha_test_mode = RenderAttrib::M_none;
-  GLint _alpha_test_ref_locations[RenderAttrib::M_always];
-  int _force_respecify = 0;
 
-  // May exclude the fragment shader if _inject_alpha_test is set.
+  // We can compile multiple versions of a program, keyed by VariantBits.
+  // M_always itself isn't included since it's the same as M_none
+  enum VariantBits {
+    VB_alpha_test_mode_mask = 7,
+    VB_instancing = 8,
+    VB_animation = 16,
+  };
+  int _variant_mask = 0;
+  int _bound_variant = -1;
+
+  // Stores the modules that aren't dependent on a particular variant.
   struct Module {
     Shader::Stage _stage;
     GLuint _handle;
   };
-  small_vector<Module, 2> _modules;
+  small_vector<Module, 1> _invariant_modules;
+
   bool _is_legacy = false;
   bool _emulate_float_attribs = false;
 
@@ -147,17 +149,18 @@ private:
 
     // When UBOs are not used or supported, we use an array of glUniform
     // calls instead.
-    small_vector<UniformCalls, 1> _calls;
+    UniformCalls _calls;
   };
-  pvector<UniformBlock> _uniform_blocks;
+  //pvector<UniformBlock> _uniform_blocks;
   int _uniform_data_deps = 0;
   size_t _scratch_space_size = 0;
+  int _force_respecify = 0;
 
   struct TextureUnit {
     PT(ShaderInputBinding) _binding;
     ShaderInputBinding::ResourceId _resource_id;
     GLenum _target;
-    GLint _size_loc[RenderAttrib::M_always];
+    pmap<int, GLint> _size_loc; // keyed by variant
   };
   typedef pvector<TextureUnit> TextureUnits;
   TextureUnits _texture_units;
@@ -168,7 +171,7 @@ private:
     CLP(TextureContext) *_gtc = nullptr;
     ShaderType::Access _access;
     bool _written = false;
-    GLint _size_loc[RenderAttrib::M_always];
+    pmap<int, GLint> _size_loc; // keyed by variant
   };
   typedef pvector<ImageUnit> ImageUnits;
   ImageUnits _image_units;
@@ -176,7 +179,8 @@ private:
   BitMask32 _enabled_attribs;
   GLint _color_attrib_index;
   GLint _instance_mat_index;
-  uint32_t _bind_attrib_locations = 0;
+  BitMask32 _bind_attrib_locations = 0;
+  BitMask32 _bind_frag_data_locations = 0;
 
   struct StorageBlock {
     PT(ShaderInputBinding) _binding;
@@ -188,9 +192,25 @@ private:
   typedef pvector<StorageBlock> StorageBlocks;
   StorageBlocks _storage_blocks;
   uint32_t _storage_block_bindings = 0;
+  bool _force_rebind_ssbos = false;
 
   CLP(GraphicsStateGuardian) *_glgsg;
   uint64_t _emulated_caps = 0u;
+
+  struct LinkedProgram {
+    int _variant;
+    GLuint _program = 0;
+
+    pvector<UniformBlock> _uniform_blocks {};
+    GLint _alpha_test_ref_location = -1;
+
+    bool operator < (const LinkedProgram &other) const {
+      return _variant < other._variant;
+    }
+  };
+  typedef ordered_vector<LinkedProgram> LinkedPrograms;
+  LinkedPrograms _linked_programs;
+  int _bound_linked_program_index = -1;
 
   bool _remap_locations = false;
   LocationMap _locations;
@@ -206,12 +226,10 @@ private:
 
   void report_shader_errors(GLuint handle, Shader::Stage stage, bool fatal);
   void report_program_errors(GLuint program, bool fatal);
-  GLuint create_shader(GLuint program, const ShaderModule *module, size_t mi,
+  GLuint create_shader(const ShaderModule *module, size_t mi,
                        const Shader::ModuleSpecConstants &spec_consts,
-                       RenderAttrib::PandaCompareFunc alpha_test_mode,
-                       bool inject_instancing=false);
-  GLuint compile_and_link(RenderAttrib::PandaCompareFunc alpha_test_mode,
-                          bool inject_instancing);
+                       int variant);
+  GLuint compile_and_link(int variant);
   void release_resources(CLP(GraphicsStateGuardian) *glgsg);
 
 public:

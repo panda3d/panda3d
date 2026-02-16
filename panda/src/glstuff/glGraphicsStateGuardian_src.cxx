@@ -4653,10 +4653,20 @@ clear_before_callback() {
   }
 #endif
 #ifndef OPENGLES_1
-  if (_vertex_array_shader_context != 0) {
+  if (_vertex_array_shader_context != nullptr) {
     _vertex_array_shader_context->disable_shader_vertex_arrays();
     _vertex_array_shader = nullptr;
     _vertex_array_shader_context = nullptr;
+  }
+  if (_texture_binding_shader_context != nullptr) {
+    _texture_binding_shader_context->disable_shader_texture_bindings();
+    _texture_binding_shader = nullptr;
+    _texture_binding_shader_context = nullptr;
+  }
+  if (_current_shader_context != nullptr) {
+    _current_shader_context->unbind();
+    _current_shader = nullptr;
+    _current_shader_context = nullptr;
   }
 #endif
   unbind_buffers();
@@ -4912,17 +4922,17 @@ end_frame(Thread *current_thread) {
 
 #ifndef OPENGLES_1
   // This breaks shaders across multiple regions.
-  if (_vertex_array_shader_context != 0) {
+  if (_vertex_array_shader_context != nullptr) {
     _vertex_array_shader_context->disable_shader_vertex_arrays();
     _vertex_array_shader = nullptr;
     _vertex_array_shader_context = nullptr;
   }
-  if (_texture_binding_shader_context != 0) {
+  if (_texture_binding_shader_context != nullptr) {
     _texture_binding_shader_context->disable_shader_texture_bindings();
     _texture_binding_shader = nullptr;
     _texture_binding_shader_context = nullptr;
   }
-  if (_current_shader_context != 0) {
+  if (_current_shader_context != nullptr) {
     _current_shader_context->unbind();
     _current_shader = nullptr;
     _current_shader_context = nullptr;
@@ -5237,14 +5247,28 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
 
 #ifndef OPENGLES_1
   // How many instances should we draw?
+  bool inject_instancing = false;
   if (_supports_geometry_instancing) {
     if (_state_instances != nullptr) {
       _instance_count = _state_instances->size();
+      inject_instancing = true;
     } else {
       _instance_count = num_instances;
     }
   } else {
     _instance_count = 1;
+  }
+
+  if (_current_shader_context != nullptr) {
+    if (!_current_shader_context->set_state_and_transform(_state_rs, _internal_transform,
+        _scene_setup->get_camera_transform(), _projection_mat, inject_instancing)) {
+      // Something is wrong with the current shader.
+      return false;
+    }
+
+    // The above call will handle texture updates nowadays.
+    _texture_binding_shader = _current_shader;
+    _texture_binding_shader_context = _current_shader_context;
   }
 #endif
 
@@ -7045,7 +7069,7 @@ extract_texture_data(Texture *tex) {
 #ifndef OPENGLES_1
   // Makes sure that textures aren't still bound to the shader (which is
   // partly necessary to make sure mark_incoherent() is called).
-  if (_texture_binding_shader_context != 0) {
+  if (_texture_binding_shader_context != nullptr) {
     _texture_binding_shader_context->disable_shader_texture_bindings();
     _texture_binding_shader = nullptr;
     _texture_binding_shader_context = nullptr;
@@ -7940,7 +7964,7 @@ release_shader_buffer(BufferContext *bc) {
 
   CLP(BufferContext) *gbc = DCAST(CLP(BufferContext), bc);
 
-  if (GLCAT.is_debug() && gl_debug_buffers) {
+  if (GLCAT.is_debug()) {
     GLCAT.debug()
       << "deleting shader buffer " << (int)gbc->_index << "\n";
   }
@@ -8346,9 +8370,14 @@ dispatch_compute(int num_groups_x, int num_groups_y, int num_groups_z) {
   maybe_gl_finish();
 
   nassertv(get_supports_compute_shaders());
-  nassertv(_current_shader_context != nullptr);
-  CLP(ShaderContext) *gsc;
-  DCAST_INTO_V(gsc, _current_shader_context);
+
+  CLP(ShaderContext) *gsc = _current_shader_context;
+  nassertv(gsc != nullptr);
+
+  if (!gsc->set_state_and_transform(_state_rs, _internal_transform,
+        _scene_setup->get_camera_transform(), _projection_mat, false)) {
+    return;
+  }
 
 #ifdef DO_PSTATS
   _compute_work_groups_pcollector.add_level(num_groups_x * num_groups_y * num_groups_z);
@@ -9203,22 +9232,11 @@ do_issue_shader() {
   CLP(ShaderContext) *context = 0;
   Shader *shader = (Shader *)_target_shader->get_shader();
 
-  RenderAttrib::PandaCompareFunc alpha_test_mode = RenderAttrib::M_none;
-  bool inject_instancing = false;
-
-  if (_state_instances != nullptr && !_target_shader->get_flag(ShaderAttrib::F_hardware_instancing)) {
-    inject_instancing = true;
-  }
-
   // If we don't have a shader, apply the default shader.
   if (!has_fixed_function_pipeline()) {
     if (!shader) {
       shader = _default_shader;
       nassertv(shader != nullptr);
-    }
-
-    if (!_target_shader->get_flag(ShaderAttrib::F_subsume_alpha_test)) {
-      alpha_test_mode = _target_rs->get_alpha_test_mode();
     }
   }
 
@@ -9232,7 +9250,7 @@ do_issue_shader() {
 
   // If it failed, try applying the default shader.
   if (_default_shader != nullptr && shader != _default_shader &&
-      (context == 0 || !context->valid())) {
+      (context == nullptr || !context->valid())) {
     shader = _default_shader;
     nassertv(shader != nullptr);
     if (_current_shader != shader) {
@@ -9242,36 +9260,41 @@ do_issue_shader() {
     }
   }
 
-  if (context == 0 || !context->valid()) {
-    if (_current_shader_context != 0) {
+  if (context == nullptr || !context->valid()) {
+    if (_current_shader_context != nullptr) {
       _current_shader_context->unbind();
-      _current_shader = 0;
-      _current_shader_context = 0;
+      _current_shader = nullptr;
+      _current_shader_context = nullptr;
+    }
+    // Unbind all the textures, in anticipation of fixed-function rendering.
+    if (_texture_binding_shader_context != nullptr) {
+      _texture_binding_shader_context->disable_shader_texture_bindings();
+      _texture_binding_shader = nullptr;
+      _texture_binding_shader_context = nullptr;
     }
   } else {
-    if (context != _current_shader_context ||
-        (inject_instancing && !_current_shader_context->_injected_instancing)) {
-      // Use a completely different shader than before.  Unbind old shader,
-      // bind the new one.
-      if (_current_shader_context != nullptr &&
-          _current_shader->get_language() != shader->get_language()) {
-        // If it's a different type of shader, make sure to unbind the old.
+#ifdef SUPPORT_FIXED_FUNCTION
+    if (_num_active_texture_stages > 0) {
+      disable_standard_texture_bindings();
+    }
+#endif
+    if (context != _current_shader_context) {
+      // Use a completely different shader than before.  Unbind old shader.
+      // We bind the new one in begin_draw_primitives.
+      if (_current_shader_context != nullptr) {
         _current_shader_context->unbind();
+        _current_shader = nullptr;
+        _current_shader_context = nullptr;
       }
-      if (!context->bind(this, alpha_test_mode, inject_instancing)) {
-        shader = nullptr;
+      if (context->bind(this)) {
+        _current_shader = shader;
+        _current_shader_context = context;
+
+        context->set_display_region(_current_display_region);
+      } else {
         context = nullptr;
       }
-      _current_shader = shader;
     }
-
-    if (context != nullptr) {
-      context->set_display_region(_current_display_region);
-
-      // Bind the shader storage buffers.
-      context->update_shader_buffer_bindings(_current_shader_context);
-    }
-    _current_shader_context = context;
   }
 
 #ifndef OPENGLES
@@ -13171,19 +13194,6 @@ set_state_and_transform(const RenderState *target,
 #endif
 
   if (target == _state_rs && (_state_mask | _inv_state_mask).is_all_on()) {
-#ifndef OPENGLES_1
-    if (transform_changed) {
-      // The state has not changed, but the transform has. Set the new
-      // transform on the shader, if we have one.
-      if (_current_shader_context != nullptr) {
-        bool inject_instancing =
-          (instances != nullptr && !_state_shader->get_flag(ShaderAttrib::F_hardware_instancing));
-
-        _current_shader_context->set_state_and_transform(_state_rs, transform,
-          _scene_setup->get_camera_transform(), _projection_mat, inject_instancing);
-      }
-    }
-#endif
     return;
   }
   _target_rs = target;
@@ -13194,27 +13204,15 @@ set_state_and_transform(const RenderState *target,
   if (_target_shader != _state_shader) {
     do_issue_shader();
     _state_shader = _target_shader;
-    _state_mask.clear_bit(TextureAttrib::get_class_slot());
     _state_mask.set_bit(ShaderAttrib::get_class_slot());
   }
   else if (!has_fixed_function_pipeline()) {
     // If we don't have a fixed-function pipeline (eg. OpenGL ES 2.x) we need
-    // to bind a shader before drawing anything.  Also, the shader must
-    // implement the desired alpha test mode.
+    // to bind a shader before drawing anything.
     if (_current_shader == nullptr) {
       do_issue_shader();
-      _state_mask.clear_bit(TextureAttrib::get_class_slot());
       _state_mask.set_bit(ShaderAttrib::get_class_slot());
     }
-  }
-
-  // Update all of the state that is bound to the shader program.
-  if (_current_shader_context != nullptr) {
-    bool inject_instancing =
-      (instances != nullptr && !_state_shader->get_flag(ShaderAttrib::F_hardware_instancing));
-
-    _current_shader_context->set_state_and_transform(target, transform,
-      _scene_setup->get_camera_transform(), _projection_mat, inject_instancing);
   }
 #endif
 
@@ -13368,9 +13366,7 @@ set_state_and_transform(const RenderState *target,
 #ifdef OPENGLES_1
     determine_target_texture();
 #else
-    if (has_fixed_function_pipeline() ||
-        _current_shader == nullptr ||
-        _current_shader == _default_shader) {
+    if (has_fixed_function_pipeline() && _current_shader == nullptr) {
       determine_target_texture();
     } else {
       // If we have a custom shader, don't filter down the list of textures.
@@ -13498,34 +13494,16 @@ do_issue_texture() {
 
 #ifdef OPENGLES_1
   update_standard_texture_bindings();
-#else
-  if (_current_shader_context == 0) {
-    // No shader, or a non-Cg shader.
-    if (_texture_binding_shader_context != 0) {
+#elif defined(SUPPORT_FIXED_FUNCTION)
+  if (_current_shader_context == nullptr) {
+    if (_texture_binding_shader_context != nullptr) {
       _texture_binding_shader_context->disable_shader_texture_bindings();
+      _texture_binding_shader = nullptr;
+      _texture_binding_shader_context = nullptr;
     }
-#ifdef SUPPORT_FIXED_FUNCTION
-    if (has_fixed_function_pipeline()) {
-      update_standard_texture_bindings();
-    }
-#endif
-  } else {
-    if (_texture_binding_shader_context == 0) {
-#ifdef SUPPORT_FIXED_FUNCTION
-      if (has_fixed_function_pipeline()) {
-        disable_standard_texture_bindings();
-      }
-#endif
-      _current_shader_context->update_shader_texture_bindings(nullptr);
-    } else {
-      _current_shader_context->
-        update_shader_texture_bindings(_texture_binding_shader_context);
-    }
+    update_standard_texture_bindings();
   }
-
-  _texture_binding_shader = _current_shader;
-  _texture_binding_shader_context = _current_shader_context;
-#endif
+#endif  // OPENGLES_1
 }
 
 #ifdef SUPPORT_FIXED_FUNCTION
