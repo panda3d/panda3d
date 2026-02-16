@@ -1133,8 +1133,8 @@ end_frame(Thread *current_thread) {
 bool DXGraphicsStateGuardian9::
 begin_draw_primitives(const GeomPipelineReader *geom_reader,
                       const GeomVertexDataPipelineReader *data_reader,
-                      size_t num_instances, bool force) {
-  if (!GraphicsStateGuardian::begin_draw_primitives(geom_reader, data_reader, num_instances, force)) {
+                      const InstanceList *instances, bool force) {
+  if (!GraphicsStateGuardian::begin_draw_primitives(geom_reader, data_reader, instances, force)) {
     return false;
   }
   nassertr(_data_reader != nullptr, false);
@@ -1245,6 +1245,10 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
       return false;
     }
 
+    size_t num_instances = 1;
+    if (instances != nullptr) {
+      num_instances = instances->size();
+    }
     if (num_instances == 1 && _instancing_enabled) {
       // Reset the divisors.
       for (size_t i = 0; i < _num_bound_streams; ++i) {
@@ -3141,8 +3145,7 @@ do_issue_shade_model() {
  */
 void DXGraphicsStateGuardian9::
 set_state_and_transform(const RenderState *target,
-                        const TransformState *transform,
-                        const InstanceList *instances) {
+                        const TransformState *transform) {
 #ifndef NDEBUG
   if (gsg_cat.is_spam()) {
     gsg_cat.spam() << "Setting GSG state to " << (void *)target << ":\n";

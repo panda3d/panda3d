@@ -5223,7 +5223,7 @@ end_frame_timing(const FrameTiming &frame) {
 bool CLP(GraphicsStateGuardian)::
 begin_draw_primitives(const GeomPipelineReader *geom_reader,
                       const GeomVertexDataPipelineReader *data_reader,
-                      size_t num_instances, bool force) {
+                      const InstanceList *instances, bool force) {
 #ifndef NDEBUG
   if (GLCAT.is_spam()) {
     GLCAT.spam() << "begin_draw_primitives: " << *(data_reader->get_object()) << "\n";
@@ -5240,26 +5240,31 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   }
 #endif
 
-  if (!GraphicsStateGuardian::begin_draw_primitives(geom_reader, data_reader, num_instances, force)) {
+  if (!GraphicsStateGuardian::begin_draw_primitives(geom_reader, data_reader, instances, force)) {
     return false;
   }
   nassertr(_data_reader != nullptr, false);
 
 #ifndef OPENGLES_1
-  // How many instances should we draw?
-  bool inject_instancing = false;
-  if (_supports_geometry_instancing) {
-    if (_state_instances != nullptr) {
-      _instance_count = _state_instances->size();
-      inject_instancing = true;
-    } else {
-      _instance_count = num_instances;
-    }
-  } else {
-    _instance_count = 1;
-  }
-
   if (_current_shader_context != nullptr) {
+    // How many instances should we draw?
+    bool inject_instancing = false;
+    if (_supports_geometry_instancing) {
+      if (instances != nullptr) {
+        if (instances != _state_instances) {
+          _state_instances = instances;
+          do_issue_instances();
+        }
+        inject_instancing = true;
+        _instance_count = instances->size();
+      } else {
+        int count = _state_shader->get_instance_count();
+        _instance_count = (count > 0) ? count : 1;
+      }
+    } else {
+      _instance_count = 1;
+    }
+
     if (!_current_shader_context->set_state_and_transform(_state_rs, _internal_transform,
         _scene_setup->get_camera_transform(), _projection_mat, inject_instancing)) {
       // Something is wrong with the current shader.
@@ -5269,6 +5274,8 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     // The above call will handle texture updates nowadays.
     _texture_binding_shader = _current_shader;
     _texture_binding_shader_context = _current_shader_context;
+  } else {
+    _instance_count = 1;
   }
 #endif
 
@@ -13165,8 +13172,7 @@ end_bind_clip_planes() {
  */
 void CLP(GraphicsStateGuardian)::
 set_state_and_transform(const RenderState *target,
-                        const TransformState *transform,
-                        const InstanceList *instances) {
+                        const TransformState *transform) {
   report_my_gl_errors();
 #ifndef NDEBUG
   if (gsg_cat.is_spam()) {
@@ -13185,13 +13191,6 @@ set_state_and_transform(const RenderState *target,
     _internal_transform = transform;
     do_issue_transform();
   }
-
-#ifndef OPENGLES_1
-  if (instances != _state_instances) {
-    _state_instances = instances;
-    do_issue_instances();
-  }
-#endif
 
   if (target == _state_rs && (_state_mask | _inv_state_mask).is_all_on()) {
     return;
@@ -13482,6 +13481,30 @@ set_state_and_transform(const RenderState *target,
   _state_rs = _target_rs;
   maybe_gl_finish();
   report_my_gl_errors();
+}
+
+/**
+ * Returns true if the current state, as set by set_state_and_transform,
+ * supports hardware instancing.
+ */
+bool CLP(GraphicsStateGuardian)::
+state_supports_instancing() const {
+#ifdef OPENGLES_1
+  return false;
+#else
+  if (_current_shader_context == nullptr || _current_shader_context->_is_legacy) {
+    return false;
+  }
+  if (!_supports_geometry_instancing || !_supports_vertex_attrib_divisor) {
+    return false;
+  }
+  if (_state_shader->get_instance_count() > 0) {
+    // We can't support instancing if the user is using instancing via a
+    // different mechanism
+    return false;
+  }
+  return true;
+#endif
 }
 
 /**

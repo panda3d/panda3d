@@ -66,9 +66,9 @@ draw(GraphicsStateGuardianBase *gsg, bool force, Thread *current_thread) {
     }
     // Now the callback has taken care of drawing.
   }
-  else if (_num_instances == 1 || _instances == nullptr) {
+  else if (LIKELY(_instances == nullptr || gsg->state_supports_instancing())) {
     nassertv(_geom != nullptr);
-    gsg->set_state_and_transform(_state, _internal_transform, _instances);
+    gsg->set_state_and_transform(_state, _internal_transform);
     draw_inline(gsg, force, current_thread);
   }
   else {
@@ -80,8 +80,8 @@ draw(GraphicsStateGuardianBase *gsg, bool force, Thread *current_thread) {
     data_reader.check_array_readers();
 
     for (const InstanceList::Instance &instance : *_instances) {
-      gsg->set_state_and_transform(_state, _internal_transform->compose(instance.get_transform()), nullptr);
-      geom_reader.draw(gsg, &data_reader, _num_instances, force);
+      gsg->set_state_and_transform(_state, _internal_transform->compose(instance.get_transform()));
+      geom_reader.draw(gsg, &data_reader, nullptr, force);
     }
   }
 }
@@ -128,7 +128,7 @@ flush_level() {
  */
 INLINE void CullableObject::
 draw_inline(GraphicsStateGuardianBase *gsg, bool force, Thread *current_thread) {
-  _geom->draw(gsg, _munged_data, _num_instances, force, current_thread);
+  _geom->draw(gsg, _munged_data, _instances, force, current_thread);
 }
 
 /**

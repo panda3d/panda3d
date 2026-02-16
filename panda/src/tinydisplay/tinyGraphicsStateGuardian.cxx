@@ -485,14 +485,14 @@ end_frame(Thread *current_thread) {
 bool TinyGraphicsStateGuardian::
 begin_draw_primitives(const GeomPipelineReader *geom_reader,
                       const GeomVertexDataPipelineReader *data_reader,
-                      size_t num_instances, bool force) {
+                      const InstanceList *instances, bool force) {
 #ifndef NDEBUG
   if (tinydisplay_cat.is_spam()) {
     tinydisplay_cat.spam() << "begin_draw_primitives: " << *(data_reader->get_object()) << "\n";
   }
 #endif  // NDEBUG
 
-  if (!GraphicsStateGuardian::begin_draw_primitives(geom_reader, data_reader, num_instances, force)) {
+  if (!GraphicsStateGuardian::begin_draw_primitives(geom_reader, data_reader, instances, force)) {
     return false;
   }
   nassertr(_data_reader != nullptr, false);
@@ -1539,8 +1539,7 @@ framebuffer_copy_to_ram(Texture *tex, int view, int z,
  */
 void TinyGraphicsStateGuardian::
 set_state_and_transform(const RenderState *target,
-                        const TransformState *transform,
-                        const InstanceList *instances) {
+                        const TransformState *transform) {
 #ifndef NDEBUG
   if (tinydisplay_cat.is_spam()) {
     tinydisplay_cat.spam()

@@ -1322,12 +1322,12 @@ is_in_view(const BoundingVolume *view_frustum, Thread *current_thread) const {
  */
 bool Geom::
 draw(GraphicsStateGuardianBase *gsg, const GeomVertexData *vertex_data,
-     size_t num_instances, bool force, Thread *current_thread) const {
+     const InstanceList *instances, bool force, Thread *current_thread) const {
   GeomPipelineReader geom_reader(this, current_thread);
   GeomVertexDataPipelineReader data_reader(vertex_data, current_thread);
   data_reader.check_array_readers();
 
-  return geom_reader.draw(gsg, &data_reader, num_instances, force);
+  return geom_reader.draw(gsg, &data_reader, instances, force);
 }
 
 /**
@@ -1873,11 +1873,11 @@ check_valid(const GeomVertexDataPipelineReader *data_reader) const {
 bool GeomPipelineReader::
 draw(GraphicsStateGuardianBase *gsg,
      const GeomVertexDataPipelineReader *data_reader,
-     size_t num_instances, bool force) const {
+     const InstanceList *instances, bool force) const {
   bool all_ok;
   {
     PStatTimer timer(Geom::_draw_primitive_setup_pcollector);
-    all_ok = gsg->begin_draw_primitives(this, data_reader, num_instances, force);
+    all_ok = gsg->begin_draw_primitives(this, data_reader, instances, force);
   }
   if (all_ok) {
     Geom::Primitives::const_iterator pi;

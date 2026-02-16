@@ -189,8 +189,9 @@ public:
                                          Thread *current_thread)=0;
 
   virtual void set_state_and_transform(const RenderState *state,
-                                       const TransformState *transform,
-                                       const InstanceList *instances=nullptr)=0;
+                                       const TransformState *transform)=0;
+
+  virtual bool state_supports_instancing() const=0;
 
   // This function may only be called during a render traversal; it will
   // compute the distance to the indicated point, assumed to be in eye
@@ -216,7 +217,7 @@ public:
 
   virtual bool begin_draw_primitives(const GeomPipelineReader *geom_reader,
                                      const GeomVertexDataPipelineReader *data_reader,
-                                     size_t num_instances, bool force)=0;
+                                     const InstanceList *instances, bool force)=0;
   virtual bool draw_triangles(const GeomPrimitivePipelineReader *reader, bool force)=0;
   virtual bool draw_triangles_adj(const GeomPrimitivePipelineReader *reader, bool force)=0;
   virtual bool draw_tristrips(const GeomPrimitivePipelineReader *reader, bool force)=0;

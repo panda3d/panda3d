@@ -174,30 +174,12 @@ munge_geom(GraphicsStateGuardianBase *gsg, GeomMunger *munger,
       std::swap(_munged_data, animated_vertices);
     }
 
-    if (sattr != nullptr) {
-      if (_instances != nullptr &&
-          sattr->get_flag(ShaderAttrib::F_hardware_instancing)) {
-        // The shader requests to munge the instance list onto the vertex data.
-        // This is deprecated.
-        munge_instances(current_thread);
-        _num_instances = _instances->size();
-        _instances = nullptr;
-      }
-      else if (_instances != nullptr && (gsg_bits & Geom::GR_instancing) != 0) {
-        // This isn't really using 1 instance, but the GSG understands to use
-        // the value from the _instances array.
-        _num_instances = 1;
-      }
-      else {
-        // No, use the instance count from the ShaderAttrib.  If there is an
-        // _instances list, draw() will issue separate draw calls for each
-        // instance in that list, since these mechanisms don't combine.
-        int count = sattr->get_instance_count();
-        //_num_instances = (count > 0) ? (size_t)count : 1;
-        _num_instances = _instances != nullptr ? _instances->size() : 1;
-      }
-    } else {
-      _num_instances = 1;
+    if (sattr != nullptr && _instances != nullptr &&
+        sattr->get_flag(ShaderAttrib::F_hardware_instancing)) {
+      // The shader requests to munge the instance list onto the vertex data.
+      // This is deprecated.
+      munge_instances(current_thread);
+      _instances = nullptr;
     }
 
 #ifndef NDEBUG
@@ -254,6 +236,10 @@ munge_instances(Thread *current_thread) {
   CPT(GeomVertexArrayData) new_array = _instances->get_array_data(array_format);
   instanced_data->insert_array((size_t)-1, new_array);
   _munged_data = instanced_data;
+
+  CPT(RenderState) state = RenderState::make(
+    DCAST(ShaderAttrib, ShaderAttrib::make())->set_instance_count(_instances->size()));
+  _state = _state->compose(state);
 }
 
 /**

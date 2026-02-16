@@ -331,7 +331,7 @@ public:
 
   virtual bool begin_draw_primitives(const GeomPipelineReader *geom_reader,
                                      const GeomVertexDataPipelineReader *data_reader,
-                                     size_t num_instances, bool force);
+                                     const InstanceList *instances, bool force);
   virtual bool draw_triangles(const GeomPrimitivePipelineReader *reader,
                               bool force);
 #ifndef OPENGLES
@@ -486,8 +486,8 @@ public:
   INLINE int get_max_vertex_attrib_stride() const;
 
   virtual void set_state_and_transform(const RenderState *state,
-                                       const TransformState *transform,
-                                       const InstanceList *instances = nullptr);
+                                       const TransformState *transform);
+  virtual bool state_supports_instancing() const;
 
   void bind_fbo(GLuint fbo);
   void finish();
