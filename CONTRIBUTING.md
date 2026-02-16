@@ -9,16 +9,16 @@ the project.  This document aims to outline some guidelines for doing so.
 We highly recommend that you file a GitHub Issue before making a change.  Issues 
 are used to track bugs and feature requests but also to get feedback from the 
 other developers about design decisions, or a specific implementation strategy.
-Note, the 'good first issue' tag is maintained with issues that could be easily 
-resolved, but are minor enough to be valuable to keep as learning/teaching tools 
-for new contributors. If you want to contribute, try starting with one of those! 
-Please note; the value of submitting a *quality* PR for one of these issues is 
-in the experience and skills you will gain working with Panda3D. It would be 
-pointless and use much more time to review these were they done with LLM agents, 
-as the experience would be lost and the community would not continue to grow. 
-Please don't contribute generated code for the 'good first issue's, and take 
-care when submitting any form of generated code that you take the time to ensure 
-it meets all standards.
+Note, the [good first issue](https://github.com/panda3d/panda3d/issues?q=state%3Aopen%20label%3A%22good%20first%20issue%22) 
+tag is maintained with issues that could be easily resolved, but are minor enough 
+to be valuable to keep as learning/teaching tools for new contributors. If you 
+want to contribute, try starting with one of those! Please note; the value of 
+submitting a *quality* PR for one of these issues is in the experience and skills 
+you will gain working with Panda3D. It would be pointless and use much more time 
+to review these were they done with LLM agents, as the experience would be lost 
+and the community would not continue to grow. Please don't contribute generated 
+code for the 'good first issue's, and take care when submitting any form of 
+generated code that you take the time to ensure it meets all standards.
 
 ## Standards
 
