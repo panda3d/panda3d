@@ -125,9 +125,18 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
         _transform_weight_index = bind._id._location;
       }
       else if (bind._name == InternalName::get_vertex()) {
+        //XXX rdb: whether and how a column should be transformed actually
+        // depends on the Contents setting in the GeomVertexFormat.
+        // But that would mean that we might need to recompile the shader
+        // based on the format, which sounds like a lot of effort to support
+        // a rather obscure use case.
         _animate_point_attrib_locations |= (1u << bind._id._location);
       }
-      else if (bind._name == InternalName::get_normal()) {
+      else if (bind._name == InternalName::get_normal() ||
+               bind._name == InternalName::get_tangent() ||
+               bind._name == InternalName::get_binormal() ||
+               bind._name->get_parent() == InternalName::get_tangent() ||
+               bind._name->get_parent() == InternalName::get_binormal()) {
         _animate_vector_attrib_locations |= (1u << bind._id._location);
       }
       int num_locations = bind._id._type->get_num_interface_locations();

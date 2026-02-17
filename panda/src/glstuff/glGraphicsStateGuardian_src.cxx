@@ -7304,6 +7304,8 @@ prepare_geom(Geom *geom) {
  */
 bool CLP(GraphicsStateGuardian)::
 update_transform_buffer(CLP(GeomContext) *ggc, const TransformTable *table) {
+  nassertr(_supports_uniform_buffers, false);
+
   GLuint buffer = ggc->_transform_buffer;
 
   size_t num_transforms = table->get_num_transforms();
@@ -7391,6 +7393,7 @@ bool CLP(GraphicsStateGuardian)::
 apply_transform_buffer(GLuint base, const GeomPipelineReader *geom_reader,
                        const TransformTable *table) {
   nassertr_always(table != nullptr, false);
+  nassertr(_supports_uniform_buffers, false);
 
   GeomContext *gc = geom_reader->prepare_now(get_prepared_objects(), this);
   nassertr(gc != nullptr, false);
