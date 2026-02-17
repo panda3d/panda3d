@@ -221,6 +221,7 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
   // Assume no vertex blending capability.
   _max_vertex_transforms = 0;
   _max_vertex_transform_indices = 0;
+  _supports_fixed_function_vertex_blending = false;
 
   _supports_occlusion_query = false;
   _supports_timer_query = false;
@@ -1535,10 +1536,10 @@ finish_decal() {
 bool GraphicsStateGuardian::
 begin_draw_primitives(const GeomPipelineReader *geom_reader,
                       const GeomVertexDataPipelineReader *data_reader,
-                      size_t num_instances, bool force) {
+                      const InstanceList *instances, bool force) {
   _data_reader = data_reader;
 
-  if (num_instances == 0) {
+  if (instances != nullptr && instances->size() == 0) {
     return false;
   }
 
@@ -1554,7 +1555,6 @@ bool GraphicsStateGuardian::
 draw_triangles(const GeomPrimitivePipelineReader *, bool) {
   return false;
 }
-
 
 /**
  * Draws a series of disconnected triangles with adjacency information.
@@ -1706,6 +1706,15 @@ reset() {
 void GraphicsStateGuardian::
 set_state_and_transform(const RenderState *state,
                         const TransformState *trans) {
+}
+
+/**
+ * Returns true if the current state, as set by set_state_and_transform,
+ * supports hardware instancing.
+ */
+bool GraphicsStateGuardian::
+state_supports_instancing() const {
+  return false;
 }
 
 /**

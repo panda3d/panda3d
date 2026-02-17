@@ -33,6 +33,8 @@
 #include "sparseArray.h"
 #include "spirVTransformer.h"
 #include "spirVInjectAlphaTestPass.h"
+#include "spirVInjectAnimationPass.h"
+#include "spirVInjectInstancingPass.h"
 #include "spirVEmulateTextureQueriesPass.h"
 
 #define SPIRV_CROSS_EXCEPTIONS_TO_ASSERTIONS
@@ -47,6 +49,7 @@ using std::min;
 using std::string;
 
 // Inject alpha test into generated shaders.
+// This is a temporary hack; a better solution will follow soon.
 class Compiler final : public spirv_cross::CompilerGLSL {
 public:
   explicit Compiler(std::vector<uint32_t> spirv_,
@@ -98,8 +101,6 @@ CLP(ShaderContext)::
 CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext(s) {
   _glgsg = glgsg;
   _uses_standard_vertex_arrays = false;
-  _enabled_attribs.clear();
-  _color_attrib_index = -1;
   _validated = !gl_validate_shaders;
   _is_legacy = s->_modules[0]._module.get_read_pointer()->is_of_type(ShaderModuleGlsl::get_class_type());
 
@@ -108,28 +109,62 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
 
   _scratch_space_size = 16;
 
-  // Do we have a p3d_Color attribute?
-  for (Shader::ShaderVarSpec &spec : s->_var_spec) {
-    if (spec._name == InternalName::get_color()) {
-      _color_attrib_index = spec._id._location;
-      break;
-    }
-  }
+  BitMask32 variant_module_mask = 0;
+  int next_unused_vertex_attrib_location = 0;
 
   if (!_is_legacy) {
+    // Go through the vertex attributes.
+    for (const Shader::VertexInputBinding &bind : _shader->_vertex_inputs) {
+      if (bind._name == InternalName::get_color()) {
+        _color_attrib_index = bind._id._location;
+      }
+      else if (bind._name == InternalName::get_transform_index()) {
+        _transform_index_index = bind._id._location;
+      }
+      else if (bind._name == InternalName::get_transform_weight()) {
+        _transform_weight_index = bind._id._location;
+      }
+      else if (bind._name == InternalName::get_vertex()) {
+        //XXX rdb: whether and how a column should be transformed actually
+        // depends on the Contents setting in the GeomVertexFormat.
+        // But that would mean that we might need to recompile the shader
+        // based on the format, which sounds like a lot of effort to support
+        // a rather obscure use case.
+        _animate_point_attrib_locations |= (1u << bind._id._location);
+      }
+      else if (bind._name == InternalName::get_normal() ||
+               bind._name == InternalName::get_tangent() ||
+               bind._name == InternalName::get_binormal() ||
+               bind._name->get_parent() == InternalName::get_tangent() ||
+               bind._name->get_parent() == InternalName::get_binormal()) {
+        _animate_vector_attrib_locations |= (1u << bind._id._location);
+      }
+      int num_locations = bind._id._type->get_num_interface_locations();
+      next_unused_vertex_attrib_location =
+        std::max(next_unused_vertex_attrib_location, (int)bind._id._location + num_locations);
+
+      _vertex_attribs.push_back({bind._name, bind._id._location, num_locations, 0, bind._append_uv, bind._scalar_type});
+    }
+
+    GLint next_location = 0;
+
     // We may need to generate a different program for each different possible
     // alpha test mode that may be applied.  This doesn't apply to the legacy
     // pipeline since we can't modify shaders there.
     if (s->_module_mask & (1u << (uint32_t)Shader::Stage::FRAGMENT)) {
-      _inject_alpha_test = !s->_subsumes_alpha_test && !glgsg->has_fixed_function_pipeline();
+      if (!s->_subsumes_alpha_test && !glgsg->has_fixed_function_pipeline()) {
+        variant_module_mask.set_bit((int)Shader::Stage::FRAGMENT);
+        _variant_mask |= VB_alpha_test_mode_mask;
+
+        // Reserve location 0 for the alpha test ref.
+        next_location = 1;
+      }
     }
 
     // Ignoring any locations that may have already been set, we assign a new
     // unique location to each parameter.
     // We can't specify any locations or bindings up front for legacy shaders,
     // in part because we don't know the parameters until after we compiled it.
-    // We reserve location 0 for the alpha test ref.
-    GLint next_location = (GLint)_inject_alpha_test;
     GLint next_ssbo_binding = 0;
 #ifdef OPENGLES
     GLint next_image_binding = 0;
@@ -161,27 +196,82 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
     }
   }
 
-  GLuint program = 0;
-  if (!_inject_alpha_test) {
-    program = _glgsg->_glCreateProgram();
-    _program = program;
+  if (!_is_legacy && (s->_module_mask & (1u << (uint32_t)Shader::Stage::VERTEX)) != 0) {
+    // Determine whether we want to inject animation support.  This requires
+    // support for UBOs, since that allows us to efficiently pass a large
+    // number of skinning matrices to the shader.
+    if (glgsg->_supports_uniform_buffers && hardware_animated_vertices &&
+        (_animate_point_attrib_locations | _animate_vector_attrib_locations) != 0) {
+
+      if (_transform_index_index < 0) {
+        _transform_index_index = next_unused_vertex_attrib_location++;
+        _vertex_attribs.push_back({
+          InternalName::get_transform_index(),
+          _transform_index_index, 1, VB_animation, -1, ShaderType::ST_uint
+        });
+        if (GLCAT.is_debug()) {
+          GLCAT.debug()
+            << "Transform indices will be using vertex attribute location "
+            << _transform_index_index << "\n";
+        }
+      }
+      if (_transform_weight_index < 0) {
+        _transform_weight_index = next_unused_vertex_attrib_location++;
+        _vertex_attribs.push_back({
+          InternalName::get_transform_weight(),
+          _transform_weight_index, 1, VB_animation, -1, ShaderType::ST_float
+        });
+        if (GLCAT.is_debug()) {
+          GLCAT.debug()
+            << "Transform weights will be using vertex attribute location "
+            << _transform_weight_index << "\n";
+        }
+      }
+      _variant_mask |= VB_animation;
+    }
+
+    // Determine whether we may want to inject hardware instancing support into
+    // the shader later (if requested), by altering the inputs that involve the
+    // modelview matrix.  We will rebuild the shader the first time it is used
+    // with instancing, see bind().
+    if (glgsg->_supports_geometry_instancing && glgsg->_supports_vertex_attrib_divisor) {
+      for (const Shader::Parameter &param : _shader->_parameters) {
+        if (param._binding == nullptr) {
+          continue;
+        }
+        // We may need to instance this input.
+        bool inverse, transpose;
+        if ((param._stage_mask & (1 << (int)Shader::Stage::VERTEX)) != 0 &&
+            param._binding->has_modelview_matrix(inverse, transpose)) {
+          _model_matrices[param._name] = std::make_pair(inverse, transpose);
+        }
+      }
+
+      if (!_model_matrices.empty()) {
+        variant_module_mask.set_bit((int)Shader::Stage::VERTEX);
+        _variant_mask |= VB_instancing;
+
+        _instance_mat_index = next_unused_vertex_attrib_location++;
+        if (GLCAT.is_debug()) {
+          GLCAT.debug()
+            << "Instance matrix will be using vertex attribute location "
+            << _instance_mat_index << "\n";
+        }
+      }
+    }
   }
 
-  // Compile all the modules now, except for the fragment module if we will be
-  // generating a different fragment module per alpha test mode later.
+  // Compile all the invariant modules, which don't need to be recompiled based
+  // on the state.
   bool valid = true;
   size_t mi = 0;
   for (Shader::LinkedModule &linked_module : _shader->_modules) {
     CPT(ShaderModule) module = linked_module._module.get_read_pointer();
 
-    if (!_inject_alpha_test || module->get_stage() != Shader::Stage::FRAGMENT) {
-      GLuint handle = create_shader(program, module, mi, linked_module._consts, RenderAttrib::M_none);
+    if (!variant_module_mask.get_bit((int)module->get_stage())) {
+      GLuint handle = create_shader(module, mi, linked_module._consts, 0);
       if (handle != 0) {
-        _modules.push_back({module->get_stage(), handle});
-
-        if (program != 0) {
-          _glgsg->_glAttachShader(program, handle);
-        }
+        _invariant_modules.push_back({module->get_stage(), handle});
       } else {
         valid = false;
       }
@@ -193,8 +283,8 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
   // Now compile the individual shaders, unless we loaded them as SPIR-V.
   // NVIDIA drivers seem to cope better when we compile them all in one go.
   if (_is_legacy || !_glgsg->_supports_spir_v) {
-    for (Module &module : _modules) {
-      _glgsg->_glCompileShader(module._handle);
+    for (Module &module : _invariant_modules) {
+      glgsg->_glCompileShader(module._handle);
     }
   }
 
@@ -203,7 +293,7 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
   }
 
 #ifdef DO_PSTATS
-  _compute_dispatch_pcollector = PStatCollector(_glgsg->_compute_dispatch_pcollector, s->get_debug_name());
+  _compute_dispatch_pcollector = PStatCollector(glgsg->_compute_dispatch_pcollector, s->get_debug_name());
 #endif
 }
 
@@ -215,19 +305,15 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
  */
 bool CLP(ShaderContext)::
 valid() {
-  if (_shader->get_error_flag()) {
-    return false;
-  }
-  return _program != 0 || _inject_alpha_test;
+  return !_shader->get_error_flag();
 }
 
 /**
- * This function is to be called to enable a new shader.  It also initializes
- * all of the shader's input parameters.
+ * This function is to be called to enable a new shader.  It should be followed
+ * by a call to set_state_and_transform before rendering with it.
  */
 bool CLP(ShaderContext)::
-bind(CLP(GraphicsStateGuardian) *glgsg,
-     RenderAttrib::PandaCompareFunc alpha_test_mode) {
+bind(CLP(GraphicsStateGuardian) *glgsg) {
   _glgsg = glgsg;
   /*if (!_validated) {
     glgsg->_glValidateProgram(_glsl_program);
@@ -235,32 +321,31 @@ bind(CLP(GraphicsStateGuardian) *glgsg,
     _validated = true;
   }*/
 
-  if (!_inject_alpha_test) {
-    alpha_test_mode = RenderAttrib::M_none;
-  }
+  // Nowadays, we only actually bind the shader here if the variant mask is 0,
+  // since otherwise we will need details about the render state we don't have.
+  if (_variant_mask == 0) {
+    if (_linked_programs.empty()) {
+      if (!compile_variant(0)) {
+        return false;
+      }
+    }
+    GLuint program = _linked_programs[0]._program;
+    if (program != 0 && !_shader->get_error_flag()) {
+      if (GLCAT.is_spam()) {
+        GLCAT.spam()
+          << "glUseProgram(" << program << "): " << _shader->get_filename()
+          << "\n";
+      }
 
-  GLuint program = _linked_programs[alpha_test_mode];
-  if (program != 0) {
-    if (!_shader->get_error_flag()) {
       glgsg->_glUseProgram(program);
     } else {
       return false;
     }
-  } else {
-    if (!compile_for(alpha_test_mode)) {
-      return false;
-    }
+    _bound_variant = 0;
+    _bound_linked_program_index = 0;
+    glgsg->report_my_gl_errors();
   }
 
-  _alpha_test_mode = alpha_test_mode;
-
-  if (GLCAT.is_spam()) {
-    GLCAT.spam() << "glUseProgram(" << program << "): "
-                 << _shader->get_filename() << " with alpha test "
-                 << alpha_test_mode << "\n";
-  }
-
-  glgsg->report_my_gl_errors();
   return true;
 }
 
@@ -269,12 +354,17 @@ bind(CLP(GraphicsStateGuardian) *glgsg,
  */
 void CLP(ShaderContext)::
 unbind() {
+  if (_glgsg == nullptr) {
+    return;
+  }
   if (GLCAT.is_spam()) {
     GLCAT.spam() << "glUseProgram(0)\n";
   }
 
   _glgsg->_glUseProgram(0);
   _glgsg->report_my_gl_errors();
+  _bound_variant = -1;
+  _bound_linked_program_index = -1;
 }
 
 /**
@@ -282,36 +372,55 @@ unbind() {
  * were no errors.
  */
 bool CLP(ShaderContext)::
-compile_for(RenderAttrib::PandaCompareFunc alpha_test_mode) {
-  nassertr(alpha_test_mode < RenderAttrib::M_always, false);
+compile_variant(int variant) {
+  variant &= _variant_mask;
 
   if (GLCAT.is_debug()) {
     GLCAT.debug()
       << "Compiling shader " << _shader->get_filename()
-      << " with alpha test mode " << alpha_test_mode << "\n";
+      << " variant " << variant << "\n";
   }
 
-  GLuint program = compile_and_link(alpha_test_mode);
-  if (program == 0) {
-    release_resources(_glgsg);
-    _shader->_error_flag = true;
-    return false;
+  GLuint program;
+  LinkedPrograms::iterator it;
+  {
+    LinkedProgram linked_program;
+    linked_program._variant = variant;
+
+    program = compile_and_link(variant);
+    if (program == 0) {
+      release_resources(_glgsg);
+      _shader->_error_flag = true;
+      return false;
+    }
+
+    linked_program._program = program;
+    it = _linked_programs.insert_nonunique(linked_program);
   }
-  _linked_programs[alpha_test_mode] = program;
-  _alpha_test_ref_locations[alpha_test_mode] = -1;
+
+  LinkedProgram &linked_program = *it;
 
   // Bind the program, so that we can call glUniform1i for the textures.
+  if (GLCAT.is_spam()) {
+    GLCAT.spam()
+      << "glUseProgram(" << program << "): " << _shader->get_filename()
+      << " variant " << variant << "\n";
+  }
   _glgsg->_glUseProgram(program);
+  _bound_linked_program_index = std::distance(_linked_programs.begin(), it);
 
   // If this is a legacy GLSL shader, we don't have the parameter definitions
   // yet, so we need to perform reflection on the shader.
   SparseArray active_locations;
   if (_is_legacy) {
-    nassertr(alpha_test_mode == RenderAttrib::M_none, false);
+    // We can't do any kind of manipulation of legacy shaders.
+    nassertr(variant == 0, false);
     reflect_program(program, active_locations);
   }
   else if (!_remap_locations) {
-    // We still need to query which uniform locations are actually in use,
+    // We won't have to query the uniform locations in a moment, because we
+    // could already explicitly assign the ones we allocated up front.
+    // But we still need to query which uniform locations are actually in use,
     // because the GL driver may have optimized some out.
     GLint num_active_uniforms = 0;
     _glgsg->_glGetProgramInterfaceiv(program, GL_UNIFORM, GL_ACTIVE_RESOURCES, &num_active_uniforms);
@@ -328,36 +437,41 @@ compile_for(RenderAttrib::PandaCompareFunc alpha_test_mode) {
     }
 
     // We reserved location 0 for the alpha test reference value.
-    if (alpha_test_mode != RenderAttrib::M_none && active_locations.get_bit(0) && _inject_alpha_test) {
-      _alpha_test_ref_locations[alpha_test_mode] = 0;
+    if ((variant & VB_alpha_test_mode_mask) != 0 && active_locations.get_bit(0)) {
+      linked_program._alpha_test_ref_location = 0;
     }
   }
-  else if (alpha_test_mode != RenderAttrib::M_none && _inject_alpha_test) {
+  else if ((variant & VB_alpha_test_mode_mask) != 0) {
     // We couldn't map the alpha ref to 0, ask the driver for the location.
-    _alpha_test_ref_locations[alpha_test_mode] = _glgsg->_glGetUniformLocation(program, "aref");
+    linked_program._alpha_test_ref_location = _glgsg->_glGetUniformLocation(program, "aref");
 
     if (GLCAT.is_debug()) {
       GLCAT.debug()
         << "Injected alpha test reference is bound to location "
-        << _alpha_test_ref_locations[alpha_test_mode] << "\n";
+        << linked_program._alpha_test_ref_location << "\n";
     }
   }
 
+  auto &uniform_blocks = linked_program._uniform_blocks;
+
+  // Now we need to go through all uniforms.  This involves checking wehther
+  // they're used, collecting their real locations, and determining what calls
+  // we will have to do to update them.
   for (const Shader::Parameter &param : _shader->_parameters) {
     if (param._binding == nullptr) {
       continue;
     }
 
     int block_index = -1;
-    for (size_t i = 0; i < _uniform_blocks.size(); ++i) {
-      if (_uniform_blocks[i]._bindings[0]._binding == param._binding) {
+    for (size_t i = 0; i < uniform_blocks.size(); ++i) {
+      if (uniform_blocks[i]._bindings[0]._binding == param._binding) {
         block_index = (int)i;
         break;
       }
     }
 
     UniformBlock new_block;
-    UniformBlock &block = block_index >= 0 ? _uniform_blocks[block_index] : new_block;
+    UniformBlock &block = block_index >= 0 ? uniform_blocks[block_index] : new_block;
 
     // We chose a location earlier, but if remap_locations was set to true,
     // we have to map this to the actual location chosen by the driver.
@@ -395,12 +509,8 @@ compile_for(RenderAttrib::PandaCompareFunc alpha_test_mode) {
       sprintf(sym_buffer, "p%d", chosen_location);
     }
 
-    if (alpha_test_mode >= block._calls.size()) {
-      block._calls.resize(alpha_test_mode + 1);
-    }
-
-    UniformCalls &calls = block._calls[alpha_test_mode];
-    r_collect_uniforms(alpha_test_mode, param, calls, param._type, name.c_str(),
+    UniformCalls &calls = block._calls;
+    r_collect_uniforms(linked_program, param, calls, param._type, name.c_str(),
                        sym_buffer, actual_location, active_locations,
                        resource_index, binding);
 
@@ -409,7 +519,7 @@ compile_for(RenderAttrib::PandaCompareFunc alpha_test_mode) {
       block._bindings.push_back({param._binding, 0});
 
       _uniform_data_deps |= block._dep;
-      _uniform_blocks.push_back(std::move(block));
+      uniform_blocks.push_back(std::move(block));
 
       // We ideally want the tightly packed size, since we are not using UBOs
       // and the regular glUniform calls use tight packing.
@@ -500,19 +610,18 @@ r_count_locations_bindings(const ShaderType *type,
  * Also finds all resources and adds them to the respective arrays.
  */
 void CLP(ShaderContext)::
-r_collect_uniforms(RenderAttrib::PandaCompareFunc alpha_test_mode,
-                   const Shader::Parameter &param, UniformCalls &calls,
-                   const ShaderType *type, const char *name, const char *sym,
-                   int &cur_location, const SparseArray &active_locations,
-                   int &resource_index, int &cur_binding, size_t offset) {
-
-  GLuint program = _linked_programs[alpha_test_mode];
+r_collect_uniforms(LinkedProgram &linked_program, const Shader::Parameter &param,
+                   UniformCalls &calls, const ShaderType *type,
+                   const char *name, const char *sym, int &cur_location,
+                   const SparseArray &active_locations, int &resource_index,
+                   int &cur_binding, size_t offset) {
 
   ShaderType::ScalarType scalar_type;
   uint32_t num_elements;
   uint32_t num_rows;
   uint32_t num_cols;
   if (type->as_scalar_type(scalar_type, num_elements, num_rows, num_cols)) {
+    GLuint program = linked_program._program;
     int location = cur_location;
     if (location < 0) {
       location = _glgsg->_glGetUniformLocation(program, _is_legacy ? name : sym);
@@ -629,7 +738,7 @@ r_collect_uniforms(RenderAttrib::PandaCompareFunc alpha_test_mode,
     for (uint32_t i = 0; i < array_type->get_num_elements(); ++i) {
       sprintf(name_buffer, "%s[%u]", name, i);
       sprintf(sym_buffer, "%s[%u]", sym, i);
-      r_collect_uniforms(alpha_test_mode, param, calls, element_type, name_buffer, sym_buffer,
+      r_collect_uniforms(linked_program, param, calls, element_type, name_buffer, sym_buffer,
                          cur_location, active_locations, resource_index, cur_binding,
                          offset);
       offset += stride;
@@ -647,12 +756,14 @@ r_collect_uniforms(RenderAttrib::PandaCompareFunc alpha_test_mode,
 
       // We have named struct members m0, m1, etc. in declaration order.
       sprintf(sym_buffer, "%s.m%u", sym, i);
-      r_collect_uniforms(alpha_test_mode, param, calls, member.type, qualname.c_str(), sym_buffer,
+      r_collect_uniforms(linked_program, param, calls, member.type, qualname.c_str(), sym_buffer,
                          cur_location, active_locations, resource_index, cur_binding,
                          offset + member.offset);
     }
     return;
   }
+
+  GLuint program = linked_program._program;
   if (type == ShaderType::VOID) {
     // We use this as a placeholder to advance the location by one.
     ++cur_location;
@@ -670,6 +781,8 @@ r_collect_uniforms(RenderAttrib::PandaCompareFunc alpha_test_mode,
       ++cur_binding;
     }
 
+    // We can always explicitly assign SSBO bindings at compilation so we don't
+    // have to worry about variants having different binding assignments.
     if ((_storage_block_bindings & (1 << binding)) == 0) {
       if (GLCAT.is_debug()) {
         GLCAT.debug()
@@ -732,12 +845,8 @@ r_collect_uniforms(RenderAttrib::PandaCompareFunc alpha_test_mode,
     unit._resource_id = param._binding->get_resource_id(resource_index++);
     unit._target = _glgsg->get_texture_target(sampler->get_texture_type());
 
-    for (int i = 0; i < RenderAttrib::M_always; ++i) {
-      unit._size_loc[i] = -1;
-    }
-
     if (size_location >= 0) {
-      unit._size_loc[alpha_test_mode] = size_location;
+      unit._size_loc[linked_program._variant] = size_location;
     }
 
     // Check if we already have a unit with these properties.  If so, we alias
@@ -750,8 +859,8 @@ r_collect_uniforms(RenderAttrib::PandaCompareFunc alpha_test_mode,
           other_unit._resource_id == unit._resource_id &&
           other_unit._target == unit._target) {
         binding = (GLint)i;
-        if (unit._size_loc[alpha_test_mode] >= 0) {
-          other_unit._size_loc[alpha_test_mode] = unit._size_loc[alpha_test_mode];
+        if (size_location >= 0) {
+          other_unit._size_loc[linked_program._variant] = size_location;
         }
         break;
       }
@@ -793,12 +902,8 @@ r_collect_uniforms(RenderAttrib::PandaCompareFunc alpha_test_mode,
     unit._access = image->get_access();
     unit._written = false;
 
-    for (int i = 0; i < RenderAttrib::M_always; ++i) {
-      unit._size_loc[i] = -1;
-    }
-
     if (size_location >= 0) {
-      unit._size_loc[alpha_test_mode] = size_location;
+      unit._size_loc[linked_program._variant] = size_location;
     }
 
 #ifndef OPENGLES
@@ -809,8 +914,8 @@ r_collect_uniforms(RenderAttrib::PandaCompareFunc alpha_test_mode,
           other_unit._resource_id == unit._resource_id &&
           other_unit._access == unit._access) {
         binding = (GLint)i;
-        if (unit._size_loc[alpha_test_mode] >= 0) {
-          other_unit._size_loc[alpha_test_mode] = unit._size_loc[alpha_test_mode];
+        if (size_location >= 0) {
+          other_unit._size_loc[linked_program._variant] = size_location;
         }
         break;
       }
@@ -835,6 +940,8 @@ r_collect_uniforms(RenderAttrib::PandaCompareFunc alpha_test_mode,
  * active, and anything that is known about top-level uniform names (that are
  * not in a struct or array) is also already filled into the maps.  The rest
  * will have to be queried later.
+ *
+ * This is only called for legacy shaders.
  */
 void CLP(ShaderContext)::
 reflect_program(GLuint program, SparseArray &active_locations) {
@@ -846,9 +953,14 @@ reflect_program(GLuint program, SparseArray &active_locations) {
   name_buflen = max(64, name_buflen);
   char *name_buffer = (char *)alloca(name_buflen);
 
-  _shader->_var_spec.clear();
+  _shader->_vertex_inputs.clear();
   for (int i = 0; i < param_count; ++i) {
     reflect_attribute(program, i, name_buffer, name_buflen);
+  }
+
+  _vertex_attribs.clear();
+  for (const Shader::VertexInputBinding &bind : _shader->_vertex_inputs) {
+    _vertex_attribs.push_back({bind._name, bind._id._location, bind._elements, 0, bind._append_uv, bind._scalar_type});
   }
 
   /*if (gl_fixed_vertex_attrib_locations) {
@@ -1773,24 +1885,15 @@ CLP(ShaderContext)::
  */
 void CLP(ShaderContext)::
 release_resources(CLP(GraphicsStateGuardian) *glgsg) {
-  if (_program != 0) {
-    glgsg->_glDeleteProgram(_program);
-    _program = 0;
+  for (LinkedProgram &program : _linked_programs) {
+    glgsg->_glDeleteProgram(program._program);
   }
-  if (_inject_alpha_test) {
-    for (int i = 0; i < RenderAttrib::M_always; ++i) {
-      if (_linked_programs[i] != 0) {
-        glgsg->_glDeleteProgram(_linked_programs[i]);
-        _linked_programs[i] = 0;
-      }
-    }
-  }
+  _linked_programs.clear();
 
-  for (Module &module : _modules) {
+  for (Module &module : _invariant_modules) {
     glgsg->_glDeleteShader(module._handle);
   }
-
-  _modules.clear();
+  _invariant_modules.clear();
 
   glgsg->report_my_gl_errors();
 }
@@ -1800,14 +1903,76 @@ release_resources(CLP(GraphicsStateGuardian) *glgsg) {
  * changed, but the Shader itself has not changed.  It loads new values into
  * the shader's parameters.
  */
-void CLP(ShaderContext)::
+bool CLP(ShaderContext)::
 set_state_and_transform(const RenderState *target_rs,
                         const TransformState *modelview_transform,
                         const TransformState *camera_transform,
-                        const TransformState *projection_transform) {
+                        const TransformState *projection_transform,
+                        bool inject_instancing, bool inject_animation) {
+  nassertr(_glgsg != nullptr, false);
 
-  // Find out which state properties have changed.
-  int altered = 0;
+  // Make sure the correct variant for this state is bound.
+  int variant = 0;
+  if (_variant_mask != 0) {
+    variant = (target_rs->get_alpha_test_mode() & VB_alpha_test_mode_mask);
+    if (inject_instancing) {
+      variant |= VB_instancing;
+    }
+    if (inject_animation) {
+      variant |= VB_animation;
+    }
+    variant &= _variant_mask;
+
+    if ((variant & VB_alpha_test_mode_mask) != 0) {
+      // This flag is deprecated.
+      if (_glgsg->_target_shader->get_flag(ShaderAttrib::F_subsume_alpha_test)) {
+        variant &= ~VB_alpha_test_mode_mask;
+      }
+    }
+
+    // Skip the bind if the current variant can still render the new object.
+    // Presumably binding a new shader is more expensive than the extra
+    // overhead from the instancing additions to the shader.
+    if (_bound_variant != variant &&
+        (_bound_variant & ~VB_instancing) != variant) {
+
+      auto it = _linked_programs.find({variant});
+      if (it != _linked_programs.end()) {
+        GLuint program = it->_program;
+        if (program != 0 && !_shader->get_error_flag()) {
+          if (GLCAT.is_spam()) {
+            GLCAT.spam()
+            << "glUseProgram(" << program << "): " << _shader->get_filename()
+            << " variant " << variant << "\n";
+          }
+
+          _glgsg->_glUseProgram(program);
+          _bound_linked_program_index = std::distance(_linked_programs.begin(), it);
+        } else {
+          return false;
+        }
+      } else {
+        // We don't have a suitable linked program, so go and generate one now.
+        // This will call glUseProgram on success.
+        if (!compile_variant(variant)) {
+          return false;
+        }
+      }
+    }
+
+    if (_bound_variant != variant) {
+      // If we bound a different program, we must respecify all uniforms.
+      _bound_variant = variant;
+      _force_respecify |= _uniform_data_deps | Shader::D_alpha_test;
+    }
+  } else {
+    // Has bind() been called first?
+    nassertr(_bound_variant >= 0, false);
+  }
+
+  // Find out which state properties have changed.  The above bind() call may
+  // have added bits to _force_respecify.
+  int altered = std::exchange(_force_respecify, 0);
 
   if (_modelview_transform != modelview_transform) {
     _modelview_transform = modelview_transform;
@@ -1822,73 +1987,73 @@ set_state_and_transform(const RenderState *target_rs,
     altered |= Shader::D_projection;
   }
 
-  CPT(RenderState) state_rs = _state_rs.lock();
-  if (state_rs == nullptr) {
-    // Reset all of the state.
-    altered |= Shader::D_state;
-    _state_rs = target_rs;
-    target_rs->get_attrib_def(_color_attrib);
-  }
-  else if (state_rs == target_rs) {
-    // State is the same from last time.
-  }
-  else if (_inject_alpha_test &&
-           target_rs->get_alpha_test_mode() != _alpha_test_mode) {
-    // Alpha test mode has changed, bind a different shader and respecify all
-    // data.
-    bind(_glgsg, target_rs->get_alpha_test_mode());
-    altered = _uniform_data_deps | Shader::D_alpha_test;
-    _state_rs = target_rs;
-  }
-  else {
-    // The state has changed since last time.
-    if (_inject_alpha_test) {
-      if (state_rs->get_attrib(AlphaTestAttrib::get_class_slot()) !=
-          target_rs->get_attrib(AlphaTestAttrib::get_class_slot())) {
-        altered |= Shader::D_alpha_test;
-      }
-    }
-    if (_color_attrib != target_rs->get_attrib(ColorAttrib::get_class_slot())) {
-      altered |= Shader::D_color;
+  // Unless we're sure everything has been altered, look at which attributes
+  // of the state have changed.
+  if ((altered & Shader::D_state) != Shader::D_state) {
+    CPT(RenderState) state_rs = _state_rs.lock();
+
+    if (state_rs == nullptr) {
+      // Reset all of the state bits.
+      altered |= Shader::D_state;
+      _state_rs = target_rs;
       target_rs->get_attrib_def(_color_attrib);
     }
-    if (state_rs->get_attrib(ColorScaleAttrib::get_class_slot()) !=
-        target_rs->get_attrib(ColorScaleAttrib::get_class_slot())) {
-      altered |= Shader::D_colorscale;
+    else if (state_rs == target_rs) {
+      // State is the same from last time.
     }
-    if (state_rs->get_attrib(MaterialAttrib::get_class_slot()) !=
-        target_rs->get_attrib(MaterialAttrib::get_class_slot())) {
-      altered |= Shader::D_material;
+    else {
+      // The state has changed since last time.
+      if (variant & VB_alpha_test_mode_mask) {
+        if (state_rs->get_attrib(AlphaTestAttrib::get_class_slot()) !=
+            target_rs->get_attrib(AlphaTestAttrib::get_class_slot())) {
+          altered |= Shader::D_alpha_test;
+        }
+      }
+      if (_color_attrib != target_rs->get_attrib(ColorAttrib::get_class_slot())) {
+        altered |= Shader::D_color;
+        target_rs->get_attrib_def(_color_attrib);
+      }
+      if (state_rs->get_attrib(ColorScaleAttrib::get_class_slot()) !=
+          target_rs->get_attrib(ColorScaleAttrib::get_class_slot())) {
+        altered |= Shader::D_colorscale;
+      }
+      if (state_rs->get_attrib(MaterialAttrib::get_class_slot()) !=
+          target_rs->get_attrib(MaterialAttrib::get_class_slot())) {
+        altered |= Shader::D_material;
+      }
+      if (state_rs->get_attrib(FogAttrib::get_class_slot()) !=
+          target_rs->get_attrib(FogAttrib::get_class_slot())) {
+        altered |= Shader::D_fog;
+      }
+      if (state_rs->get_attrib(LightAttrib::get_class_slot()) !=
+          target_rs->get_attrib(LightAttrib::get_class_slot())) {
+        altered |= Shader::D_light;
+      }
+      if (state_rs->get_attrib(ClipPlaneAttrib::get_class_slot()) !=
+          target_rs->get_attrib(ClipPlaneAttrib::get_class_slot())) {
+        altered |= Shader::D_clip_planes;
+      }
+      if (state_rs->get_attrib(TexMatrixAttrib::get_class_slot()) !=
+          target_rs->get_attrib(TexMatrixAttrib::get_class_slot())) {
+        altered |= Shader::D_tex_matrix;
+      }
+      if (state_rs->get_attrib(TextureAttrib::get_class_slot()) !=
+          target_rs->get_attrib(TextureAttrib::get_class_slot())) {
+        altered |= Shader::D_texture;
+      }
+      if (state_rs->get_attrib(TexGenAttrib::get_class_slot()) !=
+          target_rs->get_attrib(TexGenAttrib::get_class_slot())) {
+        altered |= Shader::D_tex_gen;
+      }
+      if (state_rs->get_attrib(RenderModeAttrib::get_class_slot()) !=
+          target_rs->get_attrib(RenderModeAttrib::get_class_slot())) {
+        altered |= Shader::D_render_mode;
+      }
+      _state_rs = target_rs;
     }
-    if (state_rs->get_attrib(FogAttrib::get_class_slot()) !=
-        target_rs->get_attrib(FogAttrib::get_class_slot())) {
-      altered |= Shader::D_fog;
-    }
-    if (state_rs->get_attrib(LightAttrib::get_class_slot()) !=
-        target_rs->get_attrib(LightAttrib::get_class_slot())) {
-      altered |= Shader::D_light;
-    }
-    if (state_rs->get_attrib(ClipPlaneAttrib::get_class_slot()) !=
-        target_rs->get_attrib(ClipPlaneAttrib::get_class_slot())) {
-      altered |= Shader::D_clip_planes;
-    }
-    if (state_rs->get_attrib(TexMatrixAttrib::get_class_slot()) !=
-        target_rs->get_attrib(TexMatrixAttrib::get_class_slot())) {
-      altered |= Shader::D_tex_matrix;
-    }
-    if (state_rs->get_attrib(TextureAttrib::get_class_slot()) !=
-        target_rs->get_attrib(TextureAttrib::get_class_slot())) {
-      altered |= Shader::D_texture;
-    }
-    if (state_rs->get_attrib(TexGenAttrib::get_class_slot()) !=
-        target_rs->get_attrib(TexGenAttrib::get_class_slot())) {
-      altered |= Shader::D_tex_gen;
-    }
-    if (state_rs->get_attrib(RenderModeAttrib::get_class_slot()) !=
-        target_rs->get_attrib(RenderModeAttrib::get_class_slot())) {
-      altered |= Shader::D_render_mode;
-    }
+  } else {
     _state_rs = target_rs;
+    target_rs->get_attrib_def(_color_attrib);
   }
 
   if (_shader_attrib != _glgsg->_target_shader) {
@@ -1903,9 +2068,28 @@ set_state_and_transform(const RenderState *target_rs,
     _frame_number = frame_number;
   }
 
+  // Right now, this is called by begin_draw_primitives, so this is also the
+  // right place to update this.
+  if (_uniform_data_deps & Shader::D_vertex_data) {
+    altered |= Shader::D_vertex_data;
+  }
+
   if (altered != 0) {
     issue_parameters(altered);
   }
+
+  // Textures may have altered from last frame, we always have to respecify
+  // those from one frame to the next.
+  if (altered & (Shader::D_texture | Shader::D_frame)) {
+    update_shader_texture_bindings();
+  }
+
+  if (altered & Shader::D_shader_inputs) {
+    update_shader_buffer_bindings();
+  }
+
+  issue_memory_barriers();
+  return true;
 }
 
 /**
@@ -1929,16 +2113,18 @@ issue_parameters(int altered) {
   unsigned char *scratch = (unsigned char *)alloca(_scratch_space_size);
 #endif
 
+  LinkedProgram &linked_program = _linked_programs[_bound_linked_program_index];
+
   if (altered & _uniform_data_deps) {
     if (altered & _matrix_cache_deps) {
-      _glgsg->update_shader_matrix_cache(_shader, &_matrix_cache[0], altered);
+      _glgsg->update_shader_matrix_cache(_shader, _matrix_cache.data(), altered);
     }
 
     ShaderInputBinding::State state;
     state.gsg = _glgsg;
-    state.matrix_cache = &_matrix_cache[0];
+    state.matrix_cache = _matrix_cache.data();
 
-    for (const UniformBlock &block : _uniform_blocks) {
+    for (const UniformBlock &block : linked_program._uniform_blocks) {
       if ((altered & block._dep) == 0) {
         continue;
       }
@@ -1947,7 +2133,7 @@ issue_parameters(int altered) {
         binding._binding->fetch_data(state, scratch + binding._offset, true);
       }
 
-      const UniformCalls &calls = block._calls[_alpha_test_mode];
+      const UniformCalls &calls = block._calls;
       for (const UniformCall &call : calls._matrices) {
         ((PFNGLUNIFORMMATRIX4FVPROC)call._func)(call._location, call._count, GL_FALSE, (const GLfloat *)(scratch + call._offset));
       }
@@ -1959,7 +2145,7 @@ issue_parameters(int altered) {
   }
 
   if (altered & Shader::D_alpha_test) {
-    GLint aref_loc = _alpha_test_ref_locations[_alpha_test_mode];
+    GLint aref_loc = linked_program._alpha_test_ref_location;
     if (aref_loc >= 0) {
       const AlphaTestAttrib *alpha_test;
       _state_rs->get_attrib_def(alpha_test);
@@ -1979,10 +2165,10 @@ disable_shader_vertex_arrays() {
   //  return;
   //}
 
-  for (const Shader::ShaderVarSpec &bind : _shader->_var_spec) {
-    GLint p = bind._id._location;
+  for (const VertexAttrib &attrib : _vertex_attribs) {
+    GLint p = attrib._location;
 
-    for (int i = 0; i < bind._elements; ++i) {
+    for (int i = 0; i < attrib._num_locations; ++i) {
       _glgsg->disable_vertex_attrib_array(p + i);
     }
   }
@@ -2066,14 +2252,16 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
   } else {
     Geom::NumericType numeric_type;
     int start, stride, num_values;
-    size_t nvarying = _shader->_var_spec.size();
 
     GLint max_p = 0;
 
-    for (size_t i = 0; i < nvarying; ++i) {
-      const Shader::ShaderVarSpec &bind = _shader->_var_spec[i];
-      InternalName *name = bind._name;
-      int texslot = bind._append_uv;
+    for (const VertexAttrib &attrib : _vertex_attribs) {
+      if ((_bound_variant & attrib._variant_mask) != attrib._variant_mask) {
+        continue;
+      }
+
+      InternalName *name = attrib._name;
+      int texslot = attrib._append_uv;
 
       if (texslot >= 0 && texslot < _glgsg->_state_texture->get_num_on_stages()) {
         TextureStage *stage = _glgsg->_state_texture->get_on_stage(texslot);
@@ -2086,8 +2274,8 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
         }
       }
 
-      GLint p = bind._id._location;
-      max_p = max(max_p, p + bind._elements);
+      GLint p = attrib._location;
+      max_p = max(max_p, p + attrib._num_locations);
 
       // Don't apply vertex colors if they are disabled with a ColorAttrib.
       int num_elements, element_stride, divisor;
@@ -2113,13 +2301,12 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
             _glgsg->_glVertexAttribPointer(p, GL_BGRA, GL_UNSIGNED_BYTE,
                                            GL_TRUE, stride, client_pointer);
           }
-          else if (_emulate_float_attribs ||
-                   bind._scalar_type == ShaderType::ST_float ||
+          else if (attrib._scalar_type == ShaderType::ST_float ||
                    numeric_type == GeomEnums::NT_float32) {
             _glgsg->_glVertexAttribPointer(p, num_values, type,
                                            normalized, stride, client_pointer);
           }
-          else if (bind._scalar_type == ShaderType::ST_double) {
+          else if (attrib._scalar_type == ShaderType::ST_double) {
             _glgsg->_glVertexAttribLPointer(p, num_values, type,
                                             stride, client_pointer);
           }
@@ -2134,7 +2321,7 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
           client_pointer += element_stride;
         }
       } else {
-        for (int i = 0; i < bind._elements; ++i) {
+        for (int i = 0; i < attrib._num_locations; ++i) {
           _glgsg->disable_vertex_attrib_array(p + i);
         }
         if (p == _color_attrib_index) {
@@ -2157,7 +2344,7 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
         else if (name == InternalName::get_instance_matrix()) {
           const LMatrix4 &ident_mat = LMatrix4::ident_mat();
 
-          for (int i = 0; i < bind._elements; ++i) {
+          for (int i = 0; i < attrib._num_locations; ++i) {
 #ifdef STDFLOAT_DOUBLE
             _glgsg->_glVertexAttrib4dv(p, ident_mat.get_data() + i * 4);
 #else
@@ -2169,20 +2356,34 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
       }
     }
 
+    if ((_bound_variant & VB_instancing) != 0 && _instance_mat_index >= 0) {
+      if (_glgsg->_instance_buffer == 0) {
+        static const GLfloat ident_data[] = {0, 0, 0, 1};
+        for (int i = 0; i < 3; ++i) {
+          GLint p = _instance_mat_index + i;
+          _glgsg->disable_vertex_attrib_array(p);
+          _glgsg->_glVertexAttrib4fv(p, ident_data);
+        }
+      } else {
+        _glgsg->_glBindBuffer(GL_ARRAY_BUFFER, _glgsg->_instance_buffer);
+        _glgsg->_current_vbuffer_index = _glgsg->_instance_buffer;
+
+        for (int i = 0; i < 3; ++i) {
+          GLint p = _instance_mat_index + i;
+          _glgsg->enable_vertex_attrib_array(p);
+          _glgsg->set_vertex_attrib_divisor(p, 1);
+          _glgsg->_glVertexAttribPointer(p, 4, GL_FLOAT, GL_FALSE, 48, (void *)((uintptr_t)i * 16u));
+        }
+      }
+      max_p = std::max(max_p, _instance_mat_index + 3);
+    }
+
     // Disable attribute arrays we don't use.
     GLint highest_p = _glgsg->_enabled_vertex_attrib_arrays.get_highest_on_bit() + 1;
     for (GLint p = max_p; p < highest_p; ++p) {
       _glgsg->disable_vertex_attrib_array(p);
     }
   }
-
-  if (_uniform_data_deps & Shader::D_vertex_data) {
-    issue_parameters(Shader::D_vertex_data);
-  }
-
-  // This ought to be moved elsewhere, but it's convenient to do this here for
-  // now since it's called before every Geom is drawn.
-  issue_memory_barriers();
 
   _glgsg->report_my_gl_errors();
 
@@ -2191,6 +2392,7 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
 
 /**
  * Disable all the texture bindings used by this shader.
+ * The program may not necessarily be bound if this is called.
  */
 void CLP(ShaderContext)::
 disable_shader_texture_bindings() {
@@ -2249,6 +2451,8 @@ disable_shader_texture_bindings() {
     }
   }
 
+  _force_respecify |= Shader::D_texture;
+
   _glgsg->report_my_gl_errors();
 }
 
@@ -2260,21 +2464,14 @@ disable_shader_texture_bindings() {
  * them.  We may optimize this someday.
  */
 void CLP(ShaderContext)::
-update_shader_texture_bindings(ShaderContext *prev) {
-  // if (prev) { prev->disable_shader_texture_bindings(); }
-
-  //if (_glsl_program == 0) {
-  //  return;
-  //}
-
+update_shader_texture_bindings() {
   GLbitfield barriers = 0;
 
   ShaderInputBinding::State state;
   state.gsg = _glgsg;
-  state.matrix_cache = &_matrix_cache[0];
+  state.matrix_cache = _matrix_cache.data();
 
-  // First bind all the 'image units'; a bit of an esoteric OpenGL feature
-  // right now.
+  // First bind all the image units.
   int num_image_units = (int)_image_units.size();
   if (num_image_units > 0) {
     for (int i = 0; i < num_image_units; ++i) {
@@ -2366,8 +2563,9 @@ update_shader_texture_bindings(ShaderContext *prev) {
                                     bind_layer, gl_access, gtc->_internal_format);
 
         // Update the size variable, if we have one.
-        GLint size_loc = unit._size_loc[_alpha_test_mode];
-        if (size_loc != -1) {
+        auto it = unit._size_loc.find(_bound_variant);
+        if (it != unit._size_loc.end()) {
+          GLint size_loc = it->second;
           _glgsg->_glUniform4f(size_loc, (GLfloat)gtc->_width, (GLfloat)gtc->_height,
                                          (GLfloat)gtc->_depth, (GLfloat)gtc->_num_levels);
         }
@@ -2466,8 +2664,9 @@ update_shader_texture_bindings(ShaderContext *prev) {
     }
 
     // Update the size variable, if we have one.
-    GLint size_loc = unit._size_loc[_alpha_test_mode];
-    if (size_loc != -1) {
+    auto it = unit._size_loc.find(_bound_variant);
+    if (it != unit._size_loc.end()) {
+      GLint size_loc = it->second;
       _glgsg->_glUniform4f(size_loc, (GLfloat)gtc->_width, (GLfloat)gtc->_height,
                                      (GLfloat)gtc->_depth, (GLfloat)gtc->_num_levels);
     }
@@ -2489,14 +2688,15 @@ update_shader_texture_bindings(ShaderContext *prev) {
 }
 
 /**
- * Updates the shader buffer bindings for this shader.
+ * Updates the shader storage buffer bindings for this shader.  The shader does
+ * not need to be currently bound before calling this, but bind() must have
+ * been called at least once to ensure all the SSBO bindings are known.
  */
 void CLP(ShaderContext)::
-update_shader_buffer_bindings(ShaderContext *prev) {
-  // Update the shader storage buffer bindings.
+update_shader_buffer_bindings() {
   ShaderInputBinding::State state;
   state.gsg = _glgsg;
-  state.matrix_cache = &_matrix_cache[0];
+  state.matrix_cache = _matrix_cache.data();
 
   for (StorageBlock &block : _storage_blocks) {
     PT(ShaderBuffer) buffer = block._binding->fetch_shader_buffer(state, block._resource_id);
@@ -2674,37 +2874,43 @@ report_program_errors(GLuint program, bool fatal) {
  * The program argument only needs to be passed for fragment modules.
  */
 GLuint CLP(ShaderContext)::
-create_shader(GLuint program, const ShaderModule *module, size_t mi,
-              const Shader::ModuleSpecConstants &consts,
-              RenderAttrib::PandaCompareFunc alpha_test_mode) {
+create_shader(const ShaderModule *module, size_t mi,
+              const Shader::ModuleSpecConstants &consts, int variant) {
   ShaderModule::Stage stage = module->get_stage();
+  spv::ExecutionModel model;
+  RenderAttrib::PandaCompareFunc alpha_test_mode = RenderAttrib::M_none;
 
   GLuint handle = 0;
   switch (stage) {
   case ShaderModule::Stage::VERTEX:
+    model = spv::ExecutionModelVertex;
     handle = _glgsg->_glCreateShader(GL_VERTEX_SHADER);
     break;
   case ShaderModule::Stage::FRAGMENT:
+    model = spv::ExecutionModelFragment;
     handle = _glgsg->_glCreateShader(GL_FRAGMENT_SHADER);
+    alpha_test_mode = (RenderAttrib::PandaCompareFunc)(variant & VB_alpha_test_mode_mask);
     break;
-#ifndef OPENGLES
   case ShaderModule::Stage::GEOMETRY:
+    model = spv::ExecutionModelGeometry;
     if (_glgsg->get_supports_geometry_shaders()) {
       handle = _glgsg->_glCreateShader(GL_GEOMETRY_SHADER);
     }
     break;
   case ShaderModule::Stage::TESS_CONTROL:
+    model = spv::ExecutionModelTessellationControl;
     if (_glgsg->get_supports_tessellation_shaders()) {
       handle = _glgsg->_glCreateShader(GL_TESS_CONTROL_SHADER);
     }
     break;
   case ShaderModule::Stage::TESS_EVALUATION:
+    model = spv::ExecutionModelTessellationEvaluation;
     if (_glgsg->get_supports_tessellation_shaders()) {
       handle = _glgsg->_glCreateShader(GL_TESS_EVALUATION_SHADER);
     }
     break;
-#endif
   case ShaderModule::Stage::COMPUTE:
+    model = spv::ExecutionModelGLCompute;
     if (_glgsg->get_supports_compute_shaders()) {
       handle = _glgsg->_glCreateShader(GL_COMPUTE_SHADER);
     }
@@ -2722,6 +2928,17 @@ create_shader(GLuint program, const ShaderModule *module, size_t mi,
   if (_glgsg->_use_object_labels) {
     string name = module->get_source_filename();
     _glgsg->_glObjectLabel(GL_SHADER, handle, name.size(), name.data());
+  }
+
+  pvector<SpirVInjectInstancingPass::MatrixVar> model_matrices;
+  if (stage == ShaderModule::Stage::VERTEX && (variant & VB_instancing) != 0) {
+    for (size_t pi = 0; pi < module->get_num_parameters(); ++pi) {
+      const ShaderModule::Variable &var = module->get_parameter(pi);
+      auto it = _model_matrices.find(var.name);
+      if (it != _model_matrices.end()) {
+        model_matrices.push_back({var.id, it->second.first, it->second.second});
+      }
+    }
   }
 
   if (module->is_of_type(ShaderModuleSpirV::get_class_type())) {
@@ -2777,6 +2994,21 @@ create_shader(GLuint program, const ShaderModule *module, size_t mi,
         transformer.bind_descriptor_set(0, binding_ids);
       }
 
+      if (stage == ShaderModule::Stage::VERTEX && !model_matrices.empty()) {
+        // Implement hardware instancing.
+        transformer.run(SpirVInjectInstancingPass(model_matrices, _instance_mat_index));
+      }
+
+      if (stage == ShaderModule::Stage::VERTEX && (variant & VB_animation) != 0) {
+        // Implement hardware vertex animation.
+        SpirVInjectAnimationPass pass(_animate_point_attrib_locations,
+                                      _animate_vector_attrib_locations,
+                                      _transform_index_index,
+                                      _transform_weight_index,
+                                      0, 0);
+        transformer.run(pass);
+      }
+
       if (stage == ShaderModule::Stage::FRAGMENT &&
           alpha_test_mode != RenderAttrib::M_none) {
         // Assign location 0 to the alpha ref value.
@@ -2784,6 +3016,21 @@ create_shader(GLuint program, const ShaderModule *module, size_t mi,
       }
 
       ShaderModuleSpirV::InstructionStream stream = transformer.get_result();
+      if (!stream.validate()) {
+        GLCAT.error()
+          << "SPIR-V " << stage << " shader binary "
+          << spv->get_source_filename() << " did not pass validation after transforms\n";
+        return 0;
+      }
+
+      if (GLCAT.is_spam()) {
+        std::ostream &out = GLCAT.spam()
+          << "SPIR-V " << stage << " binary " << spv->get_source_filename()
+          << " disassembly after final transforms:\n";
+
+        stream.disassemble(out);
+      }
+
       _glgsg->_glShaderBinary(1, &handle, GL_SHADER_BINARY_FORMAT_SPIR_V_ARB,
                               (const char *)stream.get_data(),
                               stream.get_data_size() * sizeof(uint32_t));
@@ -2822,7 +3069,10 @@ create_shader(GLuint program, const ShaderModule *module, size_t mi,
       }
 
       if (options.version < 130) {
-        _emulate_float_attribs = true;
+        // Emulate floating-point attributes.
+        for (VertexAttrib &attrib : _vertex_attribs) {
+          attrib._scalar_type = ShaderType::ST_float;
+        }
       }
 
       ShaderModuleSpirV::InstructionStream stream = spv->_instructions;
@@ -2831,22 +3081,51 @@ create_shader(GLuint program, const ShaderModule *module, size_t mi,
       pmap<SpirVTransformPass::AccessChain, uint32_t> size_var_ids;
       uint64_t supported_caps = _glgsg->get_supported_shader_capabilities();
       uint64_t emulate_caps = spv->_emulatable_caps & ~supported_caps;
-      if (emulate_caps != 0u) {
+      if (emulate_caps != 0u ||
+          (stage == ShaderModule::Stage::VERTEX && (variant & (VB_instancing | VB_animation)) != 0)) {
         _emulated_caps |= emulate_caps;
 
         SpirVTransformer transformer(spv->_instructions);
-        SpirVEmulateTextureQueriesPass pass(emulate_caps);
-        transformer.run(pass);
-        size_var_ids = std::move(pass._size_var_ids);
-        stream = transformer.get_result();
-      }
 
-      if (stage != ShaderModule::Stage::FRAGMENT) {
-        alpha_test_mode = RenderAttrib::M_none;
+        if (emulate_caps != 0u) {
+          SpirVEmulateTextureQueriesPass pass(emulate_caps);
+          transformer.run(pass);
+          size_var_ids = std::move(pass._size_var_ids);
+        }
+
+        if (stage == ShaderModule::Stage::VERTEX && !model_matrices.empty()) {
+          // Implement hardware instancing.
+          SpirVInjectInstancingPass pass(model_matrices, _instance_mat_index);
+          transformer.run(pass);
+
+          // The ids of the uniforms may have changed, so copy those over
+          for (const auto &pair : pass._matrix_vars) {
+            id_to_location[pair.second._id] = id_to_location[pair.first];
+          }
+        }
+
+        if (stage == ShaderModule::Stage::VERTEX && (variant & VB_animation) != 0) {
+          // Implement hardware vertex animation.
+          SpirVInjectAnimationPass pass(_animate_point_attrib_locations,
+                                        _animate_vector_attrib_locations,
+                                        _transform_index_index,
+                                        _transform_weight_index,
+                                        0, 0);
+          transformer.run(pass);
+        }
+
+        stream = transformer.get_result();
+        if (!stream.validate()) {
+          GLCAT.error()
+            << "SPIR-V " << stage << " shader binary "
+            << spv->get_source_filename() << " did not pass validation after transforms\n";
+          return 0;
+        }
       }
 
       Compiler compiler(std::move(stream._words), alpha_test_mode);
       compiler.set_common_options(options);
+      compiler.set_entry_point("main", model);
 
       if (alpha_test_mode != RenderAttrib::M_none &&
           alpha_test_mode != RenderAttrib::M_always &&
@@ -2925,7 +3204,7 @@ create_shader(GLuint program, const ShaderModule *module, size_t mi,
             // Explicit attrib locations were added in GLSL 3.30, but we can
             // override the binding in older versions using the API.
             if (options.version < 330) {
-              _bind_attrib_locations |= 1 << loc;
+              _bind_attrib_locations.set_bit(loc);
             }
             sprintf(buf, "a%u", loc);
           } else {
@@ -2941,7 +3220,7 @@ create_shader(GLuint program, const ShaderModule *module, size_t mi,
             // Output of the last stage, same story as above.
             sprintf(buf, "o%u", loc);
             if (options.version < 330) {
-              _glgsg->_glBindFragDataLocation(program, loc, buf);
+              _bind_frag_data_locations.set_bit(loc);
             }
           } else {
             // Match the name of the next stage.
@@ -3014,8 +3293,7 @@ create_shader(GLuint program, const ShaderModule *module, size_t mi,
         << glsl_module->get_source_filename() << "\n";
     }
 
-    std::string text = glsl_module->get_ir();
-    const char *text_str = text.c_str();
+    const char *text_str = glsl_module->_code.c_str();
     _glgsg->_glShaderSource(handle, 1, &text_str, nullptr);
   }
   else {
@@ -3034,15 +3312,12 @@ create_shader(GLuint program, const ShaderModule *module, size_t mi,
  * _remap_locations will be set to true.
  */
 GLuint CLP(ShaderContext)::
-compile_and_link(RenderAttrib::PandaCompareFunc alpha_test_mode) {
-  GLuint program = _program;
-  if (program == 0) {
-    program = _glgsg->_glCreateProgram();
-    if (UNLIKELY(program == 0)) {
-      GLCAT.error()
-        << "Failed to create program object\n";
-      return 0;
-    }
+compile_and_link(int variant) {
+  GLuint program = _glgsg->_glCreateProgram();
+  if (UNLIKELY(program == 0)) {
+    GLCAT.error()
+      << "Failed to create program object\n";
+    return 0;
   }
 
   if (_glgsg->_use_object_labels) {
@@ -3074,39 +3349,44 @@ compile_and_link(RenderAttrib::PandaCompareFunc alpha_test_mode) {
     }
   }*/
 
-  // We may have to compile a new fragment shader for this alpha test mode.
-  if (_inject_alpha_test) {
-    for (Module &module : _modules) {
-      _glgsg->_glAttachShader(program, module._handle);
-    }
+  small_vector<Module, 2> attached_modules;
 
-    size_t mi = 0;
-    for (Shader::LinkedModule &linked_module : _shader->_modules) {
-      CPT(ShaderModule) module = linked_module._module.get_read_pointer();
-      if (module->get_stage() == Shader::Stage::FRAGMENT) {
-        GLuint handle;
-        handle = create_shader(program, module, mi, linked_module._consts, alpha_test_mode);
-        if (handle == 0) {
-          _glgsg->_glDeleteProgram(program);
-          return false;
-        }
+  // These don't need to be compiled fresh each time.
+  BitMask32 invariant_stage_mask = 0;
+  for (Module &module : _invariant_modules) {
+    _glgsg->_glAttachShader(program, module._handle);
+    attached_modules.push_back(module);
 
-        if (!_glgsg->_supports_spir_v) {
-          _glgsg->_glCompileShader(handle);
-        }
-        _glgsg->_glAttachShader(program, handle);
-        _glgsg->_glDeleteShader(handle);
-        break;
-      }
-
-      ++mi;
-    }
+    invariant_stage_mask.set_bit((int)module._stage);
   }
 
-  if (_bind_attrib_locations != 0) {
+  // Compile the variant shaders.
+  size_t mi = 0;
+  for (Shader::LinkedModule &linked_module : _shader->_modules) {
+    CPT(ShaderModule) module = linked_module._module.get_read_pointer();
+    if (!invariant_stage_mask.get_bit((int)module->get_stage())) {
+      GLuint handle;
+      handle = create_shader(module, mi, linked_module._consts, variant);
+      if (handle == 0) {
+        _glgsg->_glDeleteProgram(program);
+        return false;
+      }
+
+      if (!_glgsg->_supports_spir_v) {
+        _glgsg->_glCompileShader(handle);
+      }
+
+      attached_modules.push_back({module->get_stage(), handle});
+      _glgsg->_glAttachShader(program, handle);
+    }
+
+    ++mi;
+  }
+
+  if (!_bind_attrib_locations.is_zero()) {
     char buf[32];
-    for (unsigned int loc = 0; loc < 32; ++loc) {
-      if (_bind_attrib_locations & (1 << loc)) {
+    for (int loc = 0; loc < 32; ++loc) {
+      if (_bind_attrib_locations.get_bit(loc)) {
         sprintf(buf, "a%u", loc);
         _glgsg->_glBindAttribLocation(program, loc, buf);
       }
@@ -3140,6 +3420,16 @@ compile_and_link(RenderAttrib::PandaCompareFunc alpha_test_mode) {
     }
   }
 
+  if (!_bind_frag_data_locations.is_zero() && _glgsg->_glBindFragDataLocation != nullptr) {
+    char buf[32];
+    for (int loc = 0; loc < 32; ++loc) {
+      if (_bind_frag_data_locations.get_bit(loc)) {
+        sprintf(buf, "o%u", loc);
+        _glgsg->_glBindFragDataLocation(program, loc, buf);
+      }
+    }
+  }
+
   // If we requested to retrieve the shader, we should indicate that before
   // linking.
 #ifndef __EMSCRIPTEN__
@@ -3159,7 +3449,8 @@ compile_and_link(RenderAttrib::PandaCompareFunc alpha_test_mode) {
 
   if (GLCAT.is_debug()) {
     GLCAT.debug()
-      << "Linking shader " << _shader->get_filename() << "\n";
+      << "Linking shader " << _shader->get_filename()
+      << " (program " << program << ") variant " << variant << "\n";
   }
 
   _glgsg->_glLinkProgram(program);
@@ -3170,11 +3461,12 @@ compile_and_link(RenderAttrib::PandaCompareFunc alpha_test_mode) {
   _glgsg->_glGetProgramiv(program, GL_LINK_STATUS, &status);
   if (status != GL_TRUE) {
     // The link failed.  Is it because one of the shaders failed to compile?
+    _shader->_error_flag = true;
     GLCAT.error()
       << "Failed to link shader " << _shader->get_filename() << ":\n";
 
     bool any_failed = false;
-    for (Module &module : _modules) {
+    for (Module &module : attached_modules) {
       _glgsg->_glGetShaderiv(module._handle, GL_COMPILE_STATUS, &status);
 
       if (status != GL_TRUE) {
@@ -3190,7 +3482,7 @@ compile_and_link(RenderAttrib::PandaCompareFunc alpha_test_mode) {
       // Delete the shader, we don't need it any more.
       _glgsg->_glDeleteShader(module._handle);
     }
-    _modules.clear();
+    _invariant_modules.clear();
 
     if (any_failed) {
       // One or more of the shaders failed to compile, which would explain the
@@ -3200,6 +3492,14 @@ compile_and_link(RenderAttrib::PandaCompareFunc alpha_test_mode) {
 
     report_program_errors(program, true);
     return 0;
+  }
+
+  // Delete the variant modules, which aren't stored anywhere.  It is safe to
+  // do this after linking.
+  for (Module &module : attached_modules) {
+    if (!invariant_stage_mask.get_bit((int)module._stage)) {
+      _glgsg->_glDeleteShader(module._handle);
+    }
   }
 
   // Report any warnings.

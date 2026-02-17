@@ -1212,6 +1212,7 @@ dispatch_compute(const LVecBase3i &work_groups, const RenderState *state, Graphi
   nassertv(gsg != nullptr);
 
   run_on_draw_thread([=] (Thread *current_thread) {
+    gsg->make_current();
     if (!gsg->begin_frame(current_thread)) {
       display_cat.error()
         << "Failed to begin frame for compute shader dispatch.\n";

@@ -2,9 +2,86 @@ name: Continuous Integration
 on: [push, pull_request]
 
 jobs:
+  thirdparty:
+    name: Build Thirdparty
+    if: "!contains(github.event.head_commit.message, '[skip ci]') && !contains(github.event.head_commit.message, '[ci skip]')"
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2022, macOS-15]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - name: Restore thirdparty build cache
+      id: cache-thirdparty-restore
+      uses: actions/cache/restore@v5
+      with:
+        path: ./thirdparty
+        key: cache-thirdparty-7b319de3355d0e8170b8b69f38362a47042b9b9b-${{ matrix.os }}
+
+    - name: Install yasm
+      if: runner.os != 'Windows' && steps.cache-thirdparty-restore.outputs.cache-hit != 'true'
+      run: ${{runner.os == 'macOS' && 'brew' || 'sudo apt-get'}} install yasm
+
+    - name: Clone thirdparty repository
+      if: steps.cache-thirdparty-restore.outputs.cache-hit != 'true'
+      run: git clone --revision=7b319de3355d0e8170b8b69f38362a47042b9b9b --depth=1 https://github.com/rdb/panda3d-thirdparty.git thirdparty
+
+    - name: Configure
+      if: steps.cache-thirdparty-restore.outputs.cache-hit != 'true'
+      working-directory: thirdparty
+      run: >
+        cmake -B build -DCMAKE_BUILD_TYPE=Release
+        -DBUILD_NVIDIACG=OFF
+        -DBUILD_FFMPEG=OFF
+        -DBUILD_FCOLLADA=OFF
+        -DBUILD_OPENSSL=OFF
+        -DBUILD_ARTOOLKIT=OFF
+
+    - name: Build
+      if: steps.cache-thirdparty-restore.outputs.cache-hit != 'true'
+      working-directory: thirdparty
+      run: cmake --build build --config Release -j4
+
+    - name: Clean up build directory
+      if: steps.cache-thirdparty-restore.outputs.cache-hit != 'true'
+      working-directory: thirdparty
+      shell: bash
+      run: rm -rf build
+
+    - name: Get NSIS (Windows)
+      if: runner.os == 'Windows' && steps.cache-thirdparty-restore.outputs.cache-hit != 'true'
+      working-directory: thirdparty
+      run: |
+        curl.exe -sLo nsis.zip "https://sourceforge.net/projects/nsis/files/NSIS%203/3.11/nsis-3.11.zip/download"
+        Expand-Archive nsis.zip -DestinationPath .
+        Rename-Item nsis-3.11 win-nsis
+        Remove-Item nsis.zip
+
+    - name: Get Python (Windows)
+      if: runner.os == 'Windows' && steps.cache-thirdparty-restore.outputs.cache-hit != 'true'
+      working-directory: thirdparty
+      run: .\install-python.ps1 win-libs-vc14-x64
+
+    - name: Save thirdparty build cache
+      id: cache-thirdparty-save
+      if: steps.cache-thirdparty-restore.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v5
+      with:
+        path: ./thirdparty
+        key: ${{ steps.cache-thirdparty-restore.outputs.cache-primary-key }}
+
+    - name: List thirdparty contents
+      working-directory: thirdparty
+      shell: bash
+      run: ls -lAhR
+
   cmake:
     name: CMake Buildsystem
     if: "!contains(github.event.head_commit.message, '[skip ci]') && !contains(github.event.head_commit.message, '[ci skip]')"
+    needs: thirdparty
 
     strategy:
       fail-fast: false
@@ -13,14 +90,14 @@ jobs:
         profile:
         - ubuntu-bionic-double-standard-unity-makefile
         - ubuntu-bionic-coverage-ninja
-        #- macos-coverage-unity-xcode
+        - macos-coverage-unity-xcode
         - macos-nometa-standard-makefile
         - windows-standard-unity-msvc
         - windows-nopython-nometa-standard-msvc
 
         include:
         - profile: ubuntu-bionic-double-standard-unity-makefile
-          os: ubuntu-22.04
+          os: ubuntu-24.04
           config: Standard
           unity: YES
           generator: Unix Makefiles
@@ -32,7 +109,7 @@ jobs:
           asan: YES
 
         - profile: ubuntu-bionic-coverage-ninja
-          os: ubuntu-22.04
+          os: ubuntu-24.04
           config: Coverage
           unity: NO
           generator: Ninja
@@ -43,16 +120,16 @@ jobs:
           double: NO
           asan: YES
 
-        #- profile: macos-coverage-unity-xcode
-        #  os: macOS-15
-        #  config: Coverage
-        #  unity: YES
-        #  generator: Xcode
-        #  compiler: Default
-        #  metalibs: YES
-        #  python: YES
-        #  eigen: NO
-        #  double: NO
+        - profile: macos-coverage-unity-xcode
+          os: macOS-15
+          config: Coverage
+          unity: YES
+          generator: Xcode
+          compiler: Default
+          metalibs: YES
+          python: YES
+          eigen: NO
+          double: NO
 
         - profile: macos-nometa-standard-makefile
           os: macOS-15
@@ -101,19 +178,8 @@ jobs:
     - name: Install dependencies (macOS)
       if: runner.os == 'macOS'
       run: |
-        curl -O https://www.panda3d.org/download/panda3d-1.10.15/panda3d-1.10.15-tools-mac.tar.gz
-        tar -xf panda3d-1.10.15-tools-mac.tar.gz
-        mv panda3d-1.10.15/thirdparty thirdparty
-        rmdir panda3d-1.10.15
-
-        # Temporary hack so that pzip can run, since we are about to remove Cg anyway.
-        install_name_tool -id "$(pwd)/thirdparty/darwin-libs-a/nvidiacg/lib/libCg.dylib" thirdparty/darwin-libs-a/nvidiacg/lib/libCg.dylib
-
         brew install ccache
-
-    - name: Set up XCode (macOS)
-      if: runner.os == 'macOS'
-      run: sudo xcode-select -s /Applications/Xcode_16.app/Contents/Developer
+        sudo xcode-select -s /Applications/Xcode_16.app/Contents/Developer
 
     - name: Install dependencies (Ubuntu)
       if: startsWith(matrix.os, 'ubuntu')
@@ -122,28 +188,17 @@ jobs:
 
         sudo apt-get install
         build-essential ninja-build clang llvm ccache
-        bison flex
-        libeigen3-dev libfreetype6-dev libgl1-mesa-dev libjpeg-dev libode-dev
-        libopenal-dev libpng-dev libssl-dev libvorbis-dev libx11-dev
-        libxcursor-dev libxrandr-dev nvidia-cg-toolkit zlib1g-dev
+        bison flex libx11-dev libxcursor-dev libxrandr-dev
+        libgl1-mesa-dev libegl1-mesa-dev libgl1-mesa-dri mesa-utils-extra
         python3-setuptools python3-tk
 
-    - name: Cache dependencies (Windows)
-      if: runner.os == 'Windows'
-      uses: actions/cache@v5
+    - name: Restore thirdparty build cache
+      id: cache-thirdparty-restore
+      uses: actions/cache/restore@v5
       with:
-        path: thirdparty
-        key: ci-cmake-${{ runner.OS }}-thirdparty-v1.10.15-r1
-    - name: Install dependencies (Windows)
-      if: runner.os == 'Windows'
-      shell: powershell
-      run: |
-        if (!(Test-Path thirdparty/win-libs-vc14-x64)) {
-          $wc = New-Object System.Net.WebClient
-          $wc.DownloadFile("https://www.panda3d.org/download/panda3d-1.10.15/panda3d-1.10.15-tools-win64.zip", "thirdparty-tools.zip")
-          Expand-Archive -Path thirdparty-tools.zip
-          Move-Item -Path thirdparty-tools/panda3d-1.10.15/thirdparty -Destination .
-        }
+        path: ./thirdparty
+        key: cache-thirdparty-7b319de3355d0e8170b8b69f38362a47042b9b9b-${{ matrix.os }}
+        fail-on-cache-miss: true
 
     - name: ccache (non-Windows)
       if: runner.os != 'Windows'
@@ -184,6 +239,7 @@ jobs:
         -D BUILD_METALIBS=${{ matrix.metalibs }}
         -D HAVE_PYTHON=${{ runner.os != 'Windows' && matrix.python || 'NO' }}
         -D HAVE_EIGEN=${{ matrix.eigen }}
+        -D HAVE_OPENSSL=OFF
         -D STDFLOAT_DOUBLE=${{ matrix.double }}
         -D ENABLE_ASAN=${{ matrix.asan || 'NO' }}
         ..
@@ -191,6 +247,16 @@ jobs:
         echo "$PWD/${{ matrix.config }}/bin" >> $GITHUB_PATH
 
         echo "$PWD/bin" >> $GITHUB_PATH
+
+    - name: Configure headless OpenGL
+      if: matrix.os == 'ubuntu-24.04'
+      run: |
+        echo "LIBGL_ALWAYS_SOFTWARE=1" >> $GITHUB_ENV
+        echo "EGL_PLATFORM=surfaceless" >> $GITHUB_ENV
+        echo "EGL_LOG_LEVEL=debug" >> $GITHUB_ENV
+        mkdir -p build/etc/panda3d
+        echo "load-display p3headlessgl" >> build/etc/panda3d/10_ci.prc
+        eglinfo || true
 
     - name: Build (no Python)
       if: contains(matrix.python, 'NO')
@@ -402,37 +468,43 @@ jobs:
 
   makepanda:
     if: "!contains(github.event.head_commit.message, '[skip ci]') && !contains(github.event.head_commit.message, '[ci skip]')"
+    needs: thirdparty
     strategy:
+      fail-fast: false
       matrix:
-        os: [ubuntu-22.04, windows-2022, macOS-15]
+        os: [ubuntu-24.04, windows-2022, macOS-15]
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v6
+
     - name: Install dependencies (Ubuntu)
-      if: matrix.os == 'ubuntu-22.04'
+      if: matrix.os == 'ubuntu-24.04'
       run: |
         sudo apt-get update
-        sudo apt-get install build-essential bison flex libfreetype6-dev libgl1-mesa-dev libjpeg-dev libode-dev libopenal-dev libpng-dev libssl-dev libvorbis-dev libx11-dev libxcursor-dev libxrandr-dev nvidia-cg-toolkit zlib1g-dev
-    - name: Get thirdparty packages (Windows)
-      if: runner.os == 'Windows'
-      shell: powershell
-      run: |
-        $wc = New-Object System.Net.WebClient
-        $wc.DownloadFile("https://www.panda3d.org/download/panda3d-1.10.16/panda3d-1.10.16-tools-win64.zip", "thirdparty-tools.zip")
-        Expand-Archive -Path thirdparty-tools.zip
-        Move-Item -Path thirdparty-tools/panda3d-1.10.16/thirdparty -Destination .
-    - name: Get thirdparty packages (macOS)
-      if: runner.os == 'macOS'
-      run: |
-        curl -O https://www.panda3d.org/download/panda3d-1.10.16/panda3d-1.10.16-tools-mac.tar.gz
-        tar -xf panda3d-1.10.16-tools-mac.tar.gz
-        mv panda3d-1.10.16/thirdparty thirdparty
-        rmdir panda3d-1.10.16
-        (cd thirdparty/darwin-libs-a && rm -rf rocket)
+        sudo apt-get install build-essential bison flex libgl1-mesa-dev libegl1-mesa-dev libgl1-mesa-dri mesa-utils-extra libx11-dev libxcursor-dev libxrandr-dev nvidia-cg-toolkit
 
     - name: Set up XCode (macOS)
       if: runner.os == 'macOS'
       run: sudo xcode-select -s /Applications/Xcode_16.app/Contents/Developer
+
+    - name: Restore thirdparty build cache
+      id: cache-thirdparty-restore
+      uses: actions/cache/restore@v5
+      with:
+        path: ./thirdparty
+        key: cache-thirdparty-7b319de3355d0e8170b8b69f38362a47042b9b9b-${{ matrix.os }}
+        fail-on-cache-miss: true
+
+    - name: Configure headless OpenGL
+      if: matrix.os == 'ubuntu-24.04'
+      run: |
+        echo "LIBGL_ALWAYS_SOFTWARE=1" >> $GITHUB_ENV
+        echo "EGL_PLATFORM=surfaceless" >> $GITHUB_ENV
+        echo "EGL_LOG_LEVEL=debug" >> $GITHUB_ENV
+        mkdir -p built/etc
+        mkdir -p built_dbl/etc
+        echo "load-display p3headlessgl" >> built/etc/ci.prc
+        echo "load-display p3headlessgl" >> built_dbl/etc/ci.prc
 
     - name: Set up Python 3.13
       uses: actions/setup-python@v6
@@ -570,6 +642,30 @@ jobs:
         path: ~/python
         key: ${{ steps.cache-emscripten-python-restore.outputs.cache-primary-key }}
 
+    - name: Restore thirdparty build cache
+      id: cache-emscripten-thirdparty-restore
+      uses: actions/cache/restore@v5
+      with:
+        path: ./thirdparty
+        key: cache-emscripten-thirdparty-7b319de3355d0e8170b8b69f38362a47042b9b9b
+
+    - name: Build thirdparty packages
+      if: steps.cache-emscripten-thirdparty-restore.outputs.cache-hit != 'true'
+      run: |
+        git clone --revision=7b319de3355d0e8170b8b69f38362a47042b9b9b --depth=1 https://github.com/rdb/panda3d-thirdparty.git thirdparty
+        cd thirdparty
+        emcmake cmake -B build -DCMAKE_BUILD_TYPE=Release -DDISABLE_ALL=ON -DBUILD_GLSLANG=ON -DBUILD_SPIRV_CROSS=ON -DBUILD_SPIRV_TOOLS=ON
+        cmake --build build --config Release -j4
+        rm -rf build
+
+    - name: Save thirdparty build cache
+      id: cache-emscripten-thirdparty-save
+      if: steps.cache-emscripten-thirdparty-restore.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v5
+      with:
+        path: ./thirdparty
+        key: ${{ steps.cache-emscripten-thirdparty-restore.outputs.cache-primary-key }}
+
     - name: Build for Emscripten
       shell: bash
       run: |
@@ -665,7 +761,7 @@ jobs:
       uses: actions/cache/restore@v5
       with:
         path: ./thirdparty
-        key: cache-android-thirdparty-935c80380ca171e08587c570e9dad678d29db3c8-${{ matrix.android-abi }}-ndk${{ matrix.ndk-version }}
+        key: cache-android-thirdparty-7b319de3355d0e8170b8b69f38362a47042b9b9b-${{ matrix.android-abi }}-ndk${{ matrix.ndk-version }}
 
     - name: Install yasm
       if: steps.cache-android-thirdparty-restore.outputs.cache-hit != 'true'
@@ -674,7 +770,7 @@ jobs:
     - name: Build thirdparty packages
       if: steps.cache-android-thirdparty-restore.outputs.cache-hit != 'true'
       run: |
-        git clone --revision=935c80380ca171e08587c570e9dad678d29db3c8 --depth=1 https://github.com/rdb/panda3d-thirdparty.git thirdparty
+        git clone --revision=7b319de3355d0e8170b8b69f38362a47042b9b9b --depth=1 https://github.com/rdb/panda3d-thirdparty.git thirdparty
         cd thirdparty
         cmake -B build \
           -DCMAKE_BUILD_TYPE=Release \

@@ -17,6 +17,7 @@ from panda3d.core import (
     ModelFlattenRequest,
     ModelNode,
     ModelPool,
+    MovieAudio,
     NodePath,
     PandaNode,
     SamplerState,
@@ -31,12 +32,17 @@ from direct.showbase.DirectObject import DirectObject
 from . import ShowBase
 import warnings
 import sys
-from typing import Any, Callable, Iterable
+import os
+from typing import Any, Callable, Iterable, Union
+
+# Type aliases for loadModel, loadSound, etc. annotations
+_ModelPath = Union[str, Filename, os.PathLike]
+_SoundPath = Union[str, Filename, os.PathLike, MovieAudio]
 
 # You can specify a phaseChecker callback to check
 # a modelPath to see if it is being loaded in the correct
 # phase
-phaseChecker: Callable[[str, LoaderOptions], object] | None = None
+phaseChecker: Callable[[_ModelPath, LoaderOptions], object] | None = None
 
 
 class Loader(DirectObject):
@@ -183,7 +189,7 @@ class Loader(DirectObject):
     # model loading funcs
     def loadModel(
         self,
-        modelPath: str | list[str] | tuple[str, ...] | set[str],
+        modelPath: _ModelPath | list[_ModelPath] | tuple[_ModelPath, ...] | set[_ModelPath],
         loaderOptions: LoaderOptions | None = None,
         noCache: bool | None = None,
         allowInstance: bool = False,
@@ -276,7 +282,7 @@ class Loader(DirectObject):
         if allowInstance:
             loaderOptions.setFlags(loaderOptions.getFlags() | LoaderOptions.LFAllowInstance)
 
-        modelList: Iterable[str]
+        modelList: Iterable[_ModelPath]
         if not isinstance(modelPath, (tuple, list, set)):
             # We were given a single model pathname.
             modelList = [modelPath]
@@ -971,7 +977,13 @@ class Loader(DirectObject):
         TexturePool.releaseTexture(texture)
 
     # sound loading funcs
-    def loadSfx(self, *args, **kw) -> Any:
+    def loadSfx(
+        self,
+        soundPath: _SoundPath | tuple[_SoundPath, ...] | list[_SoundPath] | set[_SoundPath],
+        positional: bool = False,
+        callback: Callable[..., object] | None = None,
+        extraArgs: list = [],
+    ) -> Any:
         """Loads one or more sound files, specifically designated as a
         "sound effect" file (that is, uses the sfxManager to load the
         sound).  There is no distinction between sound effect files
@@ -983,10 +995,16 @@ class Loader(DirectObject):
         # showbase-created sfxManager should always be at front of list
         assert self.base is not None
         if self.base.sfxManagerList:
-            return self.loadSound(self.base.sfxManagerList[0], *args, **kw)
+            return self.loadSound(self.base.sfxManagerList[0], soundPath, positional, callback, extraArgs)
         return None
 
-    def loadMusic(self, *args, **kw):
+    def loadMusic(
+        self,
+        soundPath: _SoundPath | tuple[_SoundPath, ...] | list[_SoundPath] | set[_SoundPath],
+        positional: bool = False,
+        callback: Callable[..., object] | None = None,
+        extraArgs: list = [],
+    ) -> Any:
         """Loads one or more sound files, specifically designated as a
         "music" file (that is, uses the musicManager to load the
         sound).  There is no distinction between sound effect files
@@ -994,15 +1012,16 @@ class Loader(DirectObject):
         to load the sound file, but this distinction allows the sound
         effects and/or the music files to be adjusted as a group,
         independently of the other group."""
+        assert self.base is not None
         if self.base.musicManager:
-            return self.loadSound(self.base.musicManager, *args, **kw)
+            return self.loadSound(self.base.musicManager, soundPath, positional, callback, extraArgs)
         else:
             return None
 
     def loadSound(
         self,
         manager: AudioManager,
-        soundPath: str | tuple[str, ...] | list[str] | set[str],
+        soundPath: _SoundPath | tuple[_SoundPath, ...] | list[_SoundPath] | set[_SoundPath],
         positional: bool = False,
         callback: Callable[..., object] | None = None,
         extraArgs: list = [],
@@ -1016,7 +1035,7 @@ class Loader(DirectObject):
 
         from panda3d.core import AudioLoadRequest
 
-        soundList: Iterable[str]
+        soundList: Iterable[_SoundPath]
         if not isinstance(soundPath, (tuple, list, set)):
             # We were given a single sound pathname or a MovieAudio instance.
             soundList = [soundPath]

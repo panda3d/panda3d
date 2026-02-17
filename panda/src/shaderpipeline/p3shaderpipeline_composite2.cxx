@@ -4,6 +4,8 @@
 #include "spirVFlattenStructPass.cxx"
 #include "spirVHoistStructResourcesPass.cxx"
 #include "spirVInjectAlphaTestPass.cxx"
+#include "spirVInjectAnimationPass.cxx"
+#include "spirVInjectInstancingPass.cxx"
 #include "spirVMakeBlockPass.cxx"
 #include "spirVRemoveUnusedVariablesPass.cxx"
 #include "spirVReplaceVariableTypePass.cxx"

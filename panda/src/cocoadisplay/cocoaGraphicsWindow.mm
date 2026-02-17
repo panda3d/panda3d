@@ -427,6 +427,14 @@ open_window() {
         << "Failed to create Cocoa window.\n";
       return false;
     }
+
+    if ([_window screen] == nil) {
+      cocoadisplay_cat.error()
+        << "No screen available for Cocoa window.\n";
+      [_window close];
+      _window = nil;
+      return false;
+    }
   }
 
   // Create the NSView to render to.

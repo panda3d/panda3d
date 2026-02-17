@@ -53,6 +53,14 @@ setup(Shader *shader) {
 }
 
 /**
+ * Returns true if this binding involves the modelview matrix.
+ */
+bool ShaderInputBinding::
+has_modelview_matrix(bool &inverse, bool &transpose) const {
+  return false;
+}
+
+/**
  * Fetches the part of the shader input that is plain numeric data.
  * If packed is true, the data is tightly packed, even if the type originally
  * contained padding.

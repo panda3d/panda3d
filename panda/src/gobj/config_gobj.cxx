@@ -212,7 +212,7 @@ ConfigVariableBool singular_points
           "don't want the points to appear repeatedly."));
 
 ConfigVariableBool matrix_palette
-("matrix-palette", false,
+("matrix-palette", true,
  PRC_DESC("Set this true to allow the use of the matrix palette when "
           "animating vertices in hardware.  The matrix palette is "
           "not supported by all devices, but if it is, using "
@@ -220,9 +220,7 @@ ConfigVariableBool matrix_palette
           "in hardware, and it can also improve the "
           "performance of animating some simpler meshes.  Without "
           "this option, certain meshes will have to be animated in "
-          "software.  However, this option is not enabled by default, "
-          "because its support seems to be buggy in certain drivers "
-          "(ATI FireGL T2 8.103 in particular.)"));
+          "software."));
 
 ConfigVariableBool display_list_animation
 ("display-list-animation", false,

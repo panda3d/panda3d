@@ -763,6 +763,7 @@ if (COMPILER == "MSVC"):
         if not os.path.isfile(GetThirdpartyDir() + "openal/bin/OpenAL32.dll"):
             # Link OpenAL Soft statically.
             DefSymbol("OPENAL", "AL_LIBTYPE_STATIC")
+            LibName("OPENAL", "avrt.lib")
     if (PkgSkip("ODE")==0):
         LibName("ODE",      GetThirdpartyDir() + "ode/lib/ode_single.lib")
         DefSymbol("ODE",    "dSINGLE", "")

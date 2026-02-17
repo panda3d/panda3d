@@ -1,7 +1,8 @@
 """
 Palette for Prototyping
 """
-import imp
+import importlib.util
+import os, sys
 
 from .ObjectPaletteBase import ObjectBase, ObjectPaletteBase
 
@@ -23,8 +24,15 @@ class ProtoPaletteBase(ObjectPaletteBase):
     def populate(self):
         moduleName = 'protoPaletteData'
         try:
-            file, pathname, description = imp.find_module(moduleName, [self.dirname])
-            module = imp.load_module(moduleName, file, pathname, description)
+            pathname = os.path.join(self.dirname, moduleName + ".py")
+            spec = importlib.util.spec_from_file_location(moduleName, pathname)
+            if spec is None or spec.loader is None:
+                raise ImportError
+
+            module = importlib.util.module_from_spec(spec)
+            sys.modules[module_name] = module
+            spec.loader.exec_module(module)
+
             self.data = module.protoData
             self.dataStruct = module.protoDataStruct
         except:

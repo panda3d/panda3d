@@ -18,6 +18,7 @@
 #include "internalName.h"
 #include "shaderEnums.h"
 #include "shaderType.h"
+#include "vector_uchar.h"
 
 class VirtualFile;
 
@@ -112,6 +113,8 @@ public:
   virtual bool link_inputs(const ShaderModule *previous, pmap<int, int> &remap) const;
   virtual void remap_input_locations(const pmap<int, int> &remap);
 
+  virtual vector_uchar get_code() const=0;
+
 PUBLISHED:
   MAKE_PROPERTY(stage, get_stage);
   MAKE_PROPERTY(used_capabilities, get_used_capabilities);
@@ -119,8 +122,7 @@ PUBLISHED:
   MAKE_SEQ_PROPERTY(outputs, get_num_outputs, get_output);
   MAKE_SEQ_PROPERTY(parameters, get_num_parameters, get_parameter);
   MAKE_SEQ_PROPERTY(spec_constants, get_num_spec_constants, get_spec_constant);
-
-  virtual std::string get_ir() const=0;
+  MAKE_PROPERTY(code, get_code);
 
 public:
   virtual void output(std::ostream &out) const;

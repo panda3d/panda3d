@@ -62,6 +62,7 @@ public:
 #endif
   EGLConfig _fbconfig;
   FrameBufferProperties _fbprops;
+  bool _supports_surfaceless = false;
 
 protected:
   virtual void gl_flush() const;

@@ -54,8 +54,8 @@ destroy_modules(VkDevice device) {
  */
 bool VulkanShaderContext::
 create_modules(VkDevice device, const ShaderType::Struct *push_constant_block_type) {
-  for (const Shader::ShaderVarSpec &spec : _shader->_var_spec) {
-    if (spec._name == InternalName::get_color()) {
+  for (const Shader::VertexInputBinding &bind : _shader->_vertex_inputs) {
+    if (bind._name == InternalName::get_color()) {
       _uses_vertex_color = true;
       break;
     }

@@ -1133,8 +1133,8 @@ end_frame(Thread *current_thread) {
 bool DXGraphicsStateGuardian9::
 begin_draw_primitives(const GeomPipelineReader *geom_reader,
                       const GeomVertexDataPipelineReader *data_reader,
-                      size_t num_instances, bool force) {
-  if (!GraphicsStateGuardian::begin_draw_primitives(geom_reader, data_reader, num_instances, force)) {
+                      const InstanceList *instances, bool force) {
+  if (!GraphicsStateGuardian::begin_draw_primitives(geom_reader, data_reader, instances, force)) {
     return false;
   }
   nassertr(_data_reader != nullptr, false);
@@ -1245,6 +1245,10 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
       return false;
     }
 
+    size_t num_instances = 1;
+    if (instances != nullptr) {
+      num_instances = instances->size();
+    }
     if (num_instances == 1 && _instancing_enabled) {
       // Reset the divisors.
       for (size_t i = 0; i < _num_bound_streams; ++i) {
@@ -2591,6 +2595,7 @@ reset() {
   _max_clip_planes = (int)d3d_caps.MaxUserClipPlanes;
   _max_vertex_transforms = d3d_caps.MaxVertexBlendMatrices;
   _max_vertex_transform_indices = d3d_caps.MaxVertexBlendMatrixIndex;
+  _supports_fixed_function_vertex_blending = (_max_vertex_transforms > 0);
 
   set_render_state(D3DRS_AMBIENT, 0x0);
 

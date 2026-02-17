@@ -711,7 +711,8 @@ class ShowBase(DirectObject.DirectObject):
             allowAccessibilityShortcutKeys(True)
             self.__disabledStickyKeys = False
 
-        self.__directObject.ignoreAll()
+        if hasattr(self, '__directObject'):
+            self.__directObject.ignoreAll()
         self.ignoreAll()
         self.shutdown()
 

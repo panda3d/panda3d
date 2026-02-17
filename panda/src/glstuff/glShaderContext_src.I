@@ -18,6 +18,6 @@ INLINE void CLP(ShaderContext)::
 set_display_region(const DisplayRegion *display_region) {
   if (_display_region != display_region) {
     _display_region = display_region;
-    issue_parameters(Shader::D_scene);
+    _force_respecify |= Shader::D_scene;
   }
 }

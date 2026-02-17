@@ -59,7 +59,7 @@ get_white_texture() {
  * Generate an error message including a description of the specified
  * parameter.  Always returns nullptr.
  */
-static nullptr_t
+static std::nullptr_t
 report_parameter_error(const InternalName *name, const ShaderType *type, const char *msg) {
   shader_cat.error()
     << *type << ' ' << *name << ": " << msg << "\n";
@@ -1020,6 +1020,29 @@ setup(Shader *shader) {
 }
 
 /**
+ * Returns true if this binding involves the modelview matrix.
+ */
+bool ShaderMatrixBinding::
+has_modelview_matrix(bool &inverse, bool &transpose) const {
+  transpose = _transpose;
+
+  switch (_input) {
+  case Shader::SM_model_to_view:
+  case Shader::SM_model_to_apiview:
+    inverse = false;
+    return true;
+
+  case Shader::SM_view_to_model:
+  case Shader::SM_apiview_to_model:
+    inverse = true;
+    return true;
+
+  default:
+    return false;
+  }
+}
+
+/**
  * Fetches the part of the shader input that is plain numeric data.
  */
 void ShaderMatrixBinding::
@@ -1055,6 +1078,36 @@ void ShaderMatrixComposeBinding::
 setup(Shader *shader) {
   _cache_index0 = shader->add_matrix_cache_item(_input0, _arg0, Shader::get_matrix_deps(_input0));
   _cache_index1 = shader->add_matrix_cache_item(_input1, _arg1, Shader::get_matrix_deps(_input1));
+}
+
+/**
+ * Returns true if this binding involves the modelview matrix.
+ */
+bool ShaderMatrixComposeBinding::
+has_modelview_matrix(bool &inverse, bool &transpose) const {
+  transpose = _transpose;
+
+  switch (_input0) {
+  case Shader::SM_model_to_view:
+  case Shader::SM_model_to_apiview:
+    inverse = false;
+    return true;
+
+  default:
+    break;
+  }
+
+  switch (_input1) {
+  case Shader::SM_view_to_model:
+  case Shader::SM_apiview_to_model:
+    inverse = true;
+    return true;
+
+  default:
+    break;
+  }
+
+  return false;
 }
 
 /**

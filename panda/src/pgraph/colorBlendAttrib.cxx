@@ -131,6 +131,18 @@ compare_to_impl(const RenderAttrib *other) const {
     return (int)_b - (int)ta->_b;
   }
 
+  if (_alpha_mode != ta->_alpha_mode) {
+    return (int)_alpha_mode - (int)ta->_alpha_mode;
+  }
+
+  if (_alpha_a != ta->_alpha_a) {
+    return (int)_alpha_a - (int)ta->_alpha_a;
+  }
+
+  if (_alpha_b != ta->_alpha_b) {
+    return (int)_alpha_b - (int)ta->_alpha_b;
+  }
+
   return _color.compare_to(ta->_color);
 }
 
@@ -146,6 +158,9 @@ get_hash_impl() const {
   hash = int_hash::add_hash(hash, (int)_mode);
   hash = int_hash::add_hash(hash, (int)_a);
   hash = int_hash::add_hash(hash, (int)_b);
+  hash = int_hash::add_hash(hash, (int)_alpha_mode);
+  hash = int_hash::add_hash(hash, (int)_alpha_a);
+  hash = int_hash::add_hash(hash, (int)_alpha_b);
   hash = _color.add_hash(hash);
 
   return hash;

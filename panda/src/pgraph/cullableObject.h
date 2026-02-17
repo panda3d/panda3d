@@ -75,7 +75,6 @@ public:
   CPT(TransformState) _internal_transform;
   PT(CallbackObject) _draw_callback;
   CPT(InstanceList) _instances;
-  int _num_instances = 1;
 
 private:
   void munge_instances(Thread *current_thread);

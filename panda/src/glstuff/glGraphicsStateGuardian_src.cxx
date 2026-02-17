@@ -2648,9 +2648,9 @@ reset() {
 #ifndef OPENGLES_1
   // Check for uniform buffers.
 #ifdef OPENGLES
-  if (is_at_least_gl_version(3, 1) || has_extension("GL_ARB_uniform_buffer_object")) {
-#else
   if (is_at_least_gles_version(3, 0)) {
+#else
+  if (is_at_least_gl_version(3, 1) || has_extension("GL_ARB_uniform_buffer_object")) {
 #endif
     _supports_uniform_buffers = true;
     _glGetActiveUniformsiv = (PFNGLGETACTIVEUNIFORMSIVPROC)
@@ -2659,6 +2659,22 @@ reset() {
        get_extension_func("glGetActiveUniformBlockiv");
     _glGetActiveUniformBlockName = (PFNGLGETACTIVEUNIFORMBLOCKNAMEPROC)
        get_extension_func("glGetActiveUniformBlockName");
+
+    // UBO support is the requirement for hardware animation.
+    // Requiring GLSL 1.50 instead of 1.40 due to a SPIRV-Cross bug.
+#ifdef OPENGLES
+    if (_glsl_version >= 300) {
+#else
+    if (_glsl_version >= 150) {
+#endif
+      _max_vertex_transforms = 4;
+      _max_vertex_transform_indices = 256;
+      _supported_geom_rendering |= Geom::GR_shader_vertex_blend;
+
+      // If we have no fixed-function hardware, we pretend to support
+      // fixed-function vertex blending, since we always have a shader applied.
+      _supports_fixed_function_vertex_blending = !has_fixed_function_pipeline();
+    }
   } else {
     _supports_uniform_buffers = false;
   }
@@ -2822,6 +2838,10 @@ reset() {
         << "Instanced vertex arrays advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
       _supports_vertex_attrib_divisor = false;
     }
+  }
+
+  if (_supports_geometry_instancing && _supports_vertex_attrib_divisor) {
+    _supported_geom_rendering |= GeomEnums::GR_instancing;
   }
 #endif
 
@@ -3039,6 +3059,7 @@ reset() {
 
 #ifndef OPENGLES
   _glMapNamedBufferRange = nullptr;
+  _glUnmapNamedBuffer = nullptr;
 
   if (gl_support_dsa &&
       (is_at_least_gl_version(4, 5) || has_extension("GL_ARB_direct_state_access"))) {
@@ -3059,6 +3080,8 @@ reset() {
       _glMapNamedBufferRange = (PFNGLMAPNAMEDBUFFERRANGEPROC)
         get_extension_func("glMapNamedBufferRange");
     }
+    _glUnmapNamedBuffer = (PFNGLUNMAPNAMEDBUFFERPROC)
+      get_extension_func("glUnmapNamedBuffer");
 
     _glNamedBufferSubData = (PFNGLNAMEDBUFFERSUBDATAPROC)
       get_extension_func("glNamedBufferSubData");
@@ -4131,6 +4154,9 @@ reset() {
   _current_vertex_format.clear();
   memset(_vertex_attrib_columns, 0, sizeof(const GeomVertexColumn *) * 32);
 
+  _current_ubuffer_index = 0;
+  _current_ubuffer_base.clear();
+
   _current_sbuffer_index = 0;
   _current_sbuffer_base.clear();
 #endif
@@ -4646,10 +4672,20 @@ clear_before_callback() {
   }
 #endif
 #ifndef OPENGLES_1
-  if (_vertex_array_shader_context != 0) {
+  if (_vertex_array_shader_context != nullptr) {
     _vertex_array_shader_context->disable_shader_vertex_arrays();
     _vertex_array_shader = nullptr;
     _vertex_array_shader_context = nullptr;
+  }
+  if (_texture_binding_shader_context != nullptr) {
+    _texture_binding_shader_context->disable_shader_texture_bindings();
+    _texture_binding_shader = nullptr;
+    _texture_binding_shader_context = nullptr;
+  }
+  if (_current_shader_context != nullptr) {
+    _current_shader_context->unbind();
+    _current_shader = nullptr;
+    _current_shader_context = nullptr;
   }
 #endif
   unbind_buffers();
@@ -4905,22 +4941,27 @@ end_frame(Thread *current_thread) {
 
 #ifndef OPENGLES_1
   // This breaks shaders across multiple regions.
-  if (_vertex_array_shader_context != 0) {
+  if (_vertex_array_shader_context != nullptr) {
     _vertex_array_shader_context->disable_shader_vertex_arrays();
     _vertex_array_shader = nullptr;
     _vertex_array_shader_context = nullptr;
   }
-  if (_texture_binding_shader_context != 0) {
+  if (_texture_binding_shader_context != nullptr) {
     _texture_binding_shader_context->disable_shader_texture_bindings();
     _texture_binding_shader = nullptr;
     _texture_binding_shader_context = nullptr;
   }
-  if (_current_shader_context != 0) {
+  if (_current_shader_context != nullptr) {
     _current_shader_context->unbind();
     _current_shader = nullptr;
     _current_shader_context = nullptr;
   }
   _state_shader = nullptr;
+#endif
+
+#ifndef OPENGLES_1
+  // The instance list may be modified between frames.
+  _state_instances = nullptr;
 #endif
 
   // Respecify the active texture next frame, for good measure.
@@ -5201,7 +5242,7 @@ end_frame_timing(const FrameTiming &frame) {
 bool CLP(GraphicsStateGuardian)::
 begin_draw_primitives(const GeomPipelineReader *geom_reader,
                       const GeomVertexDataPipelineReader *data_reader,
-                      size_t num_instances, bool force) {
+                      const InstanceList *instances, bool force) {
 #ifndef NDEBUG
   if (GLCAT.is_spam()) {
     GLCAT.spam() << "begin_draw_primitives: " << *(data_reader->get_object()) << "\n";
@@ -5218,13 +5259,55 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   }
 #endif
 
-  if (!GraphicsStateGuardian::begin_draw_primitives(geom_reader, data_reader, num_instances, force)) {
+  if (!GraphicsStateGuardian::begin_draw_primitives(geom_reader, data_reader, instances, force)) {
     return false;
   }
   nassertr(_data_reader != nullptr, false);
 
 #ifndef OPENGLES_1
-  _instance_count = _supports_geometry_instancing ? num_instances : 1;
+  if (_current_shader_context != nullptr) {
+    // How many instances should we draw?
+    bool inject_instancing = false;
+    if (_supports_geometry_instancing) {
+      if (instances != nullptr) {
+        if (instances != _state_instances) {
+          _state_instances = instances;
+          do_issue_instances();
+        }
+        inject_instancing = true;
+        _instance_count = instances->size();
+      } else {
+        int count = _state_shader->get_instance_count();
+        _instance_count = (count > 0) ? count : 1;
+      }
+    } else {
+      _instance_count = 1;
+    }
+
+    // Do we have animation that wasn't applied on the CPU?
+    bool inject_animation = false;
+    if (data_reader->get_format()->get_animation().get_animation_type() == Geom::AT_hardware &&
+        !_target_shader->get_flag(ShaderAttrib::F_hardware_skinning)) {
+      // For now, this is the only UBO, so it's always bound to index 0, but we
+      // may want to coordinate this with the shader context later.
+      if (!apply_transform_buffer(0, geom_reader, data_reader->get_transform_table())) {
+        return false;
+      }
+      inject_animation = true;
+    }
+
+    if (!_current_shader_context->set_state_and_transform(_state_rs, _internal_transform,
+        _scene_setup->get_camera_transform(), _projection_mat, inject_instancing, inject_animation)) {
+      // Something is wrong with the current shader.
+      return false;
+    }
+
+    // The above call will handle texture updates nowadays.
+    _texture_binding_shader = _current_shader;
+    _texture_binding_shader_context = _current_shader_context;
+  } else {
+    _instance_count = 1;
+  }
 #endif
 
   _geom_display_list = 0;
@@ -5614,6 +5697,24 @@ unbind_buffers() {
     _glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     _current_ibuffer_index = 0;
   }
+#ifndef OPENGLES_1
+  if (_current_ubuffer_index != 0) {
+    if (GLCAT.is_spam() && gl_debug_buffers) {
+      GLCAT.spam()
+        << "unbinding uniform buffer\n";
+    }
+    _glBindBuffer(GL_UNIFORM_BUFFER, 0);
+    _current_ubuffer_index = 0;
+  }
+  if (_current_sbuffer_index != 0) {
+    if (GLCAT.is_spam() && gl_debug_buffers) {
+      GLCAT.spam()
+        << "unbinding shader buffer\n";
+    }
+    _glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+    _current_sbuffer_index = 0;
+  }
+#endif
 
 #ifndef OPENGLES
   if (_current_vertex_buffers.size() > 1 && _supports_multi_bind) {
@@ -7024,7 +7125,7 @@ extract_texture_data(Texture *tex) {
 #ifndef OPENGLES_1
   // Makes sure that textures aren't still bound to the shader (which is
   // partly necessary to make sure mark_incoherent() is called).
-  if (_texture_binding_shader_context != 0) {
+  if (_texture_binding_shader_context != nullptr) {
     _texture_binding_shader_context->disable_shader_texture_bindings();
     _texture_binding_shader = nullptr;
     _texture_binding_shader_context = nullptr;
@@ -7197,6 +7298,135 @@ prepare_geom(Geom *geom) {
   return new CLP(GeomContext)(geom);
 }
 
+#ifndef OPENGLES_1
+/**
+ * Updates the uniform buffer holding the skinning matrices for the given Geom.
+ */
+bool CLP(GraphicsStateGuardian)::
+update_transform_buffer(CLP(GeomContext) *ggc, const TransformTable *table) {
+  nassertr(_supports_uniform_buffers, false);
+
+  GLuint buffer = ggc->_transform_buffer;
+
+  size_t num_transforms = table->get_num_transforms();
+  if (num_transforms > ggc->_transform_buffer_size) {
+    _glDeleteBuffers(1, &buffer);
+    buffer = 0;
+  }
+
+  bool recreate = false;
+  if (buffer == 0) {
+    _glGenBuffers(1, &buffer);
+    ggc->_transform_buffer = buffer;
+    ggc->_transform_buffer_size = 256;
+    recreate = true;
+  }
+
+  // For now, it's always holding 256 elements, because that's what we declare
+  // in the shader.
+  size_t size_bytes = ggc->_transform_buffer_size * sizeof(float) * 12;
+  void *ptr = map_write_discard_buffer(GL_UNIFORM_BUFFER, buffer, size_bytes, recreate);
+
+  float *data = (float *)ptr;
+  size_t i = 0;
+  for (; i < num_transforms; ++i) {
+#ifdef STDFLOAT_DOUBLE
+    LMatrix4d matd;
+    table->get_transform(i)->get_matrix(matd);
+    LMatrix4f mat = LCAST(float, matd);
+#else
+    LMatrix4f mat;
+    table->get_transform(i)->get_matrix(mat);
+#endif
+
+    data[0] = mat[0][0];
+    data[1] = mat[1][0];
+    data[2] = mat[2][0];
+    data[3] = mat[3][0];
+
+    data[4] = mat[0][1];
+    data[5] = mat[1][1];
+    data[6] = mat[2][1];
+    data[7] = mat[3][1];
+
+    data[8] = mat[0][2];
+    data[9] = mat[1][2];
+    data[10] = mat[2][2];
+    data[11] = mat[3][2];
+
+    data += 12;
+  }
+  // Fill the rest with identity.
+  /*for (; i < ggc->_transform_buffer_size; ++i) {
+    data[0] = 1;
+    data[1] = 0;
+    data[2] = 0;
+    data[3] = 0;
+
+    data[4] = 0;
+    data[5] = 1;
+    data[6] = 0;
+    data[7] = 0;
+
+    data[8] = 0;
+    data[9] = 0;
+    data[10] = 1;
+    data[11] = 0;
+    data += 12;
+  }*/
+
+  unmap_buffer(GL_UNIFORM_BUFFER, buffer);
+  _current_ubuffer_index = 0;
+
+  ggc->_transform_table = table;
+  ggc->_transform_table_modified = table->get_modified();
+  return true;
+}
+#endif  // !OPENGLES_1
+
+#ifndef OPENGLES_1
+/**
+ * Updates the uniform buffer holding the skinning matrices for the given Geom
+ * and binds it to the given UBO slot.
+ */
+bool CLP(GraphicsStateGuardian)::
+apply_transform_buffer(GLuint base, const GeomPipelineReader *geom_reader,
+                       const TransformTable *table) {
+  nassertr_always(table != nullptr, false);
+  nassertr(_supports_uniform_buffers, false);
+
+  GeomContext *gc = geom_reader->prepare_now(get_prepared_objects(), this);
+  nassertr(gc != nullptr, false);
+  CLP(GeomContext) *ggc = DCAST(CLP(GeomContext), gc);
+
+  if (ggc->_transform_buffer == 0 ||
+      ggc->_transform_table != table ||
+      ggc->_transform_table_modified != table->get_modified(geom_reader->get_current_thread())) {
+    update_transform_buffer(ggc, table);
+  }
+
+  if (base >= _current_ubuffer_base.size()) {
+    _current_ubuffer_base.resize(base + 1, 0);
+  }
+
+  GLuint index = ggc->_transform_buffer;
+  if (_current_ubuffer_base[base] != index) {
+    if (GLCAT.is_spam() && gl_debug_buffers) {
+      GLCAT.spam()
+        << "binding uniform buffer " << (int)index
+        << " to index " << base << "\n";
+    }
+    _glBindBufferBase(GL_UNIFORM_BUFFER, base, index);
+    _current_ubuffer_base[base] = index;
+    _current_ubuffer_index = index;
+
+    report_my_gl_errors();
+  }
+
+  return true;
+}
+#endif  // !OPENGLES_1
+
 /**
  * Frees the GL resources previously allocated for the geom.  This function
  * should never be called directly; instead, call Geom::release() (or simply
@@ -7208,6 +7438,14 @@ release_geom(GeomContext *gc) {
   if (has_fixed_function_pipeline()) {
     ggc->release_display_lists();
   }
+
+#ifndef OPENGLES_1
+  if (ggc->_transform_buffer != 0) {
+    _glDeleteBuffers(1, &ggc->_transform_buffer);
+    ggc->_transform_buffer = 0;
+  }
+#endif
+
   report_my_gl_errors();
 
   delete ggc;
@@ -7241,6 +7479,22 @@ prepare_shader(Shader *se) {
 void CLP(GraphicsStateGuardian)::
 release_shader(ShaderContext *sc) {
 #ifndef OPENGLES_1
+  if (_vertex_array_shader_context == sc) {
+    _vertex_array_shader = nullptr;
+    _vertex_array_shader_context = nullptr;
+  }
+
+  if (_texture_binding_shader_context == sc) {
+    _texture_binding_shader = nullptr;
+    _texture_binding_shader_context = nullptr;
+  }
+
+  if (_current_shader_context == sc) {
+    ((CLP(ShaderContext) *)sc)->unbind();
+    _current_shader = nullptr;
+    _current_shader_context = nullptr;
+  }
+
   if (sc->is_of_type(CLP(ShaderContext)::get_class_type())) {
     ((CLP(ShaderContext) *)sc)->release_resources(this);
   }
@@ -7903,7 +8157,7 @@ release_shader_buffer(BufferContext *bc) {
 
   CLP(BufferContext) *gbc = DCAST(CLP(BufferContext), bc);
 
-  if (GLCAT.is_debug() && gl_debug_buffers) {
+  if (GLCAT.is_debug()) {
     GLCAT.debug()
       << "deleting shader buffer " << (int)gbc->_index << "\n";
   }
@@ -8309,9 +8563,14 @@ dispatch_compute(int num_groups_x, int num_groups_y, int num_groups_z) {
   maybe_gl_finish();
 
   nassertv(get_supports_compute_shaders());
-  nassertv(_current_shader_context != nullptr);
-  CLP(ShaderContext) *gsc;
-  DCAST_INTO_V(gsc, _current_shader_context);
+
+  CLP(ShaderContext) *gsc = _current_shader_context;
+  nassertv(gsc != nullptr);
+
+  if (!gsc->set_state_and_transform(_state_rs, _internal_transform,
+        _scene_setup->get_camera_transform(), _projection_mat, false, false)) {
+    return;
+  }
 
 #ifdef DO_PSTATS
   _compute_work_groups_pcollector.add_level(num_groups_x * num_groups_y * num_groups_z);
@@ -9005,6 +9264,104 @@ apply_fog(Fog *fog) {
 }
 #endif  // SUPPORT_FIXED_FUNCTION
 
+
+/**
+ * Sets up the instance list for the current state.
+ */
+#ifndef OPENGLES_1
+void CLP(GraphicsStateGuardian)::
+do_issue_instances() {
+  const InstanceList *instances = _state_instances;
+
+  size_t num_instances = 1;
+  if (instances != nullptr) {
+    num_instances = instances->size();
+  }
+
+  bool recreate = false;
+  if (num_instances > _instance_buffer_size) {
+    _instance_buffer_size = num_instances;
+
+    if (_supports_buffer_storage) {
+      // Need to delete it if we're using persistent buffer storage.
+      _glDeleteBuffers(1, &_instance_buffer);
+      _instance_buffer = 0;
+    }
+
+    if (_instance_buffer == 0) {
+      _glGenBuffers(1, &_instance_buffer);
+      nassertv(_instance_buffer != 0);
+      recreate = true;
+      //XXX do we need to force a re-bind here?
+    }
+  }
+
+  if (GLCAT.is_debug()) {
+    GLCAT.debug()
+      << "Updating instance buffer with " << num_instances << " instances\n";
+  }
+
+  // Orphan the buffer data.  In the future, we could use a persistently
+  // mapped buffer if supported.
+  size_t size_bytes = _instance_buffer_size * sizeof(float) * 12;
+  void *ptr = map_write_discard_buffer(GL_ARRAY_BUFFER, _instance_buffer, size_bytes, recreate);
+  _current_vbuffer_index = 0;
+  nassertv(ptr != nullptr);
+
+  float *data = (float *)ptr;
+  if (instances != nullptr) {
+    for (size_t i = 0; i < instances->size(); ++i) {
+      LMatrix4f mat = LCAST(float, (*instances)[i].get_mat());
+
+      data[0] = mat[0][0];
+      data[1] = mat[1][0];
+      data[2] = mat[2][0];
+      data[3] = mat[3][0];
+
+      data[4] = mat[0][1];
+      data[5] = mat[1][1];
+      data[6] = mat[2][1];
+      data[7] = mat[3][1];
+
+      data[8] = mat[0][2];
+      data[9] = mat[1][2];
+      data[10] = mat[2][2];
+      data[11] = mat[3][2];
+
+      data += 12;
+    }
+  } else {
+    data[0] = 1;
+    data[1] = 0;
+    data[2] = 0;
+    data[3] = 0;
+
+    data[4] = 0;
+    data[5] = 1;
+    data[6] = 0;
+    data[7] = 0;
+
+    data[8] = 0;
+    data[9] = 0;
+    data[10] = 1;
+    data[11] = 0;
+  }
+
+  _data_transferred_pcollector.add_level(size_bytes);
+
+#ifndef OPENGLES
+  if (_glUnmapNamedBuffer != nullptr) {
+    _glUnmapNamedBuffer(_instance_buffer);
+  } else
+#endif
+  {
+    _glBindBuffer(GL_ARRAY_BUFFER, _instance_buffer);
+    _glUnmapBuffer(GL_ARRAY_BUFFER);
+    _current_vbuffer_index = _instance_buffer;
+  }
+}
+#endif
+
 /**
  * Sends the indicated transform matrix to the graphics API to be applied to
  * future vertices.
@@ -9068,17 +9425,11 @@ do_issue_shader() {
   CLP(ShaderContext) *context = 0;
   Shader *shader = (Shader *)_target_shader->get_shader();
 
-  RenderAttrib::PandaCompareFunc alpha_test_mode = RenderAttrib::M_none;
-
   // If we don't have a shader, apply the default shader.
   if (!has_fixed_function_pipeline()) {
     if (!shader) {
       shader = _default_shader;
       nassertv(shader != nullptr);
-    }
-
-    if (!_target_shader->get_flag(ShaderAttrib::F_subsume_alpha_test)) {
-      alpha_test_mode = _target_rs->get_alpha_test_mode();
     }
   }
 
@@ -9092,7 +9443,7 @@ do_issue_shader() {
 
   // If it failed, try applying the default shader.
   if (_default_shader != nullptr && shader != _default_shader &&
-      (context == 0 || !context->valid())) {
+      (context == nullptr || !context->valid())) {
     shader = _default_shader;
     nassertv(shader != nullptr);
     if (_current_shader != shader) {
@@ -9102,35 +9453,41 @@ do_issue_shader() {
     }
   }
 
-  if (context == 0 || !context->valid()) {
-    if (_current_shader_context != 0) {
+  if (context == nullptr || !context->valid()) {
+    if (_current_shader_context != nullptr) {
       _current_shader_context->unbind();
-      _current_shader = 0;
-      _current_shader_context = 0;
+      _current_shader = nullptr;
+      _current_shader_context = nullptr;
+    }
+    // Unbind all the textures, in anticipation of fixed-function rendering.
+    if (_texture_binding_shader_context != nullptr) {
+      _texture_binding_shader_context->disable_shader_texture_bindings();
+      _texture_binding_shader = nullptr;
+      _texture_binding_shader_context = nullptr;
     }
   } else {
+#ifdef SUPPORT_FIXED_FUNCTION
+    if (_num_active_texture_stages > 0) {
+      disable_standard_texture_bindings();
+    }
+#endif
     if (context != _current_shader_context) {
-      // Use a completely different shader than before.  Unbind old shader,
-      // bind the new one.
-      if (_current_shader_context != nullptr &&
-          _current_shader->get_language() != shader->get_language()) {
-        // If it's a different type of shader, make sure to unbind the old.
+      // Use a completely different shader than before.  Unbind old shader.
+      // We bind the new one in begin_draw_primitives.
+      if (_current_shader_context != nullptr) {
         _current_shader_context->unbind();
+        _current_shader = nullptr;
+        _current_shader_context = nullptr;
       }
-      if (!context->bind(this, alpha_test_mode)) {
-        shader = nullptr;
+      if (context->bind(this)) {
+        _current_shader = shader;
+        _current_shader_context = context;
+
+        context->set_display_region(_current_display_region);
+      } else {
         context = nullptr;
       }
-      _current_shader = shader;
     }
-
-    if (context != nullptr) {
-      context->set_display_region(_current_display_region);
-
-      // Bind the shader storage buffers.
-      context->update_shader_buffer_bindings(_current_shader_context);
-    }
-    _current_shader_context = context;
   }
 
 #ifndef OPENGLES
@@ -10332,24 +10689,23 @@ query_glsl_version() {
     int requested_version = gl_force_glsl_version;
     if (requested_version > _glsl_version) {
       GLCAT.warning()
-        << "Cannot force GLSL "
+        << "Forcing GLSL "
 #ifdef OPENGLES
            "ES "
 #endif
-           "version higher than supported version " << _glsl_version << "\n";
-    } else {
-      _glsl_version = requested_version;
-
-      if (GLCAT.is_debug()) {
-        GLCAT.debug()
-          << "Forced GLSL "
-#ifdef OPENGLES
-             "ES "
-#endif
-             "version: " << _glsl_version << "\n";
-      }
+           "version higher than reported supported version " << _glsl_version << "\n";
     }
-  } else {
+    if (GLCAT.is_debug()) {
+      GLCAT.debug()
+        << "Forced GLSL "
+#ifdef OPENGLES
+           "ES "
+#endif
+           "version: " << requested_version << "\n";
+    }
+    _glsl_version = requested_version;
+  }
+  else {
     if (GLCAT.is_debug()) {
       GLCAT.debug()
         << "Detected GLSL "
@@ -13023,44 +13379,25 @@ set_state_and_transform(const RenderState *target,
   }
 
   if (target == _state_rs && (_state_mask | _inv_state_mask).is_all_on()) {
-#ifndef OPENGLES_1
-    if (transform_changed) {
-      // The state has not changed, but the transform has. Set the new
-      // transform on the shader, if we have one.
-      if (_current_shader_context != nullptr) {
-        _current_shader_context->set_state_and_transform(_state_rs, transform,
-          _scene_setup->get_camera_transform(), _projection_mat);
-      }
-    }
-#endif
     return;
   }
   _target_rs = target;
 
 #ifndef OPENGLES_1
   determine_target_shader();
-  _sattr_instance_count = _target_shader->get_instance_count();
 
   if (_target_shader != _state_shader) {
     do_issue_shader();
     _state_shader = _target_shader;
-    _state_mask.clear_bit(TextureAttrib::get_class_slot());
     _state_mask.set_bit(ShaderAttrib::get_class_slot());
   }
   else if (!has_fixed_function_pipeline()) {
     // If we don't have a fixed-function pipeline (eg. OpenGL ES 2.x) we need
-    // to bind a shader before drawing anything.  Also, the shader must
-    // implement the desired alpha test mode.
+    // to bind a shader before drawing anything.
     if (_current_shader == nullptr) {
       do_issue_shader();
-      _state_mask.clear_bit(TextureAttrib::get_class_slot());
       _state_mask.set_bit(ShaderAttrib::get_class_slot());
     }
-  }
-
-  // Update all of the state that is bound to the shader program.
-  if (_current_shader_context != nullptr) {
-    _current_shader_context->set_state_and_transform(target, transform, _scene_setup->get_camera_transform(), _projection_mat);
   }
 #endif
 
@@ -13214,9 +13551,7 @@ set_state_and_transform(const RenderState *target,
 #ifdef OPENGLES_1
     determine_target_texture();
 #else
-    if (has_fixed_function_pipeline() ||
-        _current_shader == nullptr ||
-        _current_shader == _default_shader) {
+    if (has_fixed_function_pipeline() && _current_shader == nullptr) {
       determine_target_texture();
     } else {
       // If we have a custom shader, don't filter down the list of textures.
@@ -13335,6 +13670,30 @@ set_state_and_transform(const RenderState *target,
 }
 
 /**
+ * Returns true if the current state, as set by set_state_and_transform,
+ * supports hardware instancing.
+ */
+bool CLP(GraphicsStateGuardian)::
+state_supports_instancing() const {
+#ifdef OPENGLES_1
+  return false;
+#else
+  if (_current_shader_context == nullptr || _current_shader_context->_is_legacy) {
+    return false;
+  }
+  if (!_supports_geometry_instancing || !_supports_vertex_attrib_divisor) {
+    return false;
+  }
+  if (_state_shader->get_instance_count() > 0) {
+    // We can't support instancing if the user is using instancing via a
+    // different mechanism
+    return false;
+  }
+  return true;
+#endif
+}
+
+/**
  * This is called by set_state_and_transform() when the texture state has
  * changed.
  */
@@ -13344,34 +13703,16 @@ do_issue_texture() {
 
 #ifdef OPENGLES_1
   update_standard_texture_bindings();
-#else
-  if (_current_shader_context == 0) {
-    // No shader, or a non-Cg shader.
-    if (_texture_binding_shader_context != 0) {
+#elif defined(SUPPORT_FIXED_FUNCTION)
+  if (_current_shader_context == nullptr) {
+    if (_texture_binding_shader_context != nullptr) {
       _texture_binding_shader_context->disable_shader_texture_bindings();
+      _texture_binding_shader = nullptr;
+      _texture_binding_shader_context = nullptr;
     }
-#ifdef SUPPORT_FIXED_FUNCTION
-    if (has_fixed_function_pipeline()) {
-      update_standard_texture_bindings();
-    }
-#endif
-  } else {
-    if (_texture_binding_shader_context == 0) {
-#ifdef SUPPORT_FIXED_FUNCTION
-      if (has_fixed_function_pipeline()) {
-        disable_standard_texture_bindings();
-      }
-#endif
-      _current_shader_context->update_shader_texture_bindings(nullptr);
-    } else {
-      _current_shader_context->
-        update_shader_texture_bindings(_texture_binding_shader_context);
-    }
+    update_standard_texture_bindings();
   }
-
-  _texture_binding_shader = _current_shader;
-  _texture_binding_shader_context = _current_shader_context;
-#endif
+#endif  // OPENGLES_1
 }
 
 #ifdef SUPPORT_FIXED_FUNCTION
@@ -17130,6 +17471,25 @@ map_write_discard_buffer(GLenum target, GLuint buffer, size_t size,
 
   _glBindBuffer(target, 0);
   return mapped_ptr;
+}
+
+/**
+ * Call this after map_write_discard_buffer.
+ */
+void CLP(GraphicsStateGuardian)::
+unmap_buffer(GLenum target, GLuint buffer) {
+  nassertv(buffer != 0);
+
+#ifndef OPENGLES
+  if (_glUnmapNamedBuffer != nullptr) {
+    _glUnmapNamedBuffer(buffer);
+  } else
+#endif
+  {
+    _glBindBuffer(target, buffer);
+    _glUnmapBuffer(target);
+    _glBindBuffer(target, 0);
+  }
 }
 #endif  // !OPENGLES_1
 

@@ -47,9 +47,12 @@ make_cow_copy() {
   return new ShaderModuleGlsl(*this);
 }
 
-std::string ShaderModuleGlsl::
-get_ir() const {
-  return this->_code;
+/**
+ * Returns the compiled code of this module.
+ */
+vector_uchar ShaderModuleGlsl::
+get_code() const {
+  return vector_uchar((const unsigned char *)_code.data(), (const unsigned char *)(_code.data() + _code.size()));
 }
 
 /**

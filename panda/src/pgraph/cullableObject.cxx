@@ -141,16 +141,21 @@ munge_geom(GraphicsStateGuardianBase *gsg, GeomMunger *munger,
       }
     }
 
-    // If we have prepared it for skinning via the shader generator, mark a
-    // flag on the state so that the shader generator will do this.  We should
-    // probably find a cleaner way to do this.
+    // If we have prepared it for skinning in hardware, and the renderer doesn't
+    // support blending in the back-end, mark a flag on the state so that the
+    // shader generator will do this.  This is the old path for hardware
+    // skinning, but there may still be value in it as the new path currently
+    // requires uniform buffer objects (OpenGL 3.1+).
     const ShaderAttrib *sattr;
     if (_state->get_attrib(sattr) && sattr->auto_shader()) {
-      GeomVertexDataPipelineReader data_reader(_munged_data, current_thread);
-      if (data_reader.get_format()->get_animation().get_animation_type() == Geom::AT_hardware) {
-        static CPT(RenderState) state = RenderState::make(
-          DCAST(ShaderAttrib, ShaderAttrib::make())->set_flag(ShaderAttrib::F_hardware_skinning, true));
-        _state = _state->compose(state);
+      if ((gsg_bits & Geom::GR_shader_vertex_blend) == 0) {
+        // We don't support hardware blending, so do it in the generated shader.
+        GeomVertexDataPipelineReader data_reader(_munged_data, current_thread);
+        if (data_reader.get_format()->get_animation().get_animation_type() == Geom::AT_hardware) {
+          static CPT(RenderState) state = RenderState::make(
+            DCAST(ShaderAttrib, ShaderAttrib::make())->set_flag(ShaderAttrib::F_hardware_skinning, true));
+          _state = _state->compose(state);
+        }
       }
 
       gsg->ensure_generated_shader(_state);
@@ -174,21 +179,12 @@ munge_geom(GraphicsStateGuardianBase *gsg, GeomMunger *munger,
       std::swap(_munged_data, animated_vertices);
     }
 
-    if (sattr != nullptr) {
-      if (_instances != nullptr &&
-          sattr->get_flag(ShaderAttrib::F_hardware_instancing)) {
-        // We are under an InstancedNode, and the shader implements hardware.
-        // Munge the instance list into the vertex data.
-        munge_instances(current_thread);
-        _num_instances = _instances->size();
-        _instances = nullptr;
-      } else {
-        // No, use the instance count from the ShaderAttrib.
-        int count = sattr->get_instance_count();
-        _num_instances = (count > 0) ? (size_t)count : 1;
-      }
-    } else {
-      _num_instances = 1;
+    if (sattr != nullptr && _instances != nullptr &&
+        sattr->get_flag(ShaderAttrib::F_hardware_instancing)) {
+      // The shader requests to munge the instance list onto the vertex data.
+      // This is deprecated.
+      munge_instances(current_thread);
+      _instances = nullptr;
     }
 
 #ifndef NDEBUG
@@ -230,12 +226,25 @@ void CullableObject::
 munge_instances(Thread *current_thread) {
   PStatTimer timer(_munge_instances_pcollector, current_thread);
 
+  static bool showed_warning = false;
+  if (!showed_warning) {
+    showed_warning = true;
+
+    pgraph_cat.warning()
+      << "Using the F_hardware_instancing flag and manual shader instancing "
+         "is deprecated; use automatic instancing instead.\n";
+  }
+
   PT(GeomVertexData) instanced_data = new GeomVertexData(*_munged_data);
   const GeomVertexArrayFormat *array_format = GeomVertexArrayFormat::get_instance_array_format();
 
   CPT(GeomVertexArrayData) new_array = _instances->get_array_data(array_format);
   instanced_data->insert_array((size_t)-1, new_array);
   _munged_data = instanced_data;
+
+  CPT(RenderState) state = RenderState::make(
+    DCAST(ShaderAttrib, ShaderAttrib::make())->set_instance_count(_instances->size()));
+  _state = _state->compose(state);
 }
 
 /**

@@ -331,7 +331,7 @@ public:
 
   virtual bool begin_draw_primitives(const GeomPipelineReader *geom_reader,
                                      const GeomVertexDataPipelineReader *data_reader,
-                                     size_t num_instances, bool force);
+                                     const InstanceList *instances, bool force);
   virtual bool draw_triangles(const GeomPrimitivePipelineReader *reader,
                               bool force);
 #ifndef OPENGLES
@@ -381,6 +381,11 @@ public:
 #endif
 
   virtual GeomContext *prepare_geom(Geom *geom);
+#ifndef OPENGLES_1
+  bool update_transform_buffer(CLP(GeomContext) *ggc, const TransformTable *table);
+  bool apply_transform_buffer(GLuint base, const GeomPipelineReader *geom_reader,
+                              const TransformTable *table);
+#endif
   virtual void release_geom(GeomContext *gc);
 
   virtual ShaderContext *prepare_shader(Shader *shader);
@@ -487,11 +492,15 @@ public:
 
   virtual void set_state_and_transform(const RenderState *state,
                                        const TransformState *transform);
+  virtual bool state_supports_instancing() const;
 
   void bind_fbo(GLuint fbo);
   void finish();
 
 protected:
+#ifndef OPENGLES_1
+  void do_issue_instances();
+#endif
   void do_issue_transform();
   void do_issue_render_mode();
   void do_issue_antialias();
@@ -694,6 +703,7 @@ protected:
   void *map_read_buffer(GLenum target, GLuint buffer, size_t size);
   void *map_write_discard_buffer(GLenum target, GLuint buffer, size_t size,
                                  bool create_storage);
+  void unmap_buffer(GLenum target, GLuint buffer);
 #endif
 
 #ifndef OPENGLES_1
@@ -800,6 +810,9 @@ protected:
 #else
   int _max_vertex_attrib_stride = INT_MAX;
 #endif
+
+  GLuint _current_ubuffer_index;
+  pvector<GLuint> _current_ubuffer_base;
 
   GLuint _current_sbuffer_index;
   pvector<GLuint> _current_sbuffer_base;
@@ -1031,6 +1044,7 @@ public:
   PFNGLGENERATETEXTUREMIPMAPPROC _glGenerateTextureMipmap;
   PFNGLBINDTEXTUREUNITPROC _glBindTextureUnit;
   PFNGLMAPNAMEDBUFFERRANGEPROC _glMapNamedBufferRange;
+  PFNGLUNMAPNAMEDBUFFERPROC _glUnmapNamedBuffer;
   PFNGLNAMEDBUFFERSUBDATAPROC _glNamedBufferSubData;
   PFNGLCLEARNAMEDBUFFERSUBDATAPROC _glClearNamedBufferSubData;
   PFNGLCOPYNAMEDBUFFERSUBDATAPROC _glCopyNamedBufferSubData;
@@ -1221,8 +1235,12 @@ public:
   bool _supports_texture_max_level;
 
 #ifndef OPENGLES_1
-  GLsizei _sattr_instance_count;
   GLsizei _instance_count;
+
+  GLuint _instance_buffer = 0;
+  size_t _instance_buffer_size = 0;
+
+  const InstanceList *_state_instances = nullptr;
 #endif
 
   LightMutex _lock;

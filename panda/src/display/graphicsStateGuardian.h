@@ -150,6 +150,7 @@ PUBLISHED:
 
   INLINE int get_max_vertex_transforms() const;
   INLINE int get_max_vertex_transform_indices() const;
+  INLINE bool get_supports_fixed_function_vertex_blending() const;
 
   INLINE bool get_copy_texture_inverted() const;
   virtual bool get_supports_multisample() const;
@@ -353,6 +354,8 @@ public:
   virtual void set_state_and_transform(const RenderState *state,
                                        const TransformState *transform);
 
+  virtual bool state_supports_instancing() const;
+
   PN_stdfloat compute_distance_to(const LPoint3 &point) const;
 
   virtual void clear(DrawableRegion *clearable);
@@ -387,7 +390,7 @@ public:
 
   virtual bool begin_draw_primitives(const GeomPipelineReader *geom_reader,
                                      const GeomVertexDataPipelineReader *data_reader,
-                                     size_t num_instances, bool force);
+                                     const InstanceList *instances, bool force);
   virtual bool draw_triangles(const GeomPrimitivePipelineReader *reader,
                               bool force);
   virtual bool draw_triangles_adj(const GeomPrimitivePipelineReader *reader,
@@ -611,6 +614,7 @@ protected:
 
   int _max_vertex_transforms;
   int _max_vertex_transform_indices;
+  bool _supports_fixed_function_vertex_blending;
 
   bool _supports_occlusion_query;
   PT(OcclusionQueryContext) _current_occlusion_query;

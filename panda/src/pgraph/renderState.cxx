@@ -166,6 +166,13 @@ compare_sort(const RenderState &other) const {
     return 0;
   }
 
+  // Changing the alpha test mode is generally pretty expensive.
+  RenderAttrib::PandaCompareFunc alpha_test_mode = get_alpha_test_mode();
+  RenderAttrib::PandaCompareFunc other_alpha_test_mode = other.get_alpha_test_mode();
+  if (alpha_test_mode != other_alpha_test_mode) {
+    return alpha_test_mode < other_alpha_test_mode;
+  }
+
   RenderAttribRegistry *reg = RenderAttribRegistry::quick_get_global_ptr();
   int num_sorted_slots = reg->get_num_sorted_slots();
   for (int n = 0; n < num_sorted_slots; ++n) {

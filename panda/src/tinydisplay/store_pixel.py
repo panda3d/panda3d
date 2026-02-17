@@ -7,109 +7,83 @@ Each different combination of options is compiled to a different
 inner-loop store function.  The code in tinyGraphicsStateGuardian.cxx
 will select the appropriate function pointer at draw time. """
 
-Operands = [
-    'zero', 'one',
-    'icolor', 'micolor',
-    'fcolor', 'mfcolor',
-    'ialpha', 'mialpha',
-    'falpha', 'mfalpha',
-    'ccolor', 'mccolor',
-    'calpha', 'mcalpha',
+Modes = [
+    'add',
+    'min',
+    'max',
 ]
 
-CodeTable = {
-    'zero' : '0',
-    'one' : '0x10000',
-    'icolor' : 'i',
-    'micolor' : '0xffff - i',
-    'fcolor' : 'f',
-    'mfcolor' : '0xffff - f',
-    'ialpha' : 'a',
-    'mialpha' : '0xffff - a',
-    'falpha' : 'fa',
-    'mfalpha' : '0xffff - fa',
-    'ccolor' : 'zb->blend_ ## i',
-    'mccolor' : '0xffff - zb->blend_ ## i',
-    'calpha' : 'zb->blend_a',
-    'mcalpha' : '0xffff - zb->blend_a',
-}
+# We handle alpha write as a special "off" mode, reducing redundancy.
+AlphaModes = Modes + ['off']
 
+CodeTable = {
+    'add': 'STORE_PIX_CLAMP(((unsigned int)c * c_opa >> 16) + ((unsigned int)fc * c_opb >> 16))',
+    'min': 'std::min((unsigned int)c, (unsigned int)fc)',
+    'max': 'std::max((unsigned int)c, (unsigned int)fc)',
+    'off': '(unsigned int)fc',
+}
 
 bitnames = 'rgba'
 
-def getFname(op_a, op_b, mask):
+def get_fname(rgb_mode, alpha_mode, mask):
     maskname = ''
-    for b in range(4):
+    for b in range(3):
         if (mask & (1 << b)):
             maskname += bitnames[b]
         else:
             maskname += '0'
-    return 'store_pixel_%s_%s_%s' % (op_a, op_b, maskname)
+    return 'store_pixel_%s_%s_%s' % (rgb_mode, alpha_mode, maskname)
 
 # We write the code that actually instantiates the various
 # pixel-storing functions to store_pixel_code.h.
-code = open('store_pixel_code.h', 'wb')
-print >> code, '/* This file is generated code--do not edit.  See store_pixel.py. */'
-print >> code, ''
+code = open('store_pixel_code.h', 'w')
+print('/* This file is generated code--do not edit.  See store_pixel.py. */', file=code)
+print('', file=code)
 
 # The external reference for the table containing the above function
 # pointers gets written here.
-table = open('store_pixel_table.h', 'wb')
-print >> table, '/* This file is generated code--do not edit.  See store_pixel.py. */'
-print >> table, ''
+table = open('store_pixel_table.h', 'w')
+print('/* This file is generated code--do not edit.  See store_pixel.py. */', file=table)
+print('', file=table)
 
-for op_a in Operands:
-    for op_b in Operands:
-        for mask in range(0, 16):
-            fname = getFname(op_a, op_b, mask)
-            print >> code, '#define FNAME(name) %s' % (fname)
-            if mask & (1 | 2 | 3):
-                print >> code, '#define FNAME_S(name) %s_s' % (fname)
+for rgb_mode in Modes:
+    for alpha_mode in AlphaModes:
+        for mask in range(0, 8):
+            fname = get_fname(rgb_mode, alpha_mode, mask)
+            print('#define FNAME(name) %s' % (fname), file=code)
+            if mask != 0:
+                print('#define FNAME_S(name) %s_s' % (fname), file=code)
 
-            print >> code, '#define OP_A(f, i) ((unsigned int)(%s))' % (CodeTable[op_a])
-            print >> code, '#define OP_B(f, i) ((unsigned int)(%s))' % (CodeTable[op_b])
-            for b in range(0, 4):
+            print('#define MODE_RGB(c, c_opa, fc, c_opb) %s' % (CodeTable[rgb_mode]), file=code)
+            print('#define MODE_ALPHA(c, c_opa, fc, c_opb) %s' % (CodeTable[alpha_mode]), file=code)
+            for b in range(0, 3):
                 if (mask & (1 << b)):
-                    print >> code, "#define STORE_PIXEL_%s(fr, r) STORE_PIX_CLAMP(r)" % (b)
-                else:
-                    print >> code, "#define STORE_PIXEL_%s(fr, r) (fr)" % (b)
-            print >> code, '#include "store_pixel.h"'
-            print >> code, ''
+                    print("#define HAVE_%s 1" % (bitnames[b].upper()), file=code)
+            if alpha_mode != 'off':
+                print("#define HAVE_A 1", file=code)
+            print('#include "store_pixel.h"', file=code)
+            print('', file=code)
 
 
 # Now, generate the table of function pointers.
-arraySize = '[%s][%s][16]' % (len(Operands), len(Operands))
+arraySize = '[%s][%s][8][2]' % (len(Modes), len(AlphaModes))
 
-print >> table, 'extern const ZB_storePixelFunc store_pixel_funcs%s;' % (arraySize)
-print >> code, 'const ZB_storePixelFunc store_pixel_funcs%s = {' % (arraySize)
+print('extern const ZB_storePixelFunc store_pixel_funcs%s;' % (arraySize), file=table)
+print('const ZB_storePixelFunc store_pixel_funcs%s = {' % (arraySize), file=code)
 
-for op_a in Operands:
-    print >> code, '  {'
-    for op_b in Operands:
-        print >> code, '    {'
-        for mask in range(0, 16):
-            fname = getFname(op_a, op_b, mask)
-            print >> code, '      %s,' % (fname)
-        print >> code, '    },'
-    print >> code, '  },'
-print >> code, '};'
-
-print >> code
-
-# Now do this again, but for the sRGB function pointers.
-print >> table, 'extern const ZB_storePixelFunc store_pixel_funcs_sRGB%s;' % (arraySize)
-print >> code, 'const ZB_storePixelFunc store_pixel_funcs_sRGB%s = {' % (arraySize)
-
-for op_a in Operands:
-    print >> code, '  {'
-    for op_b in Operands:
-        print >> code, '    {'
-        for mask in range(0, 16):
-            fname = getFname(op_a, op_b, mask)
-            if mask & (1 | 2 | 3):
-                print >> code, '      %s_s,' % (fname)
+for rgb_mode in Modes:
+    print('  {', file=code)
+    for alpha_mode in AlphaModes:
+        print('    {', file=code)
+        for mask in range(0, 8):
+            fname = get_fname(rgb_mode, alpha_mode, mask)
+            if mask != 0:
+                fname_s = fname + '_s'
             else:
-                print >> code, '      %s,' % (fname)
-        print >> code, '    },'
-    print >> code, '  },'
-print >> code, '};'
+                fname_s = fname
+            print('      {%s, %s},' % (fname, fname_s), file=code)
+        print('    },', file=code)
+    print('  },', file=code)
+print('};', file=code)
+
+print('', file=code)

@@ -23,7 +23,7 @@
 #include <glslang/Public/ResourceLimits.h>
 #include <glslang/SPIRV/GlslangToSpv.h>
 
-#include <spirv-tools/optimizer.hpp>
+#include <spirv-tools/libspirv.h>
 
 /**
  * Interface for processing includes via the VirtualFileSystem.
@@ -113,7 +113,7 @@ private:
  * Message consumer for SPIRV-Tools.
  */
 static void
-log_message(spv_message_level_t level, const char *, const spv_position_t &, const char *msg) {
+log_message(spv_message_level_t level, const char *, const spv_position_t *, const char *msg) {
   NotifySeverity severity = NS_info;
   switch (level) {
   case SPV_MSG_FATAL:
@@ -233,7 +233,7 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
     // Fall back to GlslPreProc handler.  Cleaner way to do this?
     static ShaderCompilerGlslPreProc preprocessor;
 
-    std::istringstream stream(std::string((const char *)&code[0], code.size()));
+    std::istringstream stream(std::string((const char *)code.data(), code.size()));
     return preprocessor.compile_now(stage, stream, fullpath, options, output_log, record);
   }
 
@@ -398,32 +398,44 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
   // Run it through the optimizer.
   std::vector<uint32_t> optimized;
   if (is_cg || options.get_optimize() != CompilerOptions::Optimize::NONE) {
-    spvtools::Optimizer opt(SPV_ENV_UNIVERSAL_1_0);
-    opt.SetMessageConsumer(log_message);
+    spv_optimizer_t *opt = spvOptimizerCreate(SPV_ENV_UNIVERSAL_1_0);
+    spvOptimizerSetMessageConsumer(opt, log_message);
 
     switch (options.get_optimize()) {
     case CompilerOptions::Optimize::NONE:
       break;
 
     case CompilerOptions::Optimize::PERFORMANCE:
-      opt.RegisterPerformancePasses();
+      spvOptimizerRegisterPerformancePasses(opt);
       break;
 
     case CompilerOptions::Optimize::SIZE:
-      opt.RegisterSizePasses();
+      spvOptimizerRegisterSizePasses(opt);
       break;
     }
 
     if (is_cg) {
-      opt.RegisterLegalizationPasses();
+      spvOptimizerRegisterLegalizationPasses(opt);
     }
 
     // We skip validation because of the `uniform bool` bug, see SPIRV-Tools#3387
-    spvtools::ValidatorOptions validator_options;
-    if (!opt.Run(stream.get_data(), stream.get_data_size(), &optimized,
-                 validator_options, true)) {
+    spv_optimizer_options options = spvOptimizerOptionsCreate();
+    spvOptimizerOptionsSetRunValidator(options, false);
+
+    spv_binary optimized_binary;
+    spv_result_t result = spvOptimizerRun(opt, stream.get_data(),
+                                          stream.get_data_size(),
+                                          &optimized_binary, options);
+    spvOptimizerOptionsDestroy(options);
+    spvOptimizerDestroy(opt);
+
+    if (result != SPV_SUCCESS) {
       return nullptr;
     }
+
+    optimized.assign(optimized_binary->code,
+                     optimized_binary->code + optimized_binary->wordCount);
+    spvBinaryDestroy(optimized_binary);
   } else {
     optimized = stream;
   }
@@ -440,7 +452,7 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
  */
 bool ShaderCompilerGlslang::
 check_cg_header(const vector_uchar &code) {
-  const char *p = (const char *)&code[0];
+  const char *p = (const char *)code.data();
   const char *end = p + code.size();
   while (p < end && isspace(*p)) {
     // Skip leading whitespace.
@@ -465,8 +477,8 @@ preprocess_glsl(vector_uchar &code, int &glsl_version, const Filename &source_fi
     code.push_back((unsigned char)'\n');
   }
 
-  char *p = (char *)&code[0];
-  char *end = (char *)&code[0] + code.size();
+  char *p = (char *)code.data();
+  char *end = (char *)code.data() + code.size();
   int lineno = 1;
   bool had_include = false;
 
@@ -649,10 +661,10 @@ preprocess_glsl(vector_uchar &code, int &glsl_version, const Filename &source_fi
                     std::back_inserter(inc_code));
 
           // Insert the code bytes and reposition the pointer after it.
-          size_t offset = p - (char *)&code[0];
+          size_t offset = p - (char *)code.data();
           code.insert(code.begin() + offset, inc_code.begin(), inc_code.end());
-          p = (char *)&code[0] + offset + inc_code.size();
-          end = (char *)&code[0] + code.size();
+          p = (char *)code.data() + offset + inc_code.size();
+          end = (char *)code.data() + code.size();
           had_include = true;
           continue;
         }
@@ -716,12 +728,12 @@ preprocess_glsl(vector_uchar &code, int &glsl_version, const Filename &source_fi
           line_str << "#line " << lineno << " \"" << source_filename << "\"\n";
           std::string line = line_str.str();
 
-          size_t offset = p - (char *)&code[0];
+          size_t offset = p - (char *)code.data();
           code.insert(code.begin() + offset, (unsigned char *)line.data(),
                       (unsigned char *)line.data() + line.size());
 
-          p = (char *)&code[0] + offset + line.size();
-          end = (char *)&code[0] + code.size();
+          p = (char *)code.data() + offset + line.size();
+          end = (char *)code.data() + code.size();
           continue;
         }
       }

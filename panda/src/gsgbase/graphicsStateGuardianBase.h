@@ -54,6 +54,7 @@ class GeomLines;
 class GeomLinestrips;
 class GeomPoints;
 class GeomMunger;
+class InstanceList;
 
 class SceneSetup;
 class PreparedGraphicsObjects;
@@ -125,6 +126,7 @@ PUBLISHED:
   virtual int get_max_texture_dimension() const=0;
   virtual bool get_supports_compressed_texture_format(int compression_mode) const=0;
 
+  virtual bool get_supports_fixed_function_vertex_blending() const=0;
   virtual bool get_supports_multisample() const=0;
   virtual uint64_t get_supported_shader_capabilities() const=0;
   virtual int get_supported_geom_rendering() const=0;
@@ -190,6 +192,8 @@ public:
   virtual void set_state_and_transform(const RenderState *state,
                                        const TransformState *transform)=0;
 
+  virtual bool state_supports_instancing() const=0;
+
   // This function may only be called during a render traversal; it will
   // compute the distance to the indicated point, assumed to be in eye
   // coordinates, from the camera plane.  This is a virtual function because
@@ -214,7 +218,7 @@ public:
 
   virtual bool begin_draw_primitives(const GeomPipelineReader *geom_reader,
                                      const GeomVertexDataPipelineReader *data_reader,
-                                     size_t num_instances, bool force)=0;
+                                     const InstanceList *instances, bool force)=0;
   virtual bool draw_triangles(const GeomPrimitivePipelineReader *reader, bool force)=0;
   virtual bool draw_triangles_adj(const GeomPrimitivePipelineReader *reader, bool force)=0;
   virtual bool draw_tristrips(const GeomPrimitivePipelineReader *reader, bool force)=0;

@@ -122,15 +122,6 @@ get_matrix_cache_size() const {
 }
 
 /**
- *
- */
-void Shader::
-clear_parameters() {
-  _parameters.clear();
-  _var_spec.clear();
-}
-
-/**
  * Called by the back-end when the shader has compiled data available.
  */
 void Shader::
@@ -562,7 +553,7 @@ bool Shader::
 bind_vertex_input(const InternalName *name, const ShaderType *type, int location) {
   std::string name_str = name->get_name();
 
-  Shader::ShaderVarSpec bind;
+  VertexInputBinding bind;
   bind._id._name = name_str;
   bind._id._type = type;
   bind._id._location = location;
@@ -656,7 +647,7 @@ bind_vertex_input(const InternalName *name, const ShaderType *type, int location
     bind._name = InternalName::make(name_str);
   }
 
-  _var_spec.push_back(bind);
+  _vertex_inputs.push_back(bind);
   return true;
 }
 

@@ -94,6 +94,17 @@ VulkanGraphicsStateGuardian::
 }
 
 /**
+ * Attempts to make the context current on this thread without an associated
+ * window, if possible.  Returns false if that is not supported.
+ */
+bool VulkanGraphicsStateGuardian::
+make_current() const {
+  // Vulkan contexts don't need to be made current to a thread, so we pretend
+  // this always succeeds.
+  return true;
+}
+
+/**
  * Resets all internal state as if the gsg were newly created.
  */
 void VulkanGraphicsStateGuardian::
@@ -4043,8 +4054,8 @@ flush() {
 bool VulkanGraphicsStateGuardian::
 begin_draw_primitives(const GeomPipelineReader *geom_reader,
                       const GeomVertexDataPipelineReader *data_reader,
-                      size_t num_instances, bool force) {
-  if (!GraphicsStateGuardian::begin_draw_primitives(geom_reader, data_reader, num_instances, force)) {
+                      const InstanceList *instances, bool force) {
+  if (!GraphicsStateGuardian::begin_draw_primitives(geom_reader, data_reader, instances, force)) {
     return false;
   }
 
@@ -4053,7 +4064,12 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     return false;
   }
 
-  _instance_count = (uint32_t)std::min(num_instances, (size_t)0xffffffff);
+  if (instances != nullptr) {
+    _instance_count = (uint32_t)std::min(instances->size(), (size_t)0xffffffff);
+  } else {
+    int count = _target_shader->get_instance_count();
+    _instance_count = (count > 0) ? (uint32_t)count : 1u;
+  }
 
   // Prepare and bind the vertex buffers.
   size_t num_arrays = data_reader->get_num_arrays();
@@ -5160,14 +5176,14 @@ make_pipeline(VulkanShaderContext *sc,
   // Now describe each vertex attribute (ie. GeomVertexColumn).
   const Shader *shader = sc->get_shader();
   nassertr(shader != nullptr, VK_NULL_HANDLE);
-  pvector<Shader::ShaderVarSpec>::const_iterator it;
+  pvector<Shader::VertexInputBinding>::const_iterator it;
 
   VkVertexInputAttributeDescription *attrib_desc = (VkVertexInputAttributeDescription *)
-    alloca(sizeof(VkVertexInputAttributeDescription) * shader->_var_spec.size());
+    alloca(sizeof(VkVertexInputAttributeDescription) * shader->_vertex_inputs.size());
 
   uint32_t i = 0;
-  for (it = shader->_var_spec.begin(); it != shader->_var_spec.end(); ++it) {
-    const Shader::ShaderVarSpec &spec = *it;
+  for (it = shader->_vertex_inputs.begin(); it != shader->_vertex_inputs.end(); ++it) {
+    const Shader::VertexInputBinding &spec = *it;
     int array_index;
     const GeomVertexColumn *column;
 

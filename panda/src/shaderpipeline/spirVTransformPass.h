@@ -33,13 +33,14 @@ public:
 
   SpirVTransformPass();
 
+protected:
   void process_preamble(std::vector<uint32_t> &instructions);
   void process_annotations(std::vector<uint32_t> &instructions);
   void process_definitions(std::vector<uint32_t> &instructions);
   void process_functions(std::vector<uint32_t> &instructions);
 
   virtual void preprocess();
-  virtual bool transform_entry_point(spv::ExecutionModel model, uint32_t id, const char *name, const uint32_t *var_ids, uint16_t num_vars);
+  virtual bool transform_entry_point(spv::ExecutionModel model, uint32_t id, const char *name, pvector<uint32_t> &vars);
   virtual bool transform_debug_op(Instruction op);
   virtual bool transform_annotation_op(Instruction op);
   virtual bool transform_definition_op(Instruction op);
@@ -81,6 +82,7 @@ public:
   uint32_t define_constant(const ShaderType *type, uint32_t constant);
   uint32_t define_spec_constant(const ShaderType *type, uint32_t def_value);
 
+public:
   /**
    * Helper class for storing a chain of member or array accesses.
    */
@@ -127,13 +129,22 @@ protected:
 
   // Functions for putting specific instructions in the functions block.
   uint32_t op_load(uint32_t var_id, spv::MemoryAccessMask access = spv::MemoryAccessMaskNone);
+  void op_store(uint32_t var_id, uint32_t value);
   uint32_t op_select(uint32_t cond, uint32_t obj1, uint32_t obj2);
   uint32_t op_access_chain(uint32_t var_id, std::initializer_list<uint32_t>);
   uint32_t op_vector_shuffle(uint32_t vec1, uint32_t vec2, const pvector<uint32_t> &components);
   uint32_t op_composite_construct(const ShaderType *type, const pvector<uint32_t> &constituents);
   uint32_t op_composite_extract(uint32_t obj_id, std::initializer_list<uint32_t>);
+  uint32_t op_composite_insert(uint32_t obj_id, uint32_t composite_id, std::initializer_list<uint32_t>);
   uint32_t op_compare(spv::Op opcode, uint32_t obj1, uint32_t obj2);
   uint32_t op_convert(ShaderType::ScalarType to_scalar_type, uint32_t value);
+  uint32_t op_transpose(uint32_t obj);
+  uint32_t op_add(uint32_t left, uint32_t right);
+  uint32_t op_sub(uint32_t left, uint32_t right);
+  uint32_t op_div(uint32_t left, uint32_t right);
+  uint32_t op_dot(uint32_t left, uint32_t right);
+  uint32_t op_negate(uint32_t value);
+  uint32_t op_multiply(uint32_t left, uint32_t right);
   uint32_t op_image_sample(uint32_t image, uint32_t coord, uint32_t operands = 0u, const uint32_t *ids = nullptr);
   void op_kill();
 

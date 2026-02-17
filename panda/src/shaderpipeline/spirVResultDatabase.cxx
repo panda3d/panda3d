@@ -669,6 +669,10 @@ parse_instruction(spv::Op opcode, const uint32_t *args, uint32_t nargs, uint32_t
       _defs[args[0]]._array_stride = args[2];
       break;
 
+    case spv::DecorationFlat:
+      _defs[args[0]]._flags |= DF_flat;
+      break;
+
     case spv::DecorationSpecId:
       _defs[args[0]]._spec_id = args[2];
       break;
@@ -712,6 +716,10 @@ parse_instruction(spv::Op opcode, const uint32_t *args, uint32_t nargs, uint32_t
 
     case spv::DecorationMatrixStride:
       _defs[args[0]].modify_member(args[1])._matrix_stride = args[3];
+      break;
+
+    case spv::DecorationFlat:
+      _defs[args[0]].modify_member(args[1])._flags |= DF_flat;
       break;
 
     default:

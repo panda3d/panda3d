@@ -83,6 +83,10 @@ glxGraphicsStateGuardian::
  */
 bool glxGraphicsStateGuardian::
 make_current() const {
+  if (glXGetCurrentContext() == _context) {
+    return true;
+  }
+
   return _context != nullptr
       && is_at_least_gl_version(3, 0)
       && glXMakeCurrent(_display, None, _context);

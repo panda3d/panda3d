@@ -15,6 +15,8 @@
 #define COMPILEROPTIONS_H
 
 #include "pandabase.h"
+#include "pmap.h"
+#include "pnotify.h"
 
 /**
  * Specifies parameters that may be passed to the shader compiler.

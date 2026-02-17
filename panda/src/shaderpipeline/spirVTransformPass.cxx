@@ -51,15 +51,18 @@ process_preamble(std::vector<uint32_t> &stream) {
       ++i;
 
       // Remove the deleted IDs from the entry point interface.
-      uint32_t interface_begin = i;
+      pvector<uint32_t> vars;
       while (i < op.nargs) {
         if (!is_deleted(op.args[i])) {
-          new_args.push_back(op.args[i]);
+          vars.push_back(op.args[i]);
         }
         ++i;
       }
 
-      if (transform_entry_point((spv::ExecutionModel)op.args[0], op.args[1], (const char *)&new_args[2], &new_args[interface_begin], new_args.size() - interface_begin)) {
+      const char *name = ((const char *)new_args.data()) + 2;
+      if (transform_entry_point((spv::ExecutionModel)op.args[0], op.args[1], name,
+                                vars)) {
+        new_args.insert(new_args.end(), vars.begin(), vars.end());
         add_debug(op.opcode, new_args.data(), new_args.size());
       }
     }
@@ -202,7 +205,7 @@ preprocess() {
  * Return true to keep the instruction, false to omit it.
  */
 bool SpirVTransformPass::
-transform_entry_point(spv::ExecutionModel model, uint32_t id, const char *name, const uint32_t *var_ids, uint16_t num_vars) {
+transform_entry_point(spv::ExecutionModel model, uint32_t id, const char *name, pvector<uint32_t> &vars) {
   return true;
 }
 
@@ -619,9 +622,10 @@ delete_function_parameter(uint32_t type_id, uint32_t param_index) {
  */
 uint32_t SpirVTransformPass::
 define_variable(const ShaderType *type, spv::StorageClass storage_class) {
+  // Always allocate the id first to accommodate push_id()
+  uint32_t variable_id = allocate_id();
   uint32_t pointer_type_id = define_pointer_type(type, storage_class);
 
-  uint32_t variable_id = allocate_id();
   add_definition(spv::OpVariable, {
     pointer_type_id,
     variable_id,
@@ -1106,6 +1110,18 @@ op_load(uint32_t var_id, spv::MemoryAccessMask access) {
 }
 
 /**
+ * Inserts an OpStore to the given pointer id.
+ */
+void SpirVTransformPass::
+op_store(uint32_t var_id, uint32_t value) {
+  _new_functions.insert(_new_functions.end(),
+    {(3 << spv::WordCountShift) | spv::OpStore, var_id, value});
+
+  // A store to the pointer is enough for us to consider it "used", for now.
+  mark_used(var_id);
+}
+
+/**
  * Inserts an OpSelect.
  */
 uint32_t SpirVTransformPass::
@@ -1250,6 +1266,25 @@ op_composite_extract(uint32_t obj_id, std::initializer_list<uint32_t> chain) {
 }
 
 /**
+ * Inserts an OpCompositeInsert.
+ */
+uint32_t SpirVTransformPass::
+op_composite_insert(uint32_t obj_id, uint32_t composite_id, std::initializer_list<uint32_t> chain) {
+  const Definition &comp_def = _db.get_definition(composite_id);
+
+  uint32_t id = allocate_id();
+  _new_functions.insert(_new_functions.end(), {((5 + (uint32_t)chain.size()) << spv::WordCountShift) | spv::OpCompositeInsert, comp_def._type_id, id, obj_id, composite_id});
+  _new_functions.insert(_new_functions.end(), chain);
+
+  Definition &def = _db.modify_definition(id);
+  def._type_id = comp_def._type_id;
+  def._type = comp_def._type;
+
+  mark_defined(id);
+  return id;
+}
+
+/**
  * Inserts a comparison op, taking two operands and returning a bool.
  * At the moment, only works on scalars.
  */
@@ -1331,6 +1366,300 @@ op_convert(ShaderType::ScalarType new_scalar_type, uint32_t value) {
   def._type_id = new_type_id;
   def._type = new_type;
   def._origin_id = value_def._origin_id;
+
+  //if (value_def._flags & SpirVResultDatabase::DF_constant_expression) {
+  //  def._flags |= SpirVResultDatabase::DF_constant_expression;
+  //}
+
+  mark_defined(id);
+  return id;
+}
+
+/**
+ * Inserts a matrix transpose instruction.
+ */
+uint32_t SpirVTransformPass::
+op_transpose(uint32_t obj) {
+  const Definition &obj_def = _db.get_definition(obj);
+  const ShaderType *type = obj_def._type;
+  uint32_t type_id = obj_def._type_id;
+
+  uint32_t id = allocate_id();
+
+  if (const ShaderType::Matrix *matrix = type->as_matrix()) {
+    if (matrix->get_num_rows() != matrix->get_num_columns()) {
+      type = ShaderType::register_type(ShaderType::Matrix(matrix->get_scalar_type(), matrix->get_num_columns(), matrix->get_num_rows()));
+      type_id = define_type(type);
+    }
+  } else {
+    nassert_raise("OpTranspose requires a matrix");
+  }
+
+  _new_functions.insert(_new_functions.end(),
+    {(4u << spv::WordCountShift) | spv::OpTranspose, type_id, id, obj});
+
+  Definition &def = _db.modify_definition(id);
+  def._type_id = type_id;
+  def._type = type;
+  def._origin_id = obj_def._origin_id;
+
+  //if (obj_def._flags & SpirVResultDatabase::DF_constant_expression) {
+  //  def._flags |= SpirVResultDatabase::DF_constant_expression;
+  //}
+
+  mark_defined(id);
+  return id;
+}
+
+/**
+ * Inserts a scalar or vector addition instruction.
+ */
+uint32_t SpirVTransformPass::
+op_add(uint32_t left, uint32_t right) {
+  nassertr(left != 0u, 0u);
+  nassertr(right != 0u, 0u);
+  const Definition &left_def = _db.get_definition(left);
+  const Definition &right_def = _db.get_definition(right);
+  nassertr(left_def._type == right_def._type, 0);
+
+  uint32_t id = allocate_id();
+
+  _new_functions.insert(_new_functions.end(),
+    {(5u << spv::WordCountShift) | spv::OpFAdd, left_def._type_id, id, left, right});
+
+  Definition &def = _db.modify_definition(id);
+  def._type_id = left_def._type_id;
+  def._type = left_def._type;
+  //def._origin_id = value_def._origin_id;
+
+  //if (value_def._flags & SpirVResultDatabase::DF_constant_expression) {
+  //  def._flags |= SpirVResultDatabase::DF_constant_expression;
+  //}
+
+  mark_defined(id);
+  return id;
+}
+
+/**
+ * Inserts a scalar or vector subtraction instruction.
+ */
+uint32_t SpirVTransformPass::
+op_sub(uint32_t left, uint32_t right) {
+  nassertr(left != 0u, 0u);
+  nassertr(right != 0u, 0u);
+  const Definition &left_def = _db.get_definition(left);
+  const Definition &right_def = _db.get_definition(right);
+  nassertr(left_def._type == right_def._type, 0);
+
+  uint32_t id = allocate_id();
+
+  _new_functions.insert(_new_functions.end(),
+    {(5u << spv::WordCountShift) | spv::OpFSub, left_def._type_id, id, left, right});
+
+  Definition &def = _db.modify_definition(id);
+  def._type_id = left_def._type_id;
+  def._type = left_def._type;
+
+  //if (value_def._flags & SpirVResultDatabase::DF_constant_expression) {
+  //  def._flags |= SpirVResultDatabase::DF_constant_expression;
+  //}
+
+  mark_defined(id);
+  return id;
+}
+
+/**
+ * Inserts a scalar division instruction.
+ */
+uint32_t SpirVTransformPass::
+op_div(uint32_t left, uint32_t right) {
+  nassertr(left != 0u, 0u);
+  nassertr(right != 0u, 0u);
+  const Definition &left_def = _db.get_definition(left);
+  const Definition &right_def = _db.get_definition(right);
+  nassertr(left_def._type == right_def._type, 0);
+
+  uint32_t id = allocate_id();
+
+  _new_functions.insert(_new_functions.end(),
+    {(5u << spv::WordCountShift) | spv::OpFDiv, left_def._type_id, id, left, right});
+
+  Definition &def = _db.modify_definition(id);
+  def._type_id = left_def._type_id;
+  def._type = left_def._type;
+
+  //if (value_def._flags & SpirVResultDatabase::DF_constant_expression) {
+  //  def._flags |= SpirVResultDatabase::DF_constant_expression;
+  //}
+
+  mark_defined(id);
+  return id;
+}
+
+/**
+ * Inserts a vector dot instruction.
+ */
+uint32_t SpirVTransformPass::
+op_dot(uint32_t left, uint32_t right) {
+  nassertr(left != 0u, 0u);
+  nassertr(right != 0u, 0u);
+  const Definition &left_def = _db.get_definition(left);
+  const Definition &right_def = _db.get_definition(right);
+  nassertr(left_def._type == right_def._type, 0u);
+
+  uint32_t id = allocate_id();
+
+  const ShaderType::Vector *vector = left_def._type->as_vector();
+  nassertr(vector != nullptr, 0u);
+
+  const ShaderType *type = ShaderType::register_type(ShaderType::Scalar(vector->get_scalar_type()));
+  uint32_t type_id = define_type(type);
+
+  _new_functions.insert(_new_functions.end(),
+    {(5u << spv::WordCountShift) | spv::OpDot, type_id, id, left, right});
+
+  Definition &def = _db.modify_definition(id);
+  def._type_id = type_id;
+  def._type = type;
+
+  //if (value_def._flags & SpirVResultDatabase::DF_constant_expression) {
+  //  def._flags |= SpirVResultDatabase::DF_constant_expression;
+  //}
+
+  mark_defined(id);
+  return id;
+}
+
+/**
+ * Inserts a negation instruction.
+ */
+uint32_t SpirVTransformPass::
+op_negate(uint32_t value) {
+  nassertr(value != 0u, 0u);
+  const Definition &value_def = _db.get_definition(value);
+
+  uint32_t id = allocate_id();
+
+  _new_functions.insert(_new_functions.end(),
+    {(4u << spv::WordCountShift) | spv::OpFNegate, value_def._type_id, id, value});
+
+  Definition &def = _db.modify_definition(id);
+  def._type_id = value_def._type_id;
+  def._type = value_def._type;
+
+  //if (value_def._flags & SpirVResultDatabase::DF_constant_expression) {
+  //  def._flags |= SpirVResultDatabase::DF_constant_expression;
+  //}
+
+  mark_defined(id);
+  return id;
+}
+
+/**
+ * Inserts a multiplication instruction.
+ */
+uint32_t SpirVTransformPass::
+op_multiply(uint32_t left, uint32_t right) {
+  nassertr(left != 0u, 0u);
+  nassertr(right != 0u, 0u);
+  const Definition &left_def = _db.get_definition(left);
+  const Definition &right_def = _db.get_definition(right);
+  nassertr(left_def._type != nullptr, 0u);
+  nassertr(right_def._type != nullptr, 0u);
+
+  uint32_t id = allocate_id();
+
+  const ShaderType *type = nullptr;
+  uint32_t type_id;
+  spv::Op opcode;
+
+  if (const ShaderType::Scalar *lscalar = left_def._type->as_scalar()) {
+    if (const ShaderType::Scalar *rscalar = right_def._type->as_scalar()) {
+      nassertr(lscalar == rscalar, 0);
+      opcode = spv::OpFMul;
+      type = left_def._type;
+      type_id = left_def._type_id;
+    }
+    else if (const ShaderType::Vector *rvector = right_def._type->as_vector()) {
+      nassertr(lscalar->get_scalar_type() == rvector->get_scalar_type(), 0);
+      opcode = spv::OpVectorTimesScalar;
+      type = right_def._type;
+      type_id = right_def._type_id;
+      std::swap(left, right);
+    }
+    else if (const ShaderType::Matrix *rmatrix = right_def._type->as_matrix()) {
+      nassertr(lscalar->get_scalar_type() == rmatrix->get_scalar_type(), 0);
+      opcode = spv::OpMatrixTimesScalar;
+      type = right_def._type;
+      type_id = right_def._type_id;
+      std::swap(left, right);
+    }
+    else {
+      nassert_raise("right side of multiplication is not a scalar, vector or matrix");
+      return 0u;
+    }
+  }
+  else if (const ShaderType::Vector *lvector = left_def._type->as_vector()) {
+    if (const ShaderType::Scalar *rscalar = right_def._type->as_scalar()) {
+      nassertr(lvector->get_scalar_type() == rscalar->get_scalar_type(), 0);
+      opcode = spv::OpVectorTimesScalar;
+      type = left_def._type;
+      type_id = left_def._type_id;
+    }
+    else if (const ShaderType::Vector *rvector = right_def._type->as_vector()) {
+      nassert_raise("op_multiply for vector times vector is ambiguous");
+    }
+    else if (const ShaderType::Matrix *rmatrix = right_def._type->as_matrix()) {
+      nassertr(lvector->get_scalar_type() == rmatrix->get_scalar_type(), 0);
+      nassertr(lvector->get_num_components() == rmatrix->get_num_columns(), 0);
+      opcode = spv::OpVectorTimesMatrix;
+      type = ShaderType::register_type(ShaderType::Vector(lvector->get_scalar_type(), rmatrix->get_num_rows()));
+      type_id = define_type(type);
+    }
+    else {
+      nassert_raise("right side of multiplication is not a scalar, vector or matrix");
+      return 0u;
+    }
+  }
+  else if (const ShaderType::Matrix *lmatrix = left_def._type->as_matrix()) {
+    if (const ShaderType::Scalar *rscalar = right_def._type->as_scalar()) {
+      nassertr(lmatrix->get_scalar_type() == rscalar->get_scalar_type(), 0);
+      opcode = spv::OpMatrixTimesScalar;
+      type = left_def._type;
+      type_id = left_def._type_id;
+    }
+    else if (const ShaderType::Vector *rvector = right_def._type->as_vector()) {
+      nassertr(lmatrix->get_scalar_type() == rvector->get_scalar_type(), 0);
+      nassertr(lmatrix->get_num_rows() == rvector->get_num_components(), 0);
+      opcode = spv::OpMatrixTimesVector;
+      type = ShaderType::register_type(ShaderType::Vector(lmatrix->get_scalar_type(), lmatrix->get_num_columns()));
+      type_id = define_type(type);
+    }
+    else if (const ShaderType::Matrix *rmatrix = right_def._type->as_matrix()) {
+      nassertr(lmatrix->get_scalar_type() == rmatrix->get_scalar_type(), 0);
+      //nassertr(lmatrix->get_num_rows() == rmatrix->get_num_columns(), 0);
+      //nassertr(lmatrix->get_num_columns() == rmatrix->get_num_rows(), 0);
+      opcode = spv::OpMatrixTimesMatrix;
+      type = ShaderType::register_type(ShaderType::Matrix(lmatrix->get_scalar_type(), rmatrix->get_num_rows(), lmatrix->get_num_columns()));
+      type_id = define_type(type);
+    }
+    else {
+      nassert_raise("right side of multiplication is not a scalar, vector or matrix");
+      return 0u;
+    }
+  }
+  else {
+    nassert_raise("left side of multiplication is not a scalar, vector or matrix");
+    return 0u;
+  }
+
+  _new_functions.insert(_new_functions.end(),
+    {(5u << spv::WordCountShift) | opcode, type_id, id, left, right});
+
+  Definition &def = _db.modify_definition(id);
+  def._type_id = type_id;
+  def._type = type;
+  //def._origin_id = value_def._origin_id;
 
   //if (value_def._flags & SpirVResultDatabase::DF_constant_expression) {
   //  def._flags |= SpirVResultDatabase::DF_constant_expression;

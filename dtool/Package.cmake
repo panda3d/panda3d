@@ -93,6 +93,7 @@ if(THIRDPARTY_DIRECTORY)
     FFMPEG
     FMODEx
     Freetype
+    glslang
     HarfBuzz
     JPEG
     LibSquish
@@ -103,9 +104,11 @@ if(THIRDPARTY_DIRECTORY)
     OpenSSL
     OpusFile
     PNG
+    SPIRV-Cross
+    SPIRV-Tools
     SWResample
     SWScale
-    TIFF
+    Tiff
     VorbisFile
     VRPN
     ZLIB
@@ -132,6 +135,10 @@ if(THIRDPARTY_DIRECTORY)
 
     # Set search path
     set(${_Package}_ROOT "${THIRDPARTY_DIRECTORY}/${_thirdparty_platform}/${_package}")
+
+    if(_package STREQUAL "spirv-tools")
+      set(${_Package}-opt_ROOT "${${_Package}_ROOT}")
+    endif()
 
     # Set up copying DLLs, if necessary
     file(GLOB _dlls "${${_Package}_ROOT}/bin/*.dll")
@@ -917,3 +924,18 @@ package_option(SPIRV-Cross
   FOUND_AS SPIRV_CROSS)
 
 package_status(SPIRV-Cross "spirv-cross")
+
+
+find_package(SPIRV-Tools QUIET)
+find_package(SPIRV-Tools-opt QUIET)
+
+if(NOT SPIRV-Tools-opt_FOUND)
+  set(SPIRV-Tools_FOUND NO)
+endif()
+
+package_option(SPIRV-Tools
+  DEFAULT ON
+  "Enables optimization and validation of compiled shaders."
+  IMPORTED_AS SPIRV-Tools-static SPIRV-Tools-opt)
+
+package_status(SPIRV-Tools "spirv-tools")

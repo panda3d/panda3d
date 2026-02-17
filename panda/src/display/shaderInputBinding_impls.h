@@ -30,6 +30,7 @@ public:
 
   virtual int get_state_dep() const override;
   virtual void setup(Shader *shader) override;
+  virtual bool has_modelview_matrix(bool &inverse, bool &transpose) const;
 
   virtual void fetch_data(const State &state, void *into, bool packed) const override;
 
@@ -56,6 +57,7 @@ public:
 
   virtual int get_state_dep() const override;
   virtual void setup(Shader *shader) override;
+  virtual bool has_modelview_matrix(bool &inverse, bool &transpose) const;
 
   virtual void fetch_data(const State &state, void *into, bool packed) const override;
 

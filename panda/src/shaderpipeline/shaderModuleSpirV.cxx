@@ -149,6 +149,13 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, const CompilerOption
   // Add in location decorations for any inputs that are missing it.
   transformer.assign_interface_locations(stage);
 
+  // Assign "Flat" decorations on uint and double output variables.  This is
+  // optional in GLSL, but some drivers (Intel on Windows) struggle when the
+  // Flat keyword is present on an input but not on the matching output.
+  if (stage != Stage::FRAGMENT) {
+    transformer.assign_flat_decorations();
+  }
+
   // Get rid of uniform locations and bindings.  The numbering rules are
   // different for each back-end, so we regenerate these later.
   transformer.strip_uniform_locations();
@@ -607,9 +614,12 @@ make_cow_copy() {
   return new ShaderModuleSpirV(*this);
 }
 
-std::string ShaderModuleSpirV::
-get_ir() const {
-  return std::string();
+/**
+ * Returns the compiled code of this module.
+ */
+vector_uchar ShaderModuleSpirV::
+get_code() const {
+  return vector_uchar((const unsigned char *)get_data(), (const unsigned char *)(get_data() + get_data_size()));
 }
 
 /**
@@ -684,7 +694,7 @@ validate_header() const {
   }
 
   // Validate the header.
-  const uint32_t *words = (const uint32_t *)&_words[0];
+  const uint32_t *words = (const uint32_t *)_words.data();
   if (*words++ != spv::MagicNumber) {
     shader_cat.error()
       << "Invalid SPIR-V file: wrong magic number.\n";

@@ -217,7 +217,7 @@ begin_functions() {
  */
 INLINE ShaderModuleSpirV::InstructionIterator ShaderModuleSpirV::InstructionStream::
 end() {
-  return iterator(&_words[0] + _words.size());
+  return iterator(_words.data() + _words.size());
 }
 
 /**
@@ -237,7 +237,7 @@ insert(const iterator &it, spv::Op opcode, std::initializer_list<uint32_t > args
  */
 INLINE ShaderModuleSpirV::InstructionIterator ShaderModuleSpirV::InstructionStream::
 insert(const iterator &it, spv::Op opcode, const uint32_t *args, uint16_t nargs) {
-  ptrdiff_t offset = it._words - &_words[0];
+  ptrdiff_t offset = it._words - _words.data();
 
   // If this triggers, you used an invalid iterator.
   assert(offset >= 0 && (size_t)offset <= _words.size());
@@ -263,7 +263,7 @@ insert(const iterator &it, const Instruction &op) {
  */
 INLINE ShaderModuleSpirV::InstructionIterator ShaderModuleSpirV::InstructionStream::
 insert_arg(const iterator &it, uint16_t arg_index, uint32_t arg) {
-  ptrdiff_t offset = it._words - &_words[0];
+  ptrdiff_t offset = it._words - _words.data();
 
   // If this triggers, you used an invalid iterator.
   assert(offset >= 0 && (size_t)offset <= _words.size());
@@ -284,7 +284,7 @@ insert_arg(const iterator &it, uint16_t arg_index, uint32_t arg) {
  */
 INLINE ShaderModuleSpirV::InstructionIterator ShaderModuleSpirV::InstructionStream::
 erase(const iterator &it) {
-  ptrdiff_t offset = it._words - &_words[0];
+  ptrdiff_t offset = it._words - _words.data();
 
   // If this triggers, you used an invalid iterator.
   assert(offset >= 0 && (size_t)offset <= _words.size());
@@ -300,7 +300,7 @@ erase(const iterator &it) {
  */
 INLINE ShaderModuleSpirV::InstructionIterator ShaderModuleSpirV::InstructionStream::
 erase_arg(const iterator &it, uint16_t arg) {
-  ptrdiff_t offset = it._words - &_words[0];
+  ptrdiff_t offset = it._words - _words.data();
 
   // If this triggers, you used an invalid iterator.
   assert(offset >= 0 && (size_t)offset <= _words.size());
@@ -320,7 +320,7 @@ erase_arg(const iterator &it, uint16_t arg) {
  */
 const uint32_t *ShaderModuleSpirV::InstructionStream::
 get_data() const {
-  return &_words[0];
+  return _words.data();
 }
 
 /**

@@ -44,6 +44,7 @@ public:
                               uint32_t queue_family_index);
   virtual ~VulkanGraphicsStateGuardian();
 
+  virtual bool make_current() const;
   virtual void reset();
 
   void destroy_device();
@@ -136,7 +137,7 @@ public:
 
   virtual bool begin_draw_primitives(const GeomPipelineReader *geom_reader,
                                      const GeomVertexDataPipelineReader *data_reader,
-                                     size_t num_instances, bool force);
+                                     const InstanceList *instances, bool force);
   virtual bool draw_triangles(const GeomPrimitivePipelineReader *reader,
                               bool force);
   virtual bool draw_triangles_adj(const GeomPrimitivePipelineReader *reader,

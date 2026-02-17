@@ -488,7 +488,7 @@ compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
       }
     }
 
-    const BoundingVolume **child_begin = &child_volumes[0];
+    const BoundingVolume **child_begin = child_volumes.data();
     const BoundingVolume **child_end = child_begin + child_volumes.size();
 
     bound->around(child_begin, child_end);

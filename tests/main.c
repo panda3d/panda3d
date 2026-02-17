@@ -42,6 +42,7 @@ extern PyObject *PyInit_bullet();
 #endif
 
 extern EXPCL_PANDA_PNMIMAGETYPES void init_libpnmimagetypes();
+extern EXPCL_PANDA_SHADERPIPELINE void init_libshaderpipeline();
 #endif  // LINK_ALL_STATIC
 
 
@@ -70,6 +71,7 @@ int main(int argc, char **argv) {
 #endif
 
   init_libpnmimagetypes();
+  init_libshaderpipeline();
 
   {
     PyObject *panda3d_module = PyImport_ImportModule("panda3d");
@@ -113,7 +115,7 @@ int main(int argc, char **argv) {
 
 #ifdef ANDROID
   // No caching on Android
-  PyRun_SimpleString("import sys; sys.argv.insert(1, '-o cache_dir=/dev/null')");
+  PyRun_SimpleString("import sys; sys.argv.insert(1, '-pno:cacheprovider')");
 #endif
 
   return Py_RunMain();

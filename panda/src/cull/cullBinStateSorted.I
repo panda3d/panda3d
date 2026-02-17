@@ -41,13 +41,20 @@ ObjectData(CullableObject *object) :
  */
 INLINE bool CullBinStateSorted::ObjectData::
 operator < (const ObjectData &other) const {
+  // Respecifying the instance list is probably slower than most state changes.
+  if (_object->_instances != other._object->_instances) {
+    return _object->_instances < other._object->_instances;
+  }
+
   // Group by state changes, in approximate order from heaviest change to
   // lightest change.
   const RenderState *sa = _object->_state;
   const RenderState *sb = other._object->_state;
-  int compare = sa->compare_sort(*sb);
-  if (compare != 0) {
-    return compare < 0;
+  if (sa != sb) {
+    int compare = sa->compare_sort(*sb);
+    if (compare != 0) {
+      return compare < 0;
+    }
   }
 
   // Vertex format changes are also fairly slow.
