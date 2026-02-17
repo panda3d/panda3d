@@ -2139,6 +2139,9 @@ make_attrib(const ShaderKey &key, Shader *shader) {
   if (key._flags & ShaderKey::F_perspective_points) {
     flags |= ShaderAttrib::F_shader_point_size;
   }
+  if (key._num_anim_transforms != 0) {
+    flags |= ShaderAttrib::F_hardware_skinning;
+  }
   if (flags != 0) {
     shattr = DCAST(ShaderAttrib, shattr)->set_flag(flags, true);
   }

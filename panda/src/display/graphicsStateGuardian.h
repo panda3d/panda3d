@@ -150,6 +150,7 @@ PUBLISHED:
 
   INLINE int get_max_vertex_transforms() const;
   INLINE int get_max_vertex_transform_indices() const;
+  INLINE bool get_supports_fixed_function_vertex_blending() const;
 
   INLINE bool get_copy_texture_inverted() const;
   virtual bool get_supports_multisample() const;
@@ -613,6 +614,7 @@ protected:
 
   int _max_vertex_transforms;
   int _max_vertex_transform_indices;
+  bool _supports_fixed_function_vertex_blending;
 
   bool _supports_occlusion_query;
   PT(OcclusionQueryContext) _current_occlusion_query;

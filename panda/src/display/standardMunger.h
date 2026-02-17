@@ -52,6 +52,7 @@ private:
   Contents _contents;
 
   bool _auto_shader;
+  bool _custom_shader;
   bool _shader_skinning;
   bool _remove_material;
 

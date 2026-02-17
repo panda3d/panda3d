@@ -485,6 +485,14 @@ get_max_vertex_transform_indices() const {
 }
 
 /**
+ * Returns true if the GSG supports vertex blending without a shader applied.
+ */
+INLINE bool GraphicsStateGuardian::
+get_supports_fixed_function_vertex_blending() const {
+  return _supports_fixed_function_vertex_blending;
+}
+
+/**
  * Returns true if this particular GSG has the property that any framebuffer-
  * to-texture copy results in a texture that is upside-down and backwards from
  * Panda's usual convention; that is, it copies into a texture from the bottom

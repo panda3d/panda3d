@@ -381,6 +381,11 @@ public:
 #endif
 
   virtual GeomContext *prepare_geom(Geom *geom);
+#ifndef OPENGLES_1
+  bool update_transform_buffer(CLP(GeomContext) *ggc, const TransformTable *table);
+  bool apply_transform_buffer(GLuint base, const GeomPipelineReader *geom_reader,
+                              const TransformTable *table);
+#endif
   virtual void release_geom(GeomContext *gc);
 
   virtual ShaderContext *prepare_shader(Shader *shader);
@@ -698,6 +703,7 @@ protected:
   void *map_read_buffer(GLenum target, GLuint buffer, size_t size);
   void *map_write_discard_buffer(GLenum target, GLuint buffer, size_t size,
                                  bool create_storage);
+  void unmap_buffer(GLenum target, GLuint buffer);
 #endif
 
 #ifndef OPENGLES_1
@@ -804,6 +810,9 @@ protected:
 #else
   int _max_vertex_attrib_stride = INT_MAX;
 #endif
+
+  GLuint _current_ubuffer_index;
+  pvector<GLuint> _current_ubuffer_base;
 
   GLuint _current_sbuffer_index;
   pvector<GLuint> _current_sbuffer_base;

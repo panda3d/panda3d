@@ -38,6 +38,7 @@ StandardMunger(GraphicsStateGuardianBase *gsg, const RenderState *state,
   _numeric_type(numeric_type),
   _contents(contents),
   _auto_shader(false),
+  _custom_shader(false),
   _shader_skinning(false),
   _remove_material(false),
   _munge_color(false),
@@ -46,12 +47,12 @@ StandardMunger(GraphicsStateGuardianBase *gsg, const RenderState *state,
   const ShaderAttrib *shader_attrib;
   state->get_attrib_def(shader_attrib);
   _auto_shader = shader_attrib->auto_shader();
+  _custom_shader = shader_attrib->get_shader() != nullptr;
   if (shader_attrib->get_flag(ShaderAttrib::F_hardware_skinning)) {
     _shader_skinning = true;
   }
 
-  if (!get_gsg()->get_runtime_color_scale() && !_auto_shader &&
-      shader_attrib->get_shader() == nullptr) {
+  if (!get_gsg()->get_runtime_color_scale() && !_auto_shader && !_custom_shader) {
     // We might need to munge the colors.
     const ColorAttrib *color_attrib;
     const ColorScaleAttrib *color_scale_attrib;
@@ -128,7 +129,8 @@ munge_data_impl(const GeomVertexData *data) {
 
   } else if (hardware_animated_vertices &&
              animation.get_animation_type() == AT_panda &&
-             new_data->get_slider_table() == nullptr) {
+             new_data->get_slider_table() == nullptr &&
+             (_custom_shader || get_gsg()->get_supports_fixed_function_vertex_blending())) {
     // Maybe we can animate the vertices with hardware.
     const TransformBlendTable *table = new_data->get_transform_blend_table();
     if (table != nullptr &&
@@ -294,6 +296,9 @@ compare_to_impl(const GeomMunger *other) const {
   if (_auto_shader != om->_auto_shader) {
     return (int)_auto_shader - (int)om->_auto_shader;
   }
+  if (_custom_shader != om->_custom_shader) {
+    return (int)_custom_shader - (int)om->_custom_shader;
+  }
   if (_remove_material != om->_remove_material) {
     return (int)_remove_material - (int)om->_remove_material;
   }
@@ -328,6 +333,9 @@ geom_compare_to_impl(const GeomMunger *other) const {
     if (compare != 0) {
       return compare;
     }
+  }
+  if (_custom_shader != om->_custom_shader) {
+    return (int)_custom_shader - (int)om->_custom_shader;
   }
   if (_shader_skinning != om->_shader_skinning) {
     return (int)_shader_skinning - (int)om->_shader_skinning;

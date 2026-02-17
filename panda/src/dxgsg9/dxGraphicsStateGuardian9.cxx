@@ -2595,6 +2595,7 @@ reset() {
   _max_clip_planes = (int)d3d_caps.MaxUserClipPlanes;
   _max_vertex_transforms = d3d_caps.MaxVertexBlendMatrices;
   _max_vertex_transform_indices = d3d_caps.MaxVertexBlendMatrixIndex;
+  _supports_fixed_function_vertex_blending = (_max_vertex_transforms > 0);
 
   set_render_state(D3DRS_AMBIENT, 0x0);
 

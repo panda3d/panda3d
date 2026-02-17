@@ -33,6 +33,7 @@
 #include "sparseArray.h"
 #include "spirVTransformer.h"
 #include "spirVInjectAlphaTestPass.h"
+#include "spirVInjectAnimationPass.h"
 #include "spirVInjectInstancingPass.h"
 #include "spirVEmulateTextureQueriesPass.h"
 
@@ -100,9 +101,6 @@ CLP(ShaderContext)::
 CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext(s) {
   _glgsg = glgsg;
   _uses_standard_vertex_arrays = false;
-  _enabled_attribs.clear();
-  _color_attrib_index = -1;
-  _instance_mat_index = -1;
   _validated = !gl_validate_shaders;
   _is_legacy = s->_modules[0]._module.get_read_pointer()->is_of_type(ShaderModuleGlsl::get_class_type());
 
@@ -111,19 +109,34 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
 
   _scratch_space_size = 16;
 
-  // Do we have a p3d_Color attribute?
-  int next_unused_location = 0;
-  for (Shader::VertexInputBinding &bind : _shader->_vertex_inputs) {
-    if (bind._name == InternalName::get_color()) {
-      _color_attrib_index = bind._id._location;
-      //break;
-    }
-    next_unused_location = std::max(next_unused_location, (int)bind._id._location + bind._id._type->get_num_interface_locations());
-  }
-
   BitMask32 variant_module_mask = 0;
+  int next_unused_vertex_attrib_location = 0;
 
   if (!_is_legacy) {
+    // Go through the vertex attributes.
+    for (const Shader::VertexInputBinding &bind : _shader->_vertex_inputs) {
+      if (bind._name == InternalName::get_color()) {
+        _color_attrib_index = bind._id._location;
+      }
+      else if (bind._name == InternalName::get_transform_index()) {
+        _transform_index_index = bind._id._location;
+      }
+      else if (bind._name == InternalName::get_transform_weight()) {
+        _transform_weight_index = bind._id._location;
+      }
+      else if (bind._name == InternalName::get_vertex()) {
+        _animate_point_attrib_locations |= (1u << bind._id._location);
+      }
+      else if (bind._name == InternalName::get_normal()) {
+        _animate_vector_attrib_locations |= (1u << bind._id._location);
+      }
+      int num_locations = bind._id._type->get_num_interface_locations();
+      next_unused_vertex_attrib_location =
+        std::max(next_unused_vertex_attrib_location, (int)bind._id._location + num_locations);
+
+      _vertex_attribs.push_back({bind._name, bind._id._location, num_locations, 0, bind._append_uv, bind._scalar_type});
+    }
+
     GLint next_location = 0;
 
     // We may need to generate a different program for each different possible
@@ -174,36 +187,67 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
     }
   }
 
-  // Determine whether we may want to inject hardware instancing support into
-  // the shader later (if requested), by altering the inputs that involve the
-  // modelview matrix.  We will rebuild the shader the first time it is used
-  // with instancing, see bind().
-  if (!_is_legacy &&
-      glgsg->_supports_geometry_instancing &&
-      glgsg->_supports_vertex_attrib_divisor &&
-      (s->_module_mask & (1u << (uint32_t)Shader::Stage::VERTEX)) != 0) {
+  if (!_is_legacy && (s->_module_mask & (1u << (uint32_t)Shader::Stage::VERTEX)) != 0) {
+    // Determine whether we want to inject animation support.  This requires
+    // support for UBOs, since that allows us to efficiently pass a large
+    // number of skinning matrices to the shader.
+    if (glgsg->_supports_uniform_buffers && hardware_animated_vertices &&
+        (_animate_point_attrib_locations | _animate_vector_attrib_locations) != 0) {
 
-    for (const Shader::Parameter &param : _shader->_parameters) {
-      if (param._binding == nullptr) {
-        continue;
+      if (_transform_index_index < 0) {
+        _transform_index_index = next_unused_vertex_attrib_location++;
+        _vertex_attribs.push_back({
+          InternalName::get_transform_index(),
+          _transform_index_index, 1, VB_animation, -1, ShaderType::ST_uint
+        });
+        if (GLCAT.is_debug()) {
+          GLCAT.debug()
+            << "Transform indices will be using vertex attribute location "
+            << _transform_index_index << "\n";
+        }
       }
-      // We may need to instance this input.
-      bool inverse, transpose;
-      if ((param._stage_mask & (1 << (int)Shader::Stage::VERTEX)) != 0 &&
-          param._binding->has_modelview_matrix(inverse, transpose)) {
-        _model_matrices[param._name] = std::make_pair(inverse, transpose);
+      if (_transform_weight_index < 0) {
+        _transform_weight_index = next_unused_vertex_attrib_location++;
+        _vertex_attribs.push_back({
+          InternalName::get_transform_weight(),
+          _transform_weight_index, 1, VB_animation, -1, ShaderType::ST_float
+        });
+        if (GLCAT.is_debug()) {
+          GLCAT.debug()
+            << "Transform weights will be using vertex attribute location "
+            << _transform_weight_index << "\n";
+        }
       }
+      _variant_mask |= VB_animation;
     }
 
-    if (!_model_matrices.empty()) {
-      variant_module_mask.set_bit((int)Shader::Stage::VERTEX);
-      _variant_mask |= VB_instancing;
+    // Determine whether we may want to inject hardware instancing support into
+    // the shader later (if requested), by altering the inputs that involve the
+    // modelview matrix.  We will rebuild the shader the first time it is used
+    // with instancing, see bind().
+    if (glgsg->_supports_geometry_instancing && glgsg->_supports_vertex_attrib_divisor) {
+      for (const Shader::Parameter &param : _shader->_parameters) {
+        if (param._binding == nullptr) {
+          continue;
+        }
+        // We may need to instance this input.
+        bool inverse, transpose;
+        if ((param._stage_mask & (1 << (int)Shader::Stage::VERTEX)) != 0 &&
+            param._binding->has_modelview_matrix(inverse, transpose)) {
+          _model_matrices[param._name] = std::make_pair(inverse, transpose);
+        }
+      }
 
-      _instance_mat_index = next_unused_location;
-      if (GLCAT.is_debug()) {
-        GLCAT.debug()
-          << "Instance matrix will be using vertex attribute location "
-          << _instance_mat_index << "\n";
+      if (!_model_matrices.empty()) {
+        variant_module_mask.set_bit((int)Shader::Stage::VERTEX);
+        _variant_mask |= VB_instancing;
+
+        _instance_mat_index = next_unused_vertex_attrib_location++;
+        if (GLCAT.is_debug()) {
+          GLCAT.debug()
+            << "Instance matrix will be using vertex attribute location "
+            << _instance_mat_index << "\n";
+        }
       }
     }
   }
@@ -903,6 +947,11 @@ reflect_program(GLuint program, SparseArray &active_locations) {
   _shader->_vertex_inputs.clear();
   for (int i = 0; i < param_count; ++i) {
     reflect_attribute(program, i, name_buffer, name_buflen);
+  }
+
+  _vertex_attribs.clear();
+  for (const Shader::VertexInputBinding &bind : _shader->_vertex_inputs) {
+    _vertex_attribs.push_back({bind._name, bind._id._location, bind._elements, 0, bind._append_uv, bind._scalar_type});
   }
 
   /*if (gl_fixed_vertex_attrib_locations) {
@@ -1850,7 +1899,7 @@ set_state_and_transform(const RenderState *target_rs,
                         const TransformState *modelview_transform,
                         const TransformState *camera_transform,
                         const TransformState *projection_transform,
-                        bool inject_instancing) {
+                        bool inject_instancing, bool inject_animation) {
   nassertr(_glgsg != nullptr, false);
 
   // Make sure the correct variant for this state is bound.
@@ -1859,6 +1908,9 @@ set_state_and_transform(const RenderState *target_rs,
     variant = (target_rs->get_alpha_test_mode() & VB_alpha_test_mode_mask);
     if (inject_instancing) {
       variant |= VB_instancing;
+    }
+    if (inject_animation) {
+      variant |= VB_animation;
     }
     variant &= _variant_mask;
 
@@ -2104,10 +2156,10 @@ disable_shader_vertex_arrays() {
   //  return;
   //}
 
-  for (const Shader::VertexInputBinding &bind : _shader->_vertex_inputs) {
-    GLint p = bind._id._location;
+  for (const VertexAttrib &attrib : _vertex_attribs) {
+    GLint p = attrib._location;
 
-    for (int i = 0; i < bind._elements; ++i) {
+    for (int i = 0; i < attrib._num_locations; ++i) {
       _glgsg->disable_vertex_attrib_array(p + i);
     }
   }
@@ -2191,14 +2243,16 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
   } else {
     Geom::NumericType numeric_type;
     int start, stride, num_values;
-    size_t nvarying = _shader->_vertex_inputs.size();
 
     GLint max_p = 0;
 
-    for (size_t i = 0; i < nvarying; ++i) {
-      const Shader::VertexInputBinding &bind = _shader->_vertex_inputs[i];
-      InternalName *name = bind._name;
-      int texslot = bind._append_uv;
+    for (const VertexAttrib &attrib : _vertex_attribs) {
+      if ((_bound_variant & attrib._variant_mask) != attrib._variant_mask) {
+        continue;
+      }
+
+      InternalName *name = attrib._name;
+      int texslot = attrib._append_uv;
 
       if (texslot >= 0 && texslot < _glgsg->_state_texture->get_num_on_stages()) {
         TextureStage *stage = _glgsg->_state_texture->get_on_stage(texslot);
@@ -2211,8 +2265,8 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
         }
       }
 
-      GLint p = bind._id._location;
-      max_p = max(max_p, p + bind._elements);
+      GLint p = attrib._location;
+      max_p = max(max_p, p + attrib._num_locations);
 
       // Don't apply vertex colors if they are disabled with a ColorAttrib.
       int num_elements, element_stride, divisor;
@@ -2238,13 +2292,12 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
             _glgsg->_glVertexAttribPointer(p, GL_BGRA, GL_UNSIGNED_BYTE,
                                            GL_TRUE, stride, client_pointer);
           }
-          else if (_emulate_float_attribs ||
-                   bind._scalar_type == ShaderType::ST_float ||
+          else if (attrib._scalar_type == ShaderType::ST_float ||
                    numeric_type == GeomEnums::NT_float32) {
             _glgsg->_glVertexAttribPointer(p, num_values, type,
                                            normalized, stride, client_pointer);
           }
-          else if (bind._scalar_type == ShaderType::ST_double) {
+          else if (attrib._scalar_type == ShaderType::ST_double) {
             _glgsg->_glVertexAttribLPointer(p, num_values, type,
                                             stride, client_pointer);
           }
@@ -2259,7 +2312,7 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
           client_pointer += element_stride;
         }
       } else {
-        for (int i = 0; i < bind._elements; ++i) {
+        for (int i = 0; i < attrib._num_locations; ++i) {
           _glgsg->disable_vertex_attrib_array(p + i);
         }
         if (p == _color_attrib_index) {
@@ -2282,7 +2335,7 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
         else if (name == InternalName::get_instance_matrix()) {
           const LMatrix4 &ident_mat = LMatrix4::ident_mat();
 
-          for (int i = 0; i < bind._elements; ++i) {
+          for (int i = 0; i < attrib._num_locations; ++i) {
 #ifdef STDFLOAT_DOUBLE
             _glgsg->_glVertexAttrib4dv(p, ident_mat.get_data() + i * 4);
 #else
@@ -2937,6 +2990,16 @@ create_shader(const ShaderModule *module, size_t mi,
         transformer.run(SpirVInjectInstancingPass(model_matrices, _instance_mat_index));
       }
 
+      if (stage == ShaderModule::Stage::VERTEX && (variant & VB_animation) != 0) {
+        // Implement hardware vertex animation.
+        SpirVInjectAnimationPass pass(_animate_point_attrib_locations,
+                                      _animate_vector_attrib_locations,
+                                      _transform_index_index,
+                                      _transform_weight_index,
+                                      0, 0);
+        transformer.run(pass);
+      }
+
       if (stage == ShaderModule::Stage::FRAGMENT &&
           alpha_test_mode != RenderAttrib::M_none) {
         // Assign location 0 to the alpha ref value.
@@ -2997,7 +3060,10 @@ create_shader(const ShaderModule *module, size_t mi,
       }
 
       if (options.version < 130) {
-        _emulate_float_attribs = true;
+        // Emulate floating-point attributes.
+        for (VertexAttrib &attrib : _vertex_attribs) {
+          attrib._scalar_type = ShaderType::ST_float;
+        }
       }
 
       ShaderModuleSpirV::InstructionStream stream = spv->_instructions;
@@ -3006,7 +3072,8 @@ create_shader(const ShaderModule *module, size_t mi,
       pmap<SpirVTransformPass::AccessChain, uint32_t> size_var_ids;
       uint64_t supported_caps = _glgsg->get_supported_shader_capabilities();
       uint64_t emulate_caps = spv->_emulatable_caps & ~supported_caps;
-      if (emulate_caps != 0u || (stage == ShaderModule::Stage::VERTEX && !model_matrices.empty())) {
+      if (emulate_caps != 0u ||
+          (stage == ShaderModule::Stage::VERTEX && (variant & (VB_instancing | VB_animation)) != 0)) {
         _emulated_caps |= emulate_caps;
 
         SpirVTransformer transformer(spv->_instructions);
@@ -3026,6 +3093,16 @@ create_shader(const ShaderModule *module, size_t mi,
           for (const auto &pair : pass._matrix_vars) {
             id_to_location[pair.second._id] = id_to_location[pair.first];
           }
+        }
+
+        if (stage == ShaderModule::Stage::VERTEX && (variant & VB_animation) != 0) {
+          // Implement hardware vertex animation.
+          SpirVInjectAnimationPass pass(_animate_point_attrib_locations,
+                                        _animate_vector_attrib_locations,
+                                        _transform_index_index,
+                                        _transform_weight_index,
+                                        0, 0);
+          transformer.run(pass);
         }
 
         stream = transformer.get_result();
@@ -3293,6 +3370,8 @@ compile_and_link(int variant) {
       attached_modules.push_back({module->get_stage(), handle});
       _glgsg->_glAttachShader(program, handle);
     }
+
+    ++mi;
   }
 
   if (!_bind_attrib_locations.is_zero()) {

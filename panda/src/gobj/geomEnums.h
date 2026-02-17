@@ -138,6 +138,9 @@ PUBLISHED:
 
     // Uses geometry instancing (divisor).
     GR_instancing           = 0x200000,
+
+    // Supports automated hardware animation.
+    GR_shader_vertex_blend  = 0x400000,
   };
 
   // The shade model specifies whether the per-vertex colors and normals

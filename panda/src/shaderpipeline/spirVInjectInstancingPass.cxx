@@ -59,7 +59,7 @@ transform_annotation_op(Instruction op) {
       op.args[0] = it->second._id;
     }
   }
-  return SpirVTransformPass::transform_definition_op(op);
+  return SpirVTransformPass::transform_annotation_op(op);
 }
 
 /**

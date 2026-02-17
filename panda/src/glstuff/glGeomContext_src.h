@@ -36,6 +36,15 @@ public:
 
   void remove_munger(CLP(GeomMunger) *munger);
 
+#ifndef OPENGLES_1
+  // UBO containing skinning matrices.
+  GLuint _transform_buffer = 0;
+  size_t _transform_buffer_size = 0;
+
+  const TransformTable *_transform_table = nullptr;
+  UpdateSeq _transform_table_modified;
+#endif
+
   // The different variants of the display list, for storing the different
   // states the geom might have been rendered in (each using a different
   // munger).

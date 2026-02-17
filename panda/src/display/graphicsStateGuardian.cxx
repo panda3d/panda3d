@@ -221,6 +221,7 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
   // Assume no vertex blending capability.
   _max_vertex_transforms = 0;
   _max_vertex_transform_indices = 0;
+  _supports_fixed_function_vertex_blending = false;
 
   _supports_occlusion_query = false;
   _supports_timer_query = false;

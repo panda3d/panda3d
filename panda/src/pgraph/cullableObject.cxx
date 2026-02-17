@@ -141,16 +141,21 @@ munge_geom(GraphicsStateGuardianBase *gsg, GeomMunger *munger,
       }
     }
 
-    // If we have prepared it for skinning via the shader generator, mark a
-    // flag on the state so that the shader generator will do this.  We should
-    // probably find a cleaner way to do this.
+    // If we have prepared it for skinning in hardware, and the renderer doesn't
+    // support blending in the back-end, mark a flag on the state so that the
+    // shader generator will do this.  This is the old path for hardware
+    // skinning, but there may still be value in it as the new path currently
+    // requires uniform buffer objects (OpenGL 3.1+).
     const ShaderAttrib *sattr;
     if (_state->get_attrib(sattr) && sattr->auto_shader()) {
-      GeomVertexDataPipelineReader data_reader(_munged_data, current_thread);
-      if (data_reader.get_format()->get_animation().get_animation_type() == Geom::AT_hardware) {
-        static CPT(RenderState) state = RenderState::make(
-          DCAST(ShaderAttrib, ShaderAttrib::make())->set_flag(ShaderAttrib::F_hardware_skinning, true));
-        _state = _state->compose(state);
+      if ((gsg_bits & Geom::GR_shader_vertex_blend) == 0) {
+        // We don't support hardware blending, so do it in the generated shader.
+        GeomVertexDataPipelineReader data_reader(_munged_data, current_thread);
+        if (data_reader.get_format()->get_animation().get_animation_type() == Geom::AT_hardware) {
+          static CPT(RenderState) state = RenderState::make(
+            DCAST(ShaderAttrib, ShaderAttrib::make())->set_flag(ShaderAttrib::F_hardware_skinning, true));
+          _state = _state->compose(state);
+        }
       }
 
       gsg->ensure_generated_shader(_state);

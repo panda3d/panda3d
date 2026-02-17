@@ -86,7 +86,7 @@ private:
                                const TransformState *modelview_transform,
                                const TransformState *camera_transform,
                                const TransformState *projection_transform,
-                               bool inject_instancing);
+                               bool inject_instancing, bool inject_animation);
 
   void issue_parameters(int altered);
   void disable_shader_vertex_arrays();
@@ -124,7 +124,6 @@ private:
   small_vector<Module, 1> _invariant_modules;
 
   bool _is_legacy = false;
-  bool _emulate_float_attribs = false;
 
   WCPT(RenderState) _state_rs;
   const TransformState *_modelview_transform;
@@ -176,9 +175,22 @@ private:
   typedef pvector<ImageUnit> ImageUnits;
   ImageUnits _image_units;
 
-  BitMask32 _enabled_attribs;
-  GLint _color_attrib_index;
-  GLint _instance_mat_index;
+  struct VertexAttrib {
+    InternalName *_name;
+    GLint _location;
+    int _num_locations;
+    int _variant_mask;
+    int _append_uv;
+    Shader::ScalarType _scalar_type;
+  };
+  pvector<VertexAttrib> _vertex_attribs;
+  BitMask32 _enabled_attribs {0};
+  GLint _color_attrib_index = -1;
+  GLint _instance_mat_index = -1;
+  GLint _transform_index_index = -1;
+  GLint _transform_weight_index = -1;
+  uint32_t _animate_point_attrib_locations = 0;
+  uint32_t _animate_vector_attrib_locations = 0;
   BitMask32 _bind_attrib_locations = 0;
   BitMask32 _bind_frag_data_locations = 0;
 

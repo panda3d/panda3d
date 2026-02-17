@@ -2648,9 +2648,9 @@ reset() {
 #ifndef OPENGLES_1
   // Check for uniform buffers.
 #ifdef OPENGLES
-  if (is_at_least_gl_version(3, 1) || has_extension("GL_ARB_uniform_buffer_object")) {
-#else
   if (is_at_least_gles_version(3, 0)) {
+#else
+  if (is_at_least_gl_version(3, 1) || has_extension("GL_ARB_uniform_buffer_object")) {
 #endif
     _supports_uniform_buffers = true;
     _glGetActiveUniformsiv = (PFNGLGETACTIVEUNIFORMSIVPROC)
@@ -2659,6 +2659,22 @@ reset() {
        get_extension_func("glGetActiveUniformBlockiv");
     _glGetActiveUniformBlockName = (PFNGLGETACTIVEUNIFORMBLOCKNAMEPROC)
        get_extension_func("glGetActiveUniformBlockName");
+
+    // UBO support is the requirement for hardware animation.
+    // Requiring GLSL 1.50 instead of 1.40 due to a SPIRV-Cross bug.
+#ifdef OPENGLES
+    if (_glsl_version >= 300) {
+#else
+    if (_glsl_version >= 150) {
+#endif
+      _max_vertex_transforms = 4;
+      _max_vertex_transform_indices = 256;
+      _supported_geom_rendering |= Geom::GR_shader_vertex_blend;
+
+      // If we have no fixed-function hardware, we pretend to support
+      // fixed-function vertex blending, since we always have a shader applied.
+      _supports_fixed_function_vertex_blending = !has_fixed_function_pipeline();
+    }
   } else {
     _supports_uniform_buffers = false;
   }
@@ -4138,6 +4154,9 @@ reset() {
   _current_vertex_format.clear();
   memset(_vertex_attrib_columns, 0, sizeof(const GeomVertexColumn *) * 32);
 
+  _current_ubuffer_index = 0;
+  _current_ubuffer_base.clear();
+
   _current_sbuffer_index = 0;
   _current_sbuffer_base.clear();
 #endif
@@ -5265,8 +5284,20 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
       _instance_count = 1;
     }
 
+    // Do we have animation that wasn't applied on the CPU?
+    bool inject_animation = false;
+    if (data_reader->get_format()->get_animation().get_animation_type() == Geom::AT_hardware &&
+        !_target_shader->get_flag(ShaderAttrib::F_hardware_skinning)) {
+      // For now, this is the only UBO, so it's always bound to index 0, but we
+      // may want to coordinate this with the shader context later.
+      if (!apply_transform_buffer(0, geom_reader, data_reader->get_transform_table())) {
+        return false;
+      }
+      inject_animation = true;
+    }
+
     if (!_current_shader_context->set_state_and_transform(_state_rs, _internal_transform,
-        _scene_setup->get_camera_transform(), _projection_mat, inject_instancing)) {
+        _scene_setup->get_camera_transform(), _projection_mat, inject_instancing, inject_animation)) {
       // Something is wrong with the current shader.
       return false;
     }
@@ -5666,6 +5697,24 @@ unbind_buffers() {
     _glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     _current_ibuffer_index = 0;
   }
+#ifndef OPENGLES_1
+  if (_current_ubuffer_index != 0) {
+    if (GLCAT.is_spam() && gl_debug_buffers) {
+      GLCAT.spam()
+        << "unbinding uniform buffer\n";
+    }
+    _glBindBuffer(GL_UNIFORM_BUFFER, 0);
+    _current_ubuffer_index = 0;
+  }
+  if (_current_sbuffer_index != 0) {
+    if (GLCAT.is_spam() && gl_debug_buffers) {
+      GLCAT.spam()
+        << "unbinding shader buffer\n";
+    }
+    _glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+    _current_sbuffer_index = 0;
+  }
+#endif
 
 #ifndef OPENGLES
   if (_current_vertex_buffers.size() > 1 && _supports_multi_bind) {
@@ -7249,6 +7298,132 @@ prepare_geom(Geom *geom) {
   return new CLP(GeomContext)(geom);
 }
 
+#ifndef OPENGLES_1
+/**
+ * Updates the uniform buffer holding the skinning matrices for the given Geom.
+ */
+bool CLP(GraphicsStateGuardian)::
+update_transform_buffer(CLP(GeomContext) *ggc, const TransformTable *table) {
+  GLuint buffer = ggc->_transform_buffer;
+
+  size_t num_transforms = table->get_num_transforms();
+  if (num_transforms > ggc->_transform_buffer_size) {
+    _glDeleteBuffers(1, &buffer);
+    buffer = 0;
+  }
+
+  bool recreate = false;
+  if (buffer == 0) {
+    _glGenBuffers(1, &buffer);
+    ggc->_transform_buffer = buffer;
+    ggc->_transform_buffer_size = 256;
+    recreate = true;
+  }
+
+  // For now, it's always holding 256 elements, because that's what we declare
+  // in the shader.
+  size_t size_bytes = ggc->_transform_buffer_size * sizeof(float) * 12;
+  void *ptr = map_write_discard_buffer(GL_UNIFORM_BUFFER, buffer, size_bytes, recreate);
+
+  float *data = (float *)ptr;
+  size_t i = 0;
+  for (; i < num_transforms; ++i) {
+#ifdef STDFLOAT_DOUBLE
+    LMatrix4d matd;
+    table->get_transform(i)->get_matrix(matd);
+    LMatrix4f mat = LCAST(float, matd);
+#else
+    LMatrix4f mat;
+    table->get_transform(i)->get_matrix(mat);
+#endif
+
+    data[0] = mat[0][0];
+    data[1] = mat[1][0];
+    data[2] = mat[2][0];
+    data[3] = mat[3][0];
+
+    data[4] = mat[0][1];
+    data[5] = mat[1][1];
+    data[6] = mat[2][1];
+    data[7] = mat[3][1];
+
+    data[8] = mat[0][2];
+    data[9] = mat[1][2];
+    data[10] = mat[2][2];
+    data[11] = mat[3][2];
+
+    data += 12;
+  }
+  // Fill the rest with identity.
+  /*for (; i < ggc->_transform_buffer_size; ++i) {
+    data[0] = 1;
+    data[1] = 0;
+    data[2] = 0;
+    data[3] = 0;
+
+    data[4] = 0;
+    data[5] = 1;
+    data[6] = 0;
+    data[7] = 0;
+
+    data[8] = 0;
+    data[9] = 0;
+    data[10] = 1;
+    data[11] = 0;
+    data += 12;
+  }*/
+
+  unmap_buffer(GL_UNIFORM_BUFFER, buffer);
+  _current_ubuffer_index = 0;
+
+  ggc->_transform_table = table;
+  ggc->_transform_table_modified = table->get_modified();
+  return true;
+}
+#endif  // !OPENGLES_1
+
+#ifndef OPENGLES_1
+/**
+ * Updates the uniform buffer holding the skinning matrices for the given Geom
+ * and binds it to the given UBO slot.
+ */
+bool CLP(GraphicsStateGuardian)::
+apply_transform_buffer(GLuint base, const GeomPipelineReader *geom_reader,
+                       const TransformTable *table) {
+  nassertr_always(table != nullptr, false);
+
+  GeomContext *gc = geom_reader->prepare_now(get_prepared_objects(), this);
+  nassertr(gc != nullptr, false);
+  CLP(GeomContext) *ggc = DCAST(CLP(GeomContext), gc);
+
+  if (ggc->_transform_buffer == 0 ||
+      ggc->_transform_table != table ||
+      ggc->_transform_table_modified != table->get_modified(geom_reader->get_current_thread())) {
+    update_transform_buffer(ggc, table);
+  }
+
+  if (base >= _current_ubuffer_base.size()) {
+    _current_ubuffer_base.resize(base + 1, 0);
+  }
+
+  GLuint index = ggc->_transform_buffer;
+  if (_current_ubuffer_base[base] != index) {
+    if (GLCAT.is_spam() && gl_debug_buffers) {
+      GLCAT.spam()
+        << "binding uniform buffer " << (int)index
+        << " to index " << base << "\n";
+    }
+    _glBindBufferBase(GL_UNIFORM_BUFFER, base, index);
+    _current_ubuffer_base[base] = index;
+    _current_ubuffer_index = index;
+
+    report_my_gl_errors();
+  }
+
+  return true;
+}
+#endif  // !OPENGLES_1
+
 /**
  * Frees the GL resources previously allocated for the geom.  This function
  * should never be called directly; instead, call Geom::release() (or simply
@@ -7260,6 +7435,14 @@ release_geom(GeomContext *gc) {
   if (has_fixed_function_pipeline()) {
     ggc->release_display_lists();
   }
+
+#ifndef OPENGLES_1
+  if (ggc->_transform_buffer != 0) {
+    _glDeleteBuffers(1, &ggc->_transform_buffer);
+    ggc->_transform_buffer = 0;
+  }
+#endif
+
   report_my_gl_errors();
 
   delete ggc;
@@ -8382,7 +8565,7 @@ dispatch_compute(int num_groups_x, int num_groups_y, int num_groups_z) {
   nassertv(gsc != nullptr);
 
   if (!gsc->set_state_and_transform(_state_rs, _internal_transform,
-        _scene_setup->get_camera_transform(), _projection_mat, false)) {
+        _scene_setup->get_camera_transform(), _projection_mat, false, false)) {
     return;
   }
 
@@ -17285,6 +17468,25 @@ map_write_discard_buffer(GLenum target, GLuint buffer, size_t size,
 
   _glBindBuffer(target, 0);
   return mapped_ptr;
+}
+
+/**
+ * Call this after map_write_discard_buffer.
+ */
+void CLP(GraphicsStateGuardian)::
+unmap_buffer(GLenum target, GLuint buffer) {
+  nassertv(buffer != 0);
+
+#ifndef OPENGLES
+  if (_glUnmapNamedBuffer != nullptr) {
+    _glUnmapNamedBuffer(buffer);
+  } else
+#endif
+  {
+    _glBindBuffer(target, buffer);
+    _glUnmapBuffer(target);
+    _glBindBuffer(target, 0);
+  }
 }
 #endif  // !OPENGLES_1
 
