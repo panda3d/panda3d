@@ -4826,7 +4826,7 @@ if GetTarget() != 'android' and not PkgSkip("EGL") and not PkgSkip("GLES2"):
 #
 
 if not PkgSkip("VULKAN"):
-  OPTS=['DIR:panda/src/vulkandisplay', 'DIR:panda/src/vulkandisplay', 'BUILDING:VULKANDISPLAY', 'VULKAN']
+  OPTS=['DIR:panda/src/vulkandisplay', 'DIR:panda/src/vulkandisplay', 'BUILDING:VULKANDISPLAY', 'VULKAN', 'SPIRV-TOOLS']
   TargetAdd('p3vulkandisplay_composite1.obj', opts=OPTS, input='p3vulkandisplay_composite1.cxx')
   TargetAdd('libp3vulkandisplay.dll', input='p3vulkandisplay_composite1.obj')
   if GetTarget() == 'windows':

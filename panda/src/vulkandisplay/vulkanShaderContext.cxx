@@ -429,8 +429,11 @@ get_fragment_module(VkDevice device, RenderAttrib::PandaCompareFunc alpha_test_m
     (5u << spv::WordCountShift) | spv::OpFOrdLessThan, // M_greater_equal
   };
 
+  nassertr(_alpha_test_compare_op_offset < _alpha_test_code.get_data_size(), VK_NULL_HANDLE);
   uint32_t *code = (uint32_t *)_alpha_test_code.get_data();
-  nassertr(code[_alpha_test_compare_op_offset] == ((5u << spv::WordCountShift) | spv::OpFOrdLessThanEqual), VK_NULL_HANDLE);
+  uint32_t current_op = code[_alpha_test_compare_op_offset];
+  nassertr(current_op >= ((5u << spv::WordCountShift) | spv::OpFOrdEqual) &&
+           current_op <= ((5u << spv::WordCountShift) | spv::OpFUnordGreaterThanEqual), VK_NULL_HANDLE);
   code[_alpha_test_compare_op_offset] = opcodes[i];
 
   VkShaderModuleCreateInfo module_info;
@@ -688,7 +691,7 @@ fetch_descriptor(VulkanGraphicsStateGuardian *gsg, const Descriptor &desc,
 
   ShaderInputBinding::State state;
   state.gsg = gsg;
-  state.matrix_cache = &_matrix_cache[0];
+  state.matrix_cache = _matrix_cache.data();
 
   write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
   write.pNext = nullptr;
@@ -907,7 +910,7 @@ update_sattr_uniforms(VulkanGraphicsStateGuardian *gsg, VkBuffer &buffer) {
 
   ShaderInputBinding::State state;
   state.gsg = gsg;
-  state.matrix_cache = &_matrix_cache[0];
+  state.matrix_cache = _matrix_cache.data();
 
   for (const Block::Binding &binding : _shader_input_block._bindings) {
     binding._binding->fetch_data(state, (unsigned char *)ptr + binding._offset);
@@ -927,7 +930,7 @@ update_dynamic_uniforms(VulkanGraphicsStateGuardian *gsg, int altered) {
 
   if (altered & _other_state_block._deps) {
     if (altered & _matrix_cache_deps) {
-      gsg->update_shader_matrix_cache(_shader, &_matrix_cache[0], altered);
+      gsg->update_shader_matrix_cache(_shader, _matrix_cache.data(), altered);
     }
 
     VkBuffer ubo;
@@ -935,7 +938,7 @@ update_dynamic_uniforms(VulkanGraphicsStateGuardian *gsg, int altered) {
 
     ShaderInputBinding::State state;
     state.gsg = gsg;
-    state.matrix_cache = &_matrix_cache[0];
+    state.matrix_cache = _matrix_cache.data();
 
     for (const Block::Binding &binding : _other_state_block._bindings) {
       binding._binding->fetch_data(state, (unsigned char *)ptr + binding._offset);
@@ -996,7 +999,7 @@ get_pipeline(VulkanGraphicsStateGuardian *gsg, const RenderState *state,
   key._logic_op = logic_op->get_operation();
 
   const ColorBlendAttrib *color_blend;
-  if (state->get_attrib(color_blend) && color_blend->get_mode() == ColorBlendAttrib::M_none) {
+  if (state->get_attrib(color_blend) && color_blend->get_mode() != ColorBlendAttrib::M_none) {
     key._color_blend_attrib = color_blend;
     key._transparency_mode = TransparencyAttrib::M_none;
   } else {
