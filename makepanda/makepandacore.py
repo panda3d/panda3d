@@ -2749,6 +2749,12 @@ def SdkAutoDisableSpeedTree():
         WARNINGS.append("I cannot locate SDK for SpeedTree")
         WARNINGS.append("I have automatically added this command-line option: --no-speedtree")
 
+def SdkAutoDisableVulkan():
+    if "VULKAN" not in SDK and not PkgSkip("VULKAN"):
+        PkgDisable("VULKAN")
+        WARNINGS.append("I cannot locate SDK for Vulkan")
+        WARNINGS.append("I have automatically added this command-line option: --no-vulkan")
+
 ########################################################################
 ##
 ## Visual Studio comes with a script called VSVARS32.BAT, which

@@ -552,6 +552,9 @@ SdkLocateVulkan()
 SdkAutoDisableDirectX()
 SdkAutoDisableSpeedTree()
 
+if GetTarget() == 'windows':
+    SdkAutoDisableVulkan()
+
 if not PkgSkip("PYTHON") and SDK["PYTHONVERSION"] == "python2.7":
     pref = "%sERROR:%s " % (GetColor("red"), GetColor())
     print("========================================================================")
