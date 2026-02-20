@@ -71,6 +71,7 @@ public:
   uint32_t update_sattr_uniforms(VulkanGraphicsStateGuardian *gsg, VkBuffer &buffer);
   uint32_t update_dynamic_uniforms(VulkanGraphicsStateGuardian *gsg, int altered);
 
+  void clear_pipeline_cache();
   VkPipeline get_pipeline(VulkanGraphicsStateGuardian *gsg,
                           const RenderState *state,
                           const GeomVertexFormat *format,
@@ -87,22 +88,60 @@ public:
     INLINE bool operator ==(const PipelineKey &other) const;
     INLINE bool operator < (const PipelineKey &other) const;
 
-    CPT(GeomVertexFormat) _format;
-    VkPrimitiveTopology _topology;
-    uint32_t _patch_control_points;
-    uint32_t _fb_config;
+    ALWAYS_INLINE VkPrimitiveTopology get_topology() const;
+    ALWAYS_INLINE ColorAttrib::Type get_color_type() const;
+    ALWAYS_INLINE unsigned int get_color_write_channels() const;
+    ALWAYS_INLINE TransparencyAttrib::Mode get_transparency_mode() const;
+    ALWAYS_INLINE DepthWriteAttrib::Mode get_depth_write_mode() const;
+    ALWAYS_INLINE CullFaceAttrib::Mode get_cull_face_mode() const;
+    ALWAYS_INLINE LogicOpAttrib::Operation get_logic_op() const;
+    ALWAYS_INLINE uint32_t get_patch_control_points() const;
 
-    ColorAttrib::Type _color_type;
-    CPT(RenderModeAttrib) _render_mode_attrib;
-    CullFaceAttrib::Mode _cull_face_mode;
-    DepthWriteAttrib::Mode _depth_write_mode;
-    RenderAttrib::PandaCompareFunc _depth_test_mode;
-    int _color_write_mask;
-    LogicOpAttrib::Operation _logic_op;
-    CPT(ColorBlendAttrib) _color_blend_attrib;
-    TransparencyAttrib::Mode _transparency_mode;
-    CPT(AlphaTestAttrib) _alpha_test_attrib;
-    CPT(DepthBiasAttrib) _depth_bias_attrib;
+    // We pack most of the state into a single uint32_t for more efficient
+    // memory performance, hashing and comparisons.
+    enum PackedStateBits : uint32_t {
+      // 4 bits (10 possible values)
+      PS_topology_shift = 0,
+      PS_topology_mask = 15,
+
+      // 2 bits
+      PS_color_type_shift = 4,
+      PS_color_type_mask = 3 << PS_color_type_shift,
+
+      // 4 bits
+      PS_color_write_channels_shift = 6,
+      PS_color_write_channels_mask = 15 << PS_color_write_channels_shift,
+
+      // 3 bits
+      PS_transparency_mode_shift = 10,
+      PS_transparency_mode_mask = 7 << PS_transparency_mode_shift,
+
+      // 1 bit
+      PS_depth_write_shift = 13,
+      PS_depth_write_mask = 1 << PS_depth_write_shift,
+
+      // 4 bits
+      PS_cull_face_mode_shift = 14,
+      PS_cull_face_mode_mask = 1 << PS_cull_face_mode_shift,
+
+      // 5 bits
+      PS_logic_op_shift = 18,
+      PS_logic_op_mask = 31 << PS_logic_op_shift,
+
+      // 5 bits (stored with 1 subtracted to get full 32)
+      PS_patch_control_points_shift = 23,
+      PS_patch_control_points_mask = 31 << PS_patch_control_points_shift,
+    };
+    uint32_t _packed_state = 0u;
+    uint32_t _fb_config = 0u;
+
+    const GeomVertexFormat *_format = nullptr;
+
+    const RenderModeAttrib *_render_mode_attrib = nullptr;
+    RenderAttrib::PandaCompareFunc _depth_test_mode = RenderAttrib::M_none;
+    const ColorBlendAttrib *_color_blend_attrib = nullptr;
+    const AlphaTestAttrib *_alpha_test_attrib = nullptr;
+    const DepthBiasAttrib *_depth_bias_attrib = nullptr;
   };
 
 private:
@@ -175,9 +214,20 @@ private:
 
   // A map of all pipelines that use this shader.  This is in ShaderContext
   // because when a shader is released we have no more use of the pipelines
-  // which use that shader.
+  // which use that shader, and it dramatically narrows the key space.
   typedef pmap<PipelineKey, VkPipeline> PipelineMap;
   PipelineMap _pipeline_map;
+
+  // Mini round-robin cache of recently used pipelines, we hit this before
+  // hitting the main cache above.
+  struct PipelineCacheEntry {
+    PipelineKey _key;
+    VkPipeline _pipeline = VK_NULL_HANDLE;
+  };
+  static const size_t pipeline_cache_size = 2;
+  PipelineCacheEntry _pipeline_cache[pipeline_cache_size];
+  size_t _pipeline_cache_next = 0; // oldest entry
+
   VkPipeline _compute_pipeline = VK_NULL_HANDLE;
 
   PStatCollector _compute_dispatch_pcollector;

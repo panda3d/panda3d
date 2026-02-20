@@ -71,6 +71,10 @@ static PStatCollector _bind_descriptor_sets_pcollector("Draw:Set State:Bind Desc
 static PStatCollector _finish_frame_pcollector("Draw:Finish Frame");
 static PStatCollector _wait_semaphore_pcollector("Wait:Semaphore");
 
+PStatCollector VulkanGraphicsStateGuardian::_pipeline_cache_inline_hits_pcollector("Vulkan Pipeline Cache:Inline Hits");
+PStatCollector VulkanGraphicsStateGuardian::_pipeline_cache_main_hits_pcollector("Vulkan Pipeline Cache:Main Hits");
+PStatCollector VulkanGraphicsStateGuardian::_pipeline_cache_misses_pcollector("Vulkan Pipeline Cache:Misses");
+
 TypeHandle VulkanGraphicsStateGuardian::_type_handle;
 
 /**
@@ -3293,6 +3297,10 @@ begin_frame(Thread *current_thread, VkSemaphore wait_for) {
   _current_sc = nullptr;
 
 #ifdef DO_PSTATS
+  _pipeline_cache_inline_hits_pcollector.clear_level();
+  _pipeline_cache_main_hits_pcollector.clear_level();
+  _pipeline_cache_misses_pcollector.clear_level();
+
   if (_timer_queries_active && wait_for != VK_NULL_HANDLE) {
     // Measure the gap between the end of the transfer command buffer and
     // the beginning of the render command buffer, which is mostly waiting for
@@ -3356,6 +3364,10 @@ end_frame(Thread *current_thread, VkSemaphore signal_done) {
       _frame_data->_wait_for_finish = true;
     }
   }
+
+  _pipeline_cache_inline_hits_pcollector.flush_level();
+  _pipeline_cache_main_hits_pcollector.flush_level();
+  _pipeline_cache_misses_pcollector.flush_level();
 #endif
 
   // We only submit the work now if we know something is waiting on it.
@@ -4132,7 +4144,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
       return false;
     }
 
-    VkPipeline pipeline = _current_sc->get_pipeline(this, _state_rs, data_reader->get_format(), topology, 0, _fb_config);
+    VkPipeline pipeline = _current_sc->get_pipeline(this, _state_rs, data_reader->get_format(), topology, 1, _fb_config);
     nassertr(pipeline != VK_NULL_HANDLE, false);
     _vkCmdBindPipeline(_render_cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
     _render_cmd.flush_barriers();
@@ -4647,7 +4659,7 @@ do_draw_primitive_with_topology(const GeomPrimitivePipelineReader *reader,
     _vkCmdSetPrimitiveRestartEnable(_render_cmd, primitive_restart_enable && reader->is_indexed());
 #endif
   } else {
-    VkPipeline pipeline = _current_sc->get_pipeline(this, _state_rs, _format, topology, 0, _fb_config);
+    VkPipeline pipeline = _current_sc->get_pipeline(this, _state_rs, _format, topology, 1, _fb_config);
     nassertr(pipeline != VK_NULL_HANDLE, false);
     _vkCmdBindPipeline(_render_cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
     _render_cmd.flush_barriers();
@@ -5020,22 +5032,24 @@ VkPipeline VulkanGraphicsStateGuardian::
 make_pipeline(VulkanShaderContext *sc,
               const VulkanShaderContext::PipelineKey &key) {
 
+  _pipeline_cache_misses_pcollector.add_level(1);
+
   if (vulkandisplay_cat.is_spam()) {
     vulkandisplay_cat.spam()
       << "Making pipeline for"
       << " format=" << key._format
-      << " topology=" << key._topology
-      << " patch_control_points=" << key._patch_control_points
+      << " topology=" << key.get_topology()
+      << " patch_control_points=" << key.get_patch_control_points()
       << " fb_config=" << key._fb_config
-      << " color_type=" << key._color_type
+      << " color_type=" << key.get_color_type()
       << " render_mode_attrib=" << key._render_mode_attrib
-      << " cull_face_mode=" << key._cull_face_mode
-      << " depth_write_mode=" << key._depth_write_mode
+      << " cull_face_mode=" << key.get_cull_face_mode()
+      << " depth_write_mode=" << key.get_depth_write_mode()
       << " depth_test_mode=" << key._depth_test_mode
       << " color_blend_attrib=" << key._color_blend_attrib
-      << " color_write_mask=" << key._color_write_mask
-      << " logic_op=" << key._logic_op
-      << " transparency_mode=" << key._transparency_mode
+      << " color_write_mask=" << std::hex << key.get_color_write_channels() << std::dec
+      << " logic_op=" << key.get_logic_op()
+      << " transparency_mode=" << key.get_transparency_mode()
       << " alpha_test_attrib=" << key._alpha_test_attrib
       << " depth_bias_attrib=" << key._depth_bias_attrib
       << "\n";
@@ -5189,7 +5203,7 @@ make_pipeline(VulkanShaderContext *sc,
 
     attrib_desc[i].location = spec._id._location;
 
-    if ((key._color_type != ColorAttrib::T_vertex && spec._name == InternalName::get_color()) ||
+    if ((key.get_color_type() != ColorAttrib::T_vertex && spec._name == InternalName::get_color()) ||
         !key._format->get_array_info(spec._name, array_index, column)) {
       // The shader references a non-existent vertex column.  To make this a
       // well-defined operation (as in OpenGL), we bind a "null" vertex buffer
@@ -5306,11 +5320,12 @@ make_pipeline(VulkanShaderContext *sc,
     vertex_info.pNext = &divisor_info;
   }
 
+  VkPrimitiveTopology topology = key.get_topology();
   VkPipelineInputAssemblyStateCreateInfo assembly_info;
   assembly_info.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
   assembly_info.pNext = nullptr;
   assembly_info.flags = 0;
-  assembly_info.topology = key._topology;
+  assembly_info.topology = topology;
 #ifdef __APPLE__
   // MoltenVK doesn't support disabling primitive restart, squelch warning.
   assembly_info.primitiveRestartEnable = VK_TRUE;
@@ -5320,19 +5335,13 @@ make_pipeline(VulkanShaderContext *sc,
     assembly_info.primitiveRestartEnable = VK_FALSE;
   } else {
     assembly_info.primitiveRestartEnable = (
-      key._topology == VK_PRIMITIVE_TOPOLOGY_LINE_STRIP ||
-      //key._topology == VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP ||
-      //key._topology == VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN ||
-      key._topology == VK_PRIMITIVE_TOPOLOGY_LINE_STRIP_WITH_ADJACENCY ||
-      key._topology == VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP_WITH_ADJACENCY);
+      topology == VK_PRIMITIVE_TOPOLOGY_LINE_STRIP ||
+      //topology == VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP ||
+      //topology == VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN ||
+      topology == VK_PRIMITIVE_TOPOLOGY_LINE_STRIP_WITH_ADJACENCY ||
+      topology == VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP_WITH_ADJACENCY);
   }
 #endif
-
-  VkPipelineTessellationStateCreateInfo tess_info;
-  tess_info.sType = VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO;
-  tess_info.pNext = nullptr;
-  tess_info.flags = 0;
-  tess_info.patchControlPoints = key._patch_control_points;
 
   VkPipelineViewportStateCreateInfo viewport_info;
   viewport_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -5371,7 +5380,7 @@ make_pipeline(VulkanShaderContext *sc,
     raster_info.lineWidth = 1.0f;
   }
 
-  raster_info.cullMode = (VkCullModeFlagBits)key._cull_face_mode;
+  raster_info.cullMode = (VkCullModeFlagBits)key.get_cull_face_mode();
   raster_info.frontFace = VK_FRONT_FACE_CLOCKWISE; // Flipped
 
   if (key._depth_bias_attrib != nullptr) {
@@ -5402,7 +5411,7 @@ make_pipeline(VulkanShaderContext *sc,
   ds_info.pNext = nullptr;
   ds_info.flags = 0;
   ds_info.depthTestEnable = (key._depth_test_mode != RenderAttrib::M_none);
-  ds_info.depthWriteEnable = key._depth_write_mode;
+  ds_info.depthWriteEnable = key.get_depth_write_mode();
   ds_info.depthCompareOp = (VkCompareOp)std::max(0, key._depth_test_mode - 1);
   ds_info.depthBoundsTestEnable = VK_FALSE;
   ds_info.stencilTestEnable = VK_FALSE;
@@ -5432,7 +5441,7 @@ make_pipeline(VulkanShaderContext *sc,
     att_state[0].blendEnable = VK_FALSE;
 
     // No color blend mode enabled; was there a transparency attribute?
-    switch (key._transparency_mode) {
+    switch (key.get_transparency_mode()) {
     case TransparencyAttrib::M_none:
     case TransparencyAttrib::M_binary:
       att_state[0].blendEnable = VK_FALSE;
@@ -5481,20 +5490,20 @@ make_pipeline(VulkanShaderContext *sc,
     default:
       att_state[0].blendEnable = VK_FALSE;
       vulkandisplay_cat.error()
-        << "invalid transparency mode " << (int)key._transparency_mode << std::endl;
+        << "invalid transparency mode " << (int)key.get_transparency_mode() << std::endl;
       break;
     }
   }
-  att_state[0].colorWriteMask = key._color_write_mask;
+  att_state[0].colorWriteMask = key.get_color_write_channels();
 
   VkPipelineColorBlendStateCreateInfo blend_info;
   blend_info.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
   blend_info.pNext = nullptr;
   blend_info.flags = 0;
 
-  if (key._logic_op != LogicOpAttrib::O_none) {
+  if (key.get_logic_op() != LogicOpAttrib::O_none) {
     blend_info.logicOpEnable = VK_TRUE;
-    blend_info.logicOp = (VkLogicOp)(key._logic_op - 1);
+    blend_info.logicOp = (VkLogicOp)(key.get_logic_op() - 1);
   } else {
     blend_info.logicOpEnable = VK_FALSE;
     blend_info.logicOp = VK_LOGIC_OP_COPY;
@@ -5515,14 +5524,21 @@ make_pipeline(VulkanShaderContext *sc,
   // Tell Vulkan that we'll be specifying the viewport and scissor separately.
   VkDynamicState dynamic_states[4] = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
   uint32_t num_dynamic_states = 2;
-  if (key._topology == VK_PRIMITIVE_TOPOLOGY_PATCH_LIST) {
-    if (key._patch_control_points == 0) {
-      nassertr(_supports_extended_dynamic_state2_patch_control_points, VK_NULL_HANDLE);
+  bool have_tess_state = false;
+  VkPipelineTessellationStateCreateInfo tess_info;
+  if (topology == VK_PRIMITIVE_TOPOLOGY_PATCH_LIST) {
+    if (_supports_extended_dynamic_state2_patch_control_points) {
       dynamic_states[2] = VK_DYNAMIC_STATE_PATCH_CONTROL_POINTS_EXT;
       num_dynamic_states = 3;
+    } else {
+      have_tess_state = true;
+      tess_info.sType = VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO;
+      tess_info.pNext = nullptr;
+      tess_info.flags = 0;
+      tess_info.patchControlPoints = key.get_patch_control_points();
     }
   }
-  else if (key._topology != VK_PRIMITIVE_TOPOLOGY_POINT_LIST &&
+  else if (topology != VK_PRIMITIVE_TOPOLOGY_POINT_LIST &&
            _supports_extended_dynamic_state2) {
     dynamic_states[2] = VK_DYNAMIC_STATE_PRIMITIVE_TOPOLOGY_EXT;
 #ifdef __APPLE__
@@ -5548,7 +5564,7 @@ make_pipeline(VulkanShaderContext *sc,
   pipeline_info.pStages = stages;
   pipeline_info.pVertexInputState = &vertex_info;
   pipeline_info.pInputAssemblyState = &assembly_info;
-  pipeline_info.pTessellationState = (key._patch_control_points > 0) ? &tess_info : nullptr;
+  pipeline_info.pTessellationState = have_tess_state ? &tess_info : nullptr;
   pipeline_info.pViewportState = &viewport_info;
   pipeline_info.pRasterizationState = &raster_info;
   pipeline_info.pMultisampleState = &ms_info;

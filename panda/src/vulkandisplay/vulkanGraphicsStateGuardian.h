@@ -406,6 +406,10 @@ private:
   PFN_vkSetDebugUtilsObjectNameEXT _vkSetDebugUtilsObjectName;
   PFN_vkUpdateDescriptorSets _vkUpdateDescriptorSets;
 
+  static PStatCollector _pipeline_cache_inline_hits_pcollector;
+  static PStatCollector _pipeline_cache_main_hits_pcollector;
+  static PStatCollector _pipeline_cache_misses_pcollector;
+
   friend class VulkanGraphicsBuffer;
   friend class VulkanGraphicsWindow;
   friend class VulkanShaderContext;

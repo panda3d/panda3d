@@ -11,7 +11,6 @@
  * @date 2016-02-18
  */
 
-
 /**
  * Constructs a shader context.  Follow this up with calls to fill in the
  * module array.
@@ -30,7 +29,8 @@ VulkanShaderContext(Shader *shader) :
  *
  */
 INLINE VulkanShaderContext::
-~VulkanShaderContext()  {
+~VulkanShaderContext() {
+  clear_pipeline_cache();
 }
 
 /**
@@ -46,19 +46,12 @@ get_module(Shader::Stage stage) const {
  */
 INLINE bool VulkanShaderContext::PipelineKey::
 operator ==(const PipelineKey &other) const {
-  return _format == other._format
-      && _topology == other._topology
-      && _patch_control_points == other._patch_control_points
+  return _packed_state == other._packed_state
       && _fb_config == other._fb_config
-      && _color_type == other._color_type
+      && _format == other._format
       && _render_mode_attrib == other._render_mode_attrib
-      && _cull_face_mode == other._cull_face_mode
-      && _depth_write_mode == other._depth_write_mode
       && _depth_test_mode == other._depth_test_mode
-      && _color_write_mask == other._color_write_mask
-      && _logic_op == other._logic_op
       && _color_blend_attrib == other._color_blend_attrib
-      && _transparency_mode == other._transparency_mode
       && _alpha_test_attrib == other._alpha_test_attrib
       && _depth_bias_attrib == other._depth_bias_attrib;
 }
@@ -68,44 +61,23 @@ operator ==(const PipelineKey &other) const {
  */
 INLINE bool VulkanShaderContext::PipelineKey::
 operator < (const PipelineKey &other) const {
-  if (_format != other._format) {
-    return _format < other._format;
-  }
-  if (_topology != other._topology) {
-    return _topology < other._topology;
-  }
-  if (_patch_control_points != other._patch_control_points) {
-    return _patch_control_points < other._patch_control_points;
+  if (_packed_state != other._packed_state) {
+    return _packed_state < other._packed_state;
   }
   if (_fb_config != other._fb_config) {
     return _fb_config < other._fb_config;
   }
-  if (_color_type != other._color_type) {
-    return _color_type < other._color_type;
+  if (_format != other._format) {
+    return _format < other._format;
   }
   if (_render_mode_attrib != other._render_mode_attrib) {
     return _render_mode_attrib < other._render_mode_attrib;
   }
-  if (_cull_face_mode != other._cull_face_mode) {
-    return _cull_face_mode < other._cull_face_mode;
-  }
-  if (_depth_write_mode != other._depth_write_mode) {
-    return _depth_write_mode < other._depth_write_mode;
-  }
   if (_depth_test_mode != other._depth_test_mode) {
     return _depth_test_mode < other._depth_test_mode;
   }
-  if (_color_write_mask != other._color_write_mask) {
-    return _color_write_mask < other._color_write_mask;
-  }
-  if (_logic_op != other._logic_op) {
-    return _logic_op < other._logic_op;
-  }
   if (_color_blend_attrib != other._color_blend_attrib) {
     return _color_blend_attrib < other._color_blend_attrib;
-  }
-  if (_transparency_mode != other._transparency_mode) {
-    return _transparency_mode < other._transparency_mode;
   }
   if (_alpha_test_attrib != other._alpha_test_attrib) {
     return _alpha_test_attrib < other._alpha_test_attrib;
@@ -114,4 +86,68 @@ operator < (const PipelineKey &other) const {
     return _depth_bias_attrib < other._depth_bias_attrib;
   }
   return 0;
+}
+
+/**
+ *
+ */
+ALWAYS_INLINE VkPrimitiveTopology VulkanShaderContext::PipelineKey::
+get_topology() const {
+  return (VkPrimitiveTopology)((_packed_state & PS_topology_mask) >> PS_topology_shift);
+}
+
+/**
+ *
+ */
+ALWAYS_INLINE ColorAttrib::Type VulkanShaderContext::PipelineKey::
+get_color_type() const {
+  return (ColorAttrib::Type)((_packed_state & PS_color_type_mask) >> PS_color_type_shift);
+}
+
+/**
+ *
+ */
+ALWAYS_INLINE unsigned int VulkanShaderContext::PipelineKey::
+get_color_write_channels() const {
+  return (unsigned int)((_packed_state & PS_color_write_channels_mask) >> PS_color_write_channels_shift);
+}
+
+/**
+ *
+ */
+ALWAYS_INLINE TransparencyAttrib::Mode VulkanShaderContext::PipelineKey::
+get_transparency_mode() const {
+  return (TransparencyAttrib::Mode)((_packed_state & PS_transparency_mode_mask) >> PS_transparency_mode_shift);
+}
+
+/**
+ *
+ */
+ALWAYS_INLINE DepthWriteAttrib::Mode VulkanShaderContext::PipelineKey::
+get_depth_write_mode() const {
+  return (DepthWriteAttrib::Mode)((_packed_state & PS_depth_write_mask) >> PS_depth_write_shift);
+}
+
+/**
+ *
+ */
+ALWAYS_INLINE CullFaceAttrib::Mode VulkanShaderContext::PipelineKey::
+get_cull_face_mode() const {
+  return (CullFaceAttrib::Mode)((_packed_state & PS_cull_face_mode_mask) >> PS_cull_face_mode_shift);
+}
+
+/**
+ *
+ */
+ALWAYS_INLINE LogicOpAttrib::Operation VulkanShaderContext::PipelineKey::
+get_logic_op() const {
+  return (LogicOpAttrib::Operation)((_packed_state & PS_logic_op_mask) >> PS_logic_op_shift);
+}
+
+/**
+ *
+ */
+ALWAYS_INLINE uint32_t VulkanShaderContext::PipelineKey::
+get_patch_control_points() const {
+  return ((_packed_state & PS_patch_control_points_mask) >> PS_patch_control_points_shift) + 1u;
 }

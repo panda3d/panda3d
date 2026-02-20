@@ -955,6 +955,37 @@ update_dynamic_uniforms(VulkanGraphicsStateGuardian *gsg, int altered) {
 }
 
 /**
+ * Removes all items from the pipeline cache.
+ */
+void VulkanShaderContext::
+clear_pipeline_cache() {
+  for (auto &item : _pipeline_map) {
+    const PipelineKey &key = item.first;
+
+    unref_delete(key._format);
+    if (key._render_mode_attrib != nullptr) {
+      unref_delete(key._render_mode_attrib);
+    }
+    if (key._color_blend_attrib != nullptr) {
+      unref_delete(key._color_blend_attrib);
+    }
+    if (key._alpha_test_attrib != nullptr) {
+      unref_delete(key._alpha_test_attrib);
+    }
+    if (key._depth_bias_attrib != nullptr) {
+      unref_delete(key._depth_bias_attrib);
+    }
+  }
+
+  _pipeline_map.clear();
+
+  // Invalidate the inline cache as well.
+  for (size_t i = 0; i < pipeline_cache_size; ++i) {
+    _pipeline_cache[i]._pipeline = VK_NULL_HANDLE;
+  }
+}
+
+/**
  * Returns a VkPipeline for the given RenderState+GeomVertexFormat combination.
  */
 VkPipeline VulkanShaderContext::
@@ -962,14 +993,17 @@ get_pipeline(VulkanGraphicsStateGuardian *gsg, const RenderState *state,
              const GeomVertexFormat *format, VkPrimitiveTopology topology,
              uint32_t patch_control_points, uint32_t fb_config) {
   PipelineKey key;
+  key._packed_state = (uint32_t)topology << PipelineKey::PS_topology_shift;
   key._format = format;
-  key._topology = topology;
-  key._patch_control_points = patch_control_points;
   key._fb_config = fb_config;
+
+  if (topology == VK_PRIMITIVE_TOPOLOGY_PATCH_LIST) {
+    key._packed_state |= (patch_control_points - 1) << PipelineKey::PS_patch_control_points_shift;
+  }
 
   const ColorAttrib *color_attr;
   state->get_attrib_def(color_attr);
-  key._color_type = color_attr->get_color_type();
+  key._packed_state |= (uint32_t)color_attr->get_color_type() << PipelineKey::PS_color_type_shift;
 
   const RenderModeAttrib *render_mode;
   if (state->get_attrib(render_mode) &&
@@ -980,11 +1014,11 @@ get_pipeline(VulkanGraphicsStateGuardian *gsg, const RenderState *state,
 
   const CullFaceAttrib *cull_face;
   state->get_attrib_def(cull_face);
-  key._cull_face_mode = cull_face->get_effective_mode();
+  key._packed_state |= (uint32_t)cull_face->get_effective_mode() << PipelineKey::PS_cull_face_mode_shift;
 
   const DepthWriteAttrib *depth_write;
   state->get_attrib_def(depth_write);
-  key._depth_write_mode = depth_write->get_mode();
+  key._packed_state |= (uint32_t)depth_write->get_mode() << PipelineKey::PS_depth_write_shift;
 
   const DepthTestAttrib *depth_test;
   state->get_attrib_def(depth_test);
@@ -992,20 +1026,19 @@ get_pipeline(VulkanGraphicsStateGuardian *gsg, const RenderState *state,
 
   const ColorWriteAttrib *color_write;
   state->get_attrib_def(color_write);
-  key._color_write_mask = color_write->get_channels();
+  key._packed_state |= (uint32_t)color_write->get_channels() << PipelineKey::PS_color_write_channels_shift;
 
   const LogicOpAttrib *logic_op;
   state->get_attrib_def(logic_op);
-  key._logic_op = logic_op->get_operation();
+  key._packed_state |= (uint32_t)logic_op->get_operation() << PipelineKey::PS_logic_op_shift;
 
   const ColorBlendAttrib *color_blend;
   if (state->get_attrib(color_blend) && color_blend->get_mode() != ColorBlendAttrib::M_none) {
     key._color_blend_attrib = color_blend;
-    key._transparency_mode = TransparencyAttrib::M_none;
   } else {
     const TransparencyAttrib *transp;
     state->get_attrib_def(transp);
-    key._transparency_mode = transp->get_mode();
+    key._packed_state |= (uint32_t)transp->get_mode() << PipelineKey::PS_transparency_mode_shift;
   }
 
   if (state->get_alpha_test_mode() != RenderAttrib::M_none &&
@@ -1018,30 +1051,66 @@ get_pipeline(VulkanGraphicsStateGuardian *gsg, const RenderState *state,
   state->get_attrib(key._depth_bias_attrib);
 
   const DepthOffsetAttrib *depth_offset;
+  CPT(DepthBiasAttrib) temp_depth_bias;
   if (state->get_attrib(depth_offset)) {
     int offset = depth_offset->get_offset();
     if (offset != 0) {
       if (key._depth_bias_attrib != nullptr) {
-        key._depth_bias_attrib = DCAST(DepthBiasAttrib, DepthBiasAttrib::make(
+        temp_depth_bias = DCAST(DepthBiasAttrib, DepthBiasAttrib::make(
           key._depth_bias_attrib->get_slope_factor() - offset,
           key._depth_bias_attrib->get_constant_factor() - offset,
           key._depth_bias_attrib->get_clamp()));
       } else {
-        key._depth_bias_attrib =
+        temp_depth_bias =
           DCAST(DepthBiasAttrib, DepthBiasAttrib::make(-offset, -offset));
       }
+      key._depth_bias_attrib = temp_depth_bias;
     }
   }
 
-  PipelineMap::const_iterator it;
-  it = _pipeline_map.find(key);
-  if (it == _pipeline_map.end()) {
-    VkPipeline pipeline = gsg->make_pipeline(this, key);
-    _pipeline_map[std::move(key)] = pipeline;
-    return pipeline;
-  } else {
-    return it->second;
+  // Check the small inline cache first.
+  for (size_t i = 0; i < pipeline_cache_size; ++i) {
+    if (_pipeline_cache[i]._pipeline != VK_NULL_HANDLE && _pipeline_cache[i]._key == key) {
+      gsg->_pipeline_cache_inline_hits_pcollector.add_level(1);
+      return _pipeline_cache[i]._pipeline;
+    }
   }
+
+  // Fall back to the full map.
+  VkPipeline pipeline;
+  PipelineMap::const_iterator it = _pipeline_map.find(key);
+  if (it == _pipeline_map.end()) {
+    pipeline = gsg->make_pipeline(this, key);
+    _pipeline_map[key] = pipeline;
+
+    // Increment reference counts.
+    key._format->ref();
+    if (key._render_mode_attrib != nullptr) {
+      key._render_mode_attrib->ref();
+    }
+    if (key._color_blend_attrib != nullptr) {
+      key._color_blend_attrib->ref();
+    }
+    if (key._alpha_test_attrib != nullptr) {
+      key._alpha_test_attrib->ref();
+    }
+    if (key._depth_bias_attrib != nullptr) {
+      key._depth_bias_attrib->ref();
+    }
+  } else {
+    gsg->_pipeline_cache_main_hits_pcollector.add_level(1);
+    pipeline = it->second;
+  }
+
+  // Insert into inline cache, evicting oldest.  We don't need to increment the
+  // reference counts here since if it's in here, it's also guaranteed to be in
+  // the main map.
+  auto &slot = _pipeline_cache[_pipeline_cache_next];
+  slot._key = std::move(key);
+  slot._pipeline = pipeline;
+  _pipeline_cache_next = (_pipeline_cache_next + 1) % pipeline_cache_size;
+
+  return pipeline;
 }
 
 /**
