@@ -3468,15 +3468,15 @@ end_frame(Thread *current_thread, VkSemaphore signal_done) {
   _frame_data->_staging_buffer_head = _staging_buffer_allocator.get_head();
 
   // Report how much UBO memory was used.
-  size_t used = _uniform_buffer_allocator.get_size();
+  size_t used = (_uniform_buffer_allocator.get_size() + 1023) / 1024;
   if (used > _uniform_buffer_max_used) {
     _uniform_buffer_max_used = used;
 
     if (vulkandisplay_cat.is_debug()) {
       vulkandisplay_cat.debug()
-        << "Used at most " << _uniform_buffer_max_used << " of "
+        << "Used at most " << _uniform_buffer_max_used << " KiB of "
         << _uniform_buffer_allocator.get_capacity()
-        << " bytes of global uniform buffer.\n";
+        << " B of global uniform buffer.\n";
     }
   }
 
