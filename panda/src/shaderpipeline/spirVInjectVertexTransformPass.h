@@ -73,19 +73,18 @@ private:
   static const ShaderType *make_transform_block_type(uint32_t num_elements);
 
 public:
+  // Settings that could be related to both instancing and animation.
   struct EntryPoint {
     std::string _name;
     pvector<uint32_t> _vars;
   };
-
   pmap<uint32_t, EntryPoint> _todo_entry_points;
   bool _make_new_entry_points = false;
-
-  // Settings that could be related to both instancing and animation.
   uint32_t _transform_block_var_id = 0;
   uint32_t _transform_block_binding = 0;
   uint32_t _transform_block_set = 0;
   bool _use_ssbo = false;
+  pset<uint32_t> _make_private_pointers;
 
   // Settings related to animation.
   uint32_t _anim_locations = 0;

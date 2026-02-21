@@ -74,6 +74,7 @@ protected:
   INLINE void decorate(uint32_t id, spv::Decoration decoration, uint32_t value);
 
   uint32_t define_variable(const ShaderType *type, spv::StorageClass storage_class);
+  uint32_t define_pointer_type(uint32_t type_id, spv::StorageClass storage_class);
   uint32_t define_pointer_type(const ShaderType *type, spv::StorageClass storage_class);
   uint32_t define_function_type(const ShaderType *return_type);
   uint32_t define_type(const ShaderType *type);

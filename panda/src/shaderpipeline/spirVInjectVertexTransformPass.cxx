@@ -176,6 +176,7 @@ transform_definition_op(Instruction op) {
 
       push_id(var_id);
       define_variable(type, spv::StorageClassPrivate);
+      _make_private_pointers.insert(var_id);
 
       op.args[1] = new_id;
       _db.modify_definition(op.args[1]) = std::move(def);
@@ -250,6 +251,20 @@ transform_function_op(Instruction op) {
       add_entry_point(spv::ExecutionModelVertex, _current_function_id, entry_point._name, entry_point_vars);
       _todo_entry_points.erase(it);
       return false;
+    }
+  }
+  else if (op.opcode == spv::OpAccessChain ||
+           op.opcode == spv::OpInBoundsAccessChain ||
+           op.opcode == spv::OpCopyObject) {
+    // We changed the storage class of this, so we must change the storage
+    // class of the result type in any access chain formed from it as well.
+    if (_make_private_pointers.count(op.args[2])) {
+      uint32_t type_id = unwrap_pointer_type(op.args[0]);
+      uint32_t type_pointer_id = define_pointer_type(type_id, spv::StorageClassPrivate);
+      _db.modify_definition(op.args[1])._type_id = type_pointer_id;
+      op.args[0] = type_pointer_id;
+
+      _make_private_pointers.insert(op.args[1]);
     }
   }
 

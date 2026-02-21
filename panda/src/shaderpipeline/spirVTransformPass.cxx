@@ -649,6 +649,28 @@ define_variable(const ShaderType *type, spv::StorageClass storage_class) {
  *
  */
 uint32_t SpirVTransformPass::
+define_pointer_type(uint32_t type_id, spv::StorageClass storage_class) {
+  nassertr_always(type_id != 0u, 0u);
+
+  uint32_t pointer_type_id = _db.find_pointer_type(type_id, storage_class);
+  if (pointer_type_id != 0 && is_defined(pointer_type_id)) {
+    return pointer_type_id;
+  }
+  if (pointer_type_id == 0) {
+    pointer_type_id = allocate_id();
+    _db.record_pointer_type(pointer_type_id, storage_class, type_id);
+  }
+
+  add_definition(spv::OpTypePointer,
+    {pointer_type_id, (uint32_t)storage_class, type_id});
+
+  return pointer_type_id;
+}
+
+/**
+ *
+ */
+uint32_t SpirVTransformPass::
 define_pointer_type(const ShaderType *type, spv::StorageClass storage_class) {
   uint32_t pointer_type_id = _db.find_pointer_type(type, storage_class);
   if (pointer_type_id != 0 && is_defined(pointer_type_id)) {
