@@ -517,7 +517,9 @@ set_color_type(PNMImage::ColorType color_type) {
   } else if (!has_alpha() && has_alpha(color_type)) {
     // Create a new alpha channel
     allocate_alpha();
-    memset(_alpha, 0, sizeof(xelval) * (_x_size * _y_size));
+    for (size_t i = 0; i < (size_t)get_x_size() * (size_t)get_y_size(); ++i) {
+      _alpha[i] = _maxval;
+    }
   }
 
   _num_channels = (int)color_type;

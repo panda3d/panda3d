@@ -150,10 +150,9 @@ def test_load_texture_rgb(pool, image_rgb_path):
 
 
 def test_load_texture_rgb4(pool, image_rgb_path):
-    # Will not increase this
     tex = pool.load_texture(image_rgb_path, 4)
     assert pool.has_texture(image_rgb_path)
-    assert tex.num_components == 3
+    assert tex.num_components == 4
 
 
 def test_load_texture_rgb3(pool, image_rgb_path):
@@ -163,8 +162,7 @@ def test_load_texture_rgb3(pool, image_rgb_path):
 
 
 def test_load_texture_rgb2(pool, image_rgb_path):
-    # Cannot reduce this, since it would add an alpha channel
-    tex = pool.load_texture(image_rgb_path, 2)
+    tex = pool.load_texture(image_rgb_path, 3)
     assert pool.has_texture(image_rgb_path)
     assert tex.num_components == 3
 
@@ -191,7 +189,6 @@ def test_load_texture_rgba3_alpha(pool, image_rgba_path, image_gray_path):
 
 
 def test_load_texture_rgba2_alpha(pool, image_rgba_path, image_gray_path):
-    #FIXME: why is this not consistent with test_load_texture_rgb2_alpha?
     tex = pool.load_texture(image_rgba_path, image_gray_path, 2)
     assert tex.num_components == 2
 
@@ -217,9 +214,8 @@ def test_load_texture_rgb3_alpha(pool, image_rgb_path, image_gray_path):
 
 
 def test_load_texture_rgb2_alpha(pool, image_rgb_path, image_gray_path):
-    #FIXME: why is this not consistent with test_load_texture_rgba2_alpha?
     tex = pool.load_texture(image_rgb_path, image_gray_path, 2)
-    assert tex.num_components == 4
+    assert tex.num_components == 2
 
 
 def test_load_texture_rgb1_alpha(pool, image_rgb_path, image_gray_path):

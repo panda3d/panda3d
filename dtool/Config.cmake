@@ -358,7 +358,7 @@ mark_as_advanced(SIMULATE_NETWORK_DELAY DO_MEMORY_USAGE DO_DCAST)
 # The following options have to do with the memory allocation system.
 #
 
-find_package(MIMALLOC 1.0 QUIET)
+find_package(MIMALLOC QUIET)
 
 package_option(MIMALLOC
   "The mimalloc allocator.  See also USE_MEMORY_MIMALLOC, which

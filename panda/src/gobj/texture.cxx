@@ -9310,15 +9310,10 @@ clear_prepared(PreparedGraphicsObjects *prepared_objects) {
  */
 void Texture::
 consider_downgrade(PNMImage &pnmimage, int num_channels, const string &name) {
-  if (num_channels != 0 && num_channels < pnmimage.get_num_channels()) {
-    // One special case: we can't reduce from 3 to 2 components, since that
-    // would require adding an alpha channel.
-    if (pnmimage.get_num_channels() == 3 && num_channels == 2) {
-      return;
-    }
-
+  if (num_channels != 0 && num_channels != pnmimage.get_num_channels()) {
     gobj_cat.info()
-      << "Downgrading " << name << " from "
+      << (num_channels < pnmimage.get_num_channels() ? "Down" : "Up")
+      << "grading " << name << " from "
       << pnmimage.get_num_channels() << " components to "
       << num_channels << ".\n";
     pnmimage.set_num_channels(num_channels);
