@@ -170,6 +170,7 @@ begin_annotations() {
         opcode != spv::OpMemoryModel &&
         opcode != spv::OpEntryPoint &&
         opcode != spv::OpExecutionMode &&
+        opcode != spv::OpExecutionModeId &&
         opcode != spv::OpString &&
         opcode != spv::OpSourceExtension &&
         opcode != spv::OpSource &&

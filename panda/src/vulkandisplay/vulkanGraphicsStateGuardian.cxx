@@ -12,6 +12,7 @@
  */
 
 #include "vulkanGraphicsStateGuardian.h"
+#include "vulkanGeomMunger.h"
 #include "vulkanBufferContext.h"
 #include "vulkanIndexBufferContext.h"
 #include "vulkanTextureContext.h"
@@ -491,7 +492,46 @@ reset() {
     ShaderType::Struct struct_type;
     struct_type.add_member(ShaderType::register_type(ShaderType::Matrix(ShaderType::ST_float, 4, 4)), "p3d_ModelViewProjectionMatrix");
     struct_type.add_member(ShaderType::register_type(ShaderType::Vector(ShaderType::ST_float, 4)), "p3d_ColorScale");
-    _push_constant_block_type = ShaderType::register_type(std::move(struct_type));
+    _other_push_constant_block_type = ShaderType::register_type(std::move(struct_type));
+  }
+  bool supports_hw_anim = hardware_animated_vertices;
+  if (supports_hw_anim) {
+    // Add an index for an offset into global transform table.
+    ShaderType::Struct struct_type(*_other_push_constant_block_type);
+    struct_type.add_member(ShaderType::register_type(ShaderType::Scalar(ShaderType::ST_uint)), "p3d_TransformTableOffset");
+    _vertex_push_constant_block_type = ShaderType::register_type(std::move(struct_type));
+  } else {
+    _vertex_push_constant_block_type = _other_push_constant_block_type;
+  }
+
+  // Create a descriptor set layout for global buffers.
+  {
+    VkDescriptorSetLayoutBinding bindings[1];
+    uint32_t count = 0;
+
+    VkDescriptorSetLayoutBinding &binding = bindings[count];
+    binding.binding = count++;
+    binding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+    binding.descriptorCount = 1;
+    binding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+    binding.pImmutableSamplers = nullptr;
+
+    VkDescriptorSetLayoutCreateInfo set_info;
+    set_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    set_info.pNext = nullptr;
+    set_info.flags = 0;
+    set_info.bindingCount = count;
+    set_info.pBindings = bindings;
+
+    VkDescriptorSetLayout result;
+    VkResult
+    err = vkCreateDescriptorSetLayout(_device, &set_info, nullptr, &result);
+    if (err) {
+      vulkan_error(err, "Failed to create descriptor set layout for dynamic uniforms");
+      return;
+    }
+
+    _global_descriptor_set_layout = result;
   }
 
   // Create a descriptor set layout for our LightAttrib descriptor set.
@@ -569,6 +609,39 @@ reset() {
     }
 
     set_object_name(_empty_lattr_descriptor_set, "<empty light attrib>");
+  }
+
+  // Make an initial pipeline layout we can use for binding the
+  // non-shader-specific things, to keep the validation happy.
+  {
+    VkDescriptorSetLayout ds_layouts[2] = {
+      _global_descriptor_set_layout,
+      _lattr_descriptor_set_layout,
+    };
+
+    VkPushConstantRange ranges[2];
+    ranges[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+    ranges[0].offset = 0;
+    ranges[0].size = _vertex_push_constant_block_type->get_size_bytes();
+
+    ranges[1].stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS & ~VK_SHADER_STAGE_VERTEX_BIT;
+    ranges[1].offset = 0;
+    ranges[1].size = _other_push_constant_block_type->get_size_bytes();
+
+    VkPipelineLayoutCreateInfo layout_info;
+    layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+    layout_info.pNext = nullptr;
+    layout_info.flags = 0;
+    layout_info.setLayoutCount = 2;
+    layout_info.pSetLayouts = ds_layouts;
+    layout_info.pushConstantRangeCount = 2;
+    layout_info.pPushConstantRanges = ranges;
+
+    err = vkCreatePipelineLayout(_device, &layout_info, nullptr, &_initial_pipeline_layout);
+    if (err) {
+      vulkan_error(err, "Failed to create initial pipeline layout");
+      return;
+    }
   }
 
   // Create a uniform buffer that we'll use for everything.
@@ -672,6 +745,12 @@ reset() {
   // Assume no limits on number of lights or clip planes.
   _max_lights = -1;
   _max_clip_planes = -1;
+
+  if (supports_hw_anim) {
+    _max_vertex_transforms = 4;
+    _max_vertex_transform_indices = 65536;
+    _supports_fixed_function_vertex_blending = true;
+  }
 
   _supports_occlusion_query = false;
   _supports_timer_query = limits.timestampComputeAndGraphics;
@@ -788,7 +867,9 @@ reset() {
     Geom::GR_triangle_strip | Geom::GR_triangle_fan |
     Geom::GR_line_strip |
     Geom::GR_flat_first_vertex | //TODO: is this correct?
-    Geom::GR_strip_cut_index;
+    Geom::GR_strip_cut_index |
+    Geom::GR_instancing |
+    Geom::GR_shader_vertex_blend;
 
   if (features.fillModeNonSolid) {
     _supported_geom_rendering |= Geom::GR_render_mode_wireframe |
@@ -827,6 +908,7 @@ destroy_device() {
 
   // Remove the things we created in the constructor, in reverse order.
   vkDestroyBuffer(_device, _uniform_buffer, nullptr);
+  vkDestroyDescriptorSetLayout(_device, _global_descriptor_set_layout, nullptr);
   vkDestroyDescriptorSetLayout(_device, _lattr_descriptor_set_layout, nullptr);
   vkDestroyDescriptorPool(_device, _descriptor_pool, nullptr);
   vkDestroySampler(_device, _shadow_sampler, nullptr);
@@ -838,10 +920,17 @@ destroy_device() {
     _null_vertex_buffer = VK_NULL_HANDLE;
   }
 
+  if (_transform_buffer != VK_NULL_HANDLE) {
+    vkDestroyBuffer(_device, _transform_buffer, nullptr);
+    _transform_buffer = VK_NULL_HANDLE;
+  }
+
   if (_staging_buffer != VK_NULL_HANDLE) {
     vkDestroyBuffer(_device, _staging_buffer, nullptr);
     _staging_buffer = VK_NULL_HANDLE;
   }
+
+  vkDestroyPipelineLayout(_device, _initial_pipeline_layout, nullptr);
 
   vkDestroySemaphore(_device, _timeline_semaphore, nullptr);
 
@@ -2127,7 +2216,7 @@ prepare_shader(Shader *shader) {
 
   VulkanShaderContext *sc = new VulkanShaderContext(shader);
 
-  if (!sc->create_modules(_device, _push_constant_block_type)) {
+  if (!sc->create_modules(this)) {
     delete sc;
     return nullptr;
   }
@@ -2135,6 +2224,7 @@ prepare_shader(Shader *shader) {
   // Create the pipeline layout.  We use a predetermined number of sets, with
   // specific sets corresponding to different render attributes.
   VkDescriptorSetLayout ds_layouts[DS_SET_COUNT] = {};
+  ds_layouts[DS_global] = _global_descriptor_set_layout;
   ds_layouts[DS_light_attrib] = _lattr_descriptor_set_layout;
   ds_layouts[DS_texture_attrib] = sc->make_texture_attrib_descriptor_set_layout(_device);
   ds_layouts[DS_shader_attrib] = sc->make_shader_attrib_descriptor_set_layout(_device);
@@ -2142,28 +2232,23 @@ prepare_shader(Shader *shader) {
 
   VkResult err;
 
+  VkPushConstantRange ranges[2];
+  ranges[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+  ranges[0].offset = 0;
+  ranges[0].size = _vertex_push_constant_block_type->get_size_bytes();
+
+  ranges[1].stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS & ~VK_SHADER_STAGE_VERTEX_BIT;
+  ranges[1].offset = 0;
+  ranges[1].size = _other_push_constant_block_type->get_size_bytes();
+
   VkPipelineLayoutCreateInfo layout_info;
   layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
   layout_info.pNext = nullptr;
   layout_info.flags = 0;
   layout_info.setLayoutCount = DS_SET_COUNT;
   layout_info.pSetLayouts = ds_layouts;
-  layout_info.pushConstantRangeCount = 0;
-  layout_info.pPushConstantRanges = nullptr;
-
-  // Define the push constant range.  Because we have declared the same block
-  // in all stages that use any push constant, we only need to define one range.
-  // I'm happy with that, because I've gone down the route of trying to sort out
-  // the ranges exactly in the way that Vulkan wants it, and it's not fun.
-  VkPushConstantRange range;
-  if (sc->_push_constant_stage_mask != 0) {
-    range.stageFlags = sc->_push_constant_stage_mask;
-    range.offset = 0;
-    range.size = _push_constant_block_type->get_size_bytes();
-
-    layout_info.pushConstantRangeCount = 1;
-    layout_info.pPushConstantRanges = &range;
-  }
+  layout_info.pushConstantRangeCount = 2;
+  layout_info.pPushConstantRanges = ranges;
 
   err = vkCreatePipelineLayout(_device, &layout_info, nullptr, &sc->_pipeline_layout);
   if (err) {
@@ -2845,8 +2930,7 @@ dispatch_compute(int num_groups_x, int num_groups_y, int num_groups_z) {
  */
 PT(GeomMunger) VulkanGraphicsStateGuardian::
 make_geom_munger(const RenderState *state, Thread *current_thread) {
-  PT(StandardMunger) munger = new StandardMunger(this, state, 1, GeomEnums::NT_packed_dabc, GeomEnums::C_color);
-  return GeomMunger::register_munger(munger, current_thread);
+  return GeomMunger::register_munger(new VulkanGeomMunger(this, state), current_thread);
 }
 
 /**
@@ -2897,7 +2981,7 @@ set_state_and_transform(const RenderState *state,
     CPT(TransformState) combined = _projection_mat->compose(trans);
     LMatrix4f matrix = LCAST(float, combined->get_mat());
     _vkCmdPushConstants(cmd, sc->_pipeline_layout,
-                        sc->_push_constant_stage_mask, 0, 64, matrix.get_data());
+                        VK_SHADER_STAGE_ALL_GRAPHICS, 0, 64, matrix.get_data());
   }
 
   if (sc->_color_scale_stage_mask != 0) {
@@ -2911,14 +2995,14 @@ set_state_and_transform(const RenderState *state,
         color = LCAST(float, target_color_scale->get_scale());
       }
       _vkCmdPushConstants(cmd, sc->_pipeline_layout,
-                          sc->_push_constant_stage_mask, 64, 16, color.get_data());
+                          VK_SHADER_STAGE_ALL_GRAPHICS, 64, 16, color.get_data());
     }
   }
 
   // Update and bind descriptor sets.
   VkDescriptorSet descriptor_sets[DS_SET_COUNT] = {};
 
-  uint32_t first_set = 0;
+  uint32_t first_set = 1;
   const LightAttrib *target_light;
   state->get_attrib(target_light);
   if (shader_changed ||
@@ -2929,14 +3013,15 @@ set_state_and_transform(const RenderState *state,
       descriptor_sets[DS_light_attrib] = _empty_lattr_descriptor_set;
     }
     else if (get_attrib_descriptor_set(descriptor_sets[DS_light_attrib],
-                                      _lattr_descriptor_set_layout,
-                                      target_light)) {
+                                       sc->_lattr_descriptor_set_map,
+                                       _lattr_descriptor_set_layout,
+                                       target_light)) {
       // The first time this set is bound in this frame, we update it.  Once we
       // use it in a command buffer, we can't update it again anyway.
       update_lattr_descriptor_set(descriptor_sets[DS_light_attrib], target_light);
     }
   } else {
-    first_set = 1;
+    first_set = 2;
   }
 
   const TextureAttrib *target_texture;
@@ -2944,15 +3029,17 @@ set_state_and_transform(const RenderState *state,
   if (first_set != 1 || shader_changed ||
       target_texture != _state_rs->get_attrib_def(TextureAttrib::get_class_slot())) {
     if (get_attrib_descriptor_set(descriptor_sets[DS_texture_attrib],
+                                  sc->_tattr_descriptor_set_map,
                                   sc->_tattr_descriptor_set_layout,
                                   target_texture)) {
       sc->update_tattr_descriptor_set(this, descriptor_sets[DS_texture_attrib]);
     }
   } else {
-    first_set = 2;
+    first_set = 3;
   }
 
   if (get_attrib_descriptor_set(descriptor_sets[DS_shader_attrib],
+                                sc->_sattr_descriptor_set_map,
                                 sc->_sattr_descriptor_set_layout,
                                 _target_shader)) {
     sc->update_sattr_descriptor_set(this, descriptor_sets[DS_shader_attrib]);
@@ -2985,13 +3072,17 @@ set_state_and_transform(const RenderState *state,
     do_issue_depth_range(target_depth_offset);
   }
 
+  // Update uniforms.
   //TODO: properly compute altered field.
   uint32_t num_offsets = 0;
   uint32_t offset = 0;
   if (sc->_other_state_block._size > 0) {
+    // NB. this has to be done first since it may invalidate descriptor sets
+    // returned by get_attrib_descriptor_set.
     offset = sc->update_dynamic_uniforms(this, ~0);
     num_offsets = 1;
   }
+  _current_dynamic_uniform_offset = offset;
 
   // Note that this set may be recreated by update_dynamic_uniforms, above.
   descriptor_sets[DS_dynamic_uniforms] = sc->_uniform_descriptor_set;
@@ -3002,6 +3093,16 @@ set_state_and_transform(const RenderState *state,
   vkCmdBindDescriptorSets(cmd, sc->_bind_point, sc->_pipeline_layout,
                           first_set, DS_SET_COUNT - first_set, descriptor_sets + first_set,
                           num_offsets, &offset);
+}
+
+/**
+ * Returns true if the current state, as set by set_state_and_transform,
+ * supports hardware instancing.
+ */
+bool VulkanGraphicsStateGuardian::
+state_supports_instancing() const {
+  // Any valid shader supports instancing.
+  return _current_sc != nullptr;
 }
 
 /**
@@ -3318,6 +3419,18 @@ begin_frame(Thread *current_thread, VkSemaphore wait_for) {
   // Bind the "null" vertex buffer.
   const VkDeviceSize offset = 0;
   _vkCmdBindVertexBuffers(_render_cmd, 0, 1, &_null_vertex_buffer, &offset);
+
+  // Bind the global descriptor set.
+  if (_global_descriptor_set == VK_NULL_HANDLE) {
+    if (!update_global_descriptor_set()) {
+      return false;
+    }
+  }
+
+  vkCmdBindDescriptorSets(_render_cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                          _initial_pipeline_layout,
+                          DS_global, 1, &_global_descriptor_set,
+                          0, nullptr);
   return true;
 }
 
@@ -3450,6 +3563,8 @@ finish_frame(FrameData &frame_data) {
     }
   }
 #endif
+
+  _last_finished_frame = frame_data._frame_index;
 
   // Return the used command buffers to the pool.
   _free_command_buffers.insert(
@@ -4072,20 +4187,23 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   }
 
   // We need to have a valid shader to be able to render anything.
-  if (_current_sc == nullptr) {
+  VulkanShaderContext *sc = _current_sc;
+  if (sc == nullptr) {
     return false;
   }
 
   if (instances != nullptr) {
     _instance_count = (uint32_t)std::min(instances->size(), (size_t)0xffffffff);
+    _instanced = true;
   } else {
     int count = _target_shader->get_instance_count();
     _instance_count = (count > 0) ? (uint32_t)count : 1u;
+    _instanced = false;
   }
 
   // Prepare and bind the vertex buffers.
   size_t num_arrays = data_reader->get_num_arrays();
-  size_t num_buffers = num_arrays + _current_sc->_uses_vertex_color;
+  size_t num_buffers = num_arrays + sc->_uses_vertex_color;
   VkBuffer *buffers = (VkBuffer *)alloca(sizeof(VkBuffer) * num_buffers);
   VkDeviceSize *offsets = (VkDeviceSize *)alloca(sizeof(VkDeviceSize) * num_buffers);
 
@@ -4103,7 +4221,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     offsets[i] = 0;
   }
 
-  if (_current_sc->_uses_vertex_color) {
+  if (sc->_uses_vertex_color) {
     buffers[i] = _current_color_buffer;
     offsets[i] = _current_color_offset;
     ++i;
@@ -4144,13 +4262,59 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
       return false;
     }
 
-    VkPipeline pipeline = _current_sc->get_pipeline(this, _state_rs, data_reader->get_format(), topology, 1, _fb_config);
+    VkPipeline pipeline = sc->get_pipeline(this, _state_rs, data_reader->get_format(), topology, 1, _fb_config, _instanced);
     nassertr(pipeline != VK_NULL_HANDLE, false);
     _vkCmdBindPipeline(_render_cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
     _render_cmd.flush_barriers();
   } else {
     _format = data_reader->get_format();
   }
+
+  // Do we have animation and/or instancing to update?
+  const TransformTable *table = nullptr;
+  size_t table_size = 0;
+  if (data_reader->get_format()->get_animation().get_animation_type() == Geom::AT_hardware &&
+      sc->_anim_attrib_locations != 0u && _max_vertex_transforms > 0) {
+    table = data_reader->get_transform_table();
+    table_size = table->get_num_transforms();
+  }
+
+  uint32_t anim_offset = 0;
+  uint32_t inst_offset = 0;
+  bool update_anim = table_size > 0 && get_transform_buffer(table, anim_offset);
+  bool update_inst = _instanced && get_transform_buffer(instances, inst_offset);
+  if (update_anim || update_inst) {
+    if (UNLIKELY(_transform_buffer_offset > _transform_buffer_size)) {
+      // We allocated past the end of the buffer, so recreate the buffer.
+      size_t min_size = table_size;
+      if (_instanced) {
+        min_size += instances->size();
+      }
+      if (!recreate_transform_buffer(min_size)) {
+        return false;
+      }
+      anim_offset = 0u;
+      inst_offset = table_size;
+      _transform_buffer_offset = min_size;
+      nassertr(_transform_buffer_offset <= _transform_buffer_size, false);
+
+      // We bound a new buffer, so we must rewrite both.
+      update_anim = (table_size > 0);
+      update_inst = _instanced;
+    }
+
+    if (update_anim) {
+      update_transform_buffer(table, anim_offset);
+    }
+    if (update_inst) {
+      update_transform_buffer(instances, inst_offset);
+    }
+  }
+
+  if (table != nullptr) {
+    _vkCmdPushConstants(_render_cmd, sc->_pipeline_layout, VK_SHADER_STAGE_VERTEX_BIT, 64 + 16, 4, &anim_offset);
+  }
+  _instance_base = inst_offset;
 
   return true;
 }
@@ -4211,7 +4375,7 @@ draw_patches(const GeomPrimitivePipelineReader *reader, bool force) {
   } else {
     // Bind a pipeline which has both the topology and number of patch control
     // points baked in.
-    VkPipeline pipeline = _current_sc->get_pipeline(this, _state_rs, _format, VK_PRIMITIVE_TOPOLOGY_PATCH_LIST, patch_control_points, _fb_config);
+    VkPipeline pipeline = _current_sc->get_pipeline(this, _state_rs, _format, VK_PRIMITIVE_TOPOLOGY_PATCH_LIST, patch_control_points, _fb_config, _instanced);
     nassertr(pipeline != VK_NULL_HANDLE, false);
     _vkCmdBindPipeline(_render_cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
     _render_cmd.flush_barriers();
@@ -4269,6 +4433,7 @@ draw_points(const GeomPrimitivePipelineReader *reader, bool force) {
 void VulkanGraphicsStateGuardian::
 end_draw_primitives() {
   GraphicsStateGuardian::end_draw_primitives();
+  _instanced = false;
 }
 
 /**
@@ -4659,7 +4824,7 @@ do_draw_primitive_with_topology(const GeomPrimitivePipelineReader *reader,
     _vkCmdSetPrimitiveRestartEnable(_render_cmd, primitive_restart_enable && reader->is_indexed());
 #endif
   } else {
-    VkPipeline pipeline = _current_sc->get_pipeline(this, _state_rs, _format, topology, 1, _fb_config);
+    VkPipeline pipeline = _current_sc->get_pipeline(this, _state_rs, _format, topology, 1, _fb_config, _instanced);
     nassertr(pipeline != VK_NULL_HANDLE, false);
     _vkCmdBindPipeline(_render_cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
     _render_cmd.flush_barriers();
@@ -4685,10 +4850,10 @@ do_draw_primitive(const GeomPrimitivePipelineReader *reader, bool force) {
     }
 
     _vkCmdBindIndexBuffer(_render_cmd, ibc->_buffer, 0, ibc->_index_type);
-    _vkCmdDrawIndexed(_render_cmd, num_vertices, _instance_count, 0, 0, 0);
+    _vkCmdDrawIndexed(_render_cmd, num_vertices, _instance_count, 0, 0, _instance_base);
   } else {
     // A non-indexed primitive.
-    _vkCmdDraw(_render_cmd, num_vertices, _instance_count, reader->get_first_vertex(), 0);
+    _vkCmdDraw(_render_cmd, num_vertices, _instance_count, reader->get_first_vertex(), _instance_base);
   }
   return true;
 }
@@ -5095,7 +5260,11 @@ make_pipeline(VulkanShaderContext *sc,
     fragment_spec_map_entry.size = 4;
   }
 
-  for (size_t i = 0; i <= (size_t)Shader::Stage::COMPUTE; ++i) {
+  bool have_anim = sc->_anim_attrib_locations != 0u &&
+    _max_vertex_transforms > 0 &&
+    key._format->get_animation().get_animation_type() == Geom::AT_hardware;
+
+  for (size_t i = 0; i < (size_t)Shader::Stage::COMPUTE; ++i) {
     if (sc->_modules[i] != VK_NULL_HANDLE) {
       VkPipelineShaderStageCreateInfo &stage = stages[num_stages++];
       stage.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -5109,7 +5278,17 @@ make_pipeline(VulkanShaderContext *sc,
       } else {
         stage.module = sc->get_module((Shader::Stage)i);
       }
-      stage.pName = "main";
+      if (i == (size_t)Shader::Stage::VERTEX) {
+        // Select the appropriate entry point.
+        bool have_inst = key.is_instanced();
+        if (have_anim) {
+          stage.pName = (have_inst ? "main_anim_inst" : "main_anim");
+        } else {
+          stage.pName = (have_inst ? "main_inst" : "main");
+        }
+      } else {
+        stage.pName = "main";
+      }
     }
   }
 
@@ -5117,13 +5296,13 @@ make_pipeline(VulkanShaderContext *sc,
   // slots for the "color" and "null" bindings, see below.
   size_t num_arrays = key._format->get_num_arrays();
   VkVertexInputBindingDescription *binding_descs = (VkVertexInputBindingDescription *)
-    alloca(sizeof(VkVertexInputBindingDescription) * (num_arrays + 2));
+    alloca(sizeof(VkVertexInputBindingDescription) * (num_arrays + 3));
 
   VkVertexInputBindingDivisorDescriptionEXT *divisors = nullptr;
   int num_divisors = 0;
   if (_supports_vertex_attrib_divisor) {
     divisors = (VkVertexInputBindingDivisorDescriptionEXT *)
-      alloca(sizeof(VkVertexInputBindingDivisorDescriptionEXT) * (num_arrays + 2));
+      alloca(sizeof(VkVertexInputBindingDivisorDescriptionEXT) * (num_arrays + 3));
   }
 
   int num_bindings = 0;
@@ -5190,25 +5369,27 @@ make_pipeline(VulkanShaderContext *sc,
   // Now describe each vertex attribute (ie. GeomVertexColumn).
   const Shader *shader = sc->get_shader();
   nassertr(shader != nullptr, VK_NULL_HANDLE);
-  pvector<Shader::VertexInputBinding>::const_iterator it;
 
   VkVertexInputAttributeDescription *attrib_desc = (VkVertexInputAttributeDescription *)
-    alloca(sizeof(VkVertexInputAttributeDescription) * shader->_vertex_inputs.size());
+    alloca(sizeof(VkVertexInputAttributeDescription) * sc->_vertex_inputs.size());
 
   uint32_t i = 0;
-  for (it = shader->_vertex_inputs.begin(); it != shader->_vertex_inputs.end(); ++it) {
-    const Shader::VertexInputBinding &spec = *it;
+  for (const VulkanShaderContext::VertexInput &input : sc->_vertex_inputs) {
     int array_index;
     const GeomVertexColumn *column;
 
-    attrib_desc[i].location = spec._id._location;
+    if (input._only_anim && !have_anim) {
+      continue;
+    }
 
-    if ((key.get_color_type() != ColorAttrib::T_vertex && spec._name == InternalName::get_color()) ||
-        !key._format->get_array_info(spec._name, array_index, column)) {
+    attrib_desc[i].location = input._location;
+
+    if ((key.get_color_type() != ColorAttrib::T_vertex && input._name == InternalName::get_color()) ||
+        !key._format->get_array_info(input._name, array_index, column)) {
       // The shader references a non-existent vertex column.  To make this a
       // well-defined operation (as in OpenGL), we bind a "null" vertex buffer
       // containing a fixed value with a stride of 0.
-      if (spec._name == InternalName::get_color()) {
+      if (input._name == InternalName::get_color()) {
         // Except for vertex colors, which get a flat color applied.
         assert(color_binding >= 0);
         attrib_desc[i].binding = color_binding;
@@ -5218,7 +5399,7 @@ make_pipeline(VulkanShaderContext *sc,
       else {
         attrib_desc[i].binding = null_binding;
         attrib_desc[i].offset = 0;
-        attrib_desc[i].format = VK_FORMAT_R32_SFLOAT;
+        attrib_desc[i].format = input._null_format;
       }
       ++i;
       continue;
@@ -5639,15 +5820,17 @@ make_compute_pipeline(VulkanShaderContext *sc) {
 /**
  * Returns a VkDescriptorSet for the resources of the given render state.
  * Returns true if this was the first use of this set in this frame, false
- * otherwise.
+ * otherwise.  If force_update is true, will always make sure to return a
+ * descriptor set that can be updated (and return true, except on failure).
  */
 bool VulkanGraphicsStateGuardian::
-get_attrib_descriptor_set(VkDescriptorSet &out, VkDescriptorSetLayout layout, const RenderAttrib *attrib) {
-  nassertr(_current_sc != nullptr, false);
-
+get_attrib_descriptor_set(VkDescriptorSet &out,
+                          VulkanShaderContext::AttribDescriptorSetMap &map,
+                          VkDescriptorSetLayout layout,
+                          const RenderAttrib *attrib) {
   // Look it up in the attribute map.
-  auto it = _current_sc->_attrib_descriptor_set_map.find(attrib);
-  if (it != _current_sc->_attrib_descriptor_set_map.end()) {
+  auto it = map.find(attrib);
+  if (it != map.end()) {
     // Found something.  Check that it's not just a different state that has
     // been allocated in the memory of a previous state.
     VulkanShaderContext::DescriptorSet &set = it->second;
@@ -5698,7 +5881,7 @@ get_attrib_descriptor_set(VkDescriptorSet &out, VkDescriptorSetLayout layout, co
   set._last_update_frame = _frame_counter;
 
   out = set._handle;
-  _current_sc->_attrib_descriptor_set_map[attrib] = std::move(set);
+  map[attrib] = std::move(set);
   return true;
 }
 
@@ -5785,6 +5968,56 @@ update_lattr_descriptor_set(VkDescriptorSet ds, const LightAttrib *attr) {
 }
 
 /**
+ * Updates the descriptor set containing the globals.  This only needs to
+ * happen rarely, when the global transform buffer is swapped out due to
+ * running out of size.
+ */
+bool VulkanGraphicsStateGuardian::
+update_global_descriptor_set() {
+  nassertr(_global_descriptor_set_layout != VK_NULL_HANDLE, false);
+
+  if (_global_descriptor_set != VK_NULL_HANDLE) {
+    get_frame_data()._pending_free_descriptor_sets.push_back(_global_descriptor_set);
+    _global_descriptor_set = VK_NULL_HANDLE;
+  }
+
+  VkDescriptorSetAllocateInfo alloc_info;
+  alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+  alloc_info.pNext = nullptr;
+  alloc_info.descriptorPool = _descriptor_pool;
+  alloc_info.descriptorSetCount = 1;
+  alloc_info.pSetLayouts = &_global_descriptor_set_layout;
+  VkResult
+  err = vkAllocateDescriptorSets(_device, &alloc_info, &_global_descriptor_set);
+  if (err) {
+    vulkan_error(err, "Failed to allocate descriptor set for globals");
+    return false;
+  }
+
+  uint32_t i = 0;
+  VkWriteDescriptorSet write[1];
+  VkDescriptorBufferInfo buffer_info[1];
+
+  buffer_info[i].buffer = _transform_buffer;
+  buffer_info[i].offset = 0;
+  buffer_info[i].range = VK_WHOLE_SIZE;
+
+  write[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+  write[i].pNext = nullptr;
+  write[i].dstSet = _global_descriptor_set;
+  write[i].dstBinding = i;
+  write[i].dstArrayElement = 0;
+  write[i].descriptorCount = 1;
+  write[i].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+  write[i].pImageInfo = nullptr;
+  write[i].pBufferInfo = &buffer_info[i];
+  write[i].pTexelBufferView = nullptr;
+  ++i;
+  vkUpdateDescriptorSets(_device, i, write, 0, nullptr);
+  return true;
+}
+
+/**
  * Updates the descriptor set containing the dynamic uniform buffer.  This only
  * needs to happen rarely, when the global uniform buffer is swapped out due to
  * running out of size.
@@ -5808,17 +6041,14 @@ update_dynamic_uniform_descriptor_set(VulkanShaderContext *sc) {
   }
 
   // We set the offsets to 0, since we use dynamic offsets.
-  size_t count = 0;
+  uint32_t i = 0;
+  VkWriteDescriptorSet write[2];
   VkDescriptorBufferInfo buffer_info[2];
   if (sc->_other_state_block._size > 0) {
-    buffer_info[count].buffer = _uniform_buffer;
-    buffer_info[count].offset = 0;
-    buffer_info[count].range = sc->_other_state_block._size;
-    ++count;
-  }
+    buffer_info[i].buffer = _uniform_buffer;
+    buffer_info[i].offset = 0;
+    buffer_info[i].range = sc->_other_state_block._size;
 
-  VkWriteDescriptorSet write[1];
-  for (size_t i = 0; i < count; ++i) {
     write[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     write[i].pNext = nullptr;
     write[i].dstSet = sc->_uniform_descriptor_set;
@@ -5829,8 +6059,9 @@ update_dynamic_uniform_descriptor_set(VulkanShaderContext *sc) {
     write[i].pImageInfo = nullptr;
     write[i].pBufferInfo = &buffer_info[i];
     write[i].pTexelBufferView = nullptr;
+    ++i;
+    vkUpdateDescriptorSets(_device, i, write, 0, nullptr);
   }
-  vkUpdateDescriptorSets(_device, count, write, 0, nullptr);
 
   return true;
 }
@@ -5911,6 +6142,217 @@ alloc_dynamic_uniform_buffer(VkDeviceSize size, VkBuffer &buffer, uint32_t &offs
   offset = 0;
   *(LVecBase4f *)((char *)ptr + _uniform_buffer_white_offset) = LVecBase4f(1, 1, 1, 1);
   return ptr;
+}
+
+/**
+ * Returns an existing allocation in the transform buffer for the given table.
+ * Returns true if it needs to be updated, false if not.  Either way, offset
+ * will indicate what part of the buffer can be written to.  Does not check
+ * whether there is still room in the buffer, you need to check whether
+ * _transform_buffer_offset points past the end of the buffer afterwards if
+ * this call returns true.
+ */
+bool VulkanGraphicsStateGuardian::
+get_transform_buffer(const TypedWritableReferenceCount *obj, size_t num_transforms, UpdateSeq modified, uint32_t &offset) {
+  if (num_transforms == 0) {
+    offset = 0;
+    return false;
+  }
+
+  // Look for an existing allocation.
+  auto it = _transform_tables.find(obj);
+  if (it != _transform_tables.end()) {
+    TransformBufferAllocation &alloc = it->second;
+    if (alloc._modified == modified) {
+      // It hasn't been modified, reuse this.
+      offset = alloc._offset;
+      alloc._last_use_frame = _frame_counter;
+      return false;
+    }
+    if ((size_t)alloc._size >= num_transforms && alloc._last_use_frame <= _last_finished_frame) {
+      // This range is no longer used by the GPU, we can reuse the allocation.
+      offset = alloc._offset;
+      return true;
+    }
+  }
+
+  // We need to allocate something new.
+  offset = _transform_buffer_offset;
+  _transform_buffer_offset = offset + num_transforms;
+  return true;
+}
+
+/**
+ * Recreates the transform buffer, with the given minimum size.
+ */
+bool VulkanGraphicsStateGuardian::
+recreate_transform_buffer(size_t min_num_transforms) {
+  // We ran out of space.  We'll just create a new buffer, this should happen
+  // at most once every frame.
+  size_t new_size = _transform_buffer_size;
+  if (new_size == 0) {
+    new_size = 256;
+  }
+  else if (_transform_buffer_clock_frame_created == _current_clock_frame_number) {
+    // We'd like to be able to fit a whole frame's worth of transforms.
+    new_size *= 2;
+  }
+  if (min_num_transforms > new_size) {
+    new_size = min_num_transforms;
+  }
+
+  size_t new_size_bytes = new_size * (12 * sizeof(float));
+
+  if (vulkandisplay_cat.is_debug()) {
+    if (_transform_buffer_size == 0) {
+      vulkandisplay_cat.debug()
+        << "Creating transform buffer with size " << new_size_bytes
+        << " bytes\n";
+    } else {
+      vulkandisplay_cat.debug()
+        << "Replacing transform buffer (new size " << new_size_bytes
+        << " bytes), ran out of space allocating " << min_num_transforms
+        << " transforms in buffer that was created "
+        << (_current_clock_frame_number - _transform_buffer_clock_frame_created)
+        << " frames ago\n";
+    }
+  }
+
+  VkBuffer new_buffer;
+  VulkanMemoryBlock new_memory;
+  if (create_buffer(new_size_bytes, new_buffer, new_memory,
+                    VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
+                    (VkMemoryPropertyFlagBits)(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)) ||
+      create_buffer(new_size_bytes, new_buffer, new_memory,
+                    VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
+                    (VkMemoryPropertyFlagBits)(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT))) {
+    if (_transform_buffer != VK_NULL_HANDLE) {
+      VulkanFrameData &frame_data = get_frame_data();
+      frame_data._pending_destroy_buffers.push_back(_transform_buffer);
+      frame_data._pending_free.push_back(std::move(_transform_buffer_memory));
+    }
+    _transform_buffer = new_buffer;
+    _transform_buffer_memory = std::move(new_memory);
+    _transform_buffer_ptr = _transform_buffer_memory.map_persistent();
+    _transform_buffer_clock_frame_created = _current_clock_frame_number;
+    _transform_buffer_offset = 0;
+    _transform_buffer_size = new_size;
+    _transform_tables.clear();
+  } else {
+    vulkandisplay_cat.error()
+      << "Failed to create new global transform buffer.\n";
+    return false;
+  }
+
+  set_object_name(_transform_buffer, "<global transform buffer>");
+
+  // We must update and rebind the descriptor set holding this.
+  if (!update_global_descriptor_set()) {
+    return false;
+  }
+
+  vkCmdBindDescriptorSets(_render_cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                          _current_sc ? _current_sc->_pipeline_layout : _initial_pipeline_layout,
+                          DS_global, 1, &_global_descriptor_set,
+                          0, nullptr);
+  return true;
+}
+
+/**
+ * Updates the transform buffer with the given table.
+ */
+void VulkanGraphicsStateGuardian::
+update_transform_buffer(const TransformTable *table, uint32_t offset) {
+  nassertv_always(table != nullptr);
+
+  size_t num_transforms = table->get_num_transforms();
+
+  if (vulkandisplay_cat.is_spam()) {
+    vulkandisplay_cat.spam()
+      << "Copying " << num_transforms << " transforms from table " << table
+      << " to buffer " << _transform_buffer << " at offset " << offset << "\n";
+  }
+
+  float *data = (float *)_transform_buffer_ptr + offset * 12;
+  for (size_t i = 0; i < num_transforms; ++i) {
+#ifdef STDFLOAT_DOUBLE
+    LMatrix4d matd;
+    table->get_transform(i)->get_matrix(matd);
+    LMatrix4f mat = LCAST(float, matd);
+#else
+    LMatrix4f mat;
+    table->get_transform(i)->get_matrix(mat);
+#endif
+
+    data[0] = mat[0][0];
+    data[1] = mat[1][0];
+    data[2] = mat[2][0];
+    data[3] = mat[3][0];
+
+    data[4] = mat[0][1];
+    data[5] = mat[1][1];
+    data[6] = mat[2][1];
+    data[7] = mat[3][1];
+
+    data[8] = mat[0][2];
+    data[9] = mat[1][2];
+    data[10] = mat[2][2];
+    data[11] = mat[3][2];
+
+    data += 12;
+  }
+  nassertv((const char *)data <= (const char *)_transform_buffer_ptr + _transform_buffer_size * (12 * sizeof(float)));
+
+  TransformBufferAllocation &alloc = _transform_tables[table];
+  alloc._last_use_frame = _frame_counter;
+  alloc._modified = table->get_modified();
+  alloc._offset = offset;
+  alloc._size = num_transforms;
+}
+
+/**
+ * Updates the transform buffer with the given instances.
+ */
+void VulkanGraphicsStateGuardian::
+update_transform_buffer(const InstanceList *instances, uint32_t offset) {
+  nassertv_always(instances != nullptr);
+
+  size_t num_transforms = instances->size();
+
+  if (vulkandisplay_cat.is_spam()) {
+    vulkandisplay_cat.spam()
+      << "Copying " << num_transforms << " instance transforms to buffer "
+      << _transform_buffer << " at offset " << offset << "\n";
+  }
+
+  float *data = (float *)_transform_buffer_ptr + offset * 12;
+  for (size_t i = 0; i < num_transforms; ++i) {
+    LMatrix4f mat = LCAST(float, (*instances)[i].get_mat());
+
+    data[0] = mat[0][0];
+    data[1] = mat[1][0];
+    data[2] = mat[2][0];
+    data[3] = mat[3][0];
+
+    data[4] = mat[0][1];
+    data[5] = mat[1][1];
+    data[6] = mat[2][1];
+    data[7] = mat[3][1];
+
+    data[8] = mat[0][2];
+    data[9] = mat[1][2];
+    data[10] = mat[2][2];
+    data[11] = mat[3][2];
+
+    data += 12;
+  }
+  nassertv((const char *)data <= (const char *)_transform_buffer_ptr + _transform_buffer_size * (12 * sizeof(float)));
+
+  TransformBufferAllocation &alloc = _transform_tables[instances];
+  alloc._last_use_frame = _frame_counter;
+  alloc._modified = instances->get_modified();
+  alloc._offset = offset;
+  alloc._size = num_transforms;
 }
 
 /**

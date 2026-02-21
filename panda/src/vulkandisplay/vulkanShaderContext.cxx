@@ -18,6 +18,7 @@
 #include "spirVConvertBoolToIntPass.h"
 #include "spirVHoistStructResourcesPass.h"
 #include "spirVInjectAlphaTestPass.h"
+#include "spirVInjectVertexTransformPass.h"
 #include "spirVMakeBlockPass.h"
 #include "spirVRemoveUnusedVariablesPass.h"
 #include "spirVReplaceVariableTypePass.h"
@@ -28,6 +29,98 @@ static PStatCollector _update_tattr_descriptor_set_pcollector("Draw:Update Descr
 static PStatCollector _update_sattr_descriptor_set_pcollector("Draw:Update Descriptor Sets:ShaderAttrib");
 
 TypeHandle VulkanShaderContext::_type_handle;
+
+/**
+ * Constructs a shader context.  Follow this up with calls to fill in the
+ * module array.
+ */
+VulkanShaderContext::
+VulkanShaderContext(Shader *shader) :
+  ShaderContext(shader),
+  _modules{VK_NULL_HANDLE},
+  _compute_dispatch_pcollector(GraphicsStateGuardian::_compute_dispatch_pcollector, shader->get_debug_name()) {
+
+  _matrix_cache = pvector<LMatrix4>(shader->_matrix_cache_desc.size(), LMatrix4::ident_mat());
+  _matrix_cache_deps = shader->_matrix_cache_deps;
+
+  int next_unused_location = 0;
+  for (const Shader::VertexInputBinding &bind : _shader->_vertex_inputs) {
+    if (bind._name == InternalName::get_color()) {
+      _uses_vertex_color = true;
+    }
+
+    // Figure out which format we should use for the binding when nothing is
+    // present - just needs to match scalar type
+    VkFormat null_format = VK_FORMAT_R32_SFLOAT;
+    ShaderType::ScalarType scalar_type;
+    uint32_t dim[3];
+    if (bind._id._type->as_scalar_type(scalar_type, dim[0], dim[1], dim[2])) {
+      switch (scalar_type) {
+      case ShaderType::ST_float:
+      case ShaderType::ST_unknown:
+        null_format = VK_FORMAT_R32_SFLOAT;
+        break;
+
+      case ShaderType::ST_double:
+        null_format = VK_FORMAT_R64_SFLOAT;
+        break;
+
+      case ShaderType::ST_uint:
+      case ShaderType::ST_bool:
+        null_format = VK_FORMAT_R32_UINT;
+        break;
+
+      case ShaderType::ST_int:
+        null_format = VK_FORMAT_R32_SINT;
+        break;
+      }
+    }
+    _vertex_inputs.push_back({bind._name, bind._id._location, false, null_format});
+
+    int num_locations = bind._id._type->get_num_interface_locations();
+    next_unused_location =
+      std::max(next_unused_location, (int)bind._id._location + num_locations);
+  }
+
+  if ((shader->_module_mask & (1u << (uint32_t)Shader::Stage::VERTEX)) != 0u &&
+      hardware_animated_vertices) {
+    for (const VertexInput &input : _vertex_inputs) {
+      if (input._name == InternalName::get_transform_index()) {
+        _transform_index_location = input._location;
+      }
+      else if (input._name == InternalName::get_transform_weight()) {
+        _transform_weight_location = input._location;
+      }
+      else if (input._name == InternalName::get_vertex()) {
+        //XXX rdb: whether and how a column should be transformed actually
+        // depends on the Contents setting in the GeomVertexFormat.
+        // But that would mean that we might need to recompile the shader
+        // based on the format, which sounds like a lot of effort to support
+        // a rather obscure use case.
+        _anim_attrib_locations |= (1u << input._location);
+        _anim_point_attrib_locations |= (1u << input._location);
+      }
+      else if (input._name == InternalName::get_normal() ||
+               input._name == InternalName::get_tangent() ||
+               input._name == InternalName::get_binormal() ||
+               input._name->get_parent() == InternalName::get_tangent() ||
+               input._name->get_parent() == InternalName::get_binormal()) {
+        _anim_attrib_locations |= (1u << input._location);
+      }
+    }
+
+    if (_anim_attrib_locations != 0u) {
+      if (_transform_index_location < 0) {
+        _transform_index_location = next_unused_location++;
+        _vertex_inputs.push_back({InternalName::get_transform_index(), _transform_index_location, true, VK_FORMAT_R32_UINT});
+      }
+      if (_transform_weight_location < 0) {
+        _transform_weight_location = next_unused_location++;
+        _vertex_inputs.push_back({InternalName::get_transform_weight(), _transform_weight_location, true, VK_FORMAT_R32G32B32A32_SFLOAT});
+      }
+    }
+  }
+}
 
 /**
  *
@@ -53,20 +146,16 @@ destroy_modules(VkDevice device) {
  * Creates the shader modules.
  */
 bool VulkanShaderContext::
-create_modules(VkDevice device, const ShaderType::Struct *push_constant_block_type) {
-  for (const Shader::VertexInputBinding &bind : _shader->_vertex_inputs) {
-    if (bind._name == InternalName::get_color()) {
-      _uses_vertex_color = true;
-      break;
-    }
-  }
-
+create_modules(VulkanGraphicsStateGuardian *gsg) {
   // Compose a struct type for all the mat inputs, also gathering ones that
   // should go into a separate push constant block.  This will become a new
   // uniform block in the shader that replaces the regular uniforms.
   pvector<const InternalName *> push_constant_params({nullptr, nullptr});
   pvector<const InternalName *> shader_input_block_params;
   pvector<const InternalName *> other_state_block_params;
+
+  // Keep track of which parameters may need to be instanced.
+  pmap<const InternalName *, std::pair<bool, bool> > model_matrices;
 
   // Abuse the var id field in the access chain to store the parameter index.
   // Later we replace it with the id, because the id is unique per-module.
@@ -119,25 +208,23 @@ create_modules(VkDevice device, const ShaderType::Struct *push_constant_block_ty
       continue;
     }
 
-    if (push_constant_block_type != nullptr) {
-      if (param._binding->is_model_to_apiclip_matrix()) {
-        push_constant_params[0] = param._name.p();
-        _projection_mat_stage_mask |= param._stage_mask;
+    if (param._binding->is_model_to_apiclip_matrix()) {
+      push_constant_params[0] = param._name.p();
+      _projection_mat_stage_mask |= param._stage_mask;
+      _push_constant_stage_mask |= param._stage_mask;
+      continue;
+    }
+    if (param._binding->is_color_scale()) {
+      // Must be a vec3 or a vec4
+      if (const ShaderType::Vector *vec_type = param._type->as_vector()) {
+        if (vec_type->get_num_components() < 4) {
+          // We'll have to convert this later.
+          convert_color_scale = true;
+        }
+        push_constant_params[1] = param._name.p();
+        _color_scale_stage_mask |= param._stage_mask;
         _push_constant_stage_mask |= param._stage_mask;
         continue;
-      }
-      if (param._binding->is_color_scale()) {
-        // Must be a vec3 or a vec4
-        if (const ShaderType::Vector *vec_type = param._type->as_vector()) {
-          if (vec_type->get_num_components() < 4) {
-            // We'll have to convert this later.
-            convert_color_scale = true;
-          }
-          push_constant_params[1] = param._name.p();
-          _color_scale_stage_mask |= param._stage_mask;
-          _push_constant_stage_mask |= param._stage_mask;
-          continue;
-        }
       }
     }
 
@@ -160,6 +247,13 @@ create_modules(VkDevice device, const ShaderType::Struct *push_constant_block_ty
       _other_state_block._deps |= dep;
       _other_state_block._stage_mask |= param._stage_mask;
       _other_state_block._bindings.push_back({param._binding, other_state_block_struct.get_member(other_state_block_struct.get_num_members() - 1).offset});
+    }
+
+    // We may need to instance this input.
+    bool inverse, transpose;
+    if ((param._stage_mask & (1 << (int)Shader::Stage::VERTEX)) != 0 &&
+        param._binding->has_modelview_matrix(inverse, transpose)) {
+      model_matrices[param._name] = std::make_pair(inverse, transpose);
     }
   }
 
@@ -196,6 +290,18 @@ create_modules(VkDevice device, const ShaderType::Struct *push_constant_block_ty
     }
 
     const ShaderModuleSpirV *spv_module = (const ShaderModuleSpirV *)module.p();
+
+    const ShaderType::Struct *push_constant_block_type;
+    if (module->get_stage() == Shader::Stage::VERTEX) {
+      push_constant_block_type = gsg->_vertex_push_constant_block_type;
+    } else {
+      push_constant_block_type = gsg->_other_push_constant_block_type;
+    }
+    auto push_constant_ids = spv_module->get_parameter_ids_from_names(push_constant_params);
+    push_constant_ids.resize(push_constant_block_type->get_num_members(), 0u);
+
+    auto other_state_block_ids = spv_module->get_parameter_ids_from_names(other_state_block_params);
+
     SpirVTransformer transformer(spv_module->_instructions);
     transformer.change_to_vulkan_conventions();
 
@@ -305,22 +411,60 @@ create_modules(VkDevice device, const ShaderType::Struct *push_constant_block_ty
       transformer.run(SpirVConvertBoolToIntPass());
     }
 
+    // Create separate entry points implementing animation and instancing.
+    if (module->get_stage() == Shader::Stage::VERTEX) {
+      // We use a single global SSBO containing all transforms, both skinning
+      // matrices and instance matrices.
+      uint32_t ssbo_binding = 0;
+      uint32_t ssbo_set = VulkanGraphicsStateGuardian::DS_global;
+
+      SpirVInjectVertexTransformPass pass(true, true, ssbo_binding, ssbo_set);
+      if (_anim_attrib_locations != 0u && gsg->_max_vertex_transforms > 0) {
+        pass.setup_animation(_anim_attrib_locations, _anim_point_attrib_locations,
+                             _transform_index_location, _transform_weight_location);
+      }
+      if (!model_matrices.empty()) {
+        for (size_t i = 0; i < spv_module->get_num_parameters(); ++i) {
+          const ShaderModule::Variable &param = spv_module->get_parameter(i);
+          auto it = model_matrices.find(param.name);
+          if (it != model_matrices.end()) {
+            pass.mark_model_matrix(param.id, it->second.first, it->second.second);
+          }
+        }
+      }
+      transformer.run(pass);
+
+      // The skinning transform offset becomes a push constant.
+      if (pass._transform_offset_var_id != 0) {
+        nassertr(push_constant_ids.size() >= 3, false);
+        push_constant_ids[2] = pass._transform_offset_var_id;
+      }
+
+      if (!model_matrices.empty()) {
+        // The ids of the uniforms may have changed, so remap those
+        for (uint32_t &id : other_state_block_ids) {
+          auto it = pass._matrix_vars.find(id);
+          if (it != pass._matrix_vars.end()) {
+            id = it->second._id;
+          }
+        }
+      }
+    }
+
     if (_push_constant_stage_mask != 0) {
-      auto ids = spv_module->get_parameter_ids_from_names(push_constant_params);
-      if (convert_color_scale && ids[1] != 0) {
+      if (convert_color_scale && push_constant_ids[1] != 0) {
         // We'll have to convert this from vec4 to whatever it is.
         const ShaderType *vec4_type = push_constant_block_type->get_member(1).type;
-        transformer.run(SpirVReplaceVariableTypePass(ids[1], vec4_type, spv::StorageClassUniformConstant));
+        transformer.run(SpirVReplaceVariableTypePass(push_constant_ids[1], vec4_type, spv::StorageClassUniformConstant));
       }
       transformer.run(SpirVMakeBlockPass(push_constant_block_type,
-                                         ids, spv::StorageClassPushConstant));
+                                         push_constant_ids, spv::StorageClassPushConstant));
     }
 
     // Create UBOs and a push constant block for the uniforms.
     if (other_state_block_type != nullptr) {
-      auto ids = spv_module->get_parameter_ids_from_names(other_state_block_params);
       transformer.run(SpirVMakeBlockPass(other_state_block_type->as_struct(),
-                                         ids, spv::StorageClassUniform,
+                                         other_state_block_ids, spv::StorageClassUniform,
                                          0, VulkanGraphicsStateGuardian::DS_dynamic_uniforms));
     }
     if (shader_input_block_type != nullptr) {
@@ -354,6 +498,15 @@ create_modules(VkDevice device, const ShaderType::Struct *push_constant_block_ty
     }
 #endif
 
+    if (vulkandisplay_cat.is_spam()) {
+      std::ostream &out = vulkandisplay_cat.spam()
+        << "SPIR-V " << module->get_stage() << " binary "
+        << module->get_source_filename()
+        << " disassembly after final transforms:\n";
+
+      instructions.disassemble(out);
+    }
+
     VkShaderModuleCreateInfo module_info;
     module_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
     module_info.pNext = nullptr;
@@ -362,7 +515,7 @@ create_modules(VkDevice device, const ShaderType::Struct *push_constant_block_ty
     module_info.pCode = (const uint32_t *)instructions.get_data();
 
     VkResult err;
-    err = vkCreateShaderModule(device, &module_info, nullptr, &_modules[(size_t)spv_module->get_stage()]);
+    err = vkCreateShaderModule(gsg->_device, &module_info, nullptr, &_modules[(size_t)spv_module->get_stage()]);
     if (err) {
       vulkan_error(err, "Failed to create shader module");
       success = false;
@@ -384,7 +537,7 @@ create_modules(VkDevice device, const ShaderType::Struct *push_constant_block_ty
   if (!success) {
     for (size_t i = 0; i <= (size_t)Shader::Stage::COMPUTE; ++i) {
       if (_modules[i] != VK_NULL_HANDLE) {
-        vkDestroyShaderModule(device, _modules[i], nullptr);
+        vkDestroyShaderModule(gsg->_device, _modules[i], nullptr);
         _modules[i] = VK_NULL_HANDLE;
       }
     }
@@ -412,8 +565,8 @@ get_fragment_module(VkDevice device, RenderAttrib::PandaCompareFunc alpha_test_m
 
   if (vulkandisplay_cat.is_debug()) {
     vulkandisplay_cat.debug()
-      << "Modifying module for shader " << _shader->get_filename() << " for "
-         "alpha test mode " << alpha_test_mode << "\n";
+      << "Modifying fragment module for shader " << _shader->get_filename()
+      << " for alpha test mode " << alpha_test_mode << "\n";
   }
 
   // Creating a special case for handling M_never isn't worth it, because it's
@@ -991,7 +1144,7 @@ clear_pipeline_cache() {
 VkPipeline VulkanShaderContext::
 get_pipeline(VulkanGraphicsStateGuardian *gsg, const RenderState *state,
              const GeomVertexFormat *format, VkPrimitiveTopology topology,
-             uint32_t patch_control_points, uint32_t fb_config) {
+             uint32_t patch_control_points, uint32_t fb_config, bool instanced) {
   PipelineKey key;
   key._packed_state = (uint32_t)topology << PipelineKey::PS_topology_shift;
   key._format = format;
@@ -1066,6 +1219,10 @@ get_pipeline(VulkanGraphicsStateGuardian *gsg, const RenderState *state,
       }
       key._depth_bias_attrib = temp_depth_bias;
     }
+  }
+
+  if (instanced) {
+    key._packed_state |= PipelineKey::PS_instanced_mask;
   }
 
   // Check the small inline cache first.

@@ -75,6 +75,7 @@ protected:
 
   uint32_t define_variable(const ShaderType *type, spv::StorageClass storage_class);
   uint32_t define_pointer_type(const ShaderType *type, spv::StorageClass storage_class);
+  uint32_t define_function_type(const ShaderType *return_type);
   uint32_t define_type(const ShaderType *type);
   uint32_t define_int_constant(int32_t constant);
   INLINE uint32_t define_float_constant(float constant);
@@ -127,6 +128,8 @@ protected:
   INLINE void add_instruction(spv::Op opcode, std::initializer_list<uint32_t> args);
   void add_instruction(spv::Op opcode, const uint32_t *args, uint16_t nargs);
 
+  void add_entry_point(spv::ExecutionModel model, uint32_t id, const std::string &name, pvector<uint32_t> &vars);
+
   // Functions for putting specific instructions in the functions block.
   uint32_t op_load(uint32_t var_id, spv::MemoryAccessMask access = spv::MemoryAccessMaskNone);
   void op_store(uint32_t var_id, uint32_t value);
@@ -146,7 +149,13 @@ protected:
   uint32_t op_negate(uint32_t value);
   uint32_t op_multiply(uint32_t left, uint32_t right);
   uint32_t op_image_sample(uint32_t image, uint32_t coord, uint32_t operands = 0u, const uint32_t *ids = nullptr);
+  uint32_t op_function_call(uint32_t func_id);
+
+  uint32_t op_function(const ShaderType *return_type);
+  uint32_t op_label();
+  void op_return();
   void op_kill();
+  void op_function_end();
 
   uint32_t branch_if(uint32_t cond);
   void branch_endif(uint32_t label);

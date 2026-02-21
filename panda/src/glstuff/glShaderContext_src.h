@@ -189,8 +189,8 @@ private:
   GLint _instance_mat_index = -1;
   GLint _transform_index_index = -1;
   GLint _transform_weight_index = -1;
+  uint32_t _animate_attrib_locations = 0;
   uint32_t _animate_point_attrib_locations = 0;
-  uint32_t _animate_vector_attrib_locations = 0;
   BitMask32 _bind_attrib_locations = 0;
   BitMask32 _bind_frag_data_locations = 0;
 

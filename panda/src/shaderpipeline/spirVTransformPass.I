@@ -154,6 +154,9 @@ decorate(uint32_t id, spv::Decoration decoration, uint32_t value) {
   if (decoration == spv::DecorationLocation) {
     _db.modify_definition(id)._location = (int)value;
   }
+  else if (decoration == spv::DecorationBuiltIn) {
+    _db.modify_definition(id)._builtin = (spv::BuiltIn)value;
+  }
 }
 
 /**

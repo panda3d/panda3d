@@ -107,6 +107,8 @@ public:
   INLINE const_iterator end() const;
   INLINE const_iterator cend() const;
 
+  INLINE UpdateSeq get_modified() const;
+
   CPT(InstanceList) without(const BitArray &mask) const;
 
   CPT(GeomVertexArrayData) get_array_data(const GeomVertexArrayFormat *format) const;
@@ -116,6 +118,7 @@ public:
 
 private:
   Instances _instances;
+  UpdateSeq _modified;
 
   mutable CPT(GeomVertexArrayData) _cached_array;
 

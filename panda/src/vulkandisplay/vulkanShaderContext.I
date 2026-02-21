@@ -12,20 +12,6 @@
  */
 
 /**
- * Constructs a shader context.  Follow this up with calls to fill in the
- * module array.
- */
-INLINE VulkanShaderContext::
-VulkanShaderContext(Shader *shader) :
-  ShaderContext(shader),
-  _modules{VK_NULL_HANDLE},
-  _compute_dispatch_pcollector(GraphicsStateGuardian::_compute_dispatch_pcollector, shader->get_debug_name()) {
-
-  _matrix_cache = pvector<LMatrix4>(shader->_matrix_cache_desc.size(), LMatrix4::ident_mat());
-  _matrix_cache_deps = shader->_matrix_cache_deps;
-}
-
-/**
  *
  */
 INLINE VulkanShaderContext::
@@ -150,4 +136,12 @@ get_logic_op() const {
 ALWAYS_INLINE uint32_t VulkanShaderContext::PipelineKey::
 get_patch_control_points() const {
   return ((_packed_state & PS_patch_control_points_mask) >> PS_patch_control_points_shift) + 1u;
+}
+
+/**
+ *
+ */
+ALWAYS_INLINE bool VulkanShaderContext::PipelineKey::
+is_instanced() const {
+  return (_packed_state & PS_instanced_mask) != 0u;
 }

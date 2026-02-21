@@ -112,6 +112,7 @@ public:
 
   virtual void set_state_and_transform(const RenderState *state,
                                        const TransformState *transform);
+  virtual bool state_supports_instancing() const;
 
   virtual void clear(DrawableRegion *clearable);
   virtual void prepare_display_region(DisplayRegionPipelineReader *dr);
@@ -212,24 +213,36 @@ public:
   // Note that Vulkan only guarantees that 4 sets can be bound simultaneously,
   // though most implementations support at least 8.
   enum DescriptorSetIndex : uint32_t {
-    DS_light_attrib = 0,
-    DS_texture_attrib = 1,
-    DS_shader_attrib = 2,
+    DS_global = 0,
 
-    DS_ATTRIB_COUNT = 3,
+    DS_light_attrib = 1,
+    DS_texture_attrib = 2,
+    DS_shader_attrib = 3,
 
     // This one is used for other shader inputs and uses dynamic offsets.
-    DS_dynamic_uniforms = 3,
+    DS_dynamic_uniforms = 4,
 
-    DS_SET_COUNT = 4,
+    DS_SET_COUNT = 5,
   };
 
-  bool get_attrib_descriptor_set(VkDescriptorSet &out, VkDescriptorSetLayout layout,
+  bool get_attrib_descriptor_set(VkDescriptorSet &out,
+                                 VulkanShaderContext::AttribDescriptorSetMap &map,
+                                 VkDescriptorSetLayout layout,
                                  const RenderAttrib *attrib);
 
+  bool update_global_descriptor_set();
   bool update_lattr_descriptor_set(VkDescriptorSet ds, const LightAttrib *attr);
   bool update_dynamic_uniform_descriptor_set(VulkanShaderContext *sc);
   void *alloc_dynamic_uniform_buffer(VkDeviceSize size, VkBuffer &buffer, uint32_t &offset);
+
+  INLINE bool get_transform_buffer(const TransformTable *table, uint32_t &offset);
+  INLINE bool get_transform_buffer(const InstanceList *instances, uint32_t &offset);
+  bool get_transform_buffer(const TypedWritableReferenceCount *obj,
+                            size_t num_transforms, UpdateSeq modified,
+                            uint32_t &offset);
+  bool recreate_transform_buffer(size_t min_size);
+  void update_transform_buffer(const TransformTable *table, uint32_t offset);
+  void update_transform_buffer(const InstanceList *instances, uint32_t offset);
 
   void *alloc_staging_buffer(VkDeviceSize size, VkBuffer &buffer, uint32_t &offset);
 
@@ -282,20 +295,41 @@ private:
   VulkanShaderContext *_default_sc = nullptr;
   Shader *_current_shader = nullptr;
   VulkanShaderContext *_current_sc = nullptr;
-  const ShaderType::Struct *_push_constant_block_type = nullptr;
+  const ShaderType::Struct *_vertex_push_constant_block_type = nullptr;
+  const ShaderType::Struct *_other_push_constant_block_type = nullptr;
   CPT(GeomVertexFormat) _format;
   uint32_t _instance_count = 0;
+  uint32_t _instance_base = 0;
+  bool _instanced = false;
 
   // Single large uniform buffer used for everything in a frame.
   VkBuffer _uniform_buffer = VK_NULL_HANDLE;
   VulkanMemoryBlock _uniform_buffer_memory;
   CircularAllocator _uniform_buffer_allocator;
   void *_uniform_buffer_ptr = nullptr;
-  VkDescriptorSet _uniform_descriptor_set;
   VkDeviceSize _uniform_buffer_max_used = 0;
+  uint32_t _current_dynamic_uniform_offset = 0;
   uint32_t _uniform_buffer_white_offset = 0;
   VkBuffer _current_color_buffer = VK_NULL_HANDLE;
   uint32_t _current_color_offset = 0;
+
+  // Separate SSBO for transform matrices, used for skinning and instancing.
+  // We could have used the above buffer, but this one isn't circular, since we
+  // try to persist TransformTables across frames with modification tracking
+  // which is a bit easier with a separate linear allocator.
+  VkBuffer _transform_buffer = VK_NULL_HANDLE;
+  VulkanMemoryBlock _transform_buffer_memory;
+  size_t _transform_buffer_offset = 0;
+  size_t _transform_buffer_size = 0;
+  int _transform_buffer_clock_frame_created = 0;
+  void *_transform_buffer_ptr = nullptr;
+  struct TransformBufferAllocation {
+    uint64_t _last_use_frame;
+    UpdateSeq _modified;
+    uint32_t _offset;
+    uint32_t _size;
+  };
+  pmap<CPT(TypedWritableReferenceCount), TransformBufferAllocation> _transform_tables;
 
   // Staging buffer for CPU-to-GPU uploads.
   VkBuffer _staging_buffer = VK_NULL_HANDLE;
@@ -319,7 +353,13 @@ private:
   VulkanMemoryBlock _null_vertex_memory;
   bool _needs_write_null_vertex_data = false;
 
-  // Descriptor set layouts used for the LightAttrib descriptor sets.
+  // Used for the skinning matrix at the moment, but might hold other global
+  // resources in the future.
+  VkDescriptorSetLayout _global_descriptor_set_layout = VK_NULL_HANDLE;
+  VkDescriptorSet _global_descriptor_set = VK_NULL_HANDLE;
+  VkPipelineLayout _initial_pipeline_layout = VK_NULL_HANDLE;
+
+  // Layouts used for the LightAttrib and dynamic uniform descriptor sets.
   // The others are shader-dependent and stored in VulkanShaderContext.
   VkSampler _shadow_sampler;
   VkDescriptorSetLayout _lattr_descriptor_set_layout;

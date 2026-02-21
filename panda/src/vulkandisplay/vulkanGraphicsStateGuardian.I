@@ -24,6 +24,32 @@ get_frame_data() {
 }
 
 /**
+ * Returns an existing allocation in the transform buffer for the given table.
+ * Returns true if it needs to be updated, false if not.  Either way, offset
+ * will indicate what part of the buffer can be written to.  If there is no
+ * room in the buffer, the offset will be past the end of the buffer, so you
+ * must check this if it returns true.
+ */
+INLINE bool VulkanGraphicsStateGuardian::
+get_transform_buffer(const TransformTable *table, uint32_t &offset) {
+  return table != nullptr &&
+    get_transform_buffer(table, table->get_num_transforms(), table->get_modified(), offset);
+}
+
+/**
+ * Returns an existing allocation in the transform buffer for the given table.
+ * Returns true if it needs to be updated, false if not.  Either way, offset
+ * will indicate what part of the buffer can be written to.  If there is no
+ * room in the buffer, the offset will be past the end of the buffer, so you
+ * must check this if it returns true.
+ */
+INLINE bool VulkanGraphicsStateGuardian::
+get_transform_buffer(const InstanceList *instances, uint32_t &offset) {
+  return instances != nullptr &&
+    get_transform_buffer(instances, instances->size(), instances->get_modified(), offset);
+}
+
+/**
  *
  */
 INLINE void VulkanGraphicsStateGuardian::

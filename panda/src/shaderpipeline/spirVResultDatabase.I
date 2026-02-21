@@ -16,7 +16,7 @@
  */
 INLINE bool SpirVResultDatabase::Definition::
 is_type() const {
-  return _dtype == DT_type || _dtype == DT_pointer_type;
+  return _dtype == DT_type || _dtype == DT_pointer_type || _dtype == DT_function_type;
 }
 
 /**
@@ -25,6 +25,14 @@ is_type() const {
 INLINE bool SpirVResultDatabase::Definition::
 is_pointer_type() const {
   return _dtype == DT_pointer_type;
+}
+
+/**
+ * Returns true if this is specifically a function type.
+ */
+INLINE bool SpirVResultDatabase::Definition::
+is_function_type() const {
+  return _dtype == DT_function_type;
 }
 
 /**

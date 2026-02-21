@@ -99,6 +99,10 @@ output(std::ostream &out) const {
     out << "pointer to " << _type_id;
     break;
 
+  case SpirVResultDatabase::DT_function_type:
+    out << "function type returning " << _type_id;
+    break;
+
   case SpirVResultDatabase::DT_variable:
     out << "variable of type " << _type_id;
     break;
@@ -282,14 +286,12 @@ parse_instruction(spv::Op opcode, const uint32_t *args, uint32_t nargs, uint32_t
     break;
 
   case spv::OpTypeFunction:
-    {
-      Definition &def = modify_definition(args[0]);
-      def._dtype = DT_type;
-      def._type_id = args[1];
-      for (size_t i = 2; i < nargs; ++i) {
-        def._parameters.push_back(args[i]);
-      }
+    if (current_function_id != 0) {
+      shader_cat.error()
+        << "OpTypeFunction" << " may not occur within a function!\n";
+      return;
     }
+    record_function_type(args[0], args[1], args + 2, nargs - 2);
     break;
 
   case spv::OpTypeImage:
@@ -971,6 +973,15 @@ find_pointer_type(uint32_t type_id, spv::StorageClass storage_class) {
 }
 
 /**
+ * Searches for an already-defined function type returning void and having no
+ * function arguments and returns its id, or 0 if not found.
+ */
+uint32_t SpirVResultDatabase::
+find_function_type() {
+  return _void_function_type_id;
+}
+
+/**
  * Searches for an already-defined null constant of the given type.
  * Returns its id, or 0 if it was not found.
  */
@@ -1061,6 +1072,30 @@ record_pointer_type(uint32_t id, spv::StorageClass storage_class, uint32_t type_
   def._type = type;
   def._storage_class = storage_class;
   def._type_id = type_id;
+}
+
+/**
+ * Records that the given function type has been defined.
+ */
+void SpirVResultDatabase::
+record_function_type(uint32_t id, uint32_t return_type_id, const uint32_t *params, uint32_t nparams) {
+  // Call modify_definition first, because it may invalidate references
+  Definition &def = modify_definition(id);
+
+  const Definition &return_type_def = get_definition(return_type_id);
+  nassertv(return_type_def.is_type());
+  const ShaderType *return_type = return_type_def._type;
+
+  def._dtype = DT_function_type;
+  def._type = return_type;
+  def._type_id = return_type_id;
+
+  for (size_t i = 0; i < nparams; ++i) {
+    def._parameters.push_back(params[i]);
+  }
+  if (return_type == nullptr && def._parameters.empty()) {
+    _void_function_type_id = id;
+  }
 }
 
 /**
@@ -1176,7 +1211,7 @@ record_function_parameter(uint32_t id, uint32_t type_id, uint32_t function_id) {
   Definition &def = modify_definition(id);
 
   const Definition &type_def = get_definition(type_id);
-  nassertv(type_def._dtype == DT_type || type_def._dtype == DT_pointer_type);
+  nassertv(type_def.is_type());
 
   def._dtype = DT_function_parameter;
   def._type_id = type_id;
@@ -1230,9 +1265,10 @@ record_function(uint32_t id, uint32_t type_id) {
   Definition &def = modify_definition(id);
 
   const Definition &type_def = get_definition(type_id);
+  nassertv(type_def.is_function_type());
 
   def._dtype = DT_function;
-  def._type = type_def._type;
+  def._type = type_def._type; // return type
   def._type_id = type_id;
   def._function_id = id;
 }

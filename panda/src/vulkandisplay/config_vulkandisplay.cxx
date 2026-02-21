@@ -12,6 +12,7 @@
  */
 
 #include "config_vulkandisplay.h"
+#include "vulkanGeomMunger.h"
 #include "vulkanGraphicsBuffer.h"
 #include "vulkanGraphicsPipe.h"
 #include "vulkanGraphicsStateGuardian.h"
@@ -85,6 +86,7 @@ init_libvulkandisplay() {
   }
   initialized = true;
 
+  VulkanGeomMunger::init_type();
   VulkanGraphicsBuffer::init_type();
   VulkanGraphicsPipe::init_type();
   VulkanGraphicsStateGuardian::init_type();

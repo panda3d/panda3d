@@ -42,13 +42,13 @@ private:
 public:
   using AccessChain = SpirVTransformPass::AccessChain;
 
-  INLINE VulkanShaderContext(Shader *shader);
+  VulkanShaderContext(Shader *shader);
   INLINE ~VulkanShaderContext();
 
   ALLOC_DELETED_CHAIN(VulkanShaderContext);
 
   void destroy_modules(VkDevice device);
-  bool create_modules(VkDevice device, const ShaderType::Struct *push_constant_block_type);
+  bool create_modules(VulkanGraphicsStateGuardian *gsg);
 
   INLINE VkShaderModule get_module(Shader::Stage module) const;
   VkShaderModule get_fragment_module(VkDevice device, RenderAttrib::PandaCompareFunc alpha_test_mode);
@@ -77,7 +77,7 @@ public:
                           const GeomVertexFormat *format,
                           VkPrimitiveTopology topology,
                           uint32_t patch_control_points,
-                          uint32_t fb_config);
+                          uint32_t fb_config, bool instanced);
   VkPipeline get_compute_pipeline(VulkanGraphicsStateGuardian *gsg);
 
   /**
@@ -96,6 +96,7 @@ public:
     ALWAYS_INLINE CullFaceAttrib::Mode get_cull_face_mode() const;
     ALWAYS_INLINE LogicOpAttrib::Operation get_logic_op() const;
     ALWAYS_INLINE uint32_t get_patch_control_points() const;
+    ALWAYS_INLINE bool is_instanced() const;
 
     // We pack most of the state into a single uint32_t for more efficient
     // memory performance, hashing and comparisons.
@@ -131,6 +132,10 @@ public:
       // 5 bits (stored with 1 subtracted to get full 32)
       PS_patch_control_points_shift = 23,
       PS_patch_control_points_mask = 31 << PS_patch_control_points_shift,
+
+      // 1 bit
+      PS_instanced_shift = 28,
+      PS_instanced_mask = 1 << PS_instanced_shift,
     };
     uint32_t _packed_state = 0u;
     uint32_t _fb_config = 0u;
@@ -165,7 +170,9 @@ private:
     WeakReferenceList *_weak_ref = nullptr;
   };
   typedef pmap<const RenderAttrib *, DescriptorSet> AttribDescriptorSetMap;
-  AttribDescriptorSetMap _attrib_descriptor_set_map;
+  AttribDescriptorSetMap _lattr_descriptor_set_map;
+  AttribDescriptorSetMap _tattr_descriptor_set_map;
+  AttribDescriptorSetMap _sattr_descriptor_set_map;
 
   // Describe the two UBOs and push constant ranges we create.
   struct Block {
@@ -204,7 +211,21 @@ private:
   VkBuffer _uniform_buffer = VK_NULL_HANDLE;
   uint32_t _dynamic_uniform_offset = 0;
 
+  struct VertexInput {
+    PT(InternalName) _name;
+    int _location;
+    bool _only_anim = false;
+    VkFormat _null_format;
+  };
+  pvector<VertexInput> _vertex_inputs;
+
   bool _uses_vertex_color = false;
+
+  // Set if the vertex module defines separate entry points for animation.
+  uint32_t _anim_attrib_locations = 0;
+  uint32_t _anim_point_attrib_locations = 0;
+  int _transform_index_location = -1;
+  int _transform_weight_location = -1;
 
   // These are for the push constants; maybe in the future we'll replace this
   // with a more generic and flexible system.

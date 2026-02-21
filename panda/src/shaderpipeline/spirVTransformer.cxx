@@ -35,6 +35,7 @@ SpirVTransformer(const InstructionStream &stream) {
         op.opcode != spv::OpMemoryModel &&
         op.opcode != spv::OpEntryPoint &&
         op.opcode != spv::OpExecutionMode &&
+        op.opcode != spv::OpExecutionModeId &&
         op.opcode != spv::OpString &&
         op.opcode != spv::OpSourceExtension &&
         op.opcode != spv::OpSource &&
@@ -433,7 +434,8 @@ change_to_vulkan_conventions() {
     uint32_t wcount = *it >> spv::WordCountShift;
     nassertd(wcount > 0) break;
 
-    if (opcode == spv::OpExecutionMode && wcount >= 3 &&
+    if ((opcode == spv::OpExecutionMode || opcode == spv::OpExecutionModeId) &&
+        wcount >= 3 &&
         (spv::ExecutionMode)*(it + 2) == spv::ExecutionModeOriginLowerLeft) {
       *(it + 2) = spv::ExecutionModeOriginUpperLeft;
       break;

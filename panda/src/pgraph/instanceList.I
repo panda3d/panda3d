@@ -152,6 +152,7 @@ INLINE void InstanceList::
 append(InstanceList::Instance instance) {
   _instances.push_back(std::move(instance));
   _cached_array.clear();
+  ++_modified;
 }
 
 /**
@@ -161,6 +162,7 @@ INLINE void InstanceList::
 append(const TransformState *transform) {
   _instances.push_back(Instance(transform));
   _cached_array.clear();
+  ++_modified;
 }
 
 /**
@@ -203,6 +205,7 @@ operator [] (size_t n) const {
 INLINE InstanceList::Instance &InstanceList::
 operator [] (size_t n) {
   _cached_array.clear();
+  ++_modified;
   return _instances[n];
 }
 
@@ -211,7 +214,10 @@ operator [] (size_t n) {
  */
 INLINE void InstanceList::
 clear() {
-  _instances.clear();
+  if (!_instances.empty()) {
+    _instances.clear();
+    ++_modified;
+  }
   _cached_array.clear();
 }
 
@@ -277,4 +283,12 @@ end() const {
 INLINE InstanceList::const_iterator InstanceList::
 cend() const {
   return _instances.cend();
+}
+
+/**
+ *
+ */
+INLINE UpdateSeq InstanceList::
+get_modified() const {
+  return _modified;
 }
