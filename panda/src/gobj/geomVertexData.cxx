@@ -596,10 +596,21 @@ copy_from(const GeomVertexData *source, bool keep_data_objects,
             LVecBase4i indices(0, 0, 0, 0);
 
             if (blend.get_num_transforms() <= 4) {
-              for (size_t i = 0; i < blend.get_num_transforms(); i++) {
+              size_t i = 0;
+              int index = 0;
+              for (; i < blend.get_num_transforms(); i++) {
                 weights[i] = blend.get_weight(i);
-                indices[i] = add_transform(transform_table, blend.get_transform(i),
-                                           already_added);
+                index = add_transform(transform_table, blend.get_transform(i),
+                                      already_added);
+                indices[i] = index;
+              }
+
+              // Set the remaining indices to the last index.  The matrices
+              // are still being fetched by the shader, even if they are then
+              // multiplied by a zero weight, so we want to make sure to hit
+              // something that's guaranteed to be in the L1 cache.
+              for (; i < 4; ++i) {
+                indices[i] = index;
               }
             } else {
               // Limit the number of blends to the four with highest weights.
