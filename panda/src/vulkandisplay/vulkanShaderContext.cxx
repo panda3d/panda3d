@@ -167,6 +167,7 @@ create_modules(VulkanGraphicsStateGuardian *gsg) {
   ShaderType::Struct other_state_block_struct;
   bool replace_bools = false;
   bool convert_color_scale = false;
+  uint32_t push_constant_stages = 0;
 
   for (size_t pi = 0; pi < _shader->_parameters.size(); ++pi) {
     const Shader::Parameter &param = _shader->_parameters[pi];
@@ -210,8 +211,8 @@ create_modules(VulkanGraphicsStateGuardian *gsg) {
 
     if (param._binding->is_model_to_apiclip_matrix()) {
       push_constant_params[0] = param._name.p();
+      push_constant_stages |= param._stage_mask;
       _projection_mat_stage_mask |= param._stage_mask;
-      _push_constant_stage_mask |= param._stage_mask;
       continue;
     }
     if (param._binding->is_color_scale()) {
@@ -222,8 +223,8 @@ create_modules(VulkanGraphicsStateGuardian *gsg) {
           convert_color_scale = true;
         }
         push_constant_params[1] = param._name.p();
+        push_constant_stages |= param._stage_mask;
         _color_scale_stage_mask |= param._stage_mask;
-        _push_constant_stage_mask |= param._stage_mask;
         continue;
       }
     }
@@ -285,14 +286,15 @@ create_modules(VulkanGraphicsStateGuardian *gsg) {
       continue;
     }
 
-    if (module->get_stage() == Shader::Stage::COMPUTE) {
+    Shader::Stage stage = module->get_stage();
+    if (stage == Shader::Stage::COMPUTE) {
       _bind_point = VK_PIPELINE_BIND_POINT_COMPUTE;
     }
 
     const ShaderModuleSpirV *spv_module = (const ShaderModuleSpirV *)module.p();
 
     const ShaderType::Struct *push_constant_block_type;
-    if (module->get_stage() == Shader::Stage::VERTEX) {
+    if (stage == Shader::Stage::VERTEX) {
       push_constant_block_type = gsg->_vertex_push_constant_block_type;
     } else {
       push_constant_block_type = gsg->_other_push_constant_block_type;
@@ -412,7 +414,7 @@ create_modules(VulkanGraphicsStateGuardian *gsg) {
     }
 
     // Create separate entry points implementing animation and instancing.
-    if (module->get_stage() == Shader::Stage::VERTEX) {
+    if (stage == Shader::Stage::VERTEX) {
       // We use a single global SSBO containing all transforms, both skinning
       // matrices and instance matrices.
       uint32_t ssbo_binding = 0;
@@ -434,10 +436,12 @@ create_modules(VulkanGraphicsStateGuardian *gsg) {
       }
       transformer.run(pass);
 
-      // The skinning transform offset becomes a push constant.
+      // This may have created a skinning transform offset, which we need to
+      // convert to a push constant.
       if (pass._transform_offset_var_id != 0) {
         nassertr(push_constant_ids.size() >= 3, false);
         push_constant_ids[2] = pass._transform_offset_var_id;
+        push_constant_stages |= (1u << (uint32_t)Shader::Stage::VERTEX);
       }
 
       if (!model_matrices.empty()) {
@@ -451,7 +455,7 @@ create_modules(VulkanGraphicsStateGuardian *gsg) {
       }
     }
 
-    if (_push_constant_stage_mask != 0) {
+    if (push_constant_stages & (1u << (uint32_t)stage)) {
       if (convert_color_scale && push_constant_ids[1] != 0) {
         // We'll have to convert this from vec4 to whatever it is.
         const ShaderType *vec4_type = push_constant_block_type->get_member(1).type;
@@ -500,7 +504,7 @@ create_modules(VulkanGraphicsStateGuardian *gsg) {
 
     if (vulkandisplay_cat.is_spam()) {
       std::ostream &out = vulkandisplay_cat.spam()
-        << "SPIR-V " << module->get_stage() << " binary "
+        << "SPIR-V " << stage << " binary "
         << module->get_source_filename()
         << " disassembly after final transforms:\n";
 
@@ -515,13 +519,13 @@ create_modules(VulkanGraphicsStateGuardian *gsg) {
     module_info.pCode = (const uint32_t *)instructions.get_data();
 
     VkResult err;
-    err = vkCreateShaderModule(gsg->_device, &module_info, nullptr, &_modules[(size_t)spv_module->get_stage()]);
+    err = vkCreateShaderModule(gsg->_device, &module_info, nullptr, &_modules[(size_t)stage]);
     if (err) {
       vulkan_error(err, "Failed to create shader module");
       success = false;
     }
 
-    if (spv_module->get_stage() == Shader::Stage::FRAGMENT &&
+    if (stage == Shader::Stage::FRAGMENT &&
         !_shader->_subsumes_alpha_test) {
       // Set us up to easily create versions of the shader for various alpha
       // testing modes.

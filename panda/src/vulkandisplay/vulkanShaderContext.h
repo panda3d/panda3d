@@ -229,7 +229,6 @@ private:
 
   // These are for the push constants; maybe in the future we'll replace this
   // with a more generic and flexible system.
-  VkShaderStageFlags _push_constant_stage_mask = 0;
   VkShaderStageFlags _projection_mat_stage_mask = 0;
   VkShaderStageFlags _color_scale_stage_mask = 0;
 
