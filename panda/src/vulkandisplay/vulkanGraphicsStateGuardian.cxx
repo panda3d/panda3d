@@ -3002,7 +3002,7 @@ set_state_and_transform(const RenderState *state,
   // Update and bind descriptor sets.
   VkDescriptorSet descriptor_sets[DS_SET_COUNT] = {};
 
-  uint32_t first_set = 1;
+  uint32_t first_set = DS_light_attrib;
   const LightAttrib *target_light;
   state->get_attrib(target_light);
   if (shader_changed ||
@@ -3021,12 +3021,13 @@ set_state_and_transform(const RenderState *state,
       update_lattr_descriptor_set(descriptor_sets[DS_light_attrib], target_light);
     }
   } else {
-    first_set = 2;
+    // Don't need to bind this set.
+    first_set = DS_light_attrib + 1;
   }
 
   const TextureAttrib *target_texture;
   state->get_attrib_def(target_texture);
-  if (first_set != 1 || shader_changed ||
+  if (first_set < DS_texture_attrib || shader_changed ||
       target_texture != _state_rs->get_attrib_def(TextureAttrib::get_class_slot())) {
     if (get_attrib_descriptor_set(descriptor_sets[DS_texture_attrib],
                                   sc->_tattr_descriptor_set_map,
@@ -3035,14 +3036,20 @@ set_state_and_transform(const RenderState *state,
       sc->update_tattr_descriptor_set(this, descriptor_sets[DS_texture_attrib]);
     }
   } else {
-    first_set = 3;
+    first_set = DS_texture_attrib + 1;
   }
 
-  if (get_attrib_descriptor_set(descriptor_sets[DS_shader_attrib],
-                                sc->_sattr_descriptor_set_map,
-                                sc->_sattr_descriptor_set_layout,
-                                _target_shader)) {
-    sc->update_sattr_descriptor_set(this, descriptor_sets[DS_shader_attrib]);
+  if (first_set < DS_shader_attrib || shader_changed ||
+      _target_shader != _state_shader) {
+    if (get_attrib_descriptor_set(descriptor_sets[DS_shader_attrib],
+                                  sc->_sattr_descriptor_set_map,
+                                  sc->_sattr_descriptor_set_layout,
+                                  _target_shader)) {
+      sc->update_sattr_descriptor_set(this, descriptor_sets[DS_shader_attrib]);
+    }
+    _state_shader = _target_shader;
+  } else {
+    first_set = DS_shader_attrib + 1;
   }
 
   const ColorAttrib *target_color;
@@ -3448,6 +3455,11 @@ end_frame(Thread *current_thread, VkSemaphore signal_done) {
     _transfer_end_query_pool = VK_NULL_HANDLE;
   }
 #endif
+
+  // We must respecify these the next frame.
+  _current_shader = nullptr;
+  _current_sc = nullptr;
+  _state_shader = nullptr;
 
   end_command_buffer(std::move(_transfer_cmd));
 
