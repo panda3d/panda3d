@@ -35,6 +35,7 @@ SpirVTransformer(const InstructionStream &stream) {
         op.opcode != spv::OpMemoryModel &&
         op.opcode != spv::OpEntryPoint &&
         op.opcode != spv::OpExecutionMode &&
+        op.opcode != spv::OpExecutionModeId &&
         op.opcode != spv::OpString &&
         op.opcode != spv::OpSourceExtension &&
         op.opcode != spv::OpSource &&

@@ -12,6 +12,7 @@ private:
     DT_none,
     DT_type,
     DT_pointer_type,
+    DT_function_type,
     DT_variable,
     DT_constant,
     DT_ext_inst,
@@ -103,6 +104,7 @@ public:
 
     INLINE bool is_type() const;
     INLINE bool is_pointer_type() const;
+    INLINE bool is_function_type() const;
     INLINE bool is_variable() const;
     INLINE bool is_function_parameter() const;
     INLINE bool is_constant() const;
@@ -138,10 +140,12 @@ public:
   uint32_t find_type(const ShaderType *type);
   uint32_t find_pointer_type(const ShaderType *type, spv::StorageClass storage_class);
   uint32_t find_pointer_type(uint32_t type_id, spv::StorageClass storage_class);
+  uint32_t find_function_type();
   uint32_t find_null_constant(uint32_t type_id);
 
   void record_type(uint32_t id, const ShaderType *type);
   void record_pointer_type(uint32_t id, spv::StorageClass storage_class, uint32_t type_id);
+  void record_function_type(uint32_t id, uint32_t return_type_id, const uint32_t *params, uint32_t nparams);
   void record_variable(uint32_t id, uint32_t pointer_type_id, spv::StorageClass storage_class, uint32_t function_id=0);
   void record_function_parameter(uint32_t id, uint32_t type_id, uint32_t function_id);
   void record_constant(uint32_t id, uint32_t type_id, const uint32_t *words, uint32_t nwords);
@@ -165,6 +169,9 @@ private:
   // Reverse mapping from type to ID.  Excludes types with BuiltIn decoration.
   typedef pmap<const ShaderType *, uint32_t> TypeMap;
   mutable TypeMap _type_map;
+
+  // Holds the type id for a function taking no arguments and returning void.
+  uint32_t _void_function_type_id = 0;
 };
 
 #include "spirVResultDatabase.I"

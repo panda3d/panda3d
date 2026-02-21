@@ -59,7 +59,7 @@ process_preamble(std::vector<uint32_t> &stream) {
         ++i;
       }
 
-      const char *name = ((const char *)new_args.data()) + 2;
+      const char *name = (const char *)(new_args.data() + 2);
       if (transform_entry_point((spv::ExecutionModel)op.args[0], op.args[1], name,
                                 vars)) {
         new_args.insert(new_args.end(), vars.begin(), vars.end());
@@ -668,6 +668,31 @@ define_pointer_type(const ShaderType *type, spv::StorageClass storage_class) {
 }
 
 /**
+ *
+ */
+uint32_t SpirVTransformPass::
+define_function_type(const ShaderType *return_type) {
+  //TODO: right now we only handle the case of void with no parameters.
+  nassertr(return_type == nullptr, 0);
+
+  uint32_t function_type_id = _db.find_function_type();
+  if (function_type_id != 0 && is_defined(function_type_id)) {
+    return function_type_id;
+  }
+
+  uint32_t return_type_id = define_type(return_type);
+  if (function_type_id == 0) {
+    function_type_id = allocate_id();
+    _db.record_function_type(function_type_id, return_type_id, nullptr, 0);
+  }
+
+  add_definition(spv::OpTypeFunction,
+    {function_type_id, return_type_id});
+
+  return function_type_id;
+}
+
+/**
  * Ensures that the given type is defined by adding instructions to the
  * definitions section as necessary.
  */
@@ -683,7 +708,10 @@ define_type(const ShaderType *type) {
     _db.record_type(id, type);
   }
 
-  if (const ShaderType::Scalar *scalar_type = type->as_scalar()) {
+  if (type == nullptr) {
+    add_definition(spv::OpTypeVoid, {id});
+  }
+  else if (const ShaderType::Scalar *scalar_type = type->as_scalar()) {
     switch (scalar_type->get_scalar_type()) {
     case ShaderType::ST_float:
       add_definition(spv::OpTypeFloat, {id, 32});
@@ -1085,6 +1113,42 @@ add_instruction(spv::Op opcode, const uint32_t *args, uint16_t nargs) {
 }
 
 /**
+ * Defines a new entry point.
+ */
+void SpirVTransformPass::
+add_entry_point(spv::ExecutionModel model, uint32_t id, const std::string &name, pvector<uint32_t> &vars) {
+  auto it = _new_preamble.begin() + 5;
+  while (it != _new_preamble.end()) {
+    spv::Op opcode = (spv::Op)(*it & spv::OpCodeMask);
+    uint32_t wcount = *it >> spv::WordCountShift;
+    nassertd(wcount > 0) break;
+
+    if (opcode != spv::OpCapability &&
+        opcode != spv::OpExtension &&
+        opcode != spv::OpExtInstImport &&
+        opcode != spv::OpMemoryModel &&
+        opcode != spv::OpEntryPoint) {
+      break;
+    }
+
+    std::advance(it, wcount);
+  }
+
+  pvector<uint32_t> words(4 + name.size() / 4, 0u);
+  words[0] = ((words.size() + vars.size()) << spv::WordCountShift) | spv::OpEntryPoint;
+  words[1] = model;
+  words[2] = id;
+  memcpy((char *)&words[3], name.data(), name.size());
+
+  it = _new_preamble.insert(it, words.begin(), words.end());
+
+  if (!vars.empty()) {
+    std::advance(it, words.size());
+    _new_preamble.insert(it, vars.begin(), vars.end());
+  }
+}
+
+/**
  * Inserts an OpLoad from the given pointer id.
  */
 uint32_t SpirVTransformPass::
@@ -1422,10 +1486,29 @@ op_add(uint32_t left, uint32_t right) {
   const Definition &right_def = _db.get_definition(right);
   nassertr(left_def._type == right_def._type, 0);
 
+  ShaderType::ScalarType scalar_type;
+  if (const ShaderType::Scalar *scalar = left_def._type->as_scalar()) {
+    scalar_type = scalar->get_scalar_type();
+  }
+  else if (const ShaderType::Vector *vector = left_def._type->as_vector()) {
+    scalar_type = vector->get_scalar_type();
+  }
+  else {
+    nassertr(false, 0);
+    return 0u;
+  }
+
+  spv::Op opcode;
+  if (scalar_type == ShaderType::ST_float || scalar_type == ShaderType::ST_double) {
+    opcode = spv::OpFAdd;
+  } else {
+    opcode = spv::OpIAdd;
+  }
+
   uint32_t id = allocate_id();
 
   _new_functions.insert(_new_functions.end(),
-    {(5u << spv::WordCountShift) | spv::OpFAdd, left_def._type_id, id, left, right});
+    {(5u << spv::WordCountShift) | opcode, left_def._type_id, id, left, right});
 
   Definition &def = _db.modify_definition(id);
   def._type_id = left_def._type_id;
@@ -1451,10 +1534,29 @@ op_sub(uint32_t left, uint32_t right) {
   const Definition &right_def = _db.get_definition(right);
   nassertr(left_def._type == right_def._type, 0);
 
+  ShaderType::ScalarType scalar_type;
+  if (const ShaderType::Scalar *scalar = left_def._type->as_scalar()) {
+    scalar_type = scalar->get_scalar_type();
+  }
+  else if (const ShaderType::Vector *vector = left_def._type->as_vector()) {
+    scalar_type = vector->get_scalar_type();
+  }
+  else {
+    nassertr(false, 0);
+    return 0u;
+  }
+
+  spv::Op opcode;
+  if (scalar_type == ShaderType::ST_float || scalar_type == ShaderType::ST_double) {
+    opcode = spv::OpFSub;
+  } else {
+    opcode = spv::OpISub;
+  }
+
   uint32_t id = allocate_id();
 
   _new_functions.insert(_new_functions.end(),
-    {(5u << spv::WordCountShift) | spv::OpFSub, left_def._type_id, id, left, right});
+    {(5u << spv::WordCountShift) | opcode, left_def._type_id, id, left, right});
 
   Definition &def = _db.modify_definition(id);
   def._type_id = left_def._type_id;
@@ -1606,8 +1708,9 @@ op_multiply(uint32_t left, uint32_t right) {
       type = left_def._type;
       type_id = left_def._type_id;
     }
-    else if (const ShaderType::Vector *rvector = right_def._type->as_vector()) {
+    else if (right_def._type->as_vector() != nullptr) {
       nassert_raise("op_multiply for vector times vector is ambiguous");
+      return 0u;
     }
     else if (const ShaderType::Matrix *rmatrix = right_def._type->as_matrix()) {
       nassertr(lvector->get_scalar_type() == rmatrix->get_scalar_type(), 0);
@@ -1705,11 +1808,90 @@ op_image_sample(uint32_t image, uint32_t coord, uint32_t operands, const uint32_
 }
 
 /**
+ * Inserts an OpFunctionCall passing no arguments.
+ */
+uint32_t SpirVTransformPass::
+op_function_call(uint32_t func_id) {
+  uint32_t id = allocate_id();
+
+  Definition &func_def = _db.modify_definition(func_id);
+  nassertr(func_def.is_function(), 0);
+
+  const Definition &func_type_def = _db.get_definition(func_def._type_id);
+  nassertr(func_type_def.is_function_type(), 0);
+
+  uint32_t return_type_id = func_type_def._type_id;
+
+  _new_functions.insert(_new_functions.end(), {
+    (4u << spv::WordCountShift) | spv::OpFunctionCall,
+    return_type_id, id, func_id,
+  });
+
+  // Mark the function as used (even if its return value is unused - the
+  // function may have side effects).
+  func_def._flags |= SpirVResultDatabase::DF_used;
+
+  _db.record_temporary(id, return_type_id, func_id, _current_function_id);
+  mark_defined(id);
+  return id;
+}
+
+/**
+ * Inserts an OpFunction returning void and taking no arguments.
+ */
+uint32_t SpirVTransformPass::
+op_function(const ShaderType *return_type) {
+  uint32_t id = allocate_id();
+
+  uint32_t function_type_id = define_function_type(return_type);
+  uint32_t return_type_id = _db.get_definition(function_type_id)._type_id;
+  nassertr(return_type_id != 0, 0);
+
+  _new_functions.insert(_new_functions.end(), {
+    (5u << spv::WordCountShift) | spv::OpFunction,
+    return_type_id, id, 0, function_type_id,
+  });
+  _current_function_id = id;
+
+  _db.record_function(id, function_type_id);
+  mark_defined(id);
+  return id;
+}
+
+/**
+ * Inserts an OpLabel.
+ */
+uint32_t SpirVTransformPass::
+op_label() {
+  uint32_t id = allocate_id();
+  _new_functions.insert(_new_functions.end(), {(2u << spv::WordCountShift) | spv::OpLabel, id});
+  mark_defined(id);
+  return id;
+}
+
+/**
+ * Inserts an OpReturn.
+ */
+void SpirVTransformPass::
+op_return() {
+  _new_functions.insert(_new_functions.end(), {(1u << spv::WordCountShift) | spv::OpReturn});
+}
+
+/**
  * Inserts an OpKill.
  */
 void SpirVTransformPass::
 op_kill() {
   _new_functions.insert(_new_functions.end(), {(1u << spv::WordCountShift) | spv::OpKill});
+}
+
+/**
+ * Inserts an OpFunctionEnd.
+ */
+void SpirVTransformPass::
+op_function_end() {
+  _new_functions.insert(_new_functions.end(), {(1u << spv::WordCountShift) | spv::OpFunctionEnd});
+  _current_function_id = 0;
 }
 
 /**

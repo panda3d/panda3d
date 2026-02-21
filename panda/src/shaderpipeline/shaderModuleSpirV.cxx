@@ -64,6 +64,7 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, const CompilerOption
       break;
 
     case spv::OpExecutionMode:
+    case spv::OpExecutionModeId:
       if (op.nargs >= 3 && op.args[1] == spv::ExecutionModeInvocations) {
         if (op.args[2] != 1) {
           _used_caps |= C_geometry_shader_instancing;

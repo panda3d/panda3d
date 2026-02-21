@@ -33,8 +33,7 @@
 #include "sparseArray.h"
 #include "spirVTransformer.h"
 #include "spirVInjectAlphaTestPass.h"
-#include "spirVInjectAnimationPass.h"
-#include "spirVInjectInstancingPass.h"
+#include "spirVInjectVertexTransformPass.h"
 #include "spirVEmulateTextureQueriesPass.h"
 
 #define SPIRV_CROSS_EXCEPTIONS_TO_ASSERTIONS
@@ -130,6 +129,7 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
         // But that would mean that we might need to recompile the shader
         // based on the format, which sounds like a lot of effort to support
         // a rather obscure use case.
+        _animate_attrib_locations |= (1u << bind._id._location);
         _animate_point_attrib_locations |= (1u << bind._id._location);
       }
       else if (bind._name == InternalName::get_normal() ||
@@ -137,7 +137,7 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
                bind._name == InternalName::get_binormal() ||
                bind._name->get_parent() == InternalName::get_tangent() ||
                bind._name->get_parent() == InternalName::get_binormal()) {
-        _animate_vector_attrib_locations |= (1u << bind._id._location);
+        _animate_attrib_locations |= (1u << bind._id._location);
       }
       int num_locations = bind._id._type->get_num_interface_locations();
       next_unused_vertex_attrib_location =
@@ -201,7 +201,7 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
     // support for UBOs, since that allows us to efficiently pass a large
     // number of skinning matrices to the shader.
     if (glgsg->_supports_uniform_buffers && hardware_animated_vertices &&
-        (_animate_point_attrib_locations | _animate_vector_attrib_locations) != 0) {
+        _animate_attrib_locations != 0) {
 
       if (_transform_index_index < 0) {
         _transform_index_index = next_unused_vertex_attrib_location++;
@@ -228,6 +228,9 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
         }
       }
       _variant_mask |= VB_animation;
+    } else {
+      _animate_attrib_locations = 0;
+      _animate_point_attrib_locations = 0;
     }
 
     // Determine whether we may want to inject hardware instancing support into
@@ -2930,17 +2933,6 @@ create_shader(const ShaderModule *module, size_t mi,
     _glgsg->_glObjectLabel(GL_SHADER, handle, name.size(), name.data());
   }
 
-  pvector<SpirVInjectInstancingPass::MatrixVar> model_matrices;
-  if (stage == ShaderModule::Stage::VERTEX && (variant & VB_instancing) != 0) {
-    for (size_t pi = 0; pi < module->get_num_parameters(); ++pi) {
-      const ShaderModule::Variable &var = module->get_parameter(pi);
-      auto it = _model_matrices.find(var.name);
-      if (it != _model_matrices.end()) {
-        model_matrices.push_back({var.id, it->second.first, it->second.second});
-      }
-    }
-  }
-
   if (module->is_of_type(ShaderModuleSpirV::get_class_type())) {
     ShaderModuleSpirV *spv = (ShaderModuleSpirV *)module;
 
@@ -2961,6 +2953,29 @@ create_shader(const ShaderModule *module, size_t mi,
             binding_ids.resize(it->second + 1, 0);
           }
           binding_ids[it->second] = var.id;
+        }
+      }
+    }
+
+    // Set up this pass up here, which is common to both paths.
+    SpirVInjectVertexTransformPass vtransform_pass(false, false, 0, 0);
+    if (stage == ShaderModule::Stage::VERTEX && (variant & (VB_animation | VB_instancing)) != 0) {
+      if (variant & VB_animation) {
+        vtransform_pass.setup_animation(_animate_attrib_locations,
+                                        _animate_point_attrib_locations,
+                                        _transform_index_index,
+                                        _transform_weight_index);
+      }
+      if (variant & VB_instancing) {
+        // Set up instancing using a vertex attribute for the matrix.
+        vtransform_pass.setup_instancing_attrib(_instance_mat_index);
+
+        for (size_t i = 0; i < spv->get_num_parameters(); ++i) {
+          const ShaderModule::Variable &param = spv->get_parameter(i);
+          auto it = _model_matrices.find(param.name);
+          if (it != _model_matrices.end()) {
+            vtransform_pass.mark_model_matrix(param.id, it->second.first, it->second.second);
+          }
         }
       }
     }
@@ -2994,19 +3009,9 @@ create_shader(const ShaderModule *module, size_t mi,
         transformer.bind_descriptor_set(0, binding_ids);
       }
 
-      if (stage == ShaderModule::Stage::VERTEX && !model_matrices.empty()) {
-        // Implement hardware instancing.
-        transformer.run(SpirVInjectInstancingPass(model_matrices, _instance_mat_index));
-      }
-
-      if (stage == ShaderModule::Stage::VERTEX && (variant & VB_animation) != 0) {
-        // Implement hardware vertex animation.
-        SpirVInjectAnimationPass pass(_animate_point_attrib_locations,
-                                      _animate_vector_attrib_locations,
-                                      _transform_index_index,
-                                      _transform_weight_index,
-                                      0, 0);
-        transformer.run(pass);
+      if (stage == ShaderModule::Stage::VERTEX && (variant & (VB_animation | VB_instancing)) != 0) {
+        // Implement hardware animation and/or instancing.
+        transformer.run(std::move(vtransform_pass));
       }
 
       if (stage == ShaderModule::Stage::FRAGMENT &&
@@ -3019,14 +3024,15 @@ create_shader(const ShaderModule *module, size_t mi,
       if (!stream.validate()) {
         GLCAT.error()
           << "SPIR-V " << stage << " shader binary "
-          << spv->get_source_filename() << " did not pass validation after transforms\n";
+          << spv->get_source_filename() << " variant " << variant
+          << " did not pass validation after transforms\n";
         return 0;
       }
 
       if (GLCAT.is_spam()) {
         std::ostream &out = GLCAT.spam()
           << "SPIR-V " << stage << " binary " << spv->get_source_filename()
-          << " disassembly after final transforms:\n";
+          << " variant " << variant << " disassembly after final transforms:\n";
 
         stream.disassemble(out);
       }
@@ -3046,7 +3052,7 @@ create_shader(const ShaderModule *module, size_t mi,
       if (GLCAT.is_debug()) {
         GLCAT.debug()
           << "Transpiling SPIR-V " << stage << " shader "
-          << spv->get_source_filename() << "\n";
+          << spv->get_source_filename() << " variant " << variant << "\n";
       }
 
       spirv_cross::CompilerGLSL::Options options;
@@ -3093,32 +3099,22 @@ create_shader(const ShaderModule *module, size_t mi,
           size_var_ids = std::move(pass._size_var_ids);
         }
 
-        if (stage == ShaderModule::Stage::VERTEX && !model_matrices.empty()) {
-          // Implement hardware instancing.
-          SpirVInjectInstancingPass pass(model_matrices, _instance_mat_index);
-          transformer.run(pass);
+        if (stage == ShaderModule::Stage::VERTEX && (variant & (VB_animation | VB_instancing)) != 0) {
+          // Implement hardware animation and/or instancing.
+          transformer.run(vtransform_pass);
 
           // The ids of the uniforms may have changed, so copy those over
-          for (const auto &pair : pass._matrix_vars) {
+          for (const auto &pair : vtransform_pass._matrix_vars) {
             id_to_location[pair.second._id] = id_to_location[pair.first];
           }
-        }
-
-        if (stage == ShaderModule::Stage::VERTEX && (variant & VB_animation) != 0) {
-          // Implement hardware vertex animation.
-          SpirVInjectAnimationPass pass(_animate_point_attrib_locations,
-                                        _animate_vector_attrib_locations,
-                                        _transform_index_index,
-                                        _transform_weight_index,
-                                        0, 0);
-          transformer.run(pass);
         }
 
         stream = transformer.get_result();
         if (!stream.validate()) {
           GLCAT.error()
             << "SPIR-V " << stage << " shader binary "
-            << spv->get_source_filename() << " did not pass validation after transforms\n";
+            << spv->get_source_filename() << " variant " << variant
+            << " did not pass validation after transforms\n";
           return 0;
         }
       }

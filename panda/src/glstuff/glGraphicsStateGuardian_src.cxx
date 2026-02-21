@@ -9296,8 +9296,8 @@ do_issue_instances() {
     }
   }
 
-  if (GLCAT.is_debug()) {
-    GLCAT.debug()
+  if (GLCAT.is_spam()) {
+    GLCAT.spam()
       << "Updating instance buffer with " << num_instances << " instances\n";
   }
 
