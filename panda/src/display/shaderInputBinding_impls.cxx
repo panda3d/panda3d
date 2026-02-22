@@ -756,12 +756,12 @@ make_texture_matrix(const ShaderType *type, size_t index, bool inverse, bool tra
 
     uint32_t num_stages = 0;
     if (state.gsg->get_target_state()->get_attrib(ta) && state.gsg->get_target_state()->get_attrib(tma)) {
-      num_stages = std::min(num_elements, (uint32_t)ta->get_num_on_stages());
+      num_stages = std::min(num_elements, (uint32_t)std::max(0, ta->get_num_on_stages() - (int)index));
     }
 
-    uint32_t i = index;
+    uint32_t i = 0;
     for (; i < num_stages; ++i) {
-      ((LMatrix4f *)into)[i] = LCAST(float, tma->get_mat(ta->get_on_stage(i)));
+      ((LMatrix4f *)into)[i] = LCAST(float, tma->get_mat(ta->get_on_stage(index + i)));
       if (inverse) {
         ((LMatrix4f *)into)[i].invert_in_place();
       }
@@ -769,7 +769,7 @@ make_texture_matrix(const ShaderType *type, size_t index, bool inverse, bool tra
         ((LMatrix4f *)into)[i].transpose_in_place();
       }
     }
-    for (; i < index + num_elements; ++i) {
+    for (; i < num_elements; ++i) {
       ((LMatrix4f *)into)[i] = LCAST(float, LMatrix4::ident_mat());
     }
   });
@@ -2374,6 +2374,21 @@ make_binding_glsl(const InternalName *name, const ShaderType *type) {
     if (matrix_name.size() > 6 &&
         matrix_name.compare(matrix_name.size() - 6, 6, "Matrix") == 0) {
 
+      // Special case for p3d_TextureMatrix, which may be an array.
+      if (matrix_name == "TextureMatrix") {
+        // We may support 2-D texmats later, but let's make sure that people
+        // don't think they can just use a mat3 to get the 2-D version.
+        const ShaderType *element_type;
+        uint32_t num_elements;
+        type->unwrap_array(element_type, num_elements);
+
+        if (!expect_float_matrix(name, element_type, 4, 4)) {
+          return nullptr;
+        }
+
+        return make_texture_matrix(type, 0, inverse, transpose);
+      }
+
       if (!expect_float_matrix(name, type, 3, 4)) {
         return nullptr;
       }
@@ -2435,15 +2450,6 @@ make_binding_glsl(const InternalName *name, const ShaderType *type) {
           part[0] = Shader::SM_world_to_view;
           part[1] = Shader::SM_view_to_apiclip;
         }
-      }
-      else if (matrix_name == "TextureMatrix") {
-        // We may support 2-D texmats later, but let's make sure that people
-        // don't think they can just use a mat3 to get the 2-D version.
-        if (!expect_float_matrix(name, type, 4, 4)) {
-          return nullptr;
-        }
-
-        return make_texture_matrix(type, 0, inverse, transpose);
       }
       else {
         return report_parameter_error(name, type, "unrecognized matrix name");

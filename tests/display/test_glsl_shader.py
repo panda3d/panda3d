@@ -1440,6 +1440,78 @@ def test_glsl_state_texture(env):
     env.run_glsl(code, preamble, state=np.get_state())
 
 
+def test_glsl_state_texture_matrix(env):
+    np = core.NodePath("test")
+
+    mat1 = core.LMatrix4(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)
+    ts1 = core.TextureStage("ts1")
+    ts1.sort = 10
+    np.set_texture(ts1, core.Texture("1"))
+    np.set_tex_transform(ts1, core.TransformState.make_mat(mat1))
+
+    mat2 = core.LMatrix4(-1, -2, -3, -4, -5, -6, -7, -8, -9, -10, -11, -12, -13, -14, -15, -16)
+    ts2 = core.TextureStage("ts2")
+    ts2.sort = 20
+    np.set_texture(ts2, core.Texture("2"))
+    np.set_tex_transform(ts2, core.TransformState.make_mat(mat2))
+
+    preamble = """
+    uniform mat4 p3d_TextureMatrix;
+    """
+    code = """
+    assert(p3d_TextureMatrix[0] == vec4(1, 2, 3, 4));
+    assert(p3d_TextureMatrix[1] == vec4(5, 6, 7, 8));
+    assert(p3d_TextureMatrix[2] == vec4(9, 10, 11, 12));
+    assert(p3d_TextureMatrix[3] == vec4(13, 14, 15, 16));
+    """
+
+    env.run_glsl(code, preamble, state=np.get_state())
+
+    preamble = """
+    uniform mat4 p3d_TextureMatrix[3];
+    """
+    code = """
+    assert(p3d_TextureMatrix[0][0] == vec4(1, 2, 3, 4));
+    assert(p3d_TextureMatrix[0][1] == vec4(5, 6, 7, 8));
+    assert(p3d_TextureMatrix[0][2] == vec4(9, 10, 11, 12));
+    assert(p3d_TextureMatrix[0][3] == vec4(13, 14, 15, 16));
+
+    assert(p3d_TextureMatrix[1][0] == -vec4(1, 2, 3, 4));
+    assert(p3d_TextureMatrix[1][1] == -vec4(5, 6, 7, 8));
+    assert(p3d_TextureMatrix[1][2] == -vec4(9, 10, 11, 12));
+    assert(p3d_TextureMatrix[1][3] == -vec4(13, 14, 15, 16));
+
+    assert(p3d_TextureMatrix[2][0] == vec4(1, 0, 0, 0));
+    assert(p3d_TextureMatrix[2][1] == vec4(0, 1, 0, 0));
+    assert(p3d_TextureMatrix[2][2] == vec4(0, 0, 1, 0));
+    assert(p3d_TextureMatrix[2][3] == vec4(0, 0, 0, 1));
+    """
+
+    env.run_glsl(code, preamble, state=np.get_state())
+
+    preamble = """
+    uniform mat4 p3d_TextureMatrixTranspose[3];
+    """
+    code = """
+    assert(p3d_TextureMatrixTranspose[0][0] == vec4(1, 5, 9, 13));
+    assert(p3d_TextureMatrixTranspose[0][1] == vec4(2, 6, 10, 14));
+    assert(p3d_TextureMatrixTranspose[0][2] == vec4(3, 7, 11, 15));
+    assert(p3d_TextureMatrixTranspose[0][3] == vec4(4, 8, 12, 16));
+
+    assert(p3d_TextureMatrixTranspose[1][0] == -vec4(1, 5, 9, 13));
+    assert(p3d_TextureMatrixTranspose[1][1] == -vec4(2, 6, 10, 14));
+    assert(p3d_TextureMatrixTranspose[1][2] == -vec4(3, 7, 11, 15));
+    assert(p3d_TextureMatrixTranspose[1][3] == -vec4(4, 8, 12, 16));
+
+    assert(p3d_TextureMatrixTranspose[2][0] == vec4(1, 0, 0, 0));
+    assert(p3d_TextureMatrixTranspose[2][1] == vec4(0, 1, 0, 0));
+    assert(p3d_TextureMatrixTranspose[2][2] == vec4(0, 0, 1, 0));
+    assert(p3d_TextureMatrixTranspose[2][3] == vec4(0, 0, 0, 1));
+    """
+
+    env.run_glsl(code, preamble, state=np.get_state())
+
+
 def test_glsl_frame_number(env):
     clock = core.ClockObject.get_global_clock()
     old_frame_count = clock.get_frame_count()
