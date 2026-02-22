@@ -13729,6 +13729,10 @@ update_standard_texture_bindings() {
   }
 #endif // NDEBUG
 
+  if (!has_fixed_function_pipeline()) {
+    return;
+  }
+
   int num_stages = _target_texture->get_num_on_ff_stages();
 
 #ifndef NDEBUG
