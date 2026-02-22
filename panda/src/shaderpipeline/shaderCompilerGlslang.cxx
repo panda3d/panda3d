@@ -60,13 +60,32 @@ skip_ws_comments(char *&p, char *end, bool allow_newline) {
       // Possible comment.
       if (*(p + 1) == '/') {
         // Skip till end of line.
-        while (p < end && *p != '\n') ++p;
+        p += 2;
+        while (p < end && *p != '\n') {
+          if (*p == '\\') {
+            // Handle escaped newlines, which continue comment on next line
+            if (p + 1 < end && *(p + 1) == '\n') {
+              p += 2;
+              ++num_lines;
+              continue;
+            }
+            if (p + 2 < end && *(p + 1) == '\r' && *(p + 2) == '\n') {
+              p += 3;
+              ++num_lines;
+              continue;
+            }
+          }
+          ++p;
+        }
         continue;
       }
       if (*(p + 1) == '*') {
         // Skip till closing */.
         p += 2;
         while (p + 1 < end && (*p != '*' || *(p + 1) != '/')) {
+          if (*p == '\n') {
+            ++num_lines;
+          }
           ++p;
         }
         if (p + 1 >= end) {
@@ -87,7 +106,8 @@ skip_ws_comments(char *&p, char *end, bool allow_newline) {
  * Scans the given character stream for #pragma once.  It may be preceded by
  * whitespace or comments.  If found, comment out the line and return true.
  */
-bool scan_pragma_once(char *p, size_t size) {
+static bool
+scan_pragma_once(char *p, size_t size) {
   char *end = p + size;
 
   // Skip UTF-8 BOM if present
@@ -106,7 +126,7 @@ bool scan_pragma_once(char *p, size_t size) {
     return false;
   }
   p += 6;
-  if (p >= end || *p == '\n' || *p == '\r' || *p == 'o') {
+  if (p >= end || *p == 'o') { // reject "#pragmaonce"
     return false;
   }
   nlines += skip_ws_comments(p, end, false);
@@ -678,8 +698,7 @@ preprocess_glsl(vector_uchar &code, int &glsl_version, const Filename &source_fi
             warned = true;
             shader_cat.warning(false)
               << "WARNING: " << source_filename << ":" << lineno
-              << ": #pragma include is deprecated, use the "
-                 "GL_GOOGLE_include_directive extension instead.\n";
+              << ": #pragma include is deprecated, use #include instead.\n";
           }
 
           p += 7;
