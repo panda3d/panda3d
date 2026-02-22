@@ -317,6 +317,7 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
       shader.setEnvInput(glslang::EShSource::EShSourceGlsl, (EShLanguage)stage, glslang::EShClient::EShClientOpenGL, 450);
 
       preamble_stream << "#extension GL_GOOGLE_cpp_style_line_directive : require\n";
+      preamble_stream << "#extension GL_GOOGLE_include_directive : require\n";
     }
     options.write_defines(preamble_stream);
     preamble = std::move(preamble_stream).str();
