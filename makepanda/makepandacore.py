@@ -963,13 +963,16 @@ def LoadDependencyCache():
         icache = None
 
     if icache is not None:
-        ver = pickle.load(icache)
-        if ver == DCACHE_VERSION:
-            CXXINCLUDECACHE = pickle.load(icache)
-            BUILTFROMCACHE = pickle.load(icache)
-            icache.close()
-        else:
-            print("Cannot load dependency cache, version is too old!")
+        try:
+            ver = pickle.load(icache)
+            if ver == DCACHE_VERSION:
+                CXXINCLUDECACHE = pickle.load(icache)
+                BUILTFROMCACHE = pickle.load(icache)
+                icache.close()
+            else:
+                print("Cannot load dependency cache", icache, ": version is too old !")
+        except:
+            print("Cannot load dependency cache", icache, ": file corrupt !")
 
 ########################################################################
 ##
