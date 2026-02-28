@@ -38,6 +38,10 @@ public:
   INLINE Optimize get_optimize() const;
   INLINE void set_optimize(Optimize opt);
 
+  INLINE bool has_entry_point() const;
+  INLINE const std::string &get_entry_point() const;
+  INLINE void set_entry_point(const std::string &entry_point);
+
   INLINE bool has_define(const std::string &key) const;
   INLINE std::string get_define(const std::string &key) const;
 
@@ -47,6 +51,7 @@ PUBLISHED:
 
   MAKE_PROPERTY(suppress_log, get_suppress_log, set_suppress_log);
   MAKE_PROPERTY(optimize, get_optimize, set_optimize);
+  MAKE_PROPERTY(entry_point, get_entry_point, set_entry_point);
   MAKE_MAP_PROPERTY(defines, has_define, get_define, define, undef);
 
   void output(std::ostream &out) const;
@@ -59,6 +64,7 @@ private:
 
   int _flags = 0;
   Optimize _optimize = Optimize::PERFORMANCE;
+  std::string _entry_point;
 
   typedef pmap<std::string, std::string> Defines;
   Defines _defines;

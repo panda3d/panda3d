@@ -124,6 +124,30 @@ def test_glsl_flat_decoration():
     assert check_flat_decoration(shader.get_module(core.Shader.Stage.FRAGMENT))
 
 
+def test_glsl_entry_point():
+    reg = core.ShaderCompilerRegistry.get_global_ptr()
+    glsl = reg.get_compiler_for_language(core.Shader.SL_GLSL)
+
+    code = b"""#version 330
+
+    out vec4 color;
+
+    void custom_main() {
+      color = vec4(1, 0, 0, 1);
+    }
+    """
+
+    # Must fail, no main() defined
+    module = glsl.compile_now(core.Shader.Stage.FRAGMENT, core.StringStream(code), "test.glsl")
+    assert module is None
+
+    # Must succeed after we specify proper entry point name
+    options = core.CompilerOptions()
+    options.entry_point = "custom_main"
+    module = glsl.compile_now(core.Shader.Stage.FRAGMENT, core.StringStream(code), "test.glsl", options)
+    assert module is not None
+
+
 def test_glsl_sampler(env):
     tex1 = core.Texture("tex1-ubyte-rgba8")
     tex1.setup_1d_texture(1, core.Texture.T_unsigned_byte, core.Texture.F_rgba8)

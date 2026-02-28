@@ -129,6 +129,10 @@ compile_now(Stage stage, std::istream &in, const Filename &fullpath,
     }
   }
 
+  if (options.has_entry_point() && options.get_entry_point() != "main") {
+    code = code + "\nvoid main() { " + options.get_entry_point() + "(); }\n";
+  }
+
   PT(ShaderModuleGlsl) module = new ShaderModuleGlsl(stage, std::move(code), state.version);
   module->_included_files = std::move(state.included_files);
   module->_used_caps |= state.required_caps;

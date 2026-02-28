@@ -375,12 +375,6 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
     return preprocessor.compile_now(stage, stream, fullpath, options, output_log, record);
   }
 
-  static bool is_initialized = false;
-  if (!is_initialized) {
-    ShInitialize();
-    is_initialized = true;
-  }
-
   EShMessages messages = (EShMessages)(EShMsgDefault | EShMsgSpvRules);
   EShLanguage language;
   switch (stage) {
@@ -407,6 +401,10 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
       << "glslang compiler does not support " << stage << " shaders.\n";
     return nullptr;
   }
+
+  // This is called once, at process level.
+  static bool is_initialized = glslang::InitializeProcess();
+  nassertr(is_initialized, nullptr);
 
   glslang::TShader shader(language);
 
@@ -439,7 +437,9 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
           << "Cg does not support " << stage << " shaders.\n";
         return nullptr;
       }
-      shader.setSourceEntryPoint(source_entry_point);
+      if (!options.has_entry_point()) {
+        shader.setSourceEntryPoint(source_entry_point);
+      }
 
       // Generate a special preamble to define some functions that Cg defines but
       // HLSL doesn't.  This is sourced from cg_preamble.hlsl.
@@ -464,6 +464,10 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
 
   shader.setEnvClient(glslang::EShClient::EShClientOpenGL, glslang::EShTargetOpenGL_450);
   shader.setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_0);
+
+  if (options.has_entry_point()) {
+    shader.setSourceEntryPoint(options.get_entry_point().c_str());
+  }
 
   // This will squelch the warnings about missing bindings and locations, since
   // we can assign those ourselves.

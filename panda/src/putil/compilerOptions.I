@@ -50,6 +50,31 @@ set_optimize(CompilerOptions::Optimize opt) {
 }
 
 /**
+ * Returns true if a custom entry point was requested.
+ */
+INLINE bool CompilerOptions::
+has_entry_point() const {
+  return !_entry_point.empty();
+}
+
+/**
+ * Returns the name of the entry point.
+ */
+INLINE const std::string &CompilerOptions::
+get_entry_point() const {
+  return _entry_point;
+}
+
+/**
+ * Sets the name of the entry point.  If this is set to an empty string, a
+ * language-specific default is used.
+ */
+INLINE void CompilerOptions::
+set_entry_point(const std::string &entry_point) {
+  _entry_point = entry_point;
+}
+
+/**
  *
  */
 INLINE bool CompilerOptions::
