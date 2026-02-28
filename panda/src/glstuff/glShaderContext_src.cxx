@@ -47,48 +47,56 @@ using std::max;
 using std::min;
 using std::string;
 
-// Inject alpha test into generated shaders.
-// This is a temporary hack; a better solution will follow soon.
-class Compiler final : public spirv_cross::CompilerGLSL {
-public:
-  explicit Compiler(std::vector<uint32_t> spirv_,
-                    RenderAttrib::PandaCompareFunc alpha_test_mode)
-    : CompilerGLSL(std::move(spirv_)),
-      _alpha_test_mode(alpha_test_mode) {
-  }
+// Post-ambles for GLSL shaders that implement alpha testing.
+static const char *const alpha_test_main_funcs[] = {
+  // M_none
+  "void main() { _main(); }\n",
 
-private:
-  virtual void emit_fixup() override {
-    switch (_alpha_test_mode) {
-    case RenderAttrib::M_never:
-      statement("discard;");
-      break;
-    case RenderAttrib::M_less:
-      statement("if (o0.a >= aref) discard;");
-      break;
-    case RenderAttrib::M_equal:
-      statement("if (o0.a != aref) discard;");
-      break;
-    case RenderAttrib::M_less_equal:
-      statement("if (o0.a > aref) discard;");
-      break;
-    case RenderAttrib::M_greater:
-      statement("if (o0.a <= aref) discard;");
-      break;
-    case RenderAttrib::M_not_equal:
-      statement("if (o0.a == aref) discard;");
-      break;
-    case RenderAttrib::M_greater_equal:
-      statement("if (o0.a < aref) discard;");
-      break;
-    case RenderAttrib::M_none:
-    case RenderAttrib::M_always:
-      break;
-    }
-    CompilerGLSL::emit_fixup();
-  }
+  // M_never
+  // Still call the main function, it may write to an SSBO or something
+  "void main() {\n"
+  "  _main();\n"
+  "  discard;\n"
+  "}\n",
 
-  RenderAttrib::PandaCompareFunc _alpha_test_mode;
+  // M_less
+  "void main() {\n"
+  "  _main();\n"
+  "  if (o0.a >= aref) discard;\n"
+  "}\n",
+
+  // M_equal
+  "void main() {\n"
+  "  _main();\n"
+  "  if (o0.a != aref) discard;\n"
+  "}\n",
+
+  // M_less_equal
+  "void main() {\n"
+  "  _main();\n"
+  "  if (o0.a > aref) discard;\n"
+  "}\n",
+
+  // M_greater
+  "void main() {\n"
+  "  _main();\n"
+  "  if (o0.a <= aref) discard;\n"
+  "}\n",
+
+  // M_not_equal
+  "void main() {\n"
+  "  _main();\n"
+  "  if (o0.a == aref) discard;\n"
+  "}\n",
+
+  // M_greater_equal
+  "void main() {\n"
+  "  _main();\n"
+  "  if (o0.a < aref) discard;\n"
+  "}\n",
+
+  // M_always never goes here, it gets masked off, but adding it just in case.
+  "void main() { _main(); }\n",
 };
 
 TypeHandle CLP(ShaderContext)::_type_handle;
@@ -2880,46 +2888,38 @@ GLuint CLP(ShaderContext)::
 create_shader(const ShaderModule *module, size_t mi,
               const Shader::ModuleSpecConstants &consts, int variant) {
   ShaderModule::Stage stage = module->get_stage();
-  spv::ExecutionModel model;
-  RenderAttrib::PandaCompareFunc alpha_test_mode = RenderAttrib::M_none;
 
   GLuint handle = 0;
   switch (stage) {
   case ShaderModule::Stage::VERTEX:
-    model = spv::ExecutionModelVertex;
     handle = _glgsg->_glCreateShader(GL_VERTEX_SHADER);
     break;
   case ShaderModule::Stage::FRAGMENT:
-    model = spv::ExecutionModelFragment;
     handle = _glgsg->_glCreateShader(GL_FRAGMENT_SHADER);
-    alpha_test_mode = (RenderAttrib::PandaCompareFunc)(variant & VB_alpha_test_mode_mask);
     break;
   case ShaderModule::Stage::GEOMETRY:
-    model = spv::ExecutionModelGeometry;
     if (_glgsg->get_supports_geometry_shaders()) {
       handle = _glgsg->_glCreateShader(GL_GEOMETRY_SHADER);
     }
     break;
   case ShaderModule::Stage::TESS_CONTROL:
-    model = spv::ExecutionModelTessellationControl;
     if (_glgsg->get_supports_tessellation_shaders()) {
       handle = _glgsg->_glCreateShader(GL_TESS_CONTROL_SHADER);
     }
     break;
   case ShaderModule::Stage::TESS_EVALUATION:
-    model = spv::ExecutionModelTessellationEvaluation;
     if (_glgsg->get_supports_tessellation_shaders()) {
       handle = _glgsg->_glCreateShader(GL_TESS_EVALUATION_SHADER);
     }
     break;
   case ShaderModule::Stage::COMPUTE:
-    model = spv::ExecutionModelGLCompute;
     if (_glgsg->get_supports_compute_shaders()) {
       handle = _glgsg->_glCreateShader(GL_COMPUTE_SHADER);
     }
     break;
   default:
-    break;
+    GLCAT.error() << "Unsupported shader stage " << stage << ".\n";
+    return 0;
   }
   if (!handle) {
     GLCAT.error()
@@ -2957,89 +2957,17 @@ create_shader(const ShaderModule *module, size_t mi,
       }
     }
 
-    // Set up this pass up here, which is common to both paths.
-    SpirVInjectVertexTransformPass vtransform_pass(false, false, 0, 0);
-    if (stage == ShaderModule::Stage::VERTEX && (variant & (VB_animation | VB_instancing)) != 0) {
-      if (variant & VB_animation) {
-        vtransform_pass.setup_animation(_animate_attrib_locations,
-                                        _animate_point_attrib_locations,
-                                        _transform_index_index,
-                                        _transform_weight_index);
-      }
-      if (variant & VB_instancing) {
-        // Set up instancing using a vertex attribute for the matrix.
-        vtransform_pass.setup_instancing_attrib(_instance_mat_index);
-
-        for (size_t i = 0; i < spv->get_num_parameters(); ++i) {
-          const ShaderModule::Variable &param = spv->get_parameter(i);
-          auto it = _model_matrices.find(param.name);
-          if (it != _model_matrices.end()) {
-            vtransform_pass.mark_model_matrix(param.id, it->second.first, it->second.second);
-          }
-        }
-      }
-    }
-
 #ifndef OPENGLES
     if (_glgsg->_supports_spir_v) {
       // Load a SPIR-V binary.
-      if (GLCAT.is_debug()) {
-        GLCAT.debug()
-          << "Compiling SPIR-V " << stage << " shader binary "
-          << spv->get_source_filename() << "\n";
-      }
-
-      // Make a transformer so we can do some transformations such as assigning
-      // locations.
-      SpirVTransformer transformer(spv->_instructions);
-
-      if (!id_to_location.empty()) {
-        transformer.assign_locations(id_to_location);
-
-        if (_glgsg->_gl_vendor == "NVIDIA Corporation") {
-          // Sigh... NVIDIA driver gives an error if the SPIR-V ID doesn't match
-          // for variables with overlapping locations if the OpName is stripped.
-          // We'll have to just insert OpNames for every parameter.
-          // https://forums.developer.nvidia.com/t/gl-arb-gl-spirv-bug-duplicate-location-link-error-if-opname-is-stripped-from-spir-v-shader/128491
-          // Bug was found with 446.14 drivers on Windows 10 64-bit.
-          transformer.assign_procedural_names("p", id_to_location);
-        }
-      }
-      if (!binding_ids.empty()) {
-        transformer.bind_descriptor_set(0, binding_ids);
-      }
-
-      if (stage == ShaderModule::Stage::VERTEX && (variant & (VB_animation | VB_instancing)) != 0) {
-        // Implement hardware animation and/or instancing.
-        transformer.run(std::move(vtransform_pass));
-      }
-
-      if (stage == ShaderModule::Stage::FRAGMENT &&
-          alpha_test_mode != RenderAttrib::M_none) {
-        // Assign location 0 to the alpha ref value.
-        transformer.run(SpirVInjectAlphaTestPass((SpirVInjectAlphaTestPass::Mode)alpha_test_mode, 0));
-      }
-
-      ShaderModuleSpirV::InstructionStream stream = transformer.get_result();
-      if (!stream.validate()) {
-        GLCAT.error()
-          << "SPIR-V " << stage << " shader binary "
-          << spv->get_source_filename() << " variant " << variant
-          << " did not pass validation after transforms\n";
+      std::vector<uint32_t> code =
+        compile_spirv_to_spirv(spv, mi, id_to_location, binding_ids, variant);
+      if (code.empty()) {
         return 0;
       }
 
-      if (GLCAT.is_spam()) {
-        std::ostream &out = GLCAT.spam()
-          << "SPIR-V " << stage << " binary " << spv->get_source_filename()
-          << " variant " << variant << " disassembly after final transforms:\n";
-
-        stream.disassemble(out);
-      }
-
       _glgsg->_glShaderBinary(1, &handle, GL_SHADER_BINARY_FORMAT_SPIR_V_ARB,
-                              (const char *)stream.get_data(),
-                              stream.get_data_size() * sizeof(uint32_t));
+                              (const char *)&code[0], code.size() * sizeof(uint32_t));
 
       _glgsg->_glSpecializeShader(handle, "main", consts._indices.size(),
                                   (GLuint *)consts._indices.data(),
@@ -3049,235 +2977,36 @@ create_shader(const ShaderModule *module, size_t mi,
 #endif  // !OPENGLES
     {
       // Compile to GLSL using SPIRV-Cross.
-      if (GLCAT.is_debug()) {
-        GLCAT.debug()
-          << "Transpiling SPIR-V " << stage << " shader "
-          << spv->get_source_filename() << " variant " << variant << "\n";
-      }
+      std::string code;
+      const char *code_p[2];
 
-      spirv_cross::CompilerGLSL::Options options;
-      options.version = _glgsg->_glsl_version;
-#ifdef OPENGLES
-      options.es = true;
-#else
-      options.es = _glgsg->_glsl_version == 100
-                || _glgsg->_glsl_version == 300
-                || _glgsg->_glsl_version == 310
-                || _glgsg->_glsl_version == 320;
-#endif
-      options.vertex.support_nonzero_base_instance = false;
-      options.enable_420pack_extension = false;
+      bool do_alpha_test = (stage == Shader::Stage::FRAGMENT && (_variant_mask & VB_alpha_test_mode_mask) != 0);
 
-      // We want to use explicit bindings for SSBOs, which requires 420 or
-      // the 420pack extension.  Presumably we have it if we support SSBOs.
-      if (!binding_ids.empty() && !options.es && options.version < 420) {
-        options.enable_420pack_extension = true;
-      }
-
-      if (options.version < 130) {
-        // Emulate floating-point attributes.
-        for (VertexAttrib &attrib : _vertex_attribs) {
-          attrib._scalar_type = ShaderType::ST_float;
-        }
-      }
-
-      ShaderModuleSpirV::InstructionStream stream = spv->_instructions;
-
-      // Do we need to emulate certain caps, like texture queries?
-      pmap<SpirVTransformPass::AccessChain, uint32_t> size_var_ids;
-      uint64_t supported_caps = _glgsg->get_supported_shader_capabilities();
-      uint64_t emulate_caps = spv->_emulatable_caps & ~supported_caps;
-      if (emulate_caps != 0u ||
-          (stage == ShaderModule::Stage::VERTEX && (variant & (VB_instancing | VB_animation)) != 0)) {
-        _emulated_caps |= emulate_caps;
-
-        SpirVTransformer transformer(spv->_instructions);
-
-        if (emulate_caps != 0u) {
-          SpirVEmulateTextureQueriesPass pass(emulate_caps);
-          transformer.run(pass);
-          size_var_ids = std::move(pass._size_var_ids);
-        }
-
-        if (stage == ShaderModule::Stage::VERTEX && (variant & (VB_animation | VB_instancing)) != 0) {
-          // Implement hardware animation and/or instancing.
-          transformer.run(vtransform_pass);
-
-          // The ids of the uniforms may have changed, so copy those over
-          for (const auto &pair : vtransform_pass._matrix_vars) {
-            id_to_location[pair.second._id] = id_to_location[pair.first];
-          }
-        }
-
-        stream = transformer.get_result();
-        if (!stream.validate()) {
-          GLCAT.error()
-            << "SPIR-V " << stage << " shader binary "
-            << spv->get_source_filename() << " variant " << variant
-            << " did not pass validation after transforms\n";
+      if (stage == Shader::Stage::FRAGMENT && !_fragment_shader_code.empty()) {
+        // We already transpiled this earlier.
+        code_p[0] = _fragment_shader_code.c_str();
+      } else {
+        code = compile_spirv_to_glsl(spv, mi, id_to_location, binding_ids, variant & ~VB_alpha_test_mode_mask);
+        if (code.empty()) {
           return 0;
         }
-      }
 
-      Compiler compiler(std::move(stream._words), alpha_test_mode);
-      compiler.set_common_options(options);
-      compiler.set_entry_point("main", model);
-
-      if (alpha_test_mode != RenderAttrib::M_none &&
-          alpha_test_mode != RenderAttrib::M_always &&
-          alpha_test_mode != RenderAttrib::M_never) {
-        if ((!options.es && options.version < 430) ||
-            (options.es && options.version < 310)) {
-          compiler.add_header_line("uniform float aref;");
-          _remap_locations = true;
+        if (do_alpha_test) {
+          // Cache this for later use.
+          _fragment_shader_code = std::move(code);
+          code_p[0] = _fragment_shader_code.c_str();
         } else {
-          compiler.add_header_line("layout(location=0) uniform float aref;");
+          code_p[0] = code.c_str();
         }
       }
 
-      // At this time, SPIRV-Cross doesn't always add these automatically.
-      uint64_t used_caps = module->get_used_capabilities();
-#ifndef OPENGLES
-      if (!options.es) {
-        if (options.version < 140 && (used_caps & Shader::C_instance_id) != 0) {
-          if (_glgsg->has_extension("GL_ARB_draw_instanced")) {
-            compiler.require_extension("GL_ARB_draw_instanced");
-          } else {
-            compiler.require_extension("GL_EXT_gpu_shader4");
-          }
-        }
-        if (options.version < 130 && (used_caps & Shader::C_unified_model) != 0) {
-          compiler.require_extension("GL_EXT_gpu_shader4");
-        }
-        if (options.version < 400 && (used_caps & Shader::C_dynamic_indexing) != 0) {
-          compiler.require_extension("GL_ARB_gpu_shader5");
-        }
-        if (options.version < 430 && (used_caps & Shader::C_storage_buffer) != 0) {
-          compiler.require_extension("GL_ARB_shader_storage_buffer_object");
-        }
+      if (do_alpha_test) {
+        // Tack on the main() definition containing the alpha test.
+        code_p[1] = alpha_test_main_funcs[variant & VB_alpha_test_mode_mask];
+        _glgsg->_glShaderSource(handle, 2, code_p, nullptr);
+      } else {
+        _glgsg->_glShaderSource(handle, 1, code_p, nullptr);
       }
-      else
-#endif
-      {
-        if (options.version < 300 && (used_caps & Shader::C_non_square_matrices) != 0) {
-          compiler.require_extension("GL_NV_non_square_matrices");
-        }
-        if (options.version < 320 && (used_caps & Shader::C_dynamic_indexing) != 0) {
-          if (_glgsg->has_extension("GL_OES_gpu_shader5")) {
-            compiler.require_extension("GL_OES_gpu_shader5");
-          } else {
-            compiler.require_extension("GL_EXT_gpu_shader5");
-          }
-        }
-      }
-
-      // Assign names based on locations.  This is important to make sure that
-      // uniforms shared between shader stages have the same name, or the
-      // compiler may start to complain about overlapping locations.
-      char buf[1024];
-      for (spirv_cross::VariableID id : compiler.get_active_interface_variables()) {
-        uint32_t loc = compiler.get_decoration(id, spv::DecorationLocation);
-        spv::StorageClass sc = compiler.get_storage_class(id);
-
-        if (sc == spv::StorageClassUniformConstant) {
-          auto it = id_to_location.find(id);
-          if (it != id_to_location.end()) {
-            int location = it->second;
-            sprintf(buf, "p%u", location);
-            compiler.set_name(id, buf);
-            compiler.set_decoration(id, spv::DecorationLocation, location);
-
-            // Older versions of OpenGL (ES) do not support explicit uniform
-            // locations, and we need to query the locations later.
-            if ((!options.es && options.version < 430) ||
-                (options.es && options.version < 310)) {
-              _remap_locations = true;
-            }
-          }
-        }
-        else if (sc == spv::StorageClassInput) {
-          if (stage == ShaderModule::Stage::VERTEX) {
-            // Explicit attrib locations were added in GLSL 3.30, but we can
-            // override the binding in older versions using the API.
-            if (options.version < 330) {
-              _bind_attrib_locations.set_bit(loc);
-            }
-            sprintf(buf, "a%u", loc);
-          } else {
-            // For all other stages, it's just important that the names match,
-            // so we assign the names based on the location and successive
-            // numbering of the shaders.
-            sprintf(buf, "i%u_%u", (unsigned int)mi, loc);
-          }
-          compiler.set_name(id, buf);
-        }
-        else if (sc == spv::StorageClassOutput) {
-          if (stage == ShaderModule::Stage::FRAGMENT) {
-            // Output of the last stage, same story as above.
-            sprintf(buf, "o%u", loc);
-            if (options.version < 330) {
-              _bind_frag_data_locations.set_bit(loc);
-            }
-          } else {
-            // Match the name of the next stage.
-            sprintf(buf, "i%u_%u", (unsigned int)mi + 1u, loc);
-          }
-          compiler.set_name(id, buf);
-        }
-      }
-
-      // Assign names to emulated texture/image size variables.
-      for (auto &item : size_var_ids) {
-        const SpirVTransformPass::AccessChain &chain = item.first;
-        auto it = id_to_location.find(chain._var_id);
-        if (it != id_to_location.end()) {
-          int location = it->second;
-          size_t size = sprintf(buf, "p%u", location);
-          for (size_t i = 0; i < chain.size(); ++i) {
-            size += sprintf(buf + size, "_%d", chain[i]);
-          }
-          strcpy(buf + size, "_s");
-          compiler.set_name(item.second, buf);
-        }
-      }
-
-      // For all uniform constant structs, we need to ensure we have procedural
-      // names like _m0, _m1, _m2, etc.  Furthermore, we need to assign each
-      // struct a name that is guaranteed to be the same between stages, since
-      // some drivers will complain if the struct name is different for the
-      // same uniform between different stages.
-      for (auto &item : spv->_uniform_struct_types) {
-        std::ostringstream str;
-        item.second->output_signature(str);
-        compiler.set_name(item.first, str.str());
-
-        for (size_t i = 0; i < item.second->get_num_members(); ++i) {
-          sprintf(buf, "m%d", (int)i);
-          compiler.set_member_name(item.first, i, buf);
-        }
-      }
-
-      // Add bindings for the shader storage buffers.
-      for (size_t binding = 0; binding < binding_ids.size(); ++binding) {
-        uint32_t id = binding_ids[binding];
-        if (id > 0) {
-          compiler.set_decoration(id, spv::DecorationBinding, binding);
-        }
-      }
-
-      // Optimize out unused variables.
-      compiler.set_enabled_interface_variables(compiler.get_active_interface_variables());
-
-      std::string text = compiler.compile();
-
-      if (GLCAT.is_debug()) {
-        GLCAT.debug()
-          << "SPIRV-Cross compilation resulted in GLSL shader:\n"
-          << text << "\n";
-      }
-
-      const char *text_str = text.c_str();
-      _glgsg->_glShaderSource(handle, 1, &text_str, nullptr);
     }
   }
   else if (module->is_of_type(ShaderModuleGlsl::get_class_type())) {
@@ -3299,6 +3028,384 @@ create_shader(const ShaderModule *module, size_t mi,
   }
 
   return handle;
+}
+
+/**
+ * Prepares a SPIR-V shader by running any transforms on it that may be
+ * necessary before uploading it to the driver.
+ */
+std::vector<uint32_t> CLP(ShaderContext)::
+compile_spirv_to_spirv(const ShaderModuleSpirV *module, size_t mi,
+                       pmap<uint32_t, int> &id_to_location,
+                       const pvector<uint32_t> &binding_ids,
+                       int variant) {
+
+  Shader::Stage stage = module->get_stage();
+
+  if (GLCAT.is_debug()) {
+    GLCAT.debug()
+      << "Compiling SPIR-V " << stage << " shader binary "
+      << module->get_source_filename() << "\n";
+  }
+
+  // Make a transformer so we can do some transformations such as assigning
+  // locations.
+  SpirVTransformer transformer(module->_instructions);
+
+  if (!id_to_location.empty()) {
+    transformer.assign_locations(id_to_location);
+
+    if (_glgsg->_gl_vendor == "NVIDIA Corporation") {
+      // Sigh... NVIDIA driver gives an error if the SPIR-V ID doesn't match
+      // for variables with overlapping locations if the OpName is stripped.
+      // We'll have to just insert OpNames for every parameter.
+      // https://forums.developer.nvidia.com/t/gl-arb-gl-spirv-bug-duplicate-location-link-error-if-opname-is-stripped-from-spir-v-shader/128491
+      // Bug was found with 446.14 drivers on Windows 10 64-bit.
+      transformer.assign_procedural_names("p", id_to_location);
+    }
+  }
+  if (!binding_ids.empty()) {
+    transformer.bind_descriptor_set(0, binding_ids);
+  }
+
+  if (stage == Shader::Stage::VERTEX && (variant & (VB_animation | VB_instancing)) != 0) {
+    // Implement hardware animation and/or instancing.
+    SpirVInjectVertexTransformPass vtransform_pass(false, false, 0, 0);
+    if (variant & VB_animation) {
+      vtransform_pass.setup_animation(_animate_attrib_locations,
+                                      _animate_point_attrib_locations,
+                                      _transform_index_index,
+                                      _transform_weight_index);
+    }
+    if (variant & VB_instancing) {
+      // Set up instancing using a vertex attribute for the matrix.
+      vtransform_pass.setup_instancing_attrib(_instance_mat_index);
+
+      for (size_t i = 0; i < module->get_num_parameters(); ++i) {
+        const ShaderModule::Variable &param = module->get_parameter(i);
+        auto it = _model_matrices.find(param.name);
+        if (it != _model_matrices.end()) {
+          vtransform_pass.mark_model_matrix(param.id, it->second.first, it->second.second);
+        }
+      }
+    }
+    transformer.run(std::move(vtransform_pass));
+  }
+
+  if (stage == Shader::Stage::FRAGMENT) {
+      RenderAttrib::PandaCompareFunc alpha_test_mode =
+        (RenderAttrib::PandaCompareFunc)(variant & VB_alpha_test_mode_mask);
+
+    if (alpha_test_mode != RenderAttrib::M_none) {
+      // Assign location 0 to the alpha ref value.
+      transformer.run(SpirVInjectAlphaTestPass((SpirVInjectAlphaTestPass::Mode)alpha_test_mode, 0));
+    }
+  }
+
+  ShaderModuleSpirV::InstructionStream stream = transformer.get_result();
+  if (!stream.validate()) {
+    GLCAT.error()
+      << "SPIR-V " << stage << " shader binary "
+      << module->get_source_filename() << " variant " << variant
+      << " did not pass validation after transforms\n";
+    return {};
+  }
+
+  if (GLCAT.is_spam()) {
+    std::ostream &out = GLCAT.spam()
+      << "SPIR-V " << stage << " binary " << module->get_source_filename()
+      << " variant " << variant << " disassembly after final transforms:\n";
+
+    stream.disassemble(out);
+  }
+
+  return std::move(stream._words);
+}
+
+/**
+ * Transpiles a SPIR-V shader module using SPIRV-Cross.
+ */
+std::string CLP(ShaderContext)::
+compile_spirv_to_glsl(const ShaderModuleSpirV *module, size_t mi,
+                      pmap<uint32_t, int> &id_to_location,
+                      const pvector<uint32_t> &binding_ids,
+                      int variant) {
+
+  if (GLCAT.is_debug()) {
+    GLCAT.debug()
+      << "Transpiling SPIR-V " << module->get_stage() << " shader "
+      << module->get_source_filename() << " variant " << variant << "\n";
+  }
+
+  spv::ExecutionModel model;
+  switch (module->get_stage()) {
+  case ShaderModule::Stage::VERTEX:
+    model = spv::ExecutionModelVertex;
+    break;
+  case ShaderModule::Stage::FRAGMENT:
+    model = spv::ExecutionModelFragment;
+    break;
+  case ShaderModule::Stage::GEOMETRY:
+    model = spv::ExecutionModelGeometry;
+    break;
+  case ShaderModule::Stage::TESS_CONTROL:
+    model = spv::ExecutionModelTessellationControl;
+    break;
+  case ShaderModule::Stage::TESS_EVALUATION:
+    model = spv::ExecutionModelTessellationEvaluation;
+    break;
+  case ShaderModule::Stage::COMPUTE:
+    model = spv::ExecutionModelGLCompute;
+    break;
+  default:
+    return std::string();
+  }
+
+  ShaderModuleSpirV::InstructionStream stream;
+
+  // Do we need to emulate certain caps, like texture queries?
+  pmap<SpirVTransformPass::AccessChain, uint32_t> size_var_ids;
+  uint64_t supported_caps = _glgsg->get_supported_shader_capabilities();
+  uint64_t emulate_caps = module->_emulatable_caps & ~supported_caps;
+  if (emulate_caps != 0u ||
+      (model == spv::ExecutionModelVertex && (variant & (VB_instancing | VB_animation)) != 0)) {
+    _emulated_caps |= emulate_caps;
+
+    SpirVTransformer transformer(module->_instructions);
+
+    if (emulate_caps != 0u) {
+      SpirVEmulateTextureQueriesPass pass(emulate_caps);
+      transformer.run(pass);
+      size_var_ids = std::move(pass._size_var_ids);
+    }
+
+    if (model == spv::ExecutionModelVertex && (variant & (VB_animation | VB_instancing)) != 0) {
+      // Implement hardware animation and/or instancing.
+      SpirVInjectVertexTransformPass vtransform_pass(false, false, 0, 0);
+      if (variant & VB_animation) {
+        vtransform_pass.setup_animation(_animate_attrib_locations,
+                                        _animate_point_attrib_locations,
+                                        _transform_index_index,
+                                        _transform_weight_index);
+      }
+      if (variant & VB_instancing) {
+        // Set up instancing using a vertex attribute for the matrix.
+        vtransform_pass.setup_instancing_attrib(_instance_mat_index);
+
+        for (size_t i = 0; i < module->get_num_parameters(); ++i) {
+          const ShaderModule::Variable &param = module->get_parameter(i);
+          auto it = _model_matrices.find(param.name);
+          if (it != _model_matrices.end()) {
+            vtransform_pass.mark_model_matrix(param.id, it->second.first, it->second.second);
+          }
+        }
+      }
+      transformer.run(vtransform_pass);
+
+      // The ids of the uniforms may have changed, so copy those over
+      for (const auto &pair : vtransform_pass._matrix_vars) {
+        id_to_location[pair.second._id] = id_to_location[pair.first];
+      }
+    }
+
+    stream = transformer.get_result();
+    if (!stream.validate()) {
+      GLCAT.error()
+        << "SPIR-V " << module->get_stage() << " shader binary "
+        << module->get_source_filename() << " variant " << variant
+        << " did not pass validation after transforms\n";
+      return 0;
+    }
+  } else {
+    stream = module->_instructions;
+  }
+
+  spirv_cross::CompilerGLSL::Options options;
+  options.version = _glgsg->_glsl_version;
+#ifdef OPENGLES
+  options.es = true;
+#else
+  options.es = _glgsg->_glsl_version == 100
+            || _glgsg->_glsl_version == 300
+            || _glgsg->_glsl_version == 310
+            || _glgsg->_glsl_version == 320;
+#endif
+  options.vertex.support_nonzero_base_instance = false;
+  options.use_entry_point_name = true;
+  options.enable_420pack_extension = false;
+
+  // We want to use explicit bindings for SSBOs, which requires 420 or
+  // the 420pack extension.  Presumably we have it if we support SSBOs.
+  if (!binding_ids.empty() && !options.es && options.version < 420) {
+    options.enable_420pack_extension = true;
+  }
+
+  if (options.version < 130) {
+    // Emulate floating-point attributes.
+    for (VertexAttrib &attrib : _vertex_attribs) {
+      attrib._scalar_type = ShaderType::ST_float;
+    }
+  }
+
+  spirv_cross::CompilerGLSL compiler(std::move(stream._words));
+  compiler.set_common_options(options);
+  compiler.set_entry_point("main", model);
+
+  if (model == spv::ExecutionModelFragment && (_variant_mask & VB_alpha_test_mode_mask) != 0) {
+    // If we do alpha testing, we wrap the main function.
+    compiler.rename_entry_point("main", "_main", spv::ExecutionModelFragment);
+
+    // Add a uniform for the alpha test reference value.
+    if ((!options.es && options.version < 430) ||
+        (options.es && options.version < 310)) {
+      compiler.add_header_line("uniform float aref;");
+      _remap_locations = true;
+    } else {
+      compiler.add_header_line("layout(location = 0) uniform float aref;");
+    }
+  }
+
+  // At this time, SPIRV-Cross doesn't always add these automatically.
+  uint64_t used_caps = module->get_used_capabilities();
+#ifndef OPENGLES
+  if (!options.es) {
+    if (options.version < 140 && (used_caps & Shader::C_instance_id) != 0) {
+      if (_glgsg->has_extension("GL_ARB_draw_instanced")) {
+        compiler.require_extension("GL_ARB_draw_instanced");
+      } else {
+        compiler.require_extension("GL_EXT_gpu_shader4");
+      }
+    }
+    if (options.version < 130 && (used_caps & Shader::C_unified_model) != 0) {
+      compiler.require_extension("GL_EXT_gpu_shader4");
+    }
+    if (options.version < 400 && (used_caps & Shader::C_dynamic_indexing) != 0) {
+      compiler.require_extension("GL_ARB_gpu_shader5");
+    }
+    if (options.version < 430 && (used_caps & Shader::C_storage_buffer) != 0) {
+      compiler.require_extension("GL_ARB_shader_storage_buffer_object");
+    }
+  }
+  else
+#endif
+  {
+    if (options.version < 300 && (used_caps & Shader::C_non_square_matrices) != 0) {
+      compiler.require_extension("GL_NV_non_square_matrices");
+    }
+    if (options.version < 320 && (used_caps & Shader::C_dynamic_indexing) != 0) {
+      if (_glgsg->has_extension("GL_OES_gpu_shader5")) {
+        compiler.require_extension("GL_OES_gpu_shader5");
+      } else {
+        compiler.require_extension("GL_EXT_gpu_shader5");
+      }
+    }
+  }
+
+  // Assign names based on locations.  This is important to make sure that
+  // uniforms shared between shader stages have the same name, or the
+  // compiler may start to complain about overlapping locations.
+  char buf[1024];
+  for (spirv_cross::VariableID id : compiler.get_active_interface_variables()) {
+    uint32_t loc = compiler.get_decoration(id, spv::DecorationLocation);
+    spv::StorageClass sc = compiler.get_storage_class(id);
+
+    if (sc == spv::StorageClassUniformConstant) {
+      auto it = id_to_location.find(id);
+      if (it != id_to_location.end()) {
+        int location = it->second;
+        sprintf(buf, "p%u", location);
+        compiler.set_name(id, buf);
+        compiler.set_decoration(id, spv::DecorationLocation, location);
+
+        // Older versions of OpenGL (ES) do not support explicit uniform
+        // locations, and we need to query the locations later.
+        if ((!options.es && options.version < 430) ||
+            (options.es && options.version < 310)) {
+          _remap_locations = true;
+        }
+      }
+    }
+    else if (sc == spv::StorageClassInput) {
+      if (model == spv::ExecutionModelVertex) {
+        // Explicit attrib locations were added in GLSL 3.30, but we can
+        // override the binding in older versions using the API.
+        if (options.version < 330) {
+          _bind_attrib_locations.set_bit(loc);
+        }
+        sprintf(buf, "a%u", loc);
+      } else {
+        // For all other stages, it's just important that the names match,
+        // so we assign the names based on the location and successive
+        // numbering of the shaders.
+        sprintf(buf, "i%u_%u", (unsigned int)mi, loc);
+      }
+      compiler.set_name(id, buf);
+    }
+    else if (sc == spv::StorageClassOutput) {
+      if (model == spv::ExecutionModelFragment) {
+        // Output of the last stage, same story as above.
+        sprintf(buf, "o%u", loc);
+        if (options.version < 330) {
+          _bind_frag_data_locations.set_bit(loc);
+        }
+      } else {
+        // Match the name of the next stage.
+        sprintf(buf, "i%u_%u", (unsigned int)mi + 1u, loc);
+      }
+      compiler.set_name(id, buf);
+    }
+  }
+
+  // Assign names to emulated texture/image size variables.
+  for (auto &item : size_var_ids) {
+    const SpirVTransformPass::AccessChain &chain = item.first;
+    auto it = id_to_location.find(chain._var_id);
+    if (it != id_to_location.end()) {
+      int location = it->second;
+      size_t size = sprintf(buf, "p%u", location);
+      for (size_t i = 0; i < chain.size(); ++i) {
+        size += sprintf(buf + size, "_%d", chain[i]);
+      }
+      strcpy(buf + size, "_s");
+      compiler.set_name(item.second, buf);
+    }
+  }
+
+  // For all uniform constant structs, we need to ensure we have procedural
+  // names like _m0, _m1, _m2, etc.  Furthermore, we need to assign each
+  // struct a name that is guaranteed to be the same between stages, since
+  // some drivers will complain if the struct name is different for the
+  // same uniform between different stages.
+  for (auto &item : module->_uniform_struct_types) {
+    std::ostringstream str;
+    item.second->output_signature(str);
+    compiler.set_name(item.first, str.str());
+
+    for (size_t i = 0; i < item.second->get_num_members(); ++i) {
+      sprintf(buf, "m%d", (int)i);
+      compiler.set_member_name(item.first, i, buf);
+    }
+  }
+
+  // Add bindings for the shader storage buffers.
+  for (size_t binding = 0; binding < binding_ids.size(); ++binding) {
+    uint32_t id = binding_ids[binding];
+    if (id > 0) {
+      compiler.set_decoration(id, spv::DecorationBinding, binding);
+    }
+  }
+
+  // Optimize out unused variables.
+  compiler.set_enabled_interface_variables(compiler.get_active_interface_variables());
+
+  std::string text = compiler.compile();
+
+  if (GLCAT.is_debug()) {
+    GLCAT.debug()
+      << "SPIRV-Cross compilation resulted in GLSL shader:\n"
+      << text << "\n";
+  }
+  return text;
 }
 
 /**

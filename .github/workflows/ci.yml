@@ -19,7 +19,7 @@ jobs:
       uses: actions/cache/restore@v5
       with:
         path: ./thirdparty
-        key: cache-thirdparty-7b319de3355d0e8170b8b69f38362a47042b9b9b-${{ matrix.os }}
+        key: cache-thirdparty-73384217d26c56aa9594e6d77c9b7c54f9c0d689-${{ matrix.os }}
 
     - name: Install yasm
       if: runner.os != 'Windows' && steps.cache-thirdparty-restore.outputs.cache-hit != 'true'
@@ -27,7 +27,7 @@ jobs:
 
     - name: Clone thirdparty repository
       if: steps.cache-thirdparty-restore.outputs.cache-hit != 'true'
-      run: git clone --revision=7b319de3355d0e8170b8b69f38362a47042b9b9b --depth=1 https://github.com/rdb/panda3d-thirdparty.git thirdparty
+      run: git clone --revision=73384217d26c56aa9594e6d77c9b7c54f9c0d689 --depth=1 https://github.com/rdb/panda3d-thirdparty.git thirdparty
 
     - name: Configure
       if: steps.cache-thirdparty-restore.outputs.cache-hit != 'true'
@@ -197,7 +197,7 @@ jobs:
       uses: actions/cache/restore@v5
       with:
         path: ./thirdparty
-        key: cache-thirdparty-7b319de3355d0e8170b8b69f38362a47042b9b9b-${{ matrix.os }}
+        key: cache-thirdparty-73384217d26c56aa9594e6d77c9b7c54f9c0d689-${{ matrix.os }}
         fail-on-cache-miss: true
 
     - name: ccache (non-Windows)
@@ -492,7 +492,7 @@ jobs:
       uses: actions/cache/restore@v5
       with:
         path: ./thirdparty
-        key: cache-thirdparty-7b319de3355d0e8170b8b69f38362a47042b9b9b-${{ matrix.os }}
+        key: cache-thirdparty-73384217d26c56aa9594e6d77c9b7c54f9c0d689-${{ matrix.os }}
         fail-on-cache-miss: true
 
     - name: Configure headless OpenGL
@@ -647,12 +647,12 @@ jobs:
       uses: actions/cache/restore@v5
       with:
         path: ./thirdparty
-        key: cache-emscripten-thirdparty-7b319de3355d0e8170b8b69f38362a47042b9b9b
+        key: cache-emscripten-thirdparty-73384217d26c56aa9594e6d77c9b7c54f9c0d689
 
     - name: Build thirdparty packages
       if: steps.cache-emscripten-thirdparty-restore.outputs.cache-hit != 'true'
       run: |
-        git clone --revision=7b319de3355d0e8170b8b69f38362a47042b9b9b --depth=1 https://github.com/rdb/panda3d-thirdparty.git thirdparty
+        git clone --revision=73384217d26c56aa9594e6d77c9b7c54f9c0d689 --depth=1 https://github.com/rdb/panda3d-thirdparty.git thirdparty
         cd thirdparty
         emcmake cmake -B build -DCMAKE_BUILD_TYPE=Release -DDISABLE_ALL=ON -DBUILD_GLSLANG=ON -DBUILD_SPIRV_CROSS=ON -DBUILD_SPIRV_TOOLS=ON
         cmake --build build --config Release -j4
@@ -761,7 +761,7 @@ jobs:
       uses: actions/cache/restore@v5
       with:
         path: ./thirdparty
-        key: cache-android-thirdparty-7b319de3355d0e8170b8b69f38362a47042b9b9b-${{ matrix.android-abi }}-ndk${{ matrix.ndk-version }}
+        key: cache-android-thirdparty-73384217d26c56aa9594e6d77c9b7c54f9c0d689-${{ matrix.android-abi }}-ndk${{ matrix.ndk-version }}
 
     - name: Install yasm
       if: steps.cache-android-thirdparty-restore.outputs.cache-hit != 'true'
@@ -770,7 +770,7 @@ jobs:
     - name: Build thirdparty packages
       if: steps.cache-android-thirdparty-restore.outputs.cache-hit != 'true'
       run: |
-        git clone --revision=7b319de3355d0e8170b8b69f38362a47042b9b9b --depth=1 https://github.com/rdb/panda3d-thirdparty.git thirdparty
+        git clone --revision=73384217d26c56aa9594e6d77c9b7c54f9c0d689 --depth=1 https://github.com/rdb/panda3d-thirdparty.git thirdparty
         cd thirdparty
         cmake -B build \
           -DCMAKE_BUILD_TYPE=Release \
