@@ -124,6 +124,30 @@ cleanup() {
 }
 
 /**
+ * Copies an OpenALAudioSound into another OpenALAudioSound.
+ */
+OpenALAudioSound OpenALAudioSound::
+copy_to(const OpenALAudioSound &other) {
+  ReMutexHolder holder(OpenALAudioManager::_lock);
+
+  // copy
+  other = this;
+  other._source = this->_source.open();
+
+  other._basename = other._basename << "_copy";
+
+  // link buffer
+
+  // check that copied-to node is configured
+  if (!other.is_valid()) return;
+
+  if (!other.has_sound_data()) {
+    other.cleanup();
+    return;
+  }
+}
+
+/**
  * Plays a sound.
  */
 void OpenALAudioSound::
