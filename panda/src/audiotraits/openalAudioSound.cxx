@@ -94,6 +94,65 @@ OpenALAudioSound(OpenALAudioManager *manager,
   release_sound_data(false);
 }
 
+/**
+ * Copy constructor (to be used with make_copy).
+ */
+OpenALAudioSound::
+OpenALAudioSound(const OpenALAudioSound &copy_sound) :
+  AudioSound(copy_sound.AudioSound.is_positional()),
+  _movie(_movie.get(copy_sound._basename << "_copy")),
+  _sd(copy_sound._sd),
+  _playing_loops(copy_sound._playing_loops),
+  _playing_rate(copy_sound._playing_rate),
+  _loops_completed(copy_sound._loops_completed),
+  _source(copy_sound.source),
+  _manager(copy_sound._manager),
+  _volume(copy_sound._volume),
+  _balance(copy_sound._balance),
+  _play_rate(copy_sound._play_rate),
+  _min_dist(copy_sound._min_dist),
+  _max_dist(copy_sound._max_dist),
+  _drop_off_factor(copy_sound._drop_off_factor),
+  _length(copy_sound._length),
+  _loop_count(copy_sound._loop_count),
+  _loop_start(copy_sound._loop_start),
+  _desired_mode(copy_sound._desired_mode),
+  _start_time(copy_sound._start_time),
+  _current_time(0.0),
+  _basename(copy_sound._basename << "_copy"),
+  _active(manager->get_active()),
+  _paused(copy_sound._paused),
+  _cone_inner_angle(copy_sound._cone_inner_angle),
+  _cone_outer_angle(copy_sound._cone_outer_angle),
+  _cone_outer_gain(copy_sound._cone_outer_gain)
+{
+  _location[0] = copy_sound._location[0];
+  _location[1] = copy_sound._location[1];
+  _location[2] = copy_sound._location[2];
+  _velocity[0] = copy_sound._velocity[0];
+  _velocity[1] = copy_sound._velocity[1];
+  _velocity[2] = copy_sound._velocity[2];
+  _direction[0] = copy_sound._direction[0];
+  _direction[1] = copy_sound._direction[1];
+  _direction[2] = copy_sound._direction[2];
+
+  ReMutexHolder holder(OpenALAudioManager::_lock);
+
+  if (!require_sound_data()) {
+    cleanup();
+    return;
+  }
+
+  if (copy_sound.AudioSound.is_positional()) {
+    if (_sd->_channels != 1) {
+      audio_warning("copied stereo sound " << movie->get_filename() << " will not be spatialized");
+    }
+  }
+
+  _comment = std::move(_sd->_comment);
+  release_sound_data(false);
+}
+
 
 /**
  *
@@ -127,24 +186,16 @@ cleanup() {
  * Copies an OpenALAudioSound into another OpenALAudioSound.
  */
 OpenALAudioSound OpenALAudioSound::
-copy_to(const OpenALAudioSound &other) {
+make_copy() {
   ReMutexHolder holder(OpenALAudioManager::_lock);
 
-  // copy
-  other = this;
-  other._source = this->_source.open();
+  OpenALAudioSound &copy_sound = OpenALAudioSound(this);
 
-  other._basename = other._basename << "_copy";
+  // throw errors if the copied-to node matches copied-from
+  nassertr(copy_sound.is_valid() == this->is_valid());
+  nassertr(copy_sound.has_sound_data() == this->has_sound_data());
 
-  // link buffer
-
-  // check that copied-to node is configured
-  if (!other.is_valid()) return;
-
-  if (!other.has_sound_data()) {
-    other.cleanup();
-    return;
-  }
+  return copy_sound;
 }
 
 /**
