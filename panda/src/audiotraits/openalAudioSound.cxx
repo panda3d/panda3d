@@ -100,7 +100,7 @@ OpenALAudioSound(OpenALAudioManager *manager,
 OpenALAudioSound::
 OpenALAudioSound(const OpenALAudioSound &copy_sound) :
   AudioSound(copy_sound.AudioSound.is_positional()),
-  _movie(_movie.get(copy_sound._basename << "_copy")),
+  _movie(copy_sound._movie),
   _sd(copy_sound._sd),
   _playing_loops(copy_sound._playing_loops),
   _playing_rate(copy_sound._playing_rate),
@@ -189,7 +189,7 @@ OpenALAudioSound OpenALAudioSound::
 make_copy() {
   ReMutexHolder holder(OpenALAudioManager::_lock);
 
-  OpenALAudioSound &copy_sound = OpenALAudioSound(this);
+  OpenALAudioSound *copy_sound = new OpenALAudioSound(*this);
 
   // throw errors if the copied-to node doesn't match the copied-from
   nassertr(copy_sound.is_valid() == this->is_valid());
