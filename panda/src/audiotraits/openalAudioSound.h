@@ -125,11 +125,13 @@ private:
                    MovieAudio *movie,
                    bool positional,
                    int mode);
+  OpenALAudioSound(const OpenALAudioSound &copy_sound);
   INLINE void   set_calibrated_clock(double rtc, double t, double playrate);
   INLINE double get_calibrated_clock(double rtc) const;
   void          correct_calibrated_clock(double rtc, double t);
   void          cache_time(double rtc);
   void cleanup();
+  OpenALAudioSound make_copy();
   void restart_stalled_audio();
   void delete_queued_buffers();
   ALuint make_buffer(int samples, int channels, int rate, unsigned char *data);

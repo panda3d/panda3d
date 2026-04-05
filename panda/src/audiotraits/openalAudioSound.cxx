@@ -191,7 +191,7 @@ make_copy() {
 
   OpenALAudioSound &copy_sound = OpenALAudioSound(this);
 
-  // throw errors if the copied-to node matches copied-from
+  // throw errors if the copied-to node doesn't match the copied-from
   nassertr(copy_sound.is_valid() == this->is_valid());
   nassertr(copy_sound.has_sound_data() == this->has_sound_data());
 
