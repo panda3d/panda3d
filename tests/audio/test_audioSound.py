@@ -1,7 +1,7 @@
 from panda3d.core import AudioSound
 import pytest
 
-def test_copy(audiomgr):
+def test_make_copy(audiomgr):
     if "openal" not in str(audiomgr).lower():
         # NULL audio manager (as well as fmod) don't support copying yet
         pytest.skip("Copying is currently only supported on OpenAL")
