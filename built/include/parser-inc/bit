@@ -1,0 +1,9 @@
+#pragma once
+
+namespace std {
+  enum class endian {
+    little,
+    big,
+    native,
+  };
+};

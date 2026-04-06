@@ -1,0 +1,1 @@
+struct OggVorbis_File;

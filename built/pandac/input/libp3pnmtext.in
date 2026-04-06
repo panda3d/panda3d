@@ -1,0 +1,790 @@
+1775485525
+3 3
+12 libp3pnmtext 4 g64k 12 panda3d.core 
+46
+51 13 ~FreetypeFont 0 516 97 27 FreetypeFont::~FreetypeFont 0 0 10
+/**
+ *
+ */
+41
+inline FreetypeFont::~FreetypeFont(void);
+
+52 14 set_point_size 0 4 97 28 FreetypeFont::set_point_size 0 1 1 295
+/**
+ * Sets the point size of the font.  This controls the apparent size of the
+ * font onscreen.  By convention, a 10 point font is about 1 screen unit high.
+ *
+ * This should only be called before any characters have been requested out of
+ * the font, or immediately after calling clear().
+ */
+65
+inline bool FreetypeFont::set_point_size(PN_stdfloat point_size);
+
+53 14 get_point_size 0 4 97 28 FreetypeFont::get_point_size 0 1 2 46
+/**
+ * Returns the point size of the font.
+ */
+60
+inline PN_stdfloat FreetypeFont::get_point_size(void) const;
+
+54 19 set_pixels_per_unit 0 4 97 33 FreetypeFont::set_pixels_per_unit 0 1 3 433
+/**
+ * Set the resolution of the texture map, and hence the clarity of the
+ * resulting font.  This sets the number of pixels in the texture map that are
+ * used for each onscreen unit.
+ *
+ * Setting this number larger results in an easier to read font, but at the
+ * cost of more texture memory.
+ *
+ * This should only be called before any characters have been requested out of
+ * the font, or immediately after calling clear().
+ */
+75
+inline bool FreetypeFont::set_pixels_per_unit(PN_stdfloat pixels_per_unit);
+
+55 19 get_pixels_per_unit 0 4 97 33 FreetypeFont::get_pixels_per_unit 0 1 4 81
+/**
+ * Returns the resolution of the texture map.  See set_pixels_per_unit().
+ */
+65
+inline PN_stdfloat FreetypeFont::get_pixels_per_unit(void) const;
+
+56 14 set_pixel_size 0 4 97 28 FreetypeFont::set_pixel_size 0 1 5 197
+/**
+ * Computes the appropriate pixels_per_unit value to set the size of the font
+ * in the texture to the indicated number of pixels.  This is just another way
+ * to specify pixels_per_unit().
+ */
+65
+inline bool FreetypeFont::set_pixel_size(PN_stdfloat pixel_size);
+
+57 14 get_pixel_size 0 4 97 28 FreetypeFont::get_pixel_size 0 1 6 80
+/**
+ * Returns the size of the font in pixels, as it appears in the texture.
+ */
+60
+inline PN_stdfloat FreetypeFont::get_pixel_size(void) const;
+
+58 16 set_scale_factor 0 4 97 30 FreetypeFont::set_scale_factor 0 1 7 565
+/**
+ * Sets the factor by which the font is rendered larger by the FreeType
+ * library before being filtered down to its actual size in the texture as
+ * specified by set_pixels_per_unit().  This may be set to a number larger
+ * than 1.0 to improve the font's antialiasing (since FreeType doesn't really
+ * do a swell job of antialiasing by itself).  There is some performance
+ * implication for setting this different than 1.0.
+ *
+ * This should only be called before any characters have been requested out of
+ * the font, or immediately after calling clear().
+ */
+69
+inline bool FreetypeFont::set_scale_factor(PN_stdfloat scale_factor);
+
+59 16 get_scale_factor 0 4 97 30 FreetypeFont::get_scale_factor 0 1 8 74
+/**
+ * Returns the antialiasing scale factor.  See set_scale_factor().
+ */
+62
+inline PN_stdfloat FreetypeFont::get_scale_factor(void) const;
+
+60 20 set_native_antialias 0 4 97 34 FreetypeFont::set_native_antialias 0 1 9 469
+/**
+ * Sets whether the Freetype library's built-in antialias mode is enabled.
+ * There are two unrelated ways to achieve antialiasing: with Freetype's
+ * native antialias mode, and with the use of a scale_factor greater than one.
+ * By default, both modes are enabled.
+ *
+ * At low resolutions, some fonts may do better with one mode or the other.
+ * In general, Freetype's native antialiasing will produce less blurry
+ * results, but may introduce more artifacts.
+ */
+70
+inline void FreetypeFont::set_native_antialias(bool native_antialias);
+
+61 20 get_native_antialias 0 4 97 34 FreetypeFont::get_native_antialias 0 1 10 105
+/**
+ * Returns whether Freetype's built-in antialias mode is enabled.  See
+ * set_native_antialias().
+ */
+59
+inline bool FreetypeFont::get_native_antialias(void) const;
+
+62 19 get_font_pixel_size 0 4 97 33 FreetypeFont::get_font_pixel_size 0 1 11 386
+/**
+ * This is used to report whether the requested pixel size is being only
+ * approximated by a fixed-pixel-size font.  This returns 0 in the normal
+ * case, in which a scalable font is used, or the fixed-pixel-size font has
+ * exactly the requested pixel size.
+ *
+ * If this returns non-zero, it is the pixel size of the font that we are
+ * using to approximate our desired size.
+ */
+57
+inline int FreetypeFont::get_font_pixel_size(void) const;
+
+63 15 get_line_height 0 4 97 29 FreetypeFont::get_line_height 0 1 12 65
+/**
+ * Returns the number of units high each line of text is.
+ */
+61
+inline PN_stdfloat FreetypeFont::get_line_height(void) const;
+
+64 17 get_space_advance 0 4 97 31 FreetypeFont::get_space_advance 0 1 13 55
+/**
+ * Returns the number of units wide a space is.
+ */
+63
+inline PN_stdfloat FreetypeFont::get_space_advance(void) const;
+
+65 19 get_points_per_unit 0 4 97 33 FreetypeFont::get_points_per_unit 0 1 14 146
+/**
+ * Returns the point size of the font that is one Panda unit high.  This is an
+ * arbitrary Panda convention for text, and is set to 10.0.
+ */
+66
+static inline PN_stdfloat FreetypeFont::get_points_per_unit(void);
+
+66 19 get_points_per_inch 0 4 97 33 FreetypeFont::get_points_per_inch 0 1 15 100
+/**
+ * Returns the number of points in one inch.  This is a universal typographic
+ * convention.
+ */
+66
+static inline PN_stdfloat FreetypeFont::get_points_per_inch(void);
+
+67 17 set_winding_order 0 4 97 31 FreetypeFont::set_winding_order 0 1 16 258
+/**
+ * Specifies an explicitly winding order on this particular font.  This is
+ * only necessary if the render_mode is RM_polygon or RM_solid, and only if
+ * FreeType appears to guess wrong on this font.  Normally, you should leave
+ * this at WO_default.
+ */
+86
+inline void FreetypeFont::set_winding_order(FreetypeFont::WindingOrder winding_order);
+
+68 17 get_winding_order 0 4 97 31 FreetypeFont::get_winding_order 0 1 17 65
+/**
+ * Returns the winding order set via set_winding_order().
+ */
+78
+inline FreetypeFont::WindingOrder FreetypeFont::get_winding_order(void) const;
+
+69 12 PNMTextGlyph 0 260 100 26 PNMTextGlyph::PNMTextGlyph 0 2 18 19 10
+/**
+ *
+ */
+119
+explicit PNMTextGlyph::PNMTextGlyph(double advance);
+inline PNMTextGlyph::PNMTextGlyph(PNMTextGlyph const &) = default;
+
+70 13 ~PNMTextGlyph 0 516 100 27 PNMTextGlyph::~PNMTextGlyph 0 0 10
+/**
+ *
+ */
+34
+PNMTextGlyph::~PNMTextGlyph(void);
+
+71 11 get_advance 0 4 100 25 PNMTextGlyph::get_advance 0 1 20 106
+/**
+ * Returns the number of pixels by which the pen should be advanced after
+ * rendering this glyph.
+ */
+49
+inline int PNMTextGlyph::get_advance(void) const;
+
+72 5 place 0 4 100 19 PNMTextGlyph::place 0 2 21 22 431
+/**
+ * Copies the glyph to the indicated destination image at the indicated
+ * origin.  It colors the glyph pixels the indicated foreground color, blends
+ * antialiased pixels with the appropriate amount of the foreground color and
+ * the existing background color, and leaves other pixels alone.
+ */
+
+/**
+ * This flavor of place() also fills in the interior color.  This requires
+ * that determine_interior was called earlier.
+ */
+187
+void PNMTextGlyph::place(PNMImage &dest_image, int xp, int yp, LColor const &fg);
+void PNMTextGlyph::place(PNMImage &dest_image, int xp, int yp, LColor const &fg, LColor const &interior);
+
+73 8 get_left 0 4 100 22 PNMTextGlyph::get_left 0 1 23 71
+/**
+ * Returns the x coordinate of the leftmost pixel in the glyph.
+ */
+46
+inline int PNMTextGlyph::get_left(void) const;
+
+74 9 get_right 0 4 100 23 PNMTextGlyph::get_right 0 1 24 72
+/**
+ * Returns the x coordinate of the rightmost pixel in the glyph.
+ */
+47
+inline int PNMTextGlyph::get_right(void) const;
+
+75 10 get_bottom 0 4 100 24 PNMTextGlyph::get_bottom 0 1 25 73
+/**
+ * Returns the y coordinate of the bottommost pixel in the glyph.
+ */
+48
+inline int PNMTextGlyph::get_bottom(void) const;
+
+76 7 get_top 0 4 100 21 PNMTextGlyph::get_top 0 1 26 70
+/**
+ * Returns the y coordinate of the topmost pixel in the glyph.
+ */
+45
+inline int PNMTextGlyph::get_top(void) const;
+
+77 10 get_height 0 4 100 24 PNMTextGlyph::get_height 0 1 27 53
+/**
+ * Returns the height of the glyph in pixels.
+ */
+48
+inline int PNMTextGlyph::get_height(void) const;
+
+78 9 get_width 0 4 100 23 PNMTextGlyph::get_width 0 1 28 52
+/**
+ * Returns the width of the glyph in pixels.
+ */
+47
+inline int PNMTextGlyph::get_width(void) const;
+
+79 9 get_value 0 4 100 23 PNMTextGlyph::get_value 0 1 29 241
+/**
+ * Returns the value of the indicated pixel of the glyph.  The result is in
+ * the range [0, 1], where 0 indicates the pixel is not part of the glyph, and
+ * 1 indicates it is.  Intermediate values are used to represent antialiasing.
+ */
+58
+inline double PNMTextGlyph::get_value(int x, int y) const;
+
+80 17 get_interior_flag 0 4 100 31 PNMTextGlyph::get_interior_flag 0 1 30 119
+/**
+ * Returns true if the indicated pixel represents a pixel in the interior of a
+ * hollow font, false otherwise.
+ */
+64
+inline bool PNMTextGlyph::get_interior_flag(int x, int y) const;
+
+81 12 PNMTextMaker 0 260 101 26 PNMTextMaker::PNMTextMaker 0 4 31 32 33 34 328
+/**
+ * The constructor expects the name of some font file that FreeType can read,
+ * along with face_index, indicating which font within the file to load
+ * (usually 0).
+ */
+
+/**
+ * This constructor works as above, but it takes the font data from an in-
+ * memory buffer instead of from a named file.
+ */
+
+/**
+ *
+ */
+
+/**
+ *
+ */
+293
+explicit PNMTextMaker::PNMTextMaker(Filename const &font_filename, int face_index);
+explicit PNMTextMaker::PNMTextMaker(char const *font_data, int data_length, int face_index);
+explicit PNMTextMaker::PNMTextMaker(FreetypeFont const &copy);
+PNMTextMaker::PNMTextMaker(PNMTextMaker const &copy);
+
+82 13 ~PNMTextMaker 0 516 101 27 PNMTextMaker::~PNMTextMaker 0 0 10
+/**
+ *
+ */
+34
+PNMTextMaker::~PNMTextMaker(void);
+
+83 8 is_valid 0 4 101 22 PNMTextMaker::is_valid 0 1 35 100
+/**
+ * Returns true if the PNMTextMaker is valid and ready to generate text, false
+ * otherwise.
+ */
+47
+inline bool PNMTextMaker::is_valid(void) const;
+
+84 9 set_align 0 4 101 23 PNMTextMaker::set_align 0 1 36 10
+/**
+ *
+ */
+72
+inline void PNMTextMaker::set_align(PNMTextMaker::Alignment align_type);
+
+85 9 get_align 0 4 101 23 PNMTextMaker::get_align 0 1 37 10
+/**
+ *
+ */
+67
+inline PNMTextMaker::Alignment PNMTextMaker::get_align(void) const;
+
+86 17 set_interior_flag 0 4 101 31 PNMTextMaker::set_interior_flag 0 1 38 443
+/**
+ * Sets the flag that indicates whether the interior of hollow fonts is
+ * identified as a preprocess as each glyph is loaded.  If this flag is true,
+ * you may specify an interior color along with a fg and bg color when you
+ * place text; if the flag is false, the interior color is ignored.
+ *
+ * It is generally best to set_native_antialias(0) when using this feature.
+ * Also, this works best when the pixel size is not very small.
+ */
+64
+inline void PNMTextMaker::set_interior_flag(bool interior_flag);
+
+87 17 get_interior_flag 0 4 101 31 PNMTextMaker::get_interior_flag 0 1 39 10
+/**
+ *
+ */
+56
+inline bool PNMTextMaker::get_interior_flag(void) const;
+
+88 6 set_fg 0 4 101 20 PNMTextMaker::set_fg 0 1 40 182
+/**
+ * Sets the foreground color of text that will be generated by future calls to
+ * generate_into().  This is the color that all of the "on" pixels in the font
+ * will show as.
+ */
+51
+inline void PNMTextMaker::set_fg(LColor const &fg);
+
+89 6 get_fg 0 4 101 20 PNMTextMaker::get_fg 0 1 41 109
+/**
+ * Returns the foreground color of text that will be generated by future calls
+ * to generate_into().
+ */
+54
+inline LColor const &PNMTextMaker::get_fg(void) const;
+
+90 12 set_interior 0 4 101 26 PNMTextMaker::set_interior 0 1 42 183
+/**
+ * Sets the color that will be used to render the interior portions of hollow
+ * fonts in future calls to generate_into().  This is respected only if
+ * interior_flag is true.
+ */
+63
+inline void PNMTextMaker::set_interior(LColor const &interior);
+
+91 12 get_interior 0 4 101 26 PNMTextMaker::get_interior 0 1 43 98
+/**
+ * Returns the color that will be used to render the interior portions of
+ * hollow fonts.
+ */
+60
+inline LColor const &PNMTextMaker::get_interior(void) const;
+
+92 25 set_distance_field_radius 0 4 101 39 PNMTextMaker::set_distance_field_radius 0 1 44 122
+/**
+ * If this is set to something other than 0, Panda will generate a signed
+ * distance field with the given radius.
+ */
+64
+inline void PNMTextMaker::set_distance_field_radius(int radius);
+
+93 25 get_distance_field_radius 0 4 101 39 PNMTextMaker::get_distance_field_radius 0 1 45 95
+/**
+ * Returns the radius previously set with set_distance_field_radius, or 0
+ * otherwise.
+ */
+63
+inline int PNMTextMaker::get_distance_field_radius(void) const;
+
+94 13 generate_into 0 4 101 27 PNMTextMaker::generate_into 0 2 46 47 290
+/**
+ * Generates a single line of text into the indicated image at the indicated
+ * position; the return value is the total width in pixels.
+ */
+
+/**
+ * Generates a single line of text into the indicated image at the indicated
+ * position; the return value is the total width in pixels.
+ */
+195
+inline int PNMTextMaker::generate_into(std::string const &text, PNMImage &dest_image, int x, int y);
+int PNMTextMaker::generate_into(std::wstring const &text, PNMImage &dest_image, int x, int y);
+
+95 10 calc_width 0 4 101 24 PNMTextMaker::calc_width 0 2 48 49 140
+/**
+ * Returns the width in pixels of the indicated line of text.
+ */
+
+/**
+ * Returns the width in pixels of the indicated line of text.
+ */
+117
+inline int PNMTextMaker::calc_width(std::string const &text);
+int PNMTextMaker::calc_width(std::wstring const &text);
+
+96 9 get_glyph 0 4 101 23 PNMTextMaker::get_glyph 0 1 50 98
+/**
+ * Returns the glyph for the indicated index, or NULL if it is not defined in
+ * the font.
+ */
+53
+PNMTextGlyph *PNMTextMaker::get_glyph(int character);
+
+50
+1 0 0 6 52 106 0 0 295 /**
+ * Sets the point size of the font.  This controls the apparent size of the
+ * font onscreen.  By convention, a 10 point font is about 1 screen unit high.
+ *
+ * This should only be called before any characters have been requested out of
+ * the font, or immediately after calling clear().
+ */ 2 4 this 3 103  10 point_size 1 104  
+2 0 0 6 53 104 0 0 46 /**
+ * Returns the point size of the font.
+ */ 1 4 this 3 107  
+3 0 0 6 54 106 0 0 433 /**
+ * Set the resolution of the texture map, and hence the clarity of the
+ * resulting font.  This sets the number of pixels in the texture map that are
+ * used for each onscreen unit.
+ *
+ * Setting this number larger results in an easier to read font, but at the
+ * cost of more texture memory.
+ *
+ * This should only be called before any characters have been requested out of
+ * the font, or immediately after calling clear().
+ */ 2 4 this 3 103  15 pixels_per_unit 1 104  
+4 0 0 6 55 104 0 0 81 /**
+ * Returns the resolution of the texture map.  See set_pixels_per_unit().
+ */ 1 4 this 3 107  
+5 0 0 6 56 106 0 0 197 /**
+ * Computes the appropriate pixels_per_unit value to set the size of the font
+ * in the texture to the indicated number of pixels.  This is just another way
+ * to specify pixels_per_unit().
+ */ 2 4 this 3 103  10 pixel_size 1 104  
+6 0 0 6 57 104 0 0 80 /**
+ * Returns the size of the font in pixels, as it appears in the texture.
+ */ 1 4 this 3 107  
+7 0 0 6 58 106 0 0 565 /**
+ * Sets the factor by which the font is rendered larger by the FreeType
+ * library before being filtered down to its actual size in the texture as
+ * specified by set_pixels_per_unit().  This may be set to a number larger
+ * than 1.0 to improve the font's antialiasing (since FreeType doesn't really
+ * do a swell job of antialiasing by itself).  There is some performance
+ * implication for setting this different than 1.0.
+ *
+ * This should only be called before any characters have been requested out of
+ * the font, or immediately after calling clear().
+ */ 2 4 this 3 103  12 scale_factor 1 104  
+8 0 0 6 59 104 0 0 74 /**
+ * Returns the antialiasing scale factor.  See set_scale_factor().
+ */ 1 4 this 3 107  
+9 0 0 4 60 109 0 0 469 /**
+ * Sets whether the Freetype library's built-in antialias mode is enabled.
+ * There are two unrelated ways to achieve antialiasing: with Freetype's
+ * native antialias mode, and with the use of a scale_factor greater than one.
+ * By default, both modes are enabled.
+ *
+ * At low resolutions, some fonts may do better with one mode or the other.
+ * In general, Freetype's native antialiasing will produce less blurry
+ * results, but may introduce more artifacts.
+ */ 2 4 this 3 103  16 native_antialias 1 106  
+10 0 0 6 61 106 0 0 105 /**
+ * Returns whether Freetype's built-in antialias mode is enabled.  See
+ * set_native_antialias().
+ */ 1 4 this 3 107  
+11 0 0 6 62 110 0 0 386 /**
+ * This is used to report whether the requested pixel size is being only
+ * approximated by a fixed-pixel-size font.  This returns 0 in the normal
+ * case, in which a scalable font is used, or the fixed-pixel-size font has
+ * exactly the requested pixel size.
+ *
+ * If this returns non-zero, it is the pixel size of the font that we are
+ * using to approximate our desired size.
+ */ 1 4 this 3 107  
+12 0 0 6 63 104 0 0 65 /**
+ * Returns the number of units high each line of text is.
+ */ 1 4 this 3 107  
+13 0 0 6 64 104 0 0 55 /**
+ * Returns the number of units wide a space is.
+ */ 1 4 this 3 107  
+14 0 0 6 65 104 0 0 146 /**
+ * Returns the point size of the font that is one Panda unit high.  This is an
+ * arbitrary Panda convention for text, and is set to 10.0.
+ */ 0 
+15 0 0 6 66 104 0 0 100 /**
+ * Returns the number of points in one inch.  This is a universal typographic
+ * convention.
+ */ 0 
+16 0 0 4 67 109 0 0 258 /**
+ * Specifies an explicitly winding order on this particular font.  This is
+ * only necessary if the render_mode is RM_polygon or RM_solid, and only if
+ * FreeType appears to guess wrong on this font.  Normally, you should leave
+ * this at WO_default.
+ */ 2 4 this 3 103  13 winding_order 1 99  
+17 0 0 6 68 99 0 0 65 /**
+ * Returns the winding order set via set_winding_order().
+ */ 1 4 this 3 107  
+18 0 0 15 69 113 70 0 0 1 6 param0 0 111  
+19 0 0 7 69 113 70 0 10 /**
+ *
+ */ 1 7 advance 1 114  
+20 0 0 6 71 110 0 0 106 /**
+ * Returns the number of pixels by which the pen should be advanced after
+ * rendering this glyph.
+ */ 1 4 this 3 111  
+21 0 0 4 72 109 0 0 300 /**
+ * Copies the glyph to the indicated destination image at the indicated
+ * origin.  It colors the glyph pixels the indicated foreground color, blends
+ * antialiased pixels with the appropriate amount of the foreground color and
+ * the existing background color, and leaves other pixels alone.
+ */ 5 4 this 3 113  10 dest_image 1 115  2 xp 1 110  2 yp 1 110  2 fg 1 117  
+22 0 0 4 72 109 0 0 129 /**
+ * This flavor of place() also fills in the interior color.  This requires
+ * that determine_interior was called earlier.
+ */ 6 4 this 3 113  10 dest_image 1 115  2 xp 1 110  2 yp 1 110  2 fg 1 117  8 interior 1 117  
+23 0 0 6 73 110 0 0 71 /**
+ * Returns the x coordinate of the leftmost pixel in the glyph.
+ */ 1 4 this 3 111  
+24 0 0 6 74 110 0 0 72 /**
+ * Returns the x coordinate of the rightmost pixel in the glyph.
+ */ 1 4 this 3 111  
+25 0 0 6 75 110 0 0 73 /**
+ * Returns the y coordinate of the bottommost pixel in the glyph.
+ */ 1 4 this 3 111  
+26 0 0 6 76 110 0 0 70 /**
+ * Returns the y coordinate of the topmost pixel in the glyph.
+ */ 1 4 this 3 111  
+27 0 0 6 77 110 0 0 53 /**
+ * Returns the height of the glyph in pixels.
+ */ 1 4 this 3 111  
+28 0 0 6 78 110 0 0 52 /**
+ * Returns the width of the glyph in pixels.
+ */ 1 4 this 3 111  
+29 0 0 6 79 114 0 0 241 /**
+ * Returns the value of the indicated pixel of the glyph.  The result is in
+ * the range [0, 1], where 0 indicates the pixel is not part of the glyph, and
+ * 1 indicates it is.  Intermediate values are used to represent antialiasing.
+ */ 3 4 this 3 111  1 x 1 110  1 y 1 110  
+30 0 0 6 80 106 0 0 119 /**
+ * Returns true if the indicated pixel represents a pixel in the interior of a
+ * hollow font, false otherwise.
+ */ 3 4 this 3 111  1 x 1 110  1 y 1 110  
+31 0 0 7 81 125 82 0 173 /**
+ * The constructor expects the name of some font file that FreeType can read,
+ * along with face_index, indicating which font within the file to load
+ * (usually 0).
+ */ 2 13 font_filename 1 122  10 face_index 1 110  
+32 0 0 7 81 125 82 0 10 /**
+ *
+ */ 1 4 copy 1 107  
+33 0 0 15 81 125 82 0 10 /**
+ *
+ */ 1 4 copy 1 126  
+34 0 0 7 81 125 82 0 129 /**
+ * This constructor works as above, but it takes the font data from an in-
+ * memory buffer instead of from a named file.
+ */ 3 9 font_data 1 128  11 data_length 1 110  10 face_index 1 110  
+35 0 0 6 83 106 0 0 100 /**
+ * Returns true if the PNMTextMaker is valid and ready to generate text, false
+ * otherwise.
+ */ 1 4 this 3 126  
+36 0 0 4 84 109 0 0 10 /**
+ *
+ */ 2 4 this 3 125  10 align_type 1 102  
+37 0 0 6 85 102 0 0 10 /**
+ *
+ */ 1 4 this 3 126  
+38 0 0 4 86 109 0 0 443 /**
+ * Sets the flag that indicates whether the interior of hollow fonts is
+ * identified as a preprocess as each glyph is loaded.  If this flag is true,
+ * you may specify an interior color along with a fg and bg color when you
+ * place text; if the flag is false, the interior color is ignored.
+ *
+ * It is generally best to set_native_antialias(0) when using this feature.
+ * Also, this works best when the pixel size is not very small.
+ */ 2 4 this 3 125  13 interior_flag 1 106  
+39 0 0 6 87 106 0 0 10 /**
+ *
+ */ 1 4 this 3 126  
+40 0 0 4 88 109 0 0 182 /**
+ * Sets the foreground color of text that will be generated by future calls to
+ * generate_into().  This is the color that all of the "on" pixels in the font
+ * will show as.
+ */ 2 4 this 3 125  2 fg 1 117  
+41 0 0 6 89 117 0 0 109 /**
+ * Returns the foreground color of text that will be generated by future calls
+ * to generate_into().
+ */ 1 4 this 3 126  
+42 0 0 4 90 109 0 0 183 /**
+ * Sets the color that will be used to render the interior portions of hollow
+ * fonts in future calls to generate_into().  This is respected only if
+ * interior_flag is true.
+ */ 2 4 this 3 125  8 interior 1 117  
+43 0 0 6 91 117 0 0 98 /**
+ * Returns the color that will be used to render the interior portions of
+ * hollow fonts.
+ */ 1 4 this 3 126  
+44 0 0 4 92 109 0 0 122 /**
+ * If this is set to something other than 0, Panda will generate a signed
+ * distance field with the given radius.
+ */ 2 4 this 3 125  6 radius 1 110  
+45 0 0 6 93 110 0 0 95 /**
+ * Returns the radius previously set with set_distance_field_radius, or 0
+ * otherwise.
+ */ 1 4 this 3 126  
+46 0 0 6 94 110 0 0 144 /**
+ * Generates a single line of text into the indicated image at the indicated
+ * position; the return value is the total width in pixels.
+ */ 5 4 this 3 125  4 text 1 128  10 dest_image 1 115  1 x 1 110  1 y 1 110  
+47 0 0 6 94 110 0 0 144 /**
+ * Generates a single line of text into the indicated image at the indicated
+ * position; the return value is the total width in pixels.
+ */ 5 4 this 3 125  4 text 1 128  10 dest_image 1 115  1 x 1 110  1 y 1 110  
+48 0 0 6 95 110 0 0 69 /**
+ * Returns the width in pixels of the indicated line of text.
+ */ 2 4 this 3 125  4 text 1 128  
+49 0 0 6 95 110 0 0 69 /**
+ * Returns the width in pixels of the indicated line of text.
+ */ 2 4 this 3 125  4 text 1 128  
+50 0 0 6 96 113 0 0 98 /**
+ * Returns the glyph for the indicated index, or NULL if it is not defined in
+ * the font.
+ */ 2 4 this 3 125  9 character 1 110  
+32
+97 12 FreetypeFont 0 26625 12 FreetypeFont 12 FreetypeFont 0 0 0 0 51 1 129 17 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 0 0 1 0 98 0 0 0 1 99 247
+/**
+ * This is a common base class for both DynamicTextFont and PNMTextMaker.
+ * Both of these are utility classes that use the FreeType library to generate
+ * glyphs from fonts; this class abstracts out that common wrapper around
+ * FreeType.
+ */
+
+98 7 Namable 0 2048 7 Namable 7 Namable 0 0 0 0 0 0 0 0 0 0 0 0 125
+/**
+ * A base class for all things which can have a name.  The name is either
+ * empty or nonempty, but it is never NULL.
+ */
+
+99 12 WindingOrder 0 794624 26 FreetypeFont::WindingOrder 26 FreetypeFont::WindingOrder 97 0 0 0 0 0 0 0 0 0 4 10 WO_default 24 FreetypeFont::WO_default 0
+0 7 WO_left 21 FreetypeFont::WO_left 0
+1 8 WO_right 22 FreetypeFont::WO_right 0
+2 10 WO_invalid 24 FreetypeFont::WO_invalid 0
+3 0 0
+
+100 12 PNMTextGlyph 0 26625 12 PNMTextGlyph 12 PNMTextGlyph 0 0 0 1 69 70 0 10 71 72 73 74 75 76 77 78 79 80 0 0 0 0 0 44
+/**
+ * A single glyph in a PNMTextMaker.
+ */
+
+101 12 PNMTextMaker 0 26625 12 PNMTextMaker 12 PNMTextMaker 0 0 0 1 81 82 0 14 83 84 85 86 87 88 89 90 91 92 93 94 95 96 0 0 1 0 97 0 0 0 1 102 284
+/**
+ * This object uses the Freetype library to generate text directly into an
+ * image.  It is different from the TextNode/DynamicTextFont interface, which
+ * use the Freetype library to generate text in the scene graph, to be
+ * rendered onscreen via the Panda render traversal.
+ */
+
+102 9 Alignment 0 794624 23 PNMTextMaker::Alignment 23 PNMTextMaker::Alignment 101 0 0 0 0 0 0 0 0 0 3 6 A_left 20 PNMTextMaker::A_left 0
+0 7 A_right 21 PNMTextMaker::A_right 0
+1 8 A_center 22 PNMTextMaker::A_center 0
+2 0 0
+
+103 14 FreetypeFont * 0 8576 14 FreetypeFont * 14 FreetypeFont * 0 0 97 0 0 0 0 0 0 0 0 0 0
+
+104 11 PN_stdfloat 0 2105344 11 PN_stdfloat 11 PN_stdfloat 0 0 105 0 0 0 0 0 0 0 0 0 0
+
+105 5 float 0 8194 5 float 5 float 0 2 0 0 0 0 0 0 0 0 0 0 0
+
+106 4 bool 0 8194 4 bool 4 bool 0 4 0 0 0 0 0 0 0 0 0 0 0
+
+107 20 FreetypeFont const * 0 8576 20 FreetypeFont const * 20 FreetypeFont const * 0 0 108 0 0 0 0 0 0 0 0 0 0
+
+108 18 FreetypeFont const 0 8832 18 FreetypeFont const 18 FreetypeFont const 0 0 97 0 0 0 0 0 0 0 0 0 0
+
+109 4 void 0 8194 4 void 4 void 0 6 0 0 0 0 0 0 0 0 0 0 0
+
+110 3 int 0 8194 3 int 3 int 0 1 0 0 0 0 0 0 0 0 0 0 0
+
+111 20 PNMTextGlyph const * 0 8576 20 PNMTextGlyph const * 20 PNMTextGlyph const * 0 0 112 0 0 0 0 0 0 0 0 0 0
+
+112 18 PNMTextGlyph const 0 8832 18 PNMTextGlyph const 18 PNMTextGlyph const 0 0 100 0 0 0 0 0 0 0 0 0 0
+
+113 14 PNMTextGlyph * 0 8576 14 PNMTextGlyph * 14 PNMTextGlyph * 0 0 100 0 0 0 0 0 0 0 0 0 0
+
+114 6 double 0 8194 6 double 6 double 0 3 0 0 0 0 0 0 0 0 0 0 0
+
+115 10 PNMImage * 0 8576 10 PNMImage * 10 PNMImage * 0 0 116 0 0 0 0 0 0 0 0 0 0
+
+116 8 PNMImage 0 2048 8 PNMImage 8 PNMImage 0 0 0 0 0 0 0 0 0 0 0 0 1516
+/**
+ * The name of this class derives from the fact that we originally implemented
+ * it as a layer on top of the "pnm library", based on netpbm, which was built
+ * to implement pbm, pgm, and pbm files, and is the underlying support of a
+ * number of public-domain image file converters.  Nowadays we are no longer
+ * derived directly from the pnm library, mainly to allow support of C++
+ * iostreams instead of the C stdio FILE interface.
+ *
+ * Conceptually, a PNMImage is a two-dimensional array of xels, which are the
+ * PNM-defined generic pixel type.  Each xel may have a red, green, and blue
+ * component, or (if the image is grayscale) a gray component.  The image may
+ * be read in, the individual xels manipulated, and written out again, or a
+ * black image may be constructed from scratch.
+ *
+ * A PNMImage has a color space and a maxval, the combination of which defines
+ * how a floating-point linear color value is encoded as an integer value in
+ * memory.  The functions ending in _val operate on encoded colors, whereas
+ * the regular ones work with linear floating-point values.  All operations
+ * are color space correct unless otherwise specified.
+ *
+ * The image is of size XSize() by YSize() xels, numbered from top to bottom,
+ * left to right, beginning at zero.
+ *
+ * Files can be specified by filename, or by an iostream pointer.  The
+ * filename "-" refers to stdin or stdout.
+ *
+ * This class is not inherently thread-safe; use it from a single thread or
+ * protect access using a mutex.
+ */
+
+117 14 LColor const * 0 8576 14 LColor const * 14 LColor const * 0 0 118 0 0 0 0 0 0 0 0 0 0
+
+118 12 LColor const 0 8832 12 LColor const 12 LColor const 0 0 119 0 0 0 0 0 0 0 0 0 0
+
+119 6 LColor 0 2105344 6 LColor 6 LColor 0 0 120 0 0 0 0 0 0 0 0 0 0
+
+120 7 LColorf 0 2105344 7 LColorf 7 LColorf 0 0 121 0 0 0 0 0 0 0 0 0 0
+
+121 10 LVecBase4f 0 2048 10 LVecBase4f 10 LVecBase4f 0 0 0 0 0 0 0 0 0 0 0 0 77
+/**
+ * This is the base class for all three-component vectors and points.
+ */
+
+122 16 Filename const * 0 8576 16 Filename const * 16 Filename const * 0 0 123 0 0 0 0 0 0 0 0 0 0
+
+123 14 Filename const 0 8832 14 Filename const 14 Filename const 0 0 124 0 0 0 0 0 0 0 0 0 0
+
+124 8 Filename 0 2048 8 Filename 8 Filename 0 0 0 0 0 0 0 0 0 0 0 0 839
+/**
+ * The name of a file, such as a texture file or an Egg file.  Stores the full
+ * pathname, and includes functions for extracting out the directory prefix
+ * part and the file extension and stuff.
+ *
+ * A Filename is also aware of the mapping between the Unix-like filename
+ * convention we use internally, and the local OS's specific filename
+ * convention, and it knows how to perform basic OS-specific I/O, like testing
+ * for file existence and searching a searchpath, as well as the best way to
+ * open an fstream for reading or writing.
+ *
+ * Note that the methods of Filename that interact with the filesystem (such
+ * as exists(), open_read(), etc.) directly interface with the operating system
+ * and are not aware of Panda's virtual file system.  To interact with the VFS,
+ * use the methods on VirtualFileSystem instead.
+ */
+
+125 14 PNMTextMaker * 0 8576 14 PNMTextMaker * 14 PNMTextMaker * 0 0 101 0 0 0 0 0 0 0 0 0 0
+
+126 20 PNMTextMaker const * 0 8576 20 PNMTextMaker const * 20 PNMTextMaker const * 0 0 127 0 0 0 0 0 0 0 0 0 0
+
+127 18 PNMTextMaker const 0 8832 18 PNMTextMaker const 18 PNMTextMaker const 0 0 101 0 0 0 0 0 0 0 0 0 0
+
+128 13 atomic string 0 2 13 atomic string 13 atomic string 0 7 0 0 0 0 0 0 0 0 0 0 0
+
+0
+1
+129 13 winding_order 0 6 99 68 67 0 0 0 0 0 0 27 FreetypeFont::winding_order 0
+
+0

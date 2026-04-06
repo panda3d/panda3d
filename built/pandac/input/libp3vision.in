@@ -1,0 +1,150 @@
+1775485823
+3 3
+11 libp3vision 4 nRMq 14 panda3d.vision 
+8
+9 15 get_num_options 0 4 17 28 WebcamVideo::get_num_options 0 1 1 198
+/**
+ * Returns the number of webcam options.  An "option" consists of a device
+ * plus a set of configuration parameters.  For example, "Creative Webcam Live
+ * at 640x480, 30 fps" is an option.
+ */
+46
+static int WebcamVideo::get_num_options(void);
+
+10 10 get_option 0 4 17 23 WebcamVideo::get_option 0 1 2 41
+/**
+ * Returns the nth webcam option.
+ */
+63
+static PointerTo< WebcamVideo > WebcamVideo::get_option(int n);
+
+11 10 get_size_x 0 4 17 23 WebcamVideo::get_size_x 0 1 3 39
+/**
+ * Returns the camera's size_x.
+ */
+47
+inline int WebcamVideo::get_size_x(void) const;
+
+12 10 get_size_y 0 4 17 23 WebcamVideo::get_size_y 0 1 4 39
+/**
+ * Returns the camera's size_y.
+ */
+47
+inline int WebcamVideo::get_size_y(void) const;
+
+13 7 get_fps 0 4 17 20 WebcamVideo::get_fps 0 1 5 142
+/**
+ * Returns the camera's framerate.  This is a maximum theoretical: the actual
+ * performance will depend on the speed of the hardware.
+ */
+47
+inline double WebcamVideo::get_fps(void) const;
+
+14 16 get_pixel_format 0 4 17 29 WebcamVideo::get_pixel_format 0 1 6 73
+/**
+ * Returns the camera's pixel format, as a FourCC code, if known.
+ */
+68
+inline std::string const &WebcamVideo::get_pixel_format(void) const;
+
+15 6 output 0 4 17 19 WebcamVideo::output 0 1 7 112
+/**
+ * Outputs the WebcamVideo.  This function simply writes the name, size and
+ * FPS to the output stream.
+ */
+57
+inline void WebcamVideo::output(std::ostream &out) const;
+
+16 14 get_class_type 0 4 17 27 WebcamVideo::get_class_type 0 1 8 0
+52
+static TypeHandle WebcamVideo::get_class_type(void);
+
+8
+1 0 0 6 9 20 0 0 198 /**
+ * Returns the number of webcam options.  An "option" consists of a device
+ * plus a set of configuration parameters.  For example, "Creative Webcam Live
+ * at 640x480, 30 fps" is an option.
+ */ 0 
+2 0 0 7 10 21 0 0 41 /**
+ * Returns the nth webcam option.
+ */ 1 1 n 1 20  
+3 0 0 6 11 20 0 0 39 /**
+ * Returns the camera's size_x.
+ */ 1 4 this 3 22  
+4 0 0 6 12 20 0 0 39 /**
+ * Returns the camera's size_y.
+ */ 1 4 this 3 22  
+5 0 0 6 13 24 0 0 142 /**
+ * Returns the camera's framerate.  This is a maximum theoretical: the actual
+ * performance will depend on the speed of the hardware.
+ */ 1 4 this 3 22  
+6 0 0 6 14 25 0 0 73 /**
+ * Returns the camera's pixel format, as a FourCC code, if known.
+ */ 1 4 this 3 22  
+7 0 0 4 15 28 0 0 112 /**
+ * Outputs the WebcamVideo.  This function simply writes the name, size and
+ * FPS to the output stream.
+ */ 2 4 this 3 22  3 out 1 26  
+8 0 0 7 16 30 0 0 0 0 
+14
+17 11 WebcamVideo 0 75777 11 WebcamVideo 11 WebcamVideo 0 0 0 0 0 1 31 8 9 10 11 12 13 14 15 16 1 32 0 1 0 18 0 0 0 0 90
+/**
+ * Allows you to open a webcam or other video capture device as a video
+ * stream.
+ */
+
+18 10 MovieVideo 0 2048 10 MovieVideo 10 MovieVideo 0 0 0 0 0 0 0 0 0 0 0 0 400
+/**
+ * A MovieVideo is actually any source that provides a sequence of video
+ * frames.  That could include an AVI file, a digital camera, or an internet
+ * TV station.
+ *
+ * The difference between a MovieVideo and a MovieVideoCursor is like the
+ * difference between a filename and a file handle.  The MovieVideo just
+ * indicates a particular movie.  The MovieVideoCursor is what allows access.
+ */
+
+19 24 PointerTo< WebcamVideo > 0 2048 24 PointerTo< WebcamVideo > 24 PointerTo< WebcamVideo > 0 0 0 0 0 0 0 0 0 0 0 0 0
+
+20 3 int 0 8194 3 int 3 int 0 1 0 0 0 0 0 0 0 0 0 0 0
+
+21 13 WebcamVideo * 0 8576 13 WebcamVideo * 13 WebcamVideo * 0 0 17 0 0 0 0 0 0 0 0 0 0
+
+22 19 WebcamVideo const * 0 8576 19 WebcamVideo const * 19 WebcamVideo const * 0 0 23 0 0 0 0 0 0 0 0 0 0
+
+23 17 WebcamVideo const 0 8832 17 WebcamVideo const 17 WebcamVideo const 0 0 17 0 0 0 0 0 0 0 0 0 0
+
+24 6 double 0 8194 6 double 6 double 0 3 0 0 0 0 0 0 0 0 0 0 0
+
+25 13 atomic string 0 2 13 atomic string 13 atomic string 0 7 0 0 0 0 0 0 0 0 0 0 0
+
+26 9 ostream * 0 8576 14 std::ostream * 14 std::ostream * 0 0 27 0 0 0 0 0 0 0 0 0 0
+
+27 7 ostream 0 2048 12 std::ostream 12 std::ostream 0 0 0 0 0 0 0 0 0 0 0 0 0
+
+28 4 void 0 8194 4 void 4 void 0 6 0 0 0 0 0 0 0 0 0 0 0
+
+29 10 TypeHandle 0 16779264 10 TypeHandle 10 TypeHandle 0 0 0 0 0 0 0 0 0 0 0 0 732
+/**
+ * TypeHandle is the identifier used to differentiate C++ class types.  Any
+ * C++ classes that inherit from some base class, and must be differentiated
+ * at run time, should store a static TypeHandle object that can be queried
+ * through a static member function named get_class_type().  Most of the time,
+ * it is also desirable to inherit from TypedObject, which provides some
+ * virtual functions to return the TypeHandle for a particular instance.
+ *
+ * At its essence, a TypeHandle is simply a unique identifier that is assigned
+ * by the TypeRegistry.  The TypeRegistry stores a tree of TypeHandles, so
+ * that ancestry of a particular type may be queried, and the type name may be
+ * retrieved for run-time display.
+ */
+
+30 12 TypeHandle * 0 8576 12 TypeHandle * 12 TypeHandle * 0 0 29 0 0 0 0 0 0 0 0 0 0
+
+0
+1
+31 7 options 0 66 19 10 0 0 0 0 9 0 0 20 WebcamVideo::options 0
+
+1
+32 11 get_options 0 9 10 24 WebcamVideo::get_options 0
+

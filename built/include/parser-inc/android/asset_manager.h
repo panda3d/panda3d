@@ -1,0 +1,2 @@
+struct AAssetManager;
+struct AAsset;

@@ -1,0 +1,123 @@
+/* dtool_config.h.  Generated automatically by makepanda.py */
+#define COMPILE_IN_DEFAULT_FONT 1
+#undef DEBUG_THREADS
+#define DEFAULT_PATHSEP ":"
+#define DO_COLLISION_RECORDING 1
+#define DO_DCAST 1
+#define DO_MEMORY_USAGE 1
+#define DO_PIPELINING 1
+#define DO_PSTATS 1
+#undef GETTIMEOFDAY_ONE_PARAM
+#undef GLOBAL_ARGC
+#undef GLOBAL_ARGV
+#undef HAVE_ARTOOLKIT
+#define HAVE_AUDIO 1
+#define HAVE_BMP 1
+#ifdef __aarch64__
+#undef HAVE_CG
+#else
+#define HAVE_CG 1
+#endif
+#ifdef __aarch64__
+#undef HAVE_CGDX9
+#else
+#define HAVE_CGDX9 1
+#endif
+#ifdef __aarch64__
+#undef HAVE_CGGL
+#else
+#define HAVE_CGGL 1
+#endif
+#undef HAVE_COCOA
+#undef HAVE_DINKUM
+#undef HAVE_DIRECTCAM
+#undef HAVE_DX9
+#undef HAVE_EIGEN
+#define HAVE_FFTW 1
+#define HAVE_FREETYPE 1
+#define HAVE_GETOPT 1
+#define HAVE_GETOPT_LONG_ONLY 1
+#undef HAVE_GLOBAL_ARGV
+#define HAVE_IMG 1
+#define HAVE_IOS_BINARY 1
+#define HAVE_IOS_TYPEDEFS 1
+#define HAVE_JPEG 1
+#undef HAVE_MIMALLOC
+#define HAVE_NET 1
+#undef HAVE_OPENAL_FRAMEWORK
+#undef HAVE_OPENEXR
+#define HAVE_OPENSSL 1
+#undef HAVE_OPUS
+#define HAVE_PNG 1
+#define HAVE_PNM 1
+#define HAVE_POSIX_THREADS 1
+#undef HAVE_PROC_CURPROC_CMDLINE
+#undef HAVE_PROC_CURPROC_FILE
+#undef HAVE_PROC_CURPROC_MAP
+#define HAVE_PROC_SELF_CMDLINE 1
+#define HAVE_PROC_SELF_ENVIRON 1
+#define HAVE_PROC_SELF_EXE 1
+#define HAVE_PROC_SELF_MAPS 1
+#define HAVE_PYTHON 1
+#define HAVE_RTTI 1
+#define HAVE_SGI_RGB 1
+#define HAVE_SOFTIMAGE_PIC 1
+#undef HAVE_SQUISH
+#define HAVE_STB_IMAGE 1
+#undef HAVE_STL_HASH
+#define HAVE_TGA 1
+#define HAVE_THREADS 1
+#define HAVE_TIFF 1
+#define HAVE_VIDEO4LINUX 1
+#define HAVE_VORBIS 1
+#undef HAVE_WGL
+#define HAVE_X11 1
+#define HAVE_ZLIB 1
+#define IOCTL_TERMINAL_WIDTH 1
+#undef IS_FREEBSD
+#define IS_LINUX 1
+#undef IS_OSX
+#define LINMATH_ALIGN 1
+#undef MUTEX_SPINLOCK
+#define NOTIFY_DEBUG 1
+#define OS_SIMPLE_THREADS 1
+#define PHAVE_ALLOCA_H 1
+#define PHAVE_DIRENT_H 1
+#define PHAVE_EXECINFO_H 1
+#define PHAVE_GETOPT_H 1
+#define PHAVE_GLOB_H 1
+#define PHAVE_IOSTREAM 1
+#undef PHAVE_IO_H
+#define PHAVE_LIMITS_H 1
+#define PHAVE_LINUX_INPUT_H 1
+#define PHAVE_LOCALE_H 1
+#define PHAVE_LOCKF 1
+#define PHAVE_MALLOC_H 1
+#define PHAVE_NEW 1
+#define PHAVE_SSTREAM 1
+#define PHAVE_STDINT_H 1
+#define PHAVE_STDLIB_H 1
+#define PHAVE_STRING_H 1
+#undef PHAVE_SYS_MALLOC_H
+#define PHAVE_SYS_TIME_H 1
+#define PHAVE_SYS_TYPES_H 1
+#define PHAVE_UCONTEXT_H 1
+#define PHAVE_UNISTD_H 1
+#define PHAVE_UTIME_H 1
+#define PRC_SAVE_DESCRIPTIONS 1
+#undef PROTOTYPE_GLOBAL_ARGV
+#undef PYTHON_FRAMEWORK
+#define REPORT_OPENSSL_ERRORS 1
+#undef SIMPLE_STRUCT_POINTERS
+#undef SIMPLE_THREADS
+#undef SIMULATE_NETWORK_DELAY
+#undef STATIC_INIT_GETENV
+#undef STDFLOAT_DOUBLE
+#define SUPPORT_FIXED_FUNCTION 1
+#undef SUPPORT_IMMEDIATE_MODE
+#undef USE_DEBUG_PYTHON
+#undef USE_DELETED_CHAIN
+#define USE_PANDAFILESTREAM 1
+#undef USE_TAU
+#define WANT_NATIVE_NET 1
+#undef WORDS_BIGENDIAN

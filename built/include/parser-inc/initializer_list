@@ -1,0 +1,36 @@
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file initializer_list
+ * @author tobspr
+ * @date 2016-11-01
+ */
+
+// This file, and all the other files in this directory, aren't
+// intended to be compiled--they're just parsed by CPPParser (and
+// interrogate) in lieu of the actual system headers, to generate the
+// interrogate database.
+
+#ifndef INITIALIZER_LIST_H
+#define INITIALIZER_LIST_H
+
+#include <stdtypedefs.h>
+
+namespace std {
+  template<class E> class initializer_list {
+  public:
+    typedef E value_type;
+    typedef const E& reference;
+    typedef const E& const_reference;
+    typedef size_t size_type;
+    typedef const E* iterator;
+    typedef const E* const_iterator;
+  };
+}
+
+#endif

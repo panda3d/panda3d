@@ -1,0 +1,29 @@
+#pragma once
+
+#include <initializer_list>
+
+namespace std {
+  class random_device;
+  class seed_seq;
+
+  template<class IntType = int> class uniform_int_distribution;
+  template<class RealType = double> class uniform_real_distribution;
+  class bernoulli_distribution;
+  template<class IntType = int> class binomial_distribution;
+  template<class IntType = int> class geometric_distribution;
+  template<class IntType = int> class negative_binomial_distribution;
+  template<class IntType = int> class poisson_distribution;
+  template<class RealType = double> class exponential_distribution;
+  template<class RealType = double> class gamma_distribution;
+  template<class RealType = double> class weibull_distribution;
+  template<class RealType = double> class extreme_value_distribution;
+  template<class RealType = double> class normal_distribution;
+  template<class RealType = double> class lognormal_distribution;
+  template<class RealType = double> class chi_squared_distribution;
+  template<class RealType = double> class cauchy_distribution;
+  template<class RealType = double> class fisher_f_distribution;
+  template<class RealType = double> class student_t_distribution;
+  template<class IntType = int> class discrete_distribution;
+  template<class RealType = double> class piecewise_constant_distribution;
+  template<class RealType = double> class piecewise_linear_distribution;
+}

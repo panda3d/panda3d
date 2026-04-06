@@ -1,0 +1,4 @@
+[console_scripts]
+interrogate = interrogate:main
+interrogate_module = interrogate_module:main
+

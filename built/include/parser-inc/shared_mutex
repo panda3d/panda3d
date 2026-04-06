@@ -1,0 +1,7 @@
+#pragma once
+
+namespace std {
+  class shared_mutex;
+  class shared_timed_mutex;
+  template<class Mutex> class shared_lock;
+}

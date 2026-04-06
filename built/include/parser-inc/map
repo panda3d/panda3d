@@ -1,0 +1,57 @@
+// Filename: map
+// Created by:  drose (12May00)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) Carnegie Mellon University.  All rights reserved.
+//
+// All use of this software is subject to the terms of the revised BSD
+// license.  You should have received a copy of this license along
+// with this source code in a file named "LICENSE."
+//
+////////////////////////////////////////////////////////////////////
+
+// This file, and all the other files in this directory, aren't
+// intended to be compiled--they're just parsed by CPPParser (and
+// interrogate) in lieu of the actual system headers, to generate the
+// interrogate database.
+
+#ifndef MAP_H
+#define MAP_H
+
+#include <stdtypedefs.h>
+#include <stdcompare.h>
+#include <pair>
+
+namespace std {
+  template<class T> class allocator;
+}
+
+template<class Key, class T, class Compare = less<Key>, class Allocator = std::allocator<pair<const Key, T> > >
+class map {
+public:
+  typedef Key key_type;
+  typedef T data_type;
+  typedef T mapped_type;
+  typedef pair<const Key, T> value_type;
+  typedef Compare key_compare;
+
+  typedef T *pointer;
+  typedef const T *const_pointer;
+  typedef T &reference;
+  typedef const T &const_reference;
+
+  class iterator;
+  class const_iterator;
+  class reverse_iterator;
+  class const_reverse_iterator;
+  typedef size_t size_type;
+  class difference_type;
+};
+
+template<class key, class element, class compare = less<key> >
+class multimap : public map<key, element, compare> {
+};
+
+#endif

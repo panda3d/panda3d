@@ -1,0 +1,1164 @@
+1775484376
+3 3
+14 libp3nativenet 4 5qEC 11 panda3d.net 
+93
+97 14 Socket_Address 0 260 190 30 Socket_Address::Socket_Address 0 2 1 2 112
+/**
+ * Constructor that lets us set a port value
+ */
+
+/**
+ *
+ */
+
+/**
+ *
+ */
+
+/**
+ *
+ */
+
+/**
+ *
+ */
+
+/**
+ *
+ */
+145
+inline explicit Socket_Address::Socket_Address(unsigned short int port = 0);
+inline Socket_Address::Socket_Address(Socket_Address const &inaddr);
+
+98 15 ~Socket_Address 0 518 190 31 Socket_Address::~Socket_Address 0 0 28
+/**
+ * Normal Destructor
+ */
+53
+virtual inline Socket_Address::~Socket_Address(void);
+
+99 10 set_any_IP 0 4 190 26 Socket_Address::set_any_IP 0 1 3 50
+/**
+ * Set to any address and a specified port
+ */
+64
+inline bool Socket_Address::set_any_IP(unsigned short int port);
+
+100 12 set_any_IPv6 0 4 190 28 Socket_Address::set_any_IPv6 0 1 4 56
+/**
+ * Set to any IPv6 address and a specified port.
+ */
+66
+inline bool Socket_Address::set_any_IPv6(unsigned short int port);
+
+101 8 set_port 0 4 190 24 Socket_Address::set_port 0 1 5 34
+/**
+ * Set to a specified port
+ */
+62
+inline bool Socket_Address::set_port(unsigned short int port);
+
+102 13 set_broadcast 0 4 190 29 Socket_Address::set_broadcast 0 1 6 60
+/**
+ * Set to the broadcast address and a specified port
+ */
+67
+inline bool Socket_Address::set_broadcast(unsigned short int port);
+
+103 8 set_host 0 4 190 24 Socket_Address::set_host 0 3 7 8 9 387
+/**
+ *
+ */
+
+/**
+ * This function will take a port and string-based TCP address and initialize
+ * the address with this information.  Returns true on success; on failure, it
+ * returns false and the address may be undefined.
+ */
+
+/**
+ * Initializes the address from a string specifying both the address and port,
+ * separated by a colon.  An IPv6 address must be enclosed in brackets.
+ */
+225
+bool Socket_Address::set_host(std::string const &hostname, unsigned short int port);
+bool Socket_Address::set_host(std::string const &hostname);
+inline bool Socket_Address::set_host(uint32_t ip4addr, unsigned short int port);
+
+104 5 clear 0 4 190 21 Socket_Address::clear 0 1 10 60
+/**
+ * Set the internal values to a suitable known value
+ */
+40
+inline void Socket_Address::clear(void);
+
+105 10 get_family 0 4 190 26 Socket_Address::get_family 0 1 11 97
+/**
+ * Returns AF_INET if this is an IPv4 address, or AF_INET6 if this is an IPv6
+ * address.
+ */
+58
+inline sa_family_t Socket_Address::get_family(void) const;
+
+106 8 get_port 0 4 190 24 Socket_Address::get_port 0 1 12 45
+/**
+ * Get the port portion as an integer
+ */
+63
+inline unsigned short int Socket_Address::get_port(void) const;
+
+107 6 get_ip 0 4 190 22 Socket_Address::get_ip 0 1 13 64
+/**
+ * Return the IP address portion in dot notation string.
+ */
+47
+std::string Socket_Address::get_ip(void) const;
+
+108 11 get_ip_port 0 4 190 27 Socket_Address::get_ip_port 0 1 14 133
+/**
+ * Return the ip address/port in dot notation string.  If this is an IPv6
+ * address, it will be enclosed in square brackets.
+ */
+52
+std::string Socket_Address::get_ip_port(void) const;
+
+109 15 GetIPAddressRaw 0 4 190 31 Socket_Address::GetIPAddressRaw 0 1 15 130
+/**
+ * Returns a raw 32-bit unsigned integer representing the IPv4 address.
+ * @deprecated  Does not work with IPv6 addresses.
+ */
+62
+unsigned long int Socket_Address::GetIPAddressRaw(void) const;
+
+110 11 operator == 0 4 190 27 Socket_Address::operator == 0 1 16 0
+72
+inline bool Socket_Address::operator ==(Socket_Address const &in) const;
+
+111 11 operator != 0 4 190 27 Socket_Address::operator != 0 1 17 0
+72
+inline bool Socket_Address::operator !=(Socket_Address const &in) const;
+
+112 10 operator < 0 4 190 26 Socket_Address::operator < 0 1 18 0
+71
+inline bool Socket_Address::operator <(Socket_Address const &in) const;
+
+113 6 is_any 0 4 190 22 Socket_Address::is_any 0 1 19 39
+/**
+ * True if the address is zero.
+ */
+47
+inline bool Socket_Address::is_any(void) const;
+
+114 14 is_mcast_range 0 4 190 30 Socket_Address::is_mcast_range 0 1 20 57
+/**
+ * True if the address is in the multicast range.
+ */
+55
+inline bool Socket_Address::is_mcast_range(void) const;
+
+115 9 Socket_IP 0 260 191 20 Socket_IP::Socket_IP 0 2 21 22 79
+/**
+ * Def Constructor
+ */
+
+/**
+ * Assigns an existing socket to this class
+ */
+74
+inline Socket_IP::Socket_IP(void);
+inline Socket_IP::Socket_IP(SOCKET in);
+
+116 5 Close 0 4 191 16 Socket_IP::Close 0 1 23 53
+/**
+ * Closes a socket if it is open (allocated).
+ */
+35
+inline void Socket_IP::Close(void);
+
+117 12 GetLastError 0 4 191 23 Socket_IP::GetLastError 0 1 24 57
+/**
+ * Gets the last errcode from a socket operation.
+ */
+48
+static inline int Socket_IP::GetLastError(void);
+
+118 14 SetNonBlocking 0 4 191 25 Socket_IP::SetNonBlocking 0 1 25 67
+/**
+ * this function will throw a socket into non-blocking mode
+ */
+43
+inline int Socket_IP::SetNonBlocking(void);
+
+119 11 SetBlocking 0 4 191 22 Socket_IP::SetBlocking 0 1 26 102
+/**
+ * Set the socket to block on subsequent calls to socket functions that
+ * address this socket
+ */
+40
+inline int Socket_IP::SetBlocking(void);
+
+120 15 SetReuseAddress 0 4 191 26 Socket_IP::SetReuseAddress 0 1 27 57
+/**
+ * Informs a socket to reuse IP address as needed
+ */
+57
+inline bool Socket_IP::SetReuseAddress(bool flag = true);
+
+121 9 SetV6Only 0 4 191 20 Socket_IP::SetV6Only 0 1 28 103
+/**
+ * Sets a flag indicating whether this IPv6 socket should operate in
+ * dual-stack mode or not.
+ */
+44
+inline bool Socket_IP::SetV6Only(bool flag);
+
+122 6 Active 0 4 191 17 Socket_IP::Active 0 1 29 48
+/**
+ * Ask if the socket is open (allocated)
+ */
+36
+inline bool Socket_IP::Active(void);
+
+123 17 SetRecvBufferSize 0 4 191 28 Socket_IP::SetRecvBufferSize 0 1 30 63
+/**
+ * Ok it sets the recv buffer size for both tcp and UDP
+ */
+50
+inline int Socket_IP::SetRecvBufferSize(int size);
+
+124 9 SetSocket 0 4 191 20 Socket_IP::SetSocket 0 1 31 51
+/**
+ * Assigns an existing socket to this class
+ */
+45
+inline void Socket_IP::SetSocket(SOCKET ins);
+
+125 9 GetSocket 0 4 191 20 Socket_IP::GetSocket 0 2 32 33 82
+/**
+ * Gets the base socket type
+ */
+
+/**
+ * Get The RAW file id of the socket
+ */
+89
+inline SOCKET Socket_IP::GetSocket(void);
+inline SOCKET Socket_IP::GetSocket(void) const;
+
+126 11 GetPeerName 0 4 191 22 Socket_IP::GetPeerName 0 1 34 43
+/**
+ * Wrapper on berkly getpeername...
+ */
+57
+inline Socket_Address Socket_IP::GetPeerName(void) const;
+
+127 17 InitNetworkDriver 0 4 191 28 Socket_IP::InitNetworkDriver 0 1 35 0
+53
+static inline int Socket_IP::InitNetworkDriver(void);
+
+128 14 get_class_type 0 4 191 25 Socket_IP::get_class_type 0 1 36 0
+50
+static TypeHandle Socket_IP::get_class_type(void);
+
+129 10 Socket_TCP 0 260 193 22 Socket_TCP::Socket_TCP 0 2 37 38 10
+/**
+ *
+ */
+76
+inline Socket_TCP::Socket_TCP(SOCKET );
+inline Socket_TCP::Socket_TCP(void);
+
+130 10 SetNoDelay 0 4 193 22 Socket_TCP::SetNoDelay 0 1 39 73
+/**
+ * Disable Nagle algorithm.  Don't delay send to coalesce packets
+ */
+52
+inline int Socket_TCP::SetNoDelay(bool flag = true);
+
+131 9 SetLinger 0 4 193 21 Socket_TCP::SetLinger 0 1 40 66
+/**
+ * will control the behavior of SO_LINGER for a TCP socket
+ */
+59
+inline int Socket_TCP::SetLinger(int interval_seconds = 0);
+
+132 10 DontLinger 0 4 193 22 Socket_TCP::DontLinger 0 1 41 217
+/**
+ * Turn off the linger flag.  The socket will quickly release buffered items
+ * and free up OS resources.  You may lose a stream if you use this flag and
+ * do not negotiate the close at the application layer.
+ */
+40
+inline int Socket_TCP::DontLinger(void);
+
+133 17 SetSendBufferSize 0 4 193 29 Socket_TCP::SetSendBufferSize 0 1 42 143
+/**
+ * Just like it sounds.  Sets a buffered socket recv buffer size.  This
+ * function does not refuse ranges outside hard-coded OS limits
+ */
+53
+inline int Socket_TCP::SetSendBufferSize(int insize);
+
+134 10 ActiveOpen 0 4 193 22 Socket_TCP::ActiveOpen 0 1 43 200
+// inline bool ActiveOpen(const Socket_Address &theaddress);
+
+/**
+ * This function will try and set the socket up for active open to a specified
+ * address and port provided by the input parameter
+ */
+84
+inline bool Socket_TCP::ActiveOpen(Socket_Address const &theaddress, bool setdelay);
+
+135 21 ActiveOpenNonBlocking 0 4 193 33 Socket_TCP::ActiveOpenNonBlocking 0 1 44 161
+/**
+ * This function will try and set the socket up for active open to a specified
+ * address and port provided by the input parameter (non-blocking version)
+ */
+80
+inline bool Socket_TCP::ActiveOpenNonBlocking(Socket_Address const &theaddress);
+
+136 21 ErrorIs_WouldBlocking 0 4 193 33 Socket_TCP::ErrorIs_WouldBlocking 0 1 45 0
+55
+inline bool Socket_TCP::ErrorIs_WouldBlocking(int err);
+
+137 12 ShutdownSend 0 4 193 24 Socket_TCP::ShutdownSend 0 1 46 0
+43
+inline bool Socket_TCP::ShutdownSend(void);
+
+138 8 SendData 0 4 193 20 Socket_TCP::SendData 0 1 47 137
+/**
+ * Ok Lets Send the Data - if error 0 if socket closed for write or lengh is 0
+ * + bytes writen ( May be smaller than requested)
+ */
+58
+inline int Socket_TCP::SendData(vector_uchar const &data);
+
+139 8 RecvData 0 4 193 20 Socket_TCP::RecvData 0 1 48 295
+/**
+ * Read the data from the connection - if error 0 if socket closed for read or
+ * length is 0 + bytes read ( May be smaller than requested)
+ */
+
+/**
+ * Read the data from the connection - if error 0 if socket closed for read or
+ * length is 0 + bytes read (May be smaller than requested)
+ */
+46
+std::string Socket_TCP::RecvData(int max_len);
+
+140 14 get_class_type 0 4 193 26 Socket_TCP::get_class_type 0 1 49 0
+51
+static TypeHandle Socket_TCP::get_class_type(void);
+
+141 11 ~Socket_TCP 0 516 193 23 Socket_TCP::~Socket_TCP 0 0 0
+30
+Socket_TCP::~Socket_TCP(void);
+
+142 17 Socket_TCP_Listen 0 260 194 36 Socket_TCP_Listen::Socket_TCP_Listen 0 1 50 0
+43
+Socket_TCP_Listen::Socket_TCP_Listen(void);
+
+143 13 OpenForListen 0 4 194 32 Socket_TCP_Listen::OpenForListen 0 2 51 52 120
+/**
+ * This function will initialize a listening Socket
+ */
+
+/**
+ * This function will initialize a listening Socket
+ */
+197
+inline bool Socket_TCP_Listen::OpenForListen(unsigned short int port, int backlog_size = 1024);
+inline bool Socket_TCP_Listen::OpenForListen(Socket_Address const &address, int backlog_size = 1024);
+
+144 21 GetIncomingConnection 0 4 194 40 Socket_TCP_Listen::GetIncomingConnection 0 1 53 58
+/**
+ * This function is used to accept new connections
+ */
+102
+inline bool Socket_TCP_Listen::GetIncomingConnection(Socket_TCP &newsession, Socket_Address &address);
+
+145 14 get_class_type 0 4 194 33 Socket_TCP_Listen::get_class_type 0 1 54 0
+58
+static TypeHandle Socket_TCP_Listen::get_class_type(void);
+
+146 19 Socket_UDP_Incoming 0 260 195 40 Socket_UDP_Incoming::Socket_UDP_Incoming 0 1 55 0
+54
+inline Socket_UDP_Incoming::Socket_UDP_Incoming(void);
+
+147 12 OpenForInput 0 4 195 33 Socket_UDP_Incoming::OpenForInput 0 2 56 57 102
+/**
+ * Starts a UDP socket listening on a port
+ */
+
+/**
+ * Starts a UDP socket listening on a port
+ */
+149
+inline bool Socket_UDP_Incoming::OpenForInput(unsigned short int port);
+inline bool Socket_UDP_Incoming::OpenForInput(Socket_Address const &address);
+
+148 17 OpenForInputMCast 0 4 195 38 Socket_UDP_Incoming::OpenForInputMCast 0 1 58 50
+/**
+ * Starts a UDP socket listening on a port
+ */
+82
+inline bool Socket_UDP_Incoming::OpenForInputMCast(Socket_Address const &address);
+
+149 9 GetPacket 0 4 195 30 Socket_UDP_Incoming::GetPacket 0 0 105
+/**
+ * Grabs a dataset off the listening UDP socket and fills in the source
+ * address information
+ *
+ */
+94
+inline bool Socket_UDP_Incoming::GetPacket(char *data, int *max_len, Socket_Address &address);
+
+150 6 SendTo 0 4 195 27 Socket_UDP_Incoming::SendTo 0 1 59 41
+/**
+ * Send data to specified address
+ */
+98
+inline bool Socket_UDP_Incoming::SendTo(char const *data, int len, Socket_Address const &address);
+
+151 13 InitNoAddress 0 4 195 34 Socket_UDP_Incoming::InitNoAddress 0 1 60 68
+/**
+ * Set this socket to work without a bound external address.
+ */
+53
+inline bool Socket_UDP_Incoming::InitNoAddress(void);
+
+152 14 SetToBroadCast 0 4 195 35 Socket_UDP_Incoming::SetToBroadCast 0 1 61 85
+/**
+ * Flips the OS bits that allow for brodcast packets to come in on this port.
+ */
+54
+inline bool Socket_UDP_Incoming::SetToBroadCast(void);
+
+153 14 get_class_type 0 4 195 35 Socket_UDP_Incoming::get_class_type 0 1 62 0
+60
+static TypeHandle Socket_UDP_Incoming::get_class_type(void);
+
+154 20 ~Socket_UDP_Incoming 0 516 195 41 Socket_UDP_Incoming::~Socket_UDP_Incoming 0 0 0
+48
+Socket_UDP_Incoming::~Socket_UDP_Incoming(void);
+
+155 19 Socket_UDP_Outgoing 0 260 196 40 Socket_UDP_Outgoing::Socket_UDP_Outgoing 0 1 63 0
+54
+inline Socket_UDP_Outgoing::Socket_UDP_Outgoing(void);
+
+156 13 InitToAddress 0 4 196 34 Socket_UDP_Outgoing::InitToAddress 0 1 64 106
+// use this interface for a tagreted UDP connection
+
+/**
+ * Connects the Socket to a specified address
+ */
+78
+inline bool Socket_UDP_Outgoing::InitToAddress(Socket_Address const &address);
+
+157 4 Send 0 4 196 25 Socket_UDP_Outgoing::Send 0 1 65 84
+/**
+ * Send data to connected address
+ */
+
+/**
+ * Send data to connected address
+ */
+64
+inline bool Socket_UDP_Outgoing::Send(vector_uchar const &data);
+
+158 13 InitNoAddress 0 4 196 34 Socket_UDP_Outgoing::InitNoAddress 0 1 66 111
+// use this interface for a none tagreted UDP connection
+
+/**
+ * This will set a udp up for targeted sends.
+ */
+53
+inline bool Socket_UDP_Outgoing::InitNoAddress(void);
+
+159 6 SendTo 0 4 196 27 Socket_UDP_Outgoing::SendTo 0 1 67 84
+/**
+ * Send data to specified address
+ */
+
+/**
+ * Send data to specified address
+ */
+97
+inline bool Socket_UDP_Outgoing::SendTo(vector_uchar const &data, Socket_Address const &address);
+
+160 14 SetToBroadCast 0 4 196 35 Socket_UDP_Outgoing::SetToBroadCast 0 1 68 71
+/**
+ * Ask the OS to let us receive broadcast packets on this port.
+ */
+54
+inline bool Socket_UDP_Outgoing::SetToBroadCast(void);
+
+161 14 get_class_type 0 4 196 35 Socket_UDP_Outgoing::get_class_type 0 1 69 0
+60
+static TypeHandle Socket_UDP_Outgoing::get_class_type(void);
+
+162 20 ~Socket_UDP_Outgoing 0 516 196 41 Socket_UDP_Outgoing::~Socket_UDP_Outgoing 0 0 0
+48
+Socket_UDP_Outgoing::~Socket_UDP_Outgoing(void);
+
+163 12 Socket_fdset 0 260 197 26 Socket_fdset::Socket_fdset 0 2 70 71 26
+/**
+ * The constructor
+ */
+107
+inline Socket_fdset::Socket_fdset(void);
+inline Socket_fdset::Socket_fdset(Socket_fdset const &) = default;
+
+164 12 setForSocket 0 4 197 26 Socket_fdset::setForSocket 0 1 72 10
+/**
+ *
+ */
+63
+inline void Socket_fdset::setForSocket(Socket_IP const &incon);
+
+165 8 IsSetFor 0 4 197 22 Socket_fdset::IsSetFor 0 1 73 70
+/**
+ * check to see if a socket object has been marked for reading
+ */
+65
+inline bool Socket_fdset::IsSetFor(Socket_IP const &incon) const;
+
+166 11 WaitForRead 0 4 197 25 Socket_fdset::WaitForRead 0 2 74 75 22
+/**
+ *
+ */
+
+/**
+ *
+ */
+163
+inline int Socket_fdset::WaitForRead(bool zeroFds, uint32_t sleep_time = 4294967295);
+inline int Socket_fdset::WaitForRead(bool zeroFds, Time_Span const &timeout);
+
+167 12 WaitForWrite 0 4 197 26 Socket_fdset::WaitForWrite 0 1 76 94
+/**
+ * This is the function that will wait till one of the sockets is ready for
+ * writing
+ */
+86
+inline int Socket_fdset::WaitForWrite(bool zeroFds, uint32_t sleep_time = 4294967295);
+
+168 12 WaitForError 0 4 197 26 Socket_fdset::WaitForError 0 1 77 91
+/**
+ * This is the function that will wait till one of the sockets is in error
+ * state
+ */
+86
+inline int Socket_fdset::WaitForError(bool zeroFds, uint32_t sleep_time = 4294967295);
+
+169 5 clear 0 4 197 19 Socket_fdset::clear 0 1 78 37
+/**
+ * Marks the content as empty
+ */
+38
+inline void Socket_fdset::clear(void);
+
+170 13 ~Socket_fdset 0 516 197 27 Socket_fdset::~Socket_fdset 0 0 0
+34
+Socket_fdset::~Socket_fdset(void);
+
+171 10 GetMessage 0 4 198 39 Buffered_DatagramConnection::GetMessage 0 1 80 54
+/**
+ * Reads a message.  Returns false on failure.
+ */
+67
+inline bool Buffered_DatagramConnection::GetMessage(Datagram &val);
+
+172 9 DoConnect 0 4 198 38 Buffered_DatagramConnection::DoConnect 0 1 81 38
+// all the real state magic is in here
+57
+inline bool Buffered_DatagramConnection::DoConnect(void);
+
+173 11 IsConnected 0 4 198 40 Buffered_DatagramConnection::IsConnected 0 1 82 38
+// all the real state magic is in here
+59
+inline bool Buffered_DatagramConnection::IsConnected(void);
+
+174 27 Buffered_DatagramConnection 0 260 198 56 Buffered_DatagramConnection::Buffered_DatagramConnection 0 1 79 10
+/**
+ *
+ */
+124
+inline explicit Buffered_DatagramConnection::Buffered_DatagramConnection(int rbufsize, int wbufsize, int write_flush_point);
+
+175 11 SendMessage 0 4 198 40 Buffered_DatagramConnection::SendMessage 0 1 83 58
+// the reason thsi all exists
+
+/**
+ * send the message
+ */
+67
+bool Buffered_DatagramConnection::SendMessage(Datagram const &msg);
+
+176 5 Flush 0 4 198 34 Buffered_DatagramConnection::Flush 0 1 84 28
+/**
+ * Flush all writes.
+ */
+53
+inline bool Buffered_DatagramConnection::Flush(void);
+
+177 5 Reset 0 4 198 34 Buffered_DatagramConnection::Reset 0 1 85 16
+/**
+ * Reset
+ */
+53
+inline void Buffered_DatagramConnection::Reset(void);
+
+178 23 WaitForNetworkReadEvent 0 4 198 52 Buffered_DatagramConnection::WaitForNetworkReadEvent 0 1 86 0
+86
+inline void Buffered_DatagramConnection::WaitForNetworkReadEvent(PN_stdfloat MaxTime);
+
+179 16 AddressQueueSize 0 4 198 45 Buffered_DatagramConnection::AddressQueueSize 0 1 87 22
+// address queue stuff
+71
+inline std::size_t Buffered_DatagramConnection::AddressQueueSize(void);
+
+180 10 AddAddress 0 4 198 39 Buffered_DatagramConnection::AddAddress 0 1 88 52
+/**
+ * must be called to set value to the server
+ */
+75
+inline void Buffered_DatagramConnection::AddAddress(Socket_Address &inadr);
+
+181 14 ClearAddresses 0 4 198 43 Buffered_DatagramConnection::ClearAddresses 0 1 89 0
+62
+inline void Buffered_DatagramConnection::ClearAddresses(void);
+
+182 14 get_class_type 0 4 198 43 Buffered_DatagramConnection::get_class_type 0 1 90 0
+68
+static TypeHandle Buffered_DatagramConnection::get_class_type(void);
+
+183 10 Socket_UDP 0 260 199 22 Socket_UDP::Socket_UDP 0 1 91 0
+36
+inline Socket_UDP::Socket_UDP(void);
+
+184 13 InitToAddress 0 4 199 25 Socket_UDP::InitToAddress 0 1 92 106
+// use this interface for a tagreted UDP connection
+
+/**
+ * Connects the socket to a Specified address
+ */
+69
+inline bool Socket_UDP::InitToAddress(Socket_Address const &address);
+
+185 4 Send 0 4 199 16 Socket_UDP::Send 0 1 93 84
+/**
+ * Send data to connected address
+ */
+
+/**
+ * Send data to connected address
+ */
+55
+inline bool Socket_UDP::Send(vector_uchar const &data);
+
+186 6 SendTo 0 4 199 18 Socket_UDP::SendTo 0 1 94 84
+/**
+ * Send data to specified address
+ */
+
+/**
+ * Send data to specified address
+ */
+88
+inline bool Socket_UDP::SendTo(vector_uchar const &data, Socket_Address const &address);
+
+187 14 SetToBroadCast 0 4 199 26 Socket_UDP::SetToBroadCast 0 1 95 71
+/**
+ * Ask the OS to let us receive broadcast packets on this port.
+ */
+45
+inline bool Socket_UDP::SetToBroadCast(void);
+
+188 14 get_class_type 0 4 199 26 Socket_UDP::get_class_type 0 1 96 0
+51
+static TypeHandle Socket_UDP::get_class_type(void);
+
+189 11 ~Socket_UDP 0 516 199 23 Socket_UDP::~Socket_UDP 0 0 0
+30
+Socket_UDP::~Socket_UDP(void);
+
+96
+1 0 0 15 97 202 98 0 10 /**
+ *
+ */ 1 6 inaddr 1 200  
+2 0 0 7 97 202 98 0 52 /**
+ * Constructor that lets us set a port value
+ */ 1 4 port 5 203  
+3 0 0 6 99 204 0 0 50 /**
+ * Set to any address and a specified port
+ */ 2 4 this 3 202  4 port 1 203  
+4 0 0 6 100 204 0 0 56 /**
+ * Set to any IPv6 address and a specified port.
+ */ 2 4 this 3 202  4 port 1 203  
+5 0 0 6 101 204 0 0 34 /**
+ * Set to a specified port
+ */ 2 4 this 3 202  4 port 1 203  
+6 0 0 6 102 204 0 0 60 /**
+ * Set to the broadcast address and a specified port
+ */ 2 4 this 3 202  4 port 1 203  
+7 0 0 6 103 204 0 0 158 /**
+ * Initializes the address from a string specifying both the address and port,
+ * separated by a colon.  An IPv6 address must be enclosed in brackets.
+ */ 2 4 this 3 202  8 hostname 1 205  
+8 0 0 6 103 204 0 0 215 /**
+ * This function will take a port and string-based TCP address and initialize
+ * the address with this information.  Returns true on success; on failure, it
+ * returns false and the address may be undefined.
+ */ 3 4 this 3 202  8 hostname 1 205  4 port 1 203  
+9 0 0 6 103 204 0 0 10 /**
+ *
+ */ 3 4 this 3 202  7 ip4addr 1 206  4 port 1 203  
+10 0 0 4 104 208 0 0 60 /**
+ * Set the internal values to a suitable known value
+ */ 1 4 this 3 202  
+11 0 0 6 105 209 0 0 97 /**
+ * Returns AF_INET if this is an IPv4 address, or AF_INET6 if this is an IPv6
+ * address.
+ */ 1 4 this 3 200  
+12 0 0 6 106 203 0 0 45 /**
+ * Get the port portion as an integer
+ */ 1 4 this 3 200  
+13 0 0 6 107 205 0 0 64 /**
+ * Return the IP address portion in dot notation string.
+ */ 1 4 this 3 200  
+14 0 0 6 108 205 0 0 133 /**
+ * Return the ip address/port in dot notation string.  If this is an IPv6
+ * address, it will be enclosed in square brackets.
+ */ 1 4 this 3 200  
+15 0 0 6 109 210 0 0 130 /**
+ * Returns a raw 32-bit unsigned integer representing the IPv4 address.
+ * @deprecated  Does not work with IPv6 addresses.
+ */ 1 4 this 3 200  
+16 0 0 6 110 204 0 0 0 2 4 this 3 200  2 in 1 200  
+17 0 0 6 111 204 0 0 0 2 4 this 3 200  2 in 1 200  
+18 0 0 6 112 204 0 0 0 2 4 this 3 200  2 in 1 200  
+19 0 0 6 113 204 0 0 39 /**
+ * True if the address is zero.
+ */ 1 4 this 3 200  
+20 0 0 6 114 204 0 0 57 /**
+ * True if the address is in the multicast range.
+ */ 1 4 this 3 200  
+21 0 0 7 115 211 0 0 26 /**
+ * Def Constructor
+ */ 0 
+22 0 0 23 115 211 0 0 51 /**
+ * Assigns an existing socket to this class
+ */ 1 2 in 1 212  
+23 0 0 4 116 208 0 0 53 /**
+ * Closes a socket if it is open (allocated).
+ */ 1 4 this 3 211  
+24 0 0 6 117 213 0 0 57 /**
+ * Gets the last errcode from a socket operation.
+ */ 0 
+25 0 0 6 118 213 0 0 67 /**
+ * this function will throw a socket into non-blocking mode
+ */ 1 4 this 3 211  
+26 0 0 6 119 213 0 0 102 /**
+ * Set the socket to block on subsequent calls to socket functions that
+ * address this socket
+ */ 1 4 this 3 211  
+27 0 0 6 120 204 0 0 57 /**
+ * Informs a socket to reuse IP address as needed
+ */ 2 4 this 3 211  4 flag 5 204  
+28 0 0 6 121 204 0 0 103 /**
+ * Sets a flag indicating whether this IPv6 socket should operate in
+ * dual-stack mode or not.
+ */ 2 4 this 3 211  4 flag 1 204  
+29 0 0 6 122 204 0 0 48 /**
+ * Ask if the socket is open (allocated)
+ */ 1 4 this 3 211  
+30 0 0 6 123 213 0 0 63 /**
+ * Ok it sets the recv buffer size for both tcp and UDP
+ */ 2 4 this 3 211  4 size 1 213  
+31 0 0 4 124 208 0 0 51 /**
+ * Assigns an existing socket to this class
+ */ 2 4 this 3 211  3 ins 1 212  
+32 0 0 6 125 212 0 0 36 /**
+ * Gets the base socket type
+ */ 1 4 this 3 211  
+33 0 0 6 125 212 0 0 44 /**
+ * Get The RAW file id of the socket
+ */ 1 4 this 3 214  
+34 0 0 7 126 202 98 0 43 /**
+ * Wrapper on berkly getpeername...
+ */ 1 4 this 3 214  
+35 0 0 6 127 213 0 0 0 0 
+36 0 0 7 128 217 0 0 0 0 
+37 0 0 7 129 218 141 0 0 0 
+38 0 0 23 129 218 141 0 10 /**
+ *
+ */ 1 6 param0 0 212  
+39 0 0 6 130 213 0 0 73 /**
+ * Disable Nagle algorithm.  Don't delay send to coalesce packets
+ */ 2 4 this 3 218  4 flag 5 204  
+40 0 0 6 131 213 0 0 66 /**
+ * will control the behavior of SO_LINGER for a TCP socket
+ */ 2 4 this 3 218  16 interval_seconds 5 213  
+41 0 0 6 132 213 0 0 217 /**
+ * Turn off the linger flag.  The socket will quickly release buffered items
+ * and free up OS resources.  You may lose a stream if you use this flag and
+ * do not negotiate the close at the application layer.
+ */ 1 4 this 3 218  
+42 0 0 6 133 213 0 0 143 /**
+ * Just like it sounds.  Sets a buffered socket recv buffer size.  This
+ * function does not refuse ranges outside hard-coded OS limits
+ */ 2 4 this 3 218  6 insize 1 213  
+43 0 0 6 134 204 0 0 138 /**
+ * This function will try and set the socket up for active open to a specified
+ * address and port provided by the input parameter
+ */ 3 4 this 3 218  10 theaddress 1 200  8 setdelay 1 204  
+44 0 0 6 135 204 0 0 161 /**
+ * This function will try and set the socket up for active open to a specified
+ * address and port provided by the input parameter (non-blocking version)
+ */ 2 4 this 3 218  10 theaddress 1 200  
+45 0 0 6 136 204 0 0 0 2 4 this 3 218  3 err 1 213  
+46 0 0 6 137 204 0 0 0 1 4 this 3 218  
+47 0 0 6 138 213 0 0 0 2 4 this 3 218  4 data 1 219  
+48 0 0 6 139 205 0 0 146 /**
+ * Read the data from the connection - if error 0 if socket closed for read or
+ * length is 0 + bytes read (May be smaller than requested)
+ */ 2 4 this 3 218  7 max_len 1 213  
+49 0 0 7 140 217 0 0 0 0 
+50 0 0 7 142 221 0 0 0 0 
+51 0 0 6 143 204 0 0 59 /**
+ * This function will initialize a listening Socket
+ */ 3 4 this 3 221  7 address 1 200  12 backlog_size 5 213  
+52 0 0 6 143 204 0 0 59 /**
+ * This function will initialize a listening Socket
+ */ 3 4 this 3 221  4 port 1 203  12 backlog_size 5 213  
+53 0 0 6 144 204 0 0 0 3 4 this 3 221  10 newsession 1 218  7 address 1 202  
+54 0 0 7 145 217 0 0 0 0 
+55 0 0 7 146 222 154 0 0 0 
+56 0 0 6 147 204 0 0 50 /**
+ * Starts a UDP socket listening on a port
+ */ 2 4 this 3 222  7 address 1 200  
+57 0 0 6 147 204 0 0 50 /**
+ * Starts a UDP socket listening on a port
+ */ 2 4 this 3 222  4 port 1 203  
+58 0 0 6 148 204 0 0 50 /**
+ * Starts a UDP socket listening on a port
+ */ 2 4 this 3 222  7 address 1 200  
+59 0 0 6 150 204 0 0 41 /**
+ * Send data to specified address
+ */ 4 4 this 3 222  4 data 1 205  3 len 1 213  7 address 1 200  
+60 0 0 6 151 204 0 0 68 /**
+ * Set this socket to work without a bound external address.
+ */ 1 4 this 3 222  
+61 0 0 6 152 204 0 0 85 /**
+ * Flips the OS bits that allow for brodcast packets to come in on this port.
+ */ 1 4 this 3 222  
+62 0 0 7 153 217 0 0 0 0 
+63 0 0 7 155 223 162 0 0 0 
+64 0 0 6 156 204 0 0 53 /**
+ * Connects the Socket to a specified address
+ */ 2 4 this 3 223  7 address 1 200  
+65 0 0 6 157 204 0 0 41 /**
+ * Send data to connected address
+ */ 2 4 this 3 223  4 data 1 219  
+66 0 0 6 158 204 0 0 56 // use this interface for a none tagreted UDP connection 1 4 this 3 223  
+67 0 0 6 159 204 0 0 41 /**
+ * Send data to specified address
+ */ 3 4 this 3 223  4 data 1 219  7 address 1 200  
+68 0 0 6 160 204 0 0 71 /**
+ * Ask the OS to let us receive broadcast packets on this port.
+ */ 1 4 this 3 223  
+69 0 0 7 161 217 0 0 0 0 
+70 0 0 7 163 224 170 0 26 /**
+ * The constructor
+ */ 0 
+71 0 0 15 163 224 170 0 0 1 6 param0 0 225  
+72 0 0 4 164 208 0 0 10 /**
+ *
+ */ 2 4 this 3 224  5 incon 1 214  
+73 0 0 6 165 204 0 0 70 /**
+ * check to see if a socket object has been marked for reading
+ */ 2 4 this 3 225  5 incon 1 214  
+74 0 0 6 166 213 0 0 10 /**
+ *
+ */ 3 4 this 3 224  7 zeroFds 1 204  7 timeout 1 227  
+75 0 0 6 166 213 0 0 10 /**
+ *
+ */ 3 4 this 3 224  7 zeroFds 1 204  10 sleep_time 5 206  
+76 0 0 6 167 213 0 0 94 /**
+ * This is the function that will wait till one of the sockets is ready for
+ * writing
+ */ 3 4 this 3 224  7 zeroFds 1 204  10 sleep_time 5 206  
+77 0 0 6 168 213 0 0 91 /**
+ * This is the function that will wait till one of the sockets is in error
+ * state
+ */ 3 4 this 3 224  7 zeroFds 1 204  10 sleep_time 5 206  
+78 0 0 4 169 208 0 0 37 /**
+ * Marks the content as empty
+ */ 1 4 this 3 224  
+79 0 0 7 174 230 141 0 10 /**
+ *
+ */ 3 8 rbufsize 1 213  8 wbufsize 1 213  17 write_flush_point 1 213  
+80 0 0 6 171 204 0 0 54 /**
+ * Reads a message.  Returns false on failure.
+ */ 2 4 this 3 230  3 val 1 231  
+81 0 0 6 172 204 0 0 38 // all the real state magic is in here 1 4 this 3 230  
+82 0 0 6 173 204 0 0 38 // all the real state magic is in here 1 4 this 3 230  
+83 0 0 6 175 204 0 0 29 // the reason thsi all exists 2 4 this 3 230  3 msg 1 233  
+84 0 0 6 176 204 0 0 28 /**
+ * Flush all writes.
+ */ 1 4 this 3 230  
+85 0 0 4 177 208 0 0 16 /**
+ * Reset
+ */ 1 4 this 3 230  
+86 0 0 4 178 208 0 0 0 2 4 this 3 230  7 MaxTime 1 235  
+87 0 0 6 179 237 0 0 22 // address queue stuff 1 4 this 3 230  
+88 0 0 4 180 208 0 0 52 /**
+ * must be called to set value to the server
+ */ 2 4 this 3 230  5 inadr 1 202  
+89 0 0 4 181 208 0 0 0 1 4 this 3 230  
+90 0 0 7 182 217 0 0 0 0 
+91 0 0 7 183 238 189 0 0 0 
+92 0 0 6 184 204 0 0 53 /**
+ * Connects the socket to a Specified address
+ */ 2 4 this 3 238  7 address 1 200  
+93 0 0 6 185 204 0 0 41 /**
+ * Send data to connected address
+ */ 2 4 this 3 238  4 data 1 219  
+94 0 0 6 186 204 0 0 41 /**
+ * Send data to specified address
+ */ 3 4 this 3 238  4 data 1 219  7 address 1 200  
+95 0 0 6 187 204 0 0 71 /**
+ * Ask the OS to let us receive broadcast packets on this port.
+ */ 1 4 this 3 238  
+96 0 0 7 188 217 0 0 0 0 
+49
+190 14 Socket_Address 0 26625 14 Socket_Address 14 Socket_Address 0 0 0 1 97 98 0 16 99 100 101 102 103 104 105 106 107 108 109 110 111 112 113 114 0 0 0 0 0 97
+/**
+ * A simple place to store and manipulate tcp and port address for
+ * communication layer
+ */
+
+191 9 Socket_IP 0 75777 9 Socket_IP 9 Socket_IP 0 0 0 1 115 0 0 13 116 117 118 119 120 121 122 123 124 125 126 127 128 0 0 1 0 192 0 0 0 0 354
+/**
+ * Base functionality for a INET domain Socket This call should be the
+ * starting point for all other unix domain sockets.
+ *
+ * SocketIP |
+ * ------------------------------------------------------------------- |
+ * |                       |                           | SocketTCP
+ * SocketTCP_Listen    SocketUDP_Incoming   SocketUDP_OutBound
+ *
+ */
+
+192 11 TypedObject 0 2048 11 TypedObject 11 TypedObject 0 0 0 0 0 0 0 0 0 0 0 0 2508
+/**
+ * This is an abstract class that all classes which use TypeHandle, and also
+ * provide virtual functions to support polymorphism, should inherit from.
+ * Each derived class should define get_type(), which should return the
+ * specific type of the derived class.  Inheriting from this automatically
+ * provides support for is_of_type() and is_exact_type().
+ *
+ * All classes that inherit directly or indirectly from TypedObject should
+ * redefine get_type() and force_init_type(), as shown below.  Some classes
+ * that do not inherit from TypedObject may still declare TypeHandles for
+ * themselves by defining methods called get_class_type() and init_type().
+ * Classes such as these may serve as base classes, but the dynamic type
+ * identification system will be limited.  Classes that do not inherit from
+ * TypedObject need not define the virtual functions get_type() and
+ * force_init_type() (or any other virtual functions).
+ *
+ * There is a specific layout for defining the overrides from this class.
+ * Keeping the definitions formatted just like these examples will allow
+ * someone in the future to use a sed (or similar) script to make global
+ * changes, if necessary.  Avoid rearranging the braces or the order of the
+ * functions unless you're ready to change them in every file all at once.
+ *
+ * What follows are some examples that can be used in new classes that you
+ * create.
+ *
+ * @par In the class definition (.h file):
+ * @code
+ * public:
+ *   static TypeHandle get_class_type() {
+ *     return _type_handle;
+ *   }
+ *   static void init_type() {
+ *     <<<BaseClassOne>>>::init_type();
+ *     <<<BaseClassTwo>>>::init_type();
+ *     <<<BaseClassN>>>::init_type();
+ *     register_type(_type_handle, "<<<ThisClassStringName>>>",
+ *                   <<<BaseClassOne>>>::get_class_type(),
+ *                   <<<BaseClassTwo>>>::get_class_type(),
+ *                   <<<BaseClassN>>>::get_class_type());
+ *   }
+ *   virtual TypeHandle get_type() const {
+ *     return get_class_type();
+ *   }
+ *   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+ *
+ * private:
+ *   static TypeHandle _type_handle;
+ * @endcode
+ *
+ * @par In the class .cxx file:
+ * @code
+ * TypeHandle <<<ThisClassStringName>>>::_type_handle;
+ * @endcode
+ *
+ * @par In the class config_<<<PackageName>>>.cxx file:
+ * @code
+ * ConfigureFn(config_<<<PackageName>>>) {
+ *   <<<ClassOne>>>::init_type();
+ *   <<<ClassTwo>>>::init_type();
+ *   <<<ClassN>>>::init_type();
+ * }
+ * @endcode
+ */
+
+193 10 Socket_TCP 0 141313 10 Socket_TCP 10 Socket_TCP 0 0 0 1 129 141 0 11 130 131 132 133 134 135 136 137 138 139 140 0 0 1 0 191 0 0 0 0 175
+/**
+ * Base functionality for a TCP connected socket This class is pretty useless
+ * by itself but it does hide some of the platform differences from machine to
+ * machine
+ */
+
+194 17 Socket_TCP_Listen 0 75777 17 Socket_TCP_Listen 17 Socket_TCP_Listen 0 0 0 1 142 0 0 3 143 144 145 0 0 1 0 191 0 0 0 0 57
+/**
+ * Base functionality for a TCP rendezvous socket
+ */
+
+195 19 Socket_UDP_Incoming 0 141313 19 Socket_UDP_Incoming 19 Socket_UDP_Incoming 0 0 0 1 146 154 0 7 147 148 149 150 151 152 153 0 0 1 0 191 0 0 0 0 46
+/**
+ * Base functionality for a UDP Reader
+ */
+
+196 19 Socket_UDP_Outgoing 0 141313 19 Socket_UDP_Outgoing 19 Socket_UDP_Outgoing 0 0 0 1 155 162 0 6 156 157 158 159 160 161 0 0 1 0 191 0 0 0 0 54
+/**
+ * Base functionality for a UDP sending socket
+ */
+
+197 12 Socket_fdset 0 141313 12 Socket_fdset 12 Socket_fdset 0 0 0 1 163 170 0 6 164 165 166 167 168 169 0 0 0 0 0 0
+
+198 27 Buffered_DatagramConnection 0 75777 27 Buffered_DatagramConnection 27 Buffered_DatagramConnection 0 0 0 1 174 141 0 11 171 172 173 175 176 177 178 179 180 181 182 0 0 1 0 193 0 0 0 0 176
+// there are 3 states 1. Socket not even assigned,,,, 2. Socket Assigned and
+// trying to get a active connect open 3. Socket is open and  writable.. (
+// Fully powered up )...
+
+199 10 Socket_UDP 0 141313 10 Socket_UDP 10 Socket_UDP 0 0 0 1 183 189 0 5 184 185 186 187 188 0 0 1 0 195 0 0 0 0 171
+/**
+ * Base functionality for a combination UDP Reader and Writer.  This
+ * duplicates code from Socket_UDP_Outgoing, to avoid the problems of multiple
+ * inheritance.
+ */
+
+200 22 Socket_Address const * 0 8576 22 Socket_Address const * 22 Socket_Address const * 0 0 201 0 0 0 0 0 0 0 0 0 0
+
+201 20 Socket_Address const 0 8832 20 Socket_Address const 20 Socket_Address const 0 0 190 0 0 0 0 0 0 0 0 0 0
+
+202 16 Socket_Address * 0 8576 16 Socket_Address * 16 Socket_Address * 0 0 190 0 0 0 0 0 0 0 0 0 0
+
+203 18 unsigned short int 0 8262 18 unsigned short int 18 unsigned short int 0 1 0 0 0 0 0 0 0 0 0 0 0
+
+204 4 bool 0 8194 4 bool 4 bool 0 4 0 0 0 0 0 0 0 0 0 0 0
+
+205 13 atomic string 0 2 13 atomic string 13 atomic string 0 7 0 0 0 0 0 0 0 0 0 0 0
+
+206 8 uint32_t 0 2105344 8 uint32_t 8 uint32_t 0 0 207 0 0 0 0 0 0 0 0 0 0
+
+207 12 unsigned int 0 8198 12 unsigned int 12 unsigned int 0 1 0 0 0 0 0 0 0 0 0 0 0
+
+208 4 void 0 8194 4 void 4 void 0 6 0 0 0 0 0 0 0 0 0 0 0
+
+209 11 sa_family_t 0 2105344 11 sa_family_t 11 sa_family_t 0 0 203 0 0 0 0 0 0 0 0 0 0
+
+210 17 unsigned long int 0 8214 17 unsigned long int 17 unsigned long int 0 1 0 0 0 0 0 0 0 0 0 0 0
+
+211 11 Socket_IP * 0 8576 11 Socket_IP * 11 Socket_IP * 0 0 191 0 0 0 0 0 0 0 0 0 0
+
+212 6 SOCKET 0 2105344 6 SOCKET 6 SOCKET 0 0 210 0 0 0 0 0 0 0 0 0 0
+
+213 3 int 0 8194 3 int 3 int 0 1 0 0 0 0 0 0 0 0 0 0 0
+
+214 17 Socket_IP const * 0 8576 17 Socket_IP const * 17 Socket_IP const * 0 0 215 0 0 0 0 0 0 0 0 0 0
+
+215 15 Socket_IP const 0 8832 15 Socket_IP const 15 Socket_IP const 0 0 191 0 0 0 0 0 0 0 0 0 0
+
+216 10 TypeHandle 0 16779264 10 TypeHandle 10 TypeHandle 0 0 0 0 0 0 0 0 0 0 0 0 732
+/**
+ * TypeHandle is the identifier used to differentiate C++ class types.  Any
+ * C++ classes that inherit from some base class, and must be differentiated
+ * at run time, should store a static TypeHandle object that can be queried
+ * through a static member function named get_class_type().  Most of the time,
+ * it is also desirable to inherit from TypedObject, which provides some
+ * virtual functions to return the TypeHandle for a particular instance.
+ *
+ * At its essence, a TypeHandle is simply a unique identifier that is assigned
+ * by the TypeRegistry.  The TypeRegistry stores a tree of TypeHandles, so
+ * that ancestry of a particular type may be queried, and the type name may be
+ * retrieved for run-time display.
+ */
+
+217 12 TypeHandle * 0 8576 12 TypeHandle * 12 TypeHandle * 0 0 216 0 0 0 0 0 0 0 0 0 0
+
+218 12 Socket_TCP * 0 8576 12 Socket_TCP * 12 Socket_TCP * 0 0 193 0 0 0 0 0 0 0 0 0 0
+
+219 12 vector_uchar 0 2105344 12 vector_uchar 12 vector_uchar 0 0 220 0 0 0 0 0 0 0 0 0 0
+
+220 24 pvector< unsigned char > 0 2048 24 pvector< unsigned char > 24 pvector< unsigned char > 0 0 0 0 0 0 0 0 0 0 0 0 0
+
+221 19 Socket_TCP_Listen * 0 8576 19 Socket_TCP_Listen * 19 Socket_TCP_Listen * 0 0 194 0 0 0 0 0 0 0 0 0 0
+
+222 21 Socket_UDP_Incoming * 0 8576 21 Socket_UDP_Incoming * 21 Socket_UDP_Incoming * 0 0 195 0 0 0 0 0 0 0 0 0 0
+
+223 21 Socket_UDP_Outgoing * 0 8576 21 Socket_UDP_Outgoing * 21 Socket_UDP_Outgoing * 0 0 196 0 0 0 0 0 0 0 0 0 0
+
+224 14 Socket_fdset * 0 8576 14 Socket_fdset * 14 Socket_fdset * 0 0 197 0 0 0 0 0 0 0 0 0 0
+
+225 20 Socket_fdset const * 0 8576 20 Socket_fdset const * 20 Socket_fdset const * 0 0 226 0 0 0 0 0 0 0 0 0 0
+
+226 18 Socket_fdset const 0 8832 18 Socket_fdset const 18 Socket_fdset const 0 0 197 0 0 0 0 0 0 0 0 0 0
+
+227 17 Time_Span const * 0 8576 17 Time_Span const * 17 Time_Span const * 0 0 228 0 0 0 0 0 0 0 0 0 0
+
+228 15 Time_Span const 0 8832 15 Time_Span const 15 Time_Span const 0 0 229 0 0 0 0 0 0 0 0 0 0
+
+229 9 Time_Span 0 1050624 9 Time_Span 9 Time_Span 0 0 0 0 0 0 0 0 0 0 0 0 10
+/**
+ *
+ */
+
+230 29 Buffered_DatagramConnection * 0 8576 29 Buffered_DatagramConnection * 29 Buffered_DatagramConnection * 0 0 198 0 0 0 0 0 0 0 0 0 0
+
+231 10 Datagram * 0 8576 10 Datagram * 10 Datagram * 0 0 232 0 0 0 0 0 0 0 0 0 0
+
+232 8 Datagram 0 2048 8 Datagram 8 Datagram 0 0 0 0 0 0 0 0 0 0 0 0 565
+/**
+ * An ordered list of data elements, formatted in memory for transmission over
+ * a socket or writing to a data file.
+ *
+ * Data elements should be added one at a time, in order, to the Datagram.
+ * The nature and contents of the data elements are totally up to the user.
+ * When a Datagram has been transmitted and received, its data elements may be
+ * extracted using a DatagramIterator; it is up to the caller to know the
+ * correct type of each data element in order.
+ *
+ * A Datagram is itself headerless; it is simply a collection of data
+ * elements.
+ */
+
+233 16 Datagram const * 0 8576 16 Datagram const * 16 Datagram const * 0 0 234 0 0 0 0 0 0 0 0 0 0
+
+234 14 Datagram const 0 8832 14 Datagram const 14 Datagram const 0 0 232 0 0 0 0 0 0 0 0 0 0
+
+235 11 PN_stdfloat 0 2105344 11 PN_stdfloat 11 PN_stdfloat 0 0 236 0 0 0 0 0 0 0 0 0 0
+
+236 5 float 0 8194 5 float 5 float 0 2 0 0 0 0 0 0 0 0 0 0 0
+
+237 6 size_t 0 2105344 11 std::size_t 11 std::size_t 0 0 210 0 0 0 0 0 0 0 0 0 0
+
+238 12 Socket_UDP * 0 8576 12 Socket_UDP * 12 Socket_UDP * 0 0 199 0 0 0 0 0 0 0 0 0 0
+
+0
+0
+0

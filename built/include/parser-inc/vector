@@ -1,0 +1,51 @@
+// Filename: vector
+// Created by:  drose (12May00)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) Carnegie Mellon University.  All rights reserved.
+//
+// All use of this software is subject to the terms of the revised BSD
+// license.  You should have received a copy of this license along
+// with this source code in a file named "LICENSE."
+//
+////////////////////////////////////////////////////////////////////
+
+// This file, and all the other files in this directory, aren't
+// intended to be compiled--they're just parsed by CPPParser (and
+// interrogate) in lieu of the actual system headers, to generate the
+// interrogate database.
+
+#ifndef VECTOR_H
+#define VECTOR_H
+
+#include <stdtypedefs.h>
+
+namespace std {
+  template<class T> class allocator;
+}
+
+inline namespace std {
+
+template<class T, class Allocator = std::allocator<T> >
+class vector {
+public:
+  typedef T value_type;
+
+  typedef T *pointer;
+  typedef const T *const_pointer;
+  typedef T &reference;
+  typedef const T &const_reference;
+
+  typedef pointer iterator;
+  typedef const_pointer const_iterator;
+  class reverse_iterator;
+  class const_reverse_iterator;
+  typedef size_t difference_type;
+  typedef size_t size_type;
+};
+
+}
+
+#endif

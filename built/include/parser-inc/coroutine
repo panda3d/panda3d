@@ -1,0 +1,31 @@
+#pragma once
+
+namespace std {
+  template<class R, class... ArgTypes>
+  struct coroutine_traits;
+
+  template<class Promise = void>
+  struct coroutine_handle;
+
+  template<class T> struct hash;
+  template<class P> struct hash<coroutine_handle<P>>;
+
+  struct noop_coroutine_promise;
+
+  template<> struct coroutine_handle<noop_coroutine_promise>;
+  using noop_coroutine_handle = coroutine_handle<noop_coroutine_promise>;
+
+  noop_coroutine_handle noop_coroutine() noexcept;
+
+  struct suspend_never {
+    constexpr bool await_ready() const noexcept { return true; }
+    constexpr void await_suspend(coroutine_handle<>) const noexcept {}
+    constexpr void await_resume() const noexcept {}
+  };
+
+  struct suspend_always {
+    constexpr bool await_ready() const noexcept { return false; }
+    constexpr void await_suspend(coroutine_handle<>) const noexcept {}
+    constexpr void await_resume() const noexcept {}
+  };
+}

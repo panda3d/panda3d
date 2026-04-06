@@ -1,0 +1,153 @@
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file functional
+ * @author tobspr
+ * @date 2016-11-01
+ */
+
+// This file, and all the other files in this directory, aren't
+// intended to be compiled--they're just parsed by CPPParser (and
+// interrogate) in lieu of the actual system headers, to generate the
+// interrogate database.
+
+#ifndef FUNCTIONAL_H
+#define FUNCTIONAL_H
+
+#include <stddef.h>
+
+namespace std {
+
+  // base (deprecated):
+  template <class Arg, class Result> struct unary_function;
+  template <class Arg1, class Arg2, class Result> struct binary_function;
+ 
+  // reference_wrapper:
+  template <class T> class reference_wrapper;
+
+  // arithmetic operations:
+  template <class T> struct plus;
+  template <class T> struct minus;
+  template <class T> struct multiplies;
+  template <class T> struct divides;
+  template <class T> struct modulus;
+  template <class T> struct negate;
+ 
+  // comparisons:
+  template <class T> struct equal_to;
+  template <class T> struct not_equal_to;
+  template <class T> struct greater;
+  template <class T> struct less;
+  template <class T> struct greater_equal;
+  template <class T> struct less_equal;
+ 
+  // logical operations:
+  template <class T> struct logical_and;
+  template <class T> struct logical_or;
+  template <class T> struct logical_not;
+ 
+  // bitwise operations:
+  template <class T> struct bit_and;
+  template <class T> struct bit_or;
+  template <class T> struct bit_xor;
+ 
+  // negators:
+  template <class Predicate> class unary_negate;
+  template <class Predicate>  class binary_negate;
+ 
+  // bind:
+  template<class T> struct is_bind_expression;
+  template<class T> struct is_placeholder;
+
+  namespace placeholders {
+    // M is the implementation-defined number of placeholders
+    // (8 should be enough for interrogate)
+    extern char _1;
+    extern char _2;
+    extern char _3;
+    extern char _4;
+    extern char _5;
+    extern char _6;
+    extern char _7;
+    extern char _8;
+  }
+ 
+  // binders (deprecated):
+  template <class Fn> class binder1st;
+  template <class Fn> class binder2nd;
+
+  // adaptors (deprecated):
+  template <class Arg, class Result> class pointer_to_unary_function;
+  template <class Arg1, class Arg2, class Result>
+    class pointer_to_binary_function;
+ 
+  // adaptors (deprecated):
+  template<class S, class T> class mem_fun_t;
+  template<class S, class T, class A> class mem_fun1_t;
+  template<class S, class T> class mem_fun_ref_t;
+  template<class S, class T, class A> class mem_fun1_ref_t;
+  template <class S, class T> class const_mem_fun_t;
+  template <class S, class T, class A> class const_mem_fun1_t;
+  template <class S, class T> class const_mem_fun_ref_t;
+  template <class S, class T, class A> class const_mem_fun1_ref_t;
+ 
+
+  // polymorphic function wrappers:
+  class bad_function_call;
+
+  // hash function base template:
+  template <class T> struct hash;
+ 
+  // Hash function specializations
+  template <> struct hash<bool>;
+  template <> struct hash<char>;
+  template <> struct hash<signed char>;
+  template <> struct hash<unsigned char>;
+  template <> struct hash<char16_t>;
+  template <> struct hash<char32_t>;
+  template <> struct hash<wchar_t>;
+  template <> struct hash<short>;
+  template <> struct hash<unsigned short>;
+  template <> struct hash<int>;
+  template <> struct hash<unsigned int>;
+  template <> struct hash<long>;
+  template <> struct hash<long long>;
+  template <> struct hash<unsigned long>;
+  template <> struct hash<unsigned long long>;
+  template <> struct hash<float>;
+  template <> struct hash<double>;
+  template <> struct hash<long double>;
+  template<class T> struct hash<T*>;
+   
+  template <class T> class reference_wrapper {
+  public :
+    // types
+    typedef T type;
+    typedef void   result_type;      // not always defined
+    typedef void argument_type;    // not always defined
+    typedef void  first_argument_type;  // not always defined
+    typedef void  second_argument_type; // not always defined
+  };
+
+  template<class T> struct is_bind_expression {};
+  // : integral_constant<bool, true> {};
+
+  class bad_function_call : public std::exception {};
+
+  // template<class> class function; // undefined
+   
+  template< class R, class... ArgTypes >
+  class function {
+  public:
+    typedef R result_type;
+  };
+
+}
+
+
+#endif

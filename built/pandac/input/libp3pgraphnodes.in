@@ -1,0 +1,2846 @@
+1775484693
+3 3
+16 libp3pgraphnodes 4 Bgt0 12 panda3d.core 
+198
+174 15 upcast_to_Light 0 12 372 26 LightNode::upcast_to_Light 0 1 4 30
+upcast from LightNode to Light
+40
+Light *LightNode::upcast_to_Light(void);
+
+175 21 downcast_to_LightNode 0 12 373 28 Light::downcast_to_LightNode 0 0 32
+downcast from Light to LightNode
+46
+LightNode *Light::downcast_to_LightNode(void);
+
+176 19 upcast_to_PandaNode 0 12 372 30 LightNode::upcast_to_PandaNode 0 1 5 34
+upcast from LightNode to PandaNode
+48
+PandaNode *LightNode::upcast_to_PandaNode(void);
+
+177 21 downcast_to_LightNode 0 12 374 32 PandaNode::downcast_to_LightNode 0 0 36
+downcast from PandaNode to LightNode
+50
+LightNode *PandaNode::downcast_to_LightNode(void);
+
+178 6 output 0 6 372 17 LightNode::output 0 1 1 100
+// We have to explicitly publish these because they resolve the multiple
+// inheritance.
+
+/**
+ *
+ */
+56
+virtual void LightNode::output(std::ostream &out) const;
+
+179 5 write 0 6 372 16 LightNode::write 0 1 2 10
+/**
+ *
+ */
+77
+virtual void LightNode::write(std::ostream &out, int indent_level = 0) const;
+
+180 14 get_class_type 0 4 372 25 LightNode::get_class_type 0 1 3 0
+50
+static TypeHandle LightNode::get_class_type(void);
+
+181 10 ~LightNode 0 516 372 21 LightNode::~LightNode 0 0 0
+28
+LightNode::~LightNode(void);
+
+182 12 AmbientLight 0 260 375 26 AmbientLight::AmbientLight 0 1 6 138
+/**
+ *
+ */
+
+/**
+ * Do not call the copy constructor directly; instead, use make_copy() or
+ * copy_subgraph() to make a copy of a node.
+ */
+61
+explicit AmbientLight::AmbientLight(std::string const &name);
+
+183 14 get_class_type 0 4 375 28 AmbientLight::get_class_type 0 1 7 0
+53
+static TypeHandle AmbientLight::get_class_type(void);
+
+184 13 ~AmbientLight 0 516 375 27 AmbientLight::~AmbientLight 0 0 0
+34
+AmbientLight::~AmbientLight(void);
+
+185 12 CallbackNode 0 260 376 26 CallbackNode::CallbackNode 0 1 8 22
+/**
+ *
+ */
+
+/**
+ *
+ */
+61
+explicit CallbackNode::CallbackNode(std::string const &name);
+
+186 17 set_cull_callback 0 4 376 31 CallbackNode::set_cull_callback 0 1 9 1131
+/**
+ * Sets the CallbackObject that will be notified when this node is visited
+ * during the cull traversal.  This callback will be made during the cull
+ * thread.
+ *
+ * The cull traversal is responsible for determining which nodes are visible
+ * and within the view frustum, and for accumulating state and transform, and
+ * generally building up the list of CullableObjects that are to be eventually
+ * passed to the draw traversal for rendering.
+ *
+ * At the time the cull traversal callback is made, the node has been
+ * determined to be visible and it has passed the bounding-volume test, so it
+ * lies within the view frustum.
+ *
+ * The callback is passed an instance of a NodeCullCallbackData, which
+ * contains pointers to the CullTraverser and CullTraverserData--enough data
+ * to examine the current node and its place within the scene graph.  The
+ * callback *replaces* the normal cull behavior, so if your callback does
+ * nothing, the cull traversal will not continue below this node.  If you wish
+ * the cull traversal to continue to visit this node and below, you must call
+ * cbdata->upcall() from your callback.
+ */
+68
+inline void CallbackNode::set_cull_callback(CallbackObject *object);
+
+187 19 clear_cull_callback 0 4 376 33 CallbackNode::clear_cull_callback 0 1 10 78
+/**
+ * Removes the callback set by an earlier call to set_cull_callback().
+ */
+52
+inline void CallbackNode::clear_cull_callback(void);
+
+188 17 get_cull_callback 0 4 376 31 CallbackNode::get_cull_callback 0 1 11 65
+/**
+ * Returns the CallbackObject set by set_cull_callback().
+ */
+67
+inline CallbackObject *CallbackNode::get_cull_callback(void) const;
+
+189 17 set_draw_callback 0 4 376 31 CallbackNode::set_draw_callback 0 1 12 973
+/**
+ * Sets the CallbackObject that will be notified when this node is visited
+ * during the draw traversal.  This callback will be made during the draw
+ * thread.
+ *
+ * The draw traversal is responsible for actually issuing the commands to the
+ * graphics engine to draw primitives.  Its job is to walk through the list of
+ * CullableObjects build up by the cull traversal, as quickly as possible,
+ * issuing the appropriate commands to draw each one.
+ *
+ * At the time the draw traversal callback is made, the graphics state has
+ * been loaded with the correct modelview transform and render state, and the
+ * primitives (if any) in this node are ready to be drawn.
+ *
+ * The callback is passed an instance of a GeomDrawCallbackData, which
+ * contains pointers to the current state and transform, as well as the
+ * current GSG.  There is a Geom pointer as well, but it will always be NULL
+ * to this callback, since the CallbackNode does not itself contain any Geoms.
+ */
+68
+inline void CallbackNode::set_draw_callback(CallbackObject *object);
+
+190 19 clear_draw_callback 0 4 376 33 CallbackNode::clear_draw_callback 0 1 13 78
+/**
+ * Removes the callback set by an earlier call to set_draw_callback().
+ */
+52
+inline void CallbackNode::clear_draw_callback(void);
+
+191 17 get_draw_callback 0 4 376 31 CallbackNode::get_draw_callback 0 1 14 65
+/**
+ * Returns the CallbackObject set by set_draw_callback().
+ */
+67
+inline CallbackObject *CallbackNode::get_draw_callback(void) const;
+
+192 14 get_class_type 0 4 376 28 CallbackNode::get_class_type 0 1 15 0
+53
+static TypeHandle CallbackNode::get_class_type(void);
+
+193 13 ~CallbackNode 0 516 376 27 CallbackNode::~CallbackNode 0 0 0
+34
+CallbackNode::~CallbackNode(void);
+
+194 11 ComputeNode 0 260 379 24 ComputeNode::ComputeNode 0 1 16 134
+/**
+ * Creates a ComputeNode with the given name.  Use add_dispatch and  also
+ * assign a shader using a ShaderAttrib.
+ */
+
+/**
+ *
+ */
+59
+explicit ComputeNode::ComputeNode(std::string const &name);
+
+195 12 add_dispatch 0 4 379 25 ComputeNode::add_dispatch 0 2 17 18 388
+/**
+ * Adds a dispatch command with the given number of work groups in the X, Y,
+ * and Z dimensions.  Any of these values may be set to 1 if the respective
+ * dimension should not be used.
+ */
+
+/**
+ * Adds a dispatch command with the given number of work groups in the X, Y,
+ * and Z dimensions.  Any of these values may be set to 1 if the respective
+ * dimension should not be used.
+ */
+161
+inline void ComputeNode::add_dispatch(LVecBase3i const &num_groups);
+inline void ComputeNode::add_dispatch(int num_groups_x, int num_groups_y, int num_groups_z);
+
+196 18 get_num_dispatches 0 4 379 31 ComputeNode::get_num_dispatches 0 1 19 83
+/**
+ * Returns the number of times add_dispatch has been called on this object.
+ */
+63
+inline std::size_t ComputeNode::get_num_dispatches(void) const;
+
+197 12 get_dispatch 0 4 379 25 ComputeNode::get_dispatch 0 1 20 84
+/**
+ * Returns the group counts of the nth dispatch associated with this object.
+ */
+72
+inline LVecBase3i const &ComputeNode::get_dispatch(std::size_t i) const;
+
+198 12 set_dispatch 0 4 379 25 ComputeNode::set_dispatch 0 1 21 81
+/**
+ * Sets the group counts of the nth dispatch associated with this object.
+ */
+83
+inline void ComputeNode::set_dispatch(std::size_t i, LVecBase3i const &num_groups);
+
+199 15 insert_dispatch 0 4 379 28 ComputeNode::insert_dispatch 0 1 22 253
+/**
+ * Inserts a dispatch command with the given number of work groups in the X,
+ * Y, and Z dimensions at the given position in the list of dispatch commands.
+ * Any of these values may be set to 1 if the respective dimension should not
+ * be used.
+ */
+86
+inline void ComputeNode::insert_dispatch(std::size_t i, LVecBase3i const &num_groups);
+
+200 15 remove_dispatch 0 4 379 28 ComputeNode::remove_dispatch 0 1 23 57
+/**
+ * Erases the given dispatch index from the list.
+ */
+56
+inline void ComputeNode::remove_dispatch(std::size_t i);
+
+201 16 clear_dispatches 0 4 379 29 ComputeNode::clear_dispatches 0 1 24 41
+/**
+ * Removes all dispatch commands.
+ */
+48
+inline void ComputeNode::clear_dispatches(void);
+
+202 14 get_class_type 0 4 379 27 ComputeNode::get_class_type 0 1 25 0
+52
+static TypeHandle ComputeNode::get_class_type(void);
+
+203 12 ~ComputeNode 0 516 379 25 ComputeNode::~ComputeNode 0 0 0
+32
+ComputeNode::~ComputeNode(void);
+
+204 15 upcast_to_Light 0 12 383 30 LightLensNode::upcast_to_Light 0 1 38 34
+upcast from LightLensNode to Light
+44
+Light *LightLensNode::upcast_to_Light(void);
+
+205 25 downcast_to_LightLensNode 0 12 373 32 Light::downcast_to_LightLensNode 0 0 36
+downcast from Light to LightLensNode
+54
+LightLensNode *Light::downcast_to_LightLensNode(void);
+
+206 16 upcast_to_Camera 0 12 383 31 LightLensNode::upcast_to_Camera 0 1 39 35
+upcast from LightLensNode to Camera
+46
+Camera *LightLensNode::upcast_to_Camera(void);
+
+207 25 downcast_to_LightLensNode 0 12 384 33 Camera::downcast_to_LightLensNode 0 0 37
+downcast from Camera to LightLensNode
+55
+LightLensNode *Camera::downcast_to_LightLensNode(void);
+
+208 14 ~LightLensNode 0 518 383 29 LightLensNode::~LightLensNode 0 0 10
+/**
+ *
+ */
+44
+virtual LightLensNode::~LightLensNode(void);
+
+209 18 has_specular_color 0 4 383 33 LightLensNode::has_specular_color 0 1 26 141
+/**
+ * Returns true if this light defines a specular color, false if the specular
+ * color is derived automatically from the light color.
+ */
+58
+inline bool LightLensNode::has_specular_color(void) const;
+
+210 16 is_shadow_caster 0 4 383 31 LightLensNode::is_shadow_caster 0 1 27 75
+/**
+ * Returns whether this light is configured to cast shadows or not.
+ */
+56
+inline bool LightLensNode::is_shadow_caster(void) const;
+
+211 17 set_shadow_caster 0 4 383 32 LightLensNode::set_shadow_caster 0 2 28 29 609
+/**
+ * Sets the flag indicating whether this light should cast shadows or not.
+ * This is the variant without buffer size, meaning that the current buffer
+ * size will be kept (512x512 is the default). Note that enabling shadows will
+ * require the shader generator to be enabled on the scene.
+ */
+
+/**
+ * Sets the flag indicating whether this light should cast shadows or not.
+ * The xsize and ysize parameters specify the size of the shadow buffer that
+ * will be set up, the sort parameter specifies the sort.  Note that enabling
+ * shadows will require the shader generator to be enabled on the scene.
+ */
+155
+void LightLensNode::set_shadow_caster(bool caster);
+void LightLensNode::set_shadow_caster(bool caster, int buffer_xsize, int buffer_ysize, int sort = -10);
+
+212 22 get_shadow_buffer_sort 0 4 383 37 LightLensNode::get_shadow_buffer_sort 0 1 30 85
+/**
+ * Returns the sort of the shadow buffer to be created for this light source.
+ */
+61
+inline int LightLensNode::get_shadow_buffer_sort(void) const;
+
+213 22 set_shadow_buffer_sort 0 4 383 37 LightLensNode::set_shadow_buffer_sort 0 1 31 82
+/**
+ * Sets the sort of the shadow buffer to be created for this light source.
+ */
+60
+inline void LightLensNode::set_shadow_buffer_sort(int sort);
+
+214 22 get_shadow_buffer_size 0 4 383 37 LightLensNode::get_shadow_buffer_size 0 1 32 85
+/**
+ * Returns the size of the shadow buffer to be created for this light source.
+ */
+68
+inline LVecBase2i LightLensNode::get_shadow_buffer_size(void) const;
+
+215 22 set_shadow_buffer_size 0 4 383 37 LightLensNode::set_shadow_buffer_size 0 1 33 82
+/**
+ * Sets the size of the shadow buffer to be created for this light source.
+ */
+74
+inline void LightLensNode::set_shadow_buffer_size(LVecBase2i const &size);
+
+216 17 get_shadow_buffer 0 4 383 32 LightLensNode::get_shadow_buffer 0 1 34 214
+/**
+ * Returns the buffer that has been constructed for a given GSG, or NULL if no
+ * such buffer has (yet) been constructed.  This should be used for debugging
+ * only, you will not need to call this normally.
+ */
+92
+inline GraphicsOutputBase *LightLensNode::get_shadow_buffer(GraphicsStateGuardianBase *gsg);
+
+217 6 output 0 6 383 21 LightLensNode::output 0 1 35 100
+// We have to explicitly publish these because they resolve the multiple
+// inheritance.
+
+/**
+ *
+ */
+60
+virtual void LightLensNode::output(std::ostream &out) const;
+
+218 5 write 0 6 383 20 LightLensNode::write 0 1 36 10
+/**
+ *
+ */
+81
+virtual void LightLensNode::write(std::ostream &out, int indent_level = 0) const;
+
+219 14 get_class_type 0 4 383 29 LightLensNode::get_class_type 0 1 37 0
+54
+static TypeHandle LightLensNode::get_class_type(void);
+
+220 16 DirectionalLight 0 260 388 34 DirectionalLight::DirectionalLight 0 1 40 138
+/**
+ *
+ */
+
+/**
+ * Do not call the copy constructor directly; instead, use make_copy() or
+ * copy_subgraph() to make a copy of a node.
+ */
+69
+explicit DirectionalLight::DirectionalLight(std::string const &name);
+
+221 18 set_specular_color 0 4 388 36 DirectionalLight::set_specular_color 0 1 41 72
+/**
+ * Sets the color of specular highlights generated by the light.
+ */
+70
+inline void DirectionalLight::set_specular_color(LColor const &color);
+
+222 20 clear_specular_color 0 4 388 38 DirectionalLight::clear_specular_color 0 1 42 115
+/**
+ * Clears a custom specular color setting, meaning that the specular color
+ * will now come from the color.
+ */
+57
+inline void DirectionalLight::clear_specular_color(void);
+
+223 18 get_specular_color 0 6 388 36 DirectionalLight::get_specular_color 0 0 120
+/**
+ * Returns the color of specular highlights generated by the light.  This is
+ * usually the same as get_color().
+ */
+84
+virtual inline LColor const &DirectionalLight::get_specular_color(void) const final;
+
+224 9 get_point 0 4 388 27 DirectionalLight::get_point 0 1 43 349
+/**
+ * Returns the point in space at which the light is located.  This is local to
+ * the coordinate space in which the light is assigned.
+ *
+ * This actually has no bearing on the visual effect of the light, since the
+ * light is rendered as if it were infinitely far away.  This is only used to
+ * create a visible representation of the light.
+ */
+62
+inline LPoint3 const &DirectionalLight::get_point(void) const;
+
+225 9 set_point 0 4 388 27 DirectionalLight::set_point 0 1 44 65
+/**
+ * Sets the point in space at which the light is located.
+ */
+62
+inline void DirectionalLight::set_point(LPoint3 const &point);
+
+226 13 get_direction 0 4 388 31 DirectionalLight::get_direction 0 1 45 135
+/**
+ * Returns the direction in which the light is aimed.  This is local to the
+ * coordinate space in which the light is assigned.
+ */
+67
+inline LVector3 const &DirectionalLight::get_direction(void) const;
+
+227 13 set_direction 0 4 388 31 DirectionalLight::set_direction 0 1 46 58
+/**
+ * Sets the direction in which the light is aimed.
+ */
+71
+inline void DirectionalLight::set_direction(LVector3 const &direction);
+
+228 14 get_class_type 0 4 388 32 DirectionalLight::get_class_type 0 1 47 0
+57
+static TypeHandle DirectionalLight::get_class_type(void);
+
+229 17 ~DirectionalLight 0 516 388 35 DirectionalLight::~DirectionalLight 0 0 0
+42
+DirectionalLight::~DirectionalLight(void);
+
+230 7 LODNode 0 260 399 16 LODNode::LODNode 0 1 48 22
+/**
+ *
+ */
+
+/**
+ *
+ */
+58
+inline explicit LODNode::LODNode(std::string const &name);
+
+231 16 make_default_lod 0 4 399 25 LODNode::make_default_lod 0 1 49 98
+/**
+ * Creates a new LODNode of the type specified by the default-lod-type config
+ * variable.
+ */
+79
+static PointerTo< LODNode > LODNode::make_default_lod(std::string const &name);
+
+232 10 add_switch 0 4 399 19 LODNode::add_switch 0 1 50 355
+/**
+ * Adds a switch range to the LODNode.  This implies that the corresponding
+ * child node has been parented to the node.
+ *
+ * The sense of in vs.  out distances is as if the object were coming towards
+ * you from far away: it switches "in" at the far distance, and switches "out"
+ * at the close distance.  Thus, "in" should be larger than "out".
+ */
+65
+inline void LODNode::add_switch(PN_stdfloat in, PN_stdfloat out);
+
+233 10 set_switch 0 4 399 19 LODNode::set_switch 0 1 51 98
+/**
+ * Changes the switching range of a particular child of the LODNode.  See
+ * add_switch().
+ */
+76
+inline bool LODNode::set_switch(int index, PN_stdfloat in, PN_stdfloat out);
+
+234 14 clear_switches 0 4 399 23 LODNode::clear_switches 0 1 52 146
+/**
+ * Removes the set of switching ranges for the LODNode, presumably in
+ * conjunction with removing all of its children.  See add_switch().
+ */
+42
+inline void LODNode::clear_switches(void);
+
+235 16 get_num_switches 0 4 399 25 LODNode::get_num_switches 0 1 53 184
+/**
+ * Returns the number of switch ranges added to the LODNode.  This should
+ * correspond to the number of children of the node in order for the LODNode
+ * to function correctly.
+ */
+49
+inline int LODNode::get_num_switches(void) const;
+
+236 6 get_in 0 4 399 15 LODNode::get_in 0 1 54 136
+/**
+ * Returns the "in" distance of the indicated switch range.  This should be
+ * larger than the "out" distance of the same range.
+ */
+52
+inline PN_stdfloat LODNode::get_in(int index) const;
+
+237 7 get_out 0 4 399 16 LODNode::get_out 0 1 55 137
+/**
+ * Returns the "out" distance of the indicated switch range.  This should be
+ * smaller than the "in" distance of the same range.
+ */
+53
+inline PN_stdfloat LODNode::get_out(int index) const;
+
+238 17 get_lowest_switch 0 4 399 26 LODNode::get_lowest_switch 0 1 56 220
+/**
+ * Returns the index number of the child with the lowest level of detail; that
+ * is, the one that is designed to be seen from the farthest away.  This is
+ * usually the first child, but it is not necessarily so.
+ */
+50
+inline int LODNode::get_lowest_switch(void) const;
+
+239 18 get_highest_switch 0 4 399 27 LODNode::get_highest_switch 0 1 57 228
+/**
+ * Returns the index number of the child with the highest level of detail;
+ * that is, the one that is designed to be seen from the closest to the
+ * camera.  This is usually the last child, but it is not necessarily so.
+ */
+51
+inline int LODNode::get_highest_switch(void) const;
+
+240 12 force_switch 0 4 399 21 LODNode::force_switch 0 1 58 149
+/**
+ * Forces the LODNode to show the indicated level instead of the level that
+ * would normally be shown based on the distance from the camera.
+ */
+45
+inline void LODNode::force_switch(int index);
+
+241 18 clear_force_switch 0 4 399 27 LODNode::clear_force_switch 0 1 59 133
+/**
+ * Undoes the effect of a previous call to force_switch() and releases the
+ * LODNode to once again display the normal level.
+ */
+46
+inline void LODNode::clear_force_switch(void);
+
+242 13 set_lod_scale 0 4 399 22 LODNode::set_lod_scale 0 1 60 331
+// for performance tuning, increasing this value should improve performance
+// at the cost of model quality
+
+// for performance tuning, increasing this value should improve performance
+// at the cost of model quality
+
+/**
+ * Sets the multiplier for lod distances.  A higher value means you'll see
+ * farther switchs than normal
+ */
+54
+inline void LODNode::set_lod_scale(PN_stdfloat value);
+
+243 13 get_lod_scale 0 4 399 22 LODNode::get_lod_scale 0 1 61 51
+/**
+ * Returns the multiplier for lod distances
+ */
+54
+inline PN_stdfloat LODNode::get_lod_scale(void) const;
+
+244 10 set_center 0 4 399 19 LODNode::set_center 0 1 62 172
+/**
+ * Specifies the center of the LOD.  This is the point that is compared to the
+ * camera (in camera space) to determine the particular LOD that should be
+ * chosen.
+ */
+55
+inline void LODNode::set_center(LPoint3 const &center);
+
+245 10 get_center 0 4 399 19 LODNode::get_center 0 1 63 170
+/**
+ * Returns the center of the LOD.  This is the point that is compared to the
+ * camera (in camera space) to determine the particular LOD that should be
+ * chosen.
+ */
+54
+inline LPoint3 const &LODNode::get_center(void) const;
+
+246 11 show_switch 0 4 399 20 LODNode::show_switch 0 2 64 65 1102
+/**
+ * This is provided as a debugging aid.  show_switch() will put the LODNode
+ * into a special mode where rather than computing and drawing the appropriate
+ * level of the LOD, a ring is drawn around the LODNode center indicating the
+ * switch distances from the camera for the indicated level, and the geometry
+ * of the indicated level is drawn in wireframe.
+ *
+ * Multiple different levels can be visualized this way at once.  Call
+ * hide_switch() or hide_all_switches() to undo this mode and restore the
+ * LODNode to its normal behavior.
+ */
+
+/**
+ * This is provided as a debugging aid.  show_switch() will put the LODNode
+ * into a special mode where rather than computing and drawing the appropriate
+ * level of the LOD, a ring is drawn around the LODNode center indicating the
+ * switch distances from the camera for the indicated level, and the geometry
+ * of the indicated level is drawn in wireframe.
+ *
+ * Multiple different levels can be visualized this way at once.  Call
+ * hide_switch() or hide_all_switches() to undo this mode and restore the
+ * LODNode to its normal behavior.
+ */
+96
+void LODNode::show_switch(int index);
+void LODNode::show_switch(int index, LColor const &color);
+
+247 11 hide_switch 0 4 399 20 LODNode::hide_switch 0 1 66 53
+/**
+ * Disables a previous call to show_switch().
+ */
+37
+void LODNode::hide_switch(int index);
+
+248 17 show_all_switches 0 4 399 26 LODNode::show_all_switches 0 1 67 52
+/**
+ * Shows all levels in their default colors.
+ */
+38
+void LODNode::show_all_switches(void);
+
+249 17 hide_all_switches 0 4 399 26 LODNode::hide_all_switches 0 1 68 71
+/**
+ * Hides all levels, restoring the LODNode to normal operation.
+ */
+38
+void LODNode::hide_all_switches(void);
+
+250 12 is_any_shown 0 4 399 21 LODNode::is_any_shown 0 1 69 159
+/**
+ * Returns true if any switch has been shown with show_switch(), indicating
+ * the LODNode is in debug show mode; or false if it is in the normal mode.
+ */
+46
+inline bool LODNode::is_any_shown(void) const;
+
+251 19 verify_child_bounds 0 4 399 28 LODNode::verify_child_bounds 0 1 70 274
+/**
+ * Returns true if the bounding volumes for the geometry of each fhild node
+ * entirely fits within the switch_in radius for that child, or false
+ * otherwise.  It is almost always a mistake for the geometry of an LOD level
+ * to be larger than its switch_in radius.
+ */
+46
+bool LODNode::verify_child_bounds(void) const;
+
+252 14 get_class_type 0 4 399 23 LODNode::get_class_type 0 1 71 0
+48
+static TypeHandle LODNode::get_class_type(void);
+
+253 8 ~LODNode 0 516 399 17 LODNode::~LODNode 0 0 0
+24
+LODNode::~LODNode(void);
+
+254 11 FadeLODNode 0 260 402 24 FadeLODNode::FadeLODNode 0 1 72 22
+/**
+ *
+ */
+
+/**
+ *
+ */
+59
+explicit FadeLODNode::FadeLODNode(std::string const &name);
+
+255 13 set_fade_time 0 4 402 26 FadeLODNode::set_fade_time 0 1 73 55
+/**
+ * set the time taken to complete an LOD switch
+ */
+54
+inline void FadeLODNode::set_fade_time(PN_stdfloat t);
+
+256 13 get_fade_time 0 4 402 26 FadeLODNode::get_fade_time 0 1 74 55
+/**
+ * get the time taken to complete an LOD switch
+ */
+58
+inline PN_stdfloat FadeLODNode::get_fade_time(void) const;
+
+257 12 set_fade_bin 0 4 402 25 FadeLODNode::set_fade_bin 0 1 75 124
+/**
+ * Specifies the cull bin and draw order that is assigned to the fading part
+ * of the geometry during a transition.
+ */
+72
+void FadeLODNode::set_fade_bin(std::string const &name, int draw_order);
+
+258 17 get_fade_bin_name 0 4 402 30 FadeLODNode::get_fade_bin_name 0 1 76 107
+/**
+ * Returns the cull bin that is assigned to the fading part of the geometry
+ * during a transition.
+ */
+69
+inline std::string const &FadeLODNode::get_fade_bin_name(void) const;
+
+259 23 get_fade_bin_draw_order 0 4 402 36 FadeLODNode::get_fade_bin_draw_order 0 1 77 135
+/**
+ * Returns the draw order that is assigned (along with the bin name) to the
+ * fading part of the geometry during a transition.
+ */
+60
+inline int FadeLODNode::get_fade_bin_draw_order(void) const;
+
+260 23 set_fade_state_override 0 4 402 36 FadeLODNode::set_fade_state_override 0 1 78 191
+/**
+ * Specifies the override value that is applied to the state changes necessary
+ * to apply the fade effect.  This should be larger than any attrib overrides
+ * on the fading geometry.
+ */
+56
+void FadeLODNode::set_fade_state_override(int override);
+
+261 23 get_fade_state_override 0 4 402 36 FadeLODNode::get_fade_state_override 0 1 79 189
+/**
+ * Returns the override value that is applied to the state changes necessary
+ * to apply the fade effect.  This should be larger than any attrib overrides
+ * on the fading geometry.
+ */
+60
+inline int FadeLODNode::get_fade_state_override(void) const;
+
+262 14 get_class_type 0 4 402 27 FadeLODNode::get_class_type 0 1 80 0
+52
+static TypeHandle FadeLODNode::get_class_type(void);
+
+263 12 ~FadeLODNode 0 516 402 25 FadeLODNode::~FadeLODNode 0 0 0
+32
+FadeLODNode::~FadeLODNode(void);
+
+264 8 get_trav 0 4 406 30 NodeCullCallbackData::get_trav 0 1 81 193
+/**
+ * Returns the CullTraverser in use at the time of the callback.  This object
+ * contains data that does not change during the traversal, such as the
+ * DisplayRegion and Camera in use.
+ */
+65
+inline CullTraverser *NodeCullCallbackData::get_trav(void) const;
+
+265 8 get_data 0 4 406 30 NodeCullCallbackData::get_data 0 1 82 222
+/**
+ * Returns the CullTraverserData in use at the time of the callback.  This
+ * object contains data that changes at each node of the traversal, such as
+ * the current node and the current net transform to that node.
+ */
+69
+inline CullTraverserData &NodeCullCallbackData::get_data(void) const;
+
+266 14 get_class_type 0 4 406 36 NodeCullCallbackData::get_class_type 0 1 83 0
+61
+static TypeHandle NodeCullCallbackData::get_class_type(void);
+
+267 21 ~NodeCullCallbackData 0 516 406 43 NodeCullCallbackData::~NodeCullCallbackData 0 0 0
+50
+NodeCullCallbackData::~NodeCullCallbackData(void);
+
+268 10 PointLight 0 260 408 22 PointLight::PointLight 0 1 84 138
+/**
+ *
+ */
+
+/**
+ * Do not call the copy constructor directly; instead, use make_copy() or
+ * copy_subgraph() to make a copy of a node.
+ */
+57
+explicit PointLight::PointLight(std::string const &name);
+
+269 18 set_specular_color 0 4 408 30 PointLight::set_specular_color 0 1 85 72
+/**
+ * Sets the color of specular highlights generated by the light.
+ */
+64
+inline void PointLight::set_specular_color(LColor const &color);
+
+270 20 clear_specular_color 0 4 408 32 PointLight::clear_specular_color 0 1 86 115
+/**
+ * Clears a custom specular color setting, meaning that the specular color
+ * will now come from the color.
+ */
+51
+inline void PointLight::clear_specular_color(void);
+
+271 18 get_specular_color 0 6 408 30 PointLight::get_specular_color 0 0 120
+/**
+ * Returns the color of specular highlights generated by the light.  This is
+ * usually the same as get_color().
+ */
+78
+virtual inline LColor const &PointLight::get_specular_color(void) const final;
+
+272 15 set_attenuation 0 4 408 27 PointLight::set_attenuation 0 1 87 190
+/**
+ * Sets the terms of the attenuation equation for the light.  These are, in
+ * order, the constant, linear, and quadratic terms based on the distance from
+ * the point to the vertex.
+ */
+70
+inline void PointLight::set_attenuation(LVecBase3 const &attenuation);
+
+273 15 get_attenuation 0 6 408 27 PointLight::get_attenuation 0 0 193
+/**
+ * Returns the terms of the attenuation equation for the light.  These are, in
+ * order, the constant, linear, and quadratic terms based on the distance from
+ * the point to the vertex.
+ */
+78
+virtual inline LVecBase3 const &PointLight::get_attenuation(void) const final;
+
+274 16 get_max_distance 0 4 408 28 PointLight::get_max_distance 0 1 88 122
+/**
+ * Returns the maximum distance at which the light has any effect, as previously
+ * specified by set_max_distance.
+ */
+60
+inline PN_stdfloat PointLight::get_max_distance(void) const;
+
+275 16 set_max_distance 0 4 408 28 PointLight::set_max_distance 0 1 89 161
+/**
+ * Sets the radius of the light's sphere of influence.  Beyond this distance, the
+ * light may be attenuated to zero, if this is supported by the shader.
+ */
+67
+inline void PointLight::set_max_distance(PN_stdfloat max_distance);
+
+276 9 get_point 0 4 408 21 PointLight::get_point 0 1 90 160
+/**
+ * Returns the point in space at which the light is located.  This is local to
+ * the coordinate space in which the light is assigned, and is usually 0.
+ */
+56
+inline LPoint3 const &PointLight::get_point(void) const;
+
+277 9 set_point 0 4 408 21 PointLight::set_point 0 1 91 77
+/**
+ * Sets the point in space at which the light is located.  Usually 0.
+ */
+56
+inline void PointLight::set_point(LPoint3 const &point);
+
+278 14 get_class_type 0 4 408 26 PointLight::get_class_type 0 1 92 0
+51
+static TypeHandle PointLight::get_class_type(void);
+
+279 11 ~PointLight 0 516 408 23 PointLight::~PointLight 0 0 0
+30
+PointLight::~PointLight(void);
+
+280 14 RectangleLight 0 260 412 30 RectangleLight::RectangleLight 0 1 93 138
+/**
+ *
+ */
+
+/**
+ * Do not call the copy constructor directly; instead, use make_copy() or
+ * copy_subgraph() to make a copy of a node.
+ */
+65
+explicit RectangleLight::RectangleLight(std::string const &name);
+
+281 16 get_max_distance 0 4 412 32 RectangleLight::get_max_distance 0 1 94 122
+/**
+ * Returns the maximum distance at which the light has any effect, as previously
+ * specified by set_max_distance.
+ */
+64
+inline PN_stdfloat RectangleLight::get_max_distance(void) const;
+
+282 16 set_max_distance 0 4 412 32 RectangleLight::set_max_distance 0 1 95 161
+/**
+ * Sets the radius of the light's sphere of influence.  Beyond this distance, the
+ * light may be attenuated to zero, if this is supported by the shader.
+ */
+71
+inline void RectangleLight::set_max_distance(PN_stdfloat max_distance);
+
+283 14 get_class_type 0 4 412 30 RectangleLight::get_class_type 0 1 96 0
+55
+static TypeHandle RectangleLight::get_class_type(void);
+
+284 15 ~RectangleLight 0 516 412 31 RectangleLight::~RectangleLight 0 0 0
+38
+RectangleLight::~RectangleLight(void);
+
+285 18 SelectiveChildNode 0 260 413 38 SelectiveChildNode::SelectiveChildNode 0 1 97 22
+/**
+ *
+ */
+
+/**
+ *
+ */
+80
+inline explicit SelectiveChildNode::SelectiveChildNode(std::string const &name);
+
+286 14 get_class_type 0 4 413 34 SelectiveChildNode::get_class_type 0 1 98 0
+59
+static TypeHandle SelectiveChildNode::get_class_type(void);
+
+287 19 ~SelectiveChildNode 0 516 413 39 SelectiveChildNode::~SelectiveChildNode 0 0 0
+46
+SelectiveChildNode::~SelectiveChildNode(void);
+
+288 28 upcast_to_SelectiveChildNode 0 12 414 42 SequenceNode::upcast_to_SelectiveChildNode 0 1 103 46
+upcast from SequenceNode to SelectiveChildNode
+69
+SelectiveChildNode *SequenceNode::upcast_to_SelectiveChildNode(void);
+
+289 24 downcast_to_SequenceNode 0 12 413 44 SelectiveChildNode::downcast_to_SequenceNode 0 0 48
+downcast from SelectiveChildNode to SequenceNode
+65
+SequenceNode *SelectiveChildNode::downcast_to_SequenceNode(void);
+
+290 23 upcast_to_AnimInterface 0 12 414 37 SequenceNode::upcast_to_AnimInterface 0 1 104 41
+upcast from SequenceNode to AnimInterface
+59
+AnimInterface *SequenceNode::upcast_to_AnimInterface(void);
+
+291 24 downcast_to_SequenceNode 0 12 415 39 AnimInterface::downcast_to_SequenceNode 0 0 43
+downcast from AnimInterface to SequenceNode
+60
+SequenceNode *AnimInterface::downcast_to_SequenceNode(void);
+
+292 12 SequenceNode 0 260 414 26 SequenceNode::SequenceNode 0 1 99 22
+/**
+ *
+ */
+
+/**
+ *
+ */
+68
+inline explicit SequenceNode::SequenceNode(std::string const &name);
+
+293 14 get_num_frames 0 6 414 28 SequenceNode::get_num_frames 0 1 100 278
+/**
+ * Returns the number of frames in the animation.  This is a property of the
+ * animation and may not be directly adjusted by the user (although it may
+ * change without warning with certain kinds of animations, since this is a
+ * virtual method that may be overridden).
+ */
+53
+virtual int SequenceNode::get_num_frames(void) const;
+
+294 14 set_frame_rate 0 4 414 28 SequenceNode::set_frame_rate 0 1 101 173
+/**
+ * Changes the advertised frame rate of the SequenceNode.  This can be used in
+ * conjunction with get_play_rate() to change the effective frame rate of the
+ * node.
+ */
+60
+inline void SequenceNode::set_frame_rate(double frame_rate);
+
+295 14 get_frame_rate 0 4 414 28 SequenceNode::get_frame_rate 0 0 0
+55
+inline double SequenceNode::get_frame_rate(void) const;
+
+296 14 get_class_type 0 4 414 28 SequenceNode::get_class_type 0 1 102 0
+53
+static TypeHandle SequenceNode::get_class_type(void);
+
+297 13 ~SequenceNode 0 516 414 27 SequenceNode::~SequenceNode 0 0 0
+34
+SequenceNode::~SequenceNode(void);
+
+298 15 ShaderGenerator 0 260 417 32 ShaderGenerator::ShaderGenerator 0 2 105 106 413
+/**
+ * Create a ShaderGenerator.  This has no state, except possibly to cache
+ * certain results.  The given parameters contain information about the
+ * capabilities of the target for which the shader will be compiled.
+ */
+
+/**
+ * Create a ShaderGenerator.  This has no state, except possibly to cache
+ * certain results.  The parameter that must be passed is the GSG to which the
+ * shader generator belongs.
+ */
+147
+ShaderGenerator::ShaderGenerator(GraphicsStateGuardianBase const *gsg);
+inline ShaderGenerator::ShaderGenerator(ShaderGenerator const &) = default;
+
+299 17 synthesize_shader 0 6 417 34 ShaderGenerator::synthesize_shader 0 1 107 794
+/**
+ * This is the routine that implements the next-gen fixed function pipeline by
+ * synthesizing a shader.  It also takes care of setting up any buffers needed
+ * to produce the requested effects.
+ *
+ * Currently supports:
+ * - flat colors
+ * - vertex colors
+ * - lighting
+ * - normal maps, even multiple
+ * - gloss maps, but not multiple
+ * - glow maps, but not multiple
+ * - materials, but not updates to materials
+ * - 2D textures
+ * - all texture stage modes, including combine modes
+ * - color scale attrib
+ * - light ramps (for cartoon shading)
+ * - shadow mapping
+ * - most texgen modes
+ * - texmatrix
+ * - 1D/2D/3D textures, cube textures, 2D tex arrays
+ * - linear/exp/exp2 fog
+ * - animation
+ *
+ * Potential optimizations
+ * - omit attenuation calculations if attenuation off
+ *
+ */
+134
+virtual ConstPointerTo< ShaderAttrib > ShaderGenerator::synthesize_shader(RenderState const *rs, GeomVertexAnimationSpec const &anim);
+
+300 24 rehash_generated_shaders 0 4 417 41 ShaderGenerator::rehash_generated_shaders 0 1 108 354
+/**
+ * Rehashes all the states with generated shaders, removing the ones that are
+ * no longer fresh.
+ *
+ * Call this if certain state has changed in such a way as to require a rerun
+ * of the shader generator.  This should be rare because in most cases, the
+ * shader generator will automatically regenerate shaders as necessary.
+ *
+ * @since 1.10.0
+ */
+53
+void ShaderGenerator::rehash_generated_shaders(void);
+
+301 23 clear_generated_shaders 0 4 417 40 ShaderGenerator::clear_generated_shaders 0 1 109 159
+/**
+ * Removes all previously generated shaders, requiring all shaders to be
+ * regenerated.  Does not clear cache of compiled shaders.
+ *
+ * @since 1.10.0
+ */
+52
+void ShaderGenerator::clear_generated_shaders(void);
+
+302 14 get_class_type 0 4 417 31 ShaderGenerator::get_class_type 0 1 110 0
+56
+static TypeHandle ShaderGenerator::get_class_type(void);
+
+303 11 SphereLight 0 260 419 24 SphereLight::SphereLight 0 1 111 138
+/**
+ *
+ */
+
+/**
+ * Do not call the copy constructor directly; instead, use make_copy() or
+ * copy_subgraph() to make a copy of a node.
+ */
+59
+explicit SphereLight::SphereLight(std::string const &name);
+
+304 10 get_radius 0 4 419 23 SphereLight::get_radius 0 1 112 44
+/**
+ * Returns the radius of the sphere.
+ */
+55
+inline PN_stdfloat SphereLight::get_radius(void) const;
+
+305 10 set_radius 0 4 419 23 SphereLight::set_radius 0 1 113 41
+/**
+ * Sets the radius of the sphere.
+ */
+56
+inline void SphereLight::set_radius(PN_stdfloat radius);
+
+306 14 get_class_type 0 4 419 27 SphereLight::get_class_type 0 1 114 0
+52
+static TypeHandle SphereLight::get_class_type(void);
+
+307 12 ~SphereLight 0 516 419 25 SphereLight::~SphereLight 0 0 0
+32
+SphereLight::~SphereLight(void);
+
+308 9 Spotlight 0 260 420 20 Spotlight::Spotlight 0 1 115 138
+/**
+ *
+ */
+
+/**
+ * Do not call the copy constructor directly; instead, use make_copy() or
+ * copy_subgraph() to make a copy of a node.
+ */
+55
+explicit Spotlight::Spotlight(std::string const &name);
+
+309 12 set_exponent 0 4 420 23 Spotlight::set_exponent 0 1 116 398
+/**
+ * Sets the exponent that controls the amount of light falloff from the center
+ * of the spotlight.  The light is attenuated by the cosine of the angle
+ * between the direction of the light and the direction of the point being
+ * lighted, raised to the power of this exponent.  Thus, higher exponents
+ * result in a more focused light source, regardless of the field-of-view of
+ * the lens.
+ */
+58
+inline void Spotlight::set_exponent(PN_stdfloat exponent);
+
+310 12 get_exponent 0 6 420 23 Spotlight::get_exponent 0 0 131
+/**
+ * Returns the exponent that controls the amount of light falloff from the
+ * center of the spotlight.  See set_exponent().
+ */
+69
+virtual inline PN_stdfloat Spotlight::get_exponent(void) const final;
+
+311 18 set_specular_color 0 4 420 29 Spotlight::set_specular_color 0 1 117 72
+/**
+ * Sets the color of specular highlights generated by the light.
+ */
+63
+inline void Spotlight::set_specular_color(LColor const &color);
+
+312 20 clear_specular_color 0 4 420 31 Spotlight::clear_specular_color 0 1 118 115
+/**
+ * Clears a custom specular color setting, meaning that the specular color
+ * will now come from the color.
+ */
+50
+inline void Spotlight::clear_specular_color(void);
+
+313 18 get_specular_color 0 6 420 29 Spotlight::get_specular_color 0 0 120
+/**
+ * Returns the color of specular highlights generated by the light.  This is
+ * usually the same as get_color().
+ */
+77
+virtual inline LColor const &Spotlight::get_specular_color(void) const final;
+
+314 15 set_attenuation 0 4 420 26 Spotlight::set_attenuation 0 1 119 190
+/**
+ * Sets the terms of the attenuation equation for the light.  These are, in
+ * order, the constant, linear, and quadratic terms based on the distance from
+ * the point to the vertex.
+ */
+69
+inline void Spotlight::set_attenuation(LVecBase3 const &attenuation);
+
+315 15 get_attenuation 0 6 420 26 Spotlight::get_attenuation 0 0 193
+/**
+ * Returns the terms of the attenuation equation for the light.  These are, in
+ * order, the constant, linear, and quadratic terms based on the distance from
+ * the point to the vertex.
+ */
+77
+virtual inline LVecBase3 const &Spotlight::get_attenuation(void) const final;
+
+316 16 get_max_distance 0 4 420 27 Spotlight::get_max_distance 0 1 120 122
+/**
+ * Returns the maximum distance at which the light has any effect, as previously
+ * specified by set_max_distance.
+ */
+59
+inline PN_stdfloat Spotlight::get_max_distance(void) const;
+
+317 16 set_max_distance 0 4 420 27 Spotlight::set_max_distance 0 1 121 161
+/**
+ * Sets the radius of the light's sphere of influence.  Beyond this distance, the
+ * light may be attenuated to zero, if this is supported by the shader.
+ */
+66
+inline void Spotlight::set_max_distance(PN_stdfloat max_distance);
+
+318 9 make_spot 0 4 420 20 Spotlight::make_spot 0 1 122 619
+/**
+ * Returns a newly-generated Texture that renders a circular spot image as
+ * might be cast from the spotlight.  This may be projected onto target
+ * geometry (for instance, via NodePath::project_texture()) instead of
+ * actually enabling the light itself, as a cheesy way to make a high-
+ * resolution spot appear on the geometry.
+ *
+ * pixel_width specifies the height and width of the new texture in pixels,
+ * full_radius is a value in the range 0..1 that indicates the relative size
+ * of the fully bright center spot, and fg and bg are the colors of the
+ * interior and exterior of the spot, respectively.
+ */
+115
+static PointerTo< Texture > Spotlight::make_spot(int pixel_width, PN_stdfloat full_radius, LColor &fg, LColor &bg);
+
+319 14 get_class_type 0 4 420 25 Spotlight::get_class_type 0 1 123 0
+50
+static TypeHandle Spotlight::get_class_type(void);
+
+320 10 ~Spotlight 0 516 420 21 Spotlight::~Spotlight 0 0 0
+28
+Spotlight::~Spotlight(void);
+
+321 10 SwitchNode 0 260 421 22 SwitchNode::SwitchNode 0 1 124 22
+/**
+ *
+ */
+
+/**
+ *
+ */
+64
+inline explicit SwitchNode::SwitchNode(std::string const &name);
+
+322 17 set_visible_child 0 4 421 29 SwitchNode::set_visible_child 0 1 125 90
+/**
+ * Specifies the particular child of this node, by index, that will be
+ * visible.
+ */
+53
+inline void SwitchNode::set_visible_child(int index);
+
+323 17 get_visible_child 0 6 421 29 SwitchNode::get_visible_child 0 1 126 65
+/**
+ * Returns the index of the child that should be visible.
+ */
+54
+virtual int SwitchNode::get_visible_child(void) const;
+
+324 14 get_class_type 0 4 421 26 SwitchNode::get_class_type 0 1 127 0
+51
+static TypeHandle SwitchNode::get_class_type(void);
+
+325 11 ~SwitchNode 0 516 421 23 SwitchNode::~SwitchNode 0 0 0
+30
+SwitchNode::~SwitchNode(void);
+
+326 12 UvScrollNode 0 260 422 26 UvScrollNode::UvScrollNode 0 2 128 129 34
+/**
+ *
+ */
+
+/**
+ *
+ */
+
+/**
+ *
+ */
+221
+inline explicit UvScrollNode::UvScrollNode(std::string const &name, PN_stdfloat u_speed, PN_stdfloat v_speed, PN_stdfloat w_speed, PN_stdfloat r_speed);
+inline explicit UvScrollNode::UvScrollNode(std::string const &name);
+
+327 11 set_u_speed 0 4 422 25 UvScrollNode::set_u_speed 0 1 130 10
+/**
+ *
+ */
+59
+inline void UvScrollNode::set_u_speed(PN_stdfloat u_speed);
+
+328 11 set_v_speed 0 4 422 25 UvScrollNode::set_v_speed 0 1 131 10
+/**
+ *
+ */
+59
+inline void UvScrollNode::set_v_speed(PN_stdfloat v_speed);
+
+329 11 set_w_speed 0 4 422 25 UvScrollNode::set_w_speed 0 1 132 10
+/**
+ *
+ */
+59
+inline void UvScrollNode::set_w_speed(PN_stdfloat w_speed);
+
+330 11 set_r_speed 0 4 422 25 UvScrollNode::set_r_speed 0 1 133 10
+/**
+ *
+ */
+59
+inline void UvScrollNode::set_r_speed(PN_stdfloat r_speed);
+
+331 11 get_u_speed 0 4 422 25 UvScrollNode::get_u_speed 0 1 134 10
+/**
+ *
+ */
+57
+inline PN_stdfloat UvScrollNode::get_u_speed(void) const;
+
+332 11 get_v_speed 0 4 422 25 UvScrollNode::get_v_speed 0 1 135 10
+/**
+ *
+ */
+57
+inline PN_stdfloat UvScrollNode::get_v_speed(void) const;
+
+333 11 get_w_speed 0 4 422 25 UvScrollNode::get_w_speed 0 1 136 10
+/**
+ *
+ */
+57
+inline PN_stdfloat UvScrollNode::get_w_speed(void) const;
+
+334 11 get_r_speed 0 4 422 25 UvScrollNode::get_r_speed 0 1 137 10
+/**
+ *
+ */
+57
+inline PN_stdfloat UvScrollNode::get_r_speed(void) const;
+
+335 14 get_class_type 0 4 422 28 UvScrollNode::get_class_type 0 1 138 0
+53
+static TypeHandle UvScrollNode::get_class_type(void);
+
+336 13 ~UvScrollNode 0 516 422 27 UvScrollNode::~UvScrollNode 0 0 0
+34
+UvScrollNode::~UvScrollNode(void);
+
+337 18 SceneGraphAnalyzer 0 260 423 38 SceneGraphAnalyzer::SceneGraphAnalyzer 0 2 139 140 10
+/**
+ *
+ */
+130
+SceneGraphAnalyzer::SceneGraphAnalyzer(void);
+inline SceneGraphAnalyzer::SceneGraphAnalyzer(SceneGraphAnalyzer const &) = default;
+
+338 19 ~SceneGraphAnalyzer 0 516 423 39 SceneGraphAnalyzer::~SceneGraphAnalyzer 0 0 10
+/**
+ *
+ */
+46
+SceneGraphAnalyzer::~SceneGraphAnalyzer(void);
+
+339 12 set_lod_mode 0 4 423 32 SceneGraphAnalyzer::set_lod_mode 0 1 141 61
+/**
+ * Specifies the mode in which LODNodes are analyzed.
+ */
+83
+inline void SceneGraphAnalyzer::set_lod_mode(SceneGraphAnalyzer::LodMode lod_mode);
+
+340 12 get_lod_mode 0 4 423 32 SceneGraphAnalyzer::get_lod_mode 0 1 142 59
+/**
+ * Returns the mode in which LODNodes are analyzed.
+ */
+112
+inline SceneGraphAnalyzer::LodMode SceneGraphAnalyzer::get_lod_mode(SceneGraphAnalyzer::LodMode lod_mode) const;
+
+341 5 clear 0 4 423 25 SceneGraphAnalyzer::clear 0 1 143 79
+/**
+ * Resets all of the data in the analyzer in preparation for a new run.
+ */
+37
+void SceneGraphAnalyzer::clear(void);
+
+342 8 add_node 0 4 423 28 SceneGraphAnalyzer::add_node 0 1 144 244
+/**
+ * Adds a new node to the set of data for analysis.  Normally, this would only
+ * be called once, and passed the top of the scene graph, but it's possible to
+ * repeatedly pass in subgraphs to get an analysis of all the graphs together.
+ */
+51
+void SceneGraphAnalyzer::add_node(PandaNode *node);
+
+343 5 write 0 4 423 25 SceneGraphAnalyzer::write 0 1 145 44
+/**
+ * Describes all the data collected.
+ */
+78
+void SceneGraphAnalyzer::write(std::ostream &out, int indent_level = 0) const;
+
+344 13 get_num_nodes 0 4 423 33 SceneGraphAnalyzer::get_num_nodes 0 1 146 10
+/**
+ *
+ */
+57
+inline int SceneGraphAnalyzer::get_num_nodes(void) const;
+
+345 17 get_num_instances 0 4 423 37 SceneGraphAnalyzer::get_num_instances 0 1 147 10
+/**
+ *
+ */
+61
+inline int SceneGraphAnalyzer::get_num_instances(void) const;
+
+346 18 get_num_transforms 0 4 423 38 SceneGraphAnalyzer::get_num_transforms 0 1 148 10
+/**
+ *
+ */
+62
+inline int SceneGraphAnalyzer::get_num_transforms(void) const;
+
+347 26 get_num_nodes_with_attribs 0 4 423 46 SceneGraphAnalyzer::get_num_nodes_with_attribs 0 1 149 10
+/**
+ *
+ */
+70
+inline int SceneGraphAnalyzer::get_num_nodes_with_attribs(void) const;
+
+348 17 get_num_lod_nodes 0 4 423 37 SceneGraphAnalyzer::get_num_lod_nodes 0 1 150 10
+/**
+ *
+ */
+61
+inline int SceneGraphAnalyzer::get_num_lod_nodes(void) const;
+
+349 18 get_num_geom_nodes 0 4 423 38 SceneGraphAnalyzer::get_num_geom_nodes 0 1 151 10
+/**
+ *
+ */
+62
+inline int SceneGraphAnalyzer::get_num_geom_nodes(void) const;
+
+350 13 get_num_geoms 0 4 423 33 SceneGraphAnalyzer::get_num_geoms 0 1 152 10
+/**
+ *
+ */
+57
+inline int SceneGraphAnalyzer::get_num_geoms(void) const;
+
+351 25 get_num_geom_vertex_datas 0 4 423 45 SceneGraphAnalyzer::get_num_geom_vertex_datas 0 1 153 10
+/**
+ *
+ */
+69
+inline int SceneGraphAnalyzer::get_num_geom_vertex_datas(void) const;
+
+352 27 get_num_geom_vertex_formats 0 4 423 47 SceneGraphAnalyzer::get_num_geom_vertex_formats 0 1 154 10
+/**
+ *
+ */
+71
+inline int SceneGraphAnalyzer::get_num_geom_vertex_formats(void) const;
+
+353 20 get_vertex_data_size 0 4 423 40 SceneGraphAnalyzer::get_vertex_data_size 0 1 155 10
+/**
+ *
+ */
+72
+inline std::size_t SceneGraphAnalyzer::get_vertex_data_size(void) const;
+
+354 16 get_num_vertices 0 4 423 36 SceneGraphAnalyzer::get_num_vertices 0 1 156 10
+/**
+ *
+ */
+60
+inline int SceneGraphAnalyzer::get_num_vertices(void) const;
+
+355 15 get_num_normals 0 4 423 35 SceneGraphAnalyzer::get_num_normals 0 1 157 10
+/**
+ *
+ */
+59
+inline int SceneGraphAnalyzer::get_num_normals(void) const;
+
+356 14 get_num_colors 0 4 423 34 SceneGraphAnalyzer::get_num_colors 0 1 158 10
+/**
+ *
+ */
+58
+inline int SceneGraphAnalyzer::get_num_colors(void) const;
+
+357 17 get_num_texcoords 0 4 423 37 SceneGraphAnalyzer::get_num_texcoords 0 1 159 10
+/**
+ *
+ */
+61
+inline int SceneGraphAnalyzer::get_num_texcoords(void) const;
+
+358 12 get_num_tris 0 4 423 32 SceneGraphAnalyzer::get_num_tris 0 1 160 10
+/**
+ *
+ */
+56
+inline int SceneGraphAnalyzer::get_num_tris(void) const;
+
+359 13 get_num_lines 0 4 423 33 SceneGraphAnalyzer::get_num_lines 0 1 161 10
+/**
+ *
+ */
+57
+inline int SceneGraphAnalyzer::get_num_lines(void) const;
+
+360 14 get_num_points 0 4 423 34 SceneGraphAnalyzer::get_num_points 0 1 162 10
+/**
+ *
+ */
+58
+inline int SceneGraphAnalyzer::get_num_points(void) const;
+
+361 15 get_num_patches 0 4 423 35 SceneGraphAnalyzer::get_num_patches 0 1 163 10
+/**
+ *
+ */
+59
+inline int SceneGraphAnalyzer::get_num_patches(void) const;
+
+362 23 get_num_individual_tris 0 4 423 43 SceneGraphAnalyzer::get_num_individual_tris 0 1 164 10
+/**
+ *
+ */
+67
+inline int SceneGraphAnalyzer::get_num_individual_tris(void) const;
+
+363 17 get_num_tristrips 0 4 423 37 SceneGraphAnalyzer::get_num_tristrips 0 1 165 10
+/**
+ *
+ */
+61
+inline int SceneGraphAnalyzer::get_num_tristrips(void) const;
+
+364 27 get_num_triangles_in_strips 0 4 423 47 SceneGraphAnalyzer::get_num_triangles_in_strips 0 1 166 10
+/**
+ *
+ */
+71
+inline int SceneGraphAnalyzer::get_num_triangles_in_strips(void) const;
+
+365 15 get_num_trifans 0 4 423 35 SceneGraphAnalyzer::get_num_trifans 0 1 167 10
+/**
+ *
+ */
+59
+inline int SceneGraphAnalyzer::get_num_trifans(void) const;
+
+366 25 get_num_triangles_in_fans 0 4 423 45 SceneGraphAnalyzer::get_num_triangles_in_fans 0 1 168 10
+/**
+ *
+ */
+69
+inline int SceneGraphAnalyzer::get_num_triangles_in_fans(void) const;
+
+367 27 get_num_vertices_in_patches 0 4 423 47 SceneGraphAnalyzer::get_num_vertices_in_patches 0 1 169 10
+/**
+ *
+ */
+71
+inline int SceneGraphAnalyzer::get_num_vertices_in_patches(void) const;
+
+368 17 get_texture_bytes 0 4 423 37 SceneGraphAnalyzer::get_texture_bytes 0 1 170 10
+/**
+ *
+ */
+69
+inline std::size_t SceneGraphAnalyzer::get_texture_bytes(void) const;
+
+369 20 get_num_long_normals 0 4 423 40 SceneGraphAnalyzer::get_num_long_normals 0 1 171 10
+/**
+ *
+ */
+64
+inline int SceneGraphAnalyzer::get_num_long_normals(void) const;
+
+370 21 get_num_short_normals 0 4 423 41 SceneGraphAnalyzer::get_num_short_normals 0 1 172 10
+/**
+ *
+ */
+65
+inline int SceneGraphAnalyzer::get_num_short_normals(void) const;
+
+371 23 get_total_normal_length 0 4 423 43 SceneGraphAnalyzer::get_total_normal_length 0 1 173 10
+/**
+ *
+ */
+75
+inline PN_stdfloat SceneGraphAnalyzer::get_total_normal_length(void) const;
+
+173
+1 0 0 4 178 429 0 0 88 // We have to explicitly publish these because they resolve the multiple
+// inheritance. 2 4 this 3 425  3 out 1 427  
+2 0 0 4 179 429 0 0 10 /**
+ *
+ */ 3 4 this 3 425  3 out 1 427  12 indent_level 5 386  
+3 0 0 7 180 431 0 0 0 0 
+4 0 0 6 174 433 0 0 0 1 4 this 3 432  
+5 0 0 7 176 434 0 0 0 1 4 this 3 432  
+6 0 0 7 182 436 184 0 10 /**
+ *
+ */ 1 4 name 1 435  
+7 0 0 7 183 431 0 0 0 0 
+8 0 0 7 185 437 193 0 10 /**
+ *
+ */ 1 4 name 1 435  
+9 0 0 4 186 429 0 0 1131 /**
+ * Sets the CallbackObject that will be notified when this node is visited
+ * during the cull traversal.  This callback will be made during the cull
+ * thread.
+ *
+ * The cull traversal is responsible for determining which nodes are visible
+ * and within the view frustum, and for accumulating state and transform, and
+ * generally building up the list of CullableObjects that are to be eventually
+ * passed to the draw traversal for rendering.
+ *
+ * At the time the cull traversal callback is made, the node has been
+ * determined to be visible and it has passed the bounding-volume test, so it
+ * lies within the view frustum.
+ *
+ * The callback is passed an instance of a NodeCullCallbackData, which
+ * contains pointers to the CullTraverser and CullTraverserData--enough data
+ * to examine the current node and its place within the scene graph.  The
+ * callback *replaces* the normal cull behavior, so if your callback does
+ * nothing, the cull traversal will not continue below this node.  If you wish
+ * the cull traversal to continue to visit this node and below, you must call
+ * cbdata->upcall() from your callback.
+ */ 2 4 this 3 437  6 object 1 377  
+10 0 0 4 187 429 0 0 78 /**
+ * Removes the callback set by an earlier call to set_cull_callback().
+ */ 1 4 this 3 437  
+11 0 0 7 188 377 0 0 65 /**
+ * Returns the CallbackObject set by set_cull_callback().
+ */ 1 4 this 3 438  
+12 0 0 4 189 429 0 0 973 /**
+ * Sets the CallbackObject that will be notified when this node is visited
+ * during the draw traversal.  This callback will be made during the draw
+ * thread.
+ *
+ * The draw traversal is responsible for actually issuing the commands to the
+ * graphics engine to draw primitives.  Its job is to walk through the list of
+ * CullableObjects build up by the cull traversal, as quickly as possible,
+ * issuing the appropriate commands to draw each one.
+ *
+ * At the time the draw traversal callback is made, the graphics state has
+ * been loaded with the correct modelview transform and render state, and the
+ * primitives (if any) in this node are ready to be drawn.
+ *
+ * The callback is passed an instance of a GeomDrawCallbackData, which
+ * contains pointers to the current state and transform, as well as the
+ * current GSG.  There is a Geom pointer as well, but it will always be NULL
+ * to this callback, since the CallbackNode does not itself contain any Geoms.
+ */ 2 4 this 3 437  6 object 1 377  
+13 0 0 4 190 429 0 0 78 /**
+ * Removes the callback set by an earlier call to set_draw_callback().
+ */ 1 4 this 3 437  
+14 0 0 7 191 377 0 0 65 /**
+ * Returns the CallbackObject set by set_draw_callback().
+ */ 1 4 this 3 438  
+15 0 0 7 192 431 0 0 0 0 
+16 0 0 7 194 440 203 0 122 /**
+ * Creates a ComputeNode with the given name.  Use add_dispatch and  also
+ * assign a shader using a ShaderAttrib.
+ */ 1 4 name 1 435  
+17 0 0 4 195 429 0 0 193 /**
+ * Adds a dispatch command with the given number of work groups in the X, Y,
+ * and Z dimensions.  Any of these values may be set to 1 if the respective
+ * dimension should not be used.
+ */ 2 4 this 3 440  10 num_groups 1 441  
+18 0 0 4 195 429 0 0 193 /**
+ * Adds a dispatch command with the given number of work groups in the X, Y,
+ * and Z dimensions.  Any of these values may be set to 1 if the respective
+ * dimension should not be used.
+ */ 4 4 this 3 440  12 num_groups_x 1 386  12 num_groups_y 1 386  12 num_groups_z 1 386  
+19 0 0 6 196 444 0 0 83 /**
+ * Returns the number of times add_dispatch has been called on this object.
+ */ 1 4 this 3 442  
+20 0 0 6 197 441 0 0 84 /**
+ * Returns the group counts of the nth dispatch associated with this object.
+ */ 2 4 this 3 442  1 i 1 444  
+21 0 0 4 198 429 0 0 81 /**
+ * Sets the group counts of the nth dispatch associated with this object.
+ */ 3 4 this 3 440  1 i 1 444  10 num_groups 1 441  
+22 0 0 4 199 429 0 0 253 /**
+ * Inserts a dispatch command with the given number of work groups in the X,
+ * Y, and Z dimensions at the given position in the list of dispatch commands.
+ * Any of these values may be set to 1 if the respective dimension should not
+ * be used.
+ */ 3 4 this 3 440  1 i 1 444  10 num_groups 1 441  
+23 0 0 4 200 429 0 0 57 /**
+ * Erases the given dispatch index from the list.
+ */ 2 4 this 3 440  1 i 1 444  
+24 0 0 4 201 429 0 0 41 /**
+ * Removes all dispatch commands.
+ */ 1 4 this 3 440  
+25 0 0 7 202 431 0 0 0 0 
+26 0 0 6 209 385 0 0 141 /**
+ * Returns true if this light defines a specular color, false if the specular
+ * color is derived automatically from the light color.
+ */ 1 4 this 3 446  
+27 0 0 6 210 385 0 0 75 /**
+ * Returns whether this light is configured to cast shadows or not.
+ */ 1 4 this 3 446  
+28 0 0 4 211 429 0 0 297 /**
+ * Sets the flag indicating whether this light should cast shadows or not.
+ * This is the variant without buffer size, meaning that the current buffer
+ * size will be kept (512x512 is the default). Note that enabling shadows will
+ * require the shader generator to be enabled on the scene.
+ */ 2 4 this 3 448  6 caster 1 385  
+29 0 0 4 211 429 0 0 310 /**
+ * Sets the flag indicating whether this light should cast shadows or not.
+ * The xsize and ysize parameters specify the size of the shadow buffer that
+ * will be set up, the sort parameter specifies the sort.  Note that enabling
+ * shadows will require the shader generator to be enabled on the scene.
+ */ 5 4 this 3 448  6 caster 1 385  12 buffer_xsize 1 386  12 buffer_ysize 1 386  4 sort 5 386  
+30 0 0 6 212 386 0 0 85 /**
+ * Returns the sort of the shadow buffer to be created for this light source.
+ */ 1 4 this 3 446  
+31 0 0 4 213 429 0 0 82 /**
+ * Sets the sort of the shadow buffer to be created for this light source.
+ */ 2 4 this 3 448  4 sort 1 386  
+32 0 0 7 214 449 0 0 85 /**
+ * Returns the size of the shadow buffer to be created for this light source.
+ */ 1 4 this 3 446  
+33 0 0 4 215 429 0 0 82 /**
+ * Sets the size of the shadow buffer to be created for this light source.
+ */ 2 4 this 3 448  4 size 1 450  
+34 0 0 7 216 455 0 0 214 /**
+ * Returns the buffer that has been constructed for a given GSG, or NULL if no
+ * such buffer has (yet) been constructed.  This should be used for debugging
+ * only, you will not need to call this normally.
+ */ 2 4 this 3 448  3 gsg 1 453  
+35 0 0 4 217 429 0 0 88 // We have to explicitly publish these because they resolve the multiple
+// inheritance. 2 4 this 3 446  3 out 1 427  
+36 0 0 4 218 429 0 0 10 /**
+ *
+ */ 3 4 this 3 446  3 out 1 427  12 indent_level 5 386  
+37 0 0 7 219 431 0 0 0 0 
+38 0 0 6 204 433 0 0 0 1 4 this 3 448  
+39 0 0 7 206 456 0 0 0 1 4 this 3 448  
+40 0 0 7 220 457 229 0 10 /**
+ *
+ */ 1 4 name 1 435  
+41 0 0 4 221 429 0 0 72 /**
+ * Sets the color of specular highlights generated by the light.
+ */ 2 4 this 3 457  5 color 1 458  
+42 0 0 4 222 429 0 0 115 /**
+ * Clears a custom specular color setting, meaning that the specular color
+ * will now come from the color.
+ */ 1 4 this 3 457  
+43 0 0 6 224 461 0 0 349 /**
+ * Returns the point in space at which the light is located.  This is local to
+ * the coordinate space in which the light is assigned.
+ *
+ * This actually has no bearing on the visual effect of the light, since the
+ * light is rendered as if it were infinitely far away.  This is only used to
+ * create a visible representation of the light.
+ */ 1 4 this 3 459  
+44 0 0 4 225 429 0 0 65 /**
+ * Sets the point in space at which the light is located.
+ */ 2 4 this 3 457  5 point 1 461  
+45 0 0 6 226 462 0 0 135 /**
+ * Returns the direction in which the light is aimed.  This is local to the
+ * coordinate space in which the light is assigned.
+ */ 1 4 this 3 459  
+46 0 0 4 227 429 0 0 58 /**
+ * Sets the direction in which the light is aimed.
+ */ 2 4 this 3 457  9 direction 1 462  
+47 0 0 7 228 431 0 0 0 0 
+48 0 0 7 230 463 253 0 10 /**
+ *
+ */ 1 4 name 1 435  
+49 0 0 7 231 463 253 0 98 /**
+ * Creates a new LODNode of the type specified by the default-lod-type config
+ * variable.
+ */ 1 4 name 1 435  
+50 0 0 4 232 429 0 0 355 /**
+ * Adds a switch range to the LODNode.  This implies that the corresponding
+ * child node has been parented to the node.
+ *
+ * The sense of in vs.  out distances is as if the object were coming towards
+ * you from far away: it switches "in" at the far distance, and switches "out"
+ * at the close distance.  Thus, "in" should be larger than "out".
+ */ 3 4 this 3 463  2 in 1 400  3 out 1 400  
+51 0 0 6 233 385 0 0 98 /**
+ * Changes the switching range of a particular child of the LODNode.  See
+ * add_switch().
+ */ 4 4 this 3 463  5 index 1 386  2 in 1 400  3 out 1 400  
+52 0 0 4 234 429 0 0 146 /**
+ * Removes the set of switching ranges for the LODNode, presumably in
+ * conjunction with removing all of its children.  See add_switch().
+ */ 1 4 this 3 463  
+53 0 0 6 235 386 0 0 184 /**
+ * Returns the number of switch ranges added to the LODNode.  This should
+ * correspond to the number of children of the node in order for the LODNode
+ * to function correctly.
+ */ 1 4 this 3 464  
+54 0 0 6 236 400 0 0 136 /**
+ * Returns the "in" distance of the indicated switch range.  This should be
+ * larger than the "out" distance of the same range.
+ */ 2 4 this 3 464  5 index 1 386  
+55 0 0 6 237 400 0 0 137 /**
+ * Returns the "out" distance of the indicated switch range.  This should be
+ * smaller than the "in" distance of the same range.
+ */ 2 4 this 3 464  5 index 1 386  
+56 0 0 6 238 386 0 0 220 /**
+ * Returns the index number of the child with the lowest level of detail; that
+ * is, the one that is designed to be seen from the farthest away.  This is
+ * usually the first child, but it is not necessarily so.
+ */ 1 4 this 3 464  
+57 0 0 6 239 386 0 0 228 /**
+ * Returns the index number of the child with the highest level of detail;
+ * that is, the one that is designed to be seen from the closest to the
+ * camera.  This is usually the last child, but it is not necessarily so.
+ */ 1 4 this 3 464  
+58 0 0 4 240 429 0 0 149 /**
+ * Forces the LODNode to show the indicated level instead of the level that
+ * would normally be shown based on the distance from the camera.
+ */ 2 4 this 3 463  5 index 1 386  
+59 0 0 4 241 429 0 0 133 /**
+ * Undoes the effect of a previous call to force_switch() and releases the
+ * LODNode to once again display the normal level.
+ */ 1 4 this 3 463  
+60 0 0 4 242 429 0 0 113 /**
+ * Sets the multiplier for lod distances.  A higher value means you'll see
+ * farther switchs than normal
+ */ 2 4 this 3 463  5 value 1 400  
+61 0 0 6 243 400 0 0 51 /**
+ * Returns the multiplier for lod distances
+ */ 1 4 this 3 464  
+62 0 0 4 244 429 0 0 172 /**
+ * Specifies the center of the LOD.  This is the point that is compared to the
+ * camera (in camera space) to determine the particular LOD that should be
+ * chosen.
+ */ 2 4 this 3 463  6 center 1 461  
+63 0 0 6 245 461 0 0 170 /**
+ * Returns the center of the LOD.  This is the point that is compared to the
+ * camera (in camera space) to determine the particular LOD that should be
+ * chosen.
+ */ 1 4 this 3 464  
+64 0 0 4 246 429 0 0 550 /**
+ * This is provided as a debugging aid.  show_switch() will put the LODNode
+ * into a special mode where rather than computing and drawing the appropriate
+ * level of the LOD, a ring is drawn around the LODNode center indicating the
+ * switch distances from the camera for the indicated level, and the geometry
+ * of the indicated level is drawn in wireframe.
+ *
+ * Multiple different levels can be visualized this way at once.  Call
+ * hide_switch() or hide_all_switches() to undo this mode and restore the
+ * LODNode to its normal behavior.
+ */ 2 4 this 3 463  5 index 1 386  
+65 0 0 4 246 429 0 0 550 /**
+ * This is provided as a debugging aid.  show_switch() will put the LODNode
+ * into a special mode where rather than computing and drawing the appropriate
+ * level of the LOD, a ring is drawn around the LODNode center indicating the
+ * switch distances from the camera for the indicated level, and the geometry
+ * of the indicated level is drawn in wireframe.
+ *
+ * Multiple different levels can be visualized this way at once.  Call
+ * hide_switch() or hide_all_switches() to undo this mode and restore the
+ * LODNode to its normal behavior.
+ */ 3 4 this 3 463  5 index 1 386  5 color 1 458  
+66 0 0 4 247 429 0 0 53 /**
+ * Disables a previous call to show_switch().
+ */ 2 4 this 3 463  5 index 1 386  
+67 0 0 4 248 429 0 0 52 /**
+ * Shows all levels in their default colors.
+ */ 1 4 this 3 463  
+68 0 0 4 249 429 0 0 71 /**
+ * Hides all levels, restoring the LODNode to normal operation.
+ */ 1 4 this 3 463  
+69 0 0 6 250 385 0 0 159 /**
+ * Returns true if any switch has been shown with show_switch(), indicating
+ * the LODNode is in debug show mode; or false if it is in the normal mode.
+ */ 1 4 this 3 464  
+70 0 0 6 251 385 0 0 274 /**
+ * Returns true if the bounding volumes for the geometry of each fhild node
+ * entirely fits within the switch_in radius for that child, or false
+ * otherwise.  It is almost always a mistake for the geometry of an LOD level
+ * to be larger than its switch_in radius.
+ */ 1 4 this 3 464  
+71 0 0 7 252 431 0 0 0 0 
+72 0 0 7 254 466 263 0 10 /**
+ *
+ */ 1 4 name 1 435  
+73 0 0 4 255 429 0 0 55 /**
+ * set the time taken to complete an LOD switch
+ */ 2 4 this 3 466  1 t 1 400  
+74 0 0 6 256 400 0 0 55 /**
+ * get the time taken to complete an LOD switch
+ */ 1 4 this 3 467  
+75 0 0 4 257 429 0 0 124 /**
+ * Specifies the cull bin and draw order that is assigned to the fading part
+ * of the geometry during a transition.
+ */ 3 4 this 3 466  4 name 1 435  10 draw_order 1 386  
+76 0 0 6 258 435 0 0 107 /**
+ * Returns the cull bin that is assigned to the fading part of the geometry
+ * during a transition.
+ */ 1 4 this 3 467  
+77 0 0 6 259 386 0 0 135 /**
+ * Returns the draw order that is assigned (along with the bin name) to the
+ * fading part of the geometry during a transition.
+ */ 1 4 this 3 467  
+78 0 0 4 260 429 0 0 191 /**
+ * Specifies the override value that is applied to the state changes necessary
+ * to apply the fade effect.  This should be larger than any attrib overrides
+ * on the fading geometry.
+ */ 2 4 this 3 466  8 override 1 386  
+79 0 0 6 261 386 0 0 189 /**
+ * Returns the override value that is applied to the state changes necessary
+ * to apply the fade effect.  This should be larger than any attrib overrides
+ * on the fading geometry.
+ */ 1 4 this 3 467  
+80 0 0 7 262 431 0 0 0 0 
+81 0 0 7 264 472 0 0 193 /**
+ * Returns the CullTraverser in use at the time of the callback.  This object
+ * contains data that does not change during the traversal, such as the
+ * DisplayRegion and Camera in use.
+ */ 1 4 this 3 470  
+82 0 0 6 265 473 0 0 222 /**
+ * Returns the CullTraverserData in use at the time of the callback.  This
+ * object contains data that changes at each node of the traversal, such as
+ * the current node and the current net transform to that node.
+ */ 1 4 this 3 470  
+83 0 0 7 266 431 0 0 0 0 
+84 0 0 7 268 475 279 0 10 /**
+ *
+ */ 1 4 name 1 435  
+85 0 0 4 269 429 0 0 72 /**
+ * Sets the color of specular highlights generated by the light.
+ */ 2 4 this 3 475  5 color 1 458  
+86 0 0 4 270 429 0 0 115 /**
+ * Clears a custom specular color setting, meaning that the specular color
+ * will now come from the color.
+ */ 1 4 this 3 475  
+87 0 0 4 272 429 0 0 190 /**
+ * Sets the terms of the attenuation equation for the light.  These are, in
+ * order, the constant, linear, and quadratic terms based on the distance from
+ * the point to the vertex.
+ */ 2 4 this 3 475  11 attenuation 1 476  
+88 0 0 6 274 400 0 0 122 /**
+ * Returns the maximum distance at which the light has any effect, as previously
+ * specified by set_max_distance.
+ */ 1 4 this 3 477  
+89 0 0 4 275 429 0 0 161 /**
+ * Sets the radius of the light's sphere of influence.  Beyond this distance, the
+ * light may be attenuated to zero, if this is supported by the shader.
+ */ 2 4 this 3 475  12 max_distance 1 400  
+90 0 0 6 276 461 0 0 160 /**
+ * Returns the point in space at which the light is located.  This is local to
+ * the coordinate space in which the light is assigned, and is usually 0.
+ */ 1 4 this 3 477  
+91 0 0 4 277 429 0 0 77 /**
+ * Sets the point in space at which the light is located.  Usually 0.
+ */ 2 4 this 3 475  5 point 1 461  
+92 0 0 7 278 431 0 0 0 0 
+93 0 0 7 280 479 284 0 10 /**
+ *
+ */ 1 4 name 1 435  
+94 0 0 6 281 400 0 0 122 /**
+ * Returns the maximum distance at which the light has any effect, as previously
+ * specified by set_max_distance.
+ */ 1 4 this 3 480  
+95 0 0 4 282 429 0 0 161 /**
+ * Sets the radius of the light's sphere of influence.  Beyond this distance, the
+ * light may be attenuated to zero, if this is supported by the shader.
+ */ 2 4 this 3 479  12 max_distance 1 400  
+96 0 0 7 283 431 0 0 0 0 
+97 0 0 7 285 482 287 0 10 /**
+ *
+ */ 1 4 name 1 435  
+98 0 0 7 286 431 0 0 0 0 
+99 0 0 7 292 483 297 0 10 /**
+ *
+ */ 1 4 name 1 435  
+100 0 0 6 293 386 0 0 278 /**
+ * Returns the number of frames in the animation.  This is a property of the
+ * animation and may not be directly adjusted by the user (although it may
+ * change without warning with certain kinds of animations, since this is a
+ * virtual method that may be overridden).
+ */ 1 4 this 3 484  
+101 0 0 4 294 429 0 0 173 /**
+ * Changes the advertised frame rate of the SequenceNode.  This can be used in
+ * conjunction with get_play_rate() to change the effective frame rate of the
+ * node.
+ */ 2 4 this 3 483  10 frame_rate 1 416  
+102 0 0 7 296 431 0 0 0 0 
+103 0 0 7 288 482 287 0 0 1 4 this 3 483  
+104 0 0 6 290 486 0 0 0 1 4 this 3 483  
+105 0 0 23 298 489 0 0 189 /**
+ * Create a ShaderGenerator.  This has no state, except possibly to cache
+ * certain results.  The parameter that must be passed is the GSG to which the
+ * shader generator belongs.
+ */ 1 3 gsg 1 487  
+106 0 0 15 298 489 0 0 0 1 6 param0 0 490  
+107 0 0 7 299 500 0 0 794 /**
+ * This is the routine that implements the next-gen fixed function pipeline by
+ * synthesizing a shader.  It also takes care of setting up any buffers needed
+ * to produce the requested effects.
+ *
+ * Currently supports:
+ * - flat colors
+ * - vertex colors
+ * - lighting
+ * - normal maps, even multiple
+ * - gloss maps, but not multiple
+ * - glow maps, but not multiple
+ * - materials, but not updates to materials
+ * - 2D textures
+ * - all texture stage modes, including combine modes
+ * - color scale attrib
+ * - light ramps (for cartoon shading)
+ * - shadow mapping
+ * - most texgen modes
+ * - texmatrix
+ * - 1D/2D/3D textures, cube textures, 2D tex arrays
+ * - linear/exp/exp2 fog
+ * - animation
+ *
+ * Potential optimizations
+ * - omit attenuation calculations if attenuation off
+ *
+ */ 3 4 this 3 489  2 rs 1 494  4 anim 1 497  
+108 0 0 4 300 429 0 0 354 /**
+ * Rehashes all the states with generated shaders, removing the ones that are
+ * no longer fresh.
+ *
+ * Call this if certain state has changed in such a way as to require a rerun
+ * of the shader generator.  This should be rare because in most cases, the
+ * shader generator will automatically regenerate shaders as necessary.
+ *
+ * @since 1.10.0
+ */ 1 4 this 3 489  
+109 0 0 4 301 429 0 0 159 /**
+ * Removes all previously generated shaders, requiring all shaders to be
+ * regenerated.  Does not clear cache of compiled shaders.
+ *
+ * @since 1.10.0
+ */ 1 4 this 3 489  
+110 0 0 7 302 431 0 0 0 0 
+111 0 0 7 303 501 307 0 10 /**
+ *
+ */ 1 4 name 1 435  
+112 0 0 6 304 400 0 0 44 /**
+ * Returns the radius of the sphere.
+ */ 1 4 this 3 502  
+113 0 0 4 305 429 0 0 41 /**
+ * Sets the radius of the sphere.
+ */ 2 4 this 3 501  6 radius 1 400  
+114 0 0 7 306 431 0 0 0 0 
+115 0 0 7 308 504 320 0 10 /**
+ *
+ */ 1 4 name 1 435  
+116 0 0 4 309 429 0 0 398 /**
+ * Sets the exponent that controls the amount of light falloff from the center
+ * of the spotlight.  The light is attenuated by the cosine of the angle
+ * between the direction of the light and the direction of the point being
+ * lighted, raised to the power of this exponent.  Thus, higher exponents
+ * result in a more focused light source, regardless of the field-of-view of
+ * the lens.
+ */ 2 4 this 3 504  8 exponent 1 400  
+117 0 0 4 311 429 0 0 72 /**
+ * Sets the color of specular highlights generated by the light.
+ */ 2 4 this 3 504  5 color 1 458  
+118 0 0 4 312 429 0 0 115 /**
+ * Clears a custom specular color setting, meaning that the specular color
+ * will now come from the color.
+ */ 1 4 this 3 504  
+119 0 0 4 314 429 0 0 190 /**
+ * Sets the terms of the attenuation equation for the light.  These are, in
+ * order, the constant, linear, and quadratic terms based on the distance from
+ * the point to the vertex.
+ */ 2 4 this 3 504  11 attenuation 1 476  
+120 0 0 6 316 400 0 0 122 /**
+ * Returns the maximum distance at which the light has any effect, as previously
+ * specified by set_max_distance.
+ */ 1 4 this 3 505  
+121 0 0 4 317 429 0 0 161 /**
+ * Sets the radius of the light's sphere of influence.  Beyond this distance, the
+ * light may be attenuated to zero, if this is supported by the shader.
+ */ 2 4 this 3 504  12 max_distance 1 400  
+122 0 0 7 318 509 0 0 619 /**
+ * Returns a newly-generated Texture that renders a circular spot image as
+ * might be cast from the spotlight.  This may be projected onto target
+ * geometry (for instance, via NodePath::project_texture()) instead of
+ * actually enabling the light itself, as a cheesy way to make a high-
+ * resolution spot appear on the geometry.
+ *
+ * pixel_width specifies the height and width of the new texture in pixels,
+ * full_radius is a value in the range 0..1 that indicates the relative size
+ * of the fully bright center spot, and fg and bg are the colors of the
+ * interior and exterior of the spot, respectively.
+ */ 4 11 pixel_width 1 386  11 full_radius 1 400  2 fg 1 508  2 bg 1 508  
+123 0 0 7 319 431 0 0 0 0 
+124 0 0 7 321 510 325 0 10 /**
+ *
+ */ 1 4 name 1 435  
+125 0 0 4 322 429 0 0 90 /**
+ * Specifies the particular child of this node, by index, that will be
+ * visible.
+ */ 2 4 this 3 510  5 index 1 386  
+126 0 0 6 323 386 0 0 65 /**
+ * Returns the index of the child that should be visible.
+ */ 1 4 this 3 511  
+127 0 0 7 324 431 0 0 0 0 
+128 0 0 7 326 513 336 0 10 /**
+ *
+ */ 1 4 name 1 435  
+129 0 0 7 326 513 336 0 10 /**
+ *
+ */ 5 4 name 1 435  7 u_speed 1 400  7 v_speed 1 400  7 w_speed 1 400  7 r_speed 1 400  
+130 0 0 4 327 429 0 0 10 /**
+ *
+ */ 2 4 this 3 513  7 u_speed 1 400  
+131 0 0 4 328 429 0 0 10 /**
+ *
+ */ 2 4 this 3 513  7 v_speed 1 400  
+132 0 0 4 329 429 0 0 10 /**
+ *
+ */ 2 4 this 3 513  7 w_speed 1 400  
+133 0 0 4 330 429 0 0 10 /**
+ *
+ */ 2 4 this 3 513  7 r_speed 1 400  
+134 0 0 6 331 400 0 0 10 /**
+ *
+ */ 1 4 this 3 514  
+135 0 0 6 332 400 0 0 10 /**
+ *
+ */ 1 4 this 3 514  
+136 0 0 6 333 400 0 0 10 /**
+ *
+ */ 1 4 this 3 514  
+137 0 0 6 334 400 0 0 10 /**
+ *
+ */ 1 4 this 3 514  
+138 0 0 7 335 431 0 0 0 0 
+139 0 0 7 337 516 338 0 10 /**
+ *
+ */ 0 
+140 0 0 15 337 516 338 0 0 1 6 param0 0 517  
+141 0 0 4 339 429 0 0 61 /**
+ * Specifies the mode in which LODNodes are analyzed.
+ */ 2 4 this 3 516  8 lod_mode 1 424  
+142 0 0 6 340 424 0 0 59 /**
+ * Returns the mode in which LODNodes are analyzed.
+ */ 2 4 this 3 517  8 lod_mode 1 424  
+143 0 0 4 341 429 0 0 79 /**
+ * Resets all of the data in the analyzer in preparation for a new run.
+ */ 1 4 this 3 516  
+144 0 0 4 342 429 0 0 244 /**
+ * Adds a new node to the set of data for analysis.  Normally, this would only
+ * be called once, and passed the top of the scene graph, but it's possible to
+ * repeatedly pass in subgraphs to get an analysis of all the graphs together.
+ */ 2 4 this 3 516  4 node 1 434  
+145 0 0 4 343 429 0 0 44 /**
+ * Describes all the data collected.
+ */ 3 4 this 3 517  3 out 1 427  12 indent_level 5 386  
+146 0 0 6 344 386 0 0 10 /**
+ *
+ */ 1 4 this 3 517  
+147 0 0 6 345 386 0 0 10 /**
+ *
+ */ 1 4 this 3 517  
+148 0 0 6 346 386 0 0 10 /**
+ *
+ */ 1 4 this 3 517  
+149 0 0 6 347 386 0 0 10 /**
+ *
+ */ 1 4 this 3 517  
+150 0 0 6 348 386 0 0 10 /**
+ *
+ */ 1 4 this 3 517  
+151 0 0 6 349 386 0 0 10 /**
+ *
+ */ 1 4 this 3 517  
+152 0 0 6 350 386 0 0 10 /**
+ *
+ */ 1 4 this 3 517  
+153 0 0 6 351 386 0 0 10 /**
+ *
+ */ 1 4 this 3 517  
+154 0 0 6 352 386 0 0 10 /**
+ *
+ */ 1 4 this 3 517  
+155 0 0 6 353 444 0 0 10 /**
+ *
+ */ 1 4 this 3 517  
+156 0 0 6 354 386 0 0 10 /**
+ *
+ */ 1 4 this 3 517  
+157 0 0 6 355 386 0 0 10 /**
+ *
+ */ 1 4 this 3 517  
+158 0 0 6 356 386 0 0 10 /**
+ *
+ */ 1 4 this 3 517  
+159 0 0 6 357 386 0 0 10 /**
+ *
+ */ 1 4 this 3 517  
+160 0 0 6 358 386 0 0 10 /**
+ *
+ */ 1 4 this 3 517  
+161 0 0 6 359 386 0 0 10 /**
+ *
+ */ 1 4 this 3 517  
+162 0 0 6 360 386 0 0 10 /**
+ *
+ */ 1 4 this 3 517  
+163 0 0 6 361 386 0 0 10 /**
+ *
+ */ 1 4 this 3 517  
+164 0 0 6 362 386 0 0 10 /**
+ *
+ */ 1 4 this 3 517  
+165 0 0 6 363 386 0 0 10 /**
+ *
+ */ 1 4 this 3 517  
+166 0 0 6 364 386 0 0 10 /**
+ *
+ */ 1 4 this 3 517  
+167 0 0 6 365 386 0 0 10 /**
+ *
+ */ 1 4 this 3 517  
+168 0 0 6 366 386 0 0 10 /**
+ *
+ */ 1 4 this 3 517  
+169 0 0 6 367 386 0 0 10 /**
+ *
+ */ 1 4 this 3 517  
+170 0 0 6 368 444 0 0 10 /**
+ *
+ */ 1 4 this 3 517  
+171 0 0 6 369 386 0 0 10 /**
+ *
+ */ 1 4 this 3 517  
+172 0 0 6 370 386 0 0 10 /**
+ *
+ */ 1 4 this 3 517  
+173 0 0 6 371 400 0 0 10 /**
+ *
+ */ 1 4 this 3 517  
+147
+372 9 LightNode 0 141313 9 LightNode 9 LightNode 0 0 0 0 181 0 3 178 179 180 0 0 2 3 373 174 175 3 374 176 177 0 0 161
+/**
+ * A derivative of Light and of PandaNode.  All kinds of Light except
+ * Spotlight (which must inherit from LensNode instead) inherit from this
+ * class.
+ */
+
+373 5 Light 0 2048 5 Light 5 Light 0 0 0 0 0 0 0 0 0 0 0 0 231
+/**
+ * The abstract interface to all kinds of lights.  The actual light objects
+ * also inherit from PandaNode, and can therefore be added to the scene graph
+ * at some arbitrary point to define the coordinate system of effect.
+ */
+
+374 9 PandaNode 0 2048 9 PandaNode 9 PandaNode 0 0 0 0 0 0 0 0 0 0 0 0 175
+/**
+ * A basic node of the scene graph or data graph.  This is the base class of
+ * all specialized nodes, and also serves as a generic node with no special
+ * properties.
+ */
+
+375 12 AmbientLight 0 141313 12 AmbientLight 12 AmbientLight 0 0 0 1 182 184 0 1 183 0 0 1 0 372 0 0 0 0 188
+/**
+ * A light source that seems to illuminate all points in space at once.  This
+ * kind of light need not actually be part of the scene graph, since it has no
+ * meaningful position.
+ */
+
+376 12 CallbackNode 0 141313 12 CallbackNode 12 CallbackNode 0 0 0 1 185 193 2 519 520 7 186 187 188 189 190 191 192 0 0 1 0 374 0 0 0 0 120
+/**
+ * A special node that can issue arbitrary callbacks to user code, either
+ * during the cull or draw traversals.
+ */
+
+377 16 CallbackObject * 0 8576 16 CallbackObject * 16 CallbackObject * 0 0 378 0 0 0 0 0 0 0 0 0 0
+
+378 14 CallbackObject 0 2048 14 CallbackObject 14 CallbackObject 0 0 0 0 0 0 0 0 0 0 0 0 276
+/**
+ * This is a generic object that can be assigned to a callback at various
+ * points in the rendering process.  This is actually a base class for a
+ * handful of specialized callback object types.  You can also subclass it
+ * yourself to make your own callback handler.
+ */
+
+379 11 ComputeNode 0 141313 11 ComputeNode 11 ComputeNode 0 0 0 1 194 203 1 521 8 195 196 197 198 199 200 201 202 1 554 0 1 0 374 0 0 0 0 121
+/**
+ * A special node, the sole purpose of which is to invoke a dispatch operation
+ * on the assigned compute shader.
+ */
+
+380 16 LVecBase3i const 0 8832 16 LVecBase3i const 16 LVecBase3i const 0 0 381 0 0 0 0 0 0 0 0 0 0
+
+381 10 LVecBase3i 0 2048 10 LVecBase3i 10 LVecBase3i 0 0 0 0 0 0 0 0 0 0 0 0 77
+/**
+ * This is the base class for all three-component vectors and points.
+ */
+
+382 11 LODNodeType 0 532481 11 LODNodeType 11 LODNodeType 0 0 0 0 0 0 0 0 0 0 2 7 LNT_pop 7 LNT_pop 0
+0 8 LNT_fade 8 LNT_fade 0
+1 0 0
+
+383 13 LightLensNode 0 26625 13 LightLensNode 13 LightLensNode 0 0 0 0 208 3 522 523 524 11 209 210 211 212 213 214 215 216 217 218 219 0 0 2 3 373 204 205 3 384 206 207 0 0 215
+/**
+ * A derivative of Light and of Camera.  The name might be misleading: it does
+ * not directly derive from LensNode, but through the Camera class.  The
+ * Camera serves no purpose unless shadows are enabled.
+ */
+
+384 6 Camera 0 2048 6 Camera 6 Camera 0 0 0 0 0 0 0 0 0 0 0 0 121
+/**
+ * A node that can be positioned around in the scene graph to represent a
+ * point of view for rendering a scene.
+ */
+
+385 4 bool 0 8194 4 bool 4 bool 0 4 0 0 0 0 0 0 0 0 0 0 0
+
+386 3 int 0 8194 3 int 3 int 0 1 0 0 0 0 0 0 0 0 0 0 0
+
+387 10 LVecBase2i 0 2048 10 LVecBase2i 10 LVecBase2i 0 0 0 0 0 0 0 0 0 0 0 0 75
+/**
+ * This is the base class for all two-component vectors and points.
+ */
+
+388 16 DirectionalLight 0 141313 16 DirectionalLight 16 DirectionalLight 0 0 0 1 220 229 3 525 526 527 7 221 222 224 225 226 227 228 0 0 1 0 383 0 0 0 0 96
+/**
+ * A light shining from infinitely far away in a particular direction, like
+ * sunlight.
+ */
+
+389 12 LColor const 0 8832 12 LColor const 12 LColor const 0 0 390 0 0 0 0 0 0 0 0 0 0
+
+390 6 LColor 0 2105344 6 LColor 6 LColor 0 0 391 0 0 0 0 0 0 0 0 0 0
+
+391 7 LColorf 0 2105344 7 LColorf 7 LColorf 0 0 392 0 0 0 0 0 0 0 0 0 0
+
+392 10 LVecBase4f 0 2048 10 LVecBase4f 10 LVecBase4f 0 0 0 0 0 0 0 0 0 0 0 0 77
+/**
+ * This is the base class for all three-component vectors and points.
+ */
+
+393 13 LPoint3 const 0 8832 13 LPoint3 const 13 LPoint3 const 0 0 394 0 0 0 0 0 0 0 0 0 0
+
+394 7 LPoint3 0 2105344 7 LPoint3 7 LPoint3 0 0 395 0 0 0 0 0 0 0 0 0 0
+
+395 8 LPoint3f 0 2048 8 LPoint3f 8 LPoint3f 0 0 0 0 0 0 0 0 0 0 0 0 337
+/**
+ * This is a three-component point in space (as opposed to a three-component
+ * vector, which represents a direction and a distance).  Some of the methods
+ * are slightly different between LPoint3 and LVector3; in particular,
+ * subtraction of two points yields a vector, while addition of a vector and a
+ * point yields a point.
+ */
+
+396 14 LVector3 const 0 8832 14 LVector3 const 14 LVector3 const 0 0 397 0 0 0 0 0 0 0 0 0 0
+
+397 8 LVector3 0 2105344 8 LVector3 8 LVector3 0 0 398 0 0 0 0 0 0 0 0 0 0
+
+398 9 LVector3f 0 2048 9 LVector3f 9 LVector3f 0 0 0 0 0 0 0 0 0 0 0 0 338
+/**
+ * This is a three-component vector distance (as opposed to a three-component
+ * point, which represents a particular point in space).  Some of the methods
+ * are slightly different between LPoint3 and LVector3; in particular,
+ * subtraction of two points yields a vector, while addition of a vector and a
+ * point yields a point.
+ */
+
+399 7 LODNode 0 141313 7 LODNode 7 LODNode 0 0 0 1 230 253 6 528 529 530 531 532 533 22 231 232 233 234 235 236 237 238 239 240 241 242 243 244 245 246 247 248 249 250 251 252 2 555 556 0 1 0 374 0 0 0 0 190
+/**
+ * A Level-of-Detail node.  This selects only one of its children for
+ * rendering, according to the distance from the camera and the table
+ * indicated in the associated LOD object.
+ */
+
+400 11 PN_stdfloat 0 2105344 11 PN_stdfloat 11 PN_stdfloat 0 0 401 0 0 0 0 0 0 0 0 0 0
+
+401 5 float 0 8194 5 float 5 float 0 2 0 0 0 0 0 0 0 0 0 0 0
+
+402 11 FadeLODNode 0 141313 11 FadeLODNode 11 FadeLODNode 0 0 0 1 254 263 4 534 535 536 537 8 255 256 257 258 259 260 261 262 0 0 1 0 399 0 0 0 0 61
+/**
+ * A Level-of-Detail node with alpha based switching.
+ */
+
+403 12 string const 0 8832 17 std::string const 17 std::string const 0 0 404 0 0 0 0 0 0 0 0 0 0
+
+404 6 string 0 2105344 11 std::string 11 std::string 0 0 405 0 0 0 0 0 0 0 0 0 0
+
+405 20 basic_string< char > 0 2048 25 std::basic_string< char > 25 std::basic_string< char > 0 0 0 0 0 0 0 0 0 0 0 0 0
+
+406 20 NodeCullCallbackData 0 141313 20 NodeCullCallbackData 20 NodeCullCallbackData 0 0 0 0 267 0 3 264 265 266 0 0 1 0 407 0 0 0 0 114
+/**
+ * This kind of CallbackData is passed to the CallbackObject added to
+ * CallbackNode:set_cull_callback().
+ */
+
+407 12 CallbackData 0 2048 12 CallbackData 12 CallbackData 0 0 0 0 0 0 0 0 0 0 0 0 348
+/**
+ * This is a generic data block that is passed along to a CallbackObject when
+ * a callback is made.  It contains data specific to the particular callback
+ * type in question.
+ *
+ * This is actually an abstract base class and contains no data.
+ * Specializations of this class will contain the actual data relevant to each
+ * callback type.
+ */
+
+408 10 PointLight 0 141313 10 PointLight 10 PointLight 0 0 0 1 268 279 4 538 539 540 541 8 269 270 272 274 275 276 277 278 0 0 1 0 383 0 0 0 0 94
+/**
+ * A light originating from a single point in space, and shining in all
+ * directions.
+ */
+
+409 15 LVecBase3 const 0 8832 15 LVecBase3 const 15 LVecBase3 const 0 0 410 0 0 0 0 0 0 0 0 0 0
+
+410 9 LVecBase3 0 2105344 9 LVecBase3 9 LVecBase3 0 0 411 0 0 0 0 0 0 0 0 0 0
+
+411 10 LVecBase3f 0 2048 10 LVecBase3f 10 LVecBase3f 0 0 0 0 0 0 0 0 0 0 0 0 77
+/**
+ * This is the base class for all three-component vectors and points.
+ */
+
+412 14 RectangleLight 0 141313 14 RectangleLight 14 RectangleLight 0 0 0 1 280 284 1 542 3 281 282 283 0 0 1 0 383 0 0 0 0 150
+/**
+ * This is a type of area light that is an axis aligned rectangle, pointing
+ * along the Y axis in the positive direction.
+ *
+ * @since 1.10.0
+ */
+
+413 18 SelectiveChildNode 0 141313 18 SelectiveChildNode 18 SelectiveChildNode 0 0 0 1 285 287 0 1 286 0 0 1 0 374 0 0 0 0 147
+/**
+ * A base class for nodes like LODNode and SequenceNode that select only one
+ * visible child at a time.
+ *
+ * This class is now vestigial.
+ */
+
+414 12 SequenceNode 0 141313 12 SequenceNode 12 SequenceNode 0 0 0 1 292 297 1 543 3 293 294 296 0 0 2 3 413 288 289 3 415 290 291 0 0 118
+/**
+ * A node that automatically cycles through rendering each one of its children
+ * according to its frame rate.
+ */
+
+415 13 AnimInterface 0 2048 13 AnimInterface 13 AnimInterface 0 0 0 0 0 0 0 0 0 0 0 0 226
+/**
+ * This is the fundamental interface for things that have a play/loop/stop
+ * type interface for frame-based animation, such as animated characters.
+ * This is the base class for AnimControl and other, similar classes.
+ */
+
+416 6 double 0 8194 6 double 6 double 0 3 0 0 0 0 0 0 0 0 0 0 0
+
+417 15 ShaderGenerator 0 75777 15 ShaderGenerator 15 ShaderGenerator 0 0 0 1 298 0 0 4 299 300 301 302 0 0 1 0 418 0 0 0 0 1069
+/**
+ * The ShaderGenerator is a device that effectively replaces the classic fixed
+ * function pipeline with a 'next-gen' fixed function pipeline.  The next-gen
+ * fixed function pipeline supports features like normal mapping, gloss
+ * mapping, cartoon lighting, and so forth.  It works by automatically
+ * generating a shader from a given RenderState.
+ *
+ * Currently, there is one ShaderGenerator object per GraphicsStateGuardian.
+ * It is our intent that in time, people will write classes that derive from
+ * ShaderGenerator but which yield slightly different results.
+ *
+ * The ShaderGenerator owes its existence to the 'Bamboo Team' at Carnegie
+ * Mellon's Entertainment Technology Center.  This is a group of students who,
+ * as a semester project, decided that next-gen graphics should be accessible
+ * to everyone, even if they don't know shader programming.  The group
+ * consisted of:
+ *
+ * Aaron Lo, Programmer Heegun Lee, Programmer Erin Fernandez, Artist/Tester
+ * Joe Grubb, Artist/Tester Ivan Ortega, Technical Artist/Tester
+ *
+ * Thanks to them!
+ *
+ */
+
+418 19 TypedReferenceCount 0 2048 19 TypedReferenceCount 19 TypedReferenceCount 0 0 0 0 0 0 0 0 0 0 0 0 410
+/**
+ * A base class for things which need to inherit from both TypedObject and
+ * from ReferenceCount.  It's convenient to define this intermediate base
+ * class instead of multiply inheriting from the two classes each time they
+ * are needed, so that we can sensibly pass around pointers to things which
+ * are both TypedObjects and ReferenceCounters.
+ *
+ * See also TypedObject for detailed instructions.
+ */
+
+419 11 SphereLight 0 141313 11 SphereLight 11 SphereLight 0 0 0 1 303 307 1 544 3 304 305 306 0 0 1 0 408 0 0 0 0 174
+/**
+ * A sphere light is like a point light, except that it represents a sphere
+ * with a radius, rather than being an infinitely thin point in space.
+ *
+ * @since 1.10.0
+ */
+
+420 9 Spotlight 0 141313 9 Spotlight 9 Spotlight 0 0 0 1 308 320 4 545 546 547 548 8 309 311 312 314 316 317 318 319 0 0 1 0 383 0 0 0 0 390
+/**
+ * A light originating from a single point in space, and shining in a
+ * particular direction, with a cone-shaped falloff.
+ *
+ * The Spotlight frustum is defined using a Lens, so it can have any of the
+ * properties that a camera lens can have.
+ *
+ * Note that the class is named Spotlight instead of SpotLight, because
+ * "spotlight" is a single English word, instead of two words.
+ */
+
+421 10 SwitchNode 0 141313 10 SwitchNode 10 SwitchNode 0 0 0 1 321 325 1 549 3 322 323 324 0 0 1 0 413 0 0 0 0 95
+/**
+ * A node that renders only one of its children, according to the user's
+ * indication.
+ */
+
+422 12 UvScrollNode 0 141313 12 UvScrollNode 12 UvScrollNode 0 0 0 1 326 336 4 550 551 552 553 9 327 328 329 330 331 332 333 334 335 0 0 1 0 374 0 0 0 0 83
+/**
+ * This node is placed at key points within the scene graph to animate uvs.
+ */
+
+423 18 SceneGraphAnalyzer 0 26625 18 SceneGraphAnalyzer 18 SceneGraphAnalyzer 0 0 0 1 337 338 0 33 339 340 341 342 343 344 345 346 347 348 349 350 351 352 353 354 355 356 357 358 359 360 361 362 363 364 365 366 367 368 369 370 371 0 0 0 0 1 424 103
+/**
+ * A handy class that can scrub over a scene graph and collect interesting
+ * statistics on it.
+ */
+
+424 7 LodMode 0 794624 27 SceneGraphAnalyzer::LodMode 27 SceneGraphAnalyzer::LodMode 423 0 0 0 0 0 0 0 0 0 4 9 LM_lowest 29 SceneGraphAnalyzer::LM_lowest 0
+0 10 LM_highest 30 SceneGraphAnalyzer::LM_highest 0
+1 6 LM_all 26 SceneGraphAnalyzer::LM_all 0
+2 7 LM_none 27 SceneGraphAnalyzer::LM_none 0
+3 0 0
+
+425 17 LightNode const * 0 8576 17 LightNode const * 17 LightNode const * 0 0 426 0 0 0 0 0 0 0 0 0 0
+
+426 15 LightNode const 0 8832 15 LightNode const 15 LightNode const 0 0 372 0 0 0 0 0 0 0 0 0 0
+
+427 9 ostream * 0 8576 14 std::ostream * 14 std::ostream * 0 0 428 0 0 0 0 0 0 0 0 0 0
+
+428 7 ostream 0 2048 12 std::ostream 12 std::ostream 0 0 0 0 0 0 0 0 0 0 0 0 0
+
+429 4 void 0 8194 4 void 4 void 0 6 0 0 0 0 0 0 0 0 0 0 0
+
+430 10 TypeHandle 0 16779264 10 TypeHandle 10 TypeHandle 0 0 0 0 0 0 0 0 0 0 0 0 732
+/**
+ * TypeHandle is the identifier used to differentiate C++ class types.  Any
+ * C++ classes that inherit from some base class, and must be differentiated
+ * at run time, should store a static TypeHandle object that can be queried
+ * through a static member function named get_class_type().  Most of the time,
+ * it is also desirable to inherit from TypedObject, which provides some
+ * virtual functions to return the TypeHandle for a particular instance.
+ *
+ * At its essence, a TypeHandle is simply a unique identifier that is assigned
+ * by the TypeRegistry.  The TypeRegistry stores a tree of TypeHandles, so
+ * that ancestry of a particular type may be queried, and the type name may be
+ * retrieved for run-time display.
+ */
+
+431 12 TypeHandle * 0 8576 12 TypeHandle * 12 TypeHandle * 0 0 430 0 0 0 0 0 0 0 0 0 0
+
+432 11 LightNode * 0 8576 11 LightNode * 11 LightNode * 0 0 372 0 0 0 0 0 0 0 0 0 0
+
+433 7 Light * 0 8576 7 Light * 7 Light * 0 0 373 0 0 0 0 0 0 0 0 0 0
+
+434 11 PandaNode * 0 8576 11 PandaNode * 11 PandaNode * 0 0 374 0 0 0 0 0 0 0 0 0 0
+
+435 13 atomic string 0 2 13 atomic string 13 atomic string 0 7 0 0 0 0 0 0 0 0 0 0 0
+
+436 14 AmbientLight * 0 8576 14 AmbientLight * 14 AmbientLight * 0 0 375 0 0 0 0 0 0 0 0 0 0
+
+437 14 CallbackNode * 0 8576 14 CallbackNode * 14 CallbackNode * 0 0 376 0 0 0 0 0 0 0 0 0 0
+
+438 20 CallbackNode const * 0 8576 20 CallbackNode const * 20 CallbackNode const * 0 0 439 0 0 0 0 0 0 0 0 0 0
+
+439 18 CallbackNode const 0 8832 18 CallbackNode const 18 CallbackNode const 0 0 376 0 0 0 0 0 0 0 0 0 0
+
+440 13 ComputeNode * 0 8576 13 ComputeNode * 13 ComputeNode * 0 0 379 0 0 0 0 0 0 0 0 0 0
+
+441 18 LVecBase3i const * 0 8576 18 LVecBase3i const * 18 LVecBase3i const * 0 0 380 0 0 0 0 0 0 0 0 0 0
+
+442 19 ComputeNode const * 0 8576 19 ComputeNode const * 19 ComputeNode const * 0 0 443 0 0 0 0 0 0 0 0 0 0
+
+443 17 ComputeNode const 0 8832 17 ComputeNode const 17 ComputeNode const 0 0 379 0 0 0 0 0 0 0 0 0 0
+
+444 6 size_t 0 2105344 11 std::size_t 11 std::size_t 0 0 445 0 0 0 0 0 0 0 0 0 0
+
+445 17 unsigned long int 0 8214 17 unsigned long int 17 unsigned long int 0 1 0 0 0 0 0 0 0 0 0 0 0
+
+446 21 LightLensNode const * 0 8576 21 LightLensNode const * 21 LightLensNode const * 0 0 447 0 0 0 0 0 0 0 0 0 0
+
+447 19 LightLensNode const 0 8832 19 LightLensNode const 19 LightLensNode const 0 0 383 0 0 0 0 0 0 0 0 0 0
+
+448 15 LightLensNode * 0 8576 15 LightLensNode * 15 LightLensNode * 0 0 383 0 0 0 0 0 0 0 0 0 0
+
+449 12 LVecBase2i * 0 8576 12 LVecBase2i * 12 LVecBase2i * 0 0 387 0 0 0 0 0 0 0 0 0 0
+
+450 18 LVecBase2i const * 0 8576 18 LVecBase2i const * 18 LVecBase2i const * 0 0 451 0 0 0 0 0 0 0 0 0 0
+
+451 16 LVecBase2i const 0 8832 16 LVecBase2i const 16 LVecBase2i const 0 0 387 0 0 0 0 0 0 0 0 0 0
+
+452 18 GraphicsOutputBase 0 2048 18 GraphicsOutputBase 18 GraphicsOutputBase 0 0 0 0 0 0 0 0 0 0 0 0 80
+/**
+ * An abstract base class for GraphicsOutput, for all the usual reasons.
+ */
+
+453 27 GraphicsStateGuardianBase * 0 8576 27 GraphicsStateGuardianBase * 27 GraphicsStateGuardianBase * 0 0 454 0 0 0 0 0 0 0 0 0 0
+
+454 25 GraphicsStateGuardianBase 0 2048 25 GraphicsStateGuardianBase 25 GraphicsStateGuardianBase 0 0 0 0 0 0 0 0 0 0 0 0 607
+/**
+ * This is a base class for the GraphicsStateGuardian class, which is itself a
+ * base class for the various GSG's for different platforms.  This class
+ * contains all the function prototypes to support the double-dispatch of GSG
+ * to geoms, transitions, etc.  It lives in a separate class in its own
+ * package so we can avoid circular build dependency problems.
+ *
+ * GraphicsStateGuardians are not actually writable to bam files, of course,
+ * but they may be passed as event parameters, so they inherit from
+ * TypedWritableReferenceCount instead of TypedReferenceCount for that
+ * convenience.
+ */
+
+455 20 GraphicsOutputBase * 0 8576 20 GraphicsOutputBase * 20 GraphicsOutputBase * 0 0 452 0 0 0 0 0 0 0 0 0 0
+
+456 8 Camera * 0 8576 8 Camera * 8 Camera * 0 0 384 0 0 0 0 0 0 0 0 0 0
+
+457 18 DirectionalLight * 0 8576 18 DirectionalLight * 18 DirectionalLight * 0 0 388 0 0 0 0 0 0 0 0 0 0
+
+458 14 LColor const * 0 8576 14 LColor const * 14 LColor const * 0 0 389 0 0 0 0 0 0 0 0 0 0
+
+459 24 DirectionalLight const * 0 8576 24 DirectionalLight const * 24 DirectionalLight const * 0 0 460 0 0 0 0 0 0 0 0 0 0
+
+460 22 DirectionalLight const 0 8832 22 DirectionalLight const 22 DirectionalLight const 0 0 388 0 0 0 0 0 0 0 0 0 0
+
+461 15 LPoint3 const * 0 8576 15 LPoint3 const * 15 LPoint3 const * 0 0 393 0 0 0 0 0 0 0 0 0 0
+
+462 16 LVector3 const * 0 8576 16 LVector3 const * 16 LVector3 const * 0 0 396 0 0 0 0 0 0 0 0 0 0
+
+463 9 LODNode * 0 8576 9 LODNode * 9 LODNode * 0 0 399 0 0 0 0 0 0 0 0 0 0
+
+464 15 LODNode const * 0 8576 15 LODNode const * 15 LODNode const * 0 0 465 0 0 0 0 0 0 0 0 0 0
+
+465 13 LODNode const 0 8832 13 LODNode const 13 LODNode const 0 0 399 0 0 0 0 0 0 0 0 0 0
+
+466 13 FadeLODNode * 0 8576 13 FadeLODNode * 13 FadeLODNode * 0 0 402 0 0 0 0 0 0 0 0 0 0
+
+467 19 FadeLODNode const * 0 8576 19 FadeLODNode const * 19 FadeLODNode const * 0 0 468 0 0 0 0 0 0 0 0 0 0
+
+468 17 FadeLODNode const 0 8832 17 FadeLODNode const 17 FadeLODNode const 0 0 402 0 0 0 0 0 0 0 0 0 0
+
+469 13 CullTraverser 0 2048 13 CullTraverser 13 CullTraverser 0 0 0 0 0 0 0 0 0 0 0 0 279
+/**
+ * This object performs a depth-first traversal of the scene graph, with
+ * optional view-frustum culling, collecting CullState and searching for
+ * GeomNodes.  Each renderable Geom encountered is passed along with its
+ * associated RenderState to the CullHandler object.
+ */
+
+470 28 NodeCullCallbackData const * 0 8576 28 NodeCullCallbackData const * 28 NodeCullCallbackData const * 0 0 471 0 0 0 0 0 0 0 0 0 0
+
+471 26 NodeCullCallbackData const 0 8832 26 NodeCullCallbackData const 26 NodeCullCallbackData const 0 0 406 0 0 0 0 0 0 0 0 0 0
+
+472 15 CullTraverser * 0 8576 15 CullTraverser * 15 CullTraverser * 0 0 469 0 0 0 0 0 0 0 0 0 0
+
+473 19 CullTraverserData * 0 8576 19 CullTraverserData * 19 CullTraverserData * 0 0 474 0 0 0 0 0 0 0 0 0 0
+
+474 17 CullTraverserData 0 2048 17 CullTraverserData 17 CullTraverserData 0 0 0 0 0 0 0 0 0 0 0 0 464
+/**
+ * This collects together the pieces of data that are accumulated for each
+ * node while walking the scene graph during the cull traversal.
+ *
+ * Having this as a separate object simplifies the parameter list to
+ * CullTraverser::r_traverse(), as well as to other functions like
+ * PandaNode::cull_callback().  It also makes it easier to add cull
+ * parameters, and provides a place to abstract out some of the cull behavior
+ * (like view-frustum culling).
+ */
+
+475 12 PointLight * 0 8576 12 PointLight * 12 PointLight * 0 0 408 0 0 0 0 0 0 0 0 0 0
+
+476 17 LVecBase3 const * 0 8576 17 LVecBase3 const * 17 LVecBase3 const * 0 0 409 0 0 0 0 0 0 0 0 0 0
+
+477 18 PointLight const * 0 8576 18 PointLight const * 18 PointLight const * 0 0 478 0 0 0 0 0 0 0 0 0 0
+
+478 16 PointLight const 0 8832 16 PointLight const 16 PointLight const 0 0 408 0 0 0 0 0 0 0 0 0 0
+
+479 16 RectangleLight * 0 8576 16 RectangleLight * 16 RectangleLight * 0 0 412 0 0 0 0 0 0 0 0 0 0
+
+480 22 RectangleLight const * 0 8576 22 RectangleLight const * 22 RectangleLight const * 0 0 481 0 0 0 0 0 0 0 0 0 0
+
+481 20 RectangleLight const 0 8832 20 RectangleLight const 20 RectangleLight const 0 0 412 0 0 0 0 0 0 0 0 0 0
+
+482 20 SelectiveChildNode * 0 8576 20 SelectiveChildNode * 20 SelectiveChildNode * 0 0 413 0 0 0 0 0 0 0 0 0 0
+
+483 14 SequenceNode * 0 8576 14 SequenceNode * 14 SequenceNode * 0 0 414 0 0 0 0 0 0 0 0 0 0
+
+484 20 SequenceNode const * 0 8576 20 SequenceNode const * 20 SequenceNode const * 0 0 485 0 0 0 0 0 0 0 0 0 0
+
+485 18 SequenceNode const 0 8832 18 SequenceNode const 18 SequenceNode const 0 0 414 0 0 0 0 0 0 0 0 0 0
+
+486 15 AnimInterface * 0 8576 15 AnimInterface * 15 AnimInterface * 0 0 415 0 0 0 0 0 0 0 0 0 0
+
+487 33 GraphicsStateGuardianBase const * 0 8576 33 GraphicsStateGuardianBase const * 33 GraphicsStateGuardianBase const * 0 0 488 0 0 0 0 0 0 0 0 0 0
+
+488 31 GraphicsStateGuardianBase const 0 8832 31 GraphicsStateGuardianBase const 31 GraphicsStateGuardianBase const 0 0 454 0 0 0 0 0 0 0 0 0 0
+
+489 17 ShaderGenerator * 0 8576 17 ShaderGenerator * 17 ShaderGenerator * 0 0 417 0 0 0 0 0 0 0 0 0 0
+
+490 23 ShaderGenerator const * 0 8576 23 ShaderGenerator const * 23 ShaderGenerator const * 0 0 491 0 0 0 0 0 0 0 0 0 0
+
+491 21 ShaderGenerator const 0 8832 21 ShaderGenerator const 21 ShaderGenerator const 0 0 417 0 0 0 0 0 0 0 0 0 0
+
+492 18 ShaderAttrib const 0 8832 18 ShaderAttrib const 18 ShaderAttrib const 0 0 493 0 0 0 0 0 0 0 0 0 0
+
+493 12 ShaderAttrib 0 16779264 12 ShaderAttrib 12 ShaderAttrib 0 0 0 0 0 0 0 0 0 0 0 0 10
+/**
+ *
+ */
+
+494 19 RenderState const * 0 8576 19 RenderState const * 19 RenderState const * 0 0 495 0 0 0 0 0 0 0 0 0 0
+
+495 17 RenderState const 0 8832 17 RenderState const 17 RenderState const 0 0 496 0 0 0 0 0 0 0 0 0 0
+
+496 11 RenderState 0 2048 11 RenderState 11 RenderState 0 0 0 0 0 0 0 0 0 0 0 0 340
+/**
+ * This represents a unique collection of RenderAttrib objects that correspond
+ * to a particular renderable state.
+ *
+ * You should not attempt to create or modify a RenderState object directly.
+ * Instead, call one of the make() functions to create one for you.  And
+ * instead of modifying a RenderState object, create a new one.
+ */
+
+497 31 GeomVertexAnimationSpec const * 0 8576 31 GeomVertexAnimationSpec const * 31 GeomVertexAnimationSpec const * 0 0 498 0 0 0 0 0 0 0 0 0 0
+
+498 29 GeomVertexAnimationSpec const 0 8832 29 GeomVertexAnimationSpec const 29 GeomVertexAnimationSpec const 0 0 499 0 0 0 0 0 0 0 0 0 0
+
+499 23 GeomVertexAnimationSpec 0 2048 23 GeomVertexAnimationSpec 23 GeomVertexAnimationSpec 0 0 0 0 0 0 0 0 0 0 0 0 550
+/**
+ * This object describes how the vertex animation, if any, represented in a
+ * GeomVertexData is encoded.
+ *
+ * Vertex animation includes soft-skinned skeleton animation and morphs (blend
+ * shapes), and might be performed on the CPU by Panda, or passed down to the
+ * graphics backed to be performed on the hardware (depending on the
+ * hardware's advertised capabilities).
+ *
+ * Changing this setting doesn't by itself change the way the animation is
+ * actually performed; this just specifies how the vertices are set up to be
+ * animated.
+ */
+
+500 20 ShaderAttrib const * 0 8576 20 ShaderAttrib const * 20 ShaderAttrib const * 0 0 492 0 0 0 0 0 0 0 0 0 0
+
+501 13 SphereLight * 0 8576 13 SphereLight * 13 SphereLight * 0 0 419 0 0 0 0 0 0 0 0 0 0
+
+502 19 SphereLight const * 0 8576 19 SphereLight const * 19 SphereLight const * 0 0 503 0 0 0 0 0 0 0 0 0 0
+
+503 17 SphereLight const 0 8832 17 SphereLight const 17 SphereLight const 0 0 419 0 0 0 0 0 0 0 0 0 0
+
+504 11 Spotlight * 0 8576 11 Spotlight * 11 Spotlight * 0 0 420 0 0 0 0 0 0 0 0 0 0
+
+505 17 Spotlight const * 0 8576 17 Spotlight const * 17 Spotlight const * 0 0 506 0 0 0 0 0 0 0 0 0 0
+
+506 15 Spotlight const 0 8832 15 Spotlight const 15 Spotlight const 0 0 420 0 0 0 0 0 0 0 0 0 0
+
+507 7 Texture 0 2048 7 Texture 7 Texture 0 0 0 0 0 0 0 0 0 0 0 0 688
+/**
+ * Represents a texture object, which is typically a single 2-d image but may
+ * also represent a 1-d or 3-d texture image, or the six 2-d faces of a cube
+ * map texture.
+ *
+ * A texture's image data might be stored in system RAM (see get_ram_image())
+ * or its image may be represented in texture memory on one or more
+ * GraphicsStateGuardians (see prepare()), or both.  The typical usage pattern
+ * is that a texture is loaded from an image file on disk, which copies its
+ * image data into system RAM; then the first time the texture is rendered its
+ * image data is copied to texture memory (actually, to the graphics API), and
+ * the system RAM image is automatically freed.
+ */
+
+508 8 LColor * 0 8576 8 LColor * 8 LColor * 0 0 390 0 0 0 0 0 0 0 0 0 0
+
+509 9 Texture * 0 8576 9 Texture * 9 Texture * 0 0 507 0 0 0 0 0 0 0 0 0 0
+
+510 12 SwitchNode * 0 8576 12 SwitchNode * 12 SwitchNode * 0 0 421 0 0 0 0 0 0 0 0 0 0
+
+511 18 SwitchNode const * 0 8576 18 SwitchNode const * 18 SwitchNode const * 0 0 512 0 0 0 0 0 0 0 0 0 0
+
+512 16 SwitchNode const 0 8832 16 SwitchNode const 16 SwitchNode const 0 0 421 0 0 0 0 0 0 0 0 0 0
+
+513 14 UvScrollNode * 0 8576 14 UvScrollNode * 14 UvScrollNode * 0 0 422 0 0 0 0 0 0 0 0 0 0
+
+514 20 UvScrollNode const * 0 8576 20 UvScrollNode const * 20 UvScrollNode const * 0 0 515 0 0 0 0 0 0 0 0 0 0
+
+515 18 UvScrollNode const 0 8832 18 UvScrollNode const 18 UvScrollNode const 0 0 422 0 0 0 0 0 0 0 0 0 0
+
+516 20 SceneGraphAnalyzer * 0 8576 20 SceneGraphAnalyzer * 20 SceneGraphAnalyzer * 0 0 423 0 0 0 0 0 0 0 0 0 0
+
+517 26 SceneGraphAnalyzer const * 0 8576 26 SceneGraphAnalyzer const * 26 SceneGraphAnalyzer const * 0 0 518 0 0 0 0 0 0 0 0 0 0
+
+518 24 SceneGraphAnalyzer const 0 8832 24 SceneGraphAnalyzer const 24 SceneGraphAnalyzer const 0 0 423 0 0 0 0 0 0 0 0 0 0
+
+0
+35
+519 13 cull_callback 0 6 377 188 186 0 0 0 0 0 0 27 CallbackNode::cull_callback 0
+
+520 13 draw_callback 0 6 377 191 189 0 0 0 0 0 0 27 CallbackNode::draw_callback 0
+
+521 10 dispatches 0 358 380 197 198 0 0 200 196 199 0 23 ComputeNode::dispatches 0
+
+522 13 shadow_caster 0 2 385 210 0 0 0 0 0 0 0 28 LightLensNode::shadow_caster 0
+
+523 18 shadow_buffer_sort 0 6 386 212 213 0 0 0 0 0 0 33 LightLensNode::shadow_buffer_sort 0
+
+524 18 shadow_buffer_size 0 6 387 214 215 0 0 0 0 0 0 33 LightLensNode::shadow_buffer_size 0
+
+525 14 specular_color 0 6 389 223 221 0 0 0 0 0 0 32 DirectionalLight::specular_color 0
+
+526 5 point 0 6 393 224 225 0 0 0 0 0 0 23 DirectionalLight::point 0
+
+527 9 direction 0 6 396 226 227 0 0 0 0 0 0 27 DirectionalLight::direction 0
+
+528 3 ins 0 66 400 236 0 0 0 0 235 0 0 12 LODNode::ins 0
+
+529 4 outs 0 66 400 237 0 0 0 0 235 0 0 13 LODNode::outs 0
+
+530 13 lowest_switch 0 2 386 238 0 0 0 0 0 0 0 22 LODNode::lowest_switch 0
+
+531 14 highest_switch 0 2 386 239 0 0 0 0 0 0 0 23 LODNode::highest_switch 0
+
+532 9 lod_scale 0 6 400 243 242 0 0 0 0 0 0 18 LODNode::lod_scale 0
+
+533 6 center 0 6 393 245 244 0 0 0 0 0 0 15 LODNode::center 0
+
+534 9 fade_time 0 6 400 256 255 0 0 0 0 0 0 22 FadeLODNode::fade_time 0
+
+535 13 fade_bin_name 0 2 403 258 0 0 0 0 0 0 0 26 FadeLODNode::fade_bin_name 0
+
+536 19 fade_bin_draw_order 0 2 386 259 0 0 0 0 0 0 0 32 FadeLODNode::fade_bin_draw_order 0
+
+537 19 fade_state_override 0 6 386 261 260 0 0 0 0 0 0 32 FadeLODNode::fade_state_override 0
+
+538 14 specular_color 0 6 389 271 269 0 0 0 0 0 0 26 PointLight::specular_color 0
+
+539 11 attenuation 0 6 409 273 272 0 0 0 0 0 0 23 PointLight::attenuation 0
+
+540 12 max_distance 0 6 400 274 275 0 0 0 0 0 0 24 PointLight::max_distance 0
+
+541 5 point 0 6 393 276 277 0 0 0 0 0 0 17 PointLight::point 0
+
+542 12 max_distance 0 6 400 281 282 0 0 0 0 0 0 28 RectangleLight::max_distance 0
+
+543 10 frame_rate 0 6 416 295 294 0 0 0 0 0 0 24 SequenceNode::frame_rate 0
+
+544 6 radius 0 6 400 304 305 0 0 0 0 0 0 19 SphereLight::radius 0
+
+545 8 exponent 0 6 400 310 309 0 0 0 0 0 0 19 Spotlight::exponent 0
+
+546 14 specular_color 0 6 389 313 311 0 0 0 0 0 0 25 Spotlight::specular_color 0
+
+547 11 attenuation 0 6 409 315 314 0 0 0 0 0 0 22 Spotlight::attenuation 0
+
+548 12 max_distance 0 6 400 316 317 0 0 0 0 0 0 23 Spotlight::max_distance 0
+
+549 13 visible_child 0 6 386 323 322 0 0 0 0 0 0 25 SwitchNode::visible_child 0
+
+550 7 u_speed 0 6 400 331 327 0 0 0 0 0 0 21 UvScrollNode::u_speed 0
+
+551 7 v_speed 0 6 400 332 328 0 0 0 0 0 0 21 UvScrollNode::v_speed 0
+
+552 7 w_speed 0 6 400 333 329 0 0 0 0 0 0 21 UvScrollNode::w_speed 0
+
+553 7 r_speed 0 6 400 334 330 0 0 0 0 0 0 21 UvScrollNode::r_speed 0
+
+3
+554 14 get_dispatches 0 196 197 27 ComputeNode::get_dispatches 0
+
+555 7 get_ins 0 235 236 16 LODNode::get_ins 0
+
+556 8 get_outs 0 235 237 17 LODNode::get_outs 0
+

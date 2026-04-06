@@ -1,0 +1,3340 @@
+1775486683
+3 3
+13 libp3dcparser 4 zIbG 14 panda3d.direct 
+236
+247 18 ~DCPackerInterface 0 518 485 37 DCPackerInterface::~DCPackerInterface 0 0 10
+/**
+ *
+ */
+52
+virtual DCPackerInterface::~DCPackerInterface(void);
+
+248 8 get_name 0 4 485 27 DCPackerInterface::get_name 0 1 1 83
+/**
+ * Returns the name of this field, or empty string if the field is unnamed.
+ */
+66
+inline std::string const &DCPackerInterface::get_name(void) const;
+
+249 15 find_seek_index 0 4 485 34 DCPackerInterface::find_seek_index 0 1 2 491
+/**
+ * Returns the index number to be passed to a future call to DCPacker::seek()
+ * to seek directly to the named field without having to look up the field
+ * name in a table later, or -1 if the named field cannot be found.
+ *
+ * If the named field is nested within a switch or some similar dynamic
+ * structure that reveals different fields based on the contents of the data,
+ * this mechanism cannot be used to pre-fetch the field index number--you must
+ * seek for the field by name.
+ */
+70
+int DCPackerInterface::find_seek_index(std::string const &name) const;
+
+250 8 as_field 0 6 485 27 DCPackerInterface::as_field 0 2 3 4 22
+/**
+ *
+ */
+
+/**
+ *
+ */
+115
+virtual DCField *DCPackerInterface::as_field(void);
+virtual DCField const *DCPackerInterface::as_field(void) const;
+
+251 19 as_switch_parameter 0 6 485 38 DCPackerInterface::as_switch_parameter 0 2 5 6 22
+/**
+ *
+ */
+
+/**
+ *
+ */
+157
+virtual DCSwitchParameter *DCPackerInterface::as_switch_parameter(void);
+virtual DCSwitchParameter const *DCPackerInterface::as_switch_parameter(void) const;
+
+252 18 as_class_parameter 0 6 485 37 DCPackerInterface::as_class_parameter 0 2 7 8 22
+/**
+ *
+ */
+
+/**
+ *
+ */
+153
+virtual DCClassParameter *DCPackerInterface::as_class_parameter(void);
+virtual DCClassParameter const *DCPackerInterface::as_class_parameter(void) const;
+
+253 11 check_match 0 4 485 30 DCPackerInterface::check_match 0 2 9 10 553
+/**
+ * Returns true if the other interface is bitwise the same as this one--that
+ * is, a uint32 only matches a uint32, etc.  Names of components, and range
+ * limits, are not compared.
+ */
+
+/**
+ * Returns true if this interface is bitwise the same as the interface
+ * described with the indicated formatted string, e.g.  "(uint8, uint8,
+ * int16)", or false otherwise.
+ *
+ * If DCFile is not NULL, it specifies the DCFile that was previously loaded,
+ * from which some predefined structs and typedefs may be referenced in the
+ * description string.
+ */
+182
+inline bool DCPackerInterface::check_match(DCPackerInterface const *other) const;
+bool DCPackerInterface::check_match(std::string const &description, DCFile *dcfile = nullptr) const;
+
+254 14 ~DCKeywordList 0 516 486 29 DCKeywordList::~DCKeywordList 0 0 10
+/**
+ *
+ */
+36
+DCKeywordList::~DCKeywordList(void);
+
+255 11 has_keyword 0 4 486 26 DCKeywordList::has_keyword 0 2 11 12 172
+/**
+ * Returns true if this list includes the indicated keyword, false otherwise.
+ */
+
+/**
+ * Returns true if this list includes the indicated keyword, false otherwise.
+ */
+128
+bool DCKeywordList::has_keyword(std::string const &name) const;
+bool DCKeywordList::has_keyword(DCKeyword const *keyword) const;
+
+256 16 get_num_keywords 0 4 486 31 DCKeywordList::get_num_keywords 0 1 13 54
+/**
+ * Returns the number of keywords in the list.
+ */
+48
+int DCKeywordList::get_num_keywords(void) const;
+
+257 11 get_keyword 0 4 486 26 DCKeywordList::get_keyword 0 1 14 47
+/**
+ * Returns the nth keyword in the list.
+ */
+57
+DCKeyword const *DCKeywordList::get_keyword(int n) const;
+
+258 19 get_keyword_by_name 0 4 486 34 DCKeywordList::get_keyword_by_name 0 1 15 129
+/**
+ * Returns the keyword in the list with the indicated name, or NULL if there
+ * is no keyword in the list with that name.
+ */
+83
+DCKeyword const *DCKeywordList::get_keyword_by_name(std::string const &name) const;
+
+259 16 compare_keywords 0 4 486 31 DCKeywordList::compare_keywords 0 1 16 147
+/**
+ * Returns true if this list has the same keywords as the other list, false if
+ * some keywords differ.  Order is not considered important.
+ */
+71
+bool DCKeywordList::compare_keywords(DCKeywordList const &other) const;
+
+260 27 upcast_to_DCPackerInterface 0 12 487 36 DCField::upcast_to_DCPackerInterface 0 1 50 40
+upcast from DCField to DCPackerInterface
+62
+DCPackerInterface *DCField::upcast_to_DCPackerInterface(void);
+
+261 19 downcast_to_DCField 0 12 485 38 DCPackerInterface::downcast_to_DCField 0 0 42
+downcast from DCPackerInterface to DCField
+54
+DCField *DCPackerInterface::downcast_to_DCField(void);
+
+262 23 upcast_to_DCKeywordList 0 12 487 32 DCField::upcast_to_DCKeywordList 0 1 51 36
+upcast from DCField to DCKeywordList
+54
+DCKeywordList *DCField::upcast_to_DCKeywordList(void);
+
+263 19 downcast_to_DCField 0 12 486 34 DCKeywordList::downcast_to_DCField 0 0 38
+downcast from DCKeywordList to DCField
+50
+DCField *DCKeywordList::downcast_to_DCField(void);
+
+264 8 ~DCField 0 518 487 17 DCField::~DCField 0 0 10
+/**
+ *
+ */
+32
+virtual DCField::~DCField(void);
+
+265 10 get_number 0 4 487 19 DCField::get_number 0 1 17 130
+/**
+ * Returns a unique index number associated with this field.  This is defined
+ * implicitly when the .dc file(s) are read.
+ */
+43
+inline int DCField::get_number(void) const;
+
+266 9 get_class 0 4 487 18 DCField::get_class 0 1 18 78
+/**
+ * Returns the DCClass pointer for the class that contains this field.
+ */
+47
+inline DCClass *DCField::get_class(void) const;
+
+267 8 as_field 0 6 487 17 DCField::as_field 0 2 19 20 22
+/**
+ *
+ */
+
+/**
+ *
+ */
+95
+virtual DCField *DCField::as_field(void);
+virtual DCField const *DCField::as_field(void) const;
+
+268 15 as_atomic_field 0 6 487 24 DCField::as_atomic_field 0 2 21 22 288
+/**
+ * Returns the same field pointer converted to an atomic field pointer, if
+ * this is in fact an atomic field; otherwise, returns NULL.
+ */
+
+/**
+ * Returns the same field pointer converted to an atomic field pointer, if
+ * this is in fact an atomic field; otherwise, returns NULL.
+ */
+121
+virtual DCAtomicField *DCField::as_atomic_field(void);
+virtual DCAtomicField const *DCField::as_atomic_field(void) const;
+
+269 18 as_molecular_field 0 6 487 27 DCField::as_molecular_field 0 2 23 24 296
+/**
+ * Returns the same field pointer converted to a molecular field pointer, if
+ * this is in fact a molecular field; otherwise, returns NULL.
+ */
+
+/**
+ * Returns the same field pointer converted to a molecular field pointer, if
+ * this is in fact a molecular field; otherwise, returns NULL.
+ */
+133
+virtual DCMolecularField *DCField::as_molecular_field(void);
+virtual DCMolecularField const *DCField::as_molecular_field(void) const;
+
+270 12 as_parameter 0 6 487 21 DCField::as_parameter 0 2 25 26 22
+/**
+ *
+ */
+
+/**
+ *
+ */
+111
+virtual DCParameter *DCField::as_parameter(void);
+virtual DCParameter const *DCField::as_parameter(void) const;
+
+271 11 format_data 0 4 487 20 DCField::format_data 0 1 27 175
+/**
+ * Given a blob that represents the packed data for this field, returns a
+ * string formatting it for human consumption.  Returns empty string if there
+ * is an error.
+ */
+96
+std::string DCField::format_data(vector_uchar const &packed_data, bool show_field_names = true);
+
+272 12 parse_string 0 4 487 21 DCField::parse_string 0 1 28 243
+/**
+ * Given a human-formatted string (for instance, as returned by format_data(),
+ * above) that represents the value of this field, parse the string and return
+ * the corresponding packed data.  Returns empty string if there is an error.
+ */
+72
+vector_uchar DCField::parse_string(std::string const &formatted_string);
+
+273 15 validate_ranges 0 4 487 24 DCField::validate_ranges 0 1 29 221
+/**
+ * Verifies that all of the packed values in the field data are within the
+ * specified ranges and that there are no extra bytes on the end of the
+ * record.  Returns true if all fields are valid, false otherwise.
+ */
+69
+bool DCField::validate_ranges(vector_uchar const &packed_data) const;
+
+274 17 has_default_value 0 4 487 26 DCField::has_default_value 0 1 30 110
+/**
+ * Returns true if a default value has been explicitly established for this
+ * field, false otherwise.
+ */
+51
+inline bool DCField::has_default_value(void) const;
+
+275 17 get_default_value 0 4 487 26 DCField::get_default_value 0 1 31 218
+/**
+ * Returns the default value for this field.  If a default value has been
+ * explicitly set (e.g.  has_default_value() returns true), returns that
+ * value; otherwise, returns an implicit default for the field.
+ */
+66
+inline vector_uchar const &DCField::get_default_value(void) const;
+
+276 14 is_bogus_field 0 4 487 23 DCField::is_bogus_field 0 1 32 251
+/**
+ * Returns true if the field has been flagged as a bogus field.  This is set
+ * for fields that are generated by the parser as placeholder for missing
+ * fields, as when reading a partial file; it should not occur in a normal
+ * valid dc file.
+ */
+48
+inline bool DCField::is_bogus_field(void) const;
+
+277 11 is_required 0 4 487 20 DCField::is_required 0 1 33 86
+/**
+ * Returns true if the "required" flag is set for this field, false otherwise.
+ */
+45
+inline bool DCField::is_required(void) const;
+
+278 12 is_broadcast 0 4 487 21 DCField::is_broadcast 0 1 34 90
+/**
+ * Returns true if the "broadcast" flag is set for this field, false
+ * otherwise.
+ */
+46
+inline bool DCField::is_broadcast(void) const;
+
+279 6 is_ram 0 4 487 15 DCField::is_ram 0 1 35 81
+/**
+ * Returns true if the "ram" flag is set for this field, false otherwise.
+ */
+40
+inline bool DCField::is_ram(void) const;
+
+280 5 is_db 0 4 487 14 DCField::is_db 0 1 36 80
+/**
+ * Returns true if the "db" flag is set for this field, false otherwise.
+ */
+39
+inline bool DCField::is_db(void) const;
+
+281 9 is_clsend 0 4 487 18 DCField::is_clsend 0 1 37 84
+/**
+ * Returns true if the "clsend" flag is set for this field, false otherwise.
+ */
+43
+inline bool DCField::is_clsend(void) const;
+
+282 9 is_clrecv 0 4 487 18 DCField::is_clrecv 0 1 38 84
+/**
+ * Returns true if the "clrecv" flag is set for this field, false otherwise.
+ */
+43
+inline bool DCField::is_clrecv(void) const;
+
+283 10 is_ownsend 0 4 487 19 DCField::is_ownsend 0 1 39 85
+/**
+ * Returns true if the "ownsend" flag is set for this field, false otherwise.
+ */
+44
+inline bool DCField::is_ownsend(void) const;
+
+284 10 is_ownrecv 0 4 487 19 DCField::is_ownrecv 0 1 40 85
+/**
+ * Returns true if the "ownrecv" flag is set for this field, false otherwise.
+ */
+44
+inline bool DCField::is_ownrecv(void) const;
+
+285 9 is_airecv 0 4 487 18 DCField::is_airecv 0 1 41 84
+/**
+ * Returns true if the "airecv" flag is set for this field, false otherwise.
+ */
+43
+inline bool DCField::is_airecv(void) const;
+
+286 6 output 0 4 487 15 DCField::output 0 1 42 67
+/**
+ * Write a string representation of this instance to <out>.
+ */
+53
+inline void DCField::output(std::ostream &out) const;
+
+287 5 write 0 4 487 14 DCField::write 0 1 43 67
+/**
+ * Write a string representation of this instance to <out>.
+ */
+70
+inline void DCField::write(std::ostream &out, int indent_level) const;
+
+288 9 pack_args 0 4 487 18 DCField::pack_args 0 1 44 0
+68
+bool DCField::pack_args(DCPacker &packer, PyObject *sequence) const;
+
+289 11 unpack_args 0 4 487 20 DCField::unpack_args 0 1 45 0
+55
+PyObject *DCField::unpack_args(DCPacker &packer) const;
+
+290 14 receive_update 0 4 487 23 DCField::receive_update 0 1 46 0
+72
+void DCField::receive_update(DCPacker &packer, PyObject *distobj) const;
+
+291 20 client_format_update 0 4 487 29 DCField::client_format_update 0 1 47 0
+78
+Datagram DCField::client_format_update(DOID_TYPE do_id, PyObject *args) const;
+
+292 16 ai_format_update 0 4 487 25 DCField::ai_format_update 0 1 48 0
+116
+Datagram DCField::ai_format_update(DOID_TYPE do_id, CHANNEL_TYPE to_id, CHANNEL_TYPE from_id, PyObject *args) const;
+
+293 25 ai_format_update_msg_type 0 4 487 34 DCField::ai_format_update_msg_type 0 1 49 0
+139
+Datagram DCField::ai_format_update_msg_type(DOID_TYPE do_id, CHANNEL_TYPE to_id, CHANNEL_TYPE from_id, int msg_type, PyObject *args) const;
+
+294 10 DCPackData 0 260 488 22 DCPackData::DCPackData 0 2 52 53 10
+/**
+ *
+ */
+97
+inline DCPackData::DCPackData(void);
+inline DCPackData::DCPackData(DCPackData const &) = default;
+
+295 11 ~DCPackData 0 516 488 23 DCPackData::~DCPackData 0 0 10
+/**
+ *
+ */
+37
+inline DCPackData::~DCPackData(void);
+
+296 5 clear 0 4 488 17 DCPackData::clear 0 1 54 98
+/**
+ * Empties the contents of the data (without necessarily freeing its allocated
+ * memory).
+ */
+36
+inline void DCPackData::clear(void);
+
+297 10 get_string 0 4 488 22 DCPackData::get_string 0 1 55 69
+/**
+ * Returns the data buffer as a string.  Also see get_data().
+ */
+54
+inline std::string DCPackData::get_string(void) const;
+
+298 10 get_length 0 4 488 22 DCPackData::get_length 0 1 56 151
+/**
+ * Returns the current length of the buffer.  This is the number of useful
+ * bytes stored in the buffer, not the amount of memory it takes up.
+ */
+54
+inline std::size_t DCPackData::get_length(void) const;
+
+299 8 DCPacker 0 260 489 18 DCPacker::DCPacker 0 2 57 58 10
+/**
+ *
+ */
+80
+DCPacker::DCPacker(void);
+inline DCPacker::DCPacker(DCPacker const &) = default;
+
+300 9 ~DCPacker 0 516 489 19 DCPacker::~DCPacker 0 0 10
+/**
+ *
+ */
+26
+DCPacker::~DCPacker(void);
+
+301 10 clear_data 0 4 489 20 DCPacker::clear_data 0 1 59 190
+/**
+ * Empties the data in the pack buffer and unpack buffer.  This should be
+ * called between calls to begin_pack(), unless you want to concatenate all of
+ * the pack results together.
+ */
+39
+inline void DCPacker::clear_data(void);
+
+302 10 begin_pack 0 4 489 20 DCPacker::begin_pack 0 1 60 390
+/**
+ * Begins a packing session.  The parameter is the DC object that describes
+ * the packing format; it may be a DCParameter or DCField.
+ *
+ * Unless you call clear_data() between sessions, multiple packing sessions
+ * will be concatenated together into the same buffer.  If you wish to add
+ * bytes to the buffer between packing sessions, use append_data() or
+ * get_write_pointer().
+ */
+57
+void DCPacker::begin_pack(DCPackerInterface const *root);
+
+303 8 end_pack 0 4 489 18 DCPacker::end_pack 0 1 61 138
+/**
+ * Finishes a packing session.
+ *
+ * The return value is true on success, or false if there has been some error
+ * during packing.
+ */
+30
+bool DCPacker::end_pack(void);
+
+304 15 set_unpack_data 0 4 489 25 DCPacker::set_unpack_data 0 1 62 284
+/**
+ * Sets up the unpack_data pointer.  You may call this before calling the
+ * version of begin_unpack() that takes only one parameter.
+ */
+
+/**
+ * Sets up the unpack_data pointer.  You may call this before calling the
+ * version of begin_unpack() that takes only one parameter.
+ */
+57
+void DCPacker::set_unpack_data(vector_uchar const &data);
+
+305 12 begin_unpack 0 4 489 22 DCPacker::begin_unpack 0 1 63 375
+/**
+ * Begins an unpacking session.  You must have previously called
+ * set_unpack_data() to specify a buffer to unpack.
+ *
+ * If there was data left in the buffer after a previous begin_unpack() ..
+ * end_unpack() session, the new session will resume from the current point.
+ * This method may be used, therefore, to unpack a sequence of objects from
+ * the same buffer.
+ */
+59
+void DCPacker::begin_unpack(DCPackerInterface const *root);
+
+306 10 end_unpack 0 4 489 20 DCPacker::end_unpack 0 1 64 186
+/**
+ * Finishes the unpacking session.
+ *
+ * The return value is true on success, or false if there has been some error
+ * during unpacking (or if all fields have not been unpacked).
+ */
+32
+bool DCPacker::end_unpack(void);
+
+307 12 begin_repack 0 4 489 22 DCPacker::begin_repack 0 1 65 562
+/**
+ * Begins a repacking session.  You must have previously called
+ * set_unpack_data() to specify a buffer to unpack.
+ *
+ * Unlike begin_pack() or begin_unpack() you may not concatenate the results
+ * of multiple begin_repack() sessions in one buffer.
+ *
+ * Also, unlike in packing or unpacking modes, you may not walk through the
+ * fields from beginning to end, or even pack two consecutive fields at once.
+ * Instead, you must call seek() for each field you wish to modify and pack
+ * only that one field; then call seek() again to modify another field.
+ */
+59
+void DCPacker::begin_repack(DCPackerInterface const *root);
+
+308 10 end_repack 0 4 489 20 DCPacker::end_repack 0 1 66 186
+/**
+ * Finishes the repacking session.
+ *
+ * The return value is true on success, or false if there has been some error
+ * during repacking (or if all fields have not been repacked).
+ */
+32
+bool DCPacker::end_repack(void);
+
+309 4 seek 0 4 489 14 DCPacker::seek 0 2 67 68 709
+/**
+ * Sets the current unpack (or repack) position to the named field.  In unpack
+ * mode, the next call to unpack_*() or push() will begin to read the named
+ * field.  In repack mode, the next call to pack_*() or push() will modify the
+ * named field.
+ *
+ * Returns true if successful, false if the field is not known (or if the
+ * packer is in an invalid mode).
+ */
+
+/**
+ * Seeks to the field indentified by seek_index, which was returned by an
+ * earlier call to DCField::find_seek_index() to get the index of some nested
+ * field.  Also see the version of seek() that accepts a field name.
+ *
+ * Returns true if successful, false if the field is not known (or if the
+ * packer is in an invalid mode).
+ */
+88
+bool DCPacker::seek(std::string const &field_name);
+bool DCPacker::seek(int seek_index);
+
+310 17 has_nested_fields 0 4 489 27 DCPacker::has_nested_fields 0 1 69 254
+/**
+ * Returns true if the current field has any nested fields (and thus expects a
+ * push() .. pop() interface), or false otherwise.  If this returns true,
+ * get_num_nested_fields() may be called to determine how many nested fields
+ * are expected.
+ */
+52
+inline bool DCPacker::has_nested_fields(void) const;
+
+311 21 get_num_nested_fields 0 4 489 31 DCPacker::get_num_nested_fields 0 1 70 517
+/**
+ * Returns the number of nested fields associated with the current field, if
+ * has_nested_fields() returned true.
+ *
+ * The return value may be -1 to indicate that a variable number of nested
+ * fields are accepted by this field type (e.g.  a variable-length array).
+ *
+ * Note that this method is unreliable to determine how many fields you must
+ * traverse before you can call pop(), since particularly in the presence of a
+ * DCSwitch, it may change during traversal.  Use more_nested_fields()
+ * instead.
+ */
+55
+inline int DCPacker::get_num_nested_fields(void) const;
+
+312 18 more_nested_fields 0 4 489 28 DCPacker::more_nested_fields 0 1 71 141
+/**
+ * Returns true if there are more nested fields to pack or unpack in the
+ * current push sequence, false if it is time to call pop().
+ */
+53
+inline bool DCPacker::more_nested_fields(void) const;
+
+313 18 get_current_parent 0 4 489 28 DCPacker::get_current_parent 0 1 72 175
+/**
+ * Returns the field that we left in our last call to push(): the owner of the
+ * current level of fields.  This may be NULL at the beginning of the pack
+ * operation.
+ */
+73
+inline DCPackerInterface const *DCPacker::get_current_parent(void) const;
+
+314 17 get_current_field 0 4 489 27 DCPacker::get_current_field 0 1 73 197
+/**
+ * Returns the field that will be referenced by the next call to pack_*() or
+ * unpack_*().  This will be NULL if we have unpacked (or packed) all fields,
+ * or if it is time to call pop().
+ */
+72
+inline DCPackerInterface const *DCPacker::get_current_field(void) const;
+
+315 15 get_last_switch 0 4 489 25 DCPacker::get_last_switch 0 1 74 428
+/**
+ * Returns a pointer to the last DCSwitch instance that we have passed by and
+ * selected one case of during the pack/unpack process.  Each time we
+ * encounter a new DCSwitch and select a case, this will change state.
+ *
+ * This may be used to detect when a DCSwitch has been selected.  At the
+ * moment this changes state, get_current_parent() will contain the particular
+ * SwitchCase that was selected by the switch.
+ */
+70
+inline DCSwitchParameter const *DCPacker::get_last_switch(void) const;
+
+316 13 get_pack_type 0 4 489 23 DCPacker::get_pack_type 0 1 75 438
+/**
+ * Returns the type of value expected by the current field.  See the
+ * enumerated type definition at the top of DCPackerInterface.h.  If this
+ * returns one of PT_double, PT_int, PT_int64, or PT_string, then you should
+ * call the corresponding pack_double(), pack_int() function (or
+ * unpack_double(), unpack_int(), etc.) to transfer data.  Otherwise, you
+ * should call push() and begin packing or unpacking the nested fields.
+ */
+54
+inline DCPackType DCPacker::get_pack_type(void) const;
+
+317 22 get_current_field_name 0 4 489 32 DCPacker::get_current_field_name 0 1 76 154
+/**
+ * Returns the name of the current field, if it has a name, or the empty
+ * string if the field does not have a name or there is no current field.
+ */
+64
+inline std::string DCPacker::get_current_field_name(void) const;
+
+318 4 push 0 4 489 14 DCPacker::push 0 1 77 315
+/**
+ * Marks the beginning of a nested series of fields.
+ *
+ * This must be called before filling the elements of an array or the
+ * individual fields in a structure field.  It must also be balanced by a
+ * matching pop().
+ *
+ * It is necessary to use push() / pop() only if has_nested_fields() returns
+ * true.
+ */
+26
+void DCPacker::push(void);
+
+319 3 pop 0 4 489 13 DCPacker::pop 0 1 78 234
+/**
+ * Marks the end of a nested series of fields.
+ *
+ * This must be called to match a previous push() only after all the expected
+ * number of nested fields have been packed.  It is an error to call it too
+ * early, or too late.
+ */
+25
+void DCPacker::pop(void);
+
+320 11 pack_double 0 4 489 21 DCPacker::pack_double 0 1 79 71
+/**
+ * Packs the indicated numeric or string value into the stream.
+ */
+48
+inline void DCPacker::pack_double(double value);
+
+321 8 pack_int 0 4 489 18 DCPacker::pack_int 0 1 80 71
+/**
+ * Packs the indicated numeric or string value into the stream.
+ */
+42
+inline void DCPacker::pack_int(int value);
+
+322 9 pack_uint 0 4 489 19 DCPacker::pack_uint 0 1 81 71
+/**
+ * Packs the indicated numeric or string value into the stream.
+ */
+52
+inline void DCPacker::pack_uint(unsigned int value);
+
+323 10 pack_int64 0 4 489 20 DCPacker::pack_int64 0 1 82 71
+/**
+ * Packs the indicated numeric or string value into the stream.
+ */
+48
+inline void DCPacker::pack_int64(int64_t value);
+
+324 11 pack_uint64 0 4 489 21 DCPacker::pack_uint64 0 1 83 71
+/**
+ * Packs the indicated numeric or string value into the stream.
+ */
+50
+inline void DCPacker::pack_uint64(uint64_t value);
+
+325 11 pack_string 0 4 489 21 DCPacker::pack_string 0 1 84 71
+/**
+ * Packs the indicated numeric or string value into the stream.
+ */
+60
+inline void DCPacker::pack_string(std::string const &value);
+
+326 9 pack_blob 0 4 489 19 DCPacker::pack_blob 0 1 85 71
+/**
+ * Packs the indicated numeric or string value into the stream.
+ */
+59
+inline void DCPacker::pack_blob(vector_uchar const &value);
+
+327 18 pack_literal_value 0 4 489 28 DCPacker::pack_literal_value 0 1 86 155
+/**
+ * Adds the indicated string value into the stream, representing a single pre-
+ * packed field element, or a whole group of field elements at once.
+ */
+68
+inline void DCPacker::pack_literal_value(vector_uchar const &value);
+
+328 18 pack_default_value 0 4 489 28 DCPacker::pack_default_value 0 1 87 158
+/**
+ * Adds the default value for the current element into the stream.  If no
+ * default has been set for the current element, creates a sensible default.
+ */
+40
+void DCPacker::pack_default_value(void);
+
+329 13 unpack_double 0 4 489 23 DCPacker::unpack_double 0 1 88 144
+/**
+ * Unpacks the current numeric or string value from the stream.
+ */
+
+/**
+ * Unpacks the current numeric or string value from the stream.
+ */
+44
+inline double DCPacker::unpack_double(void);
+
+330 10 unpack_int 0 4 489 20 DCPacker::unpack_int 0 1 89 144
+/**
+ * Unpacks the current numeric or string value from the stream.
+ */
+
+/**
+ * Unpacks the current numeric or string value from the stream.
+ */
+38
+inline int DCPacker::unpack_int(void);
+
+331 11 unpack_uint 0 4 489 21 DCPacker::unpack_uint 0 1 90 144
+/**
+ * Unpacks the current numeric or string value from the stream.
+ */
+
+/**
+ * Unpacks the current numeric or string value from the stream.
+ */
+48
+inline unsigned int DCPacker::unpack_uint(void);
+
+332 12 unpack_int64 0 4 489 22 DCPacker::unpack_int64 0 1 91 144
+/**
+ * Unpacks the current numeric or string value from the stream.
+ */
+
+/**
+ * Unpacks the current numeric or string value from the stream.
+ */
+44
+inline int64_t DCPacker::unpack_int64(void);
+
+333 13 unpack_uint64 0 4 489 23 DCPacker::unpack_uint64 0 1 92 144
+/**
+ * Unpacks the current numeric or string value from the stream.
+ */
+
+/**
+ * Unpacks the current numeric or string value from the stream.
+ */
+46
+inline uint64_t DCPacker::unpack_uint64(void);
+
+334 13 unpack_string 0 4 489 23 DCPacker::unpack_string 0 1 93 144
+/**
+ * Unpacks the current numeric or string value from the stream.
+ */
+
+/**
+ * Unpacks the current numeric or string value from the stream.
+ */
+49
+inline std::string DCPacker::unpack_string(void);
+
+335 11 unpack_blob 0 4 489 21 DCPacker::unpack_blob 0 1 94 138
+/**
+ * Unpacks the current binary data value from the stream.
+ */
+
+/**
+ * Unpacks the current numeric or string value from the stream.
+ */
+48
+inline vector_uchar DCPacker::unpack_blob(void);
+
+336 20 unpack_literal_value 0 4 489 30 DCPacker::unpack_literal_value 0 1 95 256
+/**
+ * Returns the literal string that represents the packed value of the current
+ * field, and advances the field pointer.
+ */
+
+/**
+ * Returns the literal string that represents the packed value of the current
+ * field, and advances the field pointer.
+ */
+57
+inline vector_uchar DCPacker::unpack_literal_value(void);
+
+337 15 unpack_validate 0 4 489 25 DCPacker::unpack_validate 0 1 96 219
+/**
+ * Internally unpacks the current numeric or string value and validates it
+ * against the type range limits, but does not return the value.  If the
+ * current field contains nested fields, validates all of them.
+ */
+37
+void DCPacker::unpack_validate(void);
+
+338 11 unpack_skip 0 4 489 21 DCPacker::unpack_skip 0 1 97 155
+/**
+ * Skips the current field without unpacking it and advances to the next
+ * field.  If the current field contains nested fields, skips all of them.
+ */
+33
+void DCPacker::unpack_skip(void);
+
+339 11 pack_object 0 4 489 21 DCPacker::pack_object 0 1 98 0
+45
+void DCPacker::pack_object(PyObject *object);
+
+340 13 unpack_object 0 4 489 23 DCPacker::unpack_object 0 1 99 0
+40
+PyObject *DCPacker::unpack_object(void);
+
+341 14 parse_and_pack 0 4 489 24 DCPacker::parse_and_pack 0 2 100 101 344
+/**
+ * Parses an object's value according to the DC file syntax (e.g.  as a
+ * default value string) and packs it.  Returns true on success, false on a
+ * parse error.
+ */
+
+/**
+ * Parses an object's value according to the DC file syntax (e.g.  as a
+ * default value string) and packs it.  Returns true on success, false on a
+ * parse error.
+ */
+116
+bool DCPacker::parse_and_pack(std::string const &formatted_object);
+bool DCPacker::parse_and_pack(std::istream &in);
+
+342 17 unpack_and_format 0 4 489 27 DCPacker::unpack_and_format 0 2 102 103 328
+/**
+ * Unpacks an object and formats its value into a syntax suitable for parsing
+ * in the dc file (e.g.  as a default value), or as an input to parse_object.
+ */
+
+/**
+ * Unpacks an object and formats its value into a syntax suitable for parsing
+ * in the dc file (e.g.  as a default value), or as an input to parse_object.
+ */
+153
+std::string DCPacker::unpack_and_format(bool show_field_names = true);
+void DCPacker::unpack_and_format(std::ostream &out, bool show_field_names = true);
+
+343 15 had_parse_error 0 4 489 25 DCPacker::had_parse_error 0 1 104 149
+/**
+ * Returns true if there has been an parse error since the most recent call to
+ * begin(); this can only happen if you call parse_and_pack().
+ */
+50
+inline bool DCPacker::had_parse_error(void) const;
+
+344 14 had_pack_error 0 4 489 24 DCPacker::had_pack_error 0 1 105 471
+/**
+ * Returns true if there has been an packing error since the most recent call
+ * to begin(); in particular, this may be called after end() has returned
+ * false to determine the nature of the failure.
+ *
+ * A return value of true indicates there was a push/pop mismatch, or the
+ * push/pop structure did not match the data structure, or there were the
+ * wrong number of elements in a nested push/pop structure, or on unpack that
+ * the data stream was truncated.
+ */
+49
+inline bool DCPacker::had_pack_error(void) const;
+
+345 15 had_range_error 0 4 489 25 DCPacker::had_range_error 0 1 106 400
+/**
+ * Returns true if there has been an range validation error since the most
+ * recent call to begin(); in particular, this may be called after end() has
+ * returned false to determine the nature of the failure.
+ *
+ * A return value of true indicates a value that was packed or unpacked did
+ * not fit within the specified legal range for a parameter, or within the
+ * limits of the field size.
+ */
+50
+inline bool DCPacker::had_range_error(void) const;
+
+346 9 had_error 0 4 489 19 DCPacker::had_error 0 1 107 222
+/**
+ * Returns true if there has been any error (either a pack error or a range
+ * error) since the most recent call to begin().  If this returns true, then
+ * the matching call to end() will indicate an error (false).
+ */
+44
+inline bool DCPacker::had_error(void) const;
+
+347 22 get_num_unpacked_bytes 0 4 489 32 DCPacker::get_num_unpacked_bytes 0 1 108 290
+/**
+ * Returns the number of bytes that have been unpacked so far, or after
+ * unpack_end(), the total number of bytes that were unpacked at all.  This
+ * can be used to validate that all of the bytes in the buffer were actually
+ * unpacked (which is not otherwise considered an error).
+ */
+64
+inline std::size_t DCPacker::get_num_unpacked_bytes(void) const;
+
+348 10 get_length 0 4 489 20 DCPacker::get_length 0 1 109 151
+/**
+ * Returns the current length of the buffer.  This is the number of useful
+ * bytes stored in the buffer, not the amount of memory it takes up.
+ */
+52
+inline std::size_t DCPacker::get_length(void) const;
+
+349 10 get_string 0 4 489 20 DCPacker::get_string 0 1 110 160
+/**
+ * Returns the packed data buffer as a string.  Also see get_data().
+ */
+
+/**
+ * Copies the packed data into the indicated string.  Also see get_data().
+ */
+52
+inline std::string DCPacker::get_string(void) const;
+
+350 9 get_bytes 0 4 489 19 DCPacker::get_bytes 0 1 111 82
+/**
+ * Returns the packed data buffer as a bytes object.  Also see get_data().
+ */
+52
+inline vector_uchar DCPacker::get_bytes(void) const;
+
+351 17 get_unpack_length 0 4 489 27 DCPacker::get_unpack_length 0 1 112 210
+/**
+ * Returns the total number of bytes in the unpack data buffer.  This is the
+ * buffer used when unpacking; it is separate from the pack data returned by
+ * get_length(), which is filled during packing.
+ */
+59
+inline std::size_t DCPacker::get_unpack_length(void) const;
+
+352 17 get_unpack_string 0 4 489 27 DCPacker::get_unpack_string 0 1 113 223
+/**
+ * Returns the unpack data buffer, as a string.  This is the buffer used when
+ * unpacking; it is separate from the pack data returned by get_string(),
+ * which is filled during packing.  Also see get_unpack_data().
+ */
+59
+inline std::string DCPacker::get_unpack_string(void) const;
+
+353 37 get_num_stack_elements_ever_allocated 0 4 489 47 DCPacker::get_num_stack_elements_ever_allocated 0 1 114 221
+/**
+ * Returns the number of DCPacker::StackElement pointers ever simultaneously
+ * allocated; these are now either in active use or have been recycled into
+ * the deleted DCPacker::StackElement pool to be used again.
+ */
+72
+static inline int DCPacker::get_num_stack_elements_ever_allocated(void);
+
+354 13 raw_pack_int8 0 4 489 23 DCPacker::raw_pack_int8 0 1 115 67
+/**
+ * Packs the data into the buffer between packing sessions.
+ */
+47
+inline void DCPacker::raw_pack_int8(int value);
+
+355 14 raw_pack_int16 0 4 489 24 DCPacker::raw_pack_int16 0 1 116 67
+/**
+ * Packs the data into the buffer between packing sessions.
+ */
+48
+inline void DCPacker::raw_pack_int16(int value);
+
+356 14 raw_pack_int32 0 4 489 24 DCPacker::raw_pack_int32 0 1 117 67
+/**
+ * Packs the data into the buffer between packing sessions.
+ */
+48
+inline void DCPacker::raw_pack_int32(int value);
+
+357 14 raw_pack_int64 0 4 489 24 DCPacker::raw_pack_int64 0 1 118 67
+/**
+ * Packs the data into the buffer between packing sessions.
+ */
+52
+inline void DCPacker::raw_pack_int64(int64_t value);
+
+358 14 raw_pack_uint8 0 4 489 24 DCPacker::raw_pack_uint8 0 1 119 67
+/**
+ * Packs the data into the buffer between packing sessions.
+ */
+57
+inline void DCPacker::raw_pack_uint8(unsigned int value);
+
+359 15 raw_pack_uint16 0 4 489 25 DCPacker::raw_pack_uint16 0 1 120 67
+/**
+ * Packs the data into the buffer between packing sessions.
+ */
+58
+inline void DCPacker::raw_pack_uint16(unsigned int value);
+
+360 15 raw_pack_uint32 0 4 489 25 DCPacker::raw_pack_uint32 0 1 121 67
+/**
+ * Packs the data into the buffer between packing sessions.
+ */
+58
+inline void DCPacker::raw_pack_uint32(unsigned int value);
+
+361 15 raw_pack_uint64 0 4 489 25 DCPacker::raw_pack_uint64 0 1 122 67
+/**
+ * Packs the data into the buffer between packing sessions.
+ */
+54
+inline void DCPacker::raw_pack_uint64(uint64_t value);
+
+362 16 raw_pack_float64 0 4 489 26 DCPacker::raw_pack_float64 0 1 123 67
+/**
+ * Packs the data into the buffer between packing sessions.
+ */
+53
+inline void DCPacker::raw_pack_float64(double value);
+
+363 15 raw_pack_string 0 4 489 25 DCPacker::raw_pack_string 0 1 124 67
+/**
+ * Packs the data into the buffer between packing sessions.
+ */
+64
+inline void DCPacker::raw_pack_string(std::string const &value);
+
+364 13 raw_pack_blob 0 4 489 23 DCPacker::raw_pack_blob 0 1 125 67
+/**
+ * Packs the data into the buffer between packing sessions.
+ */
+63
+inline void DCPacker::raw_pack_blob(vector_uchar const &value);
+
+365 15 raw_unpack_int8 0 4 489 25 DCPacker::raw_unpack_int8 0 1 126 144
+/**
+ * Unpacks the data from the buffer between unpacking sessions.
+ */
+
+/**
+ * Unpacks the data from the buffer between unpacking sessions.
+ */
+43
+inline int DCPacker::raw_unpack_int8(void);
+
+366 16 raw_unpack_int16 0 4 489 26 DCPacker::raw_unpack_int16 0 1 127 144
+/**
+ * Unpacks the data from the buffer between unpacking sessions.
+ */
+
+/**
+ * Unpacks the data from the buffer between unpacking sessions.
+ */
+44
+inline int DCPacker::raw_unpack_int16(void);
+
+367 16 raw_unpack_int32 0 4 489 26 DCPacker::raw_unpack_int32 0 1 128 144
+/**
+ * Unpacks the data from the buffer between unpacking sessions.
+ */
+
+/**
+ * Unpacks the data from the buffer between unpacking sessions.
+ */
+44
+inline int DCPacker::raw_unpack_int32(void);
+
+368 16 raw_unpack_int64 0 4 489 26 DCPacker::raw_unpack_int64 0 1 129 144
+/**
+ * Unpacks the data from the buffer between unpacking sessions.
+ */
+
+/**
+ * Unpacks the data from the buffer between unpacking sessions.
+ */
+48
+inline int64_t DCPacker::raw_unpack_int64(void);
+
+369 16 raw_unpack_uint8 0 4 489 26 DCPacker::raw_unpack_uint8 0 1 130 144
+/**
+ * Unpacks the data from the buffer between unpacking sessions.
+ */
+
+/**
+ * Unpacks the data from the buffer between unpacking sessions.
+ */
+53
+inline unsigned int DCPacker::raw_unpack_uint8(void);
+
+370 17 raw_unpack_uint16 0 4 489 27 DCPacker::raw_unpack_uint16 0 1 131 144
+/**
+ * Unpacks the data from the buffer between unpacking sessions.
+ */
+
+/**
+ * Unpacks the data from the buffer between unpacking sessions.
+ */
+54
+inline unsigned int DCPacker::raw_unpack_uint16(void);
+
+371 17 raw_unpack_uint32 0 4 489 27 DCPacker::raw_unpack_uint32 0 1 132 144
+/**
+ * Unpacks the data from the buffer between unpacking sessions.
+ */
+
+/**
+ * Unpacks the data from the buffer between unpacking sessions.
+ */
+54
+inline unsigned int DCPacker::raw_unpack_uint32(void);
+
+372 17 raw_unpack_uint64 0 4 489 27 DCPacker::raw_unpack_uint64 0 1 133 144
+/**
+ * Unpacks the data from the buffer between unpacking sessions.
+ */
+
+/**
+ * Unpacks the data from the buffer between unpacking sessions.
+ */
+50
+inline uint64_t DCPacker::raw_unpack_uint64(void);
+
+373 18 raw_unpack_float64 0 4 489 28 DCPacker::raw_unpack_float64 0 1 134 144
+/**
+ * Unpacks the data from the buffer between unpacking sessions.
+ */
+
+/**
+ * Unpacks the data from the buffer between unpacking sessions.
+ */
+49
+inline double DCPacker::raw_unpack_float64(void);
+
+374 17 raw_unpack_string 0 4 489 27 DCPacker::raw_unpack_string 0 1 135 144
+/**
+ * Unpacks the data from the buffer between unpacking sessions.
+ */
+
+/**
+ * Unpacks the data from the buffer between unpacking sessions.
+ */
+53
+inline std::string DCPacker::raw_unpack_string(void);
+
+375 15 raw_unpack_blob 0 4 489 25 DCPacker::raw_unpack_blob 0 1 136 144
+/**
+ * Unpacks the data from the buffer between unpacking sessions.
+ */
+
+/**
+ * Unpacks the data from the buffer between unpacking sessions.
+ */
+52
+inline vector_uchar DCPacker::raw_unpack_blob(void);
+
+376 19 as_simple_parameter 0 6 490 32 DCParameter::as_simple_parameter 0 2 137 138 22
+/**
+ *
+ */
+
+/**
+ *
+ */
+145
+virtual DCSimpleParameter *DCParameter::as_simple_parameter(void);
+virtual DCSimpleParameter const *DCParameter::as_simple_parameter(void) const;
+
+377 18 as_array_parameter 0 6 490 31 DCParameter::as_array_parameter 0 2 139 140 22
+/**
+ *
+ */
+
+/**
+ *
+ */
+141
+virtual DCArrayParameter *DCParameter::as_array_parameter(void);
+virtual DCArrayParameter const *DCParameter::as_array_parameter(void) const;
+
+378 9 make_copy 0 6 490 22 DCParameter::make_copy 0 1 141 0
+60
+virtual DCParameter *DCParameter::make_copy(void) const = 0;
+
+379 8 is_valid 0 6 490 21 DCParameter::is_valid 0 1 142 0
+51
+virtual bool DCParameter::is_valid(void) const = 0;
+
+380 11 get_typedef 0 4 490 24 DCParameter::get_typedef 0 1 143 139
+/**
+ * If this type has been referenced from a typedef, returns the DCTypedef
+ * instance, or NULL if the type was declared on-the-fly.
+ */
+54
+DCTypedef const *DCParameter::get_typedef(void) const;
+
+381 16 get_element_type 0 4 491 34 DCArrayParameter::get_element_type 0 1 144 69
+/**
+ * Returns the type of the individual elements of this array.
+ */
+60
+DCParameter *DCArrayParameter::get_element_type(void) const;
+
+382 14 get_array_size 0 4 491 32 DCArrayParameter::get_array_size 0 1 145 127
+/**
+ * Returns the fixed number of elements in this array, or -1 if the array may
+ * contain a variable number of elements.
+ */
+49
+int DCArrayParameter::get_array_size(void) const;
+
+383 16 get_num_elements 0 4 492 31 DCAtomicField::get_num_elements 0 1 146 75
+/**
+ * Returns the number of elements (parameters) of the atomic field.
+ */
+48
+int DCAtomicField::get_num_elements(void) const;
+
+384 11 get_element 0 4 492 26 DCAtomicField::get_element 0 1 147 67
+/**
+ * Returns the parameter object describing the nth element.
+ */
+53
+DCParameter *DCAtomicField::get_element(int n) const;
+
+385 19 get_element_default 0 4 492 34 DCAtomicField::get_element_default 0 1 148 505
+// These five methods are deprecated and will be removed soon.
+
+/**
+ * Returns the pre-formatted default value associated with the nth element of
+ * the field.  This is only valid if has_element_default() returns true, in
+ * which case this string represents the bytes that should be assigned to the
+ * field as a default value.
+ *
+ * If the element is an array-type element, the returned value will include
+ * the two-byte length preceding the array data.
+ *
+ * @deprecated use get_element() instead.
+ */
+61
+vector_uchar DCAtomicField::get_element_default(int n) const;
+
+386 19 has_element_default 0 4 492 34 DCAtomicField::has_element_default 0 1 149 151
+/**
+ * Returns true if the nth element of the field has a default value specified,
+ * false otherwise.
+ *
+ * @deprecated use get_element() instead.
+ */
+53
+bool DCAtomicField::has_element_default(int n) const;
+
+387 16 get_element_name 0 4 492 31 DCAtomicField::get_element_name 0 1 150 272
+/**
+ * Returns the name of the nth element of the field.  This name is strictly
+ * for documentary purposes; it does not generally affect operation.  If a
+ * name is not specified, this will be the empty string.
+ *
+ * @deprecated use get_element()->get_name() instead.
+ */
+57
+std::string DCAtomicField::get_element_name(int n) const;
+
+388 16 get_element_type 0 4 492 31 DCAtomicField::get_element_type 0 1 151 126
+/**
+ * Returns the numeric type of the nth element of the field.  This method is
+ * deprecated; use get_element() instead.
+ */
+61
+DCSubatomicType DCAtomicField::get_element_type(int n) const;
+
+389 19 get_element_divisor 0 4 492 34 DCAtomicField::get_element_divisor 0 1 152 340
+/**
+ * Returns the divisor associated with the nth element of the field.  This
+ * implements an implicit fixed-point system; floating-point values are to be
+ * multiplied by this value before encoding into a packet, and divided by this
+ * number after decoding.
+ *
+ * This method is deprecated; use get_element()->get_divisor() instead.
+ */
+52
+int DCAtomicField::get_element_divisor(int n) const;
+
+390 14 ~DCDeclaration 0 518 493 29 DCDeclaration::~DCDeclaration 0 0 10
+/**
+ *
+ */
+44
+virtual DCDeclaration::~DCDeclaration(void);
+
+391 8 as_class 0 6 493 23 DCDeclaration::as_class 0 2 153 154 22
+/**
+ *
+ */
+
+/**
+ *
+ */
+107
+virtual DCClass *DCDeclaration::as_class(void);
+virtual DCClass const *DCDeclaration::as_class(void) const;
+
+392 9 as_switch 0 6 493 24 DCDeclaration::as_switch 0 2 155 156 22
+/**
+ *
+ */
+
+/**
+ *
+ */
+111
+virtual DCSwitch *DCDeclaration::as_switch(void);
+virtual DCSwitch const *DCDeclaration::as_switch(void) const;
+
+393 6 output 0 6 493 21 DCDeclaration::output 0 1 157 67
+/**
+ * Write a string representation of this instance to <out>.
+ */
+60
+virtual void DCDeclaration::output(std::ostream &out) const;
+
+394 5 write 0 4 493 20 DCDeclaration::write 0 1 158 67
+/**
+ * Write a string representation of this instance to <out>.
+ */
+69
+void DCDeclaration::write(std::ostream &out, int indent_level) const;
+
+395 11 get_dc_file 0 4 494 20 DCClass::get_dc_file 0 1 159 61
+/**
+ * Returns the DCFile object that contains the class.
+ */
+48
+inline DCFile *DCClass::get_dc_file(void) const;
+
+396 8 get_name 0 4 494 17 DCClass::get_name 0 1 160 42
+/**
+ * Returns the name of this class.
+ */
+56
+inline std::string const &DCClass::get_name(void) const;
+
+397 10 get_number 0 4 494 19 DCClass::get_number 0 1 161 130
+/**
+ * Returns a unique index number associated with this class.  This is defined
+ * implicitly when the .dc file(s) are read.
+ */
+43
+inline int DCClass::get_number(void) const;
+
+398 15 get_num_parents 0 4 494 24 DCClass::get_num_parents 0 1 162 71
+/**
+ * Returns the number of base classes this class inherits from.
+ */
+41
+int DCClass::get_num_parents(void) const;
+
+399 10 get_parent 0 4 494 19 DCClass::get_parent 0 1 163 65
+/**
+ * Returns the nth parent class this class inherits from.
+ */
+42
+DCClass *DCClass::get_parent(int n) const;
+
+400 15 has_constructor 0 4 494 24 DCClass::has_constructor 0 1 164 113
+/**
+ * Returns true if this class has a constructor method, false if it just uses
+ * the default constructor.
+ */
+42
+bool DCClass::has_constructor(void) const;
+
+401 15 get_constructor 0 4 494 24 DCClass::get_constructor 0 1 165 128
+/**
+ * Returns the constructor method for this class if it is defined, or NULL if
+ * the class uses the default constructor.
+ */
+46
+DCField *DCClass::get_constructor(void) const;
+
+402 14 get_num_fields 0 4 494 23 DCClass::get_num_fields 0 1 166 96
+/**
+ * Returns the number of fields defined directly in this class, ignoring
+ * inheritance.
+ */
+40
+int DCClass::get_num_fields(void) const;
+
+403 9 get_field 0 4 494 18 DCClass::get_field 0 1 167 176
+/**
+ * Returns the nth field in the class.  This is not necessarily the field with
+ * index n; this is the nth field defined in the class directly, ignoring
+ * inheritance.
+ */
+41
+DCField *DCClass::get_field(int n) const;
+
+404 17 get_field_by_name 0 4 494 26 DCClass::get_field_by_name 0 1 168 294
+/**
+ * Returns a pointer to the DCField that shares the indicated name.  If the
+ * named field is not found in the current class, the parent classes will be
+ * searched, so the value returned may not actually be a field within this
+ * class.  Returns NULL if there is no such field defined.
+ */
+67
+DCField *DCClass::get_field_by_name(std::string const &name) const;
+
+405 18 get_field_by_index 0 4 494 27 DCClass::get_field_by_index 0 1 169 302
+/**
+ * Returns a pointer to the DCField that has the indicated index number.  If
+ * the numbered field is not found in the current class, the parent classes
+ * will be searched, so the value returned may not actually be a field within
+ * this class.  Returns NULL if there is no such field defined.
+ */
+61
+DCField *DCClass::get_field_by_index(int index_number) const;
+
+406 24 get_num_inherited_fields 0 4 494 33 DCClass::get_num_inherited_fields 0 1 170 102
+/**
+ * Returns the total number of field fields defined in this class and all
+ * ancestor classes.
+ */
+50
+int DCClass::get_num_inherited_fields(void) const;
+
+407 19 get_inherited_field 0 4 494 28 DCClass::get_inherited_field 0 1 171 315
+/**
+ * Returns the nth field field in the class and all of its ancestors.
+ *
+ * This *used* to be the same thing as get_field_by_index(), back when the
+ * fields were numbered sequentially within a class's inheritance hierarchy.
+ * Now that fields have a globally unique index number, this is no longer
+ * true.
+ */
+51
+DCField *DCClass::get_inherited_field(int n) const;
+
+408 9 is_struct 0 4 494 18 DCClass::is_struct 0 1 172 141
+/**
+ * Returns true if the class has been identified with the "struct" keyword in
+ * the dc file, false if it was declared with "dclass".
+ */
+43
+inline bool DCClass::is_struct(void) const;
+
+409 14 is_bogus_class 0 4 494 23 DCClass::is_bogus_class 0 1 173 253
+/**
+ * Returns true if the class has been flagged as a bogus class.  This is set
+ * for classes that are generated by the parser as placeholder for missing
+ * classes, as when reading a partial file; it should not occur in a normal
+ * valid dc file.
+ */
+48
+inline bool DCClass::is_bogus_class(void) const;
+
+410 25 inherits_from_bogus_class 0 4 494 34 DCClass::inherits_from_bogus_class 0 1 174 172
+/**
+ * Returns true if this class, or any class in the inheritance heirarchy for
+ * this class, is a "bogus" class--a forward reference to an as-yet-undefined
+ * class.
+ */
+52
+bool DCClass::inherits_from_bogus_class(void) const;
+
+411 14 start_generate 0 4 494 23 DCClass::start_generate 0 1 175 255
+/**
+ * Starts the PStats timer going on the "generate" task, that is, marks the
+ * beginning of the process of generating a new object, for the purposes of
+ * timing this process.
+ *
+ * This should balance with a corresponding call to stop_generate().
+ */
+42
+inline void DCClass::start_generate(void);
+
+412 13 stop_generate 0 4 494 22 DCClass::stop_generate 0 1 176 124
+/**
+ * Stops the PStats timer on the "generate" task.  This should balance with a
+ * preceding call to start_generate().
+ */
+41
+inline void DCClass::stop_generate(void);
+
+413 6 output 0 6 494 15 DCClass::output 0 1 177 136
+/**
+ * Write a string representation of this instance to <out>.
+ */
+
+/**
+ * Write a string representation of this instance to <out>.
+ */
+54
+virtual void DCClass::output(std::ostream &out) const;
+
+414 13 has_class_def 0 4 494 22 DCClass::has_class_def 0 1 178 0
+40
+bool DCClass::has_class_def(void) const;
+
+415 13 set_class_def 0 4 494 22 DCClass::set_class_def 0 1 179 0
+49
+void DCClass::set_class_def(PyObject *class_def);
+
+416 13 get_class_def 0 4 494 22 DCClass::get_class_def 0 1 180 0
+45
+PyObject *DCClass::get_class_def(void) const;
+
+417 19 has_owner_class_def 0 4 494 28 DCClass::has_owner_class_def 0 1 181 0
+46
+bool DCClass::has_owner_class_def(void) const;
+
+418 19 set_owner_class_def 0 4 494 28 DCClass::set_owner_class_def 0 1 182 0
+61
+void DCClass::set_owner_class_def(PyObject *owner_class_def);
+
+419 19 get_owner_class_def 0 4 494 28 DCClass::get_owner_class_def 0 1 183 0
+51
+PyObject *DCClass::get_owner_class_def(void) const;
+
+420 14 receive_update 0 4 494 23 DCClass::receive_update 0 1 184 0
+76
+void DCClass::receive_update(PyObject *distobj, DatagramIterator &di) const;
+
+421 33 receive_update_broadcast_required 0 4 494 42 DCClass::receive_update_broadcast_required 0 1 185 0
+95
+void DCClass::receive_update_broadcast_required(PyObject *distobj, DatagramIterator &di) const;
+
+422 39 receive_update_broadcast_required_owner 0 4 494 48 DCClass::receive_update_broadcast_required_owner 0 1 186 0
+101
+void DCClass::receive_update_broadcast_required_owner(PyObject *distobj, DatagramIterator &di) const;
+
+423 27 receive_update_all_required 0 4 494 36 DCClass::receive_update_all_required 0 1 187 0
+89
+void DCClass::receive_update_all_required(PyObject *distobj, DatagramIterator &di) const;
+
+424 20 receive_update_other 0 4 494 29 DCClass::receive_update_other 0 1 188 0
+82
+void DCClass::receive_update_other(PyObject *distobj, DatagramIterator &di) const;
+
+425 13 direct_update 0 4 494 22 DCClass::direct_update 0 2 189 190 0
+215
+void DCClass::direct_update(PyObject *distobj, std::string const &field_name, vector_uchar const &value_blob);
+void DCClass::direct_update(PyObject *distobj, std::string const &field_name, Datagram const &datagram);
+
+426 19 pack_required_field 0 4 494 28 DCClass::pack_required_field 0 2 191 192 0
+201
+bool DCClass::pack_required_field(Datagram &datagram, PyObject *distobj, DCField const *field) const;
+bool DCClass::pack_required_field(DCPacker &packer, PyObject *distobj, DCField const *field) const;
+
+427 20 client_format_update 0 4 494 29 DCClass::client_format_update 0 1 193 0
+109
+Datagram DCClass::client_format_update(std::string const &field_name, DOID_TYPE do_id, PyObject *args) const;
+
+428 16 ai_format_update 0 4 494 25 DCClass::ai_format_update 0 1 194 0
+147
+Datagram DCClass::ai_format_update(std::string const &field_name, DOID_TYPE do_id, CHANNEL_TYPE to_id, CHANNEL_TYPE from_id, PyObject *args) const;
+
+429 25 ai_format_update_msg_type 0 4 494 34 DCClass::ai_format_update_msg_type 0 1 195 0
+170
+Datagram DCClass::ai_format_update_msg_type(std::string const &field_name, DOID_TYPE do_id, CHANNEL_TYPE to_id, CHANNEL_TYPE from_id, int msg_type, PyObject *args) const;
+
+430 18 ai_format_generate 0 4 494 27 DCClass::ai_format_generate 0 1 196 0
+214
+Datagram DCClass::ai_format_generate(PyObject *distobj, DOID_TYPE do_id, ZONEID_TYPE parent_id, ZONEID_TYPE zone_id, CHANNEL_TYPE district_channel_id, CHANNEL_TYPE from_channel_id, PyObject *optional_fields) const;
+
+431 26 client_format_generate_CMU 0 4 494 35 DCClass::client_format_generate_CMU 0 1 197 0
+135
+Datagram DCClass::client_format_generate_CMU(PyObject *distobj, DOID_TYPE do_id, ZONEID_TYPE zone_id, PyObject *optional_fields) const;
+
+432 9 get_class 0 4 495 27 DCClassParameter::get_class 0 1 198 62
+/**
+ * Returns the class object this parameter represents.
+ */
+55
+DCClass const *DCClassParameter::get_class(void) const;
+
+433 17 ~DCClassParameter 0 516 495 35 DCClassParameter::~DCClassParameter 0 0 0
+42
+DCClassParameter::~DCClassParameter(void);
+
+434 6 DCFile 0 260 496 14 DCFile::DCFile 0 2 199 200 10
+/**
+ *
+ */
+70
+DCFile::DCFile(void);
+inline DCFile::DCFile(DCFile const &) = default;
+
+435 7 ~DCFile 0 516 496 15 DCFile::~DCFile 0 0 10
+/**
+ *
+ */
+22
+DCFile::~DCFile(void);
+
+436 5 clear 0 4 496 13 DCFile::clear 0 1 201 106
+/**
+ * Removes all of the classes defined within the DCFile and prepares it for
+ * reading a new file.
+ */
+25
+void DCFile::clear(void);
+
+437 8 read_all 0 4 496 16 DCFile::read_all 0 1 202 146
+/**
+ * This special method reads all of the .dc files named by the "dc-file"
+ * config.prc variable, and loads them into the DCFile namespace.
+ */
+28
+bool DCFile::read_all(void);
+
+438 4 read 0 4 496 12 DCFile::read 0 2 203 204 763
+/**
+ * Opens and reads the indicated .dc file by name.  The distributed classes
+ * defined in the file will be appended to the set of distributed classes
+ * already recorded, if any.
+ *
+ * Returns true if the file is successfully read, false if there was an error
+ * (in which case the file might have been partially read).
+ */
+
+/**
+ * Parses the already-opened input stream for distributed class descriptions.
+ * The filename parameter is optional and is only used when reporting errors.
+ *
+ * The distributed classes defined in the file will be appended to the set of
+ * distributed classes already recorded, if any.
+ *
+ * Returns true if the file is successfully read, false if there was an error
+ * (in which case the file might have been partially read).
+ */
+114
+bool DCFile::read(Filename filename);
+bool DCFile::read(std::istream &in, std::string const &filename = string());
+
+439 5 write 0 4 496 13 DCFile::write 0 2 205 206 396
+/**
+ * Opens the indicated filename for output and writes a parseable description
+ * of all the known distributed classes to the file.
+ *
+ * Returns true if the description is successfully written, false otherwise.
+ */
+
+/**
+ * Writes a parseable description of all the known distributed classes to the
+ * stream.
+ *
+ * Returns true if the description is successfully written, false otherwise.
+ */
+113
+bool DCFile::write(Filename filename, bool brief) const;
+bool DCFile::write(std::ostream &out, bool brief) const;
+
+440 15 get_num_classes 0 4 496 23 DCFile::get_num_classes 0 1 207 67
+/**
+ * Returns the number of classes read from the .dc file(s).
+ */
+40
+int DCFile::get_num_classes(void) const;
+
+441 9 get_class 0 4 496 17 DCFile::get_class 0 1 208 59
+/**
+ * Returns the nth class read from the .dc file(s).
+ */
+40
+DCClass *DCFile::get_class(int n) const;
+
+442 17 get_class_by_name 0 4 496 25 DCFile::get_class_by_name 0 1 209 95
+/**
+ * Returns the class that has the indicated name, or NULL if there is no such
+ * class.
+ */
+66
+DCClass *DCFile::get_class_by_name(std::string const &name) const;
+
+443 18 get_switch_by_name 0 4 496 26 DCFile::get_switch_by_name 0 1 210 97
+/**
+ * Returns the switch that has the indicated name, or NULL if there is no such
+ * switch.
+ */
+68
+DCSwitch *DCFile::get_switch_by_name(std::string const &name) const;
+
+444 18 get_field_by_index 0 4 496 26 DCFile::get_field_by_index 0 1 211 354
+/**
+ * Returns a pointer to the one DCField that has the indicated index number,
+ * of all the DCFields across all classes in the file.
+ *
+ * This method is only valid if dc-multiple-inheritance is set true in the
+ * Config.prc file.  Without this setting, different DCFields may share the
+ * same index number, so this global lookup is not possible.
+ */
+60
+DCField *DCFile::get_field_by_index(int index_number) const;
+
+445 17 all_objects_valid 0 4 496 25 DCFile::all_objects_valid 0 1 212 208
+/**
+ * Returns true if all of the classes read from the DC file were defined and
+ * valid, or false if any of them were undefined ("bogus classes").  If this
+ * is true, we might have read a partial file.
+ */
+50
+inline bool DCFile::all_objects_valid(void) const;
+
+446 22 get_num_import_modules 0 4 496 30 DCFile::get_num_import_modules 0 1 213 72
+/**
+ * Returns the number of import lines read from the .dc file(s).
+ */
+47
+int DCFile::get_num_import_modules(void) const;
+
+447 17 get_import_module 0 4 496 25 DCFile::get_import_module 0 1 214 85
+/**
+ * Returns the module named by the nth import line read from the .dc file(s).
+ */
+51
+std::string DCFile::get_import_module(int n) const;
+
+448 22 get_num_import_symbols 0 4 496 30 DCFile::get_num_import_symbols 0 1 215 217
+/**
+ * Returns the number of symbols explicitly imported by the nth import line.
+ * If this is 0, the line is "import modulename"; if it is more than 0, the
+ * line is "from modulename import symbol, symbol ... ".
+ */
+48
+int DCFile::get_num_import_symbols(int n) const;
+
+449 17 get_import_symbol 0 4 496 25 DCFile::get_import_symbol 0 1 216 92
+/**
+ * Returns the ith symbol named by the nth import line read from the .dc
+ * file(s).
+ */
+58
+std::string DCFile::get_import_symbol(int n, int i) const;
+
+450 16 get_num_typedefs 0 4 496 24 DCFile::get_num_typedefs 0 1 217 68
+/**
+ * Returns the number of typedefs read from the .dc file(s).
+ */
+41
+int DCFile::get_num_typedefs(void) const;
+
+451 11 get_typedef 0 4 496 19 DCFile::get_typedef 0 1 218 61
+/**
+ * Returns the nth typedef read from the .dc file(s).
+ */
+44
+DCTypedef *DCFile::get_typedef(int n) const;
+
+452 19 get_typedef_by_name 0 4 496 27 DCFile::get_typedef_by_name 0 1 219 104
+/**
+ * Returns the typedef that has the indicated name, or NULL if there is no
+ * such typedef name.
+ */
+70
+DCTypedef *DCFile::get_typedef_by_name(std::string const &name) const;
+
+453 16 get_num_keywords 0 4 496 24 DCFile::get_num_keywords 0 1 220 68
+/**
+ * Returns the number of keywords read from the .dc file(s).
+ */
+41
+int DCFile::get_num_keywords(void) const;
+
+454 11 get_keyword 0 4 496 19 DCFile::get_keyword 0 1 221 61
+/**
+ * Returns the nth keyword read from the .dc file(s).
+ */
+50
+DCKeyword const *DCFile::get_keyword(int n) const;
+
+455 19 get_keyword_by_name 0 4 496 27 DCFile::get_keyword_by_name 0 1 222 104
+/**
+ * Returns the keyword that has the indicated name, or NULL if there is no
+ * such keyword name.
+ */
+76
+DCKeyword const *DCFile::get_keyword_by_name(std::string const &name) const;
+
+456 8 get_hash 0 4 496 16 DCFile::get_hash 0 1 223 241
+/**
+ * Returns a 32-bit hash index associated with this file.  This number is
+ * guaranteed to be consistent if the contents of the file have not changed,
+ * and it is very likely to be different if the contents of the file do
+ * change.
+ */
+47
+unsigned long int DCFile::get_hash(void) const;
+
+457 8 get_name 0 4 497 19 DCKeyword::get_name 0 1 224 44
+/**
+ * Returns the name of this keyword.
+ */
+51
+std::string const &DCKeyword::get_name(void) const;
+
+458 15 get_num_atomics 0 4 498 33 DCMolecularField::get_num_atomics 0 1 225 81
+/**
+ * Returns the number of atomic fields that make up this molecular field.
+ */
+50
+int DCMolecularField::get_num_atomics(void) const;
+
+459 10 get_atomic 0 4 498 28 DCMolecularField::get_atomic 0 1 226 178
+/**
+ * Returns the nth atomic field that makes up this molecular field.  This may
+ * or may not be a field of this particular class; it might be defined in a
+ * parent class.
+ */
+57
+DCAtomicField *DCMolecularField::get_atomic(int n) const;
+
+460 17 ~DCMolecularField 0 516 498 35 DCMolecularField::~DCMolecularField 0 0 0
+42
+DCMolecularField::~DCMolecularField(void);
+
+461 8 get_type 0 4 499 27 DCSimpleParameter::get_type 0 1 227 78
+/**
+ * Returns the particular subatomic type represented by this instance.
+ */
+56
+DCSubatomicType DCSimpleParameter::get_type(void) const;
+
+462 11 has_modulus 0 4 499 30 DCSimpleParameter::has_modulus 0 1 228 75
+/**
+ * Returns true if there is a modulus associated, false otherwise.,
+ */
+48
+bool DCSimpleParameter::has_modulus(void) const;
+
+463 11 get_modulus 0 4 499 30 DCSimpleParameter::get_modulus 0 1 229 269
+/**
+ * Returns the modulus associated with this type, if any.  It is an error to
+ * call this if has_modulus() returned false.
+ *
+ * If present, this is the modulus that is used to constrain the numeric value
+ * of the field before it is packed (and range-checked).
+ */
+50
+double DCSimpleParameter::get_modulus(void) const;
+
+464 11 get_divisor 0 4 499 30 DCSimpleParameter::get_divisor 0 1 230 292
+/**
+ * Returns the divisor associated with this type.  This is 1 by default, but
+ * if this is other than one it represents the scale to apply when packing and
+ * unpacking numeric values (to store fixed-point values in an integer field).
+ * It is only meaningful for numeric-type fields.
+ */
+47
+int DCSimpleParameter::get_divisor(void) const;
+
+465 18 ~DCSimpleParameter 0 516 499 37 DCSimpleParameter::~DCSimpleParameter 0 0 0
+44
+DCSimpleParameter::~DCSimpleParameter(void);
+
+466 8 get_name 0 4 500 18 DCSwitch::get_name 0 1 231 43
+/**
+ * Returns the name of this switch.
+ */
+50
+std::string const &DCSwitch::get_name(void) const;
+
+467 17 get_key_parameter 0 4 500 27 DCSwitch::get_key_parameter 0 1 232 189
+/**
+ * Returns the key parameter on which the switch is based.  The value of this
+ * parameter in the record determines which one of the several cases within
+ * the switch will be used.
+ */
+49
+DCField *DCSwitch::get_key_parameter(void) const;
+
+468 13 get_num_cases 0 4 500 23 DCSwitch::get_num_cases 0 1 233 140
+/**
+ * Returns the number of different cases within the switch.  The legal values
+ * for case_index range from 0 to get_num_cases() - 1.
+ */
+40
+int DCSwitch::get_num_cases(void) const;
+
+469 17 get_case_by_value 0 4 500 27 DCSwitch::get_case_by_value 0 1 234 116
+/**
+ * Returns the index number of the case with the indicated packed value, or -1
+ * if no case has this value.
+ */
+70
+int DCSwitch::get_case_by_value(vector_uchar const &case_value) const;
+
+470 8 get_case 0 4 500 18 DCSwitch::get_case 0 1 235 65
+/**
+ * Returns the DCPackerInterface that packs the nth case.
+ */
+51
+DCPackerInterface *DCSwitch::get_case(int n) const;
+
+471 16 get_default_case 0 4 500 26 DCSwitch::get_default_case 0 1 236 109
+/**
+ * Returns the DCPackerInterface that packs the default case, or NULL if there
+ * is no default case.
+ */
+58
+DCPackerInterface *DCSwitch::get_default_case(void) const;
+
+472 9 get_value 0 4 500 19 DCSwitch::get_value 0 1 237 71
+/**
+ * Returns the packed value associated with the indicated case.
+ */
+55
+vector_uchar DCSwitch::get_value(int case_index) const;
+
+473 14 get_num_fields 0 4 500 24 DCSwitch::get_num_fields 0 1 238 62
+/**
+ * Returns the number of fields in the indicated case.
+ */
+51
+int DCSwitch::get_num_fields(int case_index) const;
+
+474 9 get_field 0 4 500 19 DCSwitch::get_field 0 1 239 55
+/**
+ * Returns the nth field in the indicated case.
+ */
+58
+DCField *DCSwitch::get_field(int case_index, int n) const;
+
+475 17 get_field_by_name 0 4 500 27 DCSwitch::get_field_by_name 0 1 240 111
+/**
+ * Returns the field with the given name from the indicated case, or NULL if
+ * no field has this name.
+ */
+84
+DCField *DCSwitch::get_field_by_name(int case_index, std::string const &name) const;
+
+476 10 get_switch 0 4 501 29 DCSwitchParameter::get_switch 0 1 241 63
+/**
+ * Returns the switch object this parameter represents.
+ */
+58
+DCSwitch const *DCSwitchParameter::get_switch(void) const;
+
+477 18 ~DCSwitchParameter 0 516 501 37 DCSwitchParameter::~DCSwitchParameter 0 0 0
+44
+DCSwitchParameter::~DCSwitchParameter(void);
+
+478 10 get_number 0 4 502 21 DCTypedef::get_number 0 1 242 142
+/**
+ * Returns a unique index number associated with this typedef definition.
+ * This is defined implicitly when the .dc file(s) are read.
+ */
+38
+int DCTypedef::get_number(void) const;
+
+479 8 get_name 0 4 502 19 DCTypedef::get_name 0 1 243 44
+/**
+ * Returns the name of this typedef.
+ */
+51
+std::string const &DCTypedef::get_name(void) const;
+
+480 15 get_description 0 4 502 26 DCTypedef::get_description 0 1 244 83
+/**
+ * Returns a brief decription of the typedef, useful for human consumption.
+ */
+51
+std::string DCTypedef::get_description(void) const;
+
+481 16 is_bogus_typedef 0 4 502 27 DCTypedef::is_bogus_typedef 0 1 245 259
+/**
+ * Returns true if the typedef has been flagged as a bogus typedef.  This is
+ * set for typedefs that are generated by the parser as placeholder for
+ * missing typedefs, as when reading a partial file; it should not occur in a
+ * normal valid dc file.
+ */
+45
+bool DCTypedef::is_bogus_typedef(void) const;
+
+482 19 is_implicit_typedef 0 4 502 30 DCTypedef::is_implicit_typedef 0 1 246 157
+/**
+ * Returns true if the typedef has been flagged as an implicit typedef,
+ * meaning it was created for a DCClass that was referenced inline as a type.
+ */
+48
+bool DCTypedef::is_implicit_typedef(void) const;
+
+246
+1 0 0 6 248 505 0 0 83 /**
+ * Returns the name of this field, or empty string if the field is unnamed.
+ */ 1 4 this 3 503  
+2 0 0 6 249 506 0 0 491 /**
+ * Returns the index number to be passed to a future call to DCPacker::seek()
+ * to seek directly to the named field without having to look up the field
+ * name in a table later, or -1 if the named field cannot be found.
+ *
+ * If the named field is nested within a switch or some similar dynamic
+ * structure that reveals different fields based on the contents of the data,
+ * this mechanism cannot be used to pre-fetch the field index number--you must
+ * seek for the field by name.
+ */ 2 4 this 3 503  4 name 1 505  
+3 0 0 6 250 508 0 0 10 /**
+ *
+ */ 1 4 this 3 507  
+4 0 0 6 250 509 0 0 10 /**
+ *
+ */ 1 4 this 3 503  
+5 0 0 6 251 511 0 0 10 /**
+ *
+ */ 1 4 this 3 507  
+6 0 0 6 251 512 0 0 10 /**
+ *
+ */ 1 4 this 3 503  
+7 0 0 6 252 514 0 0 10 /**
+ *
+ */ 1 4 this 3 507  
+8 0 0 6 252 515 0 0 10 /**
+ *
+ */ 1 4 this 3 503  
+9 0 0 6 253 517 0 0 189 /**
+ * Returns true if the other interface is bitwise the same as this one--that
+ * is, a uint32 only matches a uint32, etc.  Names of components, and range
+ * limits, are not compared.
+ */ 2 4 this 3 503  5 other 1 503  
+10 0 0 6 253 517 0 0 362 /**
+ * Returns true if this interface is bitwise the same as the interface
+ * described with the indicated formatted string, e.g.  "(uint8, uint8,
+ * int16)", or false otherwise.
+ *
+ * If DCFile is not NULL, it specifies the DCFile that was previously loaded,
+ * from which some predefined structs and typedefs may be referenced in the
+ * description string.
+ */ 3 4 this 3 503  11 description 1 505  6 dcfile 5 518  
+11 0 0 6 255 517 0 0 85 /**
+ * Returns true if this list includes the indicated keyword, false otherwise.
+ */ 2 4 this 3 519  7 keyword 1 521  
+12 0 0 6 255 517 0 0 85 /**
+ * Returns true if this list includes the indicated keyword, false otherwise.
+ */ 2 4 this 3 519  4 name 1 505  
+13 0 0 6 256 506 0 0 54 /**
+ * Returns the number of keywords in the list.
+ */ 1 4 this 3 519  
+14 0 0 6 257 521 0 0 47 /**
+ * Returns the nth keyword in the list.
+ */ 2 4 this 3 519  1 n 1 506  
+15 0 0 6 258 521 0 0 129 /**
+ * Returns the keyword in the list with the indicated name, or NULL if there
+ * is no keyword in the list with that name.
+ */ 2 4 this 3 519  4 name 1 505  
+16 0 0 6 259 517 0 0 147 /**
+ * Returns true if this list has the same keywords as the other list, false if
+ * some keywords differ.  Order is not considered important.
+ */ 2 4 this 3 519  5 other 1 519  
+17 0 0 6 265 506 0 0 130 /**
+ * Returns a unique index number associated with this field.  This is defined
+ * implicitly when the .dc file(s) are read.
+ */ 1 4 this 3 509  
+18 0 0 6 266 523 0 0 78 /**
+ * Returns the DCClass pointer for the class that contains this field.
+ */ 1 4 this 3 509  
+19 0 0 6 267 508 0 0 10 /**
+ *
+ */ 1 4 this 3 508  
+20 0 0 6 267 509 0 0 10 /**
+ *
+ */ 1 4 this 3 509  
+21 0 0 6 268 524 0 0 143 /**
+ * Returns the same field pointer converted to an atomic field pointer, if
+ * this is in fact an atomic field; otherwise, returns NULL.
+ */ 1 4 this 3 508  
+22 0 0 6 268 525 0 0 143 /**
+ * Returns the same field pointer converted to an atomic field pointer, if
+ * this is in fact an atomic field; otherwise, returns NULL.
+ */ 1 4 this 3 509  
+23 0 0 6 269 527 0 0 147 /**
+ * Returns the same field pointer converted to a molecular field pointer, if
+ * this is in fact a molecular field; otherwise, returns NULL.
+ */ 1 4 this 3 508  
+24 0 0 6 269 528 0 0 147 /**
+ * Returns the same field pointer converted to a molecular field pointer, if
+ * this is in fact a molecular field; otherwise, returns NULL.
+ */ 1 4 this 3 509  
+25 0 0 6 270 530 0 0 10 /**
+ *
+ */ 1 4 this 3 508  
+26 0 0 6 270 531 0 0 10 /**
+ *
+ */ 1 4 this 3 509  
+27 0 0 6 271 505 0 0 175 /**
+ * Given a blob that represents the packed data for this field, returns a
+ * string formatting it for human consumption.  Returns empty string if there
+ * is an error.
+ */ 3 4 this 3 508  11 packed_data 1 533  16 show_field_names 5 517  
+28 0 0 6 272 533 0 0 243 /**
+ * Given a human-formatted string (for instance, as returned by format_data(),
+ * above) that represents the value of this field, parse the string and return
+ * the corresponding packed data.  Returns empty string if there is an error.
+ */ 2 4 this 3 508  16 formatted_string 1 505  
+29 0 0 6 273 517 0 0 221 /**
+ * Verifies that all of the packed values in the field data are within the
+ * specified ranges and that there are no extra bytes on the end of the
+ * record.  Returns true if all fields are valid, false otherwise.
+ */ 2 4 this 3 509  11 packed_data 1 533  
+30 0 0 6 274 517 0 0 110 /**
+ * Returns true if a default value has been explicitly established for this
+ * field, false otherwise.
+ */ 1 4 this 3 509  
+31 0 0 6 275 533 0 0 218 /**
+ * Returns the default value for this field.  If a default value has been
+ * explicitly set (e.g.  has_default_value() returns true), returns that
+ * value; otherwise, returns an implicit default for the field.
+ */ 1 4 this 3 509  
+32 0 0 6 276 517 0 0 251 /**
+ * Returns true if the field has been flagged as a bogus field.  This is set
+ * for fields that are generated by the parser as placeholder for missing
+ * fields, as when reading a partial file; it should not occur in a normal
+ * valid dc file.
+ */ 1 4 this 3 509  
+33 0 0 6 277 517 0 0 86 /**
+ * Returns true if the "required" flag is set for this field, false otherwise.
+ */ 1 4 this 3 509  
+34 0 0 6 278 517 0 0 90 /**
+ * Returns true if the "broadcast" flag is set for this field, false
+ * otherwise.
+ */ 1 4 this 3 509  
+35 0 0 6 279 517 0 0 81 /**
+ * Returns true if the "ram" flag is set for this field, false otherwise.
+ */ 1 4 this 3 509  
+36 0 0 6 280 517 0 0 80 /**
+ * Returns true if the "db" flag is set for this field, false otherwise.
+ */ 1 4 this 3 509  
+37 0 0 6 281 517 0 0 84 /**
+ * Returns true if the "clsend" flag is set for this field, false otherwise.
+ */ 1 4 this 3 509  
+38 0 0 6 282 517 0 0 84 /**
+ * Returns true if the "clrecv" flag is set for this field, false otherwise.
+ */ 1 4 this 3 509  
+39 0 0 6 283 517 0 0 85 /**
+ * Returns true if the "ownsend" flag is set for this field, false otherwise.
+ */ 1 4 this 3 509  
+40 0 0 6 284 517 0 0 85 /**
+ * Returns true if the "ownrecv" flag is set for this field, false otherwise.
+ */ 1 4 this 3 509  
+41 0 0 6 285 517 0 0 84 /**
+ * Returns true if the "airecv" flag is set for this field, false otherwise.
+ */ 1 4 this 3 509  
+42 0 0 4 286 537 0 0 67 /**
+ * Write a string representation of this instance to <out>.
+ */ 2 4 this 3 509  3 out 1 535  
+43 0 0 4 287 537 0 0 67 /**
+ * Write a string representation of this instance to <out>.
+ */ 3 4 this 3 509  3 out 1 535  12 indent_level 1 506  
+44 0 0 38 288 517 0 0 0 3 4 this 3 509  6 packer 1 538  8 sequence 1 539  
+45 0 0 38 289 539 0 0 0 2 4 this 3 509  6 packer 1 538  
+46 0 0 36 290 537 0 0 0 3 4 this 3 509  6 packer 1 538  7 distobj 1 539  
+47 0 0 39 291 546 0 0 0 3 4 this 3 509  5 do_id 1 543  4 args 1 539  
+48 0 0 39 292 546 0 0 0 5 4 this 3 509  5 do_id 1 543  5 to_id 1 547  7 from_id 1 547  4 args 1 539  
+49 0 0 39 293 546 0 0 0 6 4 this 3 509  5 do_id 1 543  5 to_id 1 547  7 from_id 1 547  8 msg_type 1 506  4 args 1 539  
+50 0 0 6 260 507 0 0 0 1 4 this 3 508  
+51 0 0 6 262 550 0 0 0 1 4 this 3 508  
+52 0 0 7 294 551 295 0 10 /**
+ *
+ */ 0 
+53 0 0 15 294 551 295 0 0 1 6 param0 0 552  
+54 0 0 4 296 537 0 0 98 /**
+ * Empties the contents of the data (without necessarily freeing its allocated
+ * memory).
+ */ 1 4 this 3 551  
+55 0 0 6 297 505 0 0 69 /**
+ * Returns the data buffer as a string.  Also see get_data().
+ */ 1 4 this 3 552  
+56 0 0 6 298 554 0 0 151 /**
+ * Returns the current length of the buffer.  This is the number of useful
+ * bytes stored in the buffer, not the amount of memory it takes up.
+ */ 1 4 this 3 552  
+57 0 0 7 299 538 300 0 10 /**
+ *
+ */ 0 
+58 0 0 15 299 538 300 0 0 1 6 param0 0 556  
+59 0 0 4 301 537 0 0 190 /**
+ * Empties the data in the pack buffer and unpack buffer.  This should be
+ * called between calls to begin_pack(), unless you want to concatenate all of
+ * the pack results together.
+ */ 1 4 this 3 538  
+60 0 0 4 302 537 0 0 390 /**
+ * Begins a packing session.  The parameter is the DC object that describes
+ * the packing format; it may be a DCParameter or DCField.
+ *
+ * Unless you call clear_data() between sessions, multiple packing sessions
+ * will be concatenated together into the same buffer.  If you wish to add
+ * bytes to the buffer between packing sessions, use append_data() or
+ * get_write_pointer().
+ */ 2 4 this 3 538  4 root 1 503  
+61 0 0 6 303 517 0 0 138 /**
+ * Finishes a packing session.
+ *
+ * The return value is true on success, or false if there has been some error
+ * during packing.
+ */ 1 4 this 3 538  
+62 0 0 4 304 537 0 0 141 /**
+ * Sets up the unpack_data pointer.  You may call this before calling the
+ * version of begin_unpack() that takes only one parameter.
+ */ 2 4 this 3 538  4 data 1 533  
+63 0 0 4 305 537 0 0 375 /**
+ * Begins an unpacking session.  You must have previously called
+ * set_unpack_data() to specify a buffer to unpack.
+ *
+ * If there was data left in the buffer after a previous begin_unpack() ..
+ * end_unpack() session, the new session will resume from the current point.
+ * This method may be used, therefore, to unpack a sequence of objects from
+ * the same buffer.
+ */ 2 4 this 3 538  4 root 1 503  
+64 0 0 6 306 517 0 0 186 /**
+ * Finishes the unpacking session.
+ *
+ * The return value is true on success, or false if there has been some error
+ * during unpacking (or if all fields have not been unpacked).
+ */ 1 4 this 3 538  
+65 0 0 4 307 537 0 0 562 /**
+ * Begins a repacking session.  You must have previously called
+ * set_unpack_data() to specify a buffer to unpack.
+ *
+ * Unlike begin_pack() or begin_unpack() you may not concatenate the results
+ * of multiple begin_repack() sessions in one buffer.
+ *
+ * Also, unlike in packing or unpacking modes, you may not walk through the
+ * fields from beginning to end, or even pack two consecutive fields at once.
+ * Instead, you must call seek() for each field you wish to modify and pack
+ * only that one field; then call seek() again to modify another field.
+ */ 2 4 this 3 538  4 root 1 503  
+66 0 0 6 308 517 0 0 186 /**
+ * Finishes the repacking session.
+ *
+ * The return value is true on success, or false if there has been some error
+ * during repacking (or if all fields have not been repacked).
+ */ 1 4 this 3 538  
+67 0 0 6 309 517 0 0 339 /**
+ * Seeks to the field indentified by seek_index, which was returned by an
+ * earlier call to DCField::find_seek_index() to get the index of some nested
+ * field.  Also see the version of seek() that accepts a field name.
+ *
+ * Returns true if successful, false if the field is not known (or if the
+ * packer is in an invalid mode).
+ */ 2 4 this 3 538  10 seek_index 1 506  
+68 0 0 6 309 517 0 0 368 /**
+ * Sets the current unpack (or repack) position to the named field.  In unpack
+ * mode, the next call to unpack_*() or push() will begin to read the named
+ * field.  In repack mode, the next call to pack_*() or push() will modify the
+ * named field.
+ *
+ * Returns true if successful, false if the field is not known (or if the
+ * packer is in an invalid mode).
+ */ 2 4 this 3 538  10 field_name 1 505  
+69 0 0 6 310 517 0 0 254 /**
+ * Returns true if the current field has any nested fields (and thus expects a
+ * push() .. pop() interface), or false otherwise.  If this returns true,
+ * get_num_nested_fields() may be called to determine how many nested fields
+ * are expected.
+ */ 1 4 this 3 556  
+70 0 0 6 311 506 0 0 517 /**
+ * Returns the number of nested fields associated with the current field, if
+ * has_nested_fields() returned true.
+ *
+ * The return value may be -1 to indicate that a variable number of nested
+ * fields are accepted by this field type (e.g.  a variable-length array).
+ *
+ * Note that this method is unreliable to determine how many fields you must
+ * traverse before you can call pop(), since particularly in the presence of a
+ * DCSwitch, it may change during traversal.  Use more_nested_fields()
+ * instead.
+ */ 1 4 this 3 556  
+71 0 0 6 312 517 0 0 141 /**
+ * Returns true if there are more nested fields to pack or unpack in the
+ * current push sequence, false if it is time to call pop().
+ */ 1 4 this 3 556  
+72 0 0 6 313 503 0 0 175 /**
+ * Returns the field that we left in our last call to push(): the owner of the
+ * current level of fields.  This may be NULL at the beginning of the pack
+ * operation.
+ */ 1 4 this 3 556  
+73 0 0 6 314 503 0 0 197 /**
+ * Returns the field that will be referenced by the next call to pack_*() or
+ * unpack_*().  This will be NULL if we have unpacked (or packed) all fields,
+ * or if it is time to call pop().
+ */ 1 4 this 3 556  
+74 0 0 6 315 512 0 0 428 /**
+ * Returns a pointer to the last DCSwitch instance that we have passed by and
+ * selected one case of during the pack/unpack process.  Each time we
+ * encounter a new DCSwitch and select a case, this will change state.
+ *
+ * This may be used to detect when a DCSwitch has been selected.  At the
+ * moment this changes state, get_current_parent() will contain the particular
+ * SwitchCase that was selected by the switch.
+ */ 1 4 this 3 556  
+75 0 0 6 316 484 0 0 438 /**
+ * Returns the type of value expected by the current field.  See the
+ * enumerated type definition at the top of DCPackerInterface.h.  If this
+ * returns one of PT_double, PT_int, PT_int64, or PT_string, then you should
+ * call the corresponding pack_double(), pack_int() function (or
+ * unpack_double(), unpack_int(), etc.) to transfer data.  Otherwise, you
+ * should call push() and begin packing or unpacking the nested fields.
+ */ 1 4 this 3 556  
+76 0 0 6 317 505 0 0 154 /**
+ * Returns the name of the current field, if it has a name, or the empty
+ * string if the field does not have a name or there is no current field.
+ */ 1 4 this 3 556  
+77 0 0 4 318 537 0 0 315 /**
+ * Marks the beginning of a nested series of fields.
+ *
+ * This must be called before filling the elements of an array or the
+ * individual fields in a structure field.  It must also be balanced by a
+ * matching pop().
+ *
+ * It is necessary to use push() / pop() only if has_nested_fields() returns
+ * true.
+ */ 1 4 this 3 538  
+78 0 0 4 319 537 0 0 234 /**
+ * Marks the end of a nested series of fields.
+ *
+ * This must be called to match a previous push() only after all the expected
+ * number of nested fields have been packed.  It is an error to call it too
+ * early, or too late.
+ */ 1 4 this 3 538  
+79 0 0 4 320 537 0 0 71 /**
+ * Packs the indicated numeric or string value into the stream.
+ */ 2 4 this 3 538  5 value 1 558  
+80 0 0 4 321 537 0 0 71 /**
+ * Packs the indicated numeric or string value into the stream.
+ */ 2 4 this 3 538  5 value 1 506  
+81 0 0 4 322 537 0 0 71 /**
+ * Packs the indicated numeric or string value into the stream.
+ */ 2 4 this 3 538  5 value 1 545  
+82 0 0 4 323 537 0 0 71 /**
+ * Packs the indicated numeric or string value into the stream.
+ */ 2 4 this 3 538  5 value 1 559  
+83 0 0 4 324 537 0 0 71 /**
+ * Packs the indicated numeric or string value into the stream.
+ */ 2 4 this 3 538  5 value 1 548  
+84 0 0 4 325 537 0 0 71 /**
+ * Packs the indicated numeric or string value into the stream.
+ */ 2 4 this 3 538  5 value 1 505  
+85 0 0 4 326 537 0 0 71 /**
+ * Packs the indicated numeric or string value into the stream.
+ */ 2 4 this 3 538  5 value 1 533  
+86 0 0 4 327 537 0 0 155 /**
+ * Adds the indicated string value into the stream, representing a single pre-
+ * packed field element, or a whole group of field elements at once.
+ */ 2 4 this 3 538  5 value 1 533  
+87 0 0 4 328 537 0 0 158 /**
+ * Adds the default value for the current element into the stream.  If no
+ * default has been set for the current element, creates a sensible default.
+ */ 1 4 this 3 538  
+88 0 0 6 329 558 0 0 71 /**
+ * Unpacks the current numeric or string value from the stream.
+ */ 1 4 this 3 538  
+89 0 0 6 330 506 0 0 71 /**
+ * Unpacks the current numeric or string value from the stream.
+ */ 1 4 this 3 538  
+90 0 0 6 331 545 0 0 71 /**
+ * Unpacks the current numeric or string value from the stream.
+ */ 1 4 this 3 538  
+91 0 0 6 332 559 0 0 71 /**
+ * Unpacks the current numeric or string value from the stream.
+ */ 1 4 this 3 538  
+92 0 0 6 333 548 0 0 71 /**
+ * Unpacks the current numeric or string value from the stream.
+ */ 1 4 this 3 538  
+93 0 0 6 334 505 0 0 71 /**
+ * Unpacks the current numeric or string value from the stream.
+ */ 1 4 this 3 538  
+94 0 0 6 335 533 0 0 65 /**
+ * Unpacks the current binary data value from the stream.
+ */ 1 4 this 3 538  
+95 0 0 6 336 533 0 0 127 /**
+ * Returns the literal string that represents the packed value of the current
+ * field, and advances the field pointer.
+ */ 1 4 this 3 538  
+96 0 0 4 337 537 0 0 219 /**
+ * Internally unpacks the current numeric or string value and validates it
+ * against the type range limits, but does not return the value.  If the
+ * current field contains nested fields, validates all of them.
+ */ 1 4 this 3 538  
+97 0 0 4 338 537 0 0 155 /**
+ * Skips the current field without unpacking it and advances to the next
+ * field.  If the current field contains nested fields, skips all of them.
+ */ 1 4 this 3 538  
+98 0 0 36 339 537 0 0 0 2 4 this 3 538  6 object 1 539  
+99 0 0 38 340 539 0 0 0 1 4 this 3 538  
+100 0 0 6 341 517 0 0 171 /**
+ * Parses an object's value according to the DC file syntax (e.g.  as a
+ * default value string) and packs it.  Returns true on success, false on a
+ * parse error.
+ */ 2 4 this 3 538  2 in 1 561  
+101 0 0 6 341 517 0 0 171 /**
+ * Parses an object's value according to the DC file syntax (e.g.  as a
+ * default value string) and packs it.  Returns true on success, false on a
+ * parse error.
+ */ 2 4 this 3 538  16 formatted_object 1 505  
+102 0 0 6 342 505 0 0 163 /**
+ * Unpacks an object and formats its value into a syntax suitable for parsing
+ * in the dc file (e.g.  as a default value), or as an input to parse_object.
+ */ 2 4 this 3 538  16 show_field_names 5 517  
+103 0 0 4 342 537 0 0 163 /**
+ * Unpacks an object and formats its value into a syntax suitable for parsing
+ * in the dc file (e.g.  as a default value), or as an input to parse_object.
+ */ 3 4 this 3 538  3 out 1 535  16 show_field_names 5 517  
+104 0 0 6 343 517 0 0 149 /**
+ * Returns true if there has been an parse error since the most recent call to
+ * begin(); this can only happen if you call parse_and_pack().
+ */ 1 4 this 3 556  
+105 0 0 6 344 517 0 0 471 /**
+ * Returns true if there has been an packing error since the most recent call
+ * to begin(); in particular, this may be called after end() has returned
+ * false to determine the nature of the failure.
+ *
+ * A return value of true indicates there was a push/pop mismatch, or the
+ * push/pop structure did not match the data structure, or there were the
+ * wrong number of elements in a nested push/pop structure, or on unpack that
+ * the data stream was truncated.
+ */ 1 4 this 3 556  
+106 0 0 6 345 517 0 0 400 /**
+ * Returns true if there has been an range validation error since the most
+ * recent call to begin(); in particular, this may be called after end() has
+ * returned false to determine the nature of the failure.
+ *
+ * A return value of true indicates a value that was packed or unpacked did
+ * not fit within the specified legal range for a parameter, or within the
+ * limits of the field size.
+ */ 1 4 this 3 556  
+107 0 0 6 346 517 0 0 222 /**
+ * Returns true if there has been any error (either a pack error or a range
+ * error) since the most recent call to begin().  If this returns true, then
+ * the matching call to end() will indicate an error (false).
+ */ 1 4 this 3 556  
+108 0 0 6 347 554 0 0 290 /**
+ * Returns the number of bytes that have been unpacked so far, or after
+ * unpack_end(), the total number of bytes that were unpacked at all.  This
+ * can be used to validate that all of the bytes in the buffer were actually
+ * unpacked (which is not otherwise considered an error).
+ */ 1 4 this 3 556  
+109 0 0 6 348 554 0 0 151 /**
+ * Returns the current length of the buffer.  This is the number of useful
+ * bytes stored in the buffer, not the amount of memory it takes up.
+ */ 1 4 this 3 556  
+110 0 0 6 349 505 0 0 76 /**
+ * Returns the packed data buffer as a string.  Also see get_data().
+ */ 1 4 this 3 556  
+111 0 0 6 350 533 0 0 82 /**
+ * Returns the packed data buffer as a bytes object.  Also see get_data().
+ */ 1 4 this 3 556  
+112 0 0 6 351 554 0 0 210 /**
+ * Returns the total number of bytes in the unpack data buffer.  This is the
+ * buffer used when unpacking; it is separate from the pack data returned by
+ * get_length(), which is filled during packing.
+ */ 1 4 this 3 556  
+113 0 0 6 352 505 0 0 223 /**
+ * Returns the unpack data buffer, as a string.  This is the buffer used when
+ * unpacking; it is separate from the pack data returned by get_string(),
+ * which is filled during packing.  Also see get_unpack_data().
+ */ 1 4 this 3 556  
+114 0 0 6 353 506 0 0 221 /**
+ * Returns the number of DCPacker::StackElement pointers ever simultaneously
+ * allocated; these are now either in active use or have been recycled into
+ * the deleted DCPacker::StackElement pool to be used again.
+ */ 0 
+115 0 0 4 354 537 0 0 67 /**
+ * Packs the data into the buffer between packing sessions.
+ */ 2 4 this 3 538  5 value 1 506  
+116 0 0 4 355 537 0 0 67 /**
+ * Packs the data into the buffer between packing sessions.
+ */ 2 4 this 3 538  5 value 1 506  
+117 0 0 4 356 537 0 0 67 /**
+ * Packs the data into the buffer between packing sessions.
+ */ 2 4 this 3 538  5 value 1 506  
+118 0 0 4 357 537 0 0 67 /**
+ * Packs the data into the buffer between packing sessions.
+ */ 2 4 this 3 538  5 value 1 559  
+119 0 0 4 358 537 0 0 67 /**
+ * Packs the data into the buffer between packing sessions.
+ */ 2 4 this 3 538  5 value 1 545  
+120 0 0 4 359 537 0 0 67 /**
+ * Packs the data into the buffer between packing sessions.
+ */ 2 4 this 3 538  5 value 1 545  
+121 0 0 4 360 537 0 0 67 /**
+ * Packs the data into the buffer between packing sessions.
+ */ 2 4 this 3 538  5 value 1 545  
+122 0 0 4 361 537 0 0 67 /**
+ * Packs the data into the buffer between packing sessions.
+ */ 2 4 this 3 538  5 value 1 548  
+123 0 0 4 362 537 0 0 67 /**
+ * Packs the data into the buffer between packing sessions.
+ */ 2 4 this 3 538  5 value 1 558  
+124 0 0 4 363 537 0 0 67 /**
+ * Packs the data into the buffer between packing sessions.
+ */ 2 4 this 3 538  5 value 1 505  
+125 0 0 4 364 537 0 0 67 /**
+ * Packs the data into the buffer between packing sessions.
+ */ 2 4 this 3 538  5 value 1 533  
+126 0 0 6 365 506 0 0 71 /**
+ * Unpacks the data from the buffer between unpacking sessions.
+ */ 1 4 this 3 538  
+127 0 0 6 366 506 0 0 71 /**
+ * Unpacks the data from the buffer between unpacking sessions.
+ */ 1 4 this 3 538  
+128 0 0 6 367 506 0 0 71 /**
+ * Unpacks the data from the buffer between unpacking sessions.
+ */ 1 4 this 3 538  
+129 0 0 6 368 559 0 0 71 /**
+ * Unpacks the data from the buffer between unpacking sessions.
+ */ 1 4 this 3 538  
+130 0 0 6 369 545 0 0 71 /**
+ * Unpacks the data from the buffer between unpacking sessions.
+ */ 1 4 this 3 538  
+131 0 0 6 370 545 0 0 71 /**
+ * Unpacks the data from the buffer between unpacking sessions.
+ */ 1 4 this 3 538  
+132 0 0 6 371 545 0 0 71 /**
+ * Unpacks the data from the buffer between unpacking sessions.
+ */ 1 4 this 3 538  
+133 0 0 6 372 548 0 0 71 /**
+ * Unpacks the data from the buffer between unpacking sessions.
+ */ 1 4 this 3 538  
+134 0 0 6 373 558 0 0 71 /**
+ * Unpacks the data from the buffer between unpacking sessions.
+ */ 1 4 this 3 538  
+135 0 0 6 374 505 0 0 71 /**
+ * Unpacks the data from the buffer between unpacking sessions.
+ */ 1 4 this 3 538  
+136 0 0 6 375 533 0 0 71 /**
+ * Unpacks the data from the buffer between unpacking sessions.
+ */ 1 4 this 3 538  
+137 0 0 6 376 563 0 0 10 /**
+ *
+ */ 1 4 this 3 530  
+138 0 0 6 376 564 0 0 10 /**
+ *
+ */ 1 4 this 3 531  
+139 0 0 6 377 566 0 0 10 /**
+ *
+ */ 1 4 this 3 530  
+140 0 0 6 377 567 0 0 10 /**
+ *
+ */ 1 4 this 3 531  
+141 0 0 6 378 530 0 0 0 1 4 this 3 531  
+142 0 0 6 379 517 0 0 0 1 4 this 3 531  
+143 0 0 6 380 569 0 0 139 /**
+ * If this type has been referenced from a typedef, returns the DCTypedef
+ * instance, or NULL if the type was declared on-the-fly.
+ */ 1 4 this 3 531  
+144 0 0 6 381 530 0 0 69 /**
+ * Returns the type of the individual elements of this array.
+ */ 1 4 this 3 567  
+145 0 0 6 382 506 0 0 127 /**
+ * Returns the fixed number of elements in this array, or -1 if the array may
+ * contain a variable number of elements.
+ */ 1 4 this 3 567  
+146 0 0 6 383 506 0 0 75 /**
+ * Returns the number of elements (parameters) of the atomic field.
+ */ 1 4 this 3 525  
+147 0 0 6 384 530 0 0 67 /**
+ * Returns the parameter object describing the nth element.
+ */ 2 4 this 3 525  1 n 1 506  
+148 0 0 6 385 533 0 0 441 /**
+ * Returns the pre-formatted default value associated with the nth element of
+ * the field.  This is only valid if has_element_default() returns true, in
+ * which case this string represents the bytes that should be assigned to the
+ * field as a default value.
+ *
+ * If the element is an array-type element, the returned value will include
+ * the two-byte length preceding the array data.
+ *
+ * @deprecated use get_element() instead.
+ */ 2 4 this 3 525  1 n 1 506  
+149 0 0 6 386 517 0 0 151 /**
+ * Returns true if the nth element of the field has a default value specified,
+ * false otherwise.
+ *
+ * @deprecated use get_element() instead.
+ */ 2 4 this 3 525  1 n 1 506  
+150 0 0 6 387 505 0 0 272 /**
+ * Returns the name of the nth element of the field.  This name is strictly
+ * for documentary purposes; it does not generally affect operation.  If a
+ * name is not specified, this will be the empty string.
+ *
+ * @deprecated use get_element()->get_name() instead.
+ */ 2 4 this 3 525  1 n 1 506  
+151 0 0 6 388 483 0 0 126 /**
+ * Returns the numeric type of the nth element of the field.  This method is
+ * deprecated; use get_element() instead.
+ */ 2 4 this 3 525  1 n 1 506  
+152 0 0 6 389 506 0 0 340 /**
+ * Returns the divisor associated with the nth element of the field.  This
+ * implements an implicit fixed-point system; floating-point values are to be
+ * multiplied by this value before encoding into a packet, and divided by this
+ * number after decoding.
+ *
+ * This method is deprecated; use get_element()->get_divisor() instead.
+ */ 2 4 this 3 525  1 n 1 506  
+153 0 0 6 391 523 0 0 10 /**
+ *
+ */ 1 4 this 3 571  
+154 0 0 6 391 574 0 0 10 /**
+ *
+ */ 1 4 this 3 572  
+155 0 0 6 392 576 0 0 10 /**
+ *
+ */ 1 4 this 3 571  
+156 0 0 6 392 577 0 0 10 /**
+ *
+ */ 1 4 this 3 572  
+157 0 0 4 393 537 0 0 67 /**
+ * Write a string representation of this instance to <out>.
+ */ 2 4 this 3 572  3 out 1 535  
+158 0 0 4 394 537 0 0 67 /**
+ * Write a string representation of this instance to <out>.
+ */ 3 4 this 3 572  3 out 1 535  12 indent_level 1 506  
+159 0 0 6 395 518 0 0 61 /**
+ * Returns the DCFile object that contains the class.
+ */ 1 4 this 3 574  
+160 0 0 6 396 505 0 0 42 /**
+ * Returns the name of this class.
+ */ 1 4 this 3 574  
+161 0 0 6 397 506 0 0 130 /**
+ * Returns a unique index number associated with this class.  This is defined
+ * implicitly when the .dc file(s) are read.
+ */ 1 4 this 3 574  
+162 0 0 6 398 506 0 0 71 /**
+ * Returns the number of base classes this class inherits from.
+ */ 1 4 this 3 574  
+163 0 0 6 399 523 0 0 65 /**
+ * Returns the nth parent class this class inherits from.
+ */ 2 4 this 3 574  1 n 1 506  
+164 0 0 6 400 517 0 0 113 /**
+ * Returns true if this class has a constructor method, false if it just uses
+ * the default constructor.
+ */ 1 4 this 3 574  
+165 0 0 6 401 508 0 0 128 /**
+ * Returns the constructor method for this class if it is defined, or NULL if
+ * the class uses the default constructor.
+ */ 1 4 this 3 574  
+166 0 0 6 402 506 0 0 96 /**
+ * Returns the number of fields defined directly in this class, ignoring
+ * inheritance.
+ */ 1 4 this 3 574  
+167 0 0 6 403 508 0 0 176 /**
+ * Returns the nth field in the class.  This is not necessarily the field with
+ * index n; this is the nth field defined in the class directly, ignoring
+ * inheritance.
+ */ 2 4 this 3 574  1 n 1 506  
+168 0 0 6 404 508 0 0 294 /**
+ * Returns a pointer to the DCField that shares the indicated name.  If the
+ * named field is not found in the current class, the parent classes will be
+ * searched, so the value returned may not actually be a field within this
+ * class.  Returns NULL if there is no such field defined.
+ */ 2 4 this 3 574  4 name 1 505  
+169 0 0 6 405 508 0 0 302 /**
+ * Returns a pointer to the DCField that has the indicated index number.  If
+ * the numbered field is not found in the current class, the parent classes
+ * will be searched, so the value returned may not actually be a field within
+ * this class.  Returns NULL if there is no such field defined.
+ */ 2 4 this 3 574  12 index_number 1 506  
+170 0 0 6 406 506 0 0 102 /**
+ * Returns the total number of field fields defined in this class and all
+ * ancestor classes.
+ */ 1 4 this 3 574  
+171 0 0 6 407 508 0 0 315 /**
+ * Returns the nth field field in the class and all of its ancestors.
+ *
+ * This *used* to be the same thing as get_field_by_index(), back when the
+ * fields were numbered sequentially within a class's inheritance hierarchy.
+ * Now that fields have a globally unique index number, this is no longer
+ * true.
+ */ 2 4 this 3 574  1 n 1 506  
+172 0 0 6 408 517 0 0 141 /**
+ * Returns true if the class has been identified with the "struct" keyword in
+ * the dc file, false if it was declared with "dclass".
+ */ 1 4 this 3 574  
+173 0 0 6 409 517 0 0 253 /**
+ * Returns true if the class has been flagged as a bogus class.  This is set
+ * for classes that are generated by the parser as placeholder for missing
+ * classes, as when reading a partial file; it should not occur in a normal
+ * valid dc file.
+ */ 1 4 this 3 574  
+174 0 0 6 410 517 0 0 172 /**
+ * Returns true if this class, or any class in the inheritance heirarchy for
+ * this class, is a "bogus" class--a forward reference to an as-yet-undefined
+ * class.
+ */ 1 4 this 3 574  
+175 0 0 4 411 537 0 0 255 /**
+ * Starts the PStats timer going on the "generate" task, that is, marks the
+ * beginning of the process of generating a new object, for the purposes of
+ * timing this process.
+ *
+ * This should balance with a corresponding call to stop_generate().
+ */ 1 4 this 3 523  
+176 0 0 4 412 537 0 0 124 /**
+ * Stops the PStats timer on the "generate" task.  This should balance with a
+ * preceding call to start_generate().
+ */ 1 4 this 3 523  
+177 0 0 4 413 537 0 0 67 /**
+ * Write a string representation of this instance to <out>.
+ */ 2 4 this 3 574  3 out 1 535  
+178 0 0 38 414 517 0 0 0 1 4 this 3 574  
+179 0 0 36 415 537 0 0 0 2 4 this 3 523  9 class_def 1 539  
+180 0 0 38 416 539 0 0 0 1 4 this 3 574  
+181 0 0 38 417 517 0 0 0 1 4 this 3 574  
+182 0 0 36 418 537 0 0 0 2 4 this 3 523  15 owner_class_def 1 539  
+183 0 0 38 419 539 0 0 0 1 4 this 3 574  
+184 0 0 36 420 537 0 0 0 3 4 this 3 574  7 distobj 1 539  2 di 1 579  
+185 0 0 36 421 537 0 0 0 3 4 this 3 574  7 distobj 1 539  2 di 1 579  
+186 0 0 36 422 537 0 0 0 3 4 this 3 574  7 distobj 1 539  2 di 1 579  
+187 0 0 36 423 537 0 0 0 3 4 this 3 574  7 distobj 1 539  2 di 1 579  
+188 0 0 36 424 537 0 0 0 3 4 this 3 574  7 distobj 1 539  2 di 1 579  
+189 0 0 36 425 537 0 0 0 4 4 this 3 523  7 distobj 1 539  10 field_name 1 505  8 datagram 1 581  
+190 0 0 36 425 537 0 0 0 4 4 this 3 523  7 distobj 1 539  10 field_name 1 505  10 value_blob 1 533  
+191 0 0 38 426 517 0 0 0 4 4 this 3 574  6 packer 1 538  7 distobj 1 539  5 field 1 509  
+192 0 0 38 426 517 0 0 0 4 4 this 3 574  8 datagram 1 546  7 distobj 1 539  5 field 1 509  
+193 0 0 39 427 546 0 0 0 4 4 this 3 574  10 field_name 1 505  5 do_id 1 543  4 args 1 539  
+194 0 0 39 428 546 0 0 0 6 4 this 3 574  10 field_name 1 505  5 do_id 1 543  5 to_id 1 547  7 from_id 1 547  4 args 1 539  
+195 0 0 39 429 546 0 0 0 7 4 this 3 574  10 field_name 1 505  5 do_id 1 543  5 to_id 1 547  7 from_id 1 547  8 msg_type 1 506  4 args 1 539  
+196 0 0 39 430 546 0 0 0 8 4 this 3 574  7 distobj 1 539  5 do_id 1 543  9 parent_id 1 583  7 zone_id 1 583  19 district_channel_id 1 547  15 from_channel_id 1 547  15 optional_fields 1 539  
+197 0 0 39 431 546 0 0 0 5 4 this 3 574  7 distobj 1 539  5 do_id 1 543  7 zone_id 1 583  15 optional_fields 1 539  
+198 0 0 6 432 574 0 0 62 /**
+ * Returns the class object this parameter represents.
+ */ 1 4 this 3 515  
+199 0 0 7 434 518 435 0 10 /**
+ *
+ */ 0 
+200 0 0 15 434 518 435 0 0 1 6 param0 0 584  
+201 0 0 4 436 537 0 0 106 /**
+ * Removes all of the classes defined within the DCFile and prepares it for
+ * reading a new file.
+ */ 1 4 this 3 518  
+202 0 0 6 437 517 0 0 146 /**
+ * This special method reads all of the .dc files named by the "dc-file"
+ * config.prc variable, and loads them into the DCFile namespace.
+ */ 1 4 this 3 518  
+203 0 0 6 438 517 0 0 327 /**
+ * Opens and reads the indicated .dc file by name.  The distributed classes
+ * defined in the file will be appended to the set of distributed classes
+ * already recorded, if any.
+ *
+ * Returns true if the file is successfully read, false if there was an error
+ * (in which case the file might have been partially read).
+ */ 2 4 this 3 518  8 filename 1 586  
+204 0 0 6 438 517 0 0 434 /**
+ * Parses the already-opened input stream for distributed class descriptions.
+ * The filename parameter is optional and is only used when reporting errors.
+ *
+ * The distributed classes defined in the file will be appended to the set of
+ * distributed classes already recorded, if any.
+ *
+ * Returns true if the file is successfully read, false if there was an error
+ * (in which case the file might have been partially read).
+ */ 3 4 this 3 518  2 in 1 561  8 filename 5 505  
+205 0 0 6 439 517 0 0 218 /**
+ * Opens the indicated filename for output and writes a parseable description
+ * of all the known distributed classes to the file.
+ *
+ * Returns true if the description is successfully written, false otherwise.
+ */ 3 4 this 3 584  8 filename 1 586  5 brief 1 517  
+206 0 0 6 439 517 0 0 176 /**
+ * Writes a parseable description of all the known distributed classes to the
+ * stream.
+ *
+ * Returns true if the description is successfully written, false otherwise.
+ */ 3 4 this 3 584  3 out 1 535  5 brief 1 517  
+207 0 0 6 440 506 0 0 67 /**
+ * Returns the number of classes read from the .dc file(s).
+ */ 1 4 this 3 584  
+208 0 0 6 441 523 0 0 59 /**
+ * Returns the nth class read from the .dc file(s).
+ */ 2 4 this 3 584  1 n 1 506  
+209 0 0 6 442 523 0 0 95 /**
+ * Returns the class that has the indicated name, or NULL if there is no such
+ * class.
+ */ 2 4 this 3 584  4 name 1 505  
+210 0 0 6 443 576 0 0 97 /**
+ * Returns the switch that has the indicated name, or NULL if there is no such
+ * switch.
+ */ 2 4 this 3 584  4 name 1 505  
+211 0 0 6 444 508 0 0 354 /**
+ * Returns a pointer to the one DCField that has the indicated index number,
+ * of all the DCFields across all classes in the file.
+ *
+ * This method is only valid if dc-multiple-inheritance is set true in the
+ * Config.prc file.  Without this setting, different DCFields may share the
+ * same index number, so this global lookup is not possible.
+ */ 2 4 this 3 584  12 index_number 1 506  
+212 0 0 6 445 517 0 0 208 /**
+ * Returns true if all of the classes read from the DC file were defined and
+ * valid, or false if any of them were undefined ("bogus classes").  If this
+ * is true, we might have read a partial file.
+ */ 1 4 this 3 584  
+213 0 0 6 446 506 0 0 72 /**
+ * Returns the number of import lines read from the .dc file(s).
+ */ 1 4 this 3 584  
+214 0 0 6 447 505 0 0 85 /**
+ * Returns the module named by the nth import line read from the .dc file(s).
+ */ 2 4 this 3 584  1 n 1 506  
+215 0 0 6 448 506 0 0 217 /**
+ * Returns the number of symbols explicitly imported by the nth import line.
+ * If this is 0, the line is "import modulename"; if it is more than 0, the
+ * line is "from modulename import symbol, symbol ... ".
+ */ 2 4 this 3 584  1 n 1 506  
+216 0 0 6 449 505 0 0 92 /**
+ * Returns the ith symbol named by the nth import line read from the .dc
+ * file(s).
+ */ 3 4 this 3 584  1 n 1 506  1 i 1 506  
+217 0 0 6 450 506 0 0 68 /**
+ * Returns the number of typedefs read from the .dc file(s).
+ */ 1 4 this 3 584  
+218 0 0 6 451 588 0 0 61 /**
+ * Returns the nth typedef read from the .dc file(s).
+ */ 2 4 this 3 584  1 n 1 506  
+219 0 0 6 452 588 0 0 104 /**
+ * Returns the typedef that has the indicated name, or NULL if there is no
+ * such typedef name.
+ */ 2 4 this 3 584  4 name 1 505  
+220 0 0 6 453 506 0 0 68 /**
+ * Returns the number of keywords read from the .dc file(s).
+ */ 1 4 this 3 584  
+221 0 0 6 454 521 0 0 61 /**
+ * Returns the nth keyword read from the .dc file(s).
+ */ 2 4 this 3 584  1 n 1 506  
+222 0 0 6 455 521 0 0 104 /**
+ * Returns the keyword that has the indicated name, or NULL if there is no
+ * such keyword name.
+ */ 2 4 this 3 584  4 name 1 505  
+223 0 0 6 456 555 0 0 241 /**
+ * Returns a 32-bit hash index associated with this file.  This number is
+ * guaranteed to be consistent if the contents of the file have not changed,
+ * and it is very likely to be different if the contents of the file do
+ * change.
+ */ 1 4 this 3 584  
+224 0 0 6 457 505 0 0 44 /**
+ * Returns the name of this keyword.
+ */ 1 4 this 3 521  
+225 0 0 6 458 506 0 0 81 /**
+ * Returns the number of atomic fields that make up this molecular field.
+ */ 1 4 this 3 528  
+226 0 0 6 459 524 0 0 178 /**
+ * Returns the nth atomic field that makes up this molecular field.  This may
+ * or may not be a field of this particular class; it might be defined in a
+ * parent class.
+ */ 2 4 this 3 528  1 n 1 506  
+227 0 0 6 461 483 0 0 78 /**
+ * Returns the particular subatomic type represented by this instance.
+ */ 1 4 this 3 564  
+228 0 0 6 462 517 0 0 75 /**
+ * Returns true if there is a modulus associated, false otherwise.,
+ */ 1 4 this 3 564  
+229 0 0 6 463 558 0 0 269 /**
+ * Returns the modulus associated with this type, if any.  It is an error to
+ * call this if has_modulus() returned false.
+ *
+ * If present, this is the modulus that is used to constrain the numeric value
+ * of the field before it is packed (and range-checked).
+ */ 1 4 this 3 564  
+230 0 0 6 464 506 0 0 292 /**
+ * Returns the divisor associated with this type.  This is 1 by default, but
+ * if this is other than one it represents the scale to apply when packing and
+ * unpacking numeric values (to store fixed-point values in an integer field).
+ * It is only meaningful for numeric-type fields.
+ */ 1 4 this 3 564  
+231 0 0 6 466 505 0 0 43 /**
+ * Returns the name of this switch.
+ */ 1 4 this 3 577  
+232 0 0 6 467 508 0 0 189 /**
+ * Returns the key parameter on which the switch is based.  The value of this
+ * parameter in the record determines which one of the several cases within
+ * the switch will be used.
+ */ 1 4 this 3 577  
+233 0 0 6 468 506 0 0 140 /**
+ * Returns the number of different cases within the switch.  The legal values
+ * for case_index range from 0 to get_num_cases() - 1.
+ */ 1 4 this 3 577  
+234 0 0 6 469 506 0 0 116 /**
+ * Returns the index number of the case with the indicated packed value, or -1
+ * if no case has this value.
+ */ 2 4 this 3 577  10 case_value 1 533  
+235 0 0 6 470 507 0 0 65 /**
+ * Returns the DCPackerInterface that packs the nth case.
+ */ 2 4 this 3 577  1 n 1 506  
+236 0 0 6 471 507 0 0 109 /**
+ * Returns the DCPackerInterface that packs the default case, or NULL if there
+ * is no default case.
+ */ 1 4 this 3 577  
+237 0 0 6 472 533 0 0 71 /**
+ * Returns the packed value associated with the indicated case.
+ */ 2 4 this 3 577  10 case_index 1 506  
+238 0 0 6 473 506 0 0 62 /**
+ * Returns the number of fields in the indicated case.
+ */ 2 4 this 3 577  10 case_index 1 506  
+239 0 0 6 474 508 0 0 55 /**
+ * Returns the nth field in the indicated case.
+ */ 3 4 this 3 577  10 case_index 1 506  1 n 1 506  
+240 0 0 6 475 508 0 0 111 /**
+ * Returns the field with the given name from the indicated case, or NULL if
+ * no field has this name.
+ */ 3 4 this 3 577  10 case_index 1 506  4 name 1 505  
+241 0 0 6 476 577 0 0 63 /**
+ * Returns the switch object this parameter represents.
+ */ 1 4 this 3 512  
+242 0 0 6 478 506 0 0 142 /**
+ * Returns a unique index number associated with this typedef definition.
+ * This is defined implicitly when the .dc file(s) are read.
+ */ 1 4 this 3 569  
+243 0 0 6 479 505 0 0 44 /**
+ * Returns the name of this typedef.
+ */ 1 4 this 3 569  
+244 0 0 6 480 505 0 0 83 /**
+ * Returns a brief decription of the typedef, useful for human consumption.
+ */ 1 4 this 3 569  
+245 0 0 6 481 517 0 0 259 /**
+ * Returns true if the typedef has been flagged as a bogus typedef.  This is
+ * set for typedefs that are generated by the parser as placeholder for
+ * missing typedefs, as when reading a partial file; it should not occur in a
+ * normal valid dc file.
+ */ 1 4 this 3 569  
+246 0 0 6 482 517 0 0 157 /**
+ * Returns true if the typedef has been flagged as an implicit typedef,
+ * meaning it was created for a DCClass that was referenced inline as a type.
+ */ 1 4 this 3 569  
+106
+483 15 DCSubatomicType 0 532481 15 DCSubatomicType 15 DCSubatomicType 0 0 0 0 0 0 0 0 0 0 21 7 ST_int8 7 ST_int8 0
+0 8 ST_int16 8 ST_int16 0
+1 8 ST_int32 8 ST_int32 0
+2 8 ST_int64 8 ST_int64 0
+3 8 ST_uint8 8 ST_uint8 0
+4 9 ST_uint16 9 ST_uint16 0
+5 9 ST_uint32 9 ST_uint32 0
+6 9 ST_uint64 9 ST_uint64 0
+7 10 ST_float64 10 ST_float64 0
+8 9 ST_string 9 ST_string 27
+// a human-printable string
+9 7 ST_blob 7 ST_blob 50
+// any variable length message, stored as a string
+10 9 ST_blob32 9 ST_blob32 49
+// a blob with a 32-bit length, up to 4.2 GB long
+11 13 ST_int16array 13 ST_int16array 0
+12 13 ST_int32array 13 ST_int32array 0
+13 14 ST_uint16array 14 ST_uint16array 0
+14 14 ST_uint32array 14 ST_uint32array 0
+15 12 ST_int8array 12 ST_int8array 0
+16 13 ST_uint8array 13 ST_uint8array 0
+17 19 ST_uint32uint8array 19 ST_uint32uint8array 121
+// A special-purpose array: a list of alternating uint32 and uint8 values.
+// In Python, this becomes a list of 2-tuples.
+18 7 ST_char 7 ST_char 73
+// Equivalent to uint8, except that it suggests a pack_type of PT_string.
+19 10 ST_invalid 10 ST_invalid 0
+20 0 188
+/**
+ * This defines the numeric type of each element of a DCAtomicField; that is,
+ * the particular values that will get added to the message when the atomic
+ * field method is called.
+ */
+
+484 10 DCPackType 0 532481 10 DCPackType 10 DCPackType 0 0 0 0 0 0 0 0 0 0 12 10 PT_invalid 10 PT_invalid 59
+// This one should never be returned in a normal situation.
+0 9 PT_double 9 PT_double 259
+// These PackTypes are all fundamental types, and should be packed (or
+// unpacked) with the corresponding call to pack_double(), pack_int(), etc.
+// PT_blob is similar to PT_string, except that it contains arbitrary binary
+// data instead of just UTF-8 text.
+1 6 PT_int 6 PT_int 0
+2 7 PT_uint 7 PT_uint 0
+3 8 PT_int64 8 PT_int64 0
+4 9 PT_uint64 9 PT_uint64 0
+5 9 PT_string 9 PT_string 0
+6 7 PT_blob 7 PT_blob 0
+7 8 PT_array 8 PT_array 192
+// The remaining PackTypes imply a need to call push() and pop(). They are
+// all variants on the same thing: a list of nested fields, but the PackType
+// provides a bit of a semantic context.
+8 8 PT_field 8 PT_field 0
+9 8 PT_class 8 PT_class 0
+10 9 PT_switch 9 PT_switch 0
+11 0 137
+// This enumerated type is returned by get_pack_type() and represents the best
+// choice for a subsequent call to pack_*() or unpack_*().
+
+485 17 DCPackerInterface 0 26625 17 DCPackerInterface 17 DCPackerInterface 0 0 0 0 247 0 6 248 249 250 251 252 253 0 0 0 0 0 257
+/**
+ * This defines the internal interface for packing values into a DCField.  The
+ * various different DC objects inherit from this.
+ *
+ * Normally these methods are called only by the DCPacker object; the user
+ * wouldn't normally call these directly.
+ */
+
+486 13 DCKeywordList 0 26625 13 DCKeywordList 13 DCKeywordList 0 0 0 0 254 0 5 255 256 257 258 259 0 0 0 0 0 95
+/**
+ * This is a list of keywords (see DCKeyword) that may be set on a particular
+ * field.
+ */
+
+487 7 DCField 0 26625 7 DCField 7 DCField 0 0 0 0 264 0 29 265 266 267 268 269 270 271 272 273 274 275 276 277 278 279 280 281 282 283 284 285 286 287 288 289 290 291 292 293 0 0 2 3 485 260 261 3 486 262 263 0 0 77
+/**
+ * A single field of a Distributed Class, either atomic or molecular.
+ */
+
+488 10 DCPackData 0 26625 10 DCPackData 10 DCPackData 0 0 0 1 294 295 0 3 296 297 298 0 0 0 0 0 73
+/**
+ * This is a block of data that receives the results of DCPacker.
+ */
+
+489 8 DCPacker 0 26625 8 DCPacker 8 DCPacker 0 0 0 1 299 300 0 75 301 302 303 304 305 306 307 308 309 310 311 312 313 314 315 316 317 318 319 320 321 322 323 324 325 326 327 328 329 330 331 332 333 334 335 336 337 338 339 340 341 342 343 344 345 346 347 348 349 350 351 352 353 354 355 356 357 358 359 360 361 362 363 364 365 366 367 368 369 370 371 372 373 374 375 0 0 0 0 0 253
+/**
+ * This class can be used for packing a series of numeric and string data into
+ * a binary stream, according to the DC specification.
+ *
+ * See also direct/src/doc/dcPacker.txt for a more complete description and
+ * examples of using this class.
+ */
+
+490 11 DCParameter 0 75777 11 DCParameter 11 DCParameter 0 0 0 0 264 0 5 376 377 378 379 380 0 0 1 0 487 0 0 0 0 314
+/**
+ * Represents the type specification for a single parameter within a field
+ * specification.  This may be a simple type, or it may be a class or an array
+ * reference.
+ *
+ * This may also be a typedef reference to another type, which has the same
+ * properties as the referenced type, but a different name.
+ */
+
+491 16 DCArrayParameter 0 75777 16 DCArrayParameter 16 DCArrayParameter 0 0 0 0 264 0 2 381 382 0 0 1 0 490 0 0 0 0 200
+/**
+ * This represents an array of some other kind of object, meaning this
+ * parameter type accepts an arbitrary (or possibly fixed) number of nested
+ * fields, all of which are of the same type.
+ */
+
+492 13 DCAtomicField 0 75777 13 DCAtomicField 13 DCAtomicField 0 0 0 0 264 0 7 383 384 385 386 387 388 389 0 0 1 0 487 0 0 0 0 195
+/**
+ * A single atomic field of a Distributed Class, as read from a .dc file.
+ * This defines an interface to the Distributed Class, and is always
+ * implemented as a remote procedure method.
+ */
+
+493 13 DCDeclaration 0 26625 13 DCDeclaration 13 DCDeclaration 0 0 0 0 390 0 4 391 392 393 394 0 0 0 0 0 369
+/**
+ * This is a common interface for a declaration in a DC file.  Currently, this
+ * is either a class or a typedef declaration (import declarations are still
+ * collected together at the top, and don't inherit from this object).  Its
+ * only purpose is so that classes and typedefs can be stored in one list
+ * together so they can be ordered correctly on output.
+ */
+
+494 7 DCClass 0 75777 7 DCClass 7 DCClass 0 0 0 0 390 0 37 395 396 397 398 399 400 401 402 403 404 405 406 407 408 409 410 411 412 413 414 415 416 417 418 419 420 421 422 423 424 425 426 427 428 429 430 431 0 0 1 0 493 0 0 0 0 80
+/**
+ * Defines a particular DistributedClass as read from an input .dc file.
+ */
+
+495 16 DCClassParameter 0 141313 16 DCClassParameter 16 DCClassParameter 0 0 0 0 433 0 1 432 0 0 1 0 490 0 0 0 0 157
+/**
+ * This represents a class (or struct) object used as a parameter itself.
+ * This means that all the fields of the class get packed into the message.
+ */
+
+496 6 DCFile 0 26625 6 DCFile 6 DCFile 0 0 0 1 434 435 0 21 436 437 438 439 440 441 442 443 444 445 446 447 448 449 450 451 452 453 454 455 456 0 0 0 0 0 101
+/**
+ * Represents the complete list of Distributed Class descriptions as read from
+ * a .dc file.
+ */
+
+497 9 DCKeyword 0 75777 9 DCKeyword 9 DCKeyword 0 0 0 0 390 0 1 457 0 0 1 0 493 0 0 0 0 187
+/**
+ * This represents a single keyword declaration in the dc file.  It is used to
+ * define a communication property associated with a field, for instance
+ * "broadcast" or "airecv".
+ */
+
+498 16 DCMolecularField 0 141313 16 DCMolecularField 16 DCMolecularField 0 0 0 0 460 0 2 458 459 0 0 1 0 487 0 0 0 0 196
+/**
+ * A single molecular field of a Distributed Class, as read from a .dc file.
+ * This represents a combination of two or more related atomic fields, that
+ * will often be treated as a unit.
+ */
+
+499 17 DCSimpleParameter 0 141313 17 DCSimpleParameter 17 DCSimpleParameter 0 0 0 0 465 0 4 461 462 463 464 0 0 1 0 490 0 0 0 0 282
+/**
+ * This is the most fundamental kind of parameter type: a single number or
+ * string, one of the DCSubatomicType elements.  It may also optionally have a
+ * divisor, which is meaningful only for the numeric type elements (and
+ * represents a fixed-point numeric convention).
+ */
+
+500 8 DCSwitch 0 75777 8 DCSwitch 8 DCSwitch 0 0 0 0 390 0 10 466 467 468 469 470 471 472 473 474 475 0 0 1 0 493 0 0 0 0 177
+/**
+ * This represents a switch statement, which can appear inside a class body
+ * and represents two or more alternative unpacking schemes based on the first
+ * field read.
+ */
+
+501 17 DCSwitchParameter 0 141313 17 DCSwitchParameter 17 DCSwitchParameter 0 0 0 0 477 0 1 476 0 0 1 0 490 0 0 0 0 140
+/**
+ * This represents a switch object used as a parameter itself, which packs the
+ * appropriate fields of the switch into the message.
+ */
+
+502 9 DCTypedef 0 75777 9 DCTypedef 9 DCTypedef 0 0 0 0 390 0 5 478 479 480 481 482 0 0 1 0 493 0 0 0 0 142
+/**
+ * This represents a single typedef declaration in the dc file.  It assigns a
+ * particular type to a new name, just like a C typedef.
+ */
+
+503 25 DCPackerInterface const * 0 8576 25 DCPackerInterface const * 25 DCPackerInterface const * 0 0 504 0 0 0 0 0 0 0 0 0 0
+
+504 23 DCPackerInterface const 0 8832 23 DCPackerInterface const 23 DCPackerInterface const 0 0 485 0 0 0 0 0 0 0 0 0 0
+
+505 13 atomic string 0 2 13 atomic string 13 atomic string 0 7 0 0 0 0 0 0 0 0 0 0 0
+
+506 3 int 0 8194 3 int 3 int 0 1 0 0 0 0 0 0 0 0 0 0 0
+
+507 19 DCPackerInterface * 0 8576 19 DCPackerInterface * 19 DCPackerInterface * 0 0 485 0 0 0 0 0 0 0 0 0 0
+
+508 9 DCField * 0 8576 9 DCField * 9 DCField * 0 0 487 0 0 0 0 0 0 0 0 0 0
+
+509 15 DCField const * 0 8576 15 DCField const * 15 DCField const * 0 0 510 0 0 0 0 0 0 0 0 0 0
+
+510 13 DCField const 0 8832 13 DCField const 13 DCField const 0 0 487 0 0 0 0 0 0 0 0 0 0
+
+511 19 DCSwitchParameter * 0 8576 19 DCSwitchParameter * 19 DCSwitchParameter * 0 0 501 0 0 0 0 0 0 0 0 0 0
+
+512 25 DCSwitchParameter const * 0 8576 25 DCSwitchParameter const * 25 DCSwitchParameter const * 0 0 513 0 0 0 0 0 0 0 0 0 0
+
+513 23 DCSwitchParameter const 0 8832 23 DCSwitchParameter const 23 DCSwitchParameter const 0 0 501 0 0 0 0 0 0 0 0 0 0
+
+514 18 DCClassParameter * 0 8576 18 DCClassParameter * 18 DCClassParameter * 0 0 495 0 0 0 0 0 0 0 0 0 0
+
+515 24 DCClassParameter const * 0 8576 24 DCClassParameter const * 24 DCClassParameter const * 0 0 516 0 0 0 0 0 0 0 0 0 0
+
+516 22 DCClassParameter const 0 8832 22 DCClassParameter const 22 DCClassParameter const 0 0 495 0 0 0 0 0 0 0 0 0 0
+
+517 4 bool 0 8194 4 bool 4 bool 0 4 0 0 0 0 0 0 0 0 0 0 0
+
+518 8 DCFile * 0 8576 8 DCFile * 8 DCFile * 0 0 496 0 0 0 0 0 0 0 0 0 0
+
+519 21 DCKeywordList const * 0 8576 21 DCKeywordList const * 21 DCKeywordList const * 0 0 520 0 0 0 0 0 0 0 0 0 0
+
+520 19 DCKeywordList const 0 8832 19 DCKeywordList const 19 DCKeywordList const 0 0 486 0 0 0 0 0 0 0 0 0 0
+
+521 17 DCKeyword const * 0 8576 17 DCKeyword const * 17 DCKeyword const * 0 0 522 0 0 0 0 0 0 0 0 0 0
+
+522 15 DCKeyword const 0 8832 15 DCKeyword const 15 DCKeyword const 0 0 497 0 0 0 0 0 0 0 0 0 0
+
+523 9 DCClass * 0 8576 9 DCClass * 9 DCClass * 0 0 494 0 0 0 0 0 0 0 0 0 0
+
+524 15 DCAtomicField * 0 8576 15 DCAtomicField * 15 DCAtomicField * 0 0 492 0 0 0 0 0 0 0 0 0 0
+
+525 21 DCAtomicField const * 0 8576 21 DCAtomicField const * 21 DCAtomicField const * 0 0 526 0 0 0 0 0 0 0 0 0 0
+
+526 19 DCAtomicField const 0 8832 19 DCAtomicField const 19 DCAtomicField const 0 0 492 0 0 0 0 0 0 0 0 0 0
+
+527 18 DCMolecularField * 0 8576 18 DCMolecularField * 18 DCMolecularField * 0 0 498 0 0 0 0 0 0 0 0 0 0
+
+528 24 DCMolecularField const * 0 8576 24 DCMolecularField const * 24 DCMolecularField const * 0 0 529 0 0 0 0 0 0 0 0 0 0
+
+529 22 DCMolecularField const 0 8832 22 DCMolecularField const 22 DCMolecularField const 0 0 498 0 0 0 0 0 0 0 0 0 0
+
+530 13 DCParameter * 0 8576 13 DCParameter * 13 DCParameter * 0 0 490 0 0 0 0 0 0 0 0 0 0
+
+531 19 DCParameter const * 0 8576 19 DCParameter const * 19 DCParameter const * 0 0 532 0 0 0 0 0 0 0 0 0 0
+
+532 17 DCParameter const 0 8832 17 DCParameter const 17 DCParameter const 0 0 490 0 0 0 0 0 0 0 0 0 0
+
+533 12 vector_uchar 0 2105344 12 vector_uchar 12 vector_uchar 0 0 534 0 0 0 0 0 0 0 0 0 0
+
+534 24 pvector< unsigned char > 0 2048 24 pvector< unsigned char > 24 pvector< unsigned char > 0 0 0 0 0 0 0 0 0 0 0 0 0
+
+535 9 ostream * 0 8576 14 std::ostream * 14 std::ostream * 0 0 536 0 0 0 0 0 0 0 0 0 0
+
+536 7 ostream 0 2048 12 std::ostream 12 std::ostream 0 0 0 0 0 0 0 0 0 0 0 0 0
+
+537 4 void 0 8194 4 void 4 void 0 6 0 0 0 0 0 0 0 0 0 0 0
+
+538 10 DCPacker * 0 8576 10 DCPacker * 10 DCPacker * 0 0 489 0 0 0 0 0 0 0 0 0 0
+
+539 10 PyObject * 0 8576 10 PyObject * 10 PyObject * 0 0 540 0 0 0 0 0 0 0 0 0 0
+
+540 8 PyObject 0 2105344 8 PyObject 8 PyObject 0 0 541 0 0 0 0 0 0 0 0 0 0
+
+541 7 _object 0 1024 7 _object 7 _object 0 0 0 0 0 0 0 0 0 0 0 0 0
+
+542 8 Datagram 0 2048 8 Datagram 8 Datagram 0 0 0 0 0 0 0 0 0 0 0 0 565
+/**
+ * An ordered list of data elements, formatted in memory for transmission over
+ * a socket or writing to a data file.
+ *
+ * Data elements should be added one at a time, in order, to the Datagram.
+ * The nature and contents of the data elements are totally up to the user.
+ * When a Datagram has been transmitted and received, its data elements may be
+ * extracted using a DatagramIterator; it is up to the caller to know the
+ * correct type of each data element in order.
+ *
+ * A Datagram is itself headerless; it is simply a collection of data
+ * elements.
+ */
+
+543 9 DOID_TYPE 0 2105344 9 DOID_TYPE 9 DOID_TYPE 0 0 544 0 0 0 0 0 0 0 0 0 0
+
+544 8 uint32_t 0 2105344 8 uint32_t 8 uint32_t 0 0 545 0 0 0 0 0 0 0 0 0 0
+
+545 12 unsigned int 0 8198 12 unsigned int 12 unsigned int 0 1 0 0 0 0 0 0 0 0 0 0 0
+
+546 10 Datagram * 0 8576 10 Datagram * 10 Datagram * 0 0 542 0 0 0 0 0 0 0 0 0 0
+
+547 12 CHANNEL_TYPE 0 2105344 12 CHANNEL_TYPE 12 CHANNEL_TYPE 0 0 548 0 0 0 0 0 0 0 0 0 0
+
+548 8 uint64_t 0 2105344 8 uint64_t 8 uint64_t 0 0 549 0 0 0 0 0 0 0 0 0 0
+
+549 22 unsigned long long int 0 8230 22 unsigned long long int 22 unsigned long long int 0 8 0 0 0 0 0 0 0 0 0 0 0
+
+550 15 DCKeywordList * 0 8576 15 DCKeywordList * 15 DCKeywordList * 0 0 486 0 0 0 0 0 0 0 0 0 0
+
+551 12 DCPackData * 0 8576 12 DCPackData * 12 DCPackData * 0 0 488 0 0 0 0 0 0 0 0 0 0
+
+552 18 DCPackData const * 0 8576 18 DCPackData const * 18 DCPackData const * 0 0 553 0 0 0 0 0 0 0 0 0 0
+
+553 16 DCPackData const 0 8832 16 DCPackData const 16 DCPackData const 0 0 488 0 0 0 0 0 0 0 0 0 0
+
+554 6 size_t 0 2105344 11 std::size_t 11 std::size_t 0 0 555 0 0 0 0 0 0 0 0 0 0
+
+555 17 unsigned long int 0 8214 17 unsigned long int 17 unsigned long int 0 1 0 0 0 0 0 0 0 0 0 0 0
+
+556 16 DCPacker const * 0 8576 16 DCPacker const * 16 DCPacker const * 0 0 557 0 0 0 0 0 0 0 0 0 0
+
+557 14 DCPacker const 0 8832 14 DCPacker const 14 DCPacker const 0 0 489 0 0 0 0 0 0 0 0 0 0
+
+558 6 double 0 8194 6 double 6 double 0 3 0 0 0 0 0 0 0 0 0 0 0
+
+559 7 int64_t 0 2105344 7 int64_t 7 int64_t 0 0 560 0 0 0 0 0 0 0 0 0 0
+
+560 13 long long int 0 8226 13 long long int 13 long long int 0 8 0 0 0 0 0 0 0 0 0 0 0
+
+561 9 istream * 0 8576 14 std::istream * 14 std::istream * 0 0 562 0 0 0 0 0 0 0 0 0 0
+
+562 7 istream 0 2048 12 std::istream 12 std::istream 0 0 0 0 0 0 0 0 0 0 0 0 0
+
+563 19 DCSimpleParameter * 0 8576 19 DCSimpleParameter * 19 DCSimpleParameter * 0 0 499 0 0 0 0 0 0 0 0 0 0
+
+564 25 DCSimpleParameter const * 0 8576 25 DCSimpleParameter const * 25 DCSimpleParameter const * 0 0 565 0 0 0 0 0 0 0 0 0 0
+
+565 23 DCSimpleParameter const 0 8832 23 DCSimpleParameter const 23 DCSimpleParameter const 0 0 499 0 0 0 0 0 0 0 0 0 0
+
+566 18 DCArrayParameter * 0 8576 18 DCArrayParameter * 18 DCArrayParameter * 0 0 491 0 0 0 0 0 0 0 0 0 0
+
+567 24 DCArrayParameter const * 0 8576 24 DCArrayParameter const * 24 DCArrayParameter const * 0 0 568 0 0 0 0 0 0 0 0 0 0
+
+568 22 DCArrayParameter const 0 8832 22 DCArrayParameter const 22 DCArrayParameter const 0 0 491 0 0 0 0 0 0 0 0 0 0
+
+569 17 DCTypedef const * 0 8576 17 DCTypedef const * 17 DCTypedef const * 0 0 570 0 0 0 0 0 0 0 0 0 0
+
+570 15 DCTypedef const 0 8832 15 DCTypedef const 15 DCTypedef const 0 0 502 0 0 0 0 0 0 0 0 0 0
+
+571 15 DCDeclaration * 0 8576 15 DCDeclaration * 15 DCDeclaration * 0 0 493 0 0 0 0 0 0 0 0 0 0
+
+572 21 DCDeclaration const * 0 8576 21 DCDeclaration const * 21 DCDeclaration const * 0 0 573 0 0 0 0 0 0 0 0 0 0
+
+573 19 DCDeclaration const 0 8832 19 DCDeclaration const 19 DCDeclaration const 0 0 493 0 0 0 0 0 0 0 0 0 0
+
+574 15 DCClass const * 0 8576 15 DCClass const * 15 DCClass const * 0 0 575 0 0 0 0 0 0 0 0 0 0
+
+575 13 DCClass const 0 8832 13 DCClass const 13 DCClass const 0 0 494 0 0 0 0 0 0 0 0 0 0
+
+576 10 DCSwitch * 0 8576 10 DCSwitch * 10 DCSwitch * 0 0 500 0 0 0 0 0 0 0 0 0 0
+
+577 16 DCSwitch const * 0 8576 16 DCSwitch const * 16 DCSwitch const * 0 0 578 0 0 0 0 0 0 0 0 0 0
+
+578 14 DCSwitch const 0 8832 14 DCSwitch const 14 DCSwitch const 0 0 500 0 0 0 0 0 0 0 0 0 0
+
+579 18 DatagramIterator * 0 8576 18 DatagramIterator * 18 DatagramIterator * 0 0 580 0 0 0 0 0 0 0 0 0 0
+
+580 16 DatagramIterator 0 2048 16 DatagramIterator 16 DatagramIterator 0 0 0 0 0 0 0 0 0 0 0 0 365
+/**
+ * A class to retrieve the individual data elements previously stored in a
+ * Datagram.  Elements may be retrieved one at a time; it is up to the caller
+ * to know the correct type and order of each element.
+ *
+ * Note that it is the responsibility of the caller to ensure that the datagram
+ * object is not destructed while this DatagramIterator is in use.
+ */
+
+581 16 Datagram const * 0 8576 16 Datagram const * 16 Datagram const * 0 0 582 0 0 0 0 0 0 0 0 0 0
+
+582 14 Datagram const 0 8832 14 Datagram const 14 Datagram const 0 0 542 0 0 0 0 0 0 0 0 0 0
+
+583 11 ZONEID_TYPE 0 2105344 11 ZONEID_TYPE 11 ZONEID_TYPE 0 0 544 0 0 0 0 0 0 0 0 0 0
+
+584 14 DCFile const * 0 8576 14 DCFile const * 14 DCFile const * 0 0 585 0 0 0 0 0 0 0 0 0 0
+
+585 12 DCFile const 0 8832 12 DCFile const 12 DCFile const 0 0 496 0 0 0 0 0 0 0 0 0 0
+
+586 10 Filename * 0 8576 10 Filename * 10 Filename * 0 0 587 0 0 0 0 0 0 0 0 0 0
+
+587 8 Filename 0 2048 8 Filename 8 Filename 0 0 0 0 0 0 0 0 0 0 0 0 839
+/**
+ * The name of a file, such as a texture file or an Egg file.  Stores the full
+ * pathname, and includes functions for extracting out the directory prefix
+ * part and the file extension and stuff.
+ *
+ * A Filename is also aware of the mapping between the Unix-like filename
+ * convention we use internally, and the local OS's specific filename
+ * convention, and it knows how to perform basic OS-specific I/O, like testing
+ * for file existence and searching a searchpath, as well as the best way to
+ * open an fstream for reading or writing.
+ *
+ * Note that the methods of Filename that interact with the filesystem (such
+ * as exists(), open_read(), etc.) directly interface with the operating system
+ * and are not aware of Panda's virtual file system.  To interact with the VFS,
+ * use the methods on VirtualFileSystem instead.
+ */
+
+588 11 DCTypedef * 0 8576 11 DCTypedef * 11 DCTypedef * 0 0 502 0 0 0 0 0 0 0 0 0 0
+
+0
+0
+0

@@ -1,0 +1,21 @@
+#pragma once
+
+#include <compare>
+
+namespace std {
+  class thread {
+  public:
+    class id;
+  };
+
+  class jthread {
+  public:
+    using id = thread::id;
+  };
+
+  template<class T> struct hash;
+  template<> struct hash<thread::id>;
+
+  namespace this_thread {
+  }
+}

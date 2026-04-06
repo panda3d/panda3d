@@ -1,0 +1,3789 @@
+1775485746
+3 3
+16 libp3parametrics 4 UKlv 12 panda3d.core 
+247
+272 8 is_valid 0 6 519 25 ParametricCurve::is_valid 0 1 1 164
+/**
+ * Returns true if the curve is defined.  This base class function always
+ * returns true; derived classes might override this to sometimes return
+ * false.
+ */
+51
+virtual bool ParametricCurve::is_valid(void) const;
+
+273 9 get_max_t 0 6 519 26 ParametricCurve::get_max_t 0 1 2 237
+/**
+ * Returns the upper bound of t for the entire curve.  The curve is defined in
+ * the range 0.0f <= t <= get_max_t().  This base class function always
+ * returns 1.0f; derived classes might override this to return something else.
+ */
+59
+virtual PN_stdfloat ParametricCurve::get_max_t(void) const;
+
+274 14 set_curve_type 0 4 519 31 ParametricCurve::set_curve_type 0 1 3 389
+/**
+ * Sets the flag indicating the use to which the curve is intended to be put.
+ * This flag is optional and only serves to provide a hint to the egg reader
+ * and writer code; it has no effect on the curve's behavior.
+ *
+ * Setting the curve type also sets the num_dimensions to 3 or 1 according to
+ * the type.
+ *
+ * THis flag may have one of the values PCT_XYZ, PCT_HPR, or PCT_T.
+ */
+47
+void ParametricCurve::set_curve_type(int type);
+
+275 14 get_curve_type 0 4 519 31 ParametricCurve::get_curve_type 0 1 4 91
+/**
+ * Returns the flag indicating the use to which the curve is intended to be
+ * put.
+ */
+48
+int ParametricCurve::get_curve_type(void) const;
+
+276 18 set_num_dimensions 0 4 519 35 ParametricCurve::set_num_dimensions 0 1 5 324
+/**
+ * Specifies the number of significant dimensions in the curve's vertices.
+ * This should be one of 1, 2, or 3. Normally, XYZ and HPR curves have three
+ * dimensions; time curves should always have one dimension.  This only serves
+ * as a hint to the mopath editor, and also controls how the curve is written
+ * out.
+ */
+50
+void ParametricCurve::set_num_dimensions(int num);
+
+277 18 get_num_dimensions 0 4 519 35 ParametricCurve::get_num_dimensions 0 1 6 267
+/**
+ * Returns the number of significant dimensions in the curve's vertices, as
+ * set by a previous call to set_num_dimensions().  This is only a hint as to
+ * how the curve is intended to be used; the actual number of dimensions of
+ * any curve is always three.
+ */
+52
+int ParametricCurve::get_num_dimensions(void) const;
+
+278 11 calc_length 0 4 519 28 ParametricCurve::calc_length 0 2 7 8 188
+/**
+ * Approximates the length of the entire curve to within a few decimal places.
+ */
+
+/**
+ * Approximates the length of the curve segment from parametric time 'from' to
+ * time 'to'.
+ */
+135
+PN_stdfloat ParametricCurve::calc_length(void) const;
+PN_stdfloat ParametricCurve::calc_length(PN_stdfloat from, PN_stdfloat to) const;
+
+279 11 find_length 0 4 519 28 ParametricCurve::find_length 0 1 9 396
+/**
+ * Returns the parametric value corresponding to the indicated distance along
+ * the curve from the starting parametric value.
+ *
+ * This is the inverse of calc_length(): rather than determining the length
+ * along the curve between two parametric points, it determines the position
+ * in parametric time of a point n units along the curve.
+ *
+ * The search distance must not be negative.
+ */
+95
+PN_stdfloat ParametricCurve::find_length(PN_stdfloat start_t, PN_stdfloat length_offset) const;
+
+280 9 get_point 0 6 519 26 ParametricCurve::get_point 0 1 10 0
+83
+virtual bool ParametricCurve::get_point(PN_stdfloat t, LVecBase3 &point) const = 0;
+
+281 11 get_tangent 0 6 519 28 ParametricCurve::get_tangent 0 1 11 0
+87
+virtual bool ParametricCurve::get_tangent(PN_stdfloat t, LVecBase3 &tangent) const = 0;
+
+282 6 get_pt 0 6 519 23 ParametricCurve::get_pt 0 1 12 0
+100
+virtual bool ParametricCurve::get_pt(PN_stdfloat t, LVecBase3 &point, LVecBase3 &tangent) const = 0;
+
+283 14 get_2ndtangent 0 6 519 31 ParametricCurve::get_2ndtangent 0 1 13 0
+91
+virtual bool ParametricCurve::get_2ndtangent(PN_stdfloat t, LVecBase3 &tangent2) const = 0;
+
+284 12 adjust_point 0 6 519 29 ParametricCurve::adjust_point 0 1 14 144
+/**
+ * Recomputes the curve such that it passes through the point (px, py, pz) at
+ * time t, but keeps the same tangent value at that point.
+ */
+106
+virtual bool ParametricCurve::adjust_point(PN_stdfloat t, PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz);
+
+285 14 adjust_tangent 0 6 519 31 ParametricCurve::adjust_tangent 0 1 15 129
+/**
+ * Recomputes the curve such that it has the tangent (tx, ty, tz) at time t,
+ * but keeps the same position at the point.
+ */
+108
+virtual bool ParametricCurve::adjust_tangent(PN_stdfloat t, PN_stdfloat tx, PN_stdfloat ty, PN_stdfloat tz);
+
+286 9 adjust_pt 0 6 519 26 ParametricCurve::adjust_pt 0 1 16 116
+/**
+ * Recomputes the curve such that it passes through the point (px, py, pz)
+ * with the tangent (tx, ty, tz).
+ */
+151
+virtual bool ParametricCurve::adjust_pt(PN_stdfloat t, PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat tx, PN_stdfloat ty, PN_stdfloat tz);
+
+287 9 recompute 0 6 519 26 ParametricCurve::recompute 0 1 17 115
+/**
+ * Recalculates the curve, if necessary.  Returns true if the resulting curve
+ * is valid, false otherwise.
+ */
+46
+virtual bool ParametricCurve::recompute(void);
+
+288 6 stitch 0 6 519 23 ParametricCurve::stitch 0 1 18 259
+/**
+ * Regenerates this curve as one long curve: the first curve connected end-to-
+ * end with the second one.  Either a or b may be the same as 'this'.
+ *
+ * Returns true if successful, false on failure or if the curve type does not
+ * support stitching.
+ */
+89
+virtual bool ParametricCurve::stitch(ParametricCurve const *a, ParametricCurve const *b);
+
+289 9 write_egg 0 4 519 26 ParametricCurve::write_egg 0 2 19 20 281
+/**
+ * Writes an egg description of the nurbs curve to the specified output file.
+ * Returns true if the file is successfully written.
+ */
+
+/**
+ * Writes an egg description of the nurbs curve to the specified output
+ * stream.  Returns true if the file is successfully written.
+ */
+186
+bool ParametricCurve::write_egg(Filename filename, CoordinateSystem cs = ::CS_default);
+bool ParametricCurve::write_egg(std::ostream &out, Filename const &filename, CoordinateSystem cs);
+
+290 14 get_class_type 0 4 519 31 ParametricCurve::get_class_type 0 1 21 0
+56
+static TypeHandle ParametricCurve::get_class_type(void);
+
+291 14 get_class_type 0 4 521 29 CubicCurveseg::get_class_type 0 1 22 0
+54
+static TypeHandle CubicCurveseg::get_class_type(void);
+
+292 25 ParametricCurveCollection 0 260 522 52 ParametricCurveCollection::ParametricCurveCollection 0 2 23 24 10
+/**
+ *
+ */
+165
+ParametricCurveCollection::ParametricCurveCollection(void);
+inline ParametricCurveCollection::ParametricCurveCollection(ParametricCurveCollection const &) = default;
+
+293 9 add_curve 0 4 522 36 ParametricCurveCollection::add_curve 0 2 25 26 192
+/**
+ * Adds a new ParametricCurve to the collection at the indicated index.
+ * @deprecated Use insert_curve(index, curve) instead.
+ */
+
+/**
+ * Adds a new ParametricCurve to the collection.
+ */
+144
+void ParametricCurveCollection::add_curve(ParametricCurve *curve);
+void ParametricCurveCollection::add_curve(ParametricCurve *curve, int index);
+
+294 12 insert_curve 0 4 522 39 ParametricCurveCollection::insert_curve 0 1 27 79
+/**
+ * Adds a new ParametricCurve to the collection at the indicated index.
+ */
+88
+void ParametricCurveCollection::insert_curve(std::size_t index, ParametricCurve *curve);
+
+295 10 add_curves 0 4 522 37 ParametricCurveCollection::add_curves 0 1 28 120
+/**
+ * Adds all the curves found in the scene graph rooted at the given node.
+ * Returns the number of curves found.
+ */
+59
+int ParametricCurveCollection::add_curves(PandaNode *node);
+
+296 12 remove_curve 0 4 522 39 ParametricCurveCollection::remove_curve 0 2 29 30 255
+/**
+ * Removes the indicated ParametricCurve from the collection.  Returns true if
+ * the curve was removed, false if it was not a member of the collection.
+ */
+
+/**
+ * Removes the indicated ParametricCurve from the collection, by its index
+ * number.
+ */
+134
+bool ParametricCurveCollection::remove_curve(ParametricCurve *curve);
+void ParametricCurveCollection::remove_curve(std::size_t index);
+
+297 9 set_curve 0 4 522 36 ParametricCurveCollection::set_curve 0 1 31 94
+/**
+ * Replaces the indicated ParametricCurve from the collection, by its index
+ * number.
+ */
+85
+void ParametricCurveCollection::set_curve(std::size_t index, ParametricCurve *curve);
+
+298 9 has_curve 0 4 522 36 ParametricCurveCollection::has_curve 0 1 32 104
+/**
+ * Returns true if the indicated ParametricCurve appears in this collection,
+ * false otherwise.
+ */
+72
+bool ParametricCurveCollection::has_curve(ParametricCurve *curve) const;
+
+299 5 clear 0 4 522 32 ParametricCurveCollection::clear 0 1 33 60
+/**
+ * Removes all ParametricCurves from the collection.
+ */
+44
+void ParametricCurveCollection::clear(void);
+
+300 15 clear_timewarps 0 4 522 42 ParametricCurveCollection::clear_timewarps 0 1 34 63
+/**
+ * Removes all the timewarp curves from the collection.
+ */
+54
+void ParametricCurveCollection::clear_timewarps(void);
+
+301 14 get_num_curves 0 4 522 41 ParametricCurveCollection::get_num_curves 0 1 35 68
+/**
+ * Returns the number of ParametricCurves in the collection.
+ */
+65
+inline int ParametricCurveCollection::get_num_curves(void) const;
+
+302 9 get_curve 0 4 522 36 ParametricCurveCollection::get_curve 0 1 36 61
+/**
+ * Returns the nth ParametricCurve in the collection.
+ */
+78
+inline ParametricCurve *ParametricCurveCollection::get_curve(int index) const;
+
+303 13 get_xyz_curve 0 4 522 40 ParametricCurveCollection::get_xyz_curve 0 1 37 95
+/**
+ * Returns the first XYZ curve in the collection, if any, or NULL if there are
+ * none.
+ */
+70
+ParametricCurve *ParametricCurveCollection::get_xyz_curve(void) const;
+
+304 13 get_hpr_curve 0 4 522 40 ParametricCurveCollection::get_hpr_curve 0 1 38 95
+/**
+ * Returns the first HPR curve in the collection, if any, or NULL if there are
+ * none.
+ */
+70
+ParametricCurve *ParametricCurveCollection::get_hpr_curve(void) const;
+
+305 17 get_default_curve 0 4 522 44 ParametricCurveCollection::get_default_curve 0 1 39 180
+/**
+ * If there is an XYZ curve in the collection, returns it; otherwise, returns
+ * the first curve whose type is unspecified.  Returns NULL if no curve meets
+ * the criteria.
+ */
+74
+ParametricCurve *ParametricCurveCollection::get_default_curve(void) const;
+
+306 17 get_num_timewarps 0 4 522 44 ParametricCurveCollection::get_num_timewarps 0 1 40 67
+/**
+ * Returns the number of timewarp curves in the collection.
+ */
+61
+int ParametricCurveCollection::get_num_timewarps(void) const;
+
+307 18 get_timewarp_curve 0 4 522 45 ParametricCurveCollection::get_timewarp_curve 0 1 41 60
+/**
+ * Returns the nth timewarp curve in the collection.
+ */
+76
+ParametricCurve *ParametricCurveCollection::get_timewarp_curve(int n) const;
+
+308 9 get_max_t 0 4 522 36 ParametricCurveCollection::get_max_t 0 1 42 170
+/**
+ * Returns the maximum T value associated with the *last* curve in the
+ * collection.  Normally, this will be either the XYZ or HPR curve, or a
+ * timewarp curve.
+ */
+68
+inline PN_stdfloat ParametricCurveCollection::get_max_t(void) const;
+
+309 9 make_even 0 4 522 36 ParametricCurveCollection::make_even 0 1 43 539
+/**
+ * Discards all existing timewarp curves and recomputes a new timewarp curve
+ * that maps distance along the curve to parametric time, so that the distance
+ * between any two points in parametric time is proportional to the
+ * approximate distance of those same two points along the XYZ curve.
+ *
+ * segments_per_unit represents the number of segments to take per each unit
+ * of parametric time of the original XYZ curve.
+ *
+ * The new timewarp curve (and thus, the apparent range of the collection)
+ * will range from 0 to max_t.
+ */
+92
+void ParametricCurveCollection::make_even(PN_stdfloat max_t, PN_stdfloat segments_per_unit);
+
+310 12 face_forward 0 4 522 39 ParametricCurveCollection::face_forward 0 1 44 179
+/**
+ * Discards the existing HPR curve and generates a new one that looks in the
+ * direction of travel along the XYZ curve, based on the XYZ curve's tangent
+ * at each point.
+ */
+76
+void ParametricCurveCollection::face_forward(PN_stdfloat segments_per_unit);
+
+311 11 reset_max_t 0 4 522 38 ParametricCurveCollection::reset_max_t 0 1 45 277
+/**
+ * Adjusts the apparent length of the curve by applying a new timewarp that
+ * maps the range [0..max_t] to the range [0..get_max_t()].  After this call,
+ * the curve collection will contain one more timewarp curve, and get_max_t()
+ * will return the given max_t value.
+ */
+63
+void ParametricCurveCollection::reset_max_t(PN_stdfloat max_t);
+
+312 8 evaluate 0 4 522 35 ParametricCurveCollection::evaluate 0 2 46 47 943
+/**
+ * Computes the position and rotation represented by the first XYZ and HPR
+ * curves in the collection at the given point t, after t has been modified by
+ * all the timewarp curves in the collection applied in sequence, from back to
+ * front.
+ *
+ * Returns true if the point is valid (i.e.  t is within the bounds indicated
+ * by all the timewarp curves and within the bounds of the curves themselves),
+ * or false otherwise.
+ */
+
+/**
+ * Computes the transform matrix representing translation to the position
+ * indicated by the first XYZ curve in the collection and the rotation
+ * indicated by the first HPR curve in the collection, after t has been
+ * modified by all the timewarp curves in the collection applied in sequence,
+ * from back to front.
+ *
+ * Returns true if the point is valid (i.e.  t is within the bounds indicated
+ * by all the timewarp curves and within the bounds of the curves themselves),
+ * or false otherwise.
+ */
+211
+bool ParametricCurveCollection::evaluate(PN_stdfloat t, LVecBase3 &xyz, LVecBase3 &hpr) const;
+bool ParametricCurveCollection::evaluate(PN_stdfloat t, LMatrix4 &result, CoordinateSystem cs = ::CS_default) const;
+
+313 10 evaluate_t 0 4 522 37 ParametricCurveCollection::evaluate_t 0 1 48 219
+/**
+ * Determines the value of t that should be passed to the XYZ and HPR curves,
+ * after applying the given value of t to all the timewarps.  Return -1.0f if
+ * the value of t exceeds one of the timewarps' ranges.
+ */
+71
+PN_stdfloat ParametricCurveCollection::evaluate_t(PN_stdfloat t) const;
+
+314 12 evaluate_xyz 0 4 522 39 ParametricCurveCollection::evaluate_xyz 0 1 49 69
+/**
+ * Computes only the XYZ part of the curves.  See evaluate().
+ */
+89
+inline bool ParametricCurveCollection::evaluate_xyz(PN_stdfloat t, LVecBase3 &xyz) const;
+
+315 12 evaluate_hpr 0 4 522 39 ParametricCurveCollection::evaluate_hpr 0 1 50 69
+/**
+ * Computes only the HPR part of the curves.  See evaluate().
+ */
+89
+inline bool ParametricCurveCollection::evaluate_hpr(PN_stdfloat t, LVecBase3 &hpr) const;
+
+316 10 adjust_xyz 0 4 522 37 ParametricCurveCollection::adjust_xyz 0 2 51 52 418
+/**
+ * Adjust the XYZ curve at the indicated time to the new value.  The curve
+ * shape will change correspondingly.  Returns true if successful, false if
+ * unable to make the adjustment for some reason.
+ */
+
+/**
+ * Adjust the XYZ curve at the indicated time to the new value.  The curve
+ * shape will change correspondingly.  Returns true if successful, false if
+ * unable to make the adjustment for some reason.
+ */
+191
+inline bool ParametricCurveCollection::adjust_xyz(PN_stdfloat t, PN_stdfloat x, PN_stdfloat y, PN_stdfloat z);
+bool ParametricCurveCollection::adjust_xyz(PN_stdfloat t, LVecBase3 const &xyz);
+
+317 10 adjust_hpr 0 4 522 37 ParametricCurveCollection::adjust_hpr 0 2 53 54 418
+/**
+ * Adjust the HPR curve at the indicated time to the new value.  The curve
+ * shape will change correspondingly.  Returns true if successful, false if
+ * unable to make the adjustment for some reason.
+ */
+
+/**
+ * Adjust the HPR curve at the indicated time to the new value.  The curve
+ * shape will change correspondingly.  Returns true if successful, false if
+ * unable to make the adjustment for some reason.
+ */
+191
+inline bool ParametricCurveCollection::adjust_hpr(PN_stdfloat t, PN_stdfloat h, PN_stdfloat p, PN_stdfloat r);
+bool ParametricCurveCollection::adjust_hpr(PN_stdfloat t, LVecBase3 const &xyz);
+
+318 9 recompute 0 4 522 36 ParametricCurveCollection::recompute 0 1 55 153
+/**
+ * Ensures all the curves are freshly computed and up-to-date.  Returns true
+ * if everything is valid, false if at least one curve is incorrect.
+ */
+48
+bool ParametricCurveCollection::recompute(void);
+
+319 6 stitch 0 4 522 33 ParametricCurveCollection::stitch 0 1 56 262
+/**
+ * Regenerates this curve as one long curve: the first curve connected end-to-
+ * end with the second one.  Either a or b may be the same as 'this'.  This
+ * will lose any timewarps on the input curves.
+ *
+ * Returns true if successful, false on failure.
+ */
+111
+bool ParametricCurveCollection::stitch(ParametricCurveCollection const *a, ParametricCurveCollection const *b);
+
+320 6 output 0 4 522 33 ParametricCurveCollection::output 0 1 57 114
+/**
+ * Writes a brief one-line description of the ParametricCurveCollection to the
+ * indicated output stream.
+ */
+64
+void ParametricCurveCollection::output(std::ostream &out) const;
+
+321 5 write 0 4 522 32 ParametricCurveCollection::write 0 1 58 119
+/**
+ * Writes a complete multi-line description of the ParametricCurveCollection
+ * to the indicated output stream.
+ */
+85
+void ParametricCurveCollection::write(std::ostream &out, int indent_level = 0) const;
+
+322 9 write_egg 0 4 522 36 ParametricCurveCollection::write_egg 0 2 59 60 328
+/**
+ * Writes an egg description of all the nurbs curves in the collection to the
+ * specified output file.  Returns true if the file is successfully written.
+ */
+
+/**
+ * Writes an egg description of all the nurbs curves in the collection to the
+ * specified output stream.  Returns true if the file is successfully written.
+ */
+206
+bool ParametricCurveCollection::write_egg(Filename filename, CoordinateSystem cs = ::CS_default);
+bool ParametricCurveCollection::write_egg(std::ostream &out, Filename const &filename, CoordinateSystem cs);
+
+323 11 CurveFitter 0 260 527 24 CurveFitter::CurveFitter 0 2 61 62 10
+/**
+ *
+ */
+95
+CurveFitter::CurveFitter(void);
+inline CurveFitter::CurveFitter(CurveFitter const &) = default;
+
+324 12 ~CurveFitter 0 516 527 25 CurveFitter::~CurveFitter 0 0 10
+/**
+ *
+ */
+32
+CurveFitter::~CurveFitter(void);
+
+325 5 reset 0 4 527 18 CurveFitter::reset 0 1 63 114
+/**
+ * Removes all the data points previously added to the CurveFitter, and
+ * initializes it for a new curve.
+ */
+30
+void CurveFitter::reset(void);
+
+326 7 add_xyz 0 4 527 20 CurveFitter::add_xyz 0 1 64 36
+/**
+ * Adds a single sample xyz.
+ */
+63
+void CurveFitter::add_xyz(PN_stdfloat t, LVecBase3 const &xyz);
+
+327 7 add_hpr 0 4 527 20 CurveFitter::add_hpr 0 1 65 36
+/**
+ * Adds a single sample hpr.
+ */
+63
+void CurveFitter::add_hpr(PN_stdfloat t, LVecBase3 const &hpr);
+
+328 11 add_xyz_hpr 0 4 527 24 CurveFitter::add_xyz_hpr 0 1 66 57
+/**
+ * Adds a single sample xyz & hpr simultaneously.
+ */
+89
+void CurveFitter::add_xyz_hpr(PN_stdfloat t, LVecBase3 const &xyz, LVecBase3 const &hpr);
+
+329 15 get_num_samples 0 4 527 28 CurveFitter::get_num_samples 0 1 67 68
+/**
+ * Returns the number of sample points that have been added.
+ */
+45
+int CurveFitter::get_num_samples(void) const;
+
+330 12 get_sample_t 0 4 527 25 CurveFitter::get_sample_t 0 1 68 64
+/**
+ * Returns the parametric value of the nth sample added.
+ */
+51
+PN_stdfloat CurveFitter::get_sample_t(int n) const;
+
+331 14 get_sample_xyz 0 4 527 27 CurveFitter::get_sample_xyz 0 1 69 62
+/**
+ * Returns the point in space of the nth sample added.
+ */
+51
+LVecBase3 CurveFitter::get_sample_xyz(int n) const;
+
+332 14 get_sample_hpr 0 4 527 27 CurveFitter::get_sample_hpr 0 1 70 59
+/**
+ * Returns the orientation of the nth sample added.
+ */
+51
+LVecBase3 CurveFitter::get_sample_hpr(int n) const;
+
+333 18 get_sample_tangent 0 4 527 31 CurveFitter::get_sample_tangent 0 1 71 143
+/**
+ * Returns the tangent associated with the nth sample added.  This is only
+ * meaningful if compute_tangents() has already been called.
+ */
+55
+LVecBase3 CurveFitter::get_sample_tangent(int n) const;
+
+334 14 remove_samples 0 4 527 27 CurveFitter::remove_samples 0 1 72 108
+/**
+ * Eliminates all samples from index begin, up to but not including index end,
+ * from the database.
+ */
+53
+void CurveFitter::remove_samples(int begin, int end);
+
+335 6 sample 0 4 527 19 CurveFitter::sample 0 1 73 223
+/**
+ * Generates a series of data points by sampling the given curve (or xyz/hpr
+ * curves) the indicated number of times.  The sampling is made evenly in
+ * parametric time, and then the timewarps, if any, are applied.
+ */
+71
+void CurveFitter::sample(ParametricCurveCollection *curves, int count);
+
+336 8 wrap_hpr 0 4 527 21 CurveFitter::wrap_hpr 0 1 74 165
+/**
+ * Resets each HPR data point so that the maximum delta between any two
+ * consecutive points is 180 degrees, which should prevent incorrect HPR
+ * wrapping.
+ */
+33
+void CurveFitter::wrap_hpr(void);
+
+337 11 sort_points 0 4 527 24 CurveFitter::sort_points 0 1 75 115
+/**
+ * Sorts all the data points in order by parametric time, in case they were
+ * added in an incorrect order.
+ */
+36
+void CurveFitter::sort_points(void);
+
+338 8 desample 0 4 527 21 CurveFitter::desample 0 1 76 175
+/**
+ * Removes sample points in order to reduce the complexity of a sampled curve.
+ * Keeps one out of every factor samples.  Also keeps the first and the last
+ * samples.
+ */
+47
+void CurveFitter::desample(PN_stdfloat factor);
+
+339 16 compute_tangents 0 4 527 29 CurveFitter::compute_tangents 0 1 77 231
+/**
+ * Once a set of points has been built, and prior to calling MakeHermite() or
+ * MakeNurbs(), ComputeTangents() must be called to set up the tangents
+ * correctly (unless the tangents were defined as the points were added).
+ */
+54
+void CurveFitter::compute_tangents(PN_stdfloat scale);
+
+340 12 make_hermite 0 4 527 25 CurveFitter::make_hermite 0 1 78 72
+/**
+ * Converts the current set of data points into a Hermite curve.
+ */
+77
+PointerTo< ParametricCurveCollection > CurveFitter::make_hermite(void) const;
+
+341 10 make_nurbs 0 4 527 23 CurveFitter::make_nurbs 0 1 79 134
+/**
+ * Converts the current set of data points into a NURBS curve.  This gives a
+ * smoother curve than produced by MakeHermite().
+ */
+75
+PointerTo< ParametricCurveCollection > CurveFitter::make_nurbs(void) const;
+
+342 6 output 0 4 527 19 CurveFitter::output 0 1 80 10
+/**
+ *
+ */
+50
+void CurveFitter::output(std::ostream &out) const;
+
+343 5 write 0 4 527 18 CurveFitter::write 0 1 81 10
+/**
+ *
+ */
+49
+void CurveFitter::write(std::ostream &out) const;
+
+344 14 get_class_type 0 4 527 27 CurveFitter::get_class_type 0 1 82 0
+52
+static TypeHandle CurveFitter::get_class_type(void);
+
+345 14 PiecewiseCurve 0 260 528 30 PiecewiseCurve::PiecewiseCurve 0 1 83 10
+/**
+ *
+ */
+37
+PiecewiseCurve::PiecewiseCurve(void);
+
+346 14 get_class_type 0 4 528 30 PiecewiseCurve::get_class_type 0 1 84 0
+55
+static TypeHandle PiecewiseCurve::get_class_type(void);
+
+347 12 HermiteCurve 0 260 529 26 HermiteCurve::HermiteCurve 0 2 85 86 92
+/**
+ *
+ */
+
+/**
+ * Constructs a Hermite from the indicated (possibly non-hermite) curve.
+ */
+88
+HermiteCurve::HermiteCurve(void);
+HermiteCurve::HermiteCurve(ParametricCurve const &pc);
+
+348 11 get_num_cvs 0 4 529 25 HermiteCurve::get_num_cvs 0 1 87 51
+/**
+ * Returns the number of CV's in the curve.
+ */
+42
+int HermiteCurve::get_num_cvs(void) const;
+
+349 9 insert_cv 0 4 529 23 HermiteCurve::insert_cv 0 1 88 547
+/**
+ * Inserts a new CV at the given parametric point along the curve.  If this
+ * parametric point is already on the curve, the CV is assigned an index
+ * between its two neighbors and the indices of all following CV's are
+ * incremented by 1; its in and out tangents are chosen to keep the curve
+ * consistent.  If the new parametric point is beyond the end of the existing
+ * curve, the curve is extended to meet it and the new CV's position, in
+ * tangent, and out tangent are set to zero.
+ *
+ * The index number of the new CV is returned.
+ */
+43
+int HermiteCurve::insert_cv(PN_stdfloat t);
+
+350 9 append_cv 0 4 529 23 HermiteCurve::append_cv 0 2 89 90 149
+/**
+ * Adds a new CV to the end of the curve.  The new CV is given initial in/out
+ * tangents of 0.  The return value is the index of the new CV.
+ */
+149
+int HermiteCurve::append_cv(int type, PN_stdfloat x, PN_stdfloat y, PN_stdfloat z);
+inline int HermiteCurve::append_cv(int type, LVecBase3 const &v);
+
+351 9 remove_cv 0 4 529 23 HermiteCurve::remove_cv 0 1 91 100
+/**
+ * Removes the given CV from the curve.  Returns true if the CV existed, false
+ * otherwise.
+ */
+36
+bool HermiteCurve::remove_cv(int n);
+
+352 14 remove_all_cvs 0 4 529 28 HermiteCurve::remove_all_cvs 0 1 92 43
+/**
+ * Removes all CV's from the curve.
+ */
+40
+void HermiteCurve::remove_all_cvs(void);
+
+353 11 set_cv_type 0 4 529 25 HermiteCurve::set_cv_type 0 1 93 544
+/**
+ * Changes the given CV's continuity type.  Legal values are HC_CUT, HC_FREE,
+ * HC_G1, or HC_SMOOTH.
+ *
+ * Other than HC_CUT, these have no effect on the actual curve; it remains up
+ * to user software to impose the constraints these imply.
+ *
+ * HC_CUT implies a disconnection of the curve; HC_FREE imposes no constraints
+ * on the tangents; HC_G1 forces the tangents to be collinear, and HC_SMOOTH
+ * forces the tangents to be identical.  Setting type type to HC_G1 or
+ * HC_SMOOTH may adjust the out tangent to match the in tangent.
+ */
+48
+bool HermiteCurve::set_cv_type(int n, int type);
+
+354 12 set_cv_point 0 4 529 26 HermiteCurve::set_cv_point 0 2 94 95 43
+/**
+ * Changes the given CV's position.
+ */
+151
+bool HermiteCurve::set_cv_point(int n, PN_stdfloat x, PN_stdfloat y, PN_stdfloat z);
+inline bool HermiteCurve::set_cv_point(int n, LVecBase3 const &v);
+
+355 9 set_cv_in 0 4 529 23 HermiteCurve::set_cv_in 0 2 96 97 121
+/**
+ * Changes the given CV's in tangent.  Depending on the continuity type, this
+ * may also adjust the out tangent.
+ */
+145
+bool HermiteCurve::set_cv_in(int n, PN_stdfloat x, PN_stdfloat y, PN_stdfloat z);
+inline bool HermiteCurve::set_cv_in(int n, LVecBase3 const &v);
+
+356 10 set_cv_out 0 4 529 24 HermiteCurve::set_cv_out 0 2 98 99 121
+/**
+ * Changes the given CV's out tangent.  Depending on the continuity type, this
+ * may also adjust the in tangent.
+ */
+147
+bool HermiteCurve::set_cv_out(int n, PN_stdfloat x, PN_stdfloat y, PN_stdfloat z);
+inline bool HermiteCurve::set_cv_out(int n, LVecBase3 const &v);
+
+357 13 set_cv_tstart 0 4 529 27 HermiteCurve::set_cv_tstart 0 1 100 103
+/**
+ * Changes the given CV's parametric starting time.  This may affect the shape
+ * of the curve.
+ */
+60
+bool HermiteCurve::set_cv_tstart(int n, PN_stdfloat tstart);
+
+358 11 set_cv_name 0 4 529 25 HermiteCurve::set_cv_name 0 1 101 60
+/**
+ * Changes the name associated with a particular CV.
+ */
+56
+bool HermiteCurve::set_cv_name(int n, char const *name);
+
+359 11 get_cv_type 0 4 529 25 HermiteCurve::get_cv_type 0 1 102 120
+/**
+ * Returns the given CV's continuity type, HC_CUT, HC_FREE, HC_G1, or
+ * HC_SMOOTH, or 0 if there is no such CV.
+ */
+43
+int HermiteCurve::get_cv_type(int n) const;
+
+360 12 get_cv_point 0 4 529 26 HermiteCurve::get_cv_point 0 2 103 104 48
+/**
+ * Returns the position of the given CV.
+ */
+117
+LVecBase3 const &HermiteCurve::get_cv_point(int n) const;
+void HermiteCurve::get_cv_point(int n, LVecBase3 &v) const;
+
+361 9 get_cv_in 0 4 529 23 HermiteCurve::get_cv_in 0 2 105 106 50
+/**
+ * Returns the in tangent of the given CV.
+ */
+111
+LVecBase3 const &HermiteCurve::get_cv_in(int n) const;
+void HermiteCurve::get_cv_in(int n, LVecBase3 &v) const;
+
+362 10 get_cv_out 0 4 529 24 HermiteCurve::get_cv_out 0 2 107 108 51
+/**
+ * Returns the out tangent of the given CV.
+ */
+113
+LVecBase3 const &HermiteCurve::get_cv_out(int n) const;
+void HermiteCurve::get_cv_out(int n, LVecBase3 &v) const;
+
+363 13 get_cv_tstart 0 4 529 27 HermiteCurve::get_cv_tstart 0 1 109 74
+/**
+ * Returns the starting point in parametric space of the given CV.
+ */
+53
+PN_stdfloat HermiteCurve::get_cv_tstart(int n) const;
+
+364 11 get_cv_name 0 4 529 25 HermiteCurve::get_cv_name 0 1 110 53
+/**
+ * Returns the name of the given CV, or NULL.
+ */
+51
+std::string HermiteCurve::get_cv_name(int n) const;
+
+365 8 write_cv 0 4 529 22 HermiteCurve::write_cv 0 1 111 10
+/**
+ *
+ */
+60
+void HermiteCurve::write_cv(std::ostream &out, int n) const;
+
+366 14 get_class_type 0 4 529 28 HermiteCurve::get_class_type 0 1 112 0
+53
+static TypeHandle HermiteCurve::get_class_type(void);
+
+367 20 ~NurbsCurveInterface 0 518 530 41 NurbsCurveInterface::~NurbsCurveInterface 0 0 10
+/**
+ *
+ */
+56
+virtual NurbsCurveInterface::~NurbsCurveInterface(void);
+
+368 9 set_order 0 6 530 30 NurbsCurveInterface::set_order 0 1 113 0
+59
+virtual void NurbsCurveInterface::set_order(int order) = 0;
+
+369 9 get_order 0 6 530 30 NurbsCurveInterface::get_order 0 1 114 0
+59
+virtual int NurbsCurveInterface::get_order(void) const = 0;
+
+370 11 get_num_cvs 0 6 530 32 NurbsCurveInterface::get_num_cvs 0 1 115 0
+61
+virtual int NurbsCurveInterface::get_num_cvs(void) const = 0;
+
+371 13 get_num_knots 0 6 530 34 NurbsCurveInterface::get_num_knots 0 1 116 0
+63
+virtual int NurbsCurveInterface::get_num_knots(void) const = 0;
+
+372 9 insert_cv 0 6 530 30 NurbsCurveInterface::insert_cv 0 1 117 0
+63
+virtual bool NurbsCurveInterface::insert_cv(PN_stdfloat t) = 0;
+
+373 9 append_cv 0 4 530 30 NurbsCurveInterface::append_cv 0 3 118 119 120 34
+/**
+ *
+ */
+
+/**
+ *
+ */
+
+/**
+ *
+ */
+213
+inline int NurbsCurveInterface::append_cv(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z);
+inline int NurbsCurveInterface::append_cv(LVecBase3 const &v);
+inline int NurbsCurveInterface::append_cv(LVecBase4 const &v);
+
+374 9 remove_cv 0 6 530 30 NurbsCurveInterface::remove_cv 0 1 121 0
+55
+virtual bool NurbsCurveInterface::remove_cv(int n) = 0;
+
+375 14 remove_all_cvs 0 6 530 35 NurbsCurveInterface::remove_all_cvs 0 1 122 0
+59
+virtual void NurbsCurveInterface::remove_all_cvs(void) = 0;
+
+376 12 set_cv_point 0 4 530 33 NurbsCurveInterface::set_cv_point 0 2 123 124 174
+/**
+ * Repositions the indicated CV.  Returns true if successful, false otherwise.
+ */
+
+/**
+ * Repositions the indicated CV.  Returns true if successful, false otherwise.
+ */
+172
+inline bool NurbsCurveInterface::set_cv_point(int n, PN_stdfloat x, PN_stdfloat y, PN_stdfloat z);
+inline bool NurbsCurveInterface::set_cv_point(int n, LVecBase3 const &v);
+
+377 12 get_cv_point 0 4 530 33 NurbsCurveInterface::get_cv_point 0 1 125 52
+/**
+ * Returns the position of the indicated CV.
+ */
+64
+inline LVecBase3 NurbsCurveInterface::get_cv_point(int n) const;
+
+378 13 set_cv_weight 0 4 530 34 NurbsCurveInterface::set_cv_weight 0 1 126 94
+/**
+ * Sets the weight of the indicated CV without affecting its position in 3-d
+ * space.
+ */
+62
+bool NurbsCurveInterface::set_cv_weight(int n, PN_stdfloat w);
+
+379 13 get_cv_weight 0 4 530 34 NurbsCurveInterface::get_cv_weight 0 1 127 50
+/**
+ * Returns the weight of the indicated CV.
+ */
+67
+inline PN_stdfloat NurbsCurveInterface::get_cv_weight(int n) const;
+
+380 6 set_cv 0 6 530 27 NurbsCurveInterface::set_cv 0 1 128 0
+72
+virtual bool NurbsCurveInterface::set_cv(int n, LVecBase4 const &v) = 0;
+
+381 6 get_cv 0 6 530 27 NurbsCurveInterface::get_cv 0 1 129 0
+63
+virtual LVecBase4 NurbsCurveInterface::get_cv(int n) const = 0;
+
+382 8 set_knot 0 6 530 29 NurbsCurveInterface::set_knot 0 1 130 0
+69
+virtual bool NurbsCurveInterface::set_knot(int n, PN_stdfloat t) = 0;
+
+383 8 get_knot 0 6 530 29 NurbsCurveInterface::get_knot 0 1 131 0
+67
+virtual PN_stdfloat NurbsCurveInterface::get_knot(int n) const = 0;
+
+384 8 write_cv 0 4 530 29 NurbsCurveInterface::write_cv 0 1 132 10
+/**
+ *
+ */
+67
+void NurbsCurveInterface::write_cv(std::ostream &out, int n) const;
+
+385 14 get_class_type 0 4 530 35 NurbsCurveInterface::get_class_type 0 1 133 0
+60
+static TypeHandle NurbsCurveInterface::get_class_type(void);
+
+386 24 upcast_to_PiecewiseCurve 0 12 531 36 NurbsCurve::upcast_to_PiecewiseCurve 0 1 137 40
+upcast from NurbsCurve to PiecewiseCurve
+59
+PiecewiseCurve *NurbsCurve::upcast_to_PiecewiseCurve(void);
+
+387 22 downcast_to_NurbsCurve 0 12 528 38 PiecewiseCurve::downcast_to_NurbsCurve 0 0 42
+downcast from PiecewiseCurve to NurbsCurve
+57
+NurbsCurve *PiecewiseCurve::downcast_to_NurbsCurve(void);
+
+388 29 upcast_to_NurbsCurveInterface 0 12 531 41 NurbsCurve::upcast_to_NurbsCurveInterface 0 1 138 45
+upcast from NurbsCurve to NurbsCurveInterface
+69
+NurbsCurveInterface *NurbsCurve::upcast_to_NurbsCurveInterface(void);
+
+389 22 downcast_to_NurbsCurve 0 12 530 43 NurbsCurveInterface::downcast_to_NurbsCurve 0 0 47
+downcast from NurbsCurveInterface to NurbsCurve
+62
+NurbsCurve *NurbsCurveInterface::downcast_to_NurbsCurve(void);
+
+390 10 NurbsCurve 0 260 531 22 NurbsCurve::NurbsCurve 0 2 134 135 188
+/**
+ *
+ */
+
+/**
+ * Constructs a NURBS curve equivalent to the indicated (possibly non-NURBS)
+ * curve.
+ */
+
+/**
+ * Constructs a NURBS curve according to the indicated NURBS parameters.
+ */
+80
+NurbsCurve::NurbsCurve(void);
+NurbsCurve::NurbsCurve(ParametricCurve const &pc);
+
+391 11 ~NurbsCurve 0 518 531 23 NurbsCurve::~NurbsCurve 0 0 10
+/**
+ *
+ */
+38
+virtual NurbsCurve::~NurbsCurve(void);
+
+392 14 get_class_type 0 4 531 26 NurbsCurve::get_class_type 0 1 136 0
+51
+static TypeHandle NurbsCurve::get_class_type(void);
+
+393 11 get_start_t 0 4 532 29 NurbsCurveResult::get_start_t 0 1 140 81
+/**
+ * Returns the first legal value of t on the curve.  Usually this is 0.0.
+ */
+61
+inline PN_stdfloat NurbsCurveResult::get_start_t(void) const;
+
+394 9 get_end_t 0 4 532 27 NurbsCurveResult::get_end_t 0 1 141 58
+/**
+ * Returns the last legal value of t on the curve.
+ */
+59
+inline PN_stdfloat NurbsCurveResult::get_end_t(void) const;
+
+395 10 eval_point 0 4 532 28 NurbsCurveResult::eval_point 0 1 142 158
+/**
+ * Computes the point on the curve corresponding to the indicated value in
+ * parametric time.  Returns true if the t value is valid, false otherwise.
+ */
+74
+inline bool NurbsCurveResult::eval_point(PN_stdfloat t, LVecBase3 &point);
+
+396 12 eval_tangent 0 4 532 30 NurbsCurveResult::eval_tangent 0 1 143 193
+/**
+ * Computes the tangent to the curve at the indicated point in parametric
+ * time.  This tangent vector will not necessarily be normalized, and could be
+ * zero.  See also eval_point().
+ */
+78
+inline bool NurbsCurveResult::eval_tangent(PN_stdfloat t, LVecBase3 &tangent);
+
+397 19 eval_extended_point 0 4 532 37 NurbsCurveResult::eval_extended_point 0 1 144 145
+/**
+ * Evaluates the curve in n-dimensional space according to the extended
+ * vertices associated with the curve in the indicated dimension.
+ */
+79
+inline PN_stdfloat NurbsCurveResult::eval_extended_point(PN_stdfloat t, int d);
+
+398 20 eval_extended_points 0 4 532 38 NurbsCurveResult::eval_extended_points 0 1 145 248
+/**
+ * Simultaneously performs eval_extended_point on a contiguous sequence of
+ * dimensions.  The dimensions evaluated are d through (d + num_values - 1);
+ * the results are filled into the num_values elements in the indicated result
+ * array.
+ */
+111
+inline bool NurbsCurveResult::eval_extended_points(PN_stdfloat t, int d, PN_stdfloat result[], int num_values);
+
+399 16 get_num_segments 0 4 532 34 NurbsCurveResult::get_num_segments 0 1 146 170
+/**
+ * Returns the number of piecewise continuous segments within the curve.  This
+ * number is usually not important unless you plan to call
+ * eval_segment_point().
+ */
+58
+inline int NurbsCurveResult::get_num_segments(void) const;
+
+400 18 eval_segment_point 0 4 532 36 NurbsCurveResult::eval_segment_point 0 1 147 637
+/**
+ * Evaluates the point on the curve corresponding to the indicated value in
+ * parametric time within the indicated curve segment.  t should be in the
+ * range [0, 1].
+ *
+ * The curve is internally represented as a number of connected (or possibly
+ * unconnected) piecewise continuous segments.  The exact number of segments
+ * for a particular curve depends on the knot vector, and is returned by
+ * get_num_segments().  Normally, eval_point() is used to evaluate a point
+ * along the continuous curve, but when you care more about local continuity,
+ * you can use eval_segment_point() to evaluate the points along each segment.
+ */
+94
+void NurbsCurveResult::eval_segment_point(int segment, PN_stdfloat t, LVecBase3 &point) const;
+
+401 20 eval_segment_tangent 0 4 532 38 NurbsCurveResult::eval_segment_tangent 0 1 148 207
+/**
+ * As eval_segment_point, but computes the tangent to the curve at the
+ * indicated point.  The tangent vector will not necessarily be normalized,
+ * and could be zero, particularly at the endpoints.
+ */
+98
+void NurbsCurveResult::eval_segment_tangent(int segment, PN_stdfloat t, LVecBase3 &tangent) const;
+
+402 27 eval_segment_extended_point 0 4 532 45 NurbsCurveResult::eval_segment_extended_point 0 1 149 145
+/**
+ * Evaluates the curve in n-dimensional space according to the extended
+ * vertices associated with the curve in the indicated dimension.
+ */
+99
+PN_stdfloat NurbsCurveResult::eval_segment_extended_point(int segment, PN_stdfloat t, int d) const;
+
+403 28 eval_segment_extended_points 0 4 532 46 NurbsCurveResult::eval_segment_extended_points 0 1 150 248
+/**
+ * Simultaneously performs eval_extended_point on a contiguous sequence of
+ * dimensions.  The dimensions evaluated are d through (d + num_values - 1);
+ * the results are filled into the num_values elements in the indicated result
+ * array.
+ */
+131
+void NurbsCurveResult::eval_segment_extended_points(int segment, PN_stdfloat t, int d, PN_stdfloat result[], int num_values) const;
+
+404 13 get_segment_t 0 4 532 31 NurbsCurveResult::get_segment_t 0 1 151 217
+/**
+ * Accepts a t value in the range [0, 1], and assumed to be relative to the
+ * indicated segment (as in eval_segment_point()), and returns the
+ * corresponding t value in the entire curve (as in eval_point()).
+ */
+85
+inline PN_stdfloat NurbsCurveResult::get_segment_t(int segment, PN_stdfloat t) const;
+
+405 15 adaptive_sample 0 4 532 33 NurbsCurveResult::adaptive_sample 0 1 152 330
+/**
+ * Determines the set of subdivisions necessary to approximate the curve with
+ * a set of linear segments, no point of which is farther than tolerance units
+ * from the actual curve.
+ *
+ * After this call, you may walk through the resulting set of samples with
+ * get_num_samples(), get_sample_t(), and get_sample_point().
+ */
+62
+void NurbsCurveResult::adaptive_sample(PN_stdfloat tolerance);
+
+406 15 get_num_samples 0 4 532 33 NurbsCurveResult::get_num_samples 0 1 153 102
+/**
+ * Returns the number of sample points generated by the previous call to
+ * adaptive_sample().
+ */
+57
+inline int NurbsCurveResult::get_num_samples(void) const;
+
+407 12 get_sample_t 0 4 532 30 NurbsCurveResult::get_sample_t 0 1 154 110
+/**
+ * Returns the t value of the nth sample point generated by the previous call
+ * to adaptive_sample().
+ */
+63
+inline PN_stdfloat NurbsCurveResult::get_sample_t(int n) const;
+
+408 16 get_sample_point 0 4 532 34 NurbsCurveResult::get_sample_point 0 1 155 252
+/**
+ * Returns the point on the curve of the nth sample point generated by the
+ * previous call to adaptive_sample().
+ *
+ * For tangents, or extended points, you should use get_sample_t() and pass it
+ * into eval_tangent() or eval_extended_point().
+ */
+70
+inline LPoint3 const &NurbsCurveResult::get_sample_point(int n) const;
+
+409 16 NurbsCurveResult 0 260 532 34 NurbsCurveResult::NurbsCurveResult 0 1 139 174
+/**
+ * The constructor automatically builds up the result as the product of the
+ * indicated set of basis matrices and the indicated table of control vertex
+ * positions.
+ */
+78
+inline NurbsCurveResult::NurbsCurveResult(NurbsCurveResult const &) = default;
+
+410 19 NurbsCurveEvaluator 0 260 533 40 NurbsCurveEvaluator::NurbsCurveEvaluator 0 2 156 157 10
+/**
+ *
+ */
+135
+NurbsCurveEvaluator::NurbsCurveEvaluator(void);
+inline NurbsCurveEvaluator::NurbsCurveEvaluator(NurbsCurveEvaluator const &) = default;
+
+411 9 set_order 0 4 533 30 NurbsCurveEvaluator::set_order 0 1 158 224
+/**
+ * Sets the order of the curve.  This resets the knot vector to the default
+ * knot vector for the number of vertices.
+ *
+ * The order must be 1, 2, 3, or 4, and the value is one more than the degree
+ * of the curve.
+ */
+54
+inline void NurbsCurveEvaluator::set_order(int order);
+
+412 9 get_order 0 4 533 30 NurbsCurveEvaluator::get_order 0 1 159 83
+/**
+ * Returns the order of the curve as set by a previous call to set_order().
+ */
+54
+inline int NurbsCurveEvaluator::get_order(void) const;
+
+413 5 reset 0 4 533 26 NurbsCurveEvaluator::reset 0 1 160 231
+/**
+ * Resets all the vertices and knots to their default values, and sets the
+ * curve up with the indicated number of vertices.  You must then call
+ * set_vertex() repeatedly to fill in all of the vertex values appropriately.
+ */
+50
+void NurbsCurveEvaluator::reset(int num_vertices);
+
+414 16 get_num_vertices 0 4 533 37 NurbsCurveEvaluator::get_num_vertices 0 1 161 122
+/**
+ * Returns the number of control vertices in the curve.  This is the number
+ * passed to the last call to reset().
+ */
+61
+inline int NurbsCurveEvaluator::get_num_vertices(void) const;
+
+415 10 set_vertex 0 4 533 31 NurbsCurveEvaluator::set_vertex 0 2 162 163 441
+/**
+ * Sets the nth control vertex of the curve, as a vertex in 4-d homogeneous
+ * space.  In this form, the first three components of the vertex should
+ * already have been scaled by the fourth component, which is the homogeneous
+ * weight.
+ */
+
+/**
+ * Sets the nth control vertex of the curve.  This flavor sets the vertex as a
+ * 3-d coordinate and a weight; the 3-d coordinate values are implicitly
+ * scaled up by the weight factor.
+ */
+179
+inline void NurbsCurveEvaluator::set_vertex(int i, LVecBase4 const &vertex);
+inline void NurbsCurveEvaluator::set_vertex(int i, LVecBase3 const &vertex, PN_stdfloat weight = 1.0);
+
+416 10 get_vertex 0 4 533 31 NurbsCurveEvaluator::get_vertex 0 2 164 165 202
+/**
+ * Returns the nth control vertex of the curve, relative to its indicated
+ * coordinate space.
+ */
+
+/**
+ * Returns the nth control vertex of the curve, relative to the given
+ * coordinate space.
+ */
+156
+inline LVecBase4 const &NurbsCurveEvaluator::get_vertex(int i) const;
+inline LVecBase4 NurbsCurveEvaluator::get_vertex(int i, NodePath const &rel_to) const;
+
+417 16 set_vertex_space 0 4 533 37 NurbsCurveEvaluator::set_vertex_space 0 2 166 167 792
+/**
+ * Sets the coordinate space of the nth control vertex.  If this is not
+ * specified, or is set to an empty NodePath, the nth control vertex is deemed
+ * to be in the coordinate space passed to evaluate().
+ *
+ * This specifies the space as a fixed NodePath, which is always the same
+ * NodePath.  Also see setting the space as a path string, which can specify a
+ * different NodePath for different instances of the curve.
+ */
+
+/**
+ * Sets the coordinate space of the nth control vertex.  If this is not
+ * specified, or is set to an empty string, the nth control vertex is deemed
+ * to be in the coordinate space passed to evaluate().
+ *
+ * This specifies the space as a string, which describes the path to find the
+ * node relative to the rel_to NodePath when the curve is evaluated.
+ */
+164
+inline void NurbsCurveEvaluator::set_vertex_space(int i, NodePath const &space);
+inline void NurbsCurveEvaluator::set_vertex_space(int i, std::string const &space);
+
+418 16 get_vertex_space 0 4 533 37 NurbsCurveEvaluator::get_vertex_space 0 1 168 107
+/**
+ * Returns the coordinate space of the nth control vertex of the curve,
+ * expressed as a NodePath.
+ */
+84
+NodePath NurbsCurveEvaluator::get_vertex_space(int i, NodePath const &rel_to) const;
+
+419 19 set_extended_vertex 0 4 533 40 NurbsCurveEvaluator::set_extended_vertex 0 1 169 768
+/**
+ * Sets an n-dimensional vertex value.  This allows definition of a NURBS
+ * surface or curve in a sparse n-dimensional space, typically used for
+ * associating additional properties (like color or joint membership) with
+ * each vertex of a surface.
+ *
+ * The value d is an arbitrary integer value and specifies the dimension of
+ * question for this particular vertex.  Any number of dimensions may be
+ * specified, and they need not be consecutive.  If a value for a given
+ * dimension is not specified, is it implicitly 0.0.
+ *
+ * The value is implicitly scaled by the homogenous weight value--that is, the
+ * fourth component of the value passed to set_vertex().  This means the
+ * ordinary vertex must be set first, before the extended vertices can be set.
+ */
+86
+inline void NurbsCurveEvaluator::set_extended_vertex(int i, int d, PN_stdfloat value);
+
+420 19 get_extended_vertex 0 4 533 40 NurbsCurveEvaluator::get_extended_vertex 0 1 170 172
+/**
+ * Returns an n-dimensional vertex value.  See set_extended_vertex().  This
+ * returns the value set for the indicated dimension, or 0.0 if nothing has
+ * been set.
+ */
+80
+inline PN_stdfloat NurbsCurveEvaluator::get_extended_vertex(int i, int d) const;
+
+421 21 set_extended_vertices 0 4 533 42 NurbsCurveEvaluator::set_extended_vertices 0 1 171 259
+/**
+ * Simultaneously sets several extended values in the slots d through (d +
+ * num_values - 1) from the num_values elements of the indicated array.  This
+ * is equivalent to calling set_extended_vertex() num_values times.  See
+ * set_extended_vertex().
+ */
+106
+void NurbsCurveEvaluator::set_extended_vertices(int i, int d, PN_stdfloat const values[], int num_values);
+
+422 13 get_num_knots 0 4 533 34 NurbsCurveEvaluator::get_num_knots 0 1 172 117
+/**
+ * Returns the number of knot values in the curve.  This is based on the
+ * number of vertices and the order.
+ */
+58
+inline int NurbsCurveEvaluator::get_num_knots(void) const;
+
+423 8 set_knot 0 4 533 29 NurbsCurveEvaluator::set_knot 0 1 173 184
+/**
+ * Sets the value of the nth knot.  Each knot value should be greater than or
+ * equal to the preceding value.  If no knot values are set, a default knot
+ * vector is supplied.
+ */
+60
+void NurbsCurveEvaluator::set_knot(int i, PN_stdfloat knot);
+
+424 8 get_knot 0 4 533 29 NurbsCurveEvaluator::get_knot 0 1 174 45
+/**
+ * Returns the value of the nth knot.
+ */
+55
+PN_stdfloat NurbsCurveEvaluator::get_knot(int i) const;
+
+425 15 normalize_knots 0 4 533 36 NurbsCurveEvaluator::normalize_knots 0 1 175 95
+/**
+ * Normalizes the knot sequence so that the parametric range of the curve is 0
+ * .. 1.
+ */
+48
+void NurbsCurveEvaluator::normalize_knots(void);
+
+426 16 get_num_segments 0 4 533 37 NurbsCurveEvaluator::get_num_segments 0 1 176 114
+/**
+ * Returns the number of piecewise continuous segments in the curve.  This is
+ * based on the knot vector.
+ */
+61
+inline int NurbsCurveEvaluator::get_num_segments(void) const;
+
+427 8 evaluate 0 4 533 29 NurbsCurveEvaluator::evaluate 0 2 177 178 447
+/**
+ * Returns a NurbsCurveResult object that represents the result of applying
+ * the knots to all of the current values of the vertices, transformed into
+ * the indicated coordinate space.
+ */
+
+/**
+ * Returns a NurbsCurveResult object that represents the result of applying
+ * the knots to all of the current values of the vertices, transformed into
+ * the indicated coordinate space, and then further transformed by the
+ * indicated matrix.
+ */
+215
+PointerTo< NurbsCurveResult > NurbsCurveEvaluator::evaluate(NodePath const &rel_to = NodePath()) const;
+PointerTo< NurbsCurveResult > NurbsCurveEvaluator::evaluate(NodePath const &rel_to, LMatrix4 const &mat) const;
+
+428 6 output 0 4 533 27 NurbsCurveEvaluator::output 0 1 179 10
+/**
+ *
+ */
+58
+void NurbsCurveEvaluator::output(std::ostream &out) const;
+
+429 11 get_start_u 0 4 534 31 NurbsSurfaceResult::get_start_u 0 1 181 83
+/**
+ * Returns the first legal value of u on the surface.  Usually this is 0.0.
+ */
+63
+inline PN_stdfloat NurbsSurfaceResult::get_start_u(void) const;
+
+430 9 get_end_u 0 4 534 29 NurbsSurfaceResult::get_end_u 0 1 182 60
+/**
+ * Returns the last legal value of u on the surface.
+ */
+61
+inline PN_stdfloat NurbsSurfaceResult::get_end_u(void) const;
+
+431 11 get_start_v 0 4 534 31 NurbsSurfaceResult::get_start_v 0 1 183 83
+/**
+ * Returns the first legal value of v on the surface.  Usually this is 0.0.
+ */
+63
+inline PN_stdfloat NurbsSurfaceResult::get_start_v(void) const;
+
+432 9 get_end_v 0 4 534 29 NurbsSurfaceResult::get_end_v 0 1 184 60
+/**
+ * Returns the last legal value of v on the surface.
+ */
+61
+inline PN_stdfloat NurbsSurfaceResult::get_end_v(void) const;
+
+433 10 eval_point 0 4 534 30 NurbsSurfaceResult::eval_point 0 1 185 168
+/**
+ * Computes the point on the surface corresponding to the indicated value in
+ * parametric time.  Returns true if the u, v values are valid, false
+ * otherwise.
+ */
+91
+inline bool NurbsSurfaceResult::eval_point(PN_stdfloat u, PN_stdfloat v, LVecBase3 &point);
+
+434 11 eval_normal 0 4 534 31 NurbsSurfaceResult::eval_normal 0 1 186 193
+/**
+ * Computes the normal to the surface at the indicated point in parametric
+ * time.  This normal vector will not necessarily be normalized, and could be
+ * zero.  See also eval_point().
+ */
+93
+inline bool NurbsSurfaceResult::eval_normal(PN_stdfloat u, PN_stdfloat v, LVecBase3 &normal);
+
+435 19 eval_extended_point 0 4 534 39 NurbsSurfaceResult::eval_extended_point 0 1 187 149
+/**
+ * Evaluates the surface in n-dimensional space according to the extended
+ * vertices associated with the surface in the indicated dimension.
+ */
+96
+inline PN_stdfloat NurbsSurfaceResult::eval_extended_point(PN_stdfloat u, PN_stdfloat v, int d);
+
+436 20 eval_extended_points 0 4 534 40 NurbsSurfaceResult::eval_extended_points 0 1 188 248
+/**
+ * Simultaneously performs eval_extended_point on a contiguous sequence of
+ * dimensions.  The dimensions evaluated are d through (d + num_values - 1);
+ * the results are filled into the num_values elements in the indicated result
+ * array.
+ */
+128
+inline bool NurbsSurfaceResult::eval_extended_points(PN_stdfloat u, PN_stdfloat v, int d, PN_stdfloat result[], int num_values);
+
+437 18 get_num_u_segments 0 4 534 38 NurbsSurfaceResult::get_num_u_segments 0 1 189 191
+/**
+ * Returns the number of piecewise continuous segments within the surface in
+ * the U direction.  This number is usually not important unless you plan to
+ * call eval_segment_point().
+ */
+62
+inline int NurbsSurfaceResult::get_num_u_segments(void) const;
+
+438 18 get_num_v_segments 0 4 534 38 NurbsSurfaceResult::get_num_v_segments 0 1 190 191
+/**
+ * Returns the number of piecewise continuous segments within the surface in
+ * the V direction.  This number is usually not important unless you plan to
+ * call eval_segment_point().
+ */
+62
+inline int NurbsSurfaceResult::get_num_v_segments(void) const;
+
+439 18 eval_segment_point 0 4 534 38 NurbsSurfaceResult::eval_segment_point 0 1 191 656
+/**
+ * Evaluates the point on the surface corresponding to the indicated value in
+ * parametric time within the indicated surface segment.  u and v should be in
+ * the range [0, 1].
+ *
+ * The surface is internally represented as a number of connected (or possibly
+ * unconnected) piecewise continuous segments.  The exact number of segments
+ * for a particular surface depends on the knot vector, and is returned by
+ * get_num_segments().  Normally, eval_point() is used to evaluate a point
+ * along the continuous surface, but when you care more about local
+ * continuity, you can use eval_segment_point() to evaluate the points along
+ * each segment.
+ */
+114
+void NurbsSurfaceResult::eval_segment_point(int ui, int vi, PN_stdfloat u, PN_stdfloat v, LVecBase3 &point) const;
+
+440 19 eval_segment_normal 0 4 534 39 NurbsSurfaceResult::eval_segment_normal 0 1 192 176
+/**
+ * As eval_segment_point, but computes the normal to the surface at the
+ * indicated point.  The normal vector will not necessarily be normalized, and
+ * could be zero.
+ */
+116
+void NurbsSurfaceResult::eval_segment_normal(int ui, int vi, PN_stdfloat u, PN_stdfloat v, LVecBase3 &normal) const;
+
+441 27 eval_segment_extended_point 0 4 534 47 NurbsSurfaceResult::eval_segment_extended_point 0 1 193 149
+/**
+ * Evaluates the surface in n-dimensional space according to the extended
+ * vertices associated with the surface in the indicated dimension.
+ */
+119
+PN_stdfloat NurbsSurfaceResult::eval_segment_extended_point(int ui, int vi, PN_stdfloat u, PN_stdfloat v, int d) const;
+
+442 28 eval_segment_extended_points 0 4 534 48 NurbsSurfaceResult::eval_segment_extended_points 0 1 194 248
+/**
+ * Simultaneously performs eval_extended_point on a contiguous sequence of
+ * dimensions.  The dimensions evaluated are d through (d + num_values - 1);
+ * the results are filled into the num_values elements in the indicated result
+ * array.
+ */
+151
+void NurbsSurfaceResult::eval_segment_extended_points(int ui, int vi, PN_stdfloat u, PN_stdfloat v, int d, PN_stdfloat result[], int num_values) const;
+
+443 13 get_segment_u 0 4 534 33 NurbsSurfaceResult::get_segment_u 0 1 195 219
+/**
+ * Accepts a u value in the range [0, 1], and assumed to be relative to the
+ * indicated segment (as in eval_segment_point()), and returns the
+ * corresponding u value in the entire surface (as in eval_point()).
+ */
+82
+inline PN_stdfloat NurbsSurfaceResult::get_segment_u(int ui, PN_stdfloat u) const;
+
+444 13 get_segment_v 0 4 534 33 NurbsSurfaceResult::get_segment_v 0 1 196 219
+/**
+ * Accepts a v value in the range [0, 1], and assumed to be relative to the
+ * indicated segment (as in eval_segment_point()), and returns the
+ * corresponding v value in the entire surface (as in eval_point()).
+ */
+82
+inline PN_stdfloat NurbsSurfaceResult::get_segment_v(int vi, PN_stdfloat v) const;
+
+445 18 NurbsSurfaceResult 0 260 534 38 NurbsSurfaceResult::NurbsSurfaceResult 0 1 180 174
+/**
+ * The constructor automatically builds up the result as the product of the
+ * indicated set of basis matrices and the indicated table of control vertex
+ * positions.
+ */
+84
+inline NurbsSurfaceResult::NurbsSurfaceResult(NurbsSurfaceResult const &) = default;
+
+446 21 NurbsSurfaceEvaluator 0 260 535 44 NurbsSurfaceEvaluator::NurbsSurfaceEvaluator 0 2 197 198 10
+/**
+ *
+ */
+145
+NurbsSurfaceEvaluator::NurbsSurfaceEvaluator(void);
+inline NurbsSurfaceEvaluator::NurbsSurfaceEvaluator(NurbsSurfaceEvaluator const &) = default;
+
+447 11 set_u_order 0 4 535 34 NurbsSurfaceEvaluator::set_u_order 0 1 199 247
+/**
+ * Sets the order of the surface in the U direction.  This resets the knot
+ * vector to the default knot vector for the number of vertices.
+ *
+ * The order must be 1, 2, 3, or 4, and the value is one more than the degree
+ * of the surface.
+ */
+60
+inline void NurbsSurfaceEvaluator::set_u_order(int u_order);
+
+448 11 get_u_order 0 4 535 34 NurbsSurfaceEvaluator::get_u_order 0 1 200 109
+/**
+ * Returns the order of the surface in the U direction as set by a previous
+ * call to set_u_order().
+ */
+58
+inline int NurbsSurfaceEvaluator::get_u_order(void) const;
+
+449 11 set_v_order 0 4 535 34 NurbsSurfaceEvaluator::set_v_order 0 1 201 247
+/**
+ * Sets the order of the surface in the V direction.  This resets the knot
+ * vector to the default knot vector for the number of vertices.
+ *
+ * The order must be 1, 2, 3, or 4, and the value is one more than the degree
+ * of the surface.
+ */
+60
+inline void NurbsSurfaceEvaluator::set_v_order(int v_order);
+
+450 11 get_v_order 0 4 535 34 NurbsSurfaceEvaluator::get_v_order 0 1 202 109
+/**
+ * Returns the order of the surface in the V direction as set by a previous
+ * call to set_v_order().
+ */
+58
+inline int NurbsSurfaceEvaluator::get_v_order(void) const;
+
+451 5 reset 0 4 535 28 NurbsSurfaceEvaluator::reset 0 1 203 233
+/**
+ * Resets all the vertices and knots to their default values, and sets the
+ * surface up with the indicated number of vertices.  You must then call
+ * set_vertex() repeatedly to fill in all of the vertex values appropriately.
+ */
+74
+void NurbsSurfaceEvaluator::reset(int num_u_vertices, int num_v_vertices);
+
+452 18 get_num_u_vertices 0 4 535 41 NurbsSurfaceEvaluator::get_num_u_vertices 0 1 204 142
+/**
+ * Returns the number of control vertices in the U direction on the surface.
+ * This is the number passed to the last call to reset().
+ */
+65
+inline int NurbsSurfaceEvaluator::get_num_u_vertices(void) const;
+
+453 18 get_num_v_vertices 0 4 535 41 NurbsSurfaceEvaluator::get_num_v_vertices 0 1 205 142
+/**
+ * Returns the number of control vertices in the V direction on the surface.
+ * This is the number passed to the last call to reset().
+ */
+65
+inline int NurbsSurfaceEvaluator::get_num_v_vertices(void) const;
+
+454 10 set_vertex 0 4 535 33 NurbsSurfaceEvaluator::set_vertex 0 2 206 207 445
+/**
+ * Sets the nth control vertex of the surface, as a vertex in 4-d homogeneous
+ * space.  In this form, the first three components of the vertex should
+ * already have been scaled by the fourth component, which is the homogeneous
+ * weight.
+ */
+
+/**
+ * Sets the nth control vertex of the surface.  This flavor sets the vertex as
+ * a 3-d coordinate and a weight; the 3-d coordinate values are implicitly
+ * scaled up by the weight factor.
+ */
+201
+inline void NurbsSurfaceEvaluator::set_vertex(int ui, int vi, LVecBase4 const &vertex);
+inline void NurbsSurfaceEvaluator::set_vertex(int ui, int vi, LVecBase3 const &vertex, PN_stdfloat weight = 1.0);
+
+455 10 get_vertex 0 4 535 33 NurbsSurfaceEvaluator::get_vertex 0 2 208 209 206
+/**
+ * Returns the nth control vertex of the surface, relative to its indicated
+ * coordinate space.
+ */
+
+/**
+ * Returns the nth control vertex of the surface, relative to the given
+ * coordinate space.
+ */
+178
+inline LVecBase4 const &NurbsSurfaceEvaluator::get_vertex(int ui, int vi) const;
+inline LVecBase4 NurbsSurfaceEvaluator::get_vertex(int ui, int vi, NodePath const &rel_to) const;
+
+456 16 set_vertex_space 0 4 535 39 NurbsSurfaceEvaluator::set_vertex_space 0 2 210 211 796
+/**
+ * Sets the coordinate space of the nth control vertex.  If this is not
+ * specified, or is set to an empty NodePath, the nth control vertex is deemed
+ * to be in the coordinate space passed to evaluate().
+ *
+ * This specifies the space as a fixed NodePath, which is always the same
+ * NodePath.  Also see setting the space as a path string, which can specify a
+ * different NodePath for different instances of the surface.
+ */
+
+/**
+ * Sets the coordinate space of the nth control vertex.  If this is not
+ * specified, or is set to an empty string, the nth control vertex is deemed
+ * to be in the coordinate space passed to evaluate().
+ *
+ * This specifies the space as a string, which describes the path to find the
+ * node relative to the rel_to NodePath when the surface is evaluated.
+ */
+186
+inline void NurbsSurfaceEvaluator::set_vertex_space(int ui, int vi, NodePath const &space);
+inline void NurbsSurfaceEvaluator::set_vertex_space(int ui, int vi, std::string const &space);
+
+457 16 get_vertex_space 0 4 535 39 NurbsSurfaceEvaluator::get_vertex_space 0 1 212 109
+/**
+ * Returns the coordinate space of the nth control vertex of the surface,
+ * expressed as a NodePath.
+ */
+95
+NodePath NurbsSurfaceEvaluator::get_vertex_space(int ui, int vi, NodePath const &rel_to) const;
+
+458 19 set_extended_vertex 0 4 535 42 NurbsSurfaceEvaluator::set_extended_vertex 0 1 213 770
+/**
+ * Sets an n-dimensional vertex value.  This allows definition of a NURBS
+ * surface or surface in a sparse n-dimensional space, typically used for
+ * associating additional properties (like color or joint membership) with
+ * each vertex of a surface.
+ *
+ * The value d is an arbitrary integer value and specifies the dimension of
+ * question for this particular vertex.  Any number of dimensions may be
+ * specified, and they need not be consecutive.  If a value for a given
+ * dimension is not specified, is it implicitly 0.0.
+ *
+ * The value is implicitly scaled by the homogenous weight value--that is, the
+ * fourth component of the value passed to set_vertex().  This means the
+ * ordinary vertex must be set first, before the extended vertices can be set.
+ */
+97
+inline void NurbsSurfaceEvaluator::set_extended_vertex(int ui, int vi, int d, PN_stdfloat value);
+
+459 19 get_extended_vertex 0 4 535 42 NurbsSurfaceEvaluator::get_extended_vertex 0 1 214 172
+/**
+ * Returns an n-dimensional vertex value.  See set_extended_vertex().  This
+ * returns the value set for the indicated dimension, or 0.0 if nothing has
+ * been set.
+ */
+91
+inline PN_stdfloat NurbsSurfaceEvaluator::get_extended_vertex(int ui, int vi, int d) const;
+
+460 21 set_extended_vertices 0 4 535 44 NurbsSurfaceEvaluator::set_extended_vertices 0 1 215 259
+/**
+ * Simultaneously sets several extended values in the slots d through (d +
+ * num_values - 1) from the num_values elements of the indicated array.  This
+ * is equivalent to calling set_extended_vertex() num_values times.  See
+ * set_extended_vertex().
+ */
+117
+void NurbsSurfaceEvaluator::set_extended_vertices(int ui, int vi, int d, PN_stdfloat const values[], int num_values);
+
+461 15 get_num_u_knots 0 4 535 38 NurbsSurfaceEvaluator::get_num_u_knots 0 1 216 138
+/**
+ * Returns the number of knot values in the surface in the U direction.  This
+ * is based on the number of vertices and the order.
+ */
+62
+inline int NurbsSurfaceEvaluator::get_num_u_knots(void) const;
+
+462 10 set_u_knot 0 4 535 33 NurbsSurfaceEvaluator::set_u_knot 0 1 217 184
+/**
+ * Sets the value of the nth knot.  Each knot value should be greater than or
+ * equal to the preceding value.  If no knot values are set, a default knot
+ * vector is supplied.
+ */
+64
+void NurbsSurfaceEvaluator::set_u_knot(int i, PN_stdfloat knot);
+
+463 10 get_u_knot 0 4 535 33 NurbsSurfaceEvaluator::get_u_knot 0 1 218 45
+/**
+ * Returns the value of the nth knot.
+ */
+59
+PN_stdfloat NurbsSurfaceEvaluator::get_u_knot(int i) const;
+
+464 17 normalize_u_knots 0 4 535 40 NurbsSurfaceEvaluator::normalize_u_knots 0 1 219 116
+/**
+ * Normalizes the knot sequence so that the parametric range of the surface in
+ * the U direction is 0 .. 1.
+ */
+52
+void NurbsSurfaceEvaluator::normalize_u_knots(void);
+
+465 15 get_num_v_knots 0 4 535 38 NurbsSurfaceEvaluator::get_num_v_knots 0 1 220 138
+/**
+ * Returns the number of knot values in the surface in the V direction.  This
+ * is based on the number of vertices and the order.
+ */
+62
+inline int NurbsSurfaceEvaluator::get_num_v_knots(void) const;
+
+466 10 set_v_knot 0 4 535 33 NurbsSurfaceEvaluator::set_v_knot 0 1 221 184
+/**
+ * Sets the value of the nth knot.  Each knot value should be greater than or
+ * equal to the preceding value.  If no knot values are set, a default knot
+ * vector is supplied.
+ */
+64
+void NurbsSurfaceEvaluator::set_v_knot(int i, PN_stdfloat knot);
+
+467 10 get_v_knot 0 4 535 33 NurbsSurfaceEvaluator::get_v_knot 0 1 222 45
+/**
+ * Returns the value of the nth knot.
+ */
+59
+PN_stdfloat NurbsSurfaceEvaluator::get_v_knot(int i) const;
+
+468 17 normalize_v_knots 0 4 535 40 NurbsSurfaceEvaluator::normalize_v_knots 0 1 223 116
+/**
+ * Normalizes the knot sequence so that the parametric range of the surface in
+ * the U direction is 0 .. 1.
+ */
+52
+void NurbsSurfaceEvaluator::normalize_v_knots(void);
+
+469 18 get_num_u_segments 0 4 535 41 NurbsSurfaceEvaluator::get_num_u_segments 0 1 224 135
+/**
+ * Returns the number of piecewise continuous segments in the surface in the U
+ * direction.  This is based on the knot vector.
+ */
+65
+inline int NurbsSurfaceEvaluator::get_num_u_segments(void) const;
+
+470 18 get_num_v_segments 0 4 535 41 NurbsSurfaceEvaluator::get_num_v_segments 0 1 225 135
+/**
+ * Returns the number of piecewise continuous segments in the surface in the V
+ * direction.  This is based on the knot vector.
+ */
+65
+inline int NurbsSurfaceEvaluator::get_num_v_segments(void) const;
+
+471 8 evaluate 0 4 535 31 NurbsSurfaceEvaluator::evaluate 0 1 226 196
+/**
+ * Returns a NurbsSurfaceResult object that represents the result of applying
+ * the knots to all of the current values of the vertices, transformed into
+ * the indicated coordinate space.
+ */
+107
+PointerTo< NurbsSurfaceResult > NurbsSurfaceEvaluator::evaluate(NodePath const &rel_to = NodePath()) const;
+
+472 6 output 0 4 535 29 NurbsSurfaceEvaluator::output 0 1 227 10
+/**
+ *
+ */
+60
+void NurbsSurfaceEvaluator::output(std::ostream &out) const;
+
+473 8 RopeNode 0 260 537 18 RopeNode::RopeNode 0 1 228 22
+/**
+ *
+ */
+
+/**
+ *
+ */
+53
+explicit RopeNode::RopeNode(std::string const &name);
+
+474 9 set_curve 0 4 537 19 RopeNode::set_curve 0 1 229 65
+/**
+ * Sets the particular curve represented by the RopeNode.
+ */
+60
+inline void RopeNode::set_curve(NurbsCurveEvaluator *curve);
+
+475 9 get_curve 0 4 537 19 RopeNode::get_curve 0 1 230 57
+/**
+ * Returns the curve represented by the RopeNode.
+ */
+60
+inline NurbsCurveEvaluator *RopeNode::get_curve(void) const;
+
+476 15 set_render_mode 0 4 537 25 RopeNode::set_render_mode 0 1 231 130
+/**
+ * Specifies the method used to render the rope.  The simplest is RM_thread,
+ * which just draws a one-pixel line segment.
+ */
+72
+inline void RopeNode::set_render_mode(RopeNode::RenderMode render_mode);
+
+477 15 get_render_mode 0 4 537 25 RopeNode::get_render_mode 0 1 232 78
+/**
+ * Returns the method used to render the rope.  See set_render_mode().
+ */
+66
+inline RopeNode::RenderMode RopeNode::get_render_mode(void) const;
+
+478 11 set_uv_mode 0 4 537 21 RopeNode::set_uv_mode 0 1 233 72
+/**
+ * Specifies the algorithm to use to generate UV's for the rope.
+ */
+60
+inline void RopeNode::set_uv_mode(RopeNode::UVMode uv_mode);
+
+479 11 get_uv_mode 0 4 537 21 RopeNode::get_uv_mode 0 1 234 70
+/**
+ * Returns the algorithm to use to generate UV's for the rope.
+ */
+58
+inline RopeNode::UVMode RopeNode::get_uv_mode(void) const;
+
+480 16 set_uv_direction 0 4 537 26 RopeNode::set_uv_direction 0 1 235 115
+/**
+ * Specify true to vary the U coordinate down the length of the rope, or false
+ * to vary the V coordinate.
+ */
+56
+inline void RopeNode::set_uv_direction(bool u_dominant);
+
+481 16 get_uv_direction 0 4 537 26 RopeNode::get_uv_direction 0 1 236 124
+/**
+ * Returns true if the rope runs down the U coordinate of the texture, or
+ * false if it runs down the V coordinate.
+ */
+51
+inline bool RopeNode::get_uv_direction(void) const;
+
+482 12 set_uv_scale 0 4 537 22 RopeNode::set_uv_scale 0 1 237 206
+/**
+ * Specifies an additional scaling factor to apply to generated UV's along the
+ * rope.  This scale factor is applied in whichever direction is along the
+ * rope, as specified by set_uv_direction().
+ */
+54
+inline void RopeNode::set_uv_scale(PN_stdfloat scale);
+
+483 12 get_uv_scale 0 4 537 22 RopeNode::get_uv_scale 0 1 238 78
+/**
+ * Returns the scaling factor to apply to generated UV's for the rope.
+ */
+54
+inline PN_stdfloat RopeNode::get_uv_scale(void) const;
+
+484 15 set_normal_mode 0 4 537 25 RopeNode::set_normal_mode 0 1 239 192
+/**
+ * Specifies the kind of normals to generate for the rope.  This is only
+ * applicable when the RenderMode is set to RM_tube; in the other render
+ * modes, normals are never generated.
+ */
+72
+inline void RopeNode::set_normal_mode(RopeNode::NormalMode normal_mode);
+
+485 15 get_normal_mode 0 4 537 25 RopeNode::get_normal_mode 0 1 240 131
+/**
+ * Returns the kind of normals to generate for the rope.  This is only
+ * applicable when the RenderMode is set to RM_tube.
+ */
+66
+inline RopeNode::NormalMode RopeNode::get_normal_mode(void) const;
+
+486 11 set_tube_up 0 4 537 21 RopeNode::set_tube_up 0 1 241 419
+/**
+ * Specifies a normal vector, generally perpendicular to the main axis of the
+ * starting point of the curve, that controls the "top" of the curve, when
+ * RenderMode is RM_tube.  This is used to orient the vertices that make up
+ * the tube.  If this vector is too nearly parallel with the starting
+ * direction of the curve, there may be a tendency for the whole tube to
+ * gimble-lock around its primary axis.
+ */
+59
+inline void RopeNode::set_tube_up(LVector3 const &tube_up);
+
+487 11 get_tube_up 0 4 537 21 RopeNode::get_tube_up 0 1 242 127
+/**
+ * Returns the normal vector used to control the "top" of the curve, when
+ * RenderMode is RM_tube.  See set_tube_up().
+ */
+57
+inline LVector3 const &RopeNode::get_tube_up(void) const;
+
+488 20 set_use_vertex_color 0 4 537 30 RopeNode::set_use_vertex_color 0 1 243 351
+/**
+ * Sets the "use vertex color" flag.  When this is true, the R, G, B, A vertex
+ * color is assumed to be stored as the dimensions n + 0, n + 1, n + 2, n + 3,
+ * respectively, of the extended vertex values, where n is the value returned
+ * by get_vertex_color_dimension().  Use
+ * NurbsCurveEvaluator::set_extended_vertex() to set these values.
+ */
+54
+inline void RopeNode::set_use_vertex_color(bool flag);
+
+489 20 get_use_vertex_color 0 4 537 30 RopeNode::get_use_vertex_color 0 1 244 76
+/**
+ * Returns the "use vertex color" flag.  See set_use_vertex_color().
+ */
+55
+inline bool RopeNode::get_use_vertex_color(void) const;
+
+490 26 get_vertex_color_dimension 0 4 537 36 RopeNode::get_vertex_color_dimension 0 1 245 221
+/**
+ * Returns the numeric extended dimension in which the color components should
+ * be found.  See NurbsCurveEvaluator::set_extended_vertex().
+ *
+ * The color components will be expected at (n, n + 1, n + 2, n + 3).
+ */
+61
+static inline int RopeNode::get_vertex_color_dimension(void);
+
+491 14 set_num_subdiv 0 4 537 24 RopeNode::set_num_subdiv 0 1 246 154
+/**
+ * Specifies the number of subdivisions per cubic segment (that is, per unique
+ * knot value) to draw in a fixed uniform tesselation of the curve.
+ */
+53
+inline void RopeNode::set_num_subdiv(int num_subdiv);
+
+492 14 get_num_subdiv 0 4 537 24 RopeNode::get_num_subdiv 0 1 247 98
+/**
+ * Returns the number of subdivisions per cubic segment to draw.  See
+ * set_num_subdiv().
+ */
+48
+inline int RopeNode::get_num_subdiv(void) const;
+
+493 14 set_num_slices 0 4 537 24 RopeNode::set_num_slices 0 1 248 404
+/**
+ * Specifies the number of radial subdivisions to make if RenderMode is
+ * RM_tube.  It is ignored in the other render modes.
+ *
+ * Increasing this number increases the roundness of a cross-section of the
+ * tube.  The minimum value for a dimensional tube is 3; setting it to 2 will
+ * get you a thin piece of tape (which is similar to RM_billboard, except it
+ * won't rotate to face the camera).
+ */
+53
+inline void RopeNode::set_num_slices(int num_slices);
+
+494 14 get_num_slices 0 4 537 24 RopeNode::get_num_slices 0 1 249 153
+/**
+ * Returns the number of radial subdivisions to make if RenderMode is RM_tube.
+ * It is ignored in the other render modes.  See set_num_slices().
+ */
+48
+inline int RopeNode::get_num_slices(void) const;
+
+495 24 set_use_vertex_thickness 0 4 537 34 RopeNode::set_use_vertex_thickness 0 1 250 418
+/**
+ * Sets the "use vertex thickness" flag.  When this is true, the vertex
+ * thickness is assumed to be stored as the dimension
+ * get_vertex_thickness_dimension(), of the extended vertex values.  Use
+ * NurbsCurveEvaluator::set_extended_vertex() to set these values.
+ *
+ * In this mode, the overall thickness is also applied as a scale to the
+ * vertex thickness.  Not all render modes support vertex thickness.
+ */
+58
+inline void RopeNode::set_use_vertex_thickness(bool flag);
+
+496 24 get_use_vertex_thickness 0 4 537 34 RopeNode::get_use_vertex_thickness 0 1 251 84
+/**
+ * Returns the "use vertex thickness" flag.  See set_use_vertex_thickness().
+ */
+59
+inline bool RopeNode::get_use_vertex_thickness(void) const;
+
+497 30 get_vertex_thickness_dimension 0 4 537 40 RopeNode::get_vertex_thickness_dimension 0 1 252 151
+/**
+ * Returns the numeric extended dimension in which the thickness component
+ * should be found.  See NurbsCurveEvaluator::set_extended_vertex().
+ */
+65
+static inline int RopeNode::get_vertex_thickness_dimension(void);
+
+498 13 set_thickness 0 4 537 23 RopeNode::set_thickness 0 1 253 236
+/**
+ * Specifies the thickness of the rope, in pixels or in spatial units,
+ * depending on the render mode.  See set_render_mode().
+ *
+ * The thickness may also be specified on a per-vertex basis.  See
+ * set_use_vertex_thickness().
+ */
+59
+inline void RopeNode::set_thickness(PN_stdfloat thickness);
+
+499 13 get_thickness 0 4 537 23 RopeNode::get_thickness 0 1 254 67
+/**
+ * Returns the thickness of the rope.  See set_thickness().
+ */
+55
+inline PN_stdfloat RopeNode::get_thickness(void) const;
+
+500 10 set_matrix 0 4 537 20 RopeNode::set_matrix 0 1 255 207
+/**
+ * Specifies an optional matrix which is used to transform each control vertex
+ * after it has been transformed into the RopeNode's coordinate space, but
+ * before the polygon vertices are generated.
+ */
+57
+inline void RopeNode::set_matrix(LMatrix4 const &matrix);
+
+501 12 clear_matrix 0 4 537 22 RopeNode::clear_matrix 0 1 256 67
+/**
+ * Resets the node's matrix to identity.  See set_matrix().
+ */
+41
+inline void RopeNode::clear_matrix(void);
+
+502 10 has_matrix 0 4 537 20 RopeNode::has_matrix 0 1 257 92
+/**
+ * Returns true if the node has a matrix set, false otherwise.  See
+ * set_matrix().
+ */
+45
+inline bool RopeNode::has_matrix(void) const;
+
+503 10 get_matrix 0 4 537 20 RopeNode::get_matrix 0 1 258 206
+/**
+ * Returns the optional matrix which is used to transform each control vertex
+ * after it has been transformed into the RopeNode's coordinate space, but
+ * before the polygon vertices are generated.
+ */
+56
+inline LMatrix4 const &RopeNode::get_matrix(void) const;
+
+504 11 reset_bound 0 4 537 21 RopeNode::reset_bound 0 1 259 206
+/**
+ * Recomputes the bounding volume.  This is normally called automatically, but
+ * it must occasionally be called explicitly when the curve has changed
+ * properties outside of this node's knowledge.
+ */
+51
+void RopeNode::reset_bound(NodePath const &rel_to);
+
+505 14 get_class_type 0 4 537 24 RopeNode::get_class_type 0 1 260 0
+49
+static TypeHandle RopeNode::get_class_type(void);
+
+506 9 ~RopeNode 0 516 537 19 RopeNode::~RopeNode 0 0 0
+26
+RopeNode::~RopeNode(void);
+
+507 9 SheetNode 0 260 549 20 SheetNode::SheetNode 0 1 261 22
+/**
+ *
+ */
+
+/**
+ *
+ */
+55
+explicit SheetNode::SheetNode(std::string const &name);
+
+508 11 set_surface 0 4 549 22 SheetNode::set_surface 0 1 262 68
+/**
+ * Sets the particular surface represented by the SheetNode.
+ */
+67
+inline void SheetNode::set_surface(NurbsSurfaceEvaluator *surface);
+
+509 11 get_surface 0 4 549 22 SheetNode::get_surface 0 1 263 60
+/**
+ * Returns the surface represented by the SheetNode.
+ */
+65
+inline NurbsSurfaceEvaluator *SheetNode::get_surface(void) const;
+
+510 20 set_use_vertex_color 0 4 549 31 SheetNode::set_use_vertex_color 0 1 264 269
+/**
+ * Sets the "use vertex color" flag.  When this is true, the R, G, B, A vertex
+ * color is assumed to be stored as the dimensions 0, 1, 2, 3, respectively,
+ * of the extended vertex values.  Use
+ * NurbsCurveEvaluator::set_extended_vertex() to set these values.
+ */
+55
+inline void SheetNode::set_use_vertex_color(bool flag);
+
+511 20 get_use_vertex_color 0 4 549 31 SheetNode::get_use_vertex_color 0 1 265 76
+/**
+ * Returns the "use vertex color" flag.  See set_use_vertex_color().
+ */
+56
+inline bool SheetNode::get_use_vertex_color(void) const;
+
+512 16 set_num_u_subdiv 0 4 549 27 SheetNode::set_num_u_subdiv 0 1 266 178
+/**
+ * Specifies the number of subdivisions per cubic segment (that is, per unique
+ * knot value) to draw in a fixed uniform tesselation of the surface in the U
+ * direction.
+ */
+58
+inline void SheetNode::set_num_u_subdiv(int num_u_subdiv);
+
+513 16 get_num_u_subdiv 0 4 549 27 SheetNode::get_num_u_subdiv 0 1 267 119
+/**
+ * Returns the number of subdivisions per cubic segment to draw in the U
+ * direction.  See set_num_u_subdiv().
+ */
+51
+inline int SheetNode::get_num_u_subdiv(void) const;
+
+514 16 set_num_v_subdiv 0 4 549 27 SheetNode::set_num_v_subdiv 0 1 268 178
+/**
+ * Specifies the number of subdivisions per cubic segment (that is, per unique
+ * knot value) to draw in a fixed uniform tesselation of the surface in the V
+ * direction.
+ */
+58
+inline void SheetNode::set_num_v_subdiv(int num_v_subdiv);
+
+515 16 get_num_v_subdiv 0 4 549 27 SheetNode::get_num_v_subdiv 0 1 269 119
+/**
+ * Returns the number of subdivisions per cubic segment to draw in the V
+ * direction.  See set_num_v_subdiv().
+ */
+51
+inline int SheetNode::get_num_v_subdiv(void) const;
+
+516 11 reset_bound 0 4 549 22 SheetNode::reset_bound 0 1 270 208
+/**
+ * Recomputes the bounding volume.  This is normally called automatically, but
+ * it must occasionally be called explicitly when the surface has changed
+ * properties outside of this node's knowledge.
+ */
+52
+void SheetNode::reset_bound(NodePath const &rel_to);
+
+517 14 get_class_type 0 4 549 25 SheetNode::get_class_type 0 1 271 0
+50
+static TypeHandle SheetNode::get_class_type(void);
+
+518 10 ~SheetNode 0 516 549 21 SheetNode::~SheetNode 0 0 0
+28
+SheetNode::~SheetNode(void);
+
+271
+1 0 0 6 272 542 0 0 164 /**
+ * Returns true if the curve is defined.  This base class function always
+ * returns true; derived classes might override this to sometimes return
+ * false.
+ */ 1 4 this 3 550  
+2 0 0 6 273 525 0 0 237 /**
+ * Returns the upper bound of t for the entire curve.  The curve is defined in
+ * the range 0.0f <= t <= get_max_t().  This base class function always
+ * returns 1.0f; derived classes might override this to return something else.
+ */ 1 4 this 3 550  
+3 0 0 4 274 552 0 0 389 /**
+ * Sets the flag indicating the use to which the curve is intended to be put.
+ * This flag is optional and only serves to provide a hint to the egg reader
+ * and writer code; it has no effect on the curve's behavior.
+ *
+ * Setting the curve type also sets the num_dimensions to 3 or 1 according to
+ * the type.
+ *
+ * THis flag may have one of the values PCT_XYZ, PCT_HPR, or PCT_T.
+ */ 2 4 this 3 524  4 type 1 536  
+4 0 0 6 275 536 0 0 91 /**
+ * Returns the flag indicating the use to which the curve is intended to be
+ * put.
+ */ 1 4 this 3 550  
+5 0 0 4 276 552 0 0 324 /**
+ * Specifies the number of significant dimensions in the curve's vertices.
+ * This should be one of 1, 2, or 3. Normally, XYZ and HPR curves have three
+ * dimensions; time curves should always have one dimension.  This only serves
+ * as a hint to the mopath editor, and also controls how the curve is written
+ * out.
+ */ 2 4 this 3 524  3 num 1 536  
+6 0 0 6 277 536 0 0 267 /**
+ * Returns the number of significant dimensions in the curve's vertices, as
+ * set by a previous call to set_num_dimensions().  This is only a hint as to
+ * how the curve is intended to be used; the actual number of dimensions of
+ * any curve is always three.
+ */ 1 4 this 3 550  
+7 0 0 6 278 525 0 0 86 /**
+ * Approximates the length of the entire curve to within a few decimal places.
+ */ 1 4 this 3 550  
+8 0 0 6 278 525 0 0 100 /**
+ * Approximates the length of the curve segment from parametric time 'from' to
+ * time 'to'.
+ */ 3 4 this 3 550  4 from 1 525  2 to 1 525  
+9 0 0 6 279 525 0 0 396 /**
+ * Returns the parametric value corresponding to the indicated distance along
+ * the curve from the starting parametric value.
+ *
+ * This is the inverse of calc_length(): rather than determining the length
+ * along the curve between two parametric points, it determines the position
+ * in parametric time of a point n units along the curve.
+ *
+ * The search distance must not be negative.
+ */ 3 4 this 3 550  7 start_t 1 525  13 length_offset 1 525  
+10 0 0 6 280 542 0 0 0 3 4 this 3 550  1 t 1 525  5 point 1 553  
+11 0 0 6 281 542 0 0 0 3 4 this 3 550  1 t 1 525  7 tangent 1 553  
+12 0 0 6 282 542 0 0 0 4 4 this 3 550  1 t 1 525  5 point 1 553  7 tangent 1 553  
+13 0 0 6 283 542 0 0 0 3 4 this 3 550  1 t 1 525  8 tangent2 1 553  
+14 0 0 6 284 542 0 0 144 /**
+ * Recomputes the curve such that it passes through the point (px, py, pz) at
+ * time t, but keeps the same tangent value at that point.
+ */ 5 4 this 3 524  1 t 1 525  2 px 1 525  2 py 1 525  2 pz 1 525  
+15 0 0 6 285 542 0 0 129 /**
+ * Recomputes the curve such that it has the tangent (tx, ty, tz) at time t,
+ * but keeps the same position at the point.
+ */ 5 4 this 3 524  1 t 1 525  2 tx 1 525  2 ty 1 525  2 tz 1 525  
+16 0 0 6 286 542 0 0 116 /**
+ * Recomputes the curve such that it passes through the point (px, py, pz)
+ * with the tangent (tx, ty, tz).
+ */ 8 4 this 3 524  1 t 1 525  2 px 1 525  2 py 1 525  2 pz 1 525  2 tx 1 525  2 ty 1 525  2 tz 1 525  
+17 0 0 6 287 542 0 0 115 /**
+ * Recalculates the curve, if necessary.  Returns true if the resulting curve
+ * is valid, false otherwise.
+ */ 1 4 this 3 524  
+18 0 0 6 288 542 0 0 259 /**
+ * Regenerates this curve as one long curve: the first curve connected end-to-
+ * end with the second one.  Either a or b may be the same as 'this'.
+ *
+ * Returns true if successful, false on failure or if the curve type does not
+ * support stitching.
+ */ 3 4 this 3 524  1 a 1 550  1 b 1 550  
+19 0 0 6 289 542 0 0 138 /**
+ * Writes an egg description of the nurbs curve to the specified output file.
+ * Returns true if the file is successfully written.
+ */ 3 4 this 3 524  8 filename 1 556  2 cs 5 558  
+20 0 0 6 289 542 0 0 141 /**
+ * Writes an egg description of the nurbs curve to the specified output
+ * stream.  Returns true if the file is successfully written.
+ */ 4 4 this 3 524  3 out 1 559  8 filename 1 561  2 cs 1 558  
+21 0 0 7 290 564 0 0 0 0 
+22 0 0 7 291 564 0 0 0 0 
+23 0 0 7 292 565 0 0 10 /**
+ *
+ */ 0 
+24 0 0 15 292 565 0 0 0 1 6 param0 0 566  
+25 0 0 4 293 552 0 0 56 /**
+ * Adds a new ParametricCurve to the collection.
+ */ 2 4 this 3 565  5 curve 1 524  
+26 0 0 4 293 552 0 0 134 /**
+ * Adds a new ParametricCurve to the collection at the indicated index.
+ * @deprecated Use insert_curve(index, curve) instead.
+ */ 3 4 this 3 565  5 curve 1 524  5 index 1 536  
+27 0 0 4 294 552 0 0 79 /**
+ * Adds a new ParametricCurve to the collection at the indicated index.
+ */ 3 4 this 3 565  5 index 1 568  5 curve 1 524  
+28 0 0 6 295 536 0 0 120 /**
+ * Adds all the curves found in the scene graph rooted at the given node.
+ * Returns the number of curves found.
+ */ 2 4 this 3 565  4 node 1 570  
+29 0 0 6 296 542 0 0 160 /**
+ * Removes the indicated ParametricCurve from the collection.  Returns true if
+ * the curve was removed, false if it was not a member of the collection.
+ */ 2 4 this 3 565  5 curve 1 524  
+30 0 0 4 296 552 0 0 93 /**
+ * Removes the indicated ParametricCurve from the collection, by its index
+ * number.
+ */ 2 4 this 3 565  5 index 1 568  
+31 0 0 4 297 552 0 0 94 /**
+ * Replaces the indicated ParametricCurve from the collection, by its index
+ * number.
+ */ 3 4 this 3 565  5 index 1 568  5 curve 1 524  
+32 0 0 6 298 542 0 0 104 /**
+ * Returns true if the indicated ParametricCurve appears in this collection,
+ * false otherwise.
+ */ 2 4 this 3 566  5 curve 1 524  
+33 0 0 4 299 552 0 0 60 /**
+ * Removes all ParametricCurves from the collection.
+ */ 1 4 this 3 565  
+34 0 0 4 300 552 0 0 63 /**
+ * Removes all the timewarp curves from the collection.
+ */ 1 4 this 3 565  
+35 0 0 6 301 536 0 0 68 /**
+ * Returns the number of ParametricCurves in the collection.
+ */ 1 4 this 3 566  
+36 0 0 7 302 524 0 0 61 /**
+ * Returns the nth ParametricCurve in the collection.
+ */ 2 4 this 3 566  5 index 1 536  
+37 0 0 7 303 524 0 0 95 /**
+ * Returns the first XYZ curve in the collection, if any, or NULL if there are
+ * none.
+ */ 1 4 this 3 566  
+38 0 0 7 304 524 0 0 95 /**
+ * Returns the first HPR curve in the collection, if any, or NULL if there are
+ * none.
+ */ 1 4 this 3 566  
+39 0 0 7 305 524 0 0 180 /**
+ * If there is an XYZ curve in the collection, returns it; otherwise, returns
+ * the first curve whose type is unspecified.  Returns NULL if no curve meets
+ * the criteria.
+ */ 1 4 this 3 566  
+40 0 0 6 306 536 0 0 67 /**
+ * Returns the number of timewarp curves in the collection.
+ */ 1 4 this 3 566  
+41 0 0 7 307 524 0 0 60 /**
+ * Returns the nth timewarp curve in the collection.
+ */ 2 4 this 3 566  1 n 1 536  
+42 0 0 6 308 525 0 0 170 /**
+ * Returns the maximum T value associated with the *last* curve in the
+ * collection.  Normally, this will be either the XYZ or HPR curve, or a
+ * timewarp curve.
+ */ 1 4 this 3 566  
+43 0 0 4 309 552 0 0 539 /**
+ * Discards all existing timewarp curves and recomputes a new timewarp curve
+ * that maps distance along the curve to parametric time, so that the distance
+ * between any two points in parametric time is proportional to the
+ * approximate distance of those same two points along the XYZ curve.
+ *
+ * segments_per_unit represents the number of segments to take per each unit
+ * of parametric time of the original XYZ curve.
+ *
+ * The new timewarp curve (and thus, the apparent range of the collection)
+ * will range from 0 to max_t.
+ */ 3 4 this 3 565  5 max_t 1 525  17 segments_per_unit 1 525  
+44 0 0 4 310 552 0 0 179 /**
+ * Discards the existing HPR curve and generates a new one that looks in the
+ * direction of travel along the XYZ curve, based on the XYZ curve's tangent
+ * at each point.
+ */ 2 4 this 3 565  17 segments_per_unit 1 525  
+45 0 0 4 311 552 0 0 277 /**
+ * Adjusts the apparent length of the curve by applying a new timewarp that
+ * maps the range [0..max_t] to the range [0..get_max_t()].  After this call,
+ * the curve collection will contain one more timewarp curve, and get_max_t()
+ * will return the given max_t value.
+ */ 2 4 this 3 565  5 max_t 1 525  
+46 0 0 6 312 542 0 0 508 /**
+ * Computes the transform matrix representing translation to the position
+ * indicated by the first XYZ curve in the collection and the rotation
+ * indicated by the first HPR curve in the collection, after t has been
+ * modified by all the timewarp curves in the collection applied in sequence,
+ * from back to front.
+ *
+ * Returns true if the point is valid (i.e.  t is within the bounds indicated
+ * by all the timewarp curves and within the bounds of the curves themselves),
+ * or false otherwise.
+ */ 4 4 this 3 566  1 t 1 525  6 result 1 571  2 cs 5 558  
+47 0 0 6 312 542 0 0 433 /**
+ * Computes the position and rotation represented by the first XYZ and HPR
+ * curves in the collection at the given point t, after t has been modified by
+ * all the timewarp curves in the collection applied in sequence, from back to
+ * front.
+ *
+ * Returns true if the point is valid (i.e.  t is within the bounds indicated
+ * by all the timewarp curves and within the bounds of the curves themselves),
+ * or false otherwise.
+ */ 4 4 this 3 566  1 t 1 525  3 xyz 1 553  3 hpr 1 553  
+48 0 0 6 313 525 0 0 219 /**
+ * Determines the value of t that should be passed to the XYZ and HPR curves,
+ * after applying the given value of t to all the timewarps.  Return -1.0f if
+ * the value of t exceeds one of the timewarps' ranges.
+ */ 2 4 this 3 566  1 t 1 525  
+49 0 0 6 314 542 0 0 69 /**
+ * Computes only the XYZ part of the curves.  See evaluate().
+ */ 3 4 this 3 566  1 t 1 525  3 xyz 1 553  
+50 0 0 6 315 542 0 0 69 /**
+ * Computes only the HPR part of the curves.  See evaluate().
+ */ 3 4 this 3 566  1 t 1 525  3 hpr 1 553  
+51 0 0 6 316 542 0 0 208 /**
+ * Adjust the XYZ curve at the indicated time to the new value.  The curve
+ * shape will change correspondingly.  Returns true if successful, false if
+ * unable to make the adjustment for some reason.
+ */ 3 4 this 3 565  1 t 1 525  3 xyz 1 572  
+52 0 0 6 316 542 0 0 208 /**
+ * Adjust the XYZ curve at the indicated time to the new value.  The curve
+ * shape will change correspondingly.  Returns true if successful, false if
+ * unable to make the adjustment for some reason.
+ */ 5 4 this 3 565  1 t 1 525  1 x 1 525  1 y 1 525  1 z 1 525  
+53 0 0 6 317 542 0 0 208 /**
+ * Adjust the HPR curve at the indicated time to the new value.  The curve
+ * shape will change correspondingly.  Returns true if successful, false if
+ * unable to make the adjustment for some reason.
+ */ 3 4 this 3 565  1 t 1 525  3 xyz 1 572  
+54 0 0 6 317 542 0 0 208 /**
+ * Adjust the HPR curve at the indicated time to the new value.  The curve
+ * shape will change correspondingly.  Returns true if successful, false if
+ * unable to make the adjustment for some reason.
+ */ 5 4 this 3 565  1 t 1 525  1 h 1 525  1 p 1 525  1 r 1 525  
+55 0 0 6 318 542 0 0 153 /**
+ * Ensures all the curves are freshly computed and up-to-date.  Returns true
+ * if everything is valid, false if at least one curve is incorrect.
+ */ 1 4 this 3 565  
+56 0 0 6 319 542 0 0 262 /**
+ * Regenerates this curve as one long curve: the first curve connected end-to-
+ * end with the second one.  Either a or b may be the same as 'this'.  This
+ * will lose any timewarps on the input curves.
+ *
+ * Returns true if successful, false on failure.
+ */ 3 4 this 3 565  1 a 1 566  1 b 1 566  
+57 0 0 4 320 552 0 0 114 /**
+ * Writes a brief one-line description of the ParametricCurveCollection to the
+ * indicated output stream.
+ */ 2 4 this 3 566  3 out 1 559  
+58 0 0 4 321 552 0 0 119 /**
+ * Writes a complete multi-line description of the ParametricCurveCollection
+ * to the indicated output stream.
+ */ 3 4 this 3 566  3 out 1 559  12 indent_level 5 536  
+59 0 0 6 322 542 0 0 162 /**
+ * Writes an egg description of all the nurbs curves in the collection to the
+ * specified output file.  Returns true if the file is successfully written.
+ */ 3 4 this 3 565  8 filename 1 556  2 cs 5 558  
+60 0 0 6 322 542 0 0 164 /**
+ * Writes an egg description of all the nurbs curves in the collection to the
+ * specified output stream.  Returns true if the file is successfully written.
+ */ 4 4 this 3 565  3 out 1 559  8 filename 1 561  2 cs 1 558  
+61 0 0 7 323 574 324 0 10 /**
+ *
+ */ 0 
+62 0 0 15 323 574 324 0 0 1 6 param0 0 575  
+63 0 0 4 325 552 0 0 114 /**
+ * Removes all the data points previously added to the CurveFitter, and
+ * initializes it for a new curve.
+ */ 1 4 this 3 574  
+64 0 0 4 326 552 0 0 36 /**
+ * Adds a single sample xyz.
+ */ 3 4 this 3 574  1 t 1 525  3 xyz 1 572  
+65 0 0 4 327 552 0 0 36 /**
+ * Adds a single sample hpr.
+ */ 3 4 this 3 574  1 t 1 525  3 hpr 1 572  
+66 0 0 4 328 552 0 0 57 /**
+ * Adds a single sample xyz & hpr simultaneously.
+ */ 4 4 this 3 574  1 t 1 525  3 xyz 1 572  3 hpr 1 572  
+67 0 0 6 329 536 0 0 68 /**
+ * Returns the number of sample points that have been added.
+ */ 1 4 this 3 575  
+68 0 0 6 330 525 0 0 64 /**
+ * Returns the parametric value of the nth sample added.
+ */ 2 4 this 3 575  1 n 1 536  
+69 0 0 7 331 553 0 0 62 /**
+ * Returns the point in space of the nth sample added.
+ */ 2 4 this 3 575  1 n 1 536  
+70 0 0 7 332 553 0 0 59 /**
+ * Returns the orientation of the nth sample added.
+ */ 2 4 this 3 575  1 n 1 536  
+71 0 0 7 333 553 0 0 143 /**
+ * Returns the tangent associated with the nth sample added.  This is only
+ * meaningful if compute_tangents() has already been called.
+ */ 2 4 this 3 575  1 n 1 536  
+72 0 0 4 334 552 0 0 108 /**
+ * Eliminates all samples from index begin, up to but not including index end,
+ * from the database.
+ */ 3 4 this 3 574  5 begin 1 536  3 end 1 536  
+73 0 0 4 335 552 0 0 223 /**
+ * Generates a series of data points by sampling the given curve (or xyz/hpr
+ * curves) the indicated number of times.  The sampling is made evenly in
+ * parametric time, and then the timewarps, if any, are applied.
+ */ 3 4 this 3 574  6 curves 1 565  5 count 1 536  
+74 0 0 4 336 552 0 0 165 /**
+ * Resets each HPR data point so that the maximum delta between any two
+ * consecutive points is 180 degrees, which should prevent incorrect HPR
+ * wrapping.
+ */ 1 4 this 3 574  
+75 0 0 4 337 552 0 0 115 /**
+ * Sorts all the data points in order by parametric time, in case they were
+ * added in an incorrect order.
+ */ 1 4 this 3 574  
+76 0 0 4 338 552 0 0 175 /**
+ * Removes sample points in order to reduce the complexity of a sampled curve.
+ * Keeps one out of every factor samples.  Also keeps the first and the last
+ * samples.
+ */ 2 4 this 3 574  6 factor 1 525  
+77 0 0 4 339 552 0 0 231 /**
+ * Once a set of points has been built, and prior to calling MakeHermite() or
+ * MakeNurbs(), ComputeTangents() must be called to set up the tangents
+ * correctly (unless the tangents were defined as the points were added).
+ */ 2 4 this 3 574  5 scale 1 525  
+78 0 0 7 340 565 0 0 72 /**
+ * Converts the current set of data points into a Hermite curve.
+ */ 1 4 this 3 575  
+79 0 0 7 341 565 0 0 134 /**
+ * Converts the current set of data points into a NURBS curve.  This gives a
+ * smoother curve than produced by MakeHermite().
+ */ 1 4 this 3 575  
+80 0 0 4 342 552 0 0 10 /**
+ *
+ */ 2 4 this 3 575  3 out 1 559  
+81 0 0 4 343 552 0 0 10 /**
+ *
+ */ 2 4 this 3 575  3 out 1 559  
+82 0 0 7 344 564 0 0 0 0 
+83 0 0 7 345 577 0 0 10 /**
+ *
+ */ 0 
+84 0 0 7 346 564 0 0 0 0 
+85 0 0 7 347 578 0 0 10 /**
+ *
+ */ 0 
+86 0 0 23 347 578 0 0 80 /**
+ * Constructs a Hermite from the indicated (possibly non-hermite) curve.
+ */ 1 2 pc 1 550  
+87 0 0 6 348 536 0 0 51 /**
+ * Returns the number of CV's in the curve.
+ */ 1 4 this 3 579  
+88 0 0 6 349 536 0 0 547 /**
+ * Inserts a new CV at the given parametric point along the curve.  If this
+ * parametric point is already on the curve, the CV is assigned an index
+ * between its two neighbors and the indices of all following CV's are
+ * incremented by 1; its in and out tangents are chosen to keep the curve
+ * consistent.  If the new parametric point is beyond the end of the existing
+ * curve, the curve is extended to meet it and the new CV's position, in
+ * tangent, and out tangent are set to zero.
+ *
+ * The index number of the new CV is returned.
+ */ 2 4 this 3 578  1 t 1 525  
+89 0 0 6 350 536 0 0 0 3 4 this 3 578  4 type 1 536  1 v 1 572  
+90 0 0 6 350 536 0 0 149 /**
+ * Adds a new CV to the end of the curve.  The new CV is given initial in/out
+ * tangents of 0.  The return value is the index of the new CV.
+ */ 5 4 this 3 578  4 type 1 536  1 x 1 525  1 y 1 525  1 z 1 525  
+91 0 0 6 351 542 0 0 100 /**
+ * Removes the given CV from the curve.  Returns true if the CV existed, false
+ * otherwise.
+ */ 2 4 this 3 578  1 n 1 536  
+92 0 0 4 352 552 0 0 43 /**
+ * Removes all CV's from the curve.
+ */ 1 4 this 3 578  
+93 0 0 6 353 542 0 0 544 /**
+ * Changes the given CV's continuity type.  Legal values are HC_CUT, HC_FREE,
+ * HC_G1, or HC_SMOOTH.
+ *
+ * Other than HC_CUT, these have no effect on the actual curve; it remains up
+ * to user software to impose the constraints these imply.
+ *
+ * HC_CUT implies a disconnection of the curve; HC_FREE imposes no constraints
+ * on the tangents; HC_G1 forces the tangents to be collinear, and HC_SMOOTH
+ * forces the tangents to be identical.  Setting type type to HC_G1 or
+ * HC_SMOOTH may adjust the out tangent to match the in tangent.
+ */ 3 4 this 3 578  1 n 1 536  4 type 1 536  
+94 0 0 6 354 542 0 0 0 3 4 this 3 578  1 n 1 536  1 v 1 572  
+95 0 0 6 354 542 0 0 43 /**
+ * Changes the given CV's position.
+ */ 5 4 this 3 578  1 n 1 536  1 x 1 525  1 y 1 525  1 z 1 525  
+96 0 0 6 355 542 0 0 0 3 4 this 3 578  1 n 1 536  1 v 1 572  
+97 0 0 6 355 542 0 0 121 /**
+ * Changes the given CV's in tangent.  Depending on the continuity type, this
+ * may also adjust the out tangent.
+ */ 5 4 this 3 578  1 n 1 536  1 x 1 525  1 y 1 525  1 z 1 525  
+98 0 0 6 356 542 0 0 0 3 4 this 3 578  1 n 1 536  1 v 1 572  
+99 0 0 6 356 542 0 0 121 /**
+ * Changes the given CV's out tangent.  Depending on the continuity type, this
+ * may also adjust the in tangent.
+ */ 5 4 this 3 578  1 n 1 536  1 x 1 525  1 y 1 525  1 z 1 525  
+100 0 0 6 357 542 0 0 103 /**
+ * Changes the given CV's parametric starting time.  This may affect the shape
+ * of the curve.
+ */ 3 4 this 3 578  1 n 1 536  6 tstart 1 525  
+101 0 0 6 358 542 0 0 60 /**
+ * Changes the name associated with a particular CV.
+ */ 3 4 this 3 578  1 n 1 536  4 name 1 581  
+102 0 0 6 359 536 0 0 120 /**
+ * Returns the given CV's continuity type, HC_CUT, HC_FREE, HC_G1, or
+ * HC_SMOOTH, or 0 if there is no such CV.
+ */ 2 4 this 3 579  1 n 1 536  
+103 0 0 6 360 572 0 0 48 /**
+ * Returns the position of the given CV.
+ */ 2 4 this 3 579  1 n 1 536  
+104 0 0 4 360 552 0 0 0 3 4 this 3 579  1 n 1 536  1 v 1 553  
+105 0 0 6 361 572 0 0 50 /**
+ * Returns the in tangent of the given CV.
+ */ 2 4 this 3 579  1 n 1 536  
+106 0 0 4 361 552 0 0 0 3 4 this 3 579  1 n 1 536  1 v 1 553  
+107 0 0 6 362 572 0 0 51 /**
+ * Returns the out tangent of the given CV.
+ */ 2 4 this 3 579  1 n 1 536  
+108 0 0 4 362 552 0 0 0 3 4 this 3 579  1 n 1 536  1 v 1 553  
+109 0 0 6 363 525 0 0 74 /**
+ * Returns the starting point in parametric space of the given CV.
+ */ 2 4 this 3 579  1 n 1 536  
+110 0 0 6 364 581 0 0 53 /**
+ * Returns the name of the given CV, or NULL.
+ */ 2 4 this 3 579  1 n 1 536  
+111 0 0 4 365 552 0 0 10 /**
+ *
+ */ 3 4 this 3 579  3 out 1 559  1 n 1 536  
+112 0 0 7 366 564 0 0 0 0 
+113 0 0 4 368 552 0 0 0 2 4 this 3 582  5 order 1 536  
+114 0 0 6 369 536 0 0 0 1 4 this 3 583  
+115 0 0 6 370 536 0 0 0 1 4 this 3 583  
+116 0 0 6 371 536 0 0 0 1 4 this 3 583  
+117 0 0 6 372 542 0 0 0 2 4 this 3 582  1 t 1 525  
+118 0 0 6 373 536 0 0 10 /**
+ *
+ */ 2 4 this 3 582  1 v 1 572  
+119 0 0 6 373 536 0 0 10 /**
+ *
+ */ 2 4 this 3 582  1 v 1 585  
+120 0 0 6 373 536 0 0 10 /**
+ *
+ */ 4 4 this 3 582  1 x 1 525  1 y 1 525  1 z 1 525  
+121 0 0 6 374 542 0 0 0 2 4 this 3 582  1 n 1 536  
+122 0 0 4 375 552 0 0 0 1 4 this 3 582  
+123 0 0 6 376 542 0 0 86 /**
+ * Repositions the indicated CV.  Returns true if successful, false otherwise.
+ */ 3 4 this 3 582  1 n 1 536  1 v 1 572  
+124 0 0 6 376 542 0 0 86 /**
+ * Repositions the indicated CV.  Returns true if successful, false otherwise.
+ */ 5 4 this 3 582  1 n 1 536  1 x 1 525  1 y 1 525  1 z 1 525  
+125 0 0 7 377 553 0 0 52 /**
+ * Returns the position of the indicated CV.
+ */ 2 4 this 3 583  1 n 1 536  
+126 0 0 6 378 542 0 0 94 /**
+ * Sets the weight of the indicated CV without affecting its position in 3-d
+ * space.
+ */ 3 4 this 3 582  1 n 1 536  1 w 1 525  
+127 0 0 6 379 525 0 0 50 /**
+ * Returns the weight of the indicated CV.
+ */ 2 4 this 3 583  1 n 1 536  
+128 0 0 6 380 542 0 0 0 3 4 this 3 582  1 n 1 536  1 v 1 585  
+129 0 0 7 381 589 0 0 0 2 4 this 3 583  1 n 1 536  
+130 0 0 6 382 542 0 0 0 3 4 this 3 582  1 n 1 536  1 t 1 525  
+131 0 0 6 383 525 0 0 0 2 4 this 3 583  1 n 1 536  
+132 0 0 4 384 552 0 0 10 /**
+ *
+ */ 3 4 this 3 583  3 out 1 559  1 n 1 536  
+133 0 0 7 385 564 0 0 0 0 
+134 0 0 7 390 590 391 0 10 /**
+ *
+ */ 0 
+135 0 0 23 390 590 391 0 94 /**
+ * Constructs a NURBS curve equivalent to the indicated (possibly non-NURBS)
+ * curve.
+ */ 1 2 pc 1 550  
+136 0 0 7 392 564 0 0 0 0 
+137 0 0 7 386 577 0 0 0 1 4 this 3 590  
+138 0 0 6 388 582 0 0 0 1 4 this 3 590  
+139 0 0 15 409 593 0 0 0 1 6 param0 0 591  
+140 0 0 6 393 525 0 0 81 /**
+ * Returns the first legal value of t on the curve.  Usually this is 0.0.
+ */ 1 4 this 3 591  
+141 0 0 6 394 525 0 0 58 /**
+ * Returns the last legal value of t on the curve.
+ */ 1 4 this 3 591  
+142 0 0 6 395 542 0 0 158 /**
+ * Computes the point on the curve corresponding to the indicated value in
+ * parametric time.  Returns true if the t value is valid, false otherwise.
+ */ 3 4 this 3 593  1 t 1 525  5 point 1 553  
+143 0 0 6 396 542 0 0 193 /**
+ * Computes the tangent to the curve at the indicated point in parametric
+ * time.  This tangent vector will not necessarily be normalized, and could be
+ * zero.  See also eval_point().
+ */ 3 4 this 3 593  1 t 1 525  7 tangent 1 553  
+144 0 0 6 397 525 0 0 145 /**
+ * Evaluates the curve in n-dimensional space according to the extended
+ * vertices associated with the curve in the indicated dimension.
+ */ 3 4 this 3 593  1 t 1 525  1 d 1 536  
+145 0 0 6 398 542 0 0 248 /**
+ * Simultaneously performs eval_extended_point on a contiguous sequence of
+ * dimensions.  The dimensions evaluated are d through (d + num_values - 1);
+ * the results are filled into the num_values elements in the indicated result
+ * array.
+ */ 5 4 this 3 593  1 t 1 525  1 d 1 536  6 result 1 594  10 num_values 1 536  
+146 0 0 6 399 536 0 0 170 /**
+ * Returns the number of piecewise continuous segments within the curve.  This
+ * number is usually not important unless you plan to call
+ * eval_segment_point().
+ */ 1 4 this 3 591  
+147 0 0 4 400 552 0 0 637 /**
+ * Evaluates the point on the curve corresponding to the indicated value in
+ * parametric time within the indicated curve segment.  t should be in the
+ * range [0, 1].
+ *
+ * The curve is internally represented as a number of connected (or possibly
+ * unconnected) piecewise continuous segments.  The exact number of segments
+ * for a particular curve depends on the knot vector, and is returned by
+ * get_num_segments().  Normally, eval_point() is used to evaluate a point
+ * along the continuous curve, but when you care more about local continuity,
+ * you can use eval_segment_point() to evaluate the points along each segment.
+ */ 4 4 this 3 591  7 segment 1 536  1 t 1 525  5 point 1 553  
+148 0 0 4 401 552 0 0 207 /**
+ * As eval_segment_point, but computes the tangent to the curve at the
+ * indicated point.  The tangent vector will not necessarily be normalized,
+ * and could be zero, particularly at the endpoints.
+ */ 4 4 this 3 591  7 segment 1 536  1 t 1 525  7 tangent 1 553  
+149 0 0 6 402 525 0 0 145 /**
+ * Evaluates the curve in n-dimensional space according to the extended
+ * vertices associated with the curve in the indicated dimension.
+ */ 4 4 this 3 591  7 segment 1 536  1 t 1 525  1 d 1 536  
+150 0 0 4 403 552 0 0 248 /**
+ * Simultaneously performs eval_extended_point on a contiguous sequence of
+ * dimensions.  The dimensions evaluated are d through (d + num_values - 1);
+ * the results are filled into the num_values elements in the indicated result
+ * array.
+ */ 6 4 this 3 591  7 segment 1 536  1 t 1 525  1 d 1 536  6 result 1 594  10 num_values 1 536  
+151 0 0 6 404 525 0 0 217 /**
+ * Accepts a t value in the range [0, 1], and assumed to be relative to the
+ * indicated segment (as in eval_segment_point()), and returns the
+ * corresponding t value in the entire curve (as in eval_point()).
+ */ 3 4 this 3 591  7 segment 1 536  1 t 1 525  
+152 0 0 4 405 552 0 0 330 /**
+ * Determines the set of subdivisions necessary to approximate the curve with
+ * a set of linear segments, no point of which is farther than tolerance units
+ * from the actual curve.
+ *
+ * After this call, you may walk through the resulting set of samples with
+ * get_num_samples(), get_sample_t(), and get_sample_point().
+ */ 2 4 this 3 593  9 tolerance 1 525  
+153 0 0 6 406 536 0 0 102 /**
+ * Returns the number of sample points generated by the previous call to
+ * adaptive_sample().
+ */ 1 4 this 3 591  
+154 0 0 6 407 525 0 0 110 /**
+ * Returns the t value of the nth sample point generated by the previous call
+ * to adaptive_sample().
+ */ 2 4 this 3 591  1 n 1 536  
+155 0 0 6 408 595 0 0 252 /**
+ * Returns the point on the curve of the nth sample point generated by the
+ * previous call to adaptive_sample().
+ *
+ * For tangents, or extended points, you should use get_sample_t() and pass it
+ * into eval_tangent() or eval_extended_point().
+ */ 2 4 this 3 591  1 n 1 536  
+156 0 0 7 410 541 0 0 10 /**
+ *
+ */ 0 
+157 0 0 15 410 541 0 0 0 1 6 param0 0 599  
+158 0 0 4 411 552 0 0 224 /**
+ * Sets the order of the curve.  This resets the knot vector to the default
+ * knot vector for the number of vertices.
+ *
+ * The order must be 1, 2, 3, or 4, and the value is one more than the degree
+ * of the curve.
+ */ 2 4 this 3 541  5 order 1 536  
+159 0 0 6 412 536 0 0 83 /**
+ * Returns the order of the curve as set by a previous call to set_order().
+ */ 1 4 this 3 599  
+160 0 0 4 413 552 0 0 231 /**
+ * Resets all the vertices and knots to their default values, and sets the
+ * curve up with the indicated number of vertices.  You must then call
+ * set_vertex() repeatedly to fill in all of the vertex values appropriately.
+ */ 2 4 this 3 541  12 num_vertices 1 536  
+161 0 0 6 414 536 0 0 122 /**
+ * Returns the number of control vertices in the curve.  This is the number
+ * passed to the last call to reset().
+ */ 1 4 this 3 599  
+162 0 0 4 415 552 0 0 194 /**
+ * Sets the nth control vertex of the curve.  This flavor sets the vertex as a
+ * 3-d coordinate and a weight; the 3-d coordinate values are implicitly
+ * scaled up by the weight factor.
+ */ 4 4 this 3 541  1 i 1 536  6 vertex 1 572  6 weight 5 525  
+163 0 0 4 415 552 0 0 245 /**
+ * Sets the nth control vertex of the curve, as a vertex in 4-d homogeneous
+ * space.  In this form, the first three components of the vertex should
+ * already have been scaled by the fourth component, which is the homogeneous
+ * weight.
+ */ 3 4 this 3 541  1 i 1 536  6 vertex 1 585  
+164 0 0 6 416 585 0 0 102 /**
+ * Returns the nth control vertex of the curve, relative to its indicated
+ * coordinate space.
+ */ 2 4 this 3 599  1 i 1 536  
+165 0 0 7 416 589 0 0 98 /**
+ * Returns the nth control vertex of the curve, relative to the given
+ * coordinate space.
+ */ 3 4 this 3 599  1 i 1 536  6 rel_to 1 601  
+166 0 0 4 417 552 0 0 429 /**
+ * Sets the coordinate space of the nth control vertex.  If this is not
+ * specified, or is set to an empty NodePath, the nth control vertex is deemed
+ * to be in the coordinate space passed to evaluate().
+ *
+ * This specifies the space as a fixed NodePath, which is always the same
+ * NodePath.  Also see setting the space as a path string, which can specify a
+ * different NodePath for different instances of the curve.
+ */ 3 4 this 3 541  1 i 1 536  5 space 1 601  
+167 0 0 4 417 552 0 0 361 /**
+ * Sets the coordinate space of the nth control vertex.  If this is not
+ * specified, or is set to an empty string, the nth control vertex is deemed
+ * to be in the coordinate space passed to evaluate().
+ *
+ * This specifies the space as a string, which describes the path to find the
+ * node relative to the rel_to NodePath when the curve is evaluated.
+ */ 3 4 this 3 541  1 i 1 536  5 space 1 581  
+168 0 0 7 418 604 0 0 107 /**
+ * Returns the coordinate space of the nth control vertex of the curve,
+ * expressed as a NodePath.
+ */ 3 4 this 3 599  1 i 1 536  6 rel_to 1 601  
+169 0 0 4 419 552 0 0 768 /**
+ * Sets an n-dimensional vertex value.  This allows definition of a NURBS
+ * surface or curve in a sparse n-dimensional space, typically used for
+ * associating additional properties (like color or joint membership) with
+ * each vertex of a surface.
+ *
+ * The value d is an arbitrary integer value and specifies the dimension of
+ * question for this particular vertex.  Any number of dimensions may be
+ * specified, and they need not be consecutive.  If a value for a given
+ * dimension is not specified, is it implicitly 0.0.
+ *
+ * The value is implicitly scaled by the homogenous weight value--that is, the
+ * fourth component of the value passed to set_vertex().  This means the
+ * ordinary vertex must be set first, before the extended vertices can be set.
+ */ 4 4 this 3 541  1 i 1 536  1 d 1 536  5 value 1 525  
+170 0 0 6 420 525 0 0 172 /**
+ * Returns an n-dimensional vertex value.  See set_extended_vertex().  This
+ * returns the value set for the indicated dimension, or 0.0 if nothing has
+ * been set.
+ */ 3 4 this 3 599  1 i 1 536  1 d 1 536  
+171 0 0 4 421 552 0 0 259 /**
+ * Simultaneously sets several extended values in the slots d through (d +
+ * num_values - 1) from the num_values elements of the indicated array.  This
+ * is equivalent to calling set_extended_vertex() num_values times.  See
+ * set_extended_vertex().
+ */ 5 4 this 3 541  1 i 1 536  1 d 1 536  6 values 1 605  10 num_values 1 536  
+172 0 0 6 422 536 0 0 117 /**
+ * Returns the number of knot values in the curve.  This is based on the
+ * number of vertices and the order.
+ */ 1 4 this 3 599  
+173 0 0 4 423 552 0 0 184 /**
+ * Sets the value of the nth knot.  Each knot value should be greater than or
+ * equal to the preceding value.  If no knot values are set, a default knot
+ * vector is supplied.
+ */ 3 4 this 3 541  1 i 1 536  4 knot 1 525  
+174 0 0 6 424 525 0 0 45 /**
+ * Returns the value of the nth knot.
+ */ 2 4 this 3 599  1 i 1 536  
+175 0 0 4 425 552 0 0 95 /**
+ * Normalizes the knot sequence so that the parametric range of the curve is 0
+ * .. 1.
+ */ 1 4 this 3 541  
+176 0 0 6 426 536 0 0 114 /**
+ * Returns the number of piecewise continuous segments in the curve.  This is
+ * based on the knot vector.
+ */ 1 4 this 3 599  
+177 0 0 7 427 593 0 0 194 /**
+ * Returns a NurbsCurveResult object that represents the result of applying
+ * the knots to all of the current values of the vertices, transformed into
+ * the indicated coordinate space.
+ */ 2 4 this 3 599  6 rel_to 5 601  
+178 0 0 7 427 593 0 0 251 /**
+ * Returns a NurbsCurveResult object that represents the result of applying
+ * the knots to all of the current values of the vertices, transformed into
+ * the indicated coordinate space, and then further transformed by the
+ * indicated matrix.
+ */ 3 4 this 3 599  6 rel_to 1 601  3 mat 1 607  
+179 0 0 4 428 552 0 0 10 /**
+ *
+ */ 2 4 this 3 599  3 out 1 559  
+180 0 0 15 445 610 0 0 0 1 6 param0 0 608  
+181 0 0 6 429 525 0 0 83 /**
+ * Returns the first legal value of u on the surface.  Usually this is 0.0.
+ */ 1 4 this 3 608  
+182 0 0 6 430 525 0 0 60 /**
+ * Returns the last legal value of u on the surface.
+ */ 1 4 this 3 608  
+183 0 0 6 431 525 0 0 83 /**
+ * Returns the first legal value of v on the surface.  Usually this is 0.0.
+ */ 1 4 this 3 608  
+184 0 0 6 432 525 0 0 60 /**
+ * Returns the last legal value of v on the surface.
+ */ 1 4 this 3 608  
+185 0 0 6 433 542 0 0 168 /**
+ * Computes the point on the surface corresponding to the indicated value in
+ * parametric time.  Returns true if the u, v values are valid, false
+ * otherwise.
+ */ 4 4 this 3 610  1 u 1 525  1 v 1 525  5 point 1 553  
+186 0 0 6 434 542 0 0 193 /**
+ * Computes the normal to the surface at the indicated point in parametric
+ * time.  This normal vector will not necessarily be normalized, and could be
+ * zero.  See also eval_point().
+ */ 4 4 this 3 610  1 u 1 525  1 v 1 525  6 normal 1 553  
+187 0 0 6 435 525 0 0 149 /**
+ * Evaluates the surface in n-dimensional space according to the extended
+ * vertices associated with the surface in the indicated dimension.
+ */ 4 4 this 3 610  1 u 1 525  1 v 1 525  1 d 1 536  
+188 0 0 6 436 542 0 0 248 /**
+ * Simultaneously performs eval_extended_point on a contiguous sequence of
+ * dimensions.  The dimensions evaluated are d through (d + num_values - 1);
+ * the results are filled into the num_values elements in the indicated result
+ * array.
+ */ 6 4 this 3 610  1 u 1 525  1 v 1 525  1 d 1 536  6 result 1 594  10 num_values 1 536  
+189 0 0 6 437 536 0 0 191 /**
+ * Returns the number of piecewise continuous segments within the surface in
+ * the U direction.  This number is usually not important unless you plan to
+ * call eval_segment_point().
+ */ 1 4 this 3 608  
+190 0 0 6 438 536 0 0 191 /**
+ * Returns the number of piecewise continuous segments within the surface in
+ * the V direction.  This number is usually not important unless you plan to
+ * call eval_segment_point().
+ */ 1 4 this 3 608  
+191 0 0 4 439 552 0 0 656 /**
+ * Evaluates the point on the surface corresponding to the indicated value in
+ * parametric time within the indicated surface segment.  u and v should be in
+ * the range [0, 1].
+ *
+ * The surface is internally represented as a number of connected (or possibly
+ * unconnected) piecewise continuous segments.  The exact number of segments
+ * for a particular surface depends on the knot vector, and is returned by
+ * get_num_segments().  Normally, eval_point() is used to evaluate a point
+ * along the continuous surface, but when you care more about local
+ * continuity, you can use eval_segment_point() to evaluate the points along
+ * each segment.
+ */ 6 4 this 3 608  2 ui 1 536  2 vi 1 536  1 u 1 525  1 v 1 525  5 point 1 553  
+192 0 0 4 440 552 0 0 176 /**
+ * As eval_segment_point, but computes the normal to the surface at the
+ * indicated point.  The normal vector will not necessarily be normalized, and
+ * could be zero.
+ */ 6 4 this 3 608  2 ui 1 536  2 vi 1 536  1 u 1 525  1 v 1 525  6 normal 1 553  
+193 0 0 6 441 525 0 0 149 /**
+ * Evaluates the surface in n-dimensional space according to the extended
+ * vertices associated with the surface in the indicated dimension.
+ */ 6 4 this 3 608  2 ui 1 536  2 vi 1 536  1 u 1 525  1 v 1 525  1 d 1 536  
+194 0 0 4 442 552 0 0 248 /**
+ * Simultaneously performs eval_extended_point on a contiguous sequence of
+ * dimensions.  The dimensions evaluated are d through (d + num_values - 1);
+ * the results are filled into the num_values elements in the indicated result
+ * array.
+ */ 8 4 this 3 608  2 ui 1 536  2 vi 1 536  1 u 1 525  1 v 1 525  1 d 1 536  6 result 1 594  10 num_values 1 536  
+195 0 0 6 443 525 0 0 219 /**
+ * Accepts a u value in the range [0, 1], and assumed to be relative to the
+ * indicated segment (as in eval_segment_point()), and returns the
+ * corresponding u value in the entire surface (as in eval_point()).
+ */ 3 4 this 3 608  2 ui 1 536  1 u 1 525  
+196 0 0 6 444 525 0 0 219 /**
+ * Accepts a v value in the range [0, 1], and assumed to be relative to the
+ * indicated segment (as in eval_segment_point()), and returns the
+ * corresponding v value in the entire surface (as in eval_point()).
+ */ 3 4 this 3 608  2 vi 1 536  1 v 1 525  
+197 0 0 7 446 611 0 0 10 /**
+ *
+ */ 0 
+198 0 0 15 446 611 0 0 0 1 6 param0 0 612  
+199 0 0 4 447 552 0 0 247 /**
+ * Sets the order of the surface in the U direction.  This resets the knot
+ * vector to the default knot vector for the number of vertices.
+ *
+ * The order must be 1, 2, 3, or 4, and the value is one more than the degree
+ * of the surface.
+ */ 2 4 this 3 611  7 u_order 1 536  
+200 0 0 6 448 536 0 0 109 /**
+ * Returns the order of the surface in the U direction as set by a previous
+ * call to set_u_order().
+ */ 1 4 this 3 612  
+201 0 0 4 449 552 0 0 247 /**
+ * Sets the order of the surface in the V direction.  This resets the knot
+ * vector to the default knot vector for the number of vertices.
+ *
+ * The order must be 1, 2, 3, or 4, and the value is one more than the degree
+ * of the surface.
+ */ 2 4 this 3 611  7 v_order 1 536  
+202 0 0 6 450 536 0 0 109 /**
+ * Returns the order of the surface in the V direction as set by a previous
+ * call to set_v_order().
+ */ 1 4 this 3 612  
+203 0 0 4 451 552 0 0 233 /**
+ * Resets all the vertices and knots to their default values, and sets the
+ * surface up with the indicated number of vertices.  You must then call
+ * set_vertex() repeatedly to fill in all of the vertex values appropriately.
+ */ 3 4 this 3 611  14 num_u_vertices 1 536  14 num_v_vertices 1 536  
+204 0 0 6 452 536 0 0 142 /**
+ * Returns the number of control vertices in the U direction on the surface.
+ * This is the number passed to the last call to reset().
+ */ 1 4 this 3 612  
+205 0 0 6 453 536 0 0 142 /**
+ * Returns the number of control vertices in the V direction on the surface.
+ * This is the number passed to the last call to reset().
+ */ 1 4 this 3 612  
+206 0 0 4 454 552 0 0 196 /**
+ * Sets the nth control vertex of the surface.  This flavor sets the vertex as
+ * a 3-d coordinate and a weight; the 3-d coordinate values are implicitly
+ * scaled up by the weight factor.
+ */ 5 4 this 3 611  2 ui 1 536  2 vi 1 536  6 vertex 1 572  6 weight 5 525  
+207 0 0 4 454 552 0 0 247 /**
+ * Sets the nth control vertex of the surface, as a vertex in 4-d homogeneous
+ * space.  In this form, the first three components of the vertex should
+ * already have been scaled by the fourth component, which is the homogeneous
+ * weight.
+ */ 4 4 this 3 611  2 ui 1 536  2 vi 1 536  6 vertex 1 585  
+208 0 0 6 455 585 0 0 104 /**
+ * Returns the nth control vertex of the surface, relative to its indicated
+ * coordinate space.
+ */ 3 4 this 3 612  2 ui 1 536  2 vi 1 536  
+209 0 0 7 455 589 0 0 100 /**
+ * Returns the nth control vertex of the surface, relative to the given
+ * coordinate space.
+ */ 4 4 this 3 612  2 ui 1 536  2 vi 1 536  6 rel_to 1 601  
+210 0 0 4 456 552 0 0 431 /**
+ * Sets the coordinate space of the nth control vertex.  If this is not
+ * specified, or is set to an empty NodePath, the nth control vertex is deemed
+ * to be in the coordinate space passed to evaluate().
+ *
+ * This specifies the space as a fixed NodePath, which is always the same
+ * NodePath.  Also see setting the space as a path string, which can specify a
+ * different NodePath for different instances of the surface.
+ */ 4 4 this 3 611  2 ui 1 536  2 vi 1 536  5 space 1 601  
+211 0 0 4 456 552 0 0 363 /**
+ * Sets the coordinate space of the nth control vertex.  If this is not
+ * specified, or is set to an empty string, the nth control vertex is deemed
+ * to be in the coordinate space passed to evaluate().
+ *
+ * This specifies the space as a string, which describes the path to find the
+ * node relative to the rel_to NodePath when the surface is evaluated.
+ */ 4 4 this 3 611  2 ui 1 536  2 vi 1 536  5 space 1 581  
+212 0 0 7 457 604 0 0 109 /**
+ * Returns the coordinate space of the nth control vertex of the surface,
+ * expressed as a NodePath.
+ */ 4 4 this 3 612  2 ui 1 536  2 vi 1 536  6 rel_to 1 601  
+213 0 0 4 458 552 0 0 770 /**
+ * Sets an n-dimensional vertex value.  This allows definition of a NURBS
+ * surface or surface in a sparse n-dimensional space, typically used for
+ * associating additional properties (like color or joint membership) with
+ * each vertex of a surface.
+ *
+ * The value d is an arbitrary integer value and specifies the dimension of
+ * question for this particular vertex.  Any number of dimensions may be
+ * specified, and they need not be consecutive.  If a value for a given
+ * dimension is not specified, is it implicitly 0.0.
+ *
+ * The value is implicitly scaled by the homogenous weight value--that is, the
+ * fourth component of the value passed to set_vertex().  This means the
+ * ordinary vertex must be set first, before the extended vertices can be set.
+ */ 5 4 this 3 611  2 ui 1 536  2 vi 1 536  1 d 1 536  5 value 1 525  
+214 0 0 6 459 525 0 0 172 /**
+ * Returns an n-dimensional vertex value.  See set_extended_vertex().  This
+ * returns the value set for the indicated dimension, or 0.0 if nothing has
+ * been set.
+ */ 4 4 this 3 612  2 ui 1 536  2 vi 1 536  1 d 1 536  
+215 0 0 4 460 552 0 0 259 /**
+ * Simultaneously sets several extended values in the slots d through (d +
+ * num_values - 1) from the num_values elements of the indicated array.  This
+ * is equivalent to calling set_extended_vertex() num_values times.  See
+ * set_extended_vertex().
+ */ 6 4 this 3 611  2 ui 1 536  2 vi 1 536  1 d 1 536  6 values 1 605  10 num_values 1 536  
+216 0 0 6 461 536 0 0 138 /**
+ * Returns the number of knot values in the surface in the U direction.  This
+ * is based on the number of vertices and the order.
+ */ 1 4 this 3 612  
+217 0 0 4 462 552 0 0 184 /**
+ * Sets the value of the nth knot.  Each knot value should be greater than or
+ * equal to the preceding value.  If no knot values are set, a default knot
+ * vector is supplied.
+ */ 3 4 this 3 611  1 i 1 536  4 knot 1 525  
+218 0 0 6 463 525 0 0 45 /**
+ * Returns the value of the nth knot.
+ */ 2 4 this 3 612  1 i 1 536  
+219 0 0 4 464 552 0 0 116 /**
+ * Normalizes the knot sequence so that the parametric range of the surface in
+ * the U direction is 0 .. 1.
+ */ 1 4 this 3 611  
+220 0 0 6 465 536 0 0 138 /**
+ * Returns the number of knot values in the surface in the V direction.  This
+ * is based on the number of vertices and the order.
+ */ 1 4 this 3 612  
+221 0 0 4 466 552 0 0 184 /**
+ * Sets the value of the nth knot.  Each knot value should be greater than or
+ * equal to the preceding value.  If no knot values are set, a default knot
+ * vector is supplied.
+ */ 3 4 this 3 611  1 i 1 536  4 knot 1 525  
+222 0 0 6 467 525 0 0 45 /**
+ * Returns the value of the nth knot.
+ */ 2 4 this 3 612  1 i 1 536  
+223 0 0 4 468 552 0 0 116 /**
+ * Normalizes the knot sequence so that the parametric range of the surface in
+ * the U direction is 0 .. 1.
+ */ 1 4 this 3 611  
+224 0 0 6 469 536 0 0 135 /**
+ * Returns the number of piecewise continuous segments in the surface in the U
+ * direction.  This is based on the knot vector.
+ */ 1 4 this 3 612  
+225 0 0 6 470 536 0 0 135 /**
+ * Returns the number of piecewise continuous segments in the surface in the V
+ * direction.  This is based on the knot vector.
+ */ 1 4 this 3 612  
+226 0 0 7 471 610 0 0 196 /**
+ * Returns a NurbsSurfaceResult object that represents the result of applying
+ * the knots to all of the current values of the vertices, transformed into
+ * the indicated coordinate space.
+ */ 2 4 this 3 612  6 rel_to 5 601  
+227 0 0 4 472 552 0 0 10 /**
+ *
+ */ 2 4 this 3 612  3 out 1 559  
+228 0 0 7 473 614 506 0 10 /**
+ *
+ */ 1 4 name 1 581  
+229 0 0 4 474 552 0 0 65 /**
+ * Sets the particular curve represented by the RopeNode.
+ */ 2 4 this 3 614  5 curve 1 541  
+230 0 0 7 475 541 0 0 57 /**
+ * Returns the curve represented by the RopeNode.
+ */ 1 4 this 3 615  
+231 0 0 4 476 552 0 0 130 /**
+ * Specifies the method used to render the rope.  The simplest is RM_thread,
+ * which just draws a one-pixel line segment.
+ */ 2 4 this 3 614  11 render_mode 1 538  
+232 0 0 6 477 538 0 0 78 /**
+ * Returns the method used to render the rope.  See set_render_mode().
+ */ 1 4 this 3 615  
+233 0 0 4 478 552 0 0 72 /**
+ * Specifies the algorithm to use to generate UV's for the rope.
+ */ 2 4 this 3 614  7 uv_mode 1 539  
+234 0 0 6 479 539 0 0 70 /**
+ * Returns the algorithm to use to generate UV's for the rope.
+ */ 1 4 this 3 615  
+235 0 0 4 480 552 0 0 115 /**
+ * Specify true to vary the U coordinate down the length of the rope, or false
+ * to vary the V coordinate.
+ */ 2 4 this 3 614  10 u_dominant 1 542  
+236 0 0 6 481 542 0 0 124 /**
+ * Returns true if the rope runs down the U coordinate of the texture, or
+ * false if it runs down the V coordinate.
+ */ 1 4 this 3 615  
+237 0 0 4 482 552 0 0 206 /**
+ * Specifies an additional scaling factor to apply to generated UV's along the
+ * rope.  This scale factor is applied in whichever direction is along the
+ * rope, as specified by set_uv_direction().
+ */ 2 4 this 3 614  5 scale 1 525  
+238 0 0 6 483 525 0 0 78 /**
+ * Returns the scaling factor to apply to generated UV's for the rope.
+ */ 1 4 this 3 615  
+239 0 0 4 484 552 0 0 192 /**
+ * Specifies the kind of normals to generate for the rope.  This is only
+ * applicable when the RenderMode is set to RM_tube; in the other render
+ * modes, normals are never generated.
+ */ 2 4 this 3 614  11 normal_mode 1 540  
+240 0 0 6 485 540 0 0 131 /**
+ * Returns the kind of normals to generate for the rope.  This is only
+ * applicable when the RenderMode is set to RM_tube.
+ */ 1 4 this 3 615  
+241 0 0 4 486 552 0 0 419 /**
+ * Specifies a normal vector, generally perpendicular to the main axis of the
+ * starting point of the curve, that controls the "top" of the curve, when
+ * RenderMode is RM_tube.  This is used to orient the vertices that make up
+ * the tube.  If this vector is too nearly parallel with the starting
+ * direction of the curve, there may be a tendency for the whole tube to
+ * gimble-lock around its primary axis.
+ */ 2 4 this 3 614  7 tube_up 1 617  
+242 0 0 6 487 617 0 0 127 /**
+ * Returns the normal vector used to control the "top" of the curve, when
+ * RenderMode is RM_tube.  See set_tube_up().
+ */ 1 4 this 3 615  
+243 0 0 4 488 552 0 0 351 /**
+ * Sets the "use vertex color" flag.  When this is true, the R, G, B, A vertex
+ * color is assumed to be stored as the dimensions n + 0, n + 1, n + 2, n + 3,
+ * respectively, of the extended vertex values, where n is the value returned
+ * by get_vertex_color_dimension().  Use
+ * NurbsCurveEvaluator::set_extended_vertex() to set these values.
+ */ 2 4 this 3 614  4 flag 1 542  
+244 0 0 6 489 542 0 0 76 /**
+ * Returns the "use vertex color" flag.  See set_use_vertex_color().
+ */ 1 4 this 3 615  
+245 0 0 6 490 536 0 0 221 /**
+ * Returns the numeric extended dimension in which the color components should
+ * be found.  See NurbsCurveEvaluator::set_extended_vertex().
+ *
+ * The color components will be expected at (n, n + 1, n + 2, n + 3).
+ */ 0 
+246 0 0 4 491 552 0 0 154 /**
+ * Specifies the number of subdivisions per cubic segment (that is, per unique
+ * knot value) to draw in a fixed uniform tesselation of the curve.
+ */ 2 4 this 3 614  10 num_subdiv 1 536  
+247 0 0 6 492 536 0 0 98 /**
+ * Returns the number of subdivisions per cubic segment to draw.  See
+ * set_num_subdiv().
+ */ 1 4 this 3 615  
+248 0 0 4 493 552 0 0 404 /**
+ * Specifies the number of radial subdivisions to make if RenderMode is
+ * RM_tube.  It is ignored in the other render modes.
+ *
+ * Increasing this number increases the roundness of a cross-section of the
+ * tube.  The minimum value for a dimensional tube is 3; setting it to 2 will
+ * get you a thin piece of tape (which is similar to RM_billboard, except it
+ * won't rotate to face the camera).
+ */ 2 4 this 3 614  10 num_slices 1 536  
+249 0 0 6 494 536 0 0 153 /**
+ * Returns the number of radial subdivisions to make if RenderMode is RM_tube.
+ * It is ignored in the other render modes.  See set_num_slices().
+ */ 1 4 this 3 615  
+250 0 0 4 495 552 0 0 418 /**
+ * Sets the "use vertex thickness" flag.  When this is true, the vertex
+ * thickness is assumed to be stored as the dimension
+ * get_vertex_thickness_dimension(), of the extended vertex values.  Use
+ * NurbsCurveEvaluator::set_extended_vertex() to set these values.
+ *
+ * In this mode, the overall thickness is also applied as a scale to the
+ * vertex thickness.  Not all render modes support vertex thickness.
+ */ 2 4 this 3 614  4 flag 1 542  
+251 0 0 6 496 542 0 0 84 /**
+ * Returns the "use vertex thickness" flag.  See set_use_vertex_thickness().
+ */ 1 4 this 3 615  
+252 0 0 6 497 536 0 0 151 /**
+ * Returns the numeric extended dimension in which the thickness component
+ * should be found.  See NurbsCurveEvaluator::set_extended_vertex().
+ */ 0 
+253 0 0 4 498 552 0 0 236 /**
+ * Specifies the thickness of the rope, in pixels or in spatial units,
+ * depending on the render mode.  See set_render_mode().
+ *
+ * The thickness may also be specified on a per-vertex basis.  See
+ * set_use_vertex_thickness().
+ */ 2 4 this 3 614  9 thickness 1 525  
+254 0 0 6 499 525 0 0 67 /**
+ * Returns the thickness of the rope.  See set_thickness().
+ */ 1 4 this 3 615  
+255 0 0 4 500 552 0 0 207 /**
+ * Specifies an optional matrix which is used to transform each control vertex
+ * after it has been transformed into the RopeNode's coordinate space, but
+ * before the polygon vertices are generated.
+ */ 2 4 this 3 614  6 matrix 1 607  
+256 0 0 4 501 552 0 0 67 /**
+ * Resets the node's matrix to identity.  See set_matrix().
+ */ 1 4 this 3 614  
+257 0 0 6 502 542 0 0 92 /**
+ * Returns true if the node has a matrix set, false otherwise.  See
+ * set_matrix().
+ */ 1 4 this 3 615  
+258 0 0 6 503 607 0 0 206 /**
+ * Returns the optional matrix which is used to transform each control vertex
+ * after it has been transformed into the RopeNode's coordinate space, but
+ * before the polygon vertices are generated.
+ */ 1 4 this 3 615  
+259 0 0 4 504 552 0 0 206 /**
+ * Recomputes the bounding volume.  This is normally called automatically, but
+ * it must occasionally be called explicitly when the curve has changed
+ * properties outside of this node's knowledge.
+ */ 2 4 this 3 614  6 rel_to 1 601  
+260 0 0 7 505 564 0 0 0 0 
+261 0 0 7 507 618 518 0 10 /**
+ *
+ */ 1 4 name 1 581  
+262 0 0 4 508 552 0 0 68 /**
+ * Sets the particular surface represented by the SheetNode.
+ */ 2 4 this 3 618  7 surface 1 611  
+263 0 0 7 509 611 0 0 60 /**
+ * Returns the surface represented by the SheetNode.
+ */ 1 4 this 3 619  
+264 0 0 4 510 552 0 0 269 /**
+ * Sets the "use vertex color" flag.  When this is true, the R, G, B, A vertex
+ * color is assumed to be stored as the dimensions 0, 1, 2, 3, respectively,
+ * of the extended vertex values.  Use
+ * NurbsCurveEvaluator::set_extended_vertex() to set these values.
+ */ 2 4 this 3 618  4 flag 1 542  
+265 0 0 6 511 542 0 0 76 /**
+ * Returns the "use vertex color" flag.  See set_use_vertex_color().
+ */ 1 4 this 3 619  
+266 0 0 4 512 552 0 0 178 /**
+ * Specifies the number of subdivisions per cubic segment (that is, per unique
+ * knot value) to draw in a fixed uniform tesselation of the surface in the U
+ * direction.
+ */ 2 4 this 3 618  12 num_u_subdiv 1 536  
+267 0 0 6 513 536 0 0 119 /**
+ * Returns the number of subdivisions per cubic segment to draw in the U
+ * direction.  See set_num_u_subdiv().
+ */ 1 4 this 3 619  
+268 0 0 4 514 552 0 0 178 /**
+ * Specifies the number of subdivisions per cubic segment (that is, per unique
+ * knot value) to draw in a fixed uniform tesselation of the surface in the V
+ * direction.
+ */ 2 4 this 3 618  12 num_v_subdiv 1 536  
+269 0 0 6 515 536 0 0 119 /**
+ * Returns the number of subdivisions per cubic segment to draw in the V
+ * direction.  See set_num_v_subdiv().
+ */ 1 4 this 3 619  
+270 0 0 4 516 552 0 0 208 /**
+ * Recomputes the bounding volume.  This is normally called automatically, but
+ * it must occasionally be called explicitly when the surface has changed
+ * properties outside of this node's knowledge.
+ */ 2 4 this 3 618  6 rel_to 1 601  
+271 0 0 7 517 564 0 0 0 0 
+102
+519 15 ParametricCurve 0 75777 15 ParametricCurve 15 ParametricCurve 0 0 0 0 0 0 19 272 273 274 275 276 277 278 279 280 281 282 283 284 285 286 287 288 289 290 0 0 1 0 520 0 0 0 0 163
+/**
+ * A virtual base class for parametric curves.  This encapsulates all curves
+ * in 3-d space defined for a single parameter t in the range [0,get_max_t()].
+ */
+
+520 9 PandaNode 0 2048 9 PandaNode 9 PandaNode 0 0 0 0 0 0 0 0 0 0 0 0 175
+/**
+ * A basic node of the scene graph or data graph.  This is the base class of
+ * all specialized nodes, and also serves as a generic node with no special
+ * properties.
+ */
+
+521 13 CubicCurveseg 0 75777 13 CubicCurveseg 13 CubicCurveseg 0 0 0 0 0 0 1 291 0 0 1 0 519 0 0 0 0 940
+/**
+ * A CubicCurveseg is any curve that can be completely described by four
+ * 4-valued basis vectors, one for each dimension in three-space, and one for
+ * the homogeneous coordinate.  This includes Beziers, Hermites, and NURBS.
+ *
+ * This class encapsulates a single curve segment of the cubic curve.
+ * Normally, when we think of Bezier and Hermite curves, we think of a
+ * piecewise collection of such segments.
+ *
+ * Although this class includes methods such as hermite_basis() and
+ * nurbs_basis(), to generate a Hermite and NURBS curve segment, respectively,
+ * only the final basis vectors are stored: the product of the basis matrix of
+ * the corresponding curve type, and its geometry vectors.  This is the
+ * minimum information needed to evaluate the curve.  However, the individual
+ * CV's that were used to compute these basis vectors are not retained; this
+ * might be handled in a subclass (for instance, HermiteCurve).
+ */
+
+522 25 ParametricCurveCollection 0 75777 25 ParametricCurveCollection 25 ParametricCurveCollection 0 0 0 1 292 0 6 629 630 631 632 633 634 30 293 294 295 296 297 298 299 300 301 302 303 304 305 306 307 308 309 310 311 312 313 314 315 316 317 318 319 320 321 322 2 654 655 0 1 0 523 0 0 0 0 343
+/**
+ * This is a set of zero or more ParametricCurves, which may or may not be
+ * related.  If they are related, the set should contain no more than one XYZ
+ * curve, no more than one HPR curve, and zero or more Timewarp curves, which
+ * can then be evaluated as a unit to return a single transformation matrix
+ * for a given unit of time.
+ */
+
+523 14 ReferenceCount 0 2048 14 ReferenceCount 14 ReferenceCount 0 0 0 0 0 0 0 0 0 0 0 0 203
+/**
+ * A base class for all things that want to be reference-counted.
+ * ReferenceCount works in conjunction with PointerTo to automatically delete
+ * objects when the last pointer to them goes away.
+ */
+
+524 17 ParametricCurve * 0 8576 17 ParametricCurve * 17 ParametricCurve * 0 0 519 0 0 0 0 0 0 0 0 0 0
+
+525 11 PN_stdfloat 0 2105344 11 PN_stdfloat 11 PN_stdfloat 0 0 526 0 0 0 0 0 0 0 0 0 0
+
+526 5 float 0 8194 5 float 5 float 0 2 0 0 0 0 0 0 0 0 0 0 0
+
+527 11 CurveFitter 0 26625 11 CurveFitter 11 CurveFitter 0 0 0 1 323 324 0 20 325 326 327 328 329 330 331 332 333 334 335 336 337 338 339 340 341 342 343 344 0 0 0 0 0 10
+/**
+ *
+ */
+
+528 14 PiecewiseCurve 0 75777 14 PiecewiseCurve 14 PiecewiseCurve 0 0 0 1 345 0 0 1 346 0 0 1 0 519 0 0 0 0 184
+/**
+ * A PiecewiseCurve is a curve made up of several curve segments, connected in
+ * a head-to-tail fashion.  The length of each curve segment in parametric
+ * space is definable.
+ */
+
+529 12 HermiteCurve 0 75777 12 HermiteCurve 12 HermiteCurve 0 0 0 1 347 0 0 19 348 349 350 351 352 353 354 355 356 357 358 359 360 361 362 363 364 365 366 0 0 1 0 528 0 0 0 0 421
+/**
+ * A parametric curve defined by a sequence of control vertices, each with an
+ * in and out tangent.
+ *
+ * This class is actually implemented as a PiecewiseCurve made up of several
+ * CubicCurvesegs, each of which is created using the hermite_basis() method.
+ * The HermiteCurve class itself keeps its own list of the CV's that are used
+ * to define the curve (since the CubicCurveseg class doesn't retain these).
+ */
+
+530 19 NurbsCurveInterface 0 26625 19 NurbsCurveInterface 19 NurbsCurveInterface 0 0 0 0 367 0 18 368 369 370 371 372 373 374 375 376 377 378 379 380 381 382 383 384 385 2 656 657 0 0 0 0 211
+/**
+ * This abstract class defines the interface only for a Nurbs-style curve,
+ * with knots and coordinates in homogeneous space.
+ *
+ * The NurbsCurve class inherits both from this and from ParametricCurve.
+ */
+
+531 10 NurbsCurve 0 16803841 10 NurbsCurve 10 NurbsCurve 0 0 0 1 390 391 0 1 392 0 0 2 3 528 386 387 3 530 388 389 0 0 830
+/**
+ * A Nonuniform Rational B-Spline.
+ *
+ * This class is actually implemented as a PiecewiseCurve made up of several
+ * CubicCurvesegs, each of which is created using the nurbs_basis() method.
+ * The list of CV's and knots is kept here, within the NurbsCurve class.
+ *
+ * This class is the original Panda-native implementation of a NURBS curve.
+ * It is typedeffed as "NurbsCurve" and performs all NURBS curve functions if
+ * we do not have the NURBS++ library available.
+ *
+ * However, if we *do* have the NURBS++ library, another class exists, the
+ * NurbsPPCurve, which is a wrapper around that library and provides some
+ * additional functionality.  In that case, the other class is typedeffed to
+ * "NurbsCurve" instead of this one, and performs most of the NURBS curve
+ * functions.  This class then becomes vestigial.
+ */
+
+532 16 NurbsCurveResult 0 75777 16 NurbsCurveResult 16 NurbsCurveResult 0 0 0 1 409 0 0 16 393 394 395 396 397 398 399 400 401 402 403 404 405 406 407 408 2 658 659 0 1 0 523 0 0 0 0 453
+/**
+ * The result of a NurbsCurveEvaluator.  This object represents a curve in a
+ * particular coordinate space.  It can return the point and/or tangent to the
+ * curve at any point.
+ *
+ * This is not related to NurbsCurve, CubicCurveseg or any of the
+ * ParametricCurve-derived objects in this module.  It is a completely
+ * parallel implementation of NURBS curves, and will probably eventually
+ * replace the whole ParametricCurve class hierarchy.
+ */
+
+533 19 NurbsCurveEvaluator 0 75777 19 NurbsCurveEvaluator 19 NurbsCurveEvaluator 0 0 0 1 410 0 0 18 411 412 413 414 415 416 417 418 419 420 421 422 423 424 425 426 427 428 2 660 661 0 1 0 523 0 0 0 0 492
+/**
+ * This class is an abstraction for evaluating NURBS curves.  It accepts an
+ * array of vertices, each of which may be in a different coordinate space (as
+ * defined by a NodePath), as well as an optional knot vector.
+ *
+ * This is not related to NurbsCurve, CubicCurveseg or any of the
+ * ParametricCurve-derived objects in this module.  It is a completely
+ * parallel implementation of NURBS curves, and will probably eventually
+ * replace the whole ParametricCurve class hierarchy.
+ */
+
+534 18 NurbsSurfaceResult 0 75777 18 NurbsSurfaceResult 18 NurbsSurfaceResult 0 0 0 1 445 0 0 16 429 430 431 432 433 434 435 436 437 438 439 440 441 442 443 444 0 0 1 0 523 0 0 0 0 191
+/**
+ * The result of a NurbsSurfaceEvaluator.  This object represents a surface in
+ * a particular coordinate space.  It can return the point and/or normal to
+ * the surface at any point.
+ */
+
+535 21 NurbsSurfaceEvaluator 0 75777 21 NurbsSurfaceEvaluator 21 NurbsSurfaceEvaluator 0 0 0 1 446 0 4 635 636 637 638 26 447 448 449 450 451 452 453 454 455 456 457 458 459 460 461 462 463 464 465 466 467 468 469 470 471 472 2 662 663 0 1 0 523 0 0 0 0 227
+/**
+ * This class is an abstraction for evaluating NURBS surfaces.  It accepts an
+ * array of vertices, each of which may be in a different coordinate space (as
+ * defined by a NodePath), as well as an optional knot vector.
+ */
+
+536 3 int 0 8194 3 int 3 int 0 1 0 0 0 0 0 0 0 0 0 0 0
+
+537 8 RopeNode 0 141313 8 RopeNode 8 RopeNode 0 0 0 1 473 506 15 639 640 641 642 643 644 645 646 647 648 649 650 651 652 653 32 474 475 476 477 478 479 480 481 482 483 484 485 486 487 488 489 490 491 492 493 494 495 496 497 498 499 500 501 502 503 504 505 0 0 1 0 520 0 0 0 3 538 539 540 428
+/**
+ * This class draws a visible representation of the NURBS curve stored in its
+ * NurbsCurveEvaluator.  It automatically recomputes the curve every frame.
+ *
+ * This is not related to NurbsCurve, CubicCurveseg or any of the
+ * ParametricCurve-derived objects in this module.  It is a completely
+ * parallel implementation of NURBS curves, and will probably eventually
+ * replace the whole ParametricCurve class hierarchy.
+ */
+
+538 10 RenderMode 0 794624 20 RopeNode::RenderMode 20 RopeNode::RenderMode 537 0 0 0 0 0 0 0 0 0 4 9 RM_thread 19 RopeNode::RM_thread 59
+// Render the rope as a one-pixel thread using a linestrip.
+0 7 RM_tape 17 RopeNode::RM_tape 93
+// Render the rope as a triangle strip oriented to be perpendicular to the
+// tube_up vector.
+1 12 RM_billboard 22 RopeNode::RM_billboard 90
+// Render the rope as a triangle strip oriented to be perpendicular to the
+// view vector.
+2 7 RM_tube 17 RopeNode::RM_tube 62
+// Render the rope as a hollow tube extruded along its length.
+3 0 0
+
+539 6 UVMode 0 794624 16 RopeNode::UVMode 16 RopeNode::UVMode 537 0 0 0 0 0 0 0 0 0 4 7 UV_none 17 RopeNode::UV_none 39
+// Don't generate UV's along the curve.
+0 13 UV_parametric 23 RopeNode::UV_parametric 69
+// Generate UV's based on the parametric coordinates along the curve.
+1 11 UV_distance 21 RopeNode::UV_distance 140
+// Generate UV's in proportion to spatial distance along the curve, by
+// using the distance function to compute the length of each segment.
+2 12 UV_distance2 22 RopeNode::UV_distance2 310
+// As above, but don't bother to take the square root of each segment.
+// The distance is then in proportion to the sum-of-squares of the
+// segments along the rope.  If the segments are similar in length, this
+// approximates the proportion of UV_distance while avoiding hundreds of
+// square root operations.
+3 0 0
+
+540 10 NormalMode 0 794624 20 RopeNode::NormalMode 20 RopeNode::NormalMode 537 0 0 0 0 0 0 0 0 0 2 7 NM_none 17 RopeNode::NM_none 26
+// Don't generate normals.
+0 9 NM_vertex 19 RopeNode::NM_vertex 43
+// Generate vertex (smooth-shaded) normals.
+1 0 0
+
+541 21 NurbsCurveEvaluator * 0 8576 21 NurbsCurveEvaluator * 21 NurbsCurveEvaluator * 0 0 533 0 0 0 0 0 0 0 0 0 0
+
+542 4 bool 0 8194 4 bool 4 bool 0 4 0 0 0 0 0 0 0 0 0 0 0
+
+543 14 LVector3 const 0 8832 14 LVector3 const 14 LVector3 const 0 0 544 0 0 0 0 0 0 0 0 0 0
+
+544 8 LVector3 0 2105344 8 LVector3 8 LVector3 0 0 545 0 0 0 0 0 0 0 0 0 0
+
+545 9 LVector3f 0 2048 9 LVector3f 9 LVector3f 0 0 0 0 0 0 0 0 0 0 0 0 338
+/**
+ * This is a three-component vector distance (as opposed to a three-component
+ * point, which represents a particular point in space).  Some of the methods
+ * are slightly different between LPoint3 and LVector3; in particular,
+ * subtraction of two points yields a vector, while addition of a vector and a
+ * point yields a point.
+ */
+
+546 14 LMatrix4 const 0 8832 14 LMatrix4 const 14 LMatrix4 const 0 0 547 0 0 0 0 0 0 0 0 0 0
+
+547 8 LMatrix4 0 2105344 8 LMatrix4 8 LMatrix4 0 0 548 0 0 0 0 0 0 0 0 0 0
+
+548 9 LMatrix4f 0 2048 9 LMatrix4f 9 LMatrix4f 0 0 0 0 0 0 0 0 0 0 0 0 45
+/**
+ * This is a 4-by-4 transform matrix.
+ */
+
+549 9 SheetNode 0 141313 9 SheetNode 9 SheetNode 0 0 0 1 507 518 0 10 508 509 510 511 512 513 514 515 516 517 0 0 1 0 520 0 0 0 0 447
+/**
+ * This class draws a visible representation of the NURBS surface stored in
+ * its NurbsSurfaceEvaluator.  It automatically recomputes the surface every
+ * frame.
+ *
+ * This is not related to NurbsSurface, CubicSurfaceseg or any of the
+ * ParametricSurface-derived objects in this module.  It is a completely
+ * parallel implementation of NURBS surfaces, and will probably eventually
+ * replace the whole ParametricSurface class hierarchy.
+ */
+
+550 23 ParametricCurve const * 0 8576 23 ParametricCurve const * 23 ParametricCurve const * 0 0 551 0 0 0 0 0 0 0 0 0 0
+
+551 21 ParametricCurve const 0 8832 21 ParametricCurve const 21 ParametricCurve const 0 0 519 0 0 0 0 0 0 0 0 0 0
+
+552 4 void 0 8194 4 void 4 void 0 6 0 0 0 0 0 0 0 0 0 0 0
+
+553 11 LVecBase3 * 0 8576 11 LVecBase3 * 11 LVecBase3 * 0 0 554 0 0 0 0 0 0 0 0 0 0
+
+554 9 LVecBase3 0 2105344 9 LVecBase3 9 LVecBase3 0 0 555 0 0 0 0 0 0 0 0 0 0
+
+555 10 LVecBase3f 0 2048 10 LVecBase3f 10 LVecBase3f 0 0 0 0 0 0 0 0 0 0 0 0 77
+/**
+ * This is the base class for all three-component vectors and points.
+ */
+
+556 10 Filename * 0 8576 10 Filename * 10 Filename * 0 0 557 0 0 0 0 0 0 0 0 0 0
+
+557 8 Filename 0 2048 8 Filename 8 Filename 0 0 0 0 0 0 0 0 0 0 0 0 839
+/**
+ * The name of a file, such as a texture file or an Egg file.  Stores the full
+ * pathname, and includes functions for extracting out the directory prefix
+ * part and the file extension and stuff.
+ *
+ * A Filename is also aware of the mapping between the Unix-like filename
+ * convention we use internally, and the local OS's specific filename
+ * convention, and it knows how to perform basic OS-specific I/O, like testing
+ * for file existence and searching a searchpath, as well as the best way to
+ * open an fstream for reading or writing.
+ *
+ * Note that the methods of Filename that interact with the filesystem (such
+ * as exists(), open_read(), etc.) directly interface with the operating system
+ * and are not aware of Panda's virtual file system.  To interact with the VFS,
+ * use the methods on VirtualFileSystem instead.
+ */
+
+558 16 CoordinateSystem 0 532480 16 CoordinateSystem 16 CoordinateSystem 0 0 0 0 0 0 0 0 0 0 6 10 CS_default 10 CS_default 210
+// The CS_default entry does not refer to a particular coordinate system,
+// but rather to the value stored in default_coordinate_system, which in
+// turn is loaded from the config variable "coordinate-system".
+0 12 CS_zup_right 12 CS_zup_right 21
+// Z-Up, Right-handed
+1 12 CS_yup_right 12 CS_yup_right 21
+// Y-Up, Right-handed
+2 11 CS_zup_left 11 CS_zup_left 20
+// Z-Up, Left-handed
+3 11 CS_yup_left 11 CS_yup_left 20
+// Y-Up, Left-handed
+4 10 CS_invalid 10 CS_invalid 156
+// CS_invalid is not a coordinate system at all.  It can be used in user-
+// input processing code to indicate a contradictory coordinate system
+// request.
+5 0 0
+
+559 9 ostream * 0 8576 14 std::ostream * 14 std::ostream * 0 0 560 0 0 0 0 0 0 0 0 0 0
+
+560 7 ostream 0 2048 12 std::ostream 12 std::ostream 0 0 0 0 0 0 0 0 0 0 0 0 0
+
+561 16 Filename const * 0 8576 16 Filename const * 16 Filename const * 0 0 562 0 0 0 0 0 0 0 0 0 0
+
+562 14 Filename const 0 8832 14 Filename const 14 Filename const 0 0 557 0 0 0 0 0 0 0 0 0 0
+
+563 10 TypeHandle 0 16779264 10 TypeHandle 10 TypeHandle 0 0 0 0 0 0 0 0 0 0 0 0 732
+/**
+ * TypeHandle is the identifier used to differentiate C++ class types.  Any
+ * C++ classes that inherit from some base class, and must be differentiated
+ * at run time, should store a static TypeHandle object that can be queried
+ * through a static member function named get_class_type().  Most of the time,
+ * it is also desirable to inherit from TypedObject, which provides some
+ * virtual functions to return the TypeHandle for a particular instance.
+ *
+ * At its essence, a TypeHandle is simply a unique identifier that is assigned
+ * by the TypeRegistry.  The TypeRegistry stores a tree of TypeHandles, so
+ * that ancestry of a particular type may be queried, and the type name may be
+ * retrieved for run-time display.
+ */
+
+564 12 TypeHandle * 0 8576 12 TypeHandle * 12 TypeHandle * 0 0 563 0 0 0 0 0 0 0 0 0 0
+
+565 27 ParametricCurveCollection * 0 8576 27 ParametricCurveCollection * 27 ParametricCurveCollection * 0 0 522 0 0 0 0 0 0 0 0 0 0
+
+566 33 ParametricCurveCollection const * 0 8576 33 ParametricCurveCollection const * 33 ParametricCurveCollection const * 0 0 567 0 0 0 0 0 0 0 0 0 0
+
+567 31 ParametricCurveCollection const 0 8832 31 ParametricCurveCollection const 31 ParametricCurveCollection const 0 0 522 0 0 0 0 0 0 0 0 0 0
+
+568 6 size_t 0 2105344 11 std::size_t 11 std::size_t 0 0 569 0 0 0 0 0 0 0 0 0 0
+
+569 17 unsigned long int 0 8214 17 unsigned long int 17 unsigned long int 0 1 0 0 0 0 0 0 0 0 0 0 0
+
+570 11 PandaNode * 0 8576 11 PandaNode * 11 PandaNode * 0 0 520 0 0 0 0 0 0 0 0 0 0
+
+571 10 LMatrix4 * 0 8576 10 LMatrix4 * 10 LMatrix4 * 0 0 547 0 0 0 0 0 0 0 0 0 0
+
+572 17 LVecBase3 const * 0 8576 17 LVecBase3 const * 17 LVecBase3 const * 0 0 573 0 0 0 0 0 0 0 0 0 0
+
+573 15 LVecBase3 const 0 8832 15 LVecBase3 const 15 LVecBase3 const 0 0 554 0 0 0 0 0 0 0 0 0 0
+
+574 13 CurveFitter * 0 8576 13 CurveFitter * 13 CurveFitter * 0 0 527 0 0 0 0 0 0 0 0 0 0
+
+575 19 CurveFitter const * 0 8576 19 CurveFitter const * 19 CurveFitter const * 0 0 576 0 0 0 0 0 0 0 0 0 0
+
+576 17 CurveFitter const 0 8832 17 CurveFitter const 17 CurveFitter const 0 0 527 0 0 0 0 0 0 0 0 0 0
+
+577 16 PiecewiseCurve * 0 8576 16 PiecewiseCurve * 16 PiecewiseCurve * 0 0 528 0 0 0 0 0 0 0 0 0 0
+
+578 14 HermiteCurve * 0 8576 14 HermiteCurve * 14 HermiteCurve * 0 0 529 0 0 0 0 0 0 0 0 0 0
+
+579 20 HermiteCurve const * 0 8576 20 HermiteCurve const * 20 HermiteCurve const * 0 0 580 0 0 0 0 0 0 0 0 0 0
+
+580 18 HermiteCurve const 0 8832 18 HermiteCurve const 18 HermiteCurve const 0 0 529 0 0 0 0 0 0 0 0 0 0
+
+581 13 atomic string 0 2 13 atomic string 13 atomic string 0 7 0 0 0 0 0 0 0 0 0 0 0
+
+582 21 NurbsCurveInterface * 0 8576 21 NurbsCurveInterface * 21 NurbsCurveInterface * 0 0 530 0 0 0 0 0 0 0 0 0 0
+
+583 27 NurbsCurveInterface const * 0 8576 27 NurbsCurveInterface const * 27 NurbsCurveInterface const * 0 0 584 0 0 0 0 0 0 0 0 0 0
+
+584 25 NurbsCurveInterface const 0 8832 25 NurbsCurveInterface const 25 NurbsCurveInterface const 0 0 530 0 0 0 0 0 0 0 0 0 0
+
+585 17 LVecBase4 const * 0 8576 17 LVecBase4 const * 17 LVecBase4 const * 0 0 586 0 0 0 0 0 0 0 0 0 0
+
+586 15 LVecBase4 const 0 8832 15 LVecBase4 const 15 LVecBase4 const 0 0 587 0 0 0 0 0 0 0 0 0 0
+
+587 9 LVecBase4 0 2105344 9 LVecBase4 9 LVecBase4 0 0 588 0 0 0 0 0 0 0 0 0 0
+
+588 10 LVecBase4f 0 2048 10 LVecBase4f 10 LVecBase4f 0 0 0 0 0 0 0 0 0 0 0 0 77
+/**
+ * This is the base class for all three-component vectors and points.
+ */
+
+589 11 LVecBase4 * 0 8576 11 LVecBase4 * 11 LVecBase4 * 0 0 587 0 0 0 0 0 0 0 0 0 0
+
+590 12 NurbsCurve * 0 8576 12 NurbsCurve * 12 NurbsCurve * 0 0 531 0 0 0 0 0 0 0 0 0 0
+
+591 24 NurbsCurveResult const * 0 8576 24 NurbsCurveResult const * 24 NurbsCurveResult const * 0 0 592 0 0 0 0 0 0 0 0 0 0
+
+592 22 NurbsCurveResult const 0 8832 22 NurbsCurveResult const 22 NurbsCurveResult const 0 0 532 0 0 0 0 0 0 0 0 0 0
+
+593 18 NurbsCurveResult * 0 8576 18 NurbsCurveResult * 18 NurbsCurveResult * 0 0 532 0 0 0 0 0 0 0 0 0 0
+
+594 14 PN_stdfloat [] 0 4202496 14 PN_stdfloat [] 14 PN_stdfloat [] 0 0 525 -1 0 0 0 0 0 0 0 0 0 0
+
+595 15 LPoint3 const * 0 8576 15 LPoint3 const * 15 LPoint3 const * 0 0 596 0 0 0 0 0 0 0 0 0 0
+
+596 13 LPoint3 const 0 8832 13 LPoint3 const 13 LPoint3 const 0 0 597 0 0 0 0 0 0 0 0 0 0
+
+597 7 LPoint3 0 2105344 7 LPoint3 7 LPoint3 0 0 598 0 0 0 0 0 0 0 0 0 0
+
+598 8 LPoint3f 0 2048 8 LPoint3f 8 LPoint3f 0 0 0 0 0 0 0 0 0 0 0 0 337
+/**
+ * This is a three-component point in space (as opposed to a three-component
+ * vector, which represents a direction and a distance).  Some of the methods
+ * are slightly different between LPoint3 and LVector3; in particular,
+ * subtraction of two points yields a vector, while addition of a vector and a
+ * point yields a point.
+ */
+
+599 27 NurbsCurveEvaluator const * 0 8576 27 NurbsCurveEvaluator const * 27 NurbsCurveEvaluator const * 0 0 600 0 0 0 0 0 0 0 0 0 0
+
+600 25 NurbsCurveEvaluator const 0 8832 25 NurbsCurveEvaluator const 25 NurbsCurveEvaluator const 0 0 533 0 0 0 0 0 0 0 0 0 0
+
+601 16 NodePath const * 0 8576 16 NodePath const * 16 NodePath const * 0 0 602 0 0 0 0 0 0 0 0 0 0
+
+602 14 NodePath const 0 8832 14 NodePath const 14 NodePath const 0 0 603 0 0 0 0 0 0 0 0 0 0
+
+603 8 NodePath 0 2048 8 NodePath 8 NodePath 0 0 0 0 0 0 0 0 0 0 0 0 762
+/**
+ * NodePath is the fundamental system for disambiguating instances, and also
+ * provides a higher-level interface for manipulating the scene graph.
+ *
+ * A NodePath is a list of connected nodes from the root of the graph to any
+ * sub-node.  Each NodePath therefore uniquely describes one instance of a
+ * node.
+ *
+ * NodePaths themselves are lightweight objects that may easily be copied and
+ * passed by value.  Their data is stored as a series of NodePathComponents
+ * that are stored on the nodes.  Holding a NodePath will keep a reference
+ * count to all the nodes in the path.  However, if any node in the path is
+ * removed or reparented (perhaps through a different NodePath), the NodePath
+ * will automatically be updated to reflect the changes.
+ */
+
+604 10 NodePath * 0 8576 10 NodePath * 10 NodePath * 0 0 603 0 0 0 0 0 0 0 0 0 0
+
+605 20 PN_stdfloat const [] 0 4202496 20 PN_stdfloat const [] 20 PN_stdfloat const [] 0 0 606 -1 0 0 0 0 0 0 0 0 0 0
+
+606 17 PN_stdfloat const 0 8832 17 PN_stdfloat const 17 PN_stdfloat const 0 0 525 0 0 0 0 0 0 0 0 0 0
+
+607 16 LMatrix4 const * 0 8576 16 LMatrix4 const * 16 LMatrix4 const * 0 0 546 0 0 0 0 0 0 0 0 0 0
+
+608 26 NurbsSurfaceResult const * 0 8576 26 NurbsSurfaceResult const * 26 NurbsSurfaceResult const * 0 0 609 0 0 0 0 0 0 0 0 0 0
+
+609 24 NurbsSurfaceResult const 0 8832 24 NurbsSurfaceResult const 24 NurbsSurfaceResult const 0 0 534 0 0 0 0 0 0 0 0 0 0
+
+610 20 NurbsSurfaceResult * 0 8576 20 NurbsSurfaceResult * 20 NurbsSurfaceResult * 0 0 534 0 0 0 0 0 0 0 0 0 0
+
+611 23 NurbsSurfaceEvaluator * 0 8576 23 NurbsSurfaceEvaluator * 23 NurbsSurfaceEvaluator * 0 0 535 0 0 0 0 0 0 0 0 0 0
+
+612 29 NurbsSurfaceEvaluator const * 0 8576 29 NurbsSurfaceEvaluator const * 29 NurbsSurfaceEvaluator const * 0 0 613 0 0 0 0 0 0 0 0 0 0
+
+613 27 NurbsSurfaceEvaluator const 0 8832 27 NurbsSurfaceEvaluator const 27 NurbsSurfaceEvaluator const 0 0 535 0 0 0 0 0 0 0 0 0 0
+
+614 10 RopeNode * 0 8576 10 RopeNode * 10 RopeNode * 0 0 537 0 0 0 0 0 0 0 0 0 0
+
+615 16 RopeNode const * 0 8576 16 RopeNode const * 16 RopeNode const * 0 0 616 0 0 0 0 0 0 0 0 0 0
+
+616 14 RopeNode const 0 8832 14 RopeNode const 14 RopeNode const 0 0 537 0 0 0 0 0 0 0 0 0 0
+
+617 16 LVector3 const * 0 8576 16 LVector3 const * 16 LVector3 const * 0 0 543 0 0 0 0 0 0 0 0 0 0
+
+618 11 SheetNode * 0 8576 11 SheetNode * 11 SheetNode * 0 0 549 0 0 0 0 0 0 0 0 0 0
+
+619 17 SheetNode const * 0 8576 17 SheetNode const * 17 SheetNode const * 0 0 620 0 0 0 0 0 0 0 0 0 0
+
+620 15 SheetNode const 0 8832 15 SheetNode const 15 SheetNode const 0 0 549 0 0 0 0 0 0 0 0 0 0
+
+8
+621 9 HC_SMOOTH 0 5 4 536 0 1 4 
+622 8 PCT_NONE 0 5 0 536 0 1 0 
+623 5 HC_G1 0 5 3 536 0 1 3 
+624 5 PCT_T 0 5 3 536 0 1 3 
+625 7 PCT_HPR 0 5 2 536 0 1 2 
+626 7 PCT_XYZ 0 5 1 536 0 1 1 
+627 7 HC_FREE 0 5 2 536 0 1 2 
+628 6 HC_CUT 0 5 1 536 0 1 1 
+25
+629 6 curves 0 102 524 302 297 0 0 296 301 0 0 33 ParametricCurveCollection::curves 0
+
+630 9 xyz_curve 0 2 524 303 0 0 0 0 0 0 0 36 ParametricCurveCollection::xyz_curve 0
+
+631 9 hpr_curve 0 2 524 304 0 0 0 0 0 0 0 36 ParametricCurveCollection::hpr_curve 0
+
+632 13 default_curve 0 2 524 305 0 0 0 0 0 0 0 40 ParametricCurveCollection::default_curve 0
+
+633 15 timewarp_curves 0 66 524 307 0 0 0 0 306 0 0 42 ParametricCurveCollection::timewarp_curves 0
+
+634 5 max_t 0 2 525 308 0 0 0 0 0 0 0 32 ParametricCurveCollection::max_t 0
+
+635 7 u_order 0 6 536 448 447 0 0 0 0 0 0 30 NurbsSurfaceEvaluator::u_order 0
+
+636 7 v_order 0 6 536 450 449 0 0 0 0 0 0 30 NurbsSurfaceEvaluator::v_order 0
+
+637 7 u_knots 0 70 525 463 462 0 0 0 461 0 0 30 NurbsSurfaceEvaluator::u_knots 0
+
+638 7 v_knots 0 70 525 467 466 0 0 0 465 0 0 30 NurbsSurfaceEvaluator::v_knots 0
+
+639 5 curve 0 6 541 475 474 0 0 0 0 0 0 15 RopeNode::curve 0
+
+640 11 render_mode 0 6 538 477 476 0 0 0 0 0 0 21 RopeNode::render_mode 0
+
+641 7 uv_mode 0 6 539 479 478 0 0 0 0 0 0 17 RopeNode::uv_mode 0
+
+642 12 uv_direction 0 6 542 481 480 0 0 0 0 0 0 22 RopeNode::uv_direction 0
+
+643 8 uv_scale 0 6 525 483 482 0 0 0 0 0 0 18 RopeNode::uv_scale 0
+
+644 11 normal_mode 0 6 540 485 484 0 0 0 0 0 0 21 RopeNode::normal_mode 0
+
+645 7 tube_up 0 6 543 487 486 0 0 0 0 0 0 17 RopeNode::tube_up 0
+
+646 16 use_vertex_color 0 6 542 489 488 0 0 0 0 0 0 26 RopeNode::use_vertex_color 0
+
+647 22 vertex_color_dimension 0 2 536 490 0 0 0 0 0 0 0 32 RopeNode::vertex_color_dimension 0
+
+648 10 num_subdiv 0 6 536 492 491 0 0 0 0 0 0 20 RopeNode::num_subdiv 0
+
+649 10 num_slices 0 6 536 494 493 0 0 0 0 0 0 20 RopeNode::num_slices 0
+
+650 20 use_vertex_thickness 0 6 542 496 495 0 0 0 0 0 0 30 RopeNode::use_vertex_thickness 0
+
+651 26 vertex_thickness_dimension 0 2 536 497 0 0 0 0 0 0 0 36 RopeNode::vertex_thickness_dimension 0
+
+652 9 thickness 0 6 525 499 498 0 0 0 0 0 0 19 RopeNode::thickness 0
+
+653 6 matrix 0 30 546 503 500 502 501 0 0 0 0 16 RopeNode::matrix 0
+
+10
+654 10 get_curves 0 301 302 37 ParametricCurveCollection::get_curves 0
+
+655 19 get_timewarp_curves 0 306 307 46 ParametricCurveCollection::get_timewarp_curves 0
+
+656 7 get_cvs 0 370 381 28 NurbsCurveInterface::get_cvs 0
+
+657 9 get_knots 0 371 383 30 NurbsCurveInterface::get_knots 0
+
+658 13 get_sample_ts 0 406 407 31 NurbsCurveResult::get_sample_ts 0
+
+659 17 get_sample_points 0 406 408 35 NurbsCurveResult::get_sample_points 0
+
+660 12 get_vertices 0 414 416 33 NurbsCurveEvaluator::get_vertices 0
+
+661 9 get_knots 0 422 424 30 NurbsCurveEvaluator::get_knots 0
+
+662 11 get_u_knots 0 461 463 34 NurbsSurfaceEvaluator::get_u_knots 0
+
+663 11 get_v_knots 0 465 467 34 NurbsSurfaceEvaluator::get_v_knots 0
+

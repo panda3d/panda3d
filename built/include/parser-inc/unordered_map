@@ -1,0 +1,85 @@
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file unordered_map
+ * @author tobspr
+ * @date 2016-11-01
+ */
+
+// This file, and all the other files in this directory, aren't
+// intended to be compiled--they're just parsed by CPPParser (and
+// interrogate) in lieu of the actual system headers, to generate the
+// interrogate database.
+
+#ifndef UNORDERED_MAP_H
+#define UNORDERED_MAP_H
+
+#include <stdtypedefs.h>
+#include <stdcompare.h>
+#include <pair>
+#include <initializer_list>
+#include <functional>
+#include <memory>
+
+namespace std {
+
+  template <class Key,
+    class T,
+    class Hash = hash<Key>,
+    class Pred = std::equal_to<Key>,
+    class Allocator = std::allocator<std::pair<const Key, T> > >
+  class unordered_map
+  {
+  public:
+    // types
+    typedef Key key_type;
+    typedef Key value_type;
+    typedef Hash hasher;
+    typedef Pred key_equal;
+    typedef Allocator allocator_type;
+    typedef typename allocator_type::pointer pointer;
+    typedef typename allocator_type::const_pointer const_pointer;
+    typedef typename allocator_type::reference reference;
+    typedef typename allocator_type::const_reference const_reference;
+    typedef size_t size_type;
+    typedef std::ptrdiff_t difference_type;
+    class iterator;
+    class const_iterator;
+    class local_iterator;
+    class const_local_iterator;
+  };
+
+  template <class Key,
+  class T,
+  class Hash = hash<Key>,
+  class Pred = std::equal_to<Key>,
+  class Allocator = std::allocator<std::pair<const Key, T> > >
+  class unordered_multimap
+  {
+  public:
+    // types
+    typedef Key key_type;
+    typedef Key value_type;
+    typedef Hash hasher;
+    typedef Pred key_equal;
+    typedef Allocator allocator_type;
+    typedef typename allocator_type::pointer pointer;
+    typedef typename allocator_type::const_pointer const_pointer;
+    typedef typename allocator_type::reference reference;
+    typedef typename allocator_type::const_reference const_reference;
+    typedef size_t size_type;
+    typedef std::ptrdiff_t difference_type;
+    class iterator;
+    class const_iterator;
+    class local_iterator;
+    class const_local_iterator;
+  };
+
+} // namespace std
+
+#endif

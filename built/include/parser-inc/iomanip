@@ -1,0 +1,6 @@
+#pragma once
+
+namespace std {
+  template<class CharT> void setfill(CharT c);
+  void setw(int);
+}

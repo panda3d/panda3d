@@ -1,0 +1,127 @@
+// It's necessary to explicitly import the Python files that define
+// the Python representation of the classes and structs named in this
+// file.  (Implicitly importing these files turned out to be a bad
+// idea.)
+
+from direct.distributed import DistributedObject
+from direct.distributed import DistributedNode
+from game.avatar import AvatarObject
+from game.avatar import DistributedObjectHolder
+
+// All of the named modules are imported into a common Python
+// namespace, which is then searched for each named dclass or struct.
+// It is OK for a dclass to be named in this file that doesn't have a
+// corresponding Python representation, but it is then an error to
+// receive a generate message for one of these objects.
+
+
+// A simple typedef provides a name and a semantic context to types.
+typedef uint32 DoId;
+
+
+// A dclass defines a collection of "methods" which may be called as
+// network messages.
+dclass DistributedObject {
+  setColor(uint8 red, uint8 green, uint8 blue);
+
+  // The uint8[] syntax replaces the old uint8array type.  All of the
+  // old hard-coded array types are now deprecated in favor of C-style
+  // array definitions.
+  setPropertiesList(uint8 properties[]);
+};
+
+
+// You can also define C-style structs.  This is really the same thing
+// as a dclass, except it can be embedded in a message rather than
+// created as an object in its own right.  The struct may or may not
+// correspond with a Python class of the same name.  If the struct
+// does have a Python representation, an instance of that class is
+// created and passed in to functions that receive this kind of
+// parameter; otherwise, a tuple with all of the fields is passed
+// instead.
+
+struct AvatarObject {
+  // Limits to numeric ranges may be specified within parentheses
+  // following the typename.
+  uint8(0-10) type;
+  int16(0-999, 2000-2999, 5000-5199) roomId;
+
+  // You can specify a default initial value in case the value is not
+  // already defined at the time generate is called.
+  int8 code = 0;
+
+  // You can also define "methods" on a struct, just as on a dclass.
+  // This implies the existence of the corresponding get method
+  // (e.g. getObjectCode() in this case), to query the information at
+  // generate time.
+  setObjectCode(int8(0-50) code, DoId player);
+};
+
+
+// Multiple inheritance is also supported.
+
+dclass DistributedObjectHolder : DistributedObject {
+  dropObject(AvatarObject object);
+
+  // You can also have an array of structs.  This specifies a
+  // fixed-length array of five elements.  This is slightly more
+  // optimal than an array of unrestricted length, since the length
+  // prefix need not be transmitted as part of the message.
+  setObjectList(AvatarObject objectArray[5]);
+
+  // In addition to fixed-length arrays and unbounded arrays, you can
+  // specify a range for the valid size of the array:
+  setRelatedObjects(AvatarObject relatedObjects[0, 3 - 5] = []);
+};
+
+// You can specify a default initial value on the typedef, if you
+// like.  This will be overridden by a default initial value specified
+// on the instance.
+typedef uint8(0-25) DNAColor = 1;
+  
+struct AvatarDNA {
+  // This defines a character element that can be any one of the three
+  // specified.  (It is similar in form to the uint8 definitions
+  // below, except that the legal values are ASCII characters instead
+  // of numbers.)
+  char('a','q','x') type;
+
+  // These specify one-byte numeric elements that can be any of the
+  // values in the specified ranges.
+  uint8(0-10) torsoIndex;
+  uint8(0-5) headIndex;
+  uint8(0-4) legsIndex;
+
+  // A switch can be used to define alternate versions of the data
+  // according to some value read from the stream.  In this example,
+  // the alternate cases are very similar, but they need not be
+  // similar at all.
+  switch (uint8 gender) {
+  case 1:
+    // Girl clothes
+    uint8(0-35) shirtIndex;
+    DNAColor shirtColor;
+    uint8(0-25) skirtIndex;
+    DNAColor skirtColor;
+    break;
+
+  case 0:
+    // Boy clothes
+    uint8(0-20) shirtIndex;
+    DNAColor shirtColor;
+    uint8(0-15) shortsIndex;
+    DNAColor shortsColor;
+    break;
+  };
+
+  // Nested structure references.
+  DNAColor armColor;
+  DNAColor headColor;
+};
+
+
+dclass DistributedAvatar {
+  // An example of defining the default value for a complex nested
+  // field, like the above.
+  setDNA(AvatarDNA dna = {'a', 1, 2, 3, { 1, 0, 1, 0, 1 }, 1, 1 }) required broadcast db;
+};

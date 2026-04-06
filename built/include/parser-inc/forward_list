@@ -1,0 +1,9 @@
+#pragma once
+
+#include <compare>
+#include <initializer_list>
+
+namespace std {
+  template<class T> struct allocator;
+  template<class T, class Allocator = allocator<T>> class forward_list;
+}

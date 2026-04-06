@@ -1,0 +1,251 @@
+1775485831
+3 3
+9 libp3skel 4 5lWe 12 panda3d.skel 
+12
+13 9 BasicSkel 0 260 25 20 BasicSkel::BasicSkel 0 2 1 2 10
+/**
+ *
+ */
+92
+inline BasicSkel::BasicSkel(void);
+inline BasicSkel::BasicSkel(BasicSkel const &) = default;
+
+14 10 ~BasicSkel 0 516 25 21 BasicSkel::~BasicSkel 0 0 10
+/**
+ *
+ */
+35
+inline BasicSkel::~BasicSkel(void);
+
+15 9 set_value 0 4 25 20 BasicSkel::set_value 0 1 3 95
+// These inline functions allow you to get and set _value.
+
+/**
+ * Stores an integer value.
+ */
+40
+inline void BasicSkel::set_value(int n);
+
+16 9 get_value 0 4 25 20 BasicSkel::get_value 0 1 4 56
+/**
+ * Retreives a value that was previously stored.
+ */
+44
+inline int BasicSkel::get_value(void) const;
+
+17 13 set_value_alt 0 4 25 24 BasicSkel::set_value_alt 0 1 5 173
+// These do the same thing as the functions above.
+
+/**
+ * Stores an integer value.  Exact same functionality as set_value, except
+ * that this isn't an inline function.
+ */
+37
+void BasicSkel::set_value_alt(int n);
+
+18 13 get_value_alt 0 4 25 24 BasicSkel::get_value_alt 0 1 6 142
+/**
+ * Retreives a value that was previously stored.  Exact same functionality as
+ * get_value, except that this isn't an inline function.
+ */
+41
+int BasicSkel::get_value_alt(void) const;
+
+19 9 TypedSkel 0 260 26 20 TypedSkel::TypedSkel 0 1 7 10
+/**
+ *
+ */
+34
+inline TypedSkel::TypedSkel(void);
+
+20 9 set_value 0 4 26 20 TypedSkel::set_value 0 1 8 95
+// These inline functions allow you to get and set _value.
+
+/**
+ * Stores an integer value.
+ */
+40
+inline void TypedSkel::set_value(int n);
+
+21 9 get_value 0 4 26 20 TypedSkel::get_value 0 1 9 56
+/**
+ * Retreives a value that was previously stored.
+ */
+44
+inline int TypedSkel::get_value(void) const;
+
+22 13 set_value_alt 0 4 26 24 TypedSkel::set_value_alt 0 1 10 173
+// These do the same thing as the functions above.
+
+/**
+ * Stores an integer value.  Exact same functionality as set_value, except
+ * that this isn't an inline function.
+ */
+37
+void TypedSkel::set_value_alt(int n);
+
+23 13 get_value_alt 0 4 26 24 TypedSkel::get_value_alt 0 1 11 142
+/**
+ * Retreives a value that was previously stored.  Exact same functionality as
+ * get_value, except that this isn't an inline function.
+ */
+41
+int TypedSkel::get_value_alt(void) const;
+
+24 14 get_class_type 0 4 26 25 TypedSkel::get_class_type 0 1 12 0
+50
+static TypeHandle TypedSkel::get_class_type(void);
+
+12
+1 0 0 7 13 28 14 0 10 /**
+ *
+ */ 0 
+2 0 0 15 13 28 14 0 0 1 6 param0 0 29  
+3 0 0 4 15 32 0 0 58 // These inline functions allow you to get and set _value. 2 4 this 3 28  1 n 1 31  
+4 0 0 6 16 31 0 0 56 /**
+ * Retreives a value that was previously stored.
+ */ 1 4 this 3 29  
+5 0 0 4 17 32 0 0 121 /**
+ * Stores an integer value.  Exact same functionality as set_value, except
+ * that this isn't an inline function.
+ */ 2 4 this 3 28  1 n 1 31  
+6 0 0 6 18 31 0 0 142 /**
+ * Retreives a value that was previously stored.  Exact same functionality as
+ * get_value, except that this isn't an inline function.
+ */ 1 4 this 3 29  
+7 0 0 7 19 33 0 0 10 /**
+ *
+ */ 0 
+8 0 0 4 20 32 0 0 58 // These inline functions allow you to get and set _value. 2 4 this 3 33  1 n 1 31  
+9 0 0 6 21 31 0 0 56 /**
+ * Retreives a value that was previously stored.
+ */ 1 4 this 3 34  
+10 0 0 4 22 32 0 0 121 /**
+ * Stores an integer value.  Exact same functionality as set_value, except
+ * that this isn't an inline function.
+ */ 2 4 this 3 33  1 n 1 31  
+11 0 0 6 23 31 0 0 142 /**
+ * Retreives a value that was previously stored.  Exact same functionality as
+ * get_value, except that this isn't an inline function.
+ */ 1 4 this 3 34  
+12 0 0 7 24 37 0 0 0 0 
+13
+25 9 BasicSkel 0 26625 9 BasicSkel 9 BasicSkel 0 0 0 1 13 14 0 4 15 16 17 18 0 0 0 0 0 262
+/**
+ * This is the most basic of the skeleton classes.  It stores an integer, and
+ * will return it on request.
+ *
+ * The skeleton classes are intended to help you learn how to add C++ classes
+ * to panda.  See also the manual, "Adding C++ Classes to Panda."
+ */
+
+26 9 TypedSkel 0 75777 9 TypedSkel 9 TypedSkel 0 0 0 1 19 0 0 5 20 21 22 23 24 0 0 1 0 27 0 0 0 0 259
+/**
+ * Skeleton object that inherits from TypedObject.  Stores an integer, and
+ * will return it on request.
+ *
+ * The skeleton classes are intended to help you learn how to add C++ classes
+ * to panda.  See also the manual, "Adding C++ Classes to Panda."
+ */
+
+27 11 TypedObject 0 2048 11 TypedObject 11 TypedObject 0 0 0 0 0 0 0 0 0 0 0 0 2508
+/**
+ * This is an abstract class that all classes which use TypeHandle, and also
+ * provide virtual functions to support polymorphism, should inherit from.
+ * Each derived class should define get_type(), which should return the
+ * specific type of the derived class.  Inheriting from this automatically
+ * provides support for is_of_type() and is_exact_type().
+ *
+ * All classes that inherit directly or indirectly from TypedObject should
+ * redefine get_type() and force_init_type(), as shown below.  Some classes
+ * that do not inherit from TypedObject may still declare TypeHandles for
+ * themselves by defining methods called get_class_type() and init_type().
+ * Classes such as these may serve as base classes, but the dynamic type
+ * identification system will be limited.  Classes that do not inherit from
+ * TypedObject need not define the virtual functions get_type() and
+ * force_init_type() (or any other virtual functions).
+ *
+ * There is a specific layout for defining the overrides from this class.
+ * Keeping the definitions formatted just like these examples will allow
+ * someone in the future to use a sed (or similar) script to make global
+ * changes, if necessary.  Avoid rearranging the braces or the order of the
+ * functions unless you're ready to change them in every file all at once.
+ *
+ * What follows are some examples that can be used in new classes that you
+ * create.
+ *
+ * @par In the class definition (.h file):
+ * @code
+ * public:
+ *   static TypeHandle get_class_type() {
+ *     return _type_handle;
+ *   }
+ *   static void init_type() {
+ *     <<<BaseClassOne>>>::init_type();
+ *     <<<BaseClassTwo>>>::init_type();
+ *     <<<BaseClassN>>>::init_type();
+ *     register_type(_type_handle, "<<<ThisClassStringName>>>",
+ *                   <<<BaseClassOne>>>::get_class_type(),
+ *                   <<<BaseClassTwo>>>::get_class_type(),
+ *                   <<<BaseClassN>>>::get_class_type());
+ *   }
+ *   virtual TypeHandle get_type() const {
+ *     return get_class_type();
+ *   }
+ *   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+ *
+ * private:
+ *   static TypeHandle _type_handle;
+ * @endcode
+ *
+ * @par In the class .cxx file:
+ * @code
+ * TypeHandle <<<ThisClassStringName>>>::_type_handle;
+ * @endcode
+ *
+ * @par In the class config_<<<PackageName>>>.cxx file:
+ * @code
+ * ConfigureFn(config_<<<PackageName>>>) {
+ *   <<<ClassOne>>>::init_type();
+ *   <<<ClassTwo>>>::init_type();
+ *   <<<ClassN>>>::init_type();
+ * }
+ * @endcode
+ */
+
+28 11 BasicSkel * 0 8576 11 BasicSkel * 11 BasicSkel * 0 0 25 0 0 0 0 0 0 0 0 0 0
+
+29 17 BasicSkel const * 0 8576 17 BasicSkel const * 17 BasicSkel const * 0 0 30 0 0 0 0 0 0 0 0 0 0
+
+30 15 BasicSkel const 0 8832 15 BasicSkel const 15 BasicSkel const 0 0 25 0 0 0 0 0 0 0 0 0 0
+
+31 3 int 0 8194 3 int 3 int 0 1 0 0 0 0 0 0 0 0 0 0 0
+
+32 4 void 0 8194 4 void 4 void 0 6 0 0 0 0 0 0 0 0 0 0 0
+
+33 11 TypedSkel * 0 8576 11 TypedSkel * 11 TypedSkel * 0 0 26 0 0 0 0 0 0 0 0 0 0
+
+34 17 TypedSkel const * 0 8576 17 TypedSkel const * 17 TypedSkel const * 0 0 35 0 0 0 0 0 0 0 0 0 0
+
+35 15 TypedSkel const 0 8832 15 TypedSkel const 15 TypedSkel const 0 0 26 0 0 0 0 0 0 0 0 0 0
+
+36 10 TypeHandle 0 16779264 10 TypeHandle 10 TypeHandle 0 0 0 0 0 0 0 0 0 0 0 0 732
+/**
+ * TypeHandle is the identifier used to differentiate C++ class types.  Any
+ * C++ classes that inherit from some base class, and must be differentiated
+ * at run time, should store a static TypeHandle object that can be queried
+ * through a static member function named get_class_type().  Most of the time,
+ * it is also desirable to inherit from TypedObject, which provides some
+ * virtual functions to return the TypeHandle for a particular instance.
+ *
+ * At its essence, a TypeHandle is simply a unique identifier that is assigned
+ * by the TypeRegistry.  The TypeRegistry stores a tree of TypeHandles, so
+ * that ancestry of a particular type may be queried, and the type name may be
+ * retrieved for run-time display.
+ */
+
+37 12 TypeHandle * 0 8576 12 TypeHandle * 12 TypeHandle * 0 0 36 0 0 0 0 0 0 0 0 0 0
+
+0
+0
+0

@@ -1,0 +1,103 @@
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file iostream
+ * @author drose
+ * @date 2000-05-12
+ */
+
+// This file, and all the other files in this directory, aren't
+// intended to be compiled--they're just parsed by CPPParser (and
+// interrogate) in lieu of the actual system headers, to generate the
+// interrogate database.
+
+#ifndef IOSTREAM_H
+#define IOSTREAM_H
+
+#include <stdtypedefs.h>
+#include <ios>
+#include <streambuf>
+#include <ostream>
+#include <Python.h>
+
+// We don't care (much) about the actual definition of the various
+// iostream classes, but we do need to know the classnames that are
+// available.
+
+namespace std {
+  class ostream : virtual public ios {
+  __published:
+    ostream(const ostream&) = delete;
+
+    __extension void write(PyObject *b);
+    __extension void writelines(PyObject *lines);
+
+    void put(char c);
+    void flush();
+    streampos tellp();
+    void seekp(streampos pos);
+    void seekp(streamoff off, ios_base::seekdir dir);
+
+  protected:
+    ostream(ostream &&);
+  };
+
+  class istream : virtual public ios {
+  __published:
+    istream(const istream&) = delete;
+
+    __extension PyObject *read(Py_ssize_t size=-1);
+    __extension PyObject *read1(Py_ssize_t size=-1);
+    __extension PyObject *readall();
+    __extension std::streamsize readinto(PyObject *b);
+
+    __extension PyObject *readline(Py_ssize_t size=-1);
+    __extension PyObject *readlines(Py_ssize_t hint=-1);
+    __extension PyObject *__iter__(PyObject *self);
+
+    int get();
+    streampos tellg();
+    void seekg(streampos pos);
+    void seekg(streamoff off, ios_base::seekdir dir);
+
+  protected:
+    istream(istream &&);
+  };
+
+  class iostream : public istream, public ostream {
+  __published:
+    iostream(const iostream&) = delete;
+
+    void flush();
+
+  protected:
+    iostream(iostream &&);
+  };
+
+  class ofstream : public ostream {
+  __published:
+    ofstream();
+    void close();
+  };
+  class ifstream : public istream {
+  __published:
+    ifstream();
+    void close();
+  };
+  class fstream : public iostream {
+  __published:
+    fstream();
+    void close();
+  };
+
+  extern istream cin;
+  extern ostream cout;
+  extern ostream cerr;
+}
+
+#endif

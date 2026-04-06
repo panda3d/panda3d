@@ -1,0 +1,3855 @@
+1775485778
+3 3
+9 libp3pgui 4 Q2_k 12 panda3d.core 
+245
+241 12 PGFrameStyle 0 260 486 26 PGFrameStyle::PGFrameStyle 0 2 1 2 22
+/**
+ *
+ */
+
+/**
+ *
+ */
+101
+inline PGFrameStyle::PGFrameStyle(void);
+inline PGFrameStyle::PGFrameStyle(PGFrameStyle const &copy);
+
+242 10 operator = 0 4 486 24 PGFrameStyle::operator = 0 1 3 0
+63
+inline void PGFrameStyle::operator =(PGFrameStyle const &copy);
+
+243 13 ~PGFrameStyle 0 516 486 27 PGFrameStyle::~PGFrameStyle 0 0 10
+/**
+ *
+ */
+41
+inline PGFrameStyle::~PGFrameStyle(void);
+
+244 8 set_type 0 4 486 22 PGFrameStyle::set_type 0 1 4 40
+/**
+ * Sets the basic type of frame.
+ */
+60
+inline void PGFrameStyle::set_type(PGFrameStyle::Type type);
+
+245 8 get_type 0 4 486 22 PGFrameStyle::get_type 0 1 5 43
+/**
+ * Returns the basic type of frame.
+ */
+61
+inline PGFrameStyle::Type PGFrameStyle::get_type(void) const;
+
+246 9 set_color 0 4 486 23 PGFrameStyle::set_color 0 2 6 7 98
+/**
+ * Sets the dominant color of the frame.
+ */
+
+/**
+ * Sets the dominant color of the frame.
+ */
+154
+inline void PGFrameStyle::set_color(PN_stdfloat r, PN_stdfloat g, PN_stdfloat b, PN_stdfloat a);
+inline void PGFrameStyle::set_color(LColor const &color);
+
+247 9 get_color 0 4 486 23 PGFrameStyle::get_color 0 1 8 51
+/**
+ * Returns the dominant color of the frame.
+ */
+50
+inline LColor PGFrameStyle::get_color(void) const;
+
+248 11 set_texture 0 4 486 25 PGFrameStyle::set_texture 0 1 9 67
+/**
+ * Specifies a texture that should be applied to the frame.
+ */
+56
+inline void PGFrameStyle::set_texture(Texture *texture);
+
+249 11 has_texture 0 4 486 25 PGFrameStyle::has_texture 0 1 10 67
+/**
+ * Returns true if a texture has been applied to the frame.
+ */
+50
+inline bool PGFrameStyle::has_texture(void) const;
+
+250 11 get_texture 0 4 486 25 PGFrameStyle::get_texture 0 1 11 109
+/**
+ * Returns the texture that has been applied to the frame, or NULL if no
+ * texture has been applied.
+ */
+54
+inline Texture *PGFrameStyle::get_texture(void) const;
+
+251 13 clear_texture 0 4 486 27 PGFrameStyle::clear_texture 0 1 12 46
+/**
+ * Removes the texture from the frame.
+ */
+46
+inline void PGFrameStyle::clear_texture(void);
+
+252 9 set_width 0 4 486 23 PGFrameStyle::set_width 0 2 13 14 396
+/**
+ * Sets the width parameter, which has meaning only for certain frame types.
+ * For instance, this is the width of the bevel for T_bevel_in or T_bevel_out.
+ * The units are in screen units.
+ */
+
+/**
+ * Sets the width parameter, which has meaning only for certain frame types.
+ * For instance, this is the width of the bevel for T_bevel_in or T_bevel_out.
+ * The units are in screen units.
+ */
+127
+inline void PGFrameStyle::set_width(PN_stdfloat x, PN_stdfloat y);
+inline void PGFrameStyle::set_width(LVecBase2 const &width);
+
+253 9 get_width 0 4 486 23 PGFrameStyle::get_width 0 1 15 202
+/**
+ * Returns the width parameter, which has meaning only for certain frame
+ * types.  For instance, this is the width of the bevel for T_bevel_in or
+ * T_bevel_out.  The units are in screen units.
+ */
+60
+inline LVecBase2 const &PGFrameStyle::get_width(void) const;
+
+254 12 set_uv_width 0 4 486 26 PGFrameStyle::set_uv_width 0 2 16 17 380
+/**
+ * Sets the uv_width parameter, which indicates the amount of the texture that
+ * is consumed by the inner bevel--the width in texture space of the amount
+ * indicated by set_width.
+ */
+
+/**
+ * Sets the uv_width parameter, which indicates the amount of the texture that
+ * is consumed by the inner bevel--the width in texture space of the amount
+ * indicated by set_width.
+ */
+136
+inline void PGFrameStyle::set_uv_width(PN_stdfloat u, PN_stdfloat v);
+inline void PGFrameStyle::set_uv_width(LVecBase2 const &uv_width);
+
+255 12 get_uv_width 0 4 486 26 PGFrameStyle::get_uv_width 0 1 18 30
+/**
+ * See set_uv_width().
+ */
+63
+inline LVecBase2 const &PGFrameStyle::get_uv_width(void) const;
+
+256 17 set_visible_scale 0 4 486 31 PGFrameStyle::set_visible_scale 0 2 19 20 478
+/**
+ * Sets a scale factor on the visible representation of the frame, in the X
+ * and Y directions.  If this scale factor is other than 1, it will affect the
+ * size of the visible frame representation within the actual frame border.
+ */
+
+/**
+ * Sets a scale factor on the visible representation of the frame, in the X
+ * and Y directions.  If this scale factor is other than 1, it will affect the
+ * size of the visible frame representation within the actual frame border.
+ */
+151
+inline void PGFrameStyle::set_visible_scale(PN_stdfloat x, PN_stdfloat y);
+inline void PGFrameStyle::set_visible_scale(LVecBase2 const &visible_scale);
+
+257 17 get_visible_scale 0 4 486 31 PGFrameStyle::get_visible_scale 0 1 21 246
+/**
+ * Returns the scale factor on the visible representation of the frame, in the
+ * X and Y directions.  If this scale factor is other than 1, it will affect
+ * the size of the visible frame representation within the actual frame
+ * border.
+ */
+68
+inline LVecBase2 const &PGFrameStyle::get_visible_scale(void) const;
+
+258 18 get_internal_frame 0 4 486 32 PGFrameStyle::get_internal_frame 0 1 22 221
+/**
+ * Computes the size of the internal frame, given the indicated external
+ * frame, appropriate for this kind of frame style.  This simply subtracts the
+ * border width for those frame styles that include a border.
+ */
+73
+LVecBase4 PGFrameStyle::get_internal_frame(LVecBase4 const &frame) const;
+
+259 6 output 0 4 486 20 PGFrameStyle::output 0 1 23 10
+/**
+ *
+ */
+51
+void PGFrameStyle::output(std::ostream &out) const;
+
+260 6 PGItem 0 260 497 14 PGItem::PGItem 0 1 24 22
+/**
+ *
+ */
+
+/**
+ *
+ */
+49
+explicit PGItem::PGItem(std::string const &name);
+
+261 8 set_name 0 4 497 16 PGItem::set_name 0 1 25 10
+/**
+ *
+ */
+54
+inline void PGItem::set_name(std::string const &name);
+
+262 9 set_frame 0 4 497 17 PGItem::set_frame 0 2 26 27 546
+/**
+ * Sets the bounding rectangle of the item, in local coordinates.  This is the
+ * region on screen within which the mouse will be considered to be within the
+ * item.  Normally, it should correspond to the bounding rectangle of the
+ * visible geometry of the item.
+ */
+
+/**
+ * Sets the bounding rectangle of the item, in local coordinates.  This is the
+ * region on screen within which the mouse will be considered to be within the
+ * item.  Normally, it should correspond to the bounding rectangle of the
+ * visible geometry of the item.
+ */
+159
+inline void PGItem::set_frame(PN_stdfloat left, PN_stdfloat right, PN_stdfloat bottom, PN_stdfloat top);
+inline void PGItem::set_frame(LVecBase4 const &frame);
+
+263 9 get_frame 0 4 497 17 PGItem::get_frame 0 1 28 134
+/**
+ * Returns the bounding rectangle of the item.  See set_frame().  It is an
+ * error to call this if has_frame() returns false.
+ */
+54
+inline LVecBase4 const &PGItem::get_frame(void) const;
+
+264 9 has_frame 0 4 497 17 PGItem::has_frame 0 1 29 78
+/**
+ * Returns true if the item has a bounding rectangle; see set_frame().
+ */
+42
+inline bool PGItem::has_frame(void) const;
+
+265 11 clear_frame 0 4 497 19 PGItem::clear_frame 0 1 30 146
+/**
+ * Removes the bounding rectangle from the item.  It will no longer be
+ * possible to position the mouse within the item; see set_frame().
+ */
+38
+inline void PGItem::clear_frame(void);
+
+266 9 set_state 0 4 497 17 PGItem::set_state 0 1 31 175
+/**
+ * Sets the "state" of this particular PGItem.
+ *
+ * The PGItem node will render as if it were the subgraph assigned to the
+ * corresponding index via set_state_def().
+ */
+41
+inline void PGItem::set_state(int state);
+
+267 9 get_state 0 4 497 17 PGItem::get_state 0 1 32 75
+/**
+ * Returns the "state" of this particular PGItem.  See set_state().
+ */
+41
+inline int PGItem::get_state(void) const;
+
+268 10 set_active 0 6 497 18 PGItem::set_active 0 1 33 245
+/**
+ * Sets whether the PGItem is active for mouse watching.  This is not
+ * necessarily related to the active/inactive appearance of the item, which is
+ * controlled by set_state(), but it does affect whether it responds to mouse
+ * events.
+ */
+45
+virtual void PGItem::set_active(bool active);
+
+269 10 get_active 0 4 497 18 PGItem::get_active 0 1 34 97
+/**
+ * Returns whether the PGItem is currently active for mouse events.  See
+ * set_active().
+ */
+43
+inline bool PGItem::get_active(void) const;
+
+270 9 set_focus 0 6 497 17 PGItem::set_focus 0 1 35 396
+/**
+ * Sets whether the PGItem currently has keyboard focus.  This simply means
+ * that the item may respond to keyboard events as well as to mouse events;
+ * precisely what this means is up to the individual item.
+ *
+ * Only one PGItem in the world is allowed to have focus at any given time.
+ * Setting the focus on any other item automatically disables the focus from
+ * the previous item.
+ */
+43
+virtual void PGItem::set_focus(bool focus);
+
+271 9 get_focus 0 4 497 17 PGItem::get_focus 0 1 36 99
+/**
+ * Returns whether the PGItem currently has focus for keyboard events.  See
+ * set_focus().
+ */
+42
+inline bool PGItem::get_focus(void) const;
+
+272 20 set_background_focus 0 4 497 28 PGItem::set_background_focus 0 1 37 278
+/**
+ * Sets the background_focus flag for this item.  When background_focus is
+ * enabled, the item will receive keypress events even if it is not in focus;
+ * in fact, even if it is not onscreen.  Unlike normal focus, many items may
+ * have background_focus simultaneously.
+ */
+46
+void PGItem::set_background_focus(bool focus);
+
+273 20 get_background_focus 0 4 497 28 PGItem::get_background_focus 0 1 38 97
+/**
+ * Returns whether background_focus is currently enabled.  See
+ * set_background_focus().
+ */
+53
+inline bool PGItem::get_background_focus(void) const;
+
+274 18 set_suppress_flags 0 4 497 26 PGItem::set_suppress_flags 0 1 39 150
+/**
+ * This is just an interface to set the suppress flags on the underlying
+ * MouseWatcherRegion.  See MouseWatcherRegion::set_suppress_flags().
+ */
+59
+inline void PGItem::set_suppress_flags(int suppress_flags);
+
+275 18 get_suppress_flags 0 4 497 26 PGItem::get_suppress_flags 0 1 40 150
+/**
+ * This is just an interface to get the suppress flags on the underlying
+ * MouseWatcherRegion.  See MouseWatcherRegion::get_suppress_flags().
+ */
+50
+inline int PGItem::get_suppress_flags(void) const;
+
+276 18 get_num_state_defs 0 4 497 26 PGItem::get_num_state_defs 0 1 41 331
+/**
+ * Returns one more than the highest-numbered state def that was ever assigned
+ * to the PGItem.  The complete set of state defs assigned may then be
+ * retrieved by indexing from 0 to (get_num_state_defs() - 1).
+ *
+ * This is only an upper limit on the actual number of state defs, since there
+ * may be holes in the list.
+ */
+43
+int PGItem::get_num_state_defs(void) const;
+
+277 15 clear_state_def 0 4 497 23 PGItem::clear_state_def 0 1 42 138
+/**
+ * Resets the NodePath assigned to the indicated state to its initial default,
+ * with only a frame representation if appropriate.
+ */
+40
+void PGItem::clear_state_def(int state);
+
+278 13 has_state_def 0 4 497 21 PGItem::has_state_def 0 1 43 166
+/**
+ * Returns true if get_state_def() has ever been called for the indicated
+ * state (thus defining a render subgraph for this state index), false
+ * otherwise.
+ */
+44
+bool PGItem::has_state_def(int state) const;
+
+279 13 get_state_def 0 4 497 21 PGItem::get_state_def 0 1 44 213
+/**
+ * Returns the Node that is the root of the subgraph that will be drawn when
+ * the PGItem is in the indicated state.  The first time this is called for a
+ * particular state index, it may create the Node.
+ */
+50
+inline NodePath &PGItem::get_state_def(int state);
+
+280 21 instance_to_state_def 0 4 497 29 PGItem::instance_to_state_def 0 1 45 108
+/**
+ * Parents an instance of the bottom node of the indicated NodePath to the
+ * indicated state index.
+ */
+72
+NodePath PGItem::instance_to_state_def(int state, NodePath const &path);
+
+281 15 get_frame_style 0 4 497 23 PGItem::get_frame_style 0 1 46 109
+/**
+ * Returns the kind of frame that will be drawn behind the item when it is in
+ * the indicated state.
+ */
+48
+PGFrameStyle PGItem::get_frame_style(int state);
+
+282 15 set_frame_style 0 4 497 23 PGItem::set_frame_style 0 1 47 109
+/**
+ * Changes the kind of frame that will be drawn behind the item when it is in
+ * the indicated state.
+ */
+67
+void PGItem::set_frame_style(int state, PGFrameStyle const &style);
+
+283 6 get_id 0 4 497 14 PGItem::get_id 0 1 48 178
+/**
+ * Returns the unique ID assigned to this PGItem.  This will be assigned to
+ * the region created with the MouseWatcher, and will thus be used to generate
+ * event names.
+ */
+53
+inline std::string const &PGItem::get_id(void) const;
+
+284 6 set_id 0 4 497 14 PGItem::set_id 0 1 49 344
+/**
+ * Set the unique ID assigned to this PGItem.  It is the user's responsibility
+ * to ensure that this ID is unique.
+ *
+ * Normally, this should not need to be called, as the PGItem will assign
+ * itself an ID when it is created, but this function allows the user to
+ * decide to redefine the ID to be something possibly more meaningful.
+ */
+50
+inline void PGItem::set_id(std::string const &id);
+
+285 8 get_name 0 4 497 16 PGItem::get_name 0 0 0
+55
+inline std::string const &PGItem::get_name(void) const;
+
+286 16 get_enter_prefix 0 4 497 24 PGItem::get_enter_prefix 0 1 50 162
+/**
+ * Returns the prefix that is used to define the enter event for all PGItems.
+ * The enter event is the concatenation of this string followed by get_id().
+ */
+57
+static inline std::string PGItem::get_enter_prefix(void);
+
+287 15 get_exit_prefix 0 4 497 23 PGItem::get_exit_prefix 0 1 51 160
+/**
+ * Returns the prefix that is used to define the exit event for all PGItems.
+ * The exit event is the concatenation of this string followed by get_id().
+ */
+56
+static inline std::string PGItem::get_exit_prefix(void);
+
+288 17 get_within_prefix 0 4 497 25 PGItem::get_within_prefix 0 1 52 164
+/**
+ * Returns the prefix that is used to define the within event for all PGItems.
+ * The within event is the concatenation of this string followed by get_id().
+ */
+58
+static inline std::string PGItem::get_within_prefix(void);
+
+289 18 get_without_prefix 0 4 497 26 PGItem::get_without_prefix 0 1 53 170
+/**
+ * Returns the prefix that is used to define the without event for all
+ * PGItems.  The without event is the concatenation of this string followed by
+ * get_id().
+ */
+59
+static inline std::string PGItem::get_without_prefix(void);
+
+290 19 get_focus_in_prefix 0 4 497 27 PGItem::get_focus_in_prefix 0 1 54 244
+/**
+ * Returns the prefix that is used to define the focus_in event for all
+ * PGItems.  The focus_in event is the concatenation of this string followed
+ * by get_id().
+ *
+ * Unlike most item events, this event is thrown with no parameters.
+ */
+60
+static inline std::string PGItem::get_focus_in_prefix(void);
+
+291 20 get_focus_out_prefix 0 4 497 28 PGItem::get_focus_out_prefix 0 1 55 246
+/**
+ * Returns the prefix that is used to define the focus_out event for all
+ * PGItems.  The focus_out event is the concatenation of this string followed
+ * by get_id().
+ *
+ * Unlike most item events, this event is thrown with no parameters.
+ */
+61
+static inline std::string PGItem::get_focus_out_prefix(void);
+
+292 16 get_press_prefix 0 4 497 24 PGItem::get_press_prefix 0 1 56 205
+/**
+ * Returns the prefix that is used to define the press event for all PGItems.
+ * The press event is the concatenation of this string followed by a button
+ * name, followed by a hyphen and get_id().
+ */
+57
+static inline std::string PGItem::get_press_prefix(void);
+
+293 17 get_repeat_prefix 0 4 497 25 PGItem::get_repeat_prefix 0 1 57 207
+/**
+ * Returns the prefix that is used to define the repeat event for all PGItems.
+ * The repeat event is the concatenation of this string followed by a button
+ * name, followed by a hyphen and get_id().
+ */
+58
+static inline std::string PGItem::get_repeat_prefix(void);
+
+294 18 get_release_prefix 0 4 497 26 PGItem::get_release_prefix 0 1 58 210
+/**
+ * Returns the prefix that is used to define the release event for all
+ * PGItems.  The release event is the concatenation of this string followed by
+ * a button name, followed by a hyphen and get_id().
+ */
+59
+static inline std::string PGItem::get_release_prefix(void);
+
+295 20 get_keystroke_prefix 0 4 497 28 PGItem::get_keystroke_prefix 0 1 59 187
+/**
+ * Returns the prefix that is used to define the keystroke event for all
+ * PGItems.  The keystroke event is the concatenation of this string followed
+ * by a hyphen and get_id().
+ */
+61
+static inline std::string PGItem::get_keystroke_prefix(void);
+
+296 15 get_enter_event 0 4 497 23 PGItem::get_enter_event 0 1 60 139
+/**
+ * Returns the event name that will be thrown when the item is active and the
+ * mouse enters its frame, but not any nested frames.
+ */
+55
+inline std::string PGItem::get_enter_event(void) const;
+
+297 14 get_exit_event 0 4 497 22 PGItem::get_exit_event 0 1 61 137
+/**
+ * Returns the event name that will be thrown when the item is active and the
+ * mouse exits its frame, or enters a nested frame.
+ */
+54
+inline std::string PGItem::get_exit_event(void) const;
+
+298 16 get_within_event 0 4 497 24 PGItem::get_within_event 0 1 62 273
+/**
+ * Returns the event name that will be thrown when the item is active and the
+ * mouse moves within the boundaries of the frame.  This is different from the
+ * enter_event in that the mouse is considered within the frame even if it is
+ * also within a nested frame.
+ */
+56
+inline std::string PGItem::get_within_event(void) const;
+
+299 17 get_without_event 0 4 497 25 PGItem::get_without_event 0 1 63 284
+/**
+ * Returns the event name that will be thrown when the item is active and the
+ * mouse moves completely outside the boundaries of the frame.  This is
+ * different from the exit_event in that the mouse is considered within the
+ * frame even if it is also within a nested frame.
+ */
+57
+inline std::string PGItem::get_without_event(void) const;
+
+300 18 get_focus_in_event 0 4 497 26 PGItem::get_focus_in_event 0 1 64 95
+/**
+ * Returns the event name that will be thrown when the item gets the keyboard
+ * focus.
+ */
+58
+inline std::string PGItem::get_focus_in_event(void) const;
+
+301 19 get_focus_out_event 0 4 497 27 PGItem::get_focus_out_event 0 1 65 96
+/**
+ * Returns the event name that will be thrown when the item loses the keyboard
+ * focus.
+ */
+59
+inline std::string PGItem::get_focus_out_event(void) const;
+
+302 15 get_press_event 0 4 497 23 PGItem::get_press_event 0 1 66 176
+/**
+ * Returns the event name that will be thrown when the item is active and the
+ * indicated mouse or keyboard button is depressed while the mouse is within
+ * the frame.
+ */
+77
+inline std::string PGItem::get_press_event(ButtonHandle const &button) const;
+
+303 16 get_repeat_event 0 4 497 24 PGItem::get_repeat_event 0 1 67 189
+/**
+ * Returns the event name that will be thrown when the item is active and the
+ * indicated mouse or keyboard button is continuously held down while the
+ * mouse is within the frame.
+ */
+78
+inline std::string PGItem::get_repeat_event(ButtonHandle const &button) const;
+
+304 17 get_release_event 0 4 497 25 PGItem::get_release_event 0 1 68 183
+/**
+ * Returns the event name that will be thrown when the item is active and the
+ * indicated mouse or keyboard button, formerly clicked down is within the
+ * frame, is released.
+ */
+79
+inline std::string PGItem::get_release_event(ButtonHandle const &button) const;
+
+305 19 get_keystroke_event 0 4 497 27 PGItem::get_keystroke_event 0 1 69 116
+/**
+ * Returns the event name that will be thrown when the item is active and any
+ * key is pressed by the user.
+ */
+59
+inline std::string PGItem::get_keystroke_event(void) const;
+
+306 19 get_frame_inv_xform 0 4 497 27 PGItem::get_frame_inv_xform 0 1 70 60
+/**
+ * Returns the inverse of the frame transform matrix
+ */
+56
+inline LMatrix4 PGItem::get_frame_inv_xform(void) const;
+
+307 9 set_sound 0 4 497 17 PGItem::set_sound 0 1 71 82
+/**
+ * Sets the sound that will be played whenever the indicated event occurs.
+ */
+68
+void PGItem::set_sound(std::string const &event, AudioSound *sound);
+
+308 11 clear_sound 0 4 497 19 PGItem::clear_sound 0 1 72 65
+/**
+ * Removes the sound associated with the indicated event.
+ */
+51
+void PGItem::clear_sound(std::string const &event);
+
+309 9 get_sound 0 4 497 17 PGItem::get_sound 0 1 73 109
+/**
+ * Returns the sound associated with the indicated event, or NULL if there is
+ * no associated sound.
+ */
+62
+AudioSound *PGItem::get_sound(std::string const &event) const;
+
+310 9 has_sound 0 4 497 17 PGItem::has_sound 0 1 74 103
+/**
+ * Returns true if there is a sound associated with the indicated event, or
+ * false otherwise.
+ */
+55
+bool PGItem::has_sound(std::string const &event) const;
+
+311 13 get_text_node 0 4 497 21 PGItem::get_text_node 0 1 75 168
+/**
+ * Returns the TextNode object that will be used by all PGItems to generate
+ * default labels given a string.  This can be loaded with the default font,
+ * etc.
+ */
+45
+static TextNode *PGItem::get_text_node(void);
+
+312 13 set_text_node 0 4 497 21 PGItem::set_text_node 0 1 76 168
+/**
+ * Changes the TextNode object that will be used by all PGItems to generate
+ * default labels given a string.  This can be loaded with the default font,
+ * etc.
+ */
+57
+static inline void PGItem::set_text_node(TextNode *node);
+
+313 14 get_focus_item 0 4 497 22 PGItem::get_focus_item 0 1 77 222
+/**
+ * Returns the one PGItem in the world that currently has keyboard focus, if
+ * any, or NULL if no item has keyboard focus.  Use PGItem::set_focus() to
+ * activate or deactivate keyboard focus on a particular item.
+ */
+51
+static inline PGItem *PGItem::get_focus_item(void);
+
+314 14 get_class_type 0 4 497 22 PGItem::get_class_type 0 1 78 0
+47
+static TypeHandle PGItem::get_class_type(void);
+
+315 8 PGButton 0 260 507 18 PGButton::PGButton 0 1 79 22
+/**
+ *
+ */
+
+/**
+ *
+ */
+53
+explicit PGButton::PGButton(std::string const &name);
+
+316 5 setup 0 4 507 15 PGButton::setup 0 5 80 81 82 83 84 594
+/**
+ * Sets up the button using the indicated NodePath as arbitrary geometry.
+ */
+
+/**
+ * Sets up the button using the indicated NodePath as arbitrary geometry.
+ */
+
+/**
+ * Sets up the button using the indicated NodePath as arbitrary geometry.
+ */
+
+/**
+ * Sets up the button as a default text button using the indicated label
+ * string.  The TextNode defined by PGItem::get_text_node() will be used to
+ * create the label geometry.  This automatically sets up the frame according
+ * to the size of the text.
+ */
+
+/**
+ * Sets up the button using the indicated NodePath as arbitrary geometry.
+ */
+432
+void PGButton::setup(std::string const &label, PN_stdfloat bevel = 0.1);
+inline void PGButton::setup(NodePath const &ready);
+inline void PGButton::setup(NodePath const &ready, NodePath const &depressed);
+inline void PGButton::setup(NodePath const &ready, NodePath const &depressed, NodePath const &rollover);
+void PGButton::setup(NodePath const &ready, NodePath const &depressed, NodePath const &rollover, NodePath const &inactive);
+
+317 16 add_click_button 0 4 507 26 PGButton::add_click_button 0 1 85 224
+/**
+ * Adds the indicated button to the set of buttons that can effectively
+ * "click" the PGButton.  Normally, this is just MouseButton::one().  Returns
+ * true if the button was added, or false if it was already there.
+ */
+60
+bool PGButton::add_click_button(ButtonHandle const &button);
+
+318 19 remove_click_button 0 4 507 29 PGButton::remove_click_button 0 1 86 232
+/**
+ * Removes the indicated button from the set of buttons that can effectively
+ * "click" the PGButton.  Normally, this is just MouseButton::one().  Returns
+ * true if the button was removed, or false if it was not in the set.
+ */
+63
+bool PGButton::remove_click_button(ButtonHandle const &button);
+
+319 16 has_click_button 0 4 507 26 PGButton::has_click_button 0 1 87 165
+/**
+ * Returns true if the indicated button is on the set of buttons that can
+ * effectively "click" the PGButton.  Normally, this is just
+ * MouseButton::one().
+ */
+60
+bool PGButton::has_click_button(ButtonHandle const &button);
+
+320 14 is_button_down 0 4 507 24 PGButton::is_button_down 0 1 88 113
+/**
+ * Returns true if the user is currently holding the mouse button down on the
+ * button, false otherwise.
+ */
+43
+inline bool PGButton::is_button_down(void);
+
+321 16 get_click_prefix 0 4 507 26 PGButton::get_click_prefix 0 1 89 168
+/**
+ * Returns the prefix that is used to define the click event for all
+ * PGButtons.  The click event is the concatenation of this string followed by
+ * get_id().
+ */
+59
+static inline std::string PGButton::get_click_prefix(void);
+
+322 15 get_click_event 0 4 507 25 PGButton::get_click_event 0 1 90 93
+/**
+ * Returns the event name that will be thrown when the button is clicked
+ * normally.
+ */
+79
+inline std::string PGButton::get_click_event(ButtonHandle const &button) const;
+
+323 14 get_class_type 0 4 507 24 PGButton::get_class_type 0 1 91 0
+49
+static TypeHandle PGButton::get_class_type(void);
+
+324 5 PGTop 0 260 509 12 PGTop::PGTop 0 1 92 22
+/**
+ *
+ */
+
+/**
+ *
+ */
+47
+explicit PGTop::PGTop(std::string const &name);
+
+325 17 set_mouse_watcher 0 4 509 24 PGTop::set_mouse_watcher 0 1 93 144
+/**
+ * Sets the MouseWatcher pointer that the PGTop object registers its PG items
+ * with.  This must be set before the PG items are active.
+ */
+53
+void PGTop::set_mouse_watcher(MouseWatcher *watcher);
+
+326 17 get_mouse_watcher 0 4 509 24 PGTop::get_mouse_watcher 0 1 94 147
+/**
+ * Returns the MouseWatcher pointer that the PGTop object registers its PG
+ * items with, or NULL if the MouseWatcher has not yet been set.
+ */
+58
+inline MouseWatcher *PGTop::get_mouse_watcher(void) const;
+
+327 9 get_group 0 4 509 16 PGTop::get_group 0 1 95 152
+/**
+ * Returns the MouseWatcherGroup pointer that the PGTop object registers its
+ * PG items with, or NULL if the MouseWatcher has not yet been set.
+ */
+55
+inline MouseWatcherGroup *PGTop::get_group(void) const;
+
+328 14 set_start_sort 0 4 509 21 PGTop::set_start_sort 0 1 96 657
+/**
+ * Specifies the sort index that is assigned during the traversal to the first
+ * PGItem that is discovered during traversal.  Subsequent PGItems will be
+ * assigned consecutively higher sort indexes.
+ *
+ * This number is used by the MouseWatcher system to rank the clickable mouse
+ * regions in the same order in which the items are rendered, so that items on
+ * top will receive mouse priority.
+ *
+ * Normally, it makes the most sense to leave this initial value at its
+ * default value of 0, unless you need the PGItems to have a particular sort
+ * value with respect to some other objects in the scene (particularly with a
+ * second PGTop node).
+ */
+50
+inline void PGTop::set_start_sort(int start_sort);
+
+329 14 get_start_sort 0 4 509 21 PGTop::get_start_sort 0 1 97 154
+/**
+ * Returns the sort index that is assigned during the traversal to the first
+ * PGItem that is discovered during traversal.  See set_start_sort().
+ */
+45
+inline int PGTop::get_start_sort(void) const;
+
+330 14 get_class_type 0 4 509 21 PGTop::get_class_type 0 1 98 0
+46
+static TypeHandle PGTop::get_class_type(void);
+
+331 7 PGEntry 0 260 514 16 PGEntry::PGEntry 0 1 99 22
+/**
+ *
+ */
+
+/**
+ *
+ */
+51
+explicit PGEntry::PGEntry(std::string const &name);
+
+332 5 setup 0 4 514 14 PGEntry::setup 0 1 100 276
+/**
+ * Sets up the entry for normal use.  The width is the maximum width of
+ * characters that will be typed, and num_lines is the integer number of lines
+ * of text of the entry.  Both of these together determine the size of the
+ * entry, based on the TextNode in effect.
+ */
+54
+void PGEntry::setup(PN_stdfloat width, int num_lines);
+
+333 13 setup_minimal 0 4 514 22 PGEntry::setup_minimal 0 1 101 76
+/**
+ * Sets up the entry without creating any frame or other decoration.
+ */
+62
+void PGEntry::setup_minimal(PN_stdfloat width, int num_lines);
+
+334 8 set_text 0 4 514 17 PGEntry::set_text 0 1 102 334
+/**
+ * Changes the text currently displayed within the entry.  This uses the
+ * Unicode encoding currently specified for the "focus" TextNode; therefore,
+ * the TextNode must exist before calling set_text().
+ *
+ * The return value is true if all the text is accepted, or false if some was
+ * truncated (see set_max_width(), etc.).
+ */
+55
+inline bool PGEntry::set_text(std::string const &text);
+
+335 14 get_plain_text 0 4 514 23 PGEntry::get_plain_text 0 1 103 260
+/**
+ * Returns the text currently displayed within the entry, without any embedded
+ * properties characters.
+ *
+ * This uses the Unicode encoding currently specified for the "focus"
+ * TextNode; therefore, the TextNode must exist before calling get_text().
+ */
+55
+inline std::string PGEntry::get_plain_text(void) const;
+
+336 8 get_text 0 4 514 17 PGEntry::get_text 0 1 104 211
+/**
+ * Returns the text currently displayed within the entry.  This uses the
+ * Unicode encoding currently specified for the "focus" TextNode; therefore,
+ * the TextNode must exist before calling get_text().
+ */
+49
+inline std::string PGEntry::get_text(void) const;
+
+337 18 get_num_characters 0 4 514 27 PGEntry::get_num_characters 0 1 105 376
+/**
+ * Returns the number of characters of text in the entry.  This is the actual
+ * number of visible characters, not counting implicit newlines due to
+ * wordwrapping, or formatted characters for text properties changes.  If
+ * there is an embedded TextGraphic object, it counts as one character.
+ *
+ * This is also the length of the string returned by get_plain_text().
+ */
+51
+inline int PGEntry::get_num_characters(void) const;
+
+338 13 get_character 0 4 514 22 PGEntry::get_character 0 1 106 165
+/**
+ * Returns the character at the indicated position in the entry.  If the
+ * object at this position is a graphic object instead of a character, returns
+ * 0.
+ */
+51
+inline wchar_t PGEntry::get_character(int n) const;
+
+339 11 get_graphic 0 4 514 20 PGEntry::get_graphic 0 1 107 190
+/**
+ * Returns the graphic object at the indicated position in the pre-wordwrapped
+ * string.  If the object at this position is a character instead of a graphic
+ * object, returns NULL.
+ */
+60
+inline TextGraphic const *PGEntry::get_graphic(int n) const;
+
+340 14 get_properties 0 4 514 23 PGEntry::get_properties 0 1 108 122
+/**
+ * Returns the TextProperties in effect for the object at the indicated
+ * position in the pre-wordwrapped string.
+ */
+66
+inline TextProperties const &PGEntry::get_properties(int n) const;
+
+341 19 set_cursor_position 0 4 514 28 PGEntry::set_cursor_position 0 1 109 207
+/**
+ * Sets the current position of the cursor.  This is the position within the
+ * text at which the next letter typed by the user will be inserted; normally
+ * it is the same as the length of the text.
+ */
+55
+inline void PGEntry::set_cursor_position(int position);
+
+342 19 get_cursor_position 0 4 514 28 PGEntry::get_cursor_position 0 1 110 54
+/**
+ * Returns the current position of the cursor.
+ */
+52
+inline int PGEntry::get_cursor_position(void) const;
+
+343 12 get_cursor_X 0 4 514 21 PGEntry::get_cursor_X 0 1 111 52
+/**
+ * Returns the node position x of the cursor
+ */
+53
+inline PN_stdfloat PGEntry::get_cursor_X(void) const;
+
+344 12 get_cursor_Y 0 4 514 21 PGEntry::get_cursor_Y 0 1 112 52
+/**
+ * Returns the node position y of the cursor
+ */
+53
+inline PN_stdfloat PGEntry::get_cursor_Y(void) const;
+
+345 13 set_max_chars 0 4 514 22 PGEntry::set_max_chars 0 1 113 236
+/**
+ * Sets the maximum number of characters that may be typed into the entry.
+ * This is a limit on the number of characters, as opposed to the width of the
+ * entry; see also set_max_width().
+ *
+ * If this is 0, there is no limit.
+ */
+50
+inline void PGEntry::set_max_chars(int max_chars);
+
+346 13 get_max_chars 0 4 514 22 PGEntry::get_max_chars 0 1 114 145
+/**
+ * Returns the current maximum number of characters that may be typed into the
+ * entry, or 0 if there is no limit.  See set_max_chars().
+ */
+46
+inline int PGEntry::get_max_chars(void) const;
+
+347 13 set_max_width 0 4 514 22 PGEntry::set_max_width 0 1 115 460
+/**
+ * Sets the maximum width of all characters that may be typed into the entry.
+ * This is a limit on the width of the formatted text, not a fixed limit on
+ * the number of characters; also set_max_chars().
+ *
+ * If this is 0, there is no limit.
+ *
+ * If _num_lines is more than 1, rather than being a fixed width on the whole
+ * entry, this becomes instead the wordwrap width (and the width limit on the
+ * entry is essentially _max_width * _num_lines).
+ */
+58
+inline void PGEntry::set_max_width(PN_stdfloat max_width);
+
+348 13 get_max_width 0 4 514 22 PGEntry::get_max_width 0 1 116 148
+/**
+ * Returns the current maximum width of the characters that may be typed into
+ * the entry, or 0 if there is no limit.  See set_max_width().
+ */
+54
+inline PN_stdfloat PGEntry::get_max_width(void) const;
+
+349 13 set_num_lines 0 4 514 22 PGEntry::set_num_lines 0 1 117 172
+/**
+ * Sets the number of lines of text the PGEntry will use.  This only has
+ * meaning if _max_width is not 0; _max_width indicates the wordwrap width of
+ * each line.
+ */
+50
+inline void PGEntry::set_num_lines(int num_lines);
+
+350 13 get_num_lines 0 4 514 22 PGEntry::get_num_lines 0 1 118 117
+/**
+ * Returns the number of lines of text the PGEntry will use, if _max_width is
+ * not 0.  See set_num_lines().
+ */
+46
+inline int PGEntry::get_num_lines(void) const;
+
+351 14 set_blink_rate 0 4 514 23 PGEntry::set_blink_rate 0 1 119 174
+/**
+ * Sets the number of times per second the cursor will blink while the entry
+ * has keyboard focus.
+ *
+ * If this is 0, the cursor does not blink, but is held steady.
+ */
+60
+inline void PGEntry::set_blink_rate(PN_stdfloat blink_rate);
+
+352 14 get_blink_rate 0 4 514 23 PGEntry::get_blink_rate 0 1 120 111
+/**
+ * Returns the number of times per second the cursor will blink, or 0 if the
+ * cursor is not to blink.
+ */
+55
+inline PN_stdfloat PGEntry::get_blink_rate(void) const;
+
+353 14 get_cursor_def 0 4 514 23 PGEntry::get_cursor_def 0 1 121 132
+/**
+ * Returns the Node that will be rendered to represent the cursor.  You can
+ * attach suitable cursor geometry to this node.
+ */
+46
+inline NodePath PGEntry::get_cursor_def(void);
+
+354 16 clear_cursor_def 0 4 514 25 PGEntry::clear_cursor_def 0 1 122 108
+/**
+ * Removes all the children from the cursor_def node, in preparation for
+ * adding a new definition.
+ */
+44
+inline void PGEntry::clear_cursor_def(void);
+
+355 22 set_cursor_keys_active 0 4 514 31 PGEntry::set_cursor_keys_active 0 1 123 142
+/**
+ * Sets whether the arrow keys (and home/end) control movement of the cursor.
+ * If true, they are active; if false, they are ignored.
+ */
+55
+inline void PGEntry::set_cursor_keys_active(bool flag);
+
+356 22 get_cursor_keys_active 0 4 514 31 PGEntry::get_cursor_keys_active 0 1 124 127
+/**
+ * Returns whether the arrow keys are currently set to control movement of the
+ * cursor; see set_cursor_keys_active().
+ */
+56
+inline bool PGEntry::get_cursor_keys_active(void) const;
+
+357 16 set_obscure_mode 0 4 514 25 PGEntry::set_obscure_mode 0 1 125 428
+/**
+ * Specifies whether obscure mode should be enabled.  In obscure mode, a
+ * string of asterisks is displayed instead of the literal text, e.g.  for
+ * entering passwords.
+ *
+ * In obscure mode, the width of the text is computed based on the width of
+ * the string of asterisks, not on the width of the actual text.  This has
+ * implications on the maximum length of text that may be entered if max_width
+ * is in effect.
+ */
+49
+inline void PGEntry::set_obscure_mode(bool flag);
+
+358 16 get_obscure_mode 0 4 514 25 PGEntry::get_obscure_mode 0 1 126 78
+/**
+ * Specifies whether obscure mode is enabled.  See set_obscure_mode().
+ */
+50
+inline bool PGEntry::get_obscure_mode(void) const;
+
+359 17 set_overflow_mode 0 4 514 26 PGEntry::set_overflow_mode 0 1 127 213
+/**
+ * Specifies whether overflow mode should be enabled.  In overflow mode, text
+ * can overflow the boundaries of the Entry element horizontally.
+ *
+ * Overflow mode only works when the number of lines is 1.
+ */
+50
+inline void PGEntry::set_overflow_mode(bool flag);
+
+360 17 get_overflow_mode 0 4 514 26 PGEntry::get_overflow_mode 0 1 128 80
+/**
+ * Specifies whether overflow mode is enabled.  See set_overflow_mode().
+ */
+51
+inline bool PGEntry::get_overflow_mode(void) const;
+
+361 20 set_candidate_active 0 4 514 29 PGEntry::set_candidate_active 0 1 129 603
+/**
+ * Specifies the name of the TextProperties structure added to the
+ * TextPropertiesManager that will be used to render candidate strings from
+ * the IME, used for typing characters in east Asian languages.  Each
+ * candidate string represents one possible way to interpret the sequence of
+ * keys the user has just entered; it should not be considered typed yet, but
+ * it is important for the user to be able to see what he is considering
+ * entering.
+ *
+ * This particular method sets the properties for the subset of the current
+ * candidate string that the user can actively scroll through.
+ */
+79
+inline void PGEntry::set_candidate_active(std::string const &candidate_active);
+
+362 20 get_candidate_active 0 4 514 29 PGEntry::get_candidate_active 0 1 130 38
+/**
+ * See set_candidate_active().
+ */
+68
+inline std::string const &PGEntry::get_candidate_active(void) const;
+
+363 22 set_candidate_inactive 0 4 514 31 PGEntry::set_candidate_inactive 0 1 131 609
+/**
+ * Specifies the name of the TextProperties structure added to the
+ * TextPropertiesManager that will be used to render candidate strings from
+ * the IME, used for typing characters in east Asian languages.  Each
+ * candidate string represents one possible way to interpret the sequence of
+ * keys the user has just entered; it should not be considered typed yet, but
+ * it is important for the user to be able to see what he is considering
+ * entering.
+ *
+ * This particular method sets the properties for the subset of the current
+ * candidate string that the user is not actively scrolling through.
+ */
+83
+inline void PGEntry::set_candidate_inactive(std::string const &candidate_inactive);
+
+364 22 get_candidate_inactive 0 4 514 31 PGEntry::get_candidate_inactive 0 1 132 40
+/**
+ * See set_candidate_inactive().
+ */
+70
+inline std::string const &PGEntry::get_candidate_inactive(void) const;
+
+365 12 set_text_def 0 4 514 21 PGEntry::set_text_def 0 1 133 228
+/**
+ * Changes the TextNode that will be used to render the text within the entry
+ * when the entry is in the indicated state.  The default if nothing is
+ * specified is the same TextNode returned by PGItem::get_text_node().
+ */
+54
+void PGEntry::set_text_def(int state, TextNode *node);
+
+366 12 get_text_def 0 4 514 21 PGEntry::get_text_def 0 1 134 151
+/**
+ * Returns the TextNode that will be used to render the text within the entry
+ * when the entry is in the indicated state.  See set_text_def().
+ */
+49
+TextNode *PGEntry::get_text_def(int state) const;
+
+367 10 get_active 0 4 514 19 PGEntry::get_active 0 0 97
+/**
+ * Returns whether the PGItem is currently active for mouse events.  See
+ * set_active().
+ */
+44
+inline bool PGEntry::get_active(void) const;
+
+368 10 set_active 0 6 514 19 PGEntry::set_active 0 0 129
+/**
+ * Toggles the active/inactive state of the entry.  In the case of a PGEntry,
+ * this also changes its visual appearance.
+ */
+52
+virtual void PGEntry::set_active(bool active) final;
+
+369 9 get_focus 0 4 514 18 PGEntry::get_focus 0 0 99
+/**
+ * Returns whether the PGItem currently has focus for keyboard events.  See
+ * set_focus().
+ */
+43
+inline bool PGEntry::get_focus(void) const;
+
+370 9 set_focus 0 6 514 18 PGEntry::set_focus 0 0 119
+/**
+ * Toggles the focus state of the entry.  In the case of a PGEntry, this also
+ * changes its visual appearance.
+ */
+44
+virtual void PGEntry::set_focus(bool focus);
+
+371 17 get_accept_prefix 0 4 514 26 PGEntry::get_accept_prefix 0 1 135 170
+/**
+ * Returns the prefix that is used to define the accept event for all
+ * PGEntries.  The accept event is the concatenation of this string followed
+ * by get_id().
+ */
+59
+static inline std::string PGEntry::get_accept_prefix(void);
+
+372 24 get_accept_failed_prefix 0 4 514 33 PGEntry::get_accept_failed_prefix 0 1 136 171
+/**
+ * Returns the prefix that is used to define the accept failed event for all
+ * PGEntries.  This event is the concatenation of this string followed by
+ * get_id().
+ */
+66
+static inline std::string PGEntry::get_accept_failed_prefix(void);
+
+373 19 get_overflow_prefix 0 4 514 28 PGEntry::get_overflow_prefix 0 1 137 174
+/**
+ * Returns the prefix that is used to define the overflow event for all
+ * PGEntries.  The overflow event is the concatenation of this string followed
+ * by get_id().
+ */
+61
+static inline std::string PGEntry::get_overflow_prefix(void);
+
+374 15 get_type_prefix 0 4 514 24 PGEntry::get_type_prefix 0 1 138 162
+/**
+ * Returns the prefix that is used to define the type event for all PGEntries.
+ * The type event is the concatenation of this string followed by get_id().
+ */
+57
+static inline std::string PGEntry::get_type_prefix(void);
+
+375 16 get_erase_prefix 0 4 514 25 PGEntry::get_erase_prefix 0 1 139 168
+/**
+ * Returns the prefix that is used to define the erase event for all
+ * PGEntries.  The erase event is the concatenation of this string followed by
+ * get_id().
+ */
+58
+static inline std::string PGEntry::get_erase_prefix(void);
+
+376 21 get_cursormove_prefix 0 4 514 30 PGEntry::get_cursormove_prefix 0 1 140 170
+/**
+ * Returns the prefix that is used to define the cursor event for all
+ * PGEntries.  The cursor event is the concatenation of this string followed
+ * by get_id().
+ */
+63
+static inline std::string PGEntry::get_cursormove_prefix(void);
+
+377 16 get_accept_event 0 4 514 25 PGEntry::get_accept_event 0 1 141 93
+/**
+ * Returns the event name that will be thrown when the entry is accepted
+ * normally.
+ */
+79
+inline std::string PGEntry::get_accept_event(ButtonHandle const &button) const;
+
+378 23 get_accept_failed_event 0 4 514 32 PGEntry::get_accept_failed_event 0 1 142 94
+/**
+ * Returns the event name that will be thrown when the entry cannot accept an
+ * input
+ */
+86
+inline std::string PGEntry::get_accept_failed_event(ButtonHandle const &button) const;
+
+379 18 get_overflow_event 0 4 514 27 PGEntry::get_overflow_event 0 1 143 198
+/**
+ * Returns the event name that will be thrown when too much text is attempted
+ * to be entered into the PGEntry, exceeding either the limit set via
+ * set_max_chars() or via set_max_width().
+ */
+59
+inline std::string PGEntry::get_overflow_event(void) const;
+
+380 14 get_type_event 0 4 514 23 PGEntry::get_type_event 0 1 144 102
+/**
+ * Returns the event name that will be thrown whenever the user extends the
+ * text by typing.
+ */
+55
+inline std::string PGEntry::get_type_event(void) const;
+
+381 15 get_erase_event 0 4 514 24 PGEntry::get_erase_event 0 1 145 105
+/**
+ * Returns the event name that will be thrown whenever the user erases
+ * characters in the text.
+ */
+56
+inline std::string PGEntry::get_erase_event(void) const;
+
+382 20 get_cursormove_event 0 4 514 29 PGEntry::get_cursormove_event 0 1 146 79
+/**
+ * Returns the event name that will be thrown whenever the cursor moves
+ */
+61
+inline std::string PGEntry::get_cursormove_event(void) const;
+
+383 9 set_wtext 0 4 514 18 PGEntry::set_wtext 0 1 147 188
+/**
+ * Changes the text currently displayed within the entry.
+ *
+ * The return value is true if all the text is accepted, or false if some was
+ * truncated (see set_max_width(), etc.).
+ */
+58
+inline bool PGEntry::set_wtext(std::wstring const &wtext);
+
+384 15 get_plain_wtext 0 4 514 24 PGEntry::get_plain_wtext 0 1 148 112
+/**
+ * Returns the text currently displayed within the entry, without any embedded
+ * properties characters.
+ */
+57
+inline std::wstring PGEntry::get_plain_wtext(void) const;
+
+385 9 get_wtext 0 4 514 18 PGEntry::get_wtext 0 1 149 65
+/**
+ * Returns the text currently displayed within the entry.
+ */
+51
+inline std::wstring PGEntry::get_wtext(void) const;
+
+386 18 set_accept_enabled 0 4 514 27 PGEntry::set_accept_enabled 0 1 150 91
+/**
+ * Sets whether the input may be accepted--use to disable submission by the
+ * user
+ */
+54
+inline void PGEntry::set_accept_enabled(bool enabled);
+
+387 8 is_wtext 0 4 514 17 PGEntry::is_wtext 0 1 151 211
+/**
+ * Returns true if any of the characters in the string returned by get_wtext()
+ * are out of the range of an ASCII character (and, therefore, get_wtext()
+ * should be called in preference to get_text()).
+ */
+35
+bool PGEntry::is_wtext(void) const;
+
+388 14 get_class_type 0 4 514 23 PGEntry::get_class_type 0 1 152 0
+48
+static TypeHandle PGEntry::get_class_type(void);
+
+389 37 upcast_to_TypedWritableReferenceCount 0 12 518 62 PGMouseWatcherParameter::upcast_to_TypedWritableReferenceCount 0 1 156 66
+upcast from PGMouseWatcherParameter to TypedWritableReferenceCount
+98
+TypedWritableReferenceCount *PGMouseWatcherParameter::upcast_to_TypedWritableReferenceCount(void);
+
+390 35 downcast_to_PGMouseWatcherParameter 0 12 519 64 TypedWritableReferenceCount::downcast_to_PGMouseWatcherParameter 0 0 68
+downcast from TypedWritableReferenceCount to PGMouseWatcherParameter
+96
+PGMouseWatcherParameter *TypedWritableReferenceCount::downcast_to_PGMouseWatcherParameter(void);
+
+391 31 upcast_to_MouseWatcherParameter 0 12 518 56 PGMouseWatcherParameter::upcast_to_MouseWatcherParameter 0 1 157 60
+upcast from PGMouseWatcherParameter to MouseWatcherParameter
+86
+MouseWatcherParameter *PGMouseWatcherParameter::upcast_to_MouseWatcherParameter(void);
+
+392 35 downcast_to_PGMouseWatcherParameter 0 12 520 58 MouseWatcherParameter::downcast_to_PGMouseWatcherParameter 0 0 62
+downcast from MouseWatcherParameter to PGMouseWatcherParameter
+90
+PGMouseWatcherParameter *MouseWatcherParameter::downcast_to_PGMouseWatcherParameter(void);
+
+393 24 ~PGMouseWatcherParameter 0 518 518 49 PGMouseWatcherParameter::~PGMouseWatcherParameter 0 0 10
+/**
+ *
+ */
+64
+virtual PGMouseWatcherParameter::~PGMouseWatcherParameter(void);
+
+394 6 output 0 4 518 31 PGMouseWatcherParameter::output 0 1 154 10
+/**
+ *
+ */
+62
+void PGMouseWatcherParameter::output(std::ostream &out) const;
+
+395 14 get_class_type 0 4 518 39 PGMouseWatcherParameter::get_class_type 0 1 155 0
+64
+static TypeHandle PGMouseWatcherParameter::get_class_type(void);
+
+396 23 PGMouseWatcherParameter 0 260 518 48 PGMouseWatcherParameter::PGMouseWatcherParameter 0 1 153 22
+/**
+ *
+ */
+
+/**
+ *
+ */
+99
+inline PGMouseWatcherParameter::PGMouseWatcherParameter(PGMouseWatcherParameter const &) = default;
+
+397 24 PGMouseWatcherBackground 0 260 521 50 PGMouseWatcherBackground::PGMouseWatcherBackground 0 2 158 159 10
+/**
+ *
+ */
+160
+PGMouseWatcherBackground::PGMouseWatcherBackground(void);
+inline PGMouseWatcherBackground::PGMouseWatcherBackground(PGMouseWatcherBackground const &) = default;
+
+398 14 get_class_type 0 4 521 40 PGMouseWatcherBackground::get_class_type 0 1 160 0
+65
+static TypeHandle PGMouseWatcherBackground::get_class_type(void);
+
+399 14 PGVirtualFrame 0 260 523 30 PGVirtualFrame::PGVirtualFrame 0 1 161 22
+/**
+ *
+ */
+
+/**
+ *
+ */
+70
+explicit PGVirtualFrame::PGVirtualFrame(std::string const &name = "");
+
+400 5 setup 0 4 523 21 PGVirtualFrame::setup 0 1 162 66
+/**
+ * Creates a PGVirtualFrame with the indicated dimensions.
+ */
+66
+void PGVirtualFrame::setup(PN_stdfloat width, PN_stdfloat height);
+
+401 14 set_clip_frame 0 4 523 30 PGVirtualFrame::set_clip_frame 0 2 163 164 598
+/**
+ * Sets the bounding rectangle of the clip frame.  This is the size of the
+ * small window through which we can see the virtual canvas.  Normally, this
+ * is the same size as the actual frame or smaller (typically it is smaller by
+ * the size of the bevel, or to make room for scroll bars).
+ */
+
+/**
+ * Sets the bounding rectangle of the clip frame.  This is the size of the
+ * small window through which we can see the virtual canvas.  Normally, this
+ * is the same size as the actual frame or smaller (typically it is smaller by
+ * the size of the bevel, or to make room for scroll bars).
+ */
+183
+inline void PGVirtualFrame::set_clip_frame(PN_stdfloat left, PN_stdfloat right, PN_stdfloat bottom, PN_stdfloat top);
+void PGVirtualFrame::set_clip_frame(LVecBase4 const &clip_frame);
+
+402 14 get_clip_frame 0 4 523 30 PGVirtualFrame::get_clip_frame 0 1 165 154
+/**
+ * Returns the bounding rectangle of the clip frame.  See set_clip_frame().
+ * If has_clip_frame() is false, this returns the item's actual frame.
+ */
+67
+inline LVecBase4 const &PGVirtualFrame::get_clip_frame(void) const;
+
+403 14 has_clip_frame 0 4 523 30 PGVirtualFrame::has_clip_frame 0 1 166 155
+/**
+ * Returns true if the clip frame has been set; see set_clip_frame().  If it
+ * has not been set, objects in the virtual frame will not be clipped.
+ */
+55
+inline bool PGVirtualFrame::has_clip_frame(void) const;
+
+404 16 clear_clip_frame 0 4 523 32 PGVirtualFrame::clear_clip_frame 0 1 167 73
+/**
+ * Removes the clip frame from the item.  This disables clipping.
+ */
+44
+void PGVirtualFrame::clear_clip_frame(void);
+
+405 20 set_canvas_transform 0 4 523 36 PGVirtualFrame::set_canvas_transform 0 1 168 124
+/**
+ * Changes the transform of the virtual canvas.  This transform is applied to
+ * all child nodes of the canvas_node.
+ */
+82
+inline void PGVirtualFrame::set_canvas_transform(TransformState const *transform);
+
+406 20 get_canvas_transform 0 4 523 36 PGVirtualFrame::get_canvas_transform 0 1 169 124
+/**
+ * Returns the transform of the virtual canvas.  This transform is applied to
+ * all child nodes of the canvas_node.
+ */
+78
+inline TransformState const *PGVirtualFrame::get_canvas_transform(void) const;
+
+407 15 get_canvas_node 0 4 523 31 PGVirtualFrame::get_canvas_node 0 1 170 104
+/**
+ * Returns the special node that holds all of the children that appear in the
+ * virtual canvas.
+ */
+62
+inline PandaNode *PGVirtualFrame::get_canvas_node(void) const;
+
+408 17 get_canvas_parent 0 4 523 33 PGVirtualFrame::get_canvas_parent 0 1 171 54
+/**
+ * Returns the parent node of the canvas_node.
+ */
+64
+inline PandaNode *PGVirtualFrame::get_canvas_parent(void) const;
+
+409 14 get_class_type 0 4 523 30 PGVirtualFrame::get_class_type 0 1 172 0
+55
+static TypeHandle PGVirtualFrame::get_class_type(void);
+
+410 16 upcast_to_PGItem 0 12 528 29 PGSliderBar::upcast_to_PGItem 0 1 209 33
+upcast from PGSliderBar to PGItem
+44
+PGItem *PGSliderBar::upcast_to_PGItem(void);
+
+411 23 downcast_to_PGSliderBar 0 12 497 31 PGItem::downcast_to_PGSliderBar 0 0 35
+downcast from PGItem to PGSliderBar
+51
+PGSliderBar *PGItem::downcast_to_PGSliderBar(void);
+
+412 24 upcast_to_PGButtonNotify 0 12 528 37 PGSliderBar::upcast_to_PGButtonNotify 0 0 41
+upcast from PGSliderBar to PGButtonNotify
+60
+PGButtonNotify *PGSliderBar::upcast_to_PGButtonNotify(void);
+
+413 23 downcast_to_PGSliderBar 0 12 529 39 PGButtonNotify::downcast_to_PGSliderBar 0 0 43
+downcast from PGButtonNotify to PGSliderBar
+59
+PGSliderBar *PGButtonNotify::downcast_to_PGSliderBar(void);
+
+414 11 PGSliderBar 0 260 528 24 PGSliderBar::PGSliderBar 0 1 173 22
+/**
+ *
+ */
+
+/**
+ *
+ */
+64
+explicit PGSliderBar::PGSliderBar(std::string const &name = "");
+
+415 12 ~PGSliderBar 0 518 528 25 PGSliderBar::~PGSliderBar 0 0 10
+/**
+ *
+ */
+40
+virtual PGSliderBar::~PGSliderBar(void);
+
+416 16 setup_scroll_bar 0 4 528 29 PGSliderBar::setup_scroll_bar 0 1 174 461
+/**
+ * Creates PGSliderBar that represents a vertical or horizontal scroll bar (if
+ * vertical is true or false, respectively), with additional buttons for
+ * scrolling, and a range of 0 .. 1.
+ *
+ * length here is the measurement along the scroll bar, and width is the
+ * measurement across the scroll bar, whether it is vertical or horizontal (so
+ * for a horizontal scroll bar, the length is actually the x dimension, and
+ * the width is the y dimension).
+ */
+108
+void PGSliderBar::setup_scroll_bar(bool vertical, PN_stdfloat length, PN_stdfloat width, PN_stdfloat bevel);
+
+417 12 setup_slider 0 4 528 25 PGSliderBar::setup_slider 0 1 175 198
+/**
+ * Creates PGSliderBar that represents a slider that the user can use to
+ * control an analog quantity.
+ *
+ * This is functionally the same as a scroll bar, but it has a distinctive
+ * look.
+ */
+104
+void PGSliderBar::setup_slider(bool vertical, PN_stdfloat length, PN_stdfloat width, PN_stdfloat bevel);
+
+418 8 set_axis 0 4 528 21 PGSliderBar::set_axis 0 1 176 550
+/**
+ * Specifies the axis of the slider bar's motion.  This should be only one of
+ * four vectors: (1, 0, 0), (0, 0, 1), (-1, 0, 0), or (0, 0, -1).
+ *
+ * This specifies the vector in which the thumb moves when it is moving from
+ * the minimum to the maximum value.
+ *
+ * The axis must be parallel to one of the screen axes, and it must be
+ * normalized.  Hence, it may only be one of the above four possibilities;
+ * anything else is an error and will result in indeterminate behavior.
+ *
+ * Normally, you should not try to set the axis directly.
+ */
+56
+inline void PGSliderBar::set_axis(LVector3 const &axis);
+
+419 8 get_axis 0 4 528 21 PGSliderBar::get_axis 0 1 177 72
+/**
+ * Returns the axis of the slider bar's motion.  See set_axis().
+ */
+57
+inline LVector3 const &PGSliderBar::get_axis(void) const;
+
+420 9 set_range 0 4 528 22 PGSliderBar::set_range 0 1 178 62
+/**
+ * Sets the minimum and maxmimum value for the slider.
+ */
+81
+inline void PGSliderBar::set_range(PN_stdfloat min_value, PN_stdfloat max_value);
+
+421 13 get_min_value 0 4 528 26 PGSliderBar::get_min_value 0 1 179 72
+/**
+ * Returns the value when the slider is all the way to the left.
+ */
+58
+inline PN_stdfloat PGSliderBar::get_min_value(void) const;
+
+422 13 get_max_value 0 4 528 26 PGSliderBar::get_max_value 0 1 180 73
+/**
+ * Returns the value when the slider is all the way to the right.
+ */
+58
+inline PN_stdfloat PGSliderBar::get_max_value(void) const;
+
+423 15 set_scroll_size 0 4 528 28 PGSliderBar::set_scroll_size 0 1 181 106
+/**
+ * Specifies the amount the slider will move when the user clicks on the left
+ * or right buttons.
+ */
+66
+inline void PGSliderBar::set_scroll_size(PN_stdfloat scroll_size);
+
+424 15 get_scroll_size 0 4 528 28 PGSliderBar::get_scroll_size 0 1 182 59
+/**
+ * Returns the value last set by set_scroll_size().
+ */
+60
+inline PN_stdfloat PGSliderBar::get_scroll_size(void) const;
+
+425 13 set_page_size 0 4 528 26 PGSliderBar::set_page_size 0 1 183 242
+/**
+ * Specifies the amount of data contained in a single page.  This indicates
+ * how much the thumb will jump when the trough is directly clicked; and if
+ * resize_thumb is true, it also controls the visible size of the thumb
+ * button.
+ */
+62
+inline void PGSliderBar::set_page_size(PN_stdfloat page_size);
+
+426 13 get_page_size 0 4 528 26 PGSliderBar::get_page_size 0 1 184 57
+/**
+ * Returns the value last set by set_page_size().
+ */
+58
+inline PN_stdfloat PGSliderBar::get_page_size(void) const;
+
+427 9 set_value 0 4 528 22 PGSliderBar::set_value 0 1 185 132
+/**
+ * Sets the current value of the slider programmatically.  This should range
+ * between get_min_value() and get_max_value().
+ */
+54
+inline void PGSliderBar::set_value(PN_stdfloat value);
+
+428 9 get_value 0 4 528 22 PGSliderBar::get_value 0 1 186 51
+/**
+ * Returns the current value of the slider.
+ */
+54
+inline PN_stdfloat PGSliderBar::get_value(void) const;
+
+429 9 set_ratio 0 4 528 22 PGSliderBar::set_ratio 0 1 187 79
+/**
+ * Sets the current value of the slider, expressed in the range 0 .. 1.
+ */
+54
+inline void PGSliderBar::set_ratio(PN_stdfloat ratio);
+
+430 9 get_ratio 0 4 528 22 PGSliderBar::get_ratio 0 1 188 82
+/**
+ * Returns the current value of the slider, expressed in the range 0 .. 1.
+ */
+54
+inline PN_stdfloat PGSliderBar::get_ratio(void) const;
+
+431 14 is_button_down 0 4 528 27 PGSliderBar::is_button_down 0 1 189 179
+/**
+ * Returns true if the user is currently holding down the mouse button to
+ * manipulate the slider.  When true, calls to set_ratio() or set_value() will
+ * have no effect.
+ */
+52
+inline bool PGSliderBar::is_button_down(void) const;
+
+432 16 set_resize_thumb 0 4 528 29 PGSliderBar::set_resize_thumb 0 1 190 217
+/**
+ * Sets the resize_thumb flag.  When this is true, the thumb button's frame
+ * will be adjusted so that its width visually represents the page size.  When
+ * this is false, the thumb button will be left alone.
+ */
+61
+inline void PGSliderBar::set_resize_thumb(bool resize_thumb);
+
+433 16 get_resize_thumb 0 4 528 29 PGSliderBar::get_resize_thumb 0 1 191 66
+/**
+ * Returns the resize_thumb flag.  See set_resize_thumb().
+ */
+54
+inline bool PGSliderBar::get_resize_thumb(void) const;
+
+434 17 set_manage_pieces 0 4 528 30 PGSliderBar::set_manage_pieces 0 1 192 253
+/**
+ * Sets the manage_pieces flag.  When this is true, the sub-pieces of the
+ * slider bar--that is, the thumb, and the left and right scroll buttons--are
+ * automatically positioned and/or resized when the slider bar's overall frame
+ * is changed.
+ */
+63
+inline void PGSliderBar::set_manage_pieces(bool manage_pieces);
+
+435 17 get_manage_pieces 0 4 528 30 PGSliderBar::get_manage_pieces 0 1 193 68
+/**
+ * Returns the manage_pieces flag.  See set_manage_pieces().
+ */
+55
+inline bool PGSliderBar::get_manage_pieces(void) const;
+
+436 16 set_thumb_button 0 4 528 29 PGSliderBar::set_thumb_button 0 1 194 312
+/**
+ * Sets the PGButton object that will serve as the thumb for this slider.
+ * This button visually represents the position of the slider, and can be
+ * dragged left and right by the user.
+ *
+ * It is the responsibility of the caller to ensure that the button object is
+ * parented to the PGSliderBar node.
+ */
+66
+inline void PGSliderBar::set_thumb_button(PGButton *thumb_button);
+
+437 18 clear_thumb_button 0 4 528 31 PGSliderBar::clear_thumb_button 0 1 195 145
+/**
+ * Removes the thumb button object from control of the frame.  It is your
+ * responsibility to actually remove or hide the button itself.
+ */
+50
+inline void PGSliderBar::clear_thumb_button(void);
+
+438 16 get_thumb_button 0 4 528 29 PGSliderBar::get_thumb_button 0 1 196 102
+/**
+ * Returns the PGButton that serves as the thumb for this slider, or NULL if
+ * it is not set.
+ */
+59
+inline PGButton *PGSliderBar::get_thumb_button(void) const;
+
+439 15 set_left_button 0 4 528 28 PGSliderBar::set_left_button 0 1 197 330
+/**
+ * Sets the PGButton object that will serve as the left scroll button for this
+ * slider.  This button is optional; if present, the user can click on it to
+ * move scroll_size units at a time to the left.
+ *
+ * It is the responsibility of the caller to ensure that the button object is
+ * parented to the PGSliderBar node.
+ */
+64
+inline void PGSliderBar::set_left_button(PGButton *left_button);
+
+440 17 clear_left_button 0 4 528 30 PGSliderBar::clear_left_button 0 1 198 144
+/**
+ * Removes the left button object from control of the frame.  It is your
+ * responsibility to actually remove or hide the button itself.
+ */
+49
+inline void PGSliderBar::clear_left_button(void);
+
+441 15 get_left_button 0 4 528 28 PGSliderBar::get_left_button 0 1 199 123
+/**
+ * Returns the PGButton that serves as the left scroll button for this slider,
+ * if any, or NULL if it is not set.
+ */
+58
+inline PGButton *PGSliderBar::get_left_button(void) const;
+
+442 16 set_right_button 0 4 528 29 PGSliderBar::set_right_button 0 1 200 332
+/**
+ * Sets the PGButton object that will serve as the right scroll button for
+ * this slider.  This button is optional; if present, the user can click on it
+ * to move scroll_size units at a time to the right.
+ *
+ * It is the responsibility of the caller to ensure that the button object is
+ * parented to the PGSliderBar node.
+ */
+66
+inline void PGSliderBar::set_right_button(PGButton *right_button);
+
+443 18 clear_right_button 0 4 528 31 PGSliderBar::clear_right_button 0 1 201 145
+/**
+ * Removes the right button object from control of the frame.  It is your
+ * responsibility to actually remove or hide the button itself.
+ */
+50
+inline void PGSliderBar::clear_right_button(void);
+
+444 16 get_right_button 0 4 528 29 PGSliderBar::get_right_button 0 1 202 124
+/**
+ * Returns the PGButton that serves as the right scroll button for this
+ * slider, if any, or NULL if it is not set.
+ */
+59
+inline PGButton *PGSliderBar::get_right_button(void) const;
+
+445 17 get_adjust_prefix 0 4 528 30 PGSliderBar::get_adjust_prefix 0 1 203 173
+/**
+ * Returns the prefix that is used to define the adjust event for all
+ * PGSliderBars.  The adjust event is the concatenation of this string
+ * followed by get_id().
+ */
+63
+static inline std::string PGSliderBar::get_adjust_prefix(void);
+
+446 16 get_adjust_event 0 4 528 29 PGSliderBar::get_adjust_event 0 1 204 127
+/**
+ * Returns the event name that will be thrown when the slider bar value is
+ * adjusted by the user or programmatically.
+ */
+61
+inline std::string PGSliderBar::get_adjust_event(void) const;
+
+447 10 set_active 0 6 528 23 PGSliderBar::set_active 0 1 205 245
+/**
+ * Sets whether the PGItem is active for mouse watching.  This is not
+ * necessarily related to the active/inactive appearance of the item, which is
+ * controlled by set_state(), but it does affect whether it responds to mouse
+ * events.
+ */
+56
+virtual void PGSliderBar::set_active(bool active) final;
+
+448 10 get_active 0 4 528 23 PGSliderBar::get_active 0 0 97
+/**
+ * Returns whether the PGItem is currently active for mouse events.  See
+ * set_active().
+ */
+48
+inline bool PGSliderBar::get_active(void) const;
+
+449 8 remanage 0 4 528 21 PGSliderBar::remanage 0 1 206 131
+/**
+ * Manages the position and size of the scroll bars and the thumb.  Normally
+ * this should not need to be called directly.
+ */
+33
+void PGSliderBar::remanage(void);
+
+450 9 recompute 0 4 528 22 PGSliderBar::recompute 0 1 207 114
+/**
+ * Recomputes the position and size of the thumb.  Normally this should not
+ * need to be called directly.
+ */
+34
+void PGSliderBar::recompute(void);
+
+451 14 get_class_type 0 4 528 27 PGSliderBar::get_class_type 0 1 208 0
+52
+static TypeHandle PGSliderBar::get_class_type(void);
+
+452 24 upcast_to_PGVirtualFrame 0 12 535 39 PGScrollFrame::upcast_to_PGVirtualFrame 0 1 230 43
+upcast from PGScrollFrame to PGVirtualFrame
+62
+PGVirtualFrame *PGScrollFrame::upcast_to_PGVirtualFrame(void);
+
+453 25 downcast_to_PGScrollFrame 0 12 523 41 PGVirtualFrame::downcast_to_PGScrollFrame 0 0 45
+downcast from PGVirtualFrame to PGScrollFrame
+63
+PGScrollFrame *PGVirtualFrame::downcast_to_PGScrollFrame(void);
+
+454 27 upcast_to_PGSliderBarNotify 0 12 535 42 PGScrollFrame::upcast_to_PGSliderBarNotify 0 0 46
+upcast from PGScrollFrame to PGSliderBarNotify
+68
+PGSliderBarNotify *PGScrollFrame::upcast_to_PGSliderBarNotify(void);
+
+455 25 downcast_to_PGScrollFrame 0 12 536 44 PGSliderBarNotify::downcast_to_PGScrollFrame 0 0 48
+downcast from PGSliderBarNotify to PGScrollFrame
+66
+PGScrollFrame *PGSliderBarNotify::downcast_to_PGScrollFrame(void);
+
+456 13 PGScrollFrame 0 260 535 28 PGScrollFrame::PGScrollFrame 0 1 210 22
+/**
+ *
+ */
+
+/**
+ *
+ */
+68
+explicit PGScrollFrame::PGScrollFrame(std::string const &name = "");
+
+457 14 ~PGScrollFrame 0 518 535 29 PGScrollFrame::~PGScrollFrame 0 0 10
+/**
+ *
+ */
+44
+virtual PGScrollFrame::~PGScrollFrame(void);
+
+458 5 setup 0 4 535 20 PGScrollFrame::setup 0 1 211 101
+/**
+ * Creates a PGScrollFrame with the indicated dimensions, and the indicated
+ * virtual frame.
+ */
+184
+void PGScrollFrame::setup(PN_stdfloat width, PN_stdfloat height, PN_stdfloat left, PN_stdfloat right, PN_stdfloat bottom, PN_stdfloat top, PN_stdfloat slider_width, PN_stdfloat bevel);
+
+459 17 set_virtual_frame 0 4 535 32 PGScrollFrame::set_virtual_frame 0 2 212 213 330
+/**
+ * Sets the bounding rectangle of the virtual frame.  This is the size of the
+ * large, virtual canvas which we can see only a portion of at any given time.
+ */
+
+/**
+ * Sets the bounding rectangle of the virtual frame.  This is the size of the
+ * large, virtual canvas which we can see only a portion of at any given time.
+ */
+197
+inline void PGScrollFrame::set_virtual_frame(PN_stdfloat left, PN_stdfloat right, PN_stdfloat bottom, PN_stdfloat top);
+inline void PGScrollFrame::set_virtual_frame(LVecBase4 const &virtual_frame);
+
+460 17 get_virtual_frame 0 4 535 32 PGScrollFrame::get_virtual_frame 0 1 214 165
+/**
+ * Returns the bounding rectangle of the virtual frame.  See
+ * set_virtual_frame().  If has_virtual_frame() is false, this returns the
+ * item's clip frame.
+ */
+69
+inline LVecBase4 const &PGScrollFrame::get_virtual_frame(void) const;
+
+461 17 has_virtual_frame 0 4 535 32 PGScrollFrame::has_virtual_frame 0 1 215 153
+/**
+ * Returns true if the virtual frame has a bounding rectangle; see
+ * set_virtual_frame().  Most PGScrollFrame objects will have a virtual frame.
+ */
+57
+inline bool PGScrollFrame::has_virtual_frame(void) const;
+
+462 19 clear_virtual_frame 0 4 535 34 PGScrollFrame::clear_virtual_frame 0 1 216 173
+/**
+ * Removes the virtual frame from the item.  This effectively sets the virtual
+ * frame to the same size as the clip frame.  Scrolling will no longer be
+ * possible.
+ */
+53
+inline void PGScrollFrame::clear_virtual_frame(void);
+
+463 17 set_manage_pieces 0 4 535 32 PGScrollFrame::set_manage_pieces 0 1 217 320
+/**
+ * Sets the manage_pieces flag.  When this is true, the sub-pieces of the
+ * scroll frame--that is, the two scroll bars--are automatically positioned
+ * and/or resized when the scroll frame's overall frame is changed.  They are
+ * also automatically resized to fill in the gap when one or the other is
+ * hidden.
+ */
+65
+inline void PGScrollFrame::set_manage_pieces(bool manage_pieces);
+
+464 17 get_manage_pieces 0 4 535 32 PGScrollFrame::get_manage_pieces 0 1 218 68
+/**
+ * Returns the manage_pieces flag.  See set_manage_pieces().
+ */
+57
+inline bool PGScrollFrame::get_manage_pieces(void) const;
+
+465 13 set_auto_hide 0 4 535 28 PGScrollFrame::set_auto_hide 0 1 219 345
+/**
+ * Sets the auto_hide flag.  When this is true, the two scroll bars are
+ * automatically hidden if they are not needed (that is, if the virtual frame
+ * would fit within the clip frame without them), and they are automatically
+ * shown when they are needed.
+ *
+ * Setting this flag true forces the manage_pieces flag to also be set true.
+ */
+57
+inline void PGScrollFrame::set_auto_hide(bool auto_hide);
+
+466 13 get_auto_hide 0 4 535 28 PGScrollFrame::get_auto_hide 0 1 220 60
+/**
+ * Returns the auto_hide flag.  See set_auto_hide().
+ */
+53
+inline bool PGScrollFrame::get_auto_hide(void) const;
+
+467 21 set_horizontal_slider 0 4 535 36 PGScrollFrame::set_horizontal_slider 0 1 221 209
+/**
+ * Sets the PGSliderBar object that will serve as the horizontal scroll bar
+ * for this frame.  It is your responsibility to parent this slider bar to the
+ * frame and move it to the appropriate place.
+ */
+81
+inline void PGScrollFrame::set_horizontal_slider(PGSliderBar *horizontal_slider);
+
+468 23 clear_horizontal_slider 0 4 535 38 PGScrollFrame::clear_horizontal_slider 0 1 222 147
+/**
+ * Removes the horizontal scroll bar from control of the frame.  It is your
+ * responsibility to actually remove or hide the object itself.
+ */
+57
+inline void PGScrollFrame::clear_horizontal_slider(void);
+
+469 21 get_horizontal_slider 0 4 535 36 PGScrollFrame::get_horizontal_slider 0 1 223 128
+/**
+ * Returns the PGSliderBar that serves as the horizontal scroll bar for this
+ * frame, if any, or NULL if it is not set.
+ */
+69
+inline PGSliderBar *PGScrollFrame::get_horizontal_slider(void) const;
+
+470 19 set_vertical_slider 0 4 535 34 PGScrollFrame::set_vertical_slider 0 1 224 207
+/**
+ * Sets the PGSliderBar object that will serve as the vertical scroll bar for
+ * this frame.  It is your responsibility to parent this slider bar to the
+ * frame and move it to the appropriate place.
+ */
+77
+inline void PGScrollFrame::set_vertical_slider(PGSliderBar *vertical_slider);
+
+471 21 clear_vertical_slider 0 4 535 36 PGScrollFrame::clear_vertical_slider 0 1 225 145
+/**
+ * Removes the vertical scroll bar from control of the frame.  It is your
+ * responsibility to actually remove or hide the object itself.
+ */
+55
+inline void PGScrollFrame::clear_vertical_slider(void);
+
+472 19 get_vertical_slider 0 4 535 34 PGScrollFrame::get_vertical_slider 0 1 226 126
+/**
+ * Returns the PGSliderBar that serves as the vertical scroll bar for this
+ * frame, if any, or NULL if it is not set.
+ */
+67
+inline PGSliderBar *PGScrollFrame::get_vertical_slider(void) const;
+
+473 8 remanage 0 4 535 23 PGScrollFrame::remanage 0 1 227 117
+/**
+ * Manages the position and size of the scroll bars.  Normally this should not
+ * need to be called directly.
+ */
+35
+void PGScrollFrame::remanage(void);
+
+474 9 recompute 0 4 535 24 PGScrollFrame::recompute 0 1 228 108
+/**
+ * Forces the PGScrollFrame to recompute itself right now.  Normally this
+ * should not be required.
+ */
+43
+inline void PGScrollFrame::recompute(void);
+
+475 14 get_class_type 0 4 535 29 PGScrollFrame::get_class_type 0 1 229 0
+54
+static TypeHandle PGScrollFrame::get_class_type(void);
+
+476 9 PGWaitBar 0 260 538 20 PGWaitBar::PGWaitBar 0 1 231 22
+/**
+ *
+ */
+
+/**
+ *
+ */
+60
+explicit PGWaitBar::PGWaitBar(std::string const &name = "");
+
+477 5 setup 0 4 538 16 PGWaitBar::setup 0 1 232 98
+/**
+ * Creates a PGWaitBar with the indicated dimensions, with the indicated
+ * maximum range.
+ */
+80
+void PGWaitBar::setup(PN_stdfloat width, PN_stdfloat height, PN_stdfloat range);
+
+478 9 set_range 0 4 538 20 PGWaitBar::set_range 0 1 233 62
+/**
+ * Sets the value at which the WaitBar indicates 100%.
+ */
+52
+inline void PGWaitBar::set_range(PN_stdfloat range);
+
+479 9 get_range 0 4 538 20 PGWaitBar::get_range 0 1 234 65
+/**
+ * Returns the value at which the WaitBar indicates 100%.
+ */
+52
+inline PN_stdfloat PGWaitBar::get_range(void) const;
+
+480 9 set_value 0 4 538 20 PGWaitBar::set_value 0 1 235 94
+/**
+ * Sets the current value of the bar.  This should range between 0 and
+ * get_range().
+ */
+52
+inline void PGWaitBar::set_value(PN_stdfloat value);
+
+481 9 get_value 0 4 538 20 PGWaitBar::get_value 0 1 236 48
+/**
+ * Returns the current value of the bar.
+ */
+52
+inline PN_stdfloat PGWaitBar::get_value(void) const;
+
+482 11 get_percent 0 4 538 22 PGWaitBar::get_percent 0 1 237 43
+/**
+ * Returns the percentage complete.
+ */
+54
+inline PN_stdfloat PGWaitBar::get_percent(void) const;
+
+483 13 set_bar_style 0 4 538 24 PGWaitBar::set_bar_style 0 1 238 107
+/**
+ * Sets the kind of frame that is drawn on top of the WaitBar to represent the
+ * amount completed.
+ */
+64
+inline void PGWaitBar::set_bar_style(PGFrameStyle const &style);
+
+484 13 get_bar_style 0 4 538 24 PGWaitBar::get_bar_style 0 1 239 110
+/**
+ * Returns the kind of frame that is drawn on top of the WaitBar to represent
+ * the amount completed.
+ */
+57
+inline PGFrameStyle PGWaitBar::get_bar_style(void) const;
+
+485 14 get_class_type 0 4 538 25 PGWaitBar::get_class_type 0 1 240 0
+50
+static TypeHandle PGWaitBar::get_class_type(void);
+
+240
+1 0 0 7 241 539 243 0 10 /**
+ *
+ */ 0 
+2 0 0 15 241 539 243 0 10 /**
+ *
+ */ 1 4 copy 1 540  
+3 0 0 6 242 539 0 0 0 2 4 this 3 539  4 copy 1 540  
+4 0 0 4 244 542 0 0 40 /**
+ * Sets the basic type of frame.
+ */ 2 4 this 3 539  4 type 1 488  
+5 0 0 6 245 488 0 0 43 /**
+ * Returns the basic type of frame.
+ */ 1 4 this 3 540  
+6 0 0 4 246 542 0 0 48 /**
+ * Sets the dominant color of the frame.
+ */ 2 4 this 3 539  5 color 1 543  
+7 0 0 4 246 542 0 0 48 /**
+ * Sets the dominant color of the frame.
+ */ 5 4 this 3 539  1 r 1 516  1 g 1 516  1 b 1 516  1 a 1 516  
+8 0 0 7 247 545 0 0 51 /**
+ * Returns the dominant color of the frame.
+ */ 1 4 this 3 540  
+9 0 0 4 248 542 0 0 67 /**
+ * Specifies a texture that should be applied to the frame.
+ */ 2 4 this 3 539  7 texture 1 492  
+10 0 0 6 249 506 0 0 67 /**
+ * Returns true if a texture has been applied to the frame.
+ */ 1 4 this 3 540  
+11 0 0 7 250 492 0 0 109 /**
+ * Returns the texture that has been applied to the frame, or NULL if no
+ * texture has been applied.
+ */ 1 4 this 3 540  
+12 0 0 4 251 542 0 0 46 /**
+ * Removes the texture from the frame.
+ */ 1 4 this 3 539  
+13 0 0 4 252 542 0 0 197 /**
+ * Sets the width parameter, which has meaning only for certain frame types.
+ * For instance, this is the width of the bevel for T_bevel_in or T_bevel_out.
+ * The units are in screen units.
+ */ 2 4 this 3 539  5 width 1 546  
+14 0 0 4 252 542 0 0 197 /**
+ * Sets the width parameter, which has meaning only for certain frame types.
+ * For instance, this is the width of the bevel for T_bevel_in or T_bevel_out.
+ * The units are in screen units.
+ */ 3 4 this 3 539  1 x 1 516  1 y 1 516  
+15 0 0 6 253 546 0 0 202 /**
+ * Returns the width parameter, which has meaning only for certain frame
+ * types.  For instance, this is the width of the bevel for T_bevel_in or
+ * T_bevel_out.  The units are in screen units.
+ */ 1 4 this 3 540  
+16 0 0 4 254 542 0 0 189 /**
+ * Sets the uv_width parameter, which indicates the amount of the texture that
+ * is consumed by the inner bevel--the width in texture space of the amount
+ * indicated by set_width.
+ */ 2 4 this 3 539  8 uv_width 1 546  
+17 0 0 4 254 542 0 0 189 /**
+ * Sets the uv_width parameter, which indicates the amount of the texture that
+ * is consumed by the inner bevel--the width in texture space of the amount
+ * indicated by set_width.
+ */ 3 4 this 3 539  1 u 1 516  1 v 1 516  
+18 0 0 6 255 546 0 0 30 /**
+ * See set_uv_width().
+ */ 1 4 this 3 540  
+19 0 0 4 256 542 0 0 238 /**
+ * Sets a scale factor on the visible representation of the frame, in the X
+ * and Y directions.  If this scale factor is other than 1, it will affect the
+ * size of the visible frame representation within the actual frame border.
+ */ 2 4 this 3 539  13 visible_scale 1 546  
+20 0 0 4 256 542 0 0 238 /**
+ * Sets a scale factor on the visible representation of the frame, in the X
+ * and Y directions.  If this scale factor is other than 1, it will affect the
+ * size of the visible frame representation within the actual frame border.
+ */ 3 4 this 3 539  1 x 1 516  1 y 1 516  
+21 0 0 6 257 546 0 0 246 /**
+ * Returns the scale factor on the visible representation of the frame, in the
+ * X and Y directions.  If this scale factor is other than 1, it will affect
+ * the size of the visible frame representation within the actual frame
+ * border.
+ */ 1 4 this 3 540  
+22 0 0 7 258 548 0 0 221 /**
+ * Computes the size of the internal frame, given the indicated external
+ * frame, appropriate for this kind of frame style.  This simply subtracts the
+ * border width for those frame styles that include a border.
+ */ 2 4 this 3 540  5 frame 1 547  
+23 0 0 4 259 542 0 0 10 /**
+ *
+ */ 2 4 this 3 540  3 out 1 549  
+24 0 0 7 260 552 0 0 10 /**
+ *
+ */ 1 4 name 1 551  
+25 0 0 4 261 542 0 0 10 /**
+ *
+ */ 2 4 this 3 552  4 name 1 551  
+26 0 0 4 262 542 0 0 272 /**
+ * Sets the bounding rectangle of the item, in local coordinates.  This is the
+ * region on screen within which the mouse will be considered to be within the
+ * item.  Normally, it should correspond to the bounding rectangle of the
+ * visible geometry of the item.
+ */ 2 4 this 3 552  5 frame 1 547  
+27 0 0 4 262 542 0 0 272 /**
+ * Sets the bounding rectangle of the item, in local coordinates.  This is the
+ * region on screen within which the mouse will be considered to be within the
+ * item.  Normally, it should correspond to the bounding rectangle of the
+ * visible geometry of the item.
+ */ 5 4 this 3 552  4 left 1 516  5 right 1 516  6 bottom 1 516  3 top 1 516  
+28 0 0 6 263 547 0 0 134 /**
+ * Returns the bounding rectangle of the item.  See set_frame().  It is an
+ * error to call this if has_frame() returns false.
+ */ 1 4 this 3 553  
+29 0 0 6 264 506 0 0 78 /**
+ * Returns true if the item has a bounding rectangle; see set_frame().
+ */ 1 4 this 3 553  
+30 0 0 4 265 542 0 0 146 /**
+ * Removes the bounding rectangle from the item.  It will no longer be
+ * possible to position the mouse within the item; see set_frame().
+ */ 1 4 this 3 552  
+31 0 0 4 266 542 0 0 175 /**
+ * Sets the "state" of this particular PGItem.
+ *
+ * The PGItem node will render as if it were the subgraph assigned to the
+ * corresponding index via set_state_def().
+ */ 2 4 this 3 552  5 state 1 505  
+32 0 0 6 267 505 0 0 75 /**
+ * Returns the "state" of this particular PGItem.  See set_state().
+ */ 1 4 this 3 553  
+33 0 0 4 268 542 0 0 245 /**
+ * Sets whether the PGItem is active for mouse watching.  This is not
+ * necessarily related to the active/inactive appearance of the item, which is
+ * controlled by set_state(), but it does affect whether it responds to mouse
+ * events.
+ */ 2 4 this 3 552  6 active 1 506  
+34 0 0 6 269 506 0 0 97 /**
+ * Returns whether the PGItem is currently active for mouse events.  See
+ * set_active().
+ */ 1 4 this 3 553  
+35 0 0 4 270 542 0 0 396 /**
+ * Sets whether the PGItem currently has keyboard focus.  This simply means
+ * that the item may respond to keyboard events as well as to mouse events;
+ * precisely what this means is up to the individual item.
+ *
+ * Only one PGItem in the world is allowed to have focus at any given time.
+ * Setting the focus on any other item automatically disables the focus from
+ * the previous item.
+ */ 2 4 this 3 552  5 focus 1 506  
+36 0 0 6 271 506 0 0 99 /**
+ * Returns whether the PGItem currently has focus for keyboard events.  See
+ * set_focus().
+ */ 1 4 this 3 553  
+37 0 0 4 272 542 0 0 278 /**
+ * Sets the background_focus flag for this item.  When background_focus is
+ * enabled, the item will receive keypress events even if it is not in focus;
+ * in fact, even if it is not onscreen.  Unlike normal focus, many items may
+ * have background_focus simultaneously.
+ */ 2 4 this 3 552  5 focus 1 506  
+38 0 0 6 273 506 0 0 97 /**
+ * Returns whether background_focus is currently enabled.  See
+ * set_background_focus().
+ */ 1 4 this 3 553  
+39 0 0 4 274 542 0 0 150 /**
+ * This is just an interface to set the suppress flags on the underlying
+ * MouseWatcherRegion.  See MouseWatcherRegion::set_suppress_flags().
+ */ 2 4 this 3 552  14 suppress_flags 1 505  
+40 0 0 6 275 505 0 0 150 /**
+ * This is just an interface to get the suppress flags on the underlying
+ * MouseWatcherRegion.  See MouseWatcherRegion::get_suppress_flags().
+ */ 1 4 this 3 553  
+41 0 0 6 276 505 0 0 331 /**
+ * Returns one more than the highest-numbered state def that was ever assigned
+ * to the PGItem.  The complete set of state defs assigned may then be
+ * retrieved by indexing from 0 to (get_num_state_defs() - 1).
+ *
+ * This is only an upper limit on the actual number of state defs, since there
+ * may be holes in the list.
+ */ 1 4 this 3 553  
+42 0 0 4 277 542 0 0 138 /**
+ * Resets the NodePath assigned to the indicated state to its initial default,
+ * with only a frame representation if appropriate.
+ */ 2 4 this 3 552  5 state 1 505  
+43 0 0 6 278 506 0 0 166 /**
+ * Returns true if get_state_def() has ever been called for the indicated
+ * state (thus defining a render subgraph for this state index), false
+ * otherwise.
+ */ 2 4 this 3 553  5 state 1 505  
+44 0 0 6 279 555 0 0 213 /**
+ * Returns the Node that is the root of the subgraph that will be drawn when
+ * the PGItem is in the indicated state.  The first time this is called for a
+ * particular state index, it may create the Node.
+ */ 2 4 this 3 552  5 state 1 505  
+45 0 0 7 280 555 0 0 108 /**
+ * Parents an instance of the bottom node of the indicated NodePath to the
+ * indicated state index.
+ */ 3 4 this 3 552  5 state 1 505  4 path 1 556  
+46 0 0 7 281 539 243 0 109 /**
+ * Returns the kind of frame that will be drawn behind the item when it is in
+ * the indicated state.
+ */ 2 4 this 3 552  5 state 1 505  
+47 0 0 4 282 542 0 0 109 /**
+ * Changes the kind of frame that will be drawn behind the item when it is in
+ * the indicated state.
+ */ 3 4 this 3 552  5 state 1 505  5 style 1 540  
+48 0 0 6 283 551 0 0 178 /**
+ * Returns the unique ID assigned to this PGItem.  This will be assigned to
+ * the region created with the MouseWatcher, and will thus be used to generate
+ * event names.
+ */ 1 4 this 3 553  
+49 0 0 4 284 542 0 0 344 /**
+ * Set the unique ID assigned to this PGItem.  It is the user's responsibility
+ * to ensure that this ID is unique.
+ *
+ * Normally, this should not need to be called, as the PGItem will assign
+ * itself an ID when it is created, but this function allows the user to
+ * decide to redefine the ID to be something possibly more meaningful.
+ */ 2 4 this 3 552  2 id 1 551  
+50 0 0 6 286 551 0 0 162 /**
+ * Returns the prefix that is used to define the enter event for all PGItems.
+ * The enter event is the concatenation of this string followed by get_id().
+ */ 0 
+51 0 0 6 287 551 0 0 160 /**
+ * Returns the prefix that is used to define the exit event for all PGItems.
+ * The exit event is the concatenation of this string followed by get_id().
+ */ 0 
+52 0 0 6 288 551 0 0 164 /**
+ * Returns the prefix that is used to define the within event for all PGItems.
+ * The within event is the concatenation of this string followed by get_id().
+ */ 0 
+53 0 0 6 289 551 0 0 170 /**
+ * Returns the prefix that is used to define the without event for all
+ * PGItems.  The without event is the concatenation of this string followed by
+ * get_id().
+ */ 0 
+54 0 0 6 290 551 0 0 244 /**
+ * Returns the prefix that is used to define the focus_in event for all
+ * PGItems.  The focus_in event is the concatenation of this string followed
+ * by get_id().
+ *
+ * Unlike most item events, this event is thrown with no parameters.
+ */ 0 
+55 0 0 6 291 551 0 0 246 /**
+ * Returns the prefix that is used to define the focus_out event for all
+ * PGItems.  The focus_out event is the concatenation of this string followed
+ * by get_id().
+ *
+ * Unlike most item events, this event is thrown with no parameters.
+ */ 0 
+56 0 0 6 292 551 0 0 205 /**
+ * Returns the prefix that is used to define the press event for all PGItems.
+ * The press event is the concatenation of this string followed by a button
+ * name, followed by a hyphen and get_id().
+ */ 0 
+57 0 0 6 293 551 0 0 207 /**
+ * Returns the prefix that is used to define the repeat event for all PGItems.
+ * The repeat event is the concatenation of this string followed by a button
+ * name, followed by a hyphen and get_id().
+ */ 0 
+58 0 0 6 294 551 0 0 210 /**
+ * Returns the prefix that is used to define the release event for all
+ * PGItems.  The release event is the concatenation of this string followed by
+ * a button name, followed by a hyphen and get_id().
+ */ 0 
+59 0 0 6 295 551 0 0 187 /**
+ * Returns the prefix that is used to define the keystroke event for all
+ * PGItems.  The keystroke event is the concatenation of this string followed
+ * by a hyphen and get_id().
+ */ 0 
+60 0 0 6 296 551 0 0 139 /**
+ * Returns the event name that will be thrown when the item is active and the
+ * mouse enters its frame, but not any nested frames.
+ */ 1 4 this 3 553  
+61 0 0 6 297 551 0 0 137 /**
+ * Returns the event name that will be thrown when the item is active and the
+ * mouse exits its frame, or enters a nested frame.
+ */ 1 4 this 3 553  
+62 0 0 6 298 551 0 0 273 /**
+ * Returns the event name that will be thrown when the item is active and the
+ * mouse moves within the boundaries of the frame.  This is different from the
+ * enter_event in that the mouse is considered within the frame even if it is
+ * also within a nested frame.
+ */ 1 4 this 3 553  
+63 0 0 6 299 551 0 0 284 /**
+ * Returns the event name that will be thrown when the item is active and the
+ * mouse moves completely outside the boundaries of the frame.  This is
+ * different from the exit_event in that the mouse is considered within the
+ * frame even if it is also within a nested frame.
+ */ 1 4 this 3 553  
+64 0 0 6 300 551 0 0 95 /**
+ * Returns the event name that will be thrown when the item gets the keyboard
+ * focus.
+ */ 1 4 this 3 553  
+65 0 0 6 301 551 0 0 96 /**
+ * Returns the event name that will be thrown when the item loses the keyboard
+ * focus.
+ */ 1 4 this 3 553  
+66 0 0 6 302 551 0 0 176 /**
+ * Returns the event name that will be thrown when the item is active and the
+ * indicated mouse or keyboard button is depressed while the mouse is within
+ * the frame.
+ */ 2 4 this 3 553  6 button 1 558  
+67 0 0 6 303 551 0 0 189 /**
+ * Returns the event name that will be thrown when the item is active and the
+ * indicated mouse or keyboard button is continuously held down while the
+ * mouse is within the frame.
+ */ 2 4 this 3 553  6 button 1 558  
+68 0 0 6 304 551 0 0 183 /**
+ * Returns the event name that will be thrown when the item is active and the
+ * indicated mouse or keyboard button, formerly clicked down is within the
+ * frame, is released.
+ */ 2 4 this 3 553  6 button 1 558  
+69 0 0 6 305 551 0 0 116 /**
+ * Returns the event name that will be thrown when the item is active and any
+ * key is pressed by the user.
+ */ 1 4 this 3 553  
+70 0 0 7 306 563 0 0 60 /**
+ * Returns the inverse of the frame transform matrix
+ */ 1 4 this 3 553  
+71 0 0 4 307 542 0 0 82 /**
+ * Sets the sound that will be played whenever the indicated event occurs.
+ */ 3 4 this 3 552  5 event 1 551  5 sound 1 564  
+72 0 0 4 308 542 0 0 65 /**
+ * Removes the sound associated with the indicated event.
+ */ 2 4 this 3 552  5 event 1 551  
+73 0 0 7 309 564 0 0 109 /**
+ * Returns the sound associated with the indicated event, or NULL if there is
+ * no associated sound.
+ */ 2 4 this 3 553  5 event 1 551  
+74 0 0 6 310 506 0 0 103 /**
+ * Returns true if there is a sound associated with the indicated event, or
+ * false otherwise.
+ */ 2 4 this 3 553  5 event 1 551  
+75 0 0 7 311 567 0 0 168 /**
+ * Returns the TextNode object that will be used by all PGItems to generate
+ * default labels given a string.  This can be loaded with the default font,
+ * etc.
+ */ 0 
+76 0 0 4 312 542 0 0 168 /**
+ * Changes the TextNode object that will be used by all PGItems to generate
+ * default labels given a string.  This can be loaded with the default font,
+ * etc.
+ */ 1 4 node 1 567  
+77 0 0 7 313 552 0 0 222 /**
+ * Returns the one PGItem in the world that currently has keyboard focus, if
+ * any, or NULL if no item has keyboard focus.  Use PGItem::set_focus() to
+ * activate or deactivate keyboard focus on a particular item.
+ */ 0 
+78 0 0 7 314 569 0 0 0 0 
+79 0 0 7 315 534 0 0 10 /**
+ *
+ */ 1 4 name 1 551  
+80 0 0 4 316 542 0 0 81 /**
+ * Sets up the button using the indicated NodePath as arbitrary geometry.
+ */ 2 4 this 3 534  5 ready 1 556  
+81 0 0 4 316 542 0 0 81 /**
+ * Sets up the button using the indicated NodePath as arbitrary geometry.
+ */ 3 4 this 3 534  5 ready 1 556  9 depressed 1 556  
+82 0 0 4 316 542 0 0 81 /**
+ * Sets up the button using the indicated NodePath as arbitrary geometry.
+ */ 4 4 this 3 534  5 ready 1 556  9 depressed 1 556  8 rollover 1 556  
+83 0 0 4 316 542 0 0 81 /**
+ * Sets up the button using the indicated NodePath as arbitrary geometry.
+ */ 5 4 this 3 534  5 ready 1 556  9 depressed 1 556  8 rollover 1 556  8 inactive 1 556  
+84 0 0 4 316 542 0 0 262 /**
+ * Sets up the button as a default text button using the indicated label
+ * string.  The TextNode defined by PGItem::get_text_node() will be used to
+ * create the label geometry.  This automatically sets up the frame according
+ * to the size of the text.
+ */ 3 4 this 3 534  5 label 1 551  5 bevel 5 516  
+85 0 0 6 317 506 0 0 224 /**
+ * Adds the indicated button to the set of buttons that can effectively
+ * "click" the PGButton.  Normally, this is just MouseButton::one().  Returns
+ * true if the button was added, or false if it was already there.
+ */ 2 4 this 3 534  6 button 1 558  
+86 0 0 6 318 506 0 0 232 /**
+ * Removes the indicated button from the set of buttons that can effectively
+ * "click" the PGButton.  Normally, this is just MouseButton::one().  Returns
+ * true if the button was removed, or false if it was not in the set.
+ */ 2 4 this 3 534  6 button 1 558  
+87 0 0 6 319 506 0 0 165 /**
+ * Returns true if the indicated button is on the set of buttons that can
+ * effectively "click" the PGButton.  Normally, this is just
+ * MouseButton::one().
+ */ 2 4 this 3 534  6 button 1 558  
+88 0 0 6 320 506 0 0 113 /**
+ * Returns true if the user is currently holding the mouse button down on the
+ * button, false otherwise.
+ */ 1 4 this 3 534  
+89 0 0 6 321 551 0 0 168 /**
+ * Returns the prefix that is used to define the click event for all
+ * PGButtons.  The click event is the concatenation of this string followed by
+ * get_id().
+ */ 0 
+90 0 0 6 322 551 0 0 93 /**
+ * Returns the event name that will be thrown when the button is clicked
+ * normally.
+ */ 2 4 this 3 570  6 button 1 558  
+91 0 0 7 323 569 0 0 0 0 
+92 0 0 7 324 572 0 0 10 /**
+ *
+ */ 1 4 name 1 551  
+93 0 0 4 325 542 0 0 144 /**
+ * Sets the MouseWatcher pointer that the PGTop object registers its PG items
+ * with.  This must be set before the PG items are active.
+ */ 2 4 this 3 572  7 watcher 1 510  
+94 0 0 7 326 510 0 0 147 /**
+ * Returns the MouseWatcher pointer that the PGTop object registers its PG
+ * items with, or NULL if the MouseWatcher has not yet been set.
+ */ 1 4 this 3 573  
+95 0 0 7 327 512 0 0 152 /**
+ * Returns the MouseWatcherGroup pointer that the PGTop object registers its
+ * PG items with, or NULL if the MouseWatcher has not yet been set.
+ */ 1 4 this 3 573  
+96 0 0 4 328 542 0 0 657 /**
+ * Specifies the sort index that is assigned during the traversal to the first
+ * PGItem that is discovered during traversal.  Subsequent PGItems will be
+ * assigned consecutively higher sort indexes.
+ *
+ * This number is used by the MouseWatcher system to rank the clickable mouse
+ * regions in the same order in which the items are rendered, so that items on
+ * top will receive mouse priority.
+ *
+ * Normally, it makes the most sense to leave this initial value at its
+ * default value of 0, unless you need the PGItems to have a particular sort
+ * value with respect to some other objects in the scene (particularly with a
+ * second PGTop node).
+ */ 2 4 this 3 572  10 start_sort 1 505  
+97 0 0 6 329 505 0 0 154 /**
+ * Returns the sort index that is assigned during the traversal to the first
+ * PGItem that is discovered during traversal.  See set_start_sort().
+ */ 1 4 this 3 573  
+98 0 0 7 330 569 0 0 0 0 
+99 0 0 7 331 575 0 0 10 /**
+ *
+ */ 1 4 name 1 551  
+100 0 0 4 332 542 0 0 276 /**
+ * Sets up the entry for normal use.  The width is the maximum width of
+ * characters that will be typed, and num_lines is the integer number of lines
+ * of text of the entry.  Both of these together determine the size of the
+ * entry, based on the TextNode in effect.
+ */ 3 4 this 3 575  5 width 1 516  9 num_lines 1 505  
+101 0 0 4 333 542 0 0 76 /**
+ * Sets up the entry without creating any frame or other decoration.
+ */ 3 4 this 3 575  5 width 1 516  9 num_lines 1 505  
+102 0 0 6 334 506 0 0 334 /**
+ * Changes the text currently displayed within the entry.  This uses the
+ * Unicode encoding currently specified for the "focus" TextNode; therefore,
+ * the TextNode must exist before calling set_text().
+ *
+ * The return value is true if all the text is accepted, or false if some was
+ * truncated (see set_max_width(), etc.).
+ */ 2 4 this 3 575  4 text 1 551  
+103 0 0 6 335 551 0 0 260 /**
+ * Returns the text currently displayed within the entry, without any embedded
+ * properties characters.
+ *
+ * This uses the Unicode encoding currently specified for the "focus"
+ * TextNode; therefore, the TextNode must exist before calling get_text().
+ */ 1 4 this 3 576  
+104 0 0 6 336 551 0 0 211 /**
+ * Returns the text currently displayed within the entry.  This uses the
+ * Unicode encoding currently specified for the "focus" TextNode; therefore,
+ * the TextNode must exist before calling get_text().
+ */ 1 4 this 3 576  
+105 0 0 6 337 505 0 0 376 /**
+ * Returns the number of characters of text in the entry.  This is the actual
+ * number of visible characters, not counting implicit newlines due to
+ * wordwrapping, or formatted characters for text properties changes.  If
+ * there is an embedded TextGraphic object, it counts as one character.
+ *
+ * This is also the length of the string returned by get_plain_text().
+ */ 1 4 this 3 576  
+106 0 0 6 338 578 0 0 165 /**
+ * Returns the character at the indicated position in the entry.  If the
+ * object at this position is a graphic object instead of a character, returns
+ * 0.
+ */ 2 4 this 3 576  1 n 1 505  
+107 0 0 6 339 579 0 0 190 /**
+ * Returns the graphic object at the indicated position in the pre-wordwrapped
+ * string.  If the object at this position is a character instead of a graphic
+ * object, returns NULL.
+ */ 2 4 this 3 576  1 n 1 505  
+108 0 0 6 340 582 0 0 122 /**
+ * Returns the TextProperties in effect for the object at the indicated
+ * position in the pre-wordwrapped string.
+ */ 2 4 this 3 576  1 n 1 505  
+109 0 0 4 341 542 0 0 207 /**
+ * Sets the current position of the cursor.  This is the position within the
+ * text at which the next letter typed by the user will be inserted; normally
+ * it is the same as the length of the text.
+ */ 2 4 this 3 575  8 position 1 505  
+110 0 0 6 342 505 0 0 54 /**
+ * Returns the current position of the cursor.
+ */ 1 4 this 3 576  
+111 0 0 6 343 516 0 0 52 /**
+ * Returns the node position x of the cursor
+ */ 1 4 this 3 576  
+112 0 0 6 344 516 0 0 52 /**
+ * Returns the node position y of the cursor
+ */ 1 4 this 3 576  
+113 0 0 4 345 542 0 0 236 /**
+ * Sets the maximum number of characters that may be typed into the entry.
+ * This is a limit on the number of characters, as opposed to the width of the
+ * entry; see also set_max_width().
+ *
+ * If this is 0, there is no limit.
+ */ 2 4 this 3 575  9 max_chars 1 505  
+114 0 0 6 346 505 0 0 145 /**
+ * Returns the current maximum number of characters that may be typed into the
+ * entry, or 0 if there is no limit.  See set_max_chars().
+ */ 1 4 this 3 576  
+115 0 0 4 347 542 0 0 460 /**
+ * Sets the maximum width of all characters that may be typed into the entry.
+ * This is a limit on the width of the formatted text, not a fixed limit on
+ * the number of characters; also set_max_chars().
+ *
+ * If this is 0, there is no limit.
+ *
+ * If _num_lines is more than 1, rather than being a fixed width on the whole
+ * entry, this becomes instead the wordwrap width (and the width limit on the
+ * entry is essentially _max_width * _num_lines).
+ */ 2 4 this 3 575  9 max_width 1 516  
+116 0 0 6 348 516 0 0 148 /**
+ * Returns the current maximum width of the characters that may be typed into
+ * the entry, or 0 if there is no limit.  See set_max_width().
+ */ 1 4 this 3 576  
+117 0 0 4 349 542 0 0 172 /**
+ * Sets the number of lines of text the PGEntry will use.  This only has
+ * meaning if _max_width is not 0; _max_width indicates the wordwrap width of
+ * each line.
+ */ 2 4 this 3 575  9 num_lines 1 505  
+118 0 0 6 350 505 0 0 117 /**
+ * Returns the number of lines of text the PGEntry will use, if _max_width is
+ * not 0.  See set_num_lines().
+ */ 1 4 this 3 576  
+119 0 0 4 351 542 0 0 174 /**
+ * Sets the number of times per second the cursor will blink while the entry
+ * has keyboard focus.
+ *
+ * If this is 0, the cursor does not blink, but is held steady.
+ */ 2 4 this 3 575  10 blink_rate 1 516  
+120 0 0 6 352 516 0 0 111 /**
+ * Returns the number of times per second the cursor will blink, or 0 if the
+ * cursor is not to blink.
+ */ 1 4 this 3 576  
+121 0 0 7 353 555 0 0 132 /**
+ * Returns the Node that will be rendered to represent the cursor.  You can
+ * attach suitable cursor geometry to this node.
+ */ 1 4 this 3 575  
+122 0 0 4 354 542 0 0 108 /**
+ * Removes all the children from the cursor_def node, in preparation for
+ * adding a new definition.
+ */ 1 4 this 3 575  
+123 0 0 4 355 542 0 0 142 /**
+ * Sets whether the arrow keys (and home/end) control movement of the cursor.
+ * If true, they are active; if false, they are ignored.
+ */ 2 4 this 3 575  4 flag 1 506  
+124 0 0 6 356 506 0 0 127 /**
+ * Returns whether the arrow keys are currently set to control movement of the
+ * cursor; see set_cursor_keys_active().
+ */ 1 4 this 3 576  
+125 0 0 4 357 542 0 0 428 /**
+ * Specifies whether obscure mode should be enabled.  In obscure mode, a
+ * string of asterisks is displayed instead of the literal text, e.g.  for
+ * entering passwords.
+ *
+ * In obscure mode, the width of the text is computed based on the width of
+ * the string of asterisks, not on the width of the actual text.  This has
+ * implications on the maximum length of text that may be entered if max_width
+ * is in effect.
+ */ 2 4 this 3 575  4 flag 1 506  
+126 0 0 6 358 506 0 0 78 /**
+ * Specifies whether obscure mode is enabled.  See set_obscure_mode().
+ */ 1 4 this 3 576  
+127 0 0 4 359 542 0 0 213 /**
+ * Specifies whether overflow mode should be enabled.  In overflow mode, text
+ * can overflow the boundaries of the Entry element horizontally.
+ *
+ * Overflow mode only works when the number of lines is 1.
+ */ 2 4 this 3 575  4 flag 1 506  
+128 0 0 6 360 506 0 0 80 /**
+ * Specifies whether overflow mode is enabled.  See set_overflow_mode().
+ */ 1 4 this 3 576  
+129 0 0 4 361 542 0 0 603 /**
+ * Specifies the name of the TextProperties structure added to the
+ * TextPropertiesManager that will be used to render candidate strings from
+ * the IME, used for typing characters in east Asian languages.  Each
+ * candidate string represents one possible way to interpret the sequence of
+ * keys the user has just entered; it should not be considered typed yet, but
+ * it is important for the user to be able to see what he is considering
+ * entering.
+ *
+ * This particular method sets the properties for the subset of the current
+ * candidate string that the user can actively scroll through.
+ */ 2 4 this 3 575  16 candidate_active 1 551  
+130 0 0 6 362 551 0 0 38 /**
+ * See set_candidate_active().
+ */ 1 4 this 3 576  
+131 0 0 4 363 542 0 0 609 /**
+ * Specifies the name of the TextProperties structure added to the
+ * TextPropertiesManager that will be used to render candidate strings from
+ * the IME, used for typing characters in east Asian languages.  Each
+ * candidate string represents one possible way to interpret the sequence of
+ * keys the user has just entered; it should not be considered typed yet, but
+ * it is important for the user to be able to see what he is considering
+ * entering.
+ *
+ * This particular method sets the properties for the subset of the current
+ * candidate string that the user is not actively scrolling through.
+ */ 2 4 this 3 575  18 candidate_inactive 1 551  
+132 0 0 6 364 551 0 0 40 /**
+ * See set_candidate_inactive().
+ */ 1 4 this 3 576  
+133 0 0 4 365 542 0 0 228 /**
+ * Changes the TextNode that will be used to render the text within the entry
+ * when the entry is in the indicated state.  The default if nothing is
+ * specified is the same TextNode returned by PGItem::get_text_node().
+ */ 3 4 this 3 575  5 state 1 505  4 node 1 567  
+134 0 0 7 366 567 0 0 151 /**
+ * Returns the TextNode that will be used to render the text within the entry
+ * when the entry is in the indicated state.  See set_text_def().
+ */ 2 4 this 3 576  5 state 1 505  
+135 0 0 6 371 551 0 0 170 /**
+ * Returns the prefix that is used to define the accept event for all
+ * PGEntries.  The accept event is the concatenation of this string followed
+ * by get_id().
+ */ 0 
+136 0 0 6 372 551 0 0 171 /**
+ * Returns the prefix that is used to define the accept failed event for all
+ * PGEntries.  This event is the concatenation of this string followed by
+ * get_id().
+ */ 0 
+137 0 0 6 373 551 0 0 174 /**
+ * Returns the prefix that is used to define the overflow event for all
+ * PGEntries.  The overflow event is the concatenation of this string followed
+ * by get_id().
+ */ 0 
+138 0 0 6 374 551 0 0 162 /**
+ * Returns the prefix that is used to define the type event for all PGEntries.
+ * The type event is the concatenation of this string followed by get_id().
+ */ 0 
+139 0 0 6 375 551 0 0 168 /**
+ * Returns the prefix that is used to define the erase event for all
+ * PGEntries.  The erase event is the concatenation of this string followed by
+ * get_id().
+ */ 0 
+140 0 0 6 376 551 0 0 170 /**
+ * Returns the prefix that is used to define the cursor event for all
+ * PGEntries.  The cursor event is the concatenation of this string followed
+ * by get_id().
+ */ 0 
+141 0 0 6 377 551 0 0 93 /**
+ * Returns the event name that will be thrown when the entry is accepted
+ * normally.
+ */ 2 4 this 3 576  6 button 1 558  
+142 0 0 6 378 551 0 0 94 /**
+ * Returns the event name that will be thrown when the entry cannot accept an
+ * input
+ */ 2 4 this 3 576  6 button 1 558  
+143 0 0 6 379 551 0 0 198 /**
+ * Returns the event name that will be thrown when too much text is attempted
+ * to be entered into the PGEntry, exceeding either the limit set via
+ * set_max_chars() or via set_max_width().
+ */ 1 4 this 3 576  
+144 0 0 6 380 551 0 0 102 /**
+ * Returns the event name that will be thrown whenever the user extends the
+ * text by typing.
+ */ 1 4 this 3 576  
+145 0 0 6 381 551 0 0 105 /**
+ * Returns the event name that will be thrown whenever the user erases
+ * characters in the text.
+ */ 1 4 this 3 576  
+146 0 0 6 382 551 0 0 79 /**
+ * Returns the event name that will be thrown whenever the cursor moves
+ */ 1 4 this 3 576  
+147 0 0 6 383 506 0 0 188 /**
+ * Changes the text currently displayed within the entry.
+ *
+ * The return value is true if all the text is accepted, or false if some was
+ * truncated (see set_max_width(), etc.).
+ */ 2 4 this 3 575  5 wtext 1 551  
+148 0 0 6 384 551 0 0 112 /**
+ * Returns the text currently displayed within the entry, without any embedded
+ * properties characters.
+ */ 1 4 this 3 576  
+149 0 0 6 385 551 0 0 65 /**
+ * Returns the text currently displayed within the entry.
+ */ 1 4 this 3 576  
+150 0 0 4 386 542 0 0 91 /**
+ * Sets whether the input may be accepted--use to disable submission by the
+ * user
+ */ 2 4 this 3 575  7 enabled 1 506  
+151 0 0 6 387 506 0 0 211 /**
+ * Returns true if any of the characters in the string returned by get_wtext()
+ * are out of the range of an ASCII character (and, therefore, get_wtext()
+ * should be called in preference to get_text()).
+ */ 1 4 this 3 576  
+152 0 0 7 388 569 0 0 0 0 
+153 0 0 15 396 587 393 0 0 1 6 param0 0 585  
+154 0 0 4 394 542 0 0 10 /**
+ *
+ */ 2 4 this 3 585  3 out 1 549  
+155 0 0 7 395 569 0 0 0 0 
+156 0 0 7 389 588 0 0 0 1 4 this 3 587  
+157 0 0 6 391 589 0 0 0 1 4 this 3 587  
+158 0 0 7 397 590 0 0 10 /**
+ *
+ */ 0 
+159 0 0 15 397 590 0 0 0 1 6 param0 0 591  
+160 0 0 7 398 569 0 0 0 0 
+161 0 0 7 399 593 0 0 10 /**
+ *
+ */ 1 4 name 5 551  
+162 0 0 4 400 542 0 0 66 /**
+ * Creates a PGVirtualFrame with the indicated dimensions.
+ */ 3 4 this 3 593  5 width 1 516  6 height 1 516  
+163 0 0 4 401 542 0 0 298 /**
+ * Sets the bounding rectangle of the clip frame.  This is the size of the
+ * small window through which we can see the virtual canvas.  Normally, this
+ * is the same size as the actual frame or smaller (typically it is smaller by
+ * the size of the bevel, or to make room for scroll bars).
+ */ 2 4 this 3 593  10 clip_frame 1 547  
+164 0 0 4 401 542 0 0 298 /**
+ * Sets the bounding rectangle of the clip frame.  This is the size of the
+ * small window through which we can see the virtual canvas.  Normally, this
+ * is the same size as the actual frame or smaller (typically it is smaller by
+ * the size of the bevel, or to make room for scroll bars).
+ */ 5 4 this 3 593  4 left 1 516  5 right 1 516  6 bottom 1 516  3 top 1 516  
+165 0 0 6 402 547 0 0 154 /**
+ * Returns the bounding rectangle of the clip frame.  See set_clip_frame().
+ * If has_clip_frame() is false, this returns the item's actual frame.
+ */ 1 4 this 3 594  
+166 0 0 6 403 506 0 0 155 /**
+ * Returns true if the clip frame has been set; see set_clip_frame().  If it
+ * has not been set, objects in the virtual frame will not be clipped.
+ */ 1 4 this 3 594  
+167 0 0 4 404 542 0 0 73 /**
+ * Removes the clip frame from the item.  This disables clipping.
+ */ 1 4 this 3 593  
+168 0 0 4 405 542 0 0 124 /**
+ * Changes the transform of the virtual canvas.  This transform is applied to
+ * all child nodes of the canvas_node.
+ */ 2 4 this 3 593  9 transform 1 524  
+169 0 0 7 406 524 0 0 124 /**
+ * Returns the transform of the virtual canvas.  This transform is applied to
+ * all child nodes of the canvas_node.
+ */ 1 4 this 3 594  
+170 0 0 7 407 527 0 0 104 /**
+ * Returns the special node that holds all of the children that appear in the
+ * virtual canvas.
+ */ 1 4 this 3 594  
+171 0 0 7 408 527 0 0 54 /**
+ * Returns the parent node of the canvas_node.
+ */ 1 4 this 3 594  
+172 0 0 7 409 569 0 0 0 0 
+173 0 0 7 414 537 415 0 10 /**
+ *
+ */ 1 4 name 5 551  
+174 0 0 4 416 542 0 0 461 /**
+ * Creates PGSliderBar that represents a vertical or horizontal scroll bar (if
+ * vertical is true or false, respectively), with additional buttons for
+ * scrolling, and a range of 0 .. 1.
+ *
+ * length here is the measurement along the scroll bar, and width is the
+ * measurement across the scroll bar, whether it is vertical or horizontal (so
+ * for a horizontal scroll bar, the length is actually the x dimension, and
+ * the width is the y dimension).
+ */ 5 4 this 3 537  8 vertical 1 506  6 length 1 516  5 width 1 516  5 bevel 1 516  
+175 0 0 4 417 542 0 0 198 /**
+ * Creates PGSliderBar that represents a slider that the user can use to
+ * control an analog quantity.
+ *
+ * This is functionally the same as a scroll bar, but it has a distinctive
+ * look.
+ */ 5 4 this 3 537  8 vertical 1 506  6 length 1 516  5 width 1 516  5 bevel 1 516  
+176 0 0 4 418 542 0 0 550 /**
+ * Specifies the axis of the slider bar's motion.  This should be only one of
+ * four vectors: (1, 0, 0), (0, 0, 1), (-1, 0, 0), or (0, 0, -1).
+ *
+ * This specifies the vector in which the thumb moves when it is moving from
+ * the minimum to the maximum value.
+ *
+ * The axis must be parallel to one of the screen axes, and it must be
+ * normalized.  Hence, it may only be one of the above four possibilities;
+ * anything else is an error and will result in indeterminate behavior.
+ *
+ * Normally, you should not try to set the axis directly.
+ */ 2 4 this 3 537  4 axis 1 596  
+177 0 0 6 419 596 0 0 72 /**
+ * Returns the axis of the slider bar's motion.  See set_axis().
+ */ 1 4 this 3 597  
+178 0 0 4 420 542 0 0 62 /**
+ * Sets the minimum and maxmimum value for the slider.
+ */ 3 4 this 3 537  9 min_value 1 516  9 max_value 1 516  
+179 0 0 6 421 516 0 0 72 /**
+ * Returns the value when the slider is all the way to the left.
+ */ 1 4 this 3 597  
+180 0 0 6 422 516 0 0 73 /**
+ * Returns the value when the slider is all the way to the right.
+ */ 1 4 this 3 597  
+181 0 0 4 423 542 0 0 106 /**
+ * Specifies the amount the slider will move when the user clicks on the left
+ * or right buttons.
+ */ 2 4 this 3 537  11 scroll_size 1 516  
+182 0 0 6 424 516 0 0 59 /**
+ * Returns the value last set by set_scroll_size().
+ */ 1 4 this 3 597  
+183 0 0 4 425 542 0 0 242 /**
+ * Specifies the amount of data contained in a single page.  This indicates
+ * how much the thumb will jump when the trough is directly clicked; and if
+ * resize_thumb is true, it also controls the visible size of the thumb
+ * button.
+ */ 2 4 this 3 537  9 page_size 1 516  
+184 0 0 6 426 516 0 0 57 /**
+ * Returns the value last set by set_page_size().
+ */ 1 4 this 3 597  
+185 0 0 4 427 542 0 0 132 /**
+ * Sets the current value of the slider programmatically.  This should range
+ * between get_min_value() and get_max_value().
+ */ 2 4 this 3 537  5 value 1 516  
+186 0 0 6 428 516 0 0 51 /**
+ * Returns the current value of the slider.
+ */ 1 4 this 3 597  
+187 0 0 4 429 542 0 0 79 /**
+ * Sets the current value of the slider, expressed in the range 0 .. 1.
+ */ 2 4 this 3 537  5 ratio 1 516  
+188 0 0 6 430 516 0 0 82 /**
+ * Returns the current value of the slider, expressed in the range 0 .. 1.
+ */ 1 4 this 3 597  
+189 0 0 6 431 506 0 0 179 /**
+ * Returns true if the user is currently holding down the mouse button to
+ * manipulate the slider.  When true, calls to set_ratio() or set_value() will
+ * have no effect.
+ */ 1 4 this 3 597  
+190 0 0 4 432 542 0 0 217 /**
+ * Sets the resize_thumb flag.  When this is true, the thumb button's frame
+ * will be adjusted so that its width visually represents the page size.  When
+ * this is false, the thumb button will be left alone.
+ */ 2 4 this 3 537  12 resize_thumb 1 506  
+191 0 0 6 433 506 0 0 66 /**
+ * Returns the resize_thumb flag.  See set_resize_thumb().
+ */ 1 4 this 3 597  
+192 0 0 4 434 542 0 0 253 /**
+ * Sets the manage_pieces flag.  When this is true, the sub-pieces of the
+ * slider bar--that is, the thumb, and the left and right scroll buttons--are
+ * automatically positioned and/or resized when the slider bar's overall frame
+ * is changed.
+ */ 2 4 this 3 537  13 manage_pieces 1 506  
+193 0 0 6 435 506 0 0 68 /**
+ * Returns the manage_pieces flag.  See set_manage_pieces().
+ */ 1 4 this 3 597  
+194 0 0 4 436 542 0 0 312 /**
+ * Sets the PGButton object that will serve as the thumb for this slider.
+ * This button visually represents the position of the slider, and can be
+ * dragged left and right by the user.
+ *
+ * It is the responsibility of the caller to ensure that the button object is
+ * parented to the PGSliderBar node.
+ */ 2 4 this 3 537  12 thumb_button 1 534  
+195 0 0 4 437 542 0 0 145 /**
+ * Removes the thumb button object from control of the frame.  It is your
+ * responsibility to actually remove or hide the button itself.
+ */ 1 4 this 3 537  
+196 0 0 7 438 534 0 0 102 /**
+ * Returns the PGButton that serves as the thumb for this slider, or NULL if
+ * it is not set.
+ */ 1 4 this 3 597  
+197 0 0 4 439 542 0 0 330 /**
+ * Sets the PGButton object that will serve as the left scroll button for this
+ * slider.  This button is optional; if present, the user can click on it to
+ * move scroll_size units at a time to the left.
+ *
+ * It is the responsibility of the caller to ensure that the button object is
+ * parented to the PGSliderBar node.
+ */ 2 4 this 3 537  11 left_button 1 534  
+198 0 0 4 440 542 0 0 144 /**
+ * Removes the left button object from control of the frame.  It is your
+ * responsibility to actually remove or hide the button itself.
+ */ 1 4 this 3 537  
+199 0 0 7 441 534 0 0 123 /**
+ * Returns the PGButton that serves as the left scroll button for this slider,
+ * if any, or NULL if it is not set.
+ */ 1 4 this 3 597  
+200 0 0 4 442 542 0 0 332 /**
+ * Sets the PGButton object that will serve as the right scroll button for
+ * this slider.  This button is optional; if present, the user can click on it
+ * to move scroll_size units at a time to the right.
+ *
+ * It is the responsibility of the caller to ensure that the button object is
+ * parented to the PGSliderBar node.
+ */ 2 4 this 3 537  12 right_button 1 534  
+201 0 0 4 443 542 0 0 145 /**
+ * Removes the right button object from control of the frame.  It is your
+ * responsibility to actually remove or hide the button itself.
+ */ 1 4 this 3 537  
+202 0 0 7 444 534 0 0 124 /**
+ * Returns the PGButton that serves as the right scroll button for this
+ * slider, if any, or NULL if it is not set.
+ */ 1 4 this 3 597  
+203 0 0 6 445 551 0 0 173 /**
+ * Returns the prefix that is used to define the adjust event for all
+ * PGSliderBars.  The adjust event is the concatenation of this string
+ * followed by get_id().
+ */ 0 
+204 0 0 6 446 551 0 0 127 /**
+ * Returns the event name that will be thrown when the slider bar value is
+ * adjusted by the user or programmatically.
+ */ 1 4 this 3 597  
+205 0 0 4 447 542 0 0 245 /**
+ * Sets whether the PGItem is active for mouse watching.  This is not
+ * necessarily related to the active/inactive appearance of the item, which is
+ * controlled by set_state(), but it does affect whether it responds to mouse
+ * events.
+ */ 2 4 this 3 537  6 active 1 506  
+206 0 0 4 449 542 0 0 131 /**
+ * Manages the position and size of the scroll bars and the thumb.  Normally
+ * this should not need to be called directly.
+ */ 1 4 this 3 537  
+207 0 0 4 450 542 0 0 114 /**
+ * Recomputes the position and size of the thumb.  Normally this should not
+ * need to be called directly.
+ */ 1 4 this 3 537  
+208 0 0 7 451 569 0 0 0 0 
+209 0 0 7 410 552 0 0 0 1 4 this 3 537  
+210 0 0 7 456 599 457 0 10 /**
+ *
+ */ 1 4 name 5 551  
+211 0 0 4 458 542 0 0 101 /**
+ * Creates a PGScrollFrame with the indicated dimensions, and the indicated
+ * virtual frame.
+ */ 9 4 this 3 599  5 width 1 516  6 height 1 516  4 left 1 516  5 right 1 516  6 bottom 1 516  3 top 1 516  12 slider_width 1 516  5 bevel 1 516  
+212 0 0 4 459 542 0 0 164 /**
+ * Sets the bounding rectangle of the virtual frame.  This is the size of the
+ * large, virtual canvas which we can see only a portion of at any given time.
+ */ 2 4 this 3 599  13 virtual_frame 1 547  
+213 0 0 4 459 542 0 0 164 /**
+ * Sets the bounding rectangle of the virtual frame.  This is the size of the
+ * large, virtual canvas which we can see only a portion of at any given time.
+ */ 5 4 this 3 599  4 left 1 516  5 right 1 516  6 bottom 1 516  3 top 1 516  
+214 0 0 6 460 547 0 0 165 /**
+ * Returns the bounding rectangle of the virtual frame.  See
+ * set_virtual_frame().  If has_virtual_frame() is false, this returns the
+ * item's clip frame.
+ */ 1 4 this 3 600  
+215 0 0 6 461 506 0 0 153 /**
+ * Returns true if the virtual frame has a bounding rectangle; see
+ * set_virtual_frame().  Most PGScrollFrame objects will have a virtual frame.
+ */ 1 4 this 3 600  
+216 0 0 4 462 542 0 0 173 /**
+ * Removes the virtual frame from the item.  This effectively sets the virtual
+ * frame to the same size as the clip frame.  Scrolling will no longer be
+ * possible.
+ */ 1 4 this 3 599  
+217 0 0 4 463 542 0 0 320 /**
+ * Sets the manage_pieces flag.  When this is true, the sub-pieces of the
+ * scroll frame--that is, the two scroll bars--are automatically positioned
+ * and/or resized when the scroll frame's overall frame is changed.  They are
+ * also automatically resized to fill in the gap when one or the other is
+ * hidden.
+ */ 2 4 this 3 599  13 manage_pieces 1 506  
+218 0 0 6 464 506 0 0 68 /**
+ * Returns the manage_pieces flag.  See set_manage_pieces().
+ */ 1 4 this 3 600  
+219 0 0 4 465 542 0 0 345 /**
+ * Sets the auto_hide flag.  When this is true, the two scroll bars are
+ * automatically hidden if they are not needed (that is, if the virtual frame
+ * would fit within the clip frame without them), and they are automatically
+ * shown when they are needed.
+ *
+ * Setting this flag true forces the manage_pieces flag to also be set true.
+ */ 2 4 this 3 599  9 auto_hide 1 506  
+220 0 0 6 466 506 0 0 60 /**
+ * Returns the auto_hide flag.  See set_auto_hide().
+ */ 1 4 this 3 600  
+221 0 0 4 467 542 0 0 209 /**
+ * Sets the PGSliderBar object that will serve as the horizontal scroll bar
+ * for this frame.  It is your responsibility to parent this slider bar to the
+ * frame and move it to the appropriate place.
+ */ 2 4 this 3 599  17 horizontal_slider 1 537  
+222 0 0 4 468 542 0 0 147 /**
+ * Removes the horizontal scroll bar from control of the frame.  It is your
+ * responsibility to actually remove or hide the object itself.
+ */ 1 4 this 3 599  
+223 0 0 7 469 537 415 0 128 /**
+ * Returns the PGSliderBar that serves as the horizontal scroll bar for this
+ * frame, if any, or NULL if it is not set.
+ */ 1 4 this 3 600  
+224 0 0 4 470 542 0 0 207 /**
+ * Sets the PGSliderBar object that will serve as the vertical scroll bar for
+ * this frame.  It is your responsibility to parent this slider bar to the
+ * frame and move it to the appropriate place.
+ */ 2 4 this 3 599  15 vertical_slider 1 537  
+225 0 0 4 471 542 0 0 145 /**
+ * Removes the vertical scroll bar from control of the frame.  It is your
+ * responsibility to actually remove or hide the object itself.
+ */ 1 4 this 3 599  
+226 0 0 7 472 537 415 0 126 /**
+ * Returns the PGSliderBar that serves as the vertical scroll bar for this
+ * frame, if any, or NULL if it is not set.
+ */ 1 4 this 3 600  
+227 0 0 4 473 542 0 0 117 /**
+ * Manages the position and size of the scroll bars.  Normally this should not
+ * need to be called directly.
+ */ 1 4 this 3 599  
+228 0 0 4 474 542 0 0 108 /**
+ * Forces the PGScrollFrame to recompute itself right now.  Normally this
+ * should not be required.
+ */ 1 4 this 3 599  
+229 0 0 7 475 569 0 0 0 0 
+230 0 0 7 452 593 0 0 0 1 4 this 3 599  
+231 0 0 7 476 602 0 0 10 /**
+ *
+ */ 1 4 name 5 551  
+232 0 0 4 477 542 0 0 98 /**
+ * Creates a PGWaitBar with the indicated dimensions, with the indicated
+ * maximum range.
+ */ 4 4 this 3 602  5 width 1 516  6 height 1 516  5 range 1 516  
+233 0 0 4 478 542 0 0 62 /**
+ * Sets the value at which the WaitBar indicates 100%.
+ */ 2 4 this 3 602  5 range 1 516  
+234 0 0 6 479 516 0 0 65 /**
+ * Returns the value at which the WaitBar indicates 100%.
+ */ 1 4 this 3 603  
+235 0 0 4 480 542 0 0 94 /**
+ * Sets the current value of the bar.  This should range between 0 and
+ * get_range().
+ */ 2 4 this 3 602  5 value 1 516  
+236 0 0 6 481 516 0 0 48 /**
+ * Returns the current value of the bar.
+ */ 1 4 this 3 603  
+237 0 0 6 482 516 0 0 43 /**
+ * Returns the percentage complete.
+ */ 1 4 this 3 603  
+238 0 0 4 483 542 0 0 107 /**
+ * Sets the kind of frame that is drawn on top of the WaitBar to represent the
+ * amount completed.
+ */ 2 4 this 3 602  5 style 1 540  
+239 0 0 7 484 539 243 0 110 /**
+ * Returns the kind of frame that is drawn on top of the WaitBar to represent
+ * the amount completed.
+ */ 1 4 this 3 603  
+240 0 0 7 485 569 0 0 0 0 
+119
+486 12 PGFrameStyle 0 26625 12 PGFrameStyle 12 PGFrameStyle 0 0 0 1 241 243 6 605 606 607 608 609 610 17 242 244 245 246 247 248 249 250 251 252 253 254 255 256 257 258 259 0 0 1 0 487 0 0 0 1 488 10
+/**
+ *
+ */
+
+487 10 MemoryBase 0 2048 10 MemoryBase 10 MemoryBase 0 0 0 0 0 0 0 0 0 0 0 0 428
+/**
+ * This class is intended to be the base class of all objects in Panda that
+ * might be allocated and deleted via the new and delete operators.  It
+ * redefines these operators to provide some memory tracking support.
+ *
+ * We used to try to override the global operator new and delete methods, but
+ * that seems to cause problems when including header files for C++-based
+ * system libraries (such as are found on OSX).
+ */
+
+488 4 Type 0 794624 18 PGFrameStyle::Type 18 PGFrameStyle::Type 486 0 0 0 0 0 0 0 0 0 7 6 T_none 20 PGFrameStyle::T_none 0
+0 6 T_flat 20 PGFrameStyle::T_flat 0
+1 11 T_bevel_out 25 PGFrameStyle::T_bevel_out 0
+2 10 T_bevel_in 24 PGFrameStyle::T_bevel_in 0
+3 8 T_groove 22 PGFrameStyle::T_groove 0
+4 7 T_ridge 21 PGFrameStyle::T_ridge 0
+5 16 T_texture_border 30 PGFrameStyle::T_texture_border 0
+6 0 0
+
+489 6 LColor 0 2105344 6 LColor 6 LColor 0 0 490 0 0 0 0 0 0 0 0 0 0
+
+490 7 LColorf 0 2105344 7 LColorf 7 LColorf 0 0 491 0 0 0 0 0 0 0 0 0 0
+
+491 10 LVecBase4f 0 2048 10 LVecBase4f 10 LVecBase4f 0 0 0 0 0 0 0 0 0 0 0 0 77
+/**
+ * This is the base class for all three-component vectors and points.
+ */
+
+492 9 Texture * 0 8576 9 Texture * 9 Texture * 0 0 493 0 0 0 0 0 0 0 0 0 0
+
+493 7 Texture 0 2048 7 Texture 7 Texture 0 0 0 0 0 0 0 0 0 0 0 0 688
+/**
+ * Represents a texture object, which is typically a single 2-d image but may
+ * also represent a 1-d or 3-d texture image, or the six 2-d faces of a cube
+ * map texture.
+ *
+ * A texture's image data might be stored in system RAM (see get_ram_image())
+ * or its image may be represented in texture memory on one or more
+ * GraphicsStateGuardians (see prepare()), or both.  The typical usage pattern
+ * is that a texture is loaded from an image file on disk, which copies its
+ * image data into system RAM; then the first time the texture is rendered its
+ * image data is copied to texture memory (actually, to the graphics API), and
+ * the system RAM image is automatically freed.
+ */
+
+494 15 LVecBase2 const 0 8832 15 LVecBase2 const 15 LVecBase2 const 0 0 495 0 0 0 0 0 0 0 0 0 0
+
+495 9 LVecBase2 0 2105344 9 LVecBase2 9 LVecBase2 0 0 496 0 0 0 0 0 0 0 0 0 0
+
+496 10 LVecBase2f 0 2048 10 LVecBase2f 10 LVecBase2f 0 0 0 0 0 0 0 0 0 0 0 0 75
+/**
+ * This is the base class for all two-component vectors and points.
+ */
+
+497 6 PGItem 0 75777 6 PGItem 6 PGItem 0 0 0 1 260 0 19 611 612 613 614 615 616 617 618 619 620 621 622 623 624 625 626 627 628 629 53 261 262 263 264 265 266 267 268 269 270 271 272 273 274 275 276 277 278 279 280 281 282 283 284 286 287 288 289 290 291 292 293 294 295 296 297 298 299 300 301 302 303 304 305 306 307 308 309 310 311 312 313 314 1 678 0 1 0 498 0 0 0 0 416
+/**
+ * This is the base class for all the various kinds of gui widget objects.
+ *
+ * It is a Node which corresponds to a rectangular region on the screen, and
+ * it may have any number of "state" subgraphs, one of which is rendered at
+ * any given time according to its current state.
+ *
+ * The PGItem node must be parented to the scene graph somewhere beneath a
+ * PGTop node in order for this behavior to work.
+ */
+
+498 9 PandaNode 0 2048 9 PandaNode 9 PandaNode 0 0 0 0 0 0 0 0 0 0 0 0 175
+/**
+ * A basic node of the scene graph or data graph.  This is the base class of
+ * all specialized nodes, and also serves as a generic node with no special
+ * properties.
+ */
+
+499 8 NodePath 0 2048 8 NodePath 8 NodePath 0 0 0 0 0 0 0 0 0 0 0 0 762
+/**
+ * NodePath is the fundamental system for disambiguating instances, and also
+ * provides a higher-level interface for manipulating the scene graph.
+ *
+ * A NodePath is a list of connected nodes from the root of the graph to any
+ * sub-node.  Each NodePath therefore uniquely describes one instance of a
+ * node.
+ *
+ * NodePaths themselves are lightweight objects that may easily be copied and
+ * passed by value.  Their data is stored as a series of NodePathComponents
+ * that are stored on the nodes.  Holding a NodePath will keep a reference
+ * count to all the nodes in the path.  However, if any node in the path is
+ * removed or reparented (perhaps through a different NodePath), the NodePath
+ * will automatically be updated to reflect the changes.
+ */
+
+500 12 string const 0 8832 17 std::string const 17 std::string const 0 0 501 0 0 0 0 0 0 0 0 0 0
+
+501 6 string 0 2105344 11 std::string 11 std::string 0 0 502 0 0 0 0 0 0 0 0 0 0
+
+502 20 basic_string< char > 0 2048 25 std::basic_string< char > 25 std::basic_string< char > 0 0 0 0 0 0 0 0 0 0 0 0 0
+
+503 15 LVecBase4 const 0 8832 15 LVecBase4 const 15 LVecBase4 const 0 0 504 0 0 0 0 0 0 0 0 0 0
+
+504 9 LVecBase4 0 2105344 9 LVecBase4 9 LVecBase4 0 0 491 0 0 0 0 0 0 0 0 0 0
+
+505 3 int 0 8194 3 int 3 int 0 1 0 0 0 0 0 0 0 0 0 0 0
+
+506 4 bool 0 8194 4 bool 4 bool 0 4 0 0 0 0 0 0 0 0 0 0 0
+
+507 8 PGButton 0 75777 8 PGButton 8 PGButton 0 0 0 1 315 0 1 630 8 316 317 318 319 320 321 322 323 0 0 1 0 497 0 0 0 1 508 180
+/**
+ * This is a particular kind of PGItem that is specialized to behave like a
+ * normal button object.  It keeps track of its own state, and handles mouse
+ * events sensibly.
+ */
+
+508 5 State 0 794624 15 PGButton::State 15 PGButton::State 507 0 0 0 0 0 0 0 0 0 4 7 S_ready 17 PGButton::S_ready 0
+0 11 S_depressed 21 PGButton::S_depressed 0
+1 10 S_rollover 20 PGButton::S_rollover 0
+2 10 S_inactive 20 PGButton::S_inactive 0
+3 0 0
+
+509 5 PGTop 0 75777 5 PGTop 5 PGTop 0 0 0 1 324 0 3 631 632 633 6 325 326 327 328 329 330 0 0 1 0 498 0 0 0 0 477
+/**
+ * The "top" node of the new Panda GUI system.  This node must be parented to
+ * the 2-d scene graph, and all PG objects should be parented to this node or
+ * somewhere below it.  PG objects not parented within this hierarchy will not
+ * be clickable.
+ *
+ * This node begins the special traversal of the PG objects that registers
+ * each node within the MouseWatcher and forces everything to render in a
+ * depth-first, left-to-right order, appropriate for 2-d objects.
+ */
+
+510 14 MouseWatcher * 0 8576 14 MouseWatcher * 14 MouseWatcher * 0 0 511 0 0 0 0 0 0 0 0 0 0
+
+511 12 MouseWatcher 0 2048 12 MouseWatcher 12 MouseWatcher 0 0 0 0 0 0 0 0 0 0 0 0 1142
+/**
+ * This TFormer maintains a list of rectangular regions on the screen that are
+ * considered special mouse regions; typically these will be click buttons.
+ * When the mouse passes in or out of one of these regions, or when a button
+ * is clicked while the mouse is in one of these regions, an event is thrown.
+ *
+ * Mouse events may also be suppressed from the rest of the datagraph in these
+ * special regions.
+ *
+ * This class can also implement a software mouse pointer by automatically
+ * generating a transform to apply to a piece of geometry placed under the 2-d
+ * scene graph.  It will move the geometry around according to the mouse's
+ * known position.
+ *
+ * Finally, this class can keep a record of the mouse trail.  This is useful
+ * if you want to know, not just where the mouse is, but the exact sequence of
+ * movements it took to get there.  This information is mainly useful for
+ * gesture-recognition code.  To use trail logging, you need to enable the
+ * generation of pointer events in the GraphicsWindowInputDevice and set the
+ * trail log duration in the MouseWatcher.  Otherwise, the trail log will be
+ * empty.
+ */
+
+512 19 MouseWatcherGroup * 0 8576 19 MouseWatcherGroup * 19 MouseWatcherGroup * 0 0 513 0 0 0 0 0 0 0 0 0 0
+
+513 17 MouseWatcherGroup 0 2048 17 MouseWatcherGroup 17 MouseWatcherGroup 0 0 0 0 0 0 0 0 0 0 0 0 215
+/**
+ * This represents a collection of MouseWatcherRegions that may be managed as
+ * a group.  The implementation for this is in MouseWatcherBase; this class
+ * exists so that we can inherit from ReferenceCount.
+ */
+
+514 7 PGEntry 0 75777 7 PGEntry 7 PGEntry 0 0 0 1 331 0 19 634 635 636 637 638 639 640 641 642 643 644 645 646 647 648 649 650 651 652 53 332 333 334 335 336 337 338 339 340 341 342 343 344 345 346 347 348 349 350 351 352 353 354 355 356 357 358 359 360 361 362 363 364 365 366 371 372 373 374 375 376 377 378 379 380 381 382 383 384 385 386 387 388 0 0 1 0 497 0 0 0 1 515 487
+/**
+ * This is a particular kind of PGItem that handles simple one-line or short
+ * multi-line text entries, of the sort where the user can type any string.
+ *
+ * A PGEntry does all of its internal manipulation on a wide string, so it can
+ * store the full Unicode character set.  The interface can support either the
+ * wide string getters and setters, or the normal 8-bit string getters and
+ * setters, which use whatever encoding method is specified by the associated
+ * TextNode.
+ */
+
+515 5 State 0 794624 14 PGEntry::State 14 PGEntry::State 514 0 0 0 0 0 0 0 0 0 3 7 S_focus 16 PGEntry::S_focus 0
+0 10 S_no_focus 19 PGEntry::S_no_focus 0
+1 10 S_inactive 19 PGEntry::S_inactive 0
+2 0 0
+
+516 11 PN_stdfloat 0 2105344 11 PN_stdfloat 11 PN_stdfloat 0 0 517 0 0 0 0 0 0 0 0 0 0
+
+517 5 float 0 8194 5 float 5 float 0 2 0 0 0 0 0 0 0 0 0 0 0
+
+518 23 PGMouseWatcherParameter 0 26625 23 PGMouseWatcherParameter 23 PGMouseWatcherParameter 0 0 0 1 396 393 0 2 394 395 0 0 2 3 519 389 390 3 520 391 392 0 0 223
+/**
+ * This specialization on MouseWatcherParameter allows us to tag on additional
+ * elements to events for the gui system, and also inherits from
+ * TypedWritableReferenceCount so we can attach this thing to an event.
+ */
+
+519 27 TypedWritableReferenceCount 0 2048 27 TypedWritableReferenceCount 27 TypedWritableReferenceCount 0 0 0 0 0 0 0 0 0 0 0 0 414
+/**
+ * A base class for things which need to inherit from both TypedWritable and
+ * from ReferenceCount.  It's convenient to define this intermediate base
+ * class instead of multiply inheriting from the two classes each time they
+ * are needed, so that we can sensibly pass around pointers to things which
+ * are both TypedWritables and ReferenceCounters.
+ *
+ * See also TypedObject for detailed instructions.
+ */
+
+520 21 MouseWatcherParameter 0 2048 21 MouseWatcherParameter 21 MouseWatcherParameter 0 0 0 0 0 0 0 0 0 0 0 0 139
+/**
+ * This is sent along as a parameter to most events generated for a region to
+ * indicate the mouse and button state for the event.
+ */
+
+521 24 PGMouseWatcherBackground 0 75777 24 PGMouseWatcherBackground 24 PGMouseWatcherBackground 0 0 0 1 397 0 0 1 398 0 0 1 0 522 0 0 0 0 209
+/**
+ * This is a special kind of MouseWatcherRegion that doesn't have a rectangle
+ * and is never active, but just quietly listens for keypresses and sends them
+ * to all the PGItems with background focus.
+ */
+
+522 18 MouseWatcherRegion 0 2048 18 MouseWatcherRegion 18 MouseWatcherRegion 0 0 0 0 0 0 0 0 0 0 0 0 101
+/**
+ * This is the class that defines a rectangular region on the screen for the
+ * MouseWatcher.
+ */
+
+523 14 PGVirtualFrame 0 75777 14 PGVirtualFrame 14 PGVirtualFrame 0 0 0 1 399 0 4 653 654 655 656 10 400 401 402 403 404 405 406 407 408 409 0 0 1 0 497 0 0 0 0 927
+/**
+ * This represents a frame that is rendered as a window onto another (possibly
+ * much larger) canvas.  You can only see the portion of the canvas that is
+ * below the window at any given time.
+ *
+ * This works simply by automatically defining a scissor effect to be applied
+ * to a special child node, called the canvas_node, of the PGVirtualFrame
+ * node.  Every object that is parented to the canvas_node will be clipped by
+ * the scissor effect.  Also, you can modify the canvas_transform through
+ * convenience methods here, which actually modifies the transform on the
+ * canvas_node.
+ *
+ * The net effect is that the virtual canvas is arbitrarily large, and we can
+ * peek at it through the scissor region, and scroll through different parts
+ * of it by modifying the canvas_transform.
+ *
+ * See PGScrollFrame for a specialization of this class that handles the
+ * traditional scrolling canvas, with scroll bars.
+ */
+
+524 22 TransformState const * 0 8576 22 TransformState const * 22 TransformState const * 0 0 525 0 0 0 0 0 0 0 0 0 0
+
+525 20 TransformState const 0 8832 20 TransformState const 20 TransformState const 0 0 526 0 0 0 0 0 0 0 0 0 0
+
+526 14 TransformState 0 16779264 14 TransformState 14 TransformState 0 0 0 0 0 0 0 0 0 0 0 0 734
+/**
+ * Indicates a coordinate-system transform on vertices.  TransformStates are
+ * the primary means for storing transformations on the scene graph.
+ *
+ * Transforms may be specified in one of two ways: componentwise, with a pos-
+ * hpr-scale, or with an arbitrary transform matrix.  If you specify a
+ * transform componentwise, it will remember its original components.
+ *
+ * TransformState objects are managed very much like RenderState objects.
+ * They are immutable and reference-counted automatically.
+ *
+ * You should not attempt to create or modify a TransformState object
+ * directly.  Instead, call one of the make() functions to create one for you.
+ * And instead of modifying a TransformState object, create a new one.
+ */
+
+527 11 PandaNode * 0 8576 11 PandaNode * 11 PandaNode * 0 0 498 0 0 0 0 0 0 0 0 0 0
+
+528 11 PGSliderBar 0 26625 11 PGSliderBar 11 PGSliderBar 0 0 0 1 414 415 13 657 658 659 660 661 662 663 664 665 666 667 668 669 35 416 417 418 419 420 421 422 423 424 425 426 427 428 429 430 431 432 433 434 435 436 437 438 439 440 441 442 443 444 445 446 447 449 450 451 0 0 2 3 497 410 411 3 529 412 413 0 0 246
+/**
+ * This is a particular kind of PGItem that draws a little bar with a slider
+ * that moves from left to right indicating a value between the ranges.
+ *
+ * This is used as an implementation for both DirectSlider and for
+ * DirectScrollBar.
+ */
+
+529 14 PGButtonNotify 0 1050624 14 PGButtonNotify 14 PGButtonNotify 0 0 0 0 0 0 0 0 0 1 0 530 0 0 0 0 132
+/**
+ * Objects that inherit from this class can receive notify messages when a
+ * slider bar moves or otherwise is reconfigured.
+ */
+
+530 12 PGItemNotify 0 1050624 12 PGItemNotify 12 PGItemNotify 0 0 0 0 0 0 0 0 0 0 0 0 120
+/**
+ * Objects that inherit from this class can receive specialized messages when
+ * PGItems change in certain ways.
+ */
+
+531 14 LVector3 const 0 8832 14 LVector3 const 14 LVector3 const 0 0 532 0 0 0 0 0 0 0 0 0 0
+
+532 8 LVector3 0 2105344 8 LVector3 8 LVector3 0 0 533 0 0 0 0 0 0 0 0 0 0
+
+533 9 LVector3f 0 2048 9 LVector3f 9 LVector3f 0 0 0 0 0 0 0 0 0 0 0 0 338
+/**
+ * This is a three-component vector distance (as opposed to a three-component
+ * point, which represents a particular point in space).  Some of the methods
+ * are slightly different between LPoint3 and LVector3; in particular,
+ * subtraction of two points yields a vector, while addition of a vector and a
+ * point yields a point.
+ */
+
+534 10 PGButton * 0 8576 10 PGButton * 10 PGButton * 0 0 507 0 0 0 0 0 0 0 0 0 0
+
+535 13 PGScrollFrame 0 26625 13 PGScrollFrame 13 PGScrollFrame 0 0 0 1 456 457 5 670 671 672 673 674 18 458 459 460 461 462 463 464 465 466 467 468 469 470 471 472 473 474 475 0 0 2 3 523 452 453 3 536 454 455 0 0 570
+/**
+ * This is a special kind of frame that pretends to be much larger than it
+ * actually is.  You can scroll through the frame, as if you're looking
+ * through a window at the larger frame beneath.  All children of this frame
+ * node are scrolled and clipped as if they were children of the larger,
+ * virtual frame.
+ *
+ * This is implemented as a specialization of PGVirtualFrame, which handles
+ * the meat of the virtual canvas.  This class adds automatic support for
+ * scroll bars, and restricts the virtual transform to translate only (no
+ * scale or rotate).
+ */
+
+536 17 PGSliderBarNotify 0 1050624 17 PGSliderBarNotify 17 PGSliderBarNotify 0 0 0 0 0 0 0 0 0 1 0 530 0 0 0 0 132
+/**
+ * Objects that inherit from this class can receive notify messages when a
+ * slider bar moves or otherwise is reconfigured.
+ */
+
+537 13 PGSliderBar * 0 8576 13 PGSliderBar * 13 PGSliderBar * 0 0 528 0 0 0 0 0 0 0 0 0 0
+
+538 9 PGWaitBar 0 75777 9 PGWaitBar 9 PGWaitBar 0 0 0 1 476 0 3 675 676 677 9 477 478 479 480 481 482 483 484 485 0 0 1 0 497 0 0 0 0 195
+/**
+ * This is a particular kind of PGItem that draws a little bar that fills from
+ * left to right to indicate a slow process gradually completing, like a
+ * traditional "wait, loading" bar.
+ */
+
+539 14 PGFrameStyle * 0 8576 14 PGFrameStyle * 14 PGFrameStyle * 0 0 486 0 0 0 0 0 0 0 0 0 0
+
+540 20 PGFrameStyle const * 0 8576 20 PGFrameStyle const * 20 PGFrameStyle const * 0 0 541 0 0 0 0 0 0 0 0 0 0
+
+541 18 PGFrameStyle const 0 8832 18 PGFrameStyle const 18 PGFrameStyle const 0 0 486 0 0 0 0 0 0 0 0 0 0
+
+542 4 void 0 8194 4 void 4 void 0 6 0 0 0 0 0 0 0 0 0 0 0
+
+543 14 LColor const * 0 8576 14 LColor const * 14 LColor const * 0 0 544 0 0 0 0 0 0 0 0 0 0
+
+544 12 LColor const 0 8832 12 LColor const 12 LColor const 0 0 489 0 0 0 0 0 0 0 0 0 0
+
+545 8 LColor * 0 8576 8 LColor * 8 LColor * 0 0 489 0 0 0 0 0 0 0 0 0 0
+
+546 17 LVecBase2 const * 0 8576 17 LVecBase2 const * 17 LVecBase2 const * 0 0 494 0 0 0 0 0 0 0 0 0 0
+
+547 17 LVecBase4 const * 0 8576 17 LVecBase4 const * 17 LVecBase4 const * 0 0 503 0 0 0 0 0 0 0 0 0 0
+
+548 11 LVecBase4 * 0 8576 11 LVecBase4 * 11 LVecBase4 * 0 0 504 0 0 0 0 0 0 0 0 0 0
+
+549 9 ostream * 0 8576 14 std::ostream * 14 std::ostream * 0 0 550 0 0 0 0 0 0 0 0 0 0
+
+550 7 ostream 0 2048 12 std::ostream 12 std::ostream 0 0 0 0 0 0 0 0 0 0 0 0 0
+
+551 13 atomic string 0 2 13 atomic string 13 atomic string 0 7 0 0 0 0 0 0 0 0 0 0 0
+
+552 8 PGItem * 0 8576 8 PGItem * 8 PGItem * 0 0 497 0 0 0 0 0 0 0 0 0 0
+
+553 14 PGItem const * 0 8576 14 PGItem const * 14 PGItem const * 0 0 554 0 0 0 0 0 0 0 0 0 0
+
+554 12 PGItem const 0 8832 12 PGItem const 12 PGItem const 0 0 497 0 0 0 0 0 0 0 0 0 0
+
+555 10 NodePath * 0 8576 10 NodePath * 10 NodePath * 0 0 499 0 0 0 0 0 0 0 0 0 0
+
+556 16 NodePath const * 0 8576 16 NodePath const * 16 NodePath const * 0 0 557 0 0 0 0 0 0 0 0 0 0
+
+557 14 NodePath const 0 8832 14 NodePath const 14 NodePath const 0 0 499 0 0 0 0 0 0 0 0 0 0
+
+558 20 ButtonHandle const * 0 8576 20 ButtonHandle const * 20 ButtonHandle const * 0 0 559 0 0 0 0 0 0 0 0 0 0
+
+559 18 ButtonHandle const 0 8832 18 ButtonHandle const 18 ButtonHandle const 0 0 560 0 0 0 0 0 0 0 0 0 0
+
+560 12 ButtonHandle 0 16779264 12 ButtonHandle 12 ButtonHandle 0 0 0 0 0 0 0 0 0 0 0 0 162
+/**
+ * A ButtonHandle represents a single button from any device, including
+ * keyboard buttons and mouse buttons (but see KeyboardButton and
+ * MouseButton).
+ */
+
+561 8 LMatrix4 0 2105344 8 LMatrix4 8 LMatrix4 0 0 562 0 0 0 0 0 0 0 0 0 0
+
+562 9 LMatrix4f 0 2048 9 LMatrix4f 9 LMatrix4f 0 0 0 0 0 0 0 0 0 0 0 0 45
+/**
+ * This is a 4-by-4 transform matrix.
+ */
+
+563 10 LMatrix4 * 0 8576 10 LMatrix4 * 10 LMatrix4 * 0 0 561 0 0 0 0 0 0 0 0 0 0
+
+564 12 AudioSound * 0 8576 12 AudioSound * 12 AudioSound * 0 0 565 0 0 0 0 0 0 0 0 0 0
+
+565 10 AudioSound 0 2048 10 AudioSound 10 AudioSound 0 0 0 0 0 0 0 0 0 0 0 0 0
+
+566 8 TextNode 0 2048 8 TextNode 8 TextNode 0 0 0 0 0 0 0 0 0 0 0 0 917
+/**
+ * The primary interface to this module.  This class does basic text assembly;
+ * given a string of text and a TextFont object, it creates a piece of
+ * geometry that may be placed in the 3-d or 2-d world to represent the
+ * indicated text.
+ *
+ * The TextNode may be used in one of two ways.  Naively, it may simply be
+ * parented directly into the scene graph and rendered as if it were a
+ * GeomNode; in this mode, the actual polygon geometry that renders the text
+ * is not directly visible or accessible, but remains hidden within the
+ * TextNode.
+ *
+ * The second way TextNode may be used is as a text generator.  To use it in
+ * this way, do not parent the TextNode to the scene graph; instead, set the
+ * properties of the text and call generate() to return an ordinary node,
+ * containing ordinary geometry, which you may use however you like.  Each
+ * time you call generate() a new node is returned.
+ */
+
+567 10 TextNode * 0 8576 10 TextNode * 10 TextNode * 0 0 566 0 0 0 0 0 0 0 0 0 0
+
+568 10 TypeHandle 0 16779264 10 TypeHandle 10 TypeHandle 0 0 0 0 0 0 0 0 0 0 0 0 732
+/**
+ * TypeHandle is the identifier used to differentiate C++ class types.  Any
+ * C++ classes that inherit from some base class, and must be differentiated
+ * at run time, should store a static TypeHandle object that can be queried
+ * through a static member function named get_class_type().  Most of the time,
+ * it is also desirable to inherit from TypedObject, which provides some
+ * virtual functions to return the TypeHandle for a particular instance.
+ *
+ * At its essence, a TypeHandle is simply a unique identifier that is assigned
+ * by the TypeRegistry.  The TypeRegistry stores a tree of TypeHandles, so
+ * that ancestry of a particular type may be queried, and the type name may be
+ * retrieved for run-time display.
+ */
+
+569 12 TypeHandle * 0 8576 12 TypeHandle * 12 TypeHandle * 0 0 568 0 0 0 0 0 0 0 0 0 0
+
+570 16 PGButton const * 0 8576 16 PGButton const * 16 PGButton const * 0 0 571 0 0 0 0 0 0 0 0 0 0
+
+571 14 PGButton const 0 8832 14 PGButton const 14 PGButton const 0 0 507 0 0 0 0 0 0 0 0 0 0
+
+572 7 PGTop * 0 8576 7 PGTop * 7 PGTop * 0 0 509 0 0 0 0 0 0 0 0 0 0
+
+573 13 PGTop const * 0 8576 13 PGTop const * 13 PGTop const * 0 0 574 0 0 0 0 0 0 0 0 0 0
+
+574 11 PGTop const 0 8832 11 PGTop const 11 PGTop const 0 0 509 0 0 0 0 0 0 0 0 0 0
+
+575 9 PGEntry * 0 8576 9 PGEntry * 9 PGEntry * 0 0 514 0 0 0 0 0 0 0 0 0 0
+
+576 15 PGEntry const * 0 8576 15 PGEntry const * 15 PGEntry const * 0 0 577 0 0 0 0 0 0 0 0 0 0
+
+577 13 PGEntry const 0 8832 13 PGEntry const 13 PGEntry const 0 0 514 0 0 0 0 0 0 0 0 0 0
+
+578 7 wchar_t 0 8194 7 wchar_t 7 wchar_t 0 1 0 0 0 0 0 0 0 0 0 0 0
+
+579 19 TextGraphic const * 0 8576 19 TextGraphic const * 19 TextGraphic const * 0 0 580 0 0 0 0 0 0 0 0 0 0
+
+580 17 TextGraphic const 0 8832 17 TextGraphic const 17 TextGraphic const 0 0 581 0 0 0 0 0 0 0 0 0 0
+
+581 11 TextGraphic 0 2048 11 TextGraphic 11 TextGraphic 0 0 0 0 0 0 0 0 0 0 0 0 761
+/**
+ * This defines a special model that has been constructed for the purposes of
+ * embedding an arbitrary graphic image within a text paragraph.
+ *
+ * It can be any arbitrary model, though it should be built along the same
+ * scale as the text, and it should probably be at least mostly two-
+ * dimensional.  Typically, this means it should be constructed in the X-Z
+ * plane, and it should have a maximum vertical (Z) height of 1.0.
+ *
+ * The frame specifies an arbitrary bounding volume in the form (left, right,
+ * bottom, top).  This indicates the amount of space that will be reserved
+ * within the paragraph.  The actual model is not actually required to fit
+ * within this rectangle, but if it does not, it may visually overlap with
+ * nearby text.
+ */
+
+582 22 TextProperties const * 0 8576 22 TextProperties const * 22 TextProperties const * 0 0 583 0 0 0 0 0 0 0 0 0 0
+
+583 20 TextProperties const 0 8832 20 TextProperties const 20 TextProperties const 0 0 584 0 0 0 0 0 0 0 0 0 0
+
+584 14 TextProperties 0 2048 14 TextProperties 14 TextProperties 0 0 0 0 0 0 0 0 0 0 0 0 822
+/**
+ * This defines the set of visual properties that may be assigned to the
+ * individual characters of the text.  (Properties which affect the overall
+ * block of text can only be specified on the TextNode directly).
+ *
+ * Typically, there is just one set of properties on a given block of text,
+ * which is set directly on the TextNode (TextNode inherits from
+ * TextProperties). That makes all of the text within a particular block have
+ * the same appearance.
+ *
+ * This separate class exists in order to implement multiple different kinds
+ * of text appearing within one block.  The text string itself may reference a
+ * TextProperties structure by name using the \1 and \2 tokens embedded within
+ * the string; each nested TextProperties structure modifies the appearance of
+ * subsequent text within the block.
+ */
+
+585 31 PGMouseWatcherParameter const * 0 8576 31 PGMouseWatcherParameter const * 31 PGMouseWatcherParameter const * 0 0 586 0 0 0 0 0 0 0 0 0 0
+
+586 29 PGMouseWatcherParameter const 0 8832 29 PGMouseWatcherParameter const 29 PGMouseWatcherParameter const 0 0 518 0 0 0 0 0 0 0 0 0 0
+
+587 25 PGMouseWatcherParameter * 0 8576 25 PGMouseWatcherParameter * 25 PGMouseWatcherParameter * 0 0 518 0 0 0 0 0 0 0 0 0 0
+
+588 29 TypedWritableReferenceCount * 0 8576 29 TypedWritableReferenceCount * 29 TypedWritableReferenceCount * 0 0 519 0 0 0 0 0 0 0 0 0 0
+
+589 23 MouseWatcherParameter * 0 8576 23 MouseWatcherParameter * 23 MouseWatcherParameter * 0 0 520 0 0 0 0 0 0 0 0 0 0
+
+590 26 PGMouseWatcherBackground * 0 8576 26 PGMouseWatcherBackground * 26 PGMouseWatcherBackground * 0 0 521 0 0 0 0 0 0 0 0 0 0
+
+591 32 PGMouseWatcherBackground const * 0 8576 32 PGMouseWatcherBackground const * 32 PGMouseWatcherBackground const * 0 0 592 0 0 0 0 0 0 0 0 0 0
+
+592 30 PGMouseWatcherBackground const 0 8832 30 PGMouseWatcherBackground const 30 PGMouseWatcherBackground const 0 0 521 0 0 0 0 0 0 0 0 0 0
+
+593 16 PGVirtualFrame * 0 8576 16 PGVirtualFrame * 16 PGVirtualFrame * 0 0 523 0 0 0 0 0 0 0 0 0 0
+
+594 22 PGVirtualFrame const * 0 8576 22 PGVirtualFrame const * 22 PGVirtualFrame const * 0 0 595 0 0 0 0 0 0 0 0 0 0
+
+595 20 PGVirtualFrame const 0 8832 20 PGVirtualFrame const 20 PGVirtualFrame const 0 0 523 0 0 0 0 0 0 0 0 0 0
+
+596 16 LVector3 const * 0 8576 16 LVector3 const * 16 LVector3 const * 0 0 531 0 0 0 0 0 0 0 0 0 0
+
+597 19 PGSliderBar const * 0 8576 19 PGSliderBar const * 19 PGSliderBar const * 0 0 598 0 0 0 0 0 0 0 0 0 0
+
+598 17 PGSliderBar const 0 8832 17 PGSliderBar const 17 PGSliderBar const 0 0 528 0 0 0 0 0 0 0 0 0 0
+
+599 15 PGScrollFrame * 0 8576 15 PGScrollFrame * 15 PGScrollFrame * 0 0 535 0 0 0 0 0 0 0 0 0 0
+
+600 21 PGScrollFrame const * 0 8576 21 PGScrollFrame const * 21 PGScrollFrame const * 0 0 601 0 0 0 0 0 0 0 0 0 0
+
+601 19 PGScrollFrame const 0 8832 19 PGScrollFrame const 19 PGScrollFrame const 0 0 535 0 0 0 0 0 0 0 0 0 0
+
+602 11 PGWaitBar * 0 8576 11 PGWaitBar * 11 PGWaitBar * 0 0 538 0 0 0 0 0 0 0 0 0 0
+
+603 17 PGWaitBar const * 0 8576 17 PGWaitBar const * 17 PGWaitBar const * 0 0 604 0 0 0 0 0 0 0 0 0 0
+
+604 15 PGWaitBar const 0 8832 15 PGWaitBar const 15 PGWaitBar const 0 0 538 0 0 0 0 0 0 0 0 0 0
+
+0
+73
+605 4 type 0 6 488 245 244 0 0 0 0 0 0 18 PGFrameStyle::type 0
+
+606 5 color 0 6 489 247 246 0 0 0 0 0 0 19 PGFrameStyle::color 0
+
+607 7 texture 0 30 492 250 248 249 251 0 0 0 0 21 PGFrameStyle::texture 0
+
+608 5 width 0 6 494 253 252 0 0 0 0 0 0 19 PGFrameStyle::width 0
+
+609 8 uv_width 0 6 494 255 254 0 0 0 0 0 0 22 PGFrameStyle::uv_width 0
+
+610 13 visible_scale 0 6 494 257 256 0 0 0 0 0 0 27 PGFrameStyle::visible_scale 0
+
+611 10 state_defs 0 66 499 279 0 0 0 0 276 0 0 18 PGItem::state_defs 0
+
+612 4 name 0 6 500 285 261 0 0 0 0 0 0 12 PGItem::name 0
+
+613 5 frame 0 30 503 263 262 264 265 0 0 0 0 13 PGItem::frame 0
+
+614 5 state 0 6 505 267 266 0 0 0 0 0 0 13 PGItem::state 0
+
+615 6 active 0 6 506 269 268 0 0 0 0 0 0 14 PGItem::active 0
+
+616 5 focus 0 6 506 271 270 0 0 0 0 0 0 13 PGItem::focus 0
+
+617 16 background_focus 0 6 506 273 272 0 0 0 0 0 0 24 PGItem::background_focus 0
+
+618 14 suppress_flags 0 6 505 275 274 0 0 0 0 0 0 22 PGItem::suppress_flags 0
+
+619 2 id 0 6 500 283 284 0 0 0 0 0 0 10 PGItem::id 0
+
+620 12 enter_prefix 0 2 501 286 0 0 0 0 0 0 0 20 PGItem::enter_prefix 0
+
+621 11 exit_prefix 0 2 501 287 0 0 0 0 0 0 0 19 PGItem::exit_prefix 0
+
+622 13 within_prefix 0 2 501 288 0 0 0 0 0 0 0 21 PGItem::within_prefix 0
+
+623 14 without_prefix 0 2 501 289 0 0 0 0 0 0 0 22 PGItem::without_prefix 0
+
+624 15 focus_in_prefix 0 2 501 290 0 0 0 0 0 0 0 23 PGItem::focus_in_prefix 0
+
+625 16 focus_out_prefix 0 2 501 291 0 0 0 0 0 0 0 24 PGItem::focus_out_prefix 0
+
+626 12 press_prefix 0 2 501 292 0 0 0 0 0 0 0 20 PGItem::press_prefix 0
+
+627 13 repeat_prefix 0 2 501 293 0 0 0 0 0 0 0 21 PGItem::repeat_prefix 0
+
+628 14 release_prefix 0 2 501 294 0 0 0 0 0 0 0 22 PGItem::release_prefix 0
+
+629 16 keystroke_prefix 0 2 501 295 0 0 0 0 0 0 0 24 PGItem::keystroke_prefix 0
+
+630 12 click_prefix 0 2 501 321 0 0 0 0 0 0 0 22 PGButton::click_prefix 0
+
+631 13 mouse_watcher 0 6 510 326 325 0 0 0 0 0 0 20 PGTop::mouse_watcher 0
+
+632 5 group 0 2 512 327 0 0 0 0 0 0 0 12 PGTop::group 0
+
+633 10 start_sort 0 6 505 329 328 0 0 0 0 0 0 17 PGTop::start_sort 0
+
+634 15 cursor_position 0 6 505 342 341 0 0 0 0 0 0 24 PGEntry::cursor_position 0
+
+635 9 max_chars 0 6 505 346 345 0 0 0 0 0 0 18 PGEntry::max_chars 0
+
+636 9 max_width 0 6 516 348 347 0 0 0 0 0 0 18 PGEntry::max_width 0
+
+637 9 num_lines 0 6 505 350 349 0 0 0 0 0 0 18 PGEntry::num_lines 0
+
+638 10 blink_rate 0 6 516 352 351 0 0 0 0 0 0 19 PGEntry::blink_rate 0
+
+639 10 cursor_def 0 2 499 353 0 0 0 0 0 0 0 19 PGEntry::cursor_def 0
+
+640 18 cursor_keys_active 0 6 506 356 355 0 0 0 0 0 0 27 PGEntry::cursor_keys_active 0
+
+641 12 obscure_mode 0 6 506 358 357 0 0 0 0 0 0 21 PGEntry::obscure_mode 0
+
+642 13 overflow_mode 0 6 506 360 359 0 0 0 0 0 0 22 PGEntry::overflow_mode 0
+
+643 16 candidate_active 0 6 500 362 361 0 0 0 0 0 0 25 PGEntry::candidate_active 0
+
+644 18 candidate_inactive 0 6 500 364 363 0 0 0 0 0 0 27 PGEntry::candidate_inactive 0
+
+645 6 active 0 6 506 367 368 0 0 0 0 0 0 15 PGEntry::active 97
+/**
+ * Returns whether the PGItem is currently active for mouse events.  See
+ * set_active().
+ */
+
+646 5 focus 0 6 506 369 370 0 0 0 0 0 0 14 PGEntry::focus 99
+/**
+ * Returns whether the PGItem currently has focus for keyboard events.  See
+ * set_focus().
+ */
+
+647 13 accept_prefix 0 2 501 371 0 0 0 0 0 0 0 22 PGEntry::accept_prefix 0
+
+648 20 accept_failed_prefix 0 2 501 372 0 0 0 0 0 0 0 29 PGEntry::accept_failed_prefix 0
+
+649 15 overflow_prefix 0 2 501 373 0 0 0 0 0 0 0 24 PGEntry::overflow_prefix 0
+
+650 11 type_prefix 0 2 501 374 0 0 0 0 0 0 0 20 PGEntry::type_prefix 0
+
+651 12 erase_prefix 0 2 501 375 0 0 0 0 0 0 0 21 PGEntry::erase_prefix 0
+
+652 17 cursormove_prefix 0 2 501 376 0 0 0 0 0 0 0 26 PGEntry::cursormove_prefix 0
+
+653 10 clip_frame 0 30 503 402 401 403 404 0 0 0 0 26 PGVirtualFrame::clip_frame 0
+
+654 16 canvas_transform 0 6 524 406 405 0 0 0 0 0 0 32 PGVirtualFrame::canvas_transform 0
+
+655 11 canvas_node 0 2 527 407 0 0 0 0 0 0 0 27 PGVirtualFrame::canvas_node 0
+
+656 13 canvas_parent 0 2 527 408 0 0 0 0 0 0 0 29 PGVirtualFrame::canvas_parent 0
+
+657 4 axis 0 6 531 419 418 0 0 0 0 0 0 17 PGSliderBar::axis 0
+
+658 11 scroll_size 0 6 516 424 423 0 0 0 0 0 0 24 PGSliderBar::scroll_size 0
+
+659 9 page_size 0 6 516 426 425 0 0 0 0 0 0 22 PGSliderBar::page_size 0
+
+660 5 value 0 6 516 428 427 0 0 0 0 0 0 18 PGSliderBar::value 0
+
+661 5 ratio 0 6 516 430 429 0 0 0 0 0 0 18 PGSliderBar::ratio 0
+
+662 11 button_down 0 2 506 431 0 0 0 0 0 0 0 24 PGSliderBar::button_down 0
+
+663 12 resize_thumb 0 6 506 433 432 0 0 0 0 0 0 25 PGSliderBar::resize_thumb 0
+
+664 13 manage_pieces 0 6 506 435 434 0 0 0 0 0 0 26 PGSliderBar::manage_pieces 0
+
+665 12 thumb_button 0 30 534 438 436 438 437 0 0 0 0 25 PGSliderBar::thumb_button 0
+
+666 11 left_button 0 30 534 441 439 441 440 0 0 0 0 24 PGSliderBar::left_button 0
+
+667 12 right_button 0 30 534 444 442 444 443 0 0 0 0 25 PGSliderBar::right_button 0
+
+668 13 adjust_prefix 0 2 501 445 0 0 0 0 0 0 0 26 PGSliderBar::adjust_prefix 0
+
+669 6 active 0 6 506 448 447 0 0 0 0 0 0 19 PGSliderBar::active 97
+/**
+ * Returns whether the PGItem is currently active for mouse events.  See
+ * set_active().
+ */
+
+670 13 virtual_frame 0 30 503 460 459 461 462 0 0 0 0 28 PGScrollFrame::virtual_frame 0
+
+671 13 manage_pieces 0 6 506 464 463 0 0 0 0 0 0 28 PGScrollFrame::manage_pieces 0
+
+672 9 auto_hide 0 6 506 466 465 0 0 0 0 0 0 24 PGScrollFrame::auto_hide 0
+
+673 17 horizontal_slider 0 30 537 469 467 469 468 0 0 0 0 32 PGScrollFrame::horizontal_slider 0
+
+674 15 vertical_slider 0 30 537 472 470 472 471 0 0 0 0 30 PGScrollFrame::vertical_slider 0
+
+675 5 range 0 6 516 479 478 0 0 0 0 0 0 16 PGWaitBar::range 0
+
+676 5 value 0 6 516 481 480 0 0 0 0 0 0 16 PGWaitBar::value 0
+
+677 9 bar_style 0 6 486 484 483 0 0 0 0 0 0 20 PGWaitBar::bar_style 0
+
+1
+678 14 get_state_defs 0 276 279 22 PGItem::get_state_defs 0
+

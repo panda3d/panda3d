@@ -1,0 +1,103 @@
+1775485970
+3 3
+11 libp3egg2pg 4 KLrJ 11 panda3d.egg 
+4
+5 13 load_egg_file 0 1 0 13 load_egg_file 0 1 1 0
+133
+PointerTo< PandaNode > load_egg_file(Filename const &filename, CoordinateSystem cs = ::CS_default, BamCacheRecord *record = nullptr);
+
+6 13 load_egg_data 0 1 0 13 load_egg_data 0 1 2 0
+88
+PointerTo< PandaNode > load_egg_data(EggData *data, CoordinateSystem cs = ::CS_default);
+
+7 13 save_egg_file 0 1 0 13 save_egg_file 0 1 3 0
+98
+bool save_egg_file(Filename const &filename, PandaNode *node, CoordinateSystem cs = ::CS_default);
+
+8 13 save_egg_data 0 1 0 13 save_egg_data 0 1 4 0
+51
+bool save_egg_data(EggData *data, PandaNode *node);
+
+4
+1 0 0 7 5 16 0 0 0 3 8 filename 1 10  2 cs 5 13  6 record 5 14  
+2 0 0 7 6 16 0 0 0 2 4 data 1 17  2 cs 5 13  
+3 0 0 6 7 19 0 0 0 3 8 filename 1 10  4 node 1 16  2 cs 5 13  
+4 0 0 6 8 19 0 0 0 2 4 data 1 17  4 node 1 16  
+11
+9 9 PandaNode 0 2048 9 PandaNode 9 PandaNode 0 0 0 0 0 0 0 0 0 0 0 0 175
+/**
+ * A basic node of the scene graph or data graph.  This is the base class of
+ * all specialized nodes, and also serves as a generic node with no special
+ * properties.
+ */
+
+10 16 Filename const * 0 8576 16 Filename const * 16 Filename const * 0 0 11 0 0 0 0 0 0 0 0 0 0
+
+11 14 Filename const 0 8832 14 Filename const 14 Filename const 0 0 12 0 0 0 0 0 0 0 0 0 0
+
+12 8 Filename 0 2048 8 Filename 8 Filename 0 0 0 0 0 0 0 0 0 0 0 0 839
+/**
+ * The name of a file, such as a texture file or an Egg file.  Stores the full
+ * pathname, and includes functions for extracting out the directory prefix
+ * part and the file extension and stuff.
+ *
+ * A Filename is also aware of the mapping between the Unix-like filename
+ * convention we use internally, and the local OS's specific filename
+ * convention, and it knows how to perform basic OS-specific I/O, like testing
+ * for file existence and searching a searchpath, as well as the best way to
+ * open an fstream for reading or writing.
+ *
+ * Note that the methods of Filename that interact with the filesystem (such
+ * as exists(), open_read(), etc.) directly interface with the operating system
+ * and are not aware of Panda's virtual file system.  To interact with the VFS,
+ * use the methods on VirtualFileSystem instead.
+ */
+
+13 16 CoordinateSystem 0 532480 16 CoordinateSystem 16 CoordinateSystem 0 0 0 0 0 0 0 0 0 0 6 10 CS_default 10 CS_default 210
+// The CS_default entry does not refer to a particular coordinate system,
+// but rather to the value stored in default_coordinate_system, which in
+// turn is loaded from the config variable "coordinate-system".
+0 12 CS_zup_right 12 CS_zup_right 21
+// Z-Up, Right-handed
+1 12 CS_yup_right 12 CS_yup_right 21
+// Y-Up, Right-handed
+2 11 CS_zup_left 11 CS_zup_left 20
+// Z-Up, Left-handed
+3 11 CS_yup_left 11 CS_yup_left 20
+// Y-Up, Left-handed
+4 10 CS_invalid 10 CS_invalid 156
+// CS_invalid is not a coordinate system at all.  It can be used in user-
+// input processing code to indicate a contradictory coordinate system
+// request.
+5 0 0
+
+14 16 BamCacheRecord * 0 8576 16 BamCacheRecord * 16 BamCacheRecord * 0 0 15 0 0 0 0 0 0 0 0 0 0
+
+15 14 BamCacheRecord 0 2048 14 BamCacheRecord 14 BamCacheRecord 0 0 0 0 0 0 0 0 0 0 0 0 231
+/**
+ * An instance of this class is written to the front of a Bam or Txo file to
+ * make the file a cached instance of some other loadable resource.  This
+ * record contains information needed to test the validity of the cache.
+ */
+
+16 11 PandaNode * 0 8576 11 PandaNode * 11 PandaNode * 0 0 9 0 0 0 0 0 0 0 0 0 0
+
+17 9 EggData * 0 8576 9 EggData * 9 EggData * 0 0 18 0 0 0 0 0 0 0 0 0 0
+
+18 7 EggData 0 2048 7 EggData 7 EggData 0 0 0 0 0 0 0 0 0 0 0 0 441
+/**
+ * This is the primary interface into all the egg data, and the root of the
+ * egg file structure.  An EggData structure corresponds exactly with an egg
+ * file on the disk.
+ *
+ * The EggData class inherits from EggGroupNode its collection of children,
+ * which are accessed by using the EggData itself as an STL container with
+ * begin() and end() calls.  The children of the EggData class are the
+ * toplevel nodes in the egg file.
+ */
+
+19 4 bool 0 8194 4 bool 4 bool 0 4 0 0 0 0 0 0 0 0 0 0 0
+
+0
+0
+0

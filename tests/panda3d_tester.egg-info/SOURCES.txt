@@ -1,0 +1,5 @@
+setup.py
+panda3d_tester.egg-info/PKG-INFO
+panda3d_tester.egg-info/SOURCES.txt
+panda3d_tester.egg-info/dependency_links.txt
+panda3d_tester.egg-info/top_level.txt

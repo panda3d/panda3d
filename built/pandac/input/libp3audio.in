@@ -1,0 +1,1060 @@
+1775484104
+3 3
+10 libp3audio 4 M_1l 12 panda3d.core 
+105
+107 16 FilterProperties 0 260 212 34 FilterProperties::FilterProperties 0 2 1 2 0
+120
+FilterProperties::FilterProperties(void);
+inline FilterProperties::FilterProperties(FilterProperties const &) = default;
+
+108 5 clear 0 4 212 23 FilterProperties::clear 0 1 3 42
+/**
+ * Removes all DSP postprocessing.
+ */
+42
+inline void FilterProperties::clear(void);
+
+109 11 add_lowpass 0 4 212 29 FilterProperties::add_lowpass 0 1 4 60
+/**
+ * Add a lowpass filter to the end of the DSP chain.
+ */
+92
+inline void FilterProperties::add_lowpass(PN_stdfloat cutoff_freq, PN_stdfloat resonance_q);
+
+110 12 add_highpass 0 4 212 30 FilterProperties::add_highpass 0 1 5 61
+/**
+ * Add a highpass filter to the end of the DSP chain.
+ */
+93
+inline void FilterProperties::add_highpass(PN_stdfloat cutoff_freq, PN_stdfloat resonance_q);
+
+111 8 add_echo 0 4 212 26 FilterProperties::add_echo 0 1 6 57
+/**
+ * Add a echo filter to the end of the DSP chain.
+ */
+122
+inline void FilterProperties::add_echo(PN_stdfloat drymix, PN_stdfloat wetmix, PN_stdfloat delay, PN_stdfloat decayratio);
+
+112 10 add_flange 0 4 212 28 FilterProperties::add_flange 0 1 7 59
+/**
+ * Add a flange filter to the end of the DSP chain.
+ */
+118
+inline void FilterProperties::add_flange(PN_stdfloat drymix, PN_stdfloat wetmix, PN_stdfloat depth, PN_stdfloat rate);
+
+113 11 add_distort 0 4 212 29 FilterProperties::add_distort 0 1 8 60
+/**
+ * Add a distort filter to the end of the DSP chain.
+ */
+61
+inline void FilterProperties::add_distort(PN_stdfloat level);
+
+114 13 add_normalize 0 4 212 31 FilterProperties::add_normalize 0 1 9 62
+/**
+ * Add a normalize filter to the end of the DSP chain.
+ */
+109
+inline void FilterProperties::add_normalize(PN_stdfloat fadetime, PN_stdfloat threshold, PN_stdfloat maxamp);
+
+115 11 add_parameq 0 4 212 29 FilterProperties::add_parameq 0 1 10 60
+/**
+ * Add a parameq filter to the end of the DSP chain.
+ */
+108
+inline void FilterProperties::add_parameq(PN_stdfloat center_freq, PN_stdfloat bandwidth, PN_stdfloat gain);
+
+116 14 add_pitchshift 0 4 212 32 FilterProperties::add_pitchshift 0 1 11 63
+/**
+ * Add a pitchshift filter to the end of the DSP chain.
+ */
+106
+inline void FilterProperties::add_pitchshift(PN_stdfloat pitch, PN_stdfloat fftsize, PN_stdfloat overlap);
+
+117 10 add_chorus 0 4 212 28 FilterProperties::add_chorus 0 1 12 59
+/**
+ * Add a chorus filter to the end of the DSP chain.
+ */
+171
+inline void FilterProperties::add_chorus(PN_stdfloat drymix, PN_stdfloat wet1, PN_stdfloat wet2, PN_stdfloat wet3, PN_stdfloat delay, PN_stdfloat rate, PN_stdfloat depth);
+
+118 13 add_sfxreverb 0 4 212 31 FilterProperties::add_sfxreverb 0 1 13 59
+/**
+ * Add a reverb filter to the end of the DSP chain.
+ */
+491
+inline void FilterProperties::add_sfxreverb(PN_stdfloat drylevel = 0, PN_stdfloat room = -10000, PN_stdfloat roomhf = 0, PN_stdfloat decaytime = 1, PN_stdfloat decayhfratio = 0.5, PN_stdfloat reflectionslevel = -10000, PN_stdfloat reflectionsdelay = 0.020000000000000005, PN_stdfloat reverblevel = 0, PN_stdfloat reverbdelay = 0.04000000000000001, PN_stdfloat diffusion = 100, PN_stdfloat density = 100, PN_stdfloat hfreference = 5000, PN_stdfloat roomlf = 0, PN_stdfloat lfreference = 250);
+
+119 12 add_compress 0 4 212 30 FilterProperties::add_compress 0 1 14 61
+/**
+ * Add a compress filter to the end of the DSP chain.
+ */
+131
+inline void FilterProperties::add_compress(PN_stdfloat threshold, PN_stdfloat attack, PN_stdfloat release, PN_stdfloat gainmakeup);
+
+120 14 get_class_type 0 4 212 32 FilterProperties::get_class_type 0 1 15 0
+57
+static TypeHandle FilterProperties::get_class_type(void);
+
+121 4 play 0 6 214 16 AudioSound::play 0 1 16 350
+// For best compatibility, set the loop_count, volume, and balance, prior to
+// calling play().  You may set them while they're playing, but it's
+// implementation specific whether you get the results.  - Calling play() a
+// second time on the same sound before it is finished will start the sound
+// again (creating a skipping or stuttering effect).
+40
+virtual void AudioSound::play(void) = 0;
+
+122 4 stop 0 6 214 16 AudioSound::stop 0 1 17 0
+40
+virtual void AudioSound::stop(void) = 0;
+
+123 8 set_loop 0 6 214 20 AudioSound::set_loop 0 1 18 65
+// loop: false = play once; true = play forever.  inits to false.
+56
+virtual void AudioSound::set_loop(bool loop = true) = 0;
+
+124 8 get_loop 0 6 214 20 AudioSound::get_loop 0 1 19 0
+50
+virtual bool AudioSound::get_loop(void) const = 0;
+
+125 14 set_loop_count 0 6 214 26 AudioSound::set_loop_count 0 1 20 73
+// loop_count: 0 = forever; 1 = play once; n = play n times.  inits to 1.
+78
+virtual void AudioSound::set_loop_count(unsigned long int loop_count = 1) = 0;
+
+126 14 get_loop_count 0 6 214 26 AudioSound::get_loop_count 0 1 21 0
+69
+virtual unsigned long int AudioSound::get_loop_count(void) const = 0;
+
+127 14 set_loop_start 0 6 214 26 AudioSound::set_loop_start 0 1 22 65
+// loop_start: 0 = beginning.  expressed in seconds.  inits to 0.
+72
+virtual void AudioSound::set_loop_start(PN_stdfloat loop_start = 0) = 0;
+
+128 14 get_loop_start 0 6 214 26 AudioSound::get_loop_start 0 1 23 0
+63
+virtual PN_stdfloat AudioSound::get_loop_start(void) const = 0;
+
+129 8 set_time 0 6 214 20 AudioSound::set_time 0 1 24 1314
+/**
+   * Control time position within the sound, in seconds.  This is similar (in
+   * concept) to the seek position within a file.  The value starts at 0.0 (the
+   * default) and ends at the value given by the length() method.
+   *
+   * In the past, this call did nothing if the sound was currently playing, and
+   * it was necessary to call play() to effect the change.  This is no longer
+   * the case; the time change takes effect immediately.
+   *
+   * If a sound is playing, calling get_time() repeatedly will return different
+   * results over time.  e.g.
+   * @code
+   * PN_stdfloat percent_complete = s.get_time() / s.length();
+   * @endcode
+   */
+
+/**
+   * Control time position within the sound, in seconds.  This is similar (in
+   * concept) to the seek position within a file.  The value starts at 0.0 (the
+   * default) and ends at the value given by the length() method.
+   *
+   * In the past, this call did nothing if the sound was currently playing, and
+   * it was necessary to call play() to effect the change.  This is no longer
+   * the case; the time change takes effect immediately.
+   *
+   * If a sound is playing, calling get_time() repeatedly will return different
+   * results over time.  e.g.
+   * @code
+   * PN_stdfloat percent_complete = s.get_time() / s.length();
+   * @endcode
+   */
+68
+virtual void AudioSound::set_time(PN_stdfloat start_time = 0.0) = 0;
+
+130 8 get_time 0 6 214 20 AudioSound::get_time 0 1 25 0
+57
+virtual PN_stdfloat AudioSound::get_time(void) const = 0;
+
+131 10 set_volume 0 6 214 22 AudioSound::set_volume 0 1 26 92
+// 0 = minimum; 1.0 = maximum.  inits to 1.0.
+
+// 0 = minimum; 1.0 = maximum.  inits to 1.0.
+66
+virtual void AudioSound::set_volume(PN_stdfloat volume = 1.0) = 0;
+
+132 10 get_volume 0 6 214 22 AudioSound::get_volume 0 1 27 0
+59
+virtual PN_stdfloat AudioSound::get_volume(void) const = 0;
+
+133 11 set_balance 0 6 214 23 AudioSound::set_balance 0 1 28 138
+// -1.0 is hard left 0.0 is centered 1.0 is hard right inits to 0.0.
+
+// -1.0 is hard left 0.0 is centered 1.0 is hard right inits to 0.0.
+74
+virtual void AudioSound::set_balance(PN_stdfloat balance_right = 0.0) = 0;
+
+134 11 get_balance 0 6 214 23 AudioSound::get_balance 0 1 29 0
+60
+virtual PN_stdfloat AudioSound::get_balance(void) const = 0;
+
+135 13 set_play_rate 0 6 214 25 AudioSound::set_play_rate 0 1 30 126
+// play_rate is any positive PN_stdfloat value.  inits to 1.0.
+
+// play_rate is any positive PN_stdfloat value.  inits to 1.0.
+72
+virtual void AudioSound::set_play_rate(PN_stdfloat play_rate = 1.0) = 0;
+
+136 13 get_play_rate 0 6 214 25 AudioSound::get_play_rate 0 1 31 0
+62
+virtual PN_stdfloat AudioSound::get_play_rate(void) const = 0;
+
+137 10 set_active 0 6 214 22 AudioSound::set_active 0 1 32 58
+// inits to manager's state.
+
+// inits to manager's state.
+58
+virtual void AudioSound::set_active(bool flag = true) = 0;
+
+138 10 get_active 0 6 214 22 AudioSound::get_active 0 1 33 0
+52
+virtual bool AudioSound::get_active(void) const = 0;
+
+139 18 set_finished_event 0 6 214 30 AudioSound::set_finished_event 0 1 34 126
+// Set (or clear) the event that will be thrown when the sound finishes
+// playing.  To clear the event, pass an empty string.
+74
+virtual void AudioSound::set_finished_event(std::string const &event) = 0;
+
+140 18 get_finished_event 0 6 214 30 AudioSound::get_finished_event 0 1 35 0
+74
+virtual std::string const &AudioSound::get_finished_event(void) const = 0;
+
+141 8 get_name 0 6 214 20 AudioSound::get_name 0 1 36 96
+// There is no set_name(), this is intentional.
+
+// There is no set_name(), this is intentional.
+64
+virtual std::string const &AudioSound::get_name(void) const = 0;
+
+142 13 is_positional 0 4 214 25 AudioSound::is_positional 0 1 37 66
+/**
+ * Returns true if this was created as a positional sound.
+ */
+50
+inline bool AudioSound::is_positional(void) const;
+
+143 6 length 0 6 214 18 AudioSound::length 0 1 38 35
+// return: playing time in seconds.
+55
+virtual PN_stdfloat AudioSound::length(void) const = 0;
+
+144 17 set_3d_attributes 0 6 214 29 AudioSound::set_3d_attributes 0 1 39 179
+// Controls the position of this sound's emitter.  px, py and pz are the
+// emitter's position.  vx, vy and vz are the emitter's velocity in UNITS
+// PER SECOND (default: meters).
+139
+virtual void AudioSound::set_3d_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx, PN_stdfloat vy, PN_stdfloat vz);
+
+145 17 get_3d_attributes 0 6 214 29 AudioSound::get_3d_attributes 0 0 0
+145
+virtual void AudioSound::get_3d_attributes(PN_stdfloat *px, PN_stdfloat *py, PN_stdfloat *pz, PN_stdfloat *vx, PN_stdfloat *vy, PN_stdfloat *vz);
+
+146 16 set_3d_direction 0 6 214 28 AudioSound::set_3d_direction 0 1 40 87
+// Controls the direction of this sound emitter. Currently implemented only for OpenAL.
+54
+virtual void AudioSound::set_3d_direction(LVector3 d);
+
+147 16 get_3d_direction 0 6 214 28 AudioSound::get_3d_direction 0 1 41 0
+58
+virtual LVector3 AudioSound::get_3d_direction(void) const;
+
+148 19 set_3d_min_distance 0 6 214 31 AudioSound::set_3d_min_distance 0 1 42 168
+// Controls the distance (in units) that this sound begins to fall off.
+// Also affects the rate it falls off.  Default is 1.0 CloserFaster, <1.0
+// FartherSlower, >1.0
+63
+virtual void AudioSound::set_3d_min_distance(PN_stdfloat dist);
+
+149 19 get_3d_min_distance 0 6 214 31 AudioSound::get_3d_min_distance 0 1 43 0
+64
+virtual PN_stdfloat AudioSound::get_3d_min_distance(void) const;
+
+150 19 set_3d_max_distance 0 6 214 31 AudioSound::set_3d_max_distance 0 1 44 222
+// Controls the maximum distance (in units) that this sound stops falling
+// off.  The sound does not stop at that point, it just doesn't get any
+// quieter.  You should rarely need to adjust this.  Default is 1000000000.0
+63
+virtual void AudioSound::set_3d_max_distance(PN_stdfloat dist);
+
+151 19 get_3d_max_distance 0 6 214 31 AudioSound::get_3d_max_distance 0 1 45 0
+64
+virtual PN_stdfloat AudioSound::get_3d_max_distance(void) const;
+
+152 23 set_3d_cone_inner_angle 0 6 214 35 AudioSound::set_3d_cone_inner_angle 0 1 46 169
+// Sets the angle of the inner cone of a directional sound source. In the zone inside of the inner cone
+// sound is emitted with the (normal) volume set by set_volume().
+68
+virtual void AudioSound::set_3d_cone_inner_angle(PN_stdfloat angle);
+
+153 23 get_3d_cone_inner_angle 0 6 214 35 AudioSound::get_3d_cone_inner_angle 0 1 47 0
+68
+virtual PN_stdfloat AudioSound::get_3d_cone_inner_angle(void) const;
+
+154 23 set_3d_cone_outer_angle 0 6 214 35 AudioSound::set_3d_cone_outer_angle 0 1 48 144
+// Sets the angle of the outer cone of a directional sound source. In the zone between
+// the inner and the outer cone the volume is attenuated.
+68
+virtual void AudioSound::set_3d_cone_outer_angle(PN_stdfloat angle);
+
+155 23 get_3d_cone_outer_angle 0 6 214 35 AudioSound::get_3d_cone_outer_angle 0 1 49 0
+68
+virtual PN_stdfloat AudioSound::get_3d_cone_outer_angle(void) const;
+
+156 22 set_3d_cone_outer_gain 0 6 214 34 AudioSound::set_3d_cone_outer_gain 0 1 50 165
+// Sets a factor applied to the volume set by set_volume() for the zone outside the outer cone.
+// By default this is 0 (so no sound is heard inside the outer zone).
+66
+virtual void AudioSound::set_3d_cone_outer_gain(PN_stdfloat gain);
+
+157 22 get_3d_cone_outer_gain 0 6 214 34 AudioSound::get_3d_cone_outer_gain 0 1 51 0
+67
+virtual PN_stdfloat AudioSound::get_3d_cone_outer_gain(void) const;
+
+158 15 get_speaker_mix 0 6 214 27 AudioSound::get_speaker_mix 0 1 52 36
+// speaker_mix is for use with FMOD.
+61
+virtual PN_stdfloat AudioSound::get_speaker_mix(int speaker);
+
+159 15 set_speaker_mix 0 6 214 27 AudioSound::set_speaker_mix 0 1 53 0
+215
+virtual void AudioSound::set_speaker_mix(PN_stdfloat frontleft, PN_stdfloat frontright, PN_stdfloat center, PN_stdfloat sub, PN_stdfloat backleft, PN_stdfloat backright, PN_stdfloat sideleft, PN_stdfloat sideright);
+
+160 12 get_priority 0 6 214 24 AudioSound::get_priority 0 1 54 0
+43
+virtual int AudioSound::get_priority(void);
+
+161 12 set_priority 0 6 214 24 AudioSound::set_priority 0 1 55 0
+52
+virtual void AudioSound::set_priority(int priority);
+
+162 17 configure_filters 0 6 214 29 AudioSound::configure_filters 0 1 56 0
+69
+virtual bool AudioSound::configure_filters(FilterProperties *config);
+
+163 6 status 0 6 214 18 AudioSound::status 0 1 57 0
+67
+virtual AudioSound::SoundStatus AudioSound::status(void) const = 0;
+
+164 11 has_comment 0 4 214 23 AudioSound::has_comment 0 1 58 0
+59
+bool AudioSound::has_comment(std::string const &key) const;
+
+165 11 get_comment 0 4 214 23 AudioSound::get_comment 0 1 59 0
+66
+std::string AudioSound::get_comment(std::string const &key) const;
+
+166 15 get_raw_comment 0 6 214 27 AudioSound::get_raw_comment 0 2 60 61 0
+127
+virtual vector_string const &AudioSound::get_raw_comment(void) const;
+std::string AudioSound::get_raw_comment(int index) const;
+
+167 20 get_num_raw_comments 0 4 214 32 AudioSound::get_num_raw_comments 0 1 62 0
+49
+int AudioSound::get_num_raw_comments(void) const;
+
+168 6 output 0 6 214 18 AudioSound::output 0 1 63 0
+57
+virtual void AudioSound::output(std::ostream &out) const;
+
+169 5 write 0 6 214 17 AudioSound::write 0 1 64 0
+56
+virtual void AudioSound::write(std::ostream &out) const;
+
+170 14 get_class_type 0 4 214 26 AudioSound::get_class_type 0 1 65 0
+51
+static TypeHandle AudioSound::get_class_type(void);
+
+171 17 get_speaker_setup 0 6 222 31 AudioManager::get_speaker_setup 0 1 66 0
+50
+virtual int AudioManager::get_speaker_setup(void);
+
+172 17 set_speaker_setup 0 6 222 31 AudioManager::set_speaker_setup 0 1 67 0
+84
+virtual void AudioManager::set_speaker_setup(AudioManager::SpeakerModeCategory cat);
+
+173 17 configure_filters 0 6 222 31 AudioManager::configure_filters 0 1 68 0
+71
+virtual bool AudioManager::configure_filters(FilterProperties *config);
+
+174 19 create_AudioManager 0 4 222 33 AudioManager::create_AudioManager 0 1 69 0
+73
+static PointerTo< AudioManager > AudioManager::create_AudioManager(void);
+
+175 8 shutdown 0 6 222 22 AudioManager::shutdown 0 1 70 0
+42
+virtual void AudioManager::shutdown(void);
+
+176 8 is_valid 0 6 222 22 AudioManager::is_valid 0 1 71 408
+// If you're interested in knowing whether this audio manager is valid,
+// here's the call to do it.  It is not necessary to check whether the audio
+// manager is valid before making other calls.  You are free to use an
+// invalid sound manager, you may get silent sounds from it though.  The
+// sound manager and the sounds it creates should not crash the application
+// even when the objects are not valid.
+46
+virtual bool AudioManager::is_valid(void) = 0;
+
+177 9 get_sound 0 6 222 23 AudioManager::get_sound 0 2 72 73 15
+// Get a sound:
+300
+virtual PointerTo< AudioSound > AudioManager::get_sound(Filename const &file_name, bool positional = false, int mode = ::AudioManager::SM_heuristic) = 0;
+virtual PointerTo< AudioSound > AudioManager::get_sound(MovieAudio *source, bool positional = false, int mode = ::AudioManager::SM_heuristic) = 0;
+
+178 14 get_null_sound 0 4 222 28 AudioManager::get_null_sound 0 1 74 0
+59
+PointerTo< AudioSound > AudioManager::get_null_sound(void);
+
+179 13 uncache_sound 0 6 222 27 AudioManager::uncache_sound 0 1 75 278
+// Tell the AudioManager there is no need to keep this one cached.  This
+// doesn't break any connection between AudioSounds that have already given
+// by get_sound() from this manager.  It's only affecting whether the
+// AudioManager keeps a copy of the sound in its poolcache.
+72
+virtual void AudioManager::uncache_sound(Filename const &file_name) = 0;
+
+180 11 clear_cache 0 6 222 25 AudioManager::clear_cache 0 1 76 0
+49
+virtual void AudioManager::clear_cache(void) = 0;
+
+181 15 set_cache_limit 0 6 222 29 AudioManager::set_cache_limit 0 1 77 0
+67
+virtual void AudioManager::set_cache_limit(unsigned int count) = 0;
+
+182 15 get_cache_limit 0 6 222 29 AudioManager::get_cache_limit 0 1 78 0
+67
+virtual unsigned int AudioManager::get_cache_limit(void) const = 0;
+
+183 10 set_volume 0 6 222 24 AudioManager::set_volume 0 1 79 194
+// Control volume: FYI: If you start a sound with the volume off and turn
+// the volume up later, you'll hear the sound playing at that late point.  0
+// = minimum; 1.0 = maximum.  inits to 1.0.
+62
+virtual void AudioManager::set_volume(PN_stdfloat volume) = 0;
+
+184 10 get_volume 0 6 222 24 AudioManager::get_volume 0 1 80 0
+61
+virtual PN_stdfloat AudioManager::get_volume(void) const = 0;
+
+185 10 set_active 0 6 222 24 AudioManager::set_active 0 1 81 360
+// Turn the manager on or off.  If you play a sound while the manager is
+// inactive, it won't start.  If you deactivate the manager while sounds are
+// playing, they'll stop.  If you activate the manager while looping sounds
+// are playing (those that have a loop_count of zero), they will start
+// playing from the beginning of their loop.  Defaults to true.
+53
+virtual void AudioManager::set_active(bool flag) = 0;
+
+186 10 get_active 0 6 222 24 AudioManager::get_active 0 1 82 0
+54
+virtual bool AudioManager::get_active(void) const = 0;
+
+187 26 set_concurrent_sound_limit 0 6 222 40 AudioManager::set_concurrent_sound_limit 0 1 83 343
+// This controls the number of sounds that you allow at once.  This is more
+// of a user choice -- it avoids talk over and the creation of a cacophony.
+// It can also be used to help performance.  0 == unlimited.  1 == mutually
+// exclusive (one sound at a time).  Which is an example of: n == allow n
+// sounds to be playing at the same time.
+82
+virtual void AudioManager::set_concurrent_sound_limit(unsigned int limit = 0) = 0;
+
+188 26 get_concurrent_sound_limit 0 6 222 40 AudioManager::get_concurrent_sound_limit 0 1 84 0
+78
+virtual unsigned int AudioManager::get_concurrent_sound_limit(void) const = 0;
+
+189 24 reduce_sounds_playing_to 0 6 222 38 AudioManager::reduce_sounds_playing_to 0 1 85 369
+// This is likely to be a utility function for the concurrent_sound_limit
+// options.  It is exposed as an API, because it's reasonable that it may be
+// useful to be here.  It reduces the number of concurrently playing sounds
+// to count by some implementation specific means.  If the number of sounds
+// currently playing is at or below count then there is no effect.
+76
+virtual void AudioManager::reduce_sounds_playing_to(unsigned int count) = 0;
+
+190 15 stop_all_sounds 0 6 222 29 AudioManager::stop_all_sounds 0 1 86 183
+// Stop playback on all sounds managed by this manager.  This is effectively
+// the same as reduce_sounds_playing_to(0), but this call may be for
+// efficient on some implementations.
+53
+virtual void AudioManager::stop_all_sounds(void) = 0;
+
+191 6 update 0 6 222 20 AudioManager::update 0 1 87 76
+// This should be called every frame.  Failure to call could cause problems.
+40
+virtual void AudioManager::update(void);
+
+192 32 audio_3d_set_listener_attributes 0 6 222 46 AudioManager::audio_3d_set_listener_attributes 0 1 88 326
+// This controls the "set of ears" that listens to 3D spacialized sound px,
+// py, pz are position coordinates.  vx, vy, vz are a velocity vector in
+// UNITS PER SECOND (default: meters). fx, fy and fz are the respective
+// components of a unit forward-vector ux, uy and uz are the respective
+// components of a unit up-vector
+252
+virtual void AudioManager::audio_3d_set_listener_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx, PN_stdfloat vy, PN_stdfloat vz, PN_stdfloat fx, PN_stdfloat fy, PN_stdfloat fz, PN_stdfloat ux, PN_stdfloat uy, PN_stdfloat uz);
+
+193 32 audio_3d_get_listener_attributes 0 6 222 46 AudioManager::audio_3d_get_listener_attributes 0 0 0
+264
+virtual void AudioManager::audio_3d_get_listener_attributes(PN_stdfloat *px, PN_stdfloat *py, PN_stdfloat *pz, PN_stdfloat *vx, PN_stdfloat *vy, PN_stdfloat *vz, PN_stdfloat *fx, PN_stdfloat *fy, PN_stdfloat *fz, PN_stdfloat *ux, PN_stdfloat *uy, PN_stdfloat *uz);
+
+194 28 audio_3d_set_distance_factor 0 6 222 42 AudioManager::audio_3d_set_distance_factor 0 1 89 305
+// Control the "relative scale that sets the distance factor" units for 3D
+// spacialized audio. This is a float in units-per-meter. Default value is
+// 1.0, which means that Panda units are understood as meters; for e.g.
+// feet, set 3.28. This factor is applied only to Fmod and OpenAL at the
+// moment.
+76
+virtual void AudioManager::audio_3d_set_distance_factor(PN_stdfloat factor);
+
+195 28 audio_3d_get_distance_factor 0 6 222 42 AudioManager::audio_3d_get_distance_factor 0 1 90 0
+75
+virtual PN_stdfloat AudioManager::audio_3d_get_distance_factor(void) const;
+
+196 27 audio_3d_set_doppler_factor 0 6 222 41 AudioManager::audio_3d_set_doppler_factor 0 1 91 123
+// Control the presence of the Doppler effect.  Default is 1.0 Exaggerated
+// Doppler, use >1.0 Diminshed Doppler, use <1.0
+75
+virtual void AudioManager::audio_3d_set_doppler_factor(PN_stdfloat factor);
+
+197 27 audio_3d_get_doppler_factor 0 6 222 41 AudioManager::audio_3d_get_doppler_factor 0 1 92 0
+74
+virtual PN_stdfloat AudioManager::audio_3d_get_doppler_factor(void) const;
+
+198 28 audio_3d_set_drop_off_factor 0 6 222 42 AudioManager::audio_3d_set_drop_off_factor 0 1 93 155
+// Exaggerate or diminish the effect of distance on sound.  Default is 1.0
+// Valid range is 0 to 10 Faster drop off, use >1.0 Slower drop off, use
+// <1.0
+76
+virtual void AudioManager::audio_3d_set_drop_off_factor(PN_stdfloat factor);
+
+199 28 audio_3d_get_drop_off_factor 0 6 222 42 AudioManager::audio_3d_get_drop_off_factor 0 1 94 0
+75
+virtual PN_stdfloat AudioManager::audio_3d_get_drop_off_factor(void) const;
+
+200 16 get_dls_pathname 0 4 222 30 AudioManager::get_dls_pathname 0 1 95 0
+53
+static Filename AudioManager::get_dls_pathname(void);
+
+201 6 output 0 6 222 20 AudioManager::output 0 1 96 0
+59
+virtual void AudioManager::output(std::ostream &out) const;
+
+202 5 write 0 6 222 19 AudioManager::write 0 1 97 0
+58
+virtual void AudioManager::write(std::ostream &out) const;
+
+203 14 get_class_type 0 4 222 28 AudioManager::get_class_type 0 1 98 0
+53
+static TypeHandle AudioManager::get_class_type(void);
+
+204 16 AudioLoadRequest 0 260 227 34 AudioLoadRequest::AudioLoadRequest 0 2 99 100 238
+/**
+ * Create a new AudioLoadRequest, and add it to the loader via load_async(),
+ * to begin an asynchronous load.
+ */
+
+/**
+ * Create a new AudioLoadRequest, and add it to the loader via load_async(),
+ * to begin an asynchronous load.
+ */
+241
+inline explicit AudioLoadRequest::AudioLoadRequest(AudioManager *audio_manager, Filename const &filename, bool positional);
+inline explicit AudioLoadRequest::AudioLoadRequest(AudioManager *audio_manager, MovieAudio *source, bool positional);
+
+205 17 get_audio_manager 0 4 227 35 AudioLoadRequest::get_audio_manager 0 1 101 90
+/**
+ * Returns the AudioManager that will serve this asynchronous
+ * AudioLoadRequest.
+ */
+69
+inline AudioManager *AudioLoadRequest::get_audio_manager(void) const;
+
+206 12 get_filename 0 4 227 30 AudioLoadRequest::get_filename 0 1 102 83
+/**
+ * Returns the filename associated with this asynchronous AudioLoadRequest.
+ */
+66
+inline Filename const &AudioLoadRequest::get_filename(void) const;
+
+207 14 get_positional 0 4 227 32 AudioLoadRequest::get_positional 0 1 103 93
+/**
+ * Returns the positional flag associated with this asynchronous
+ * AudioLoadRequest.
+ */
+57
+inline bool AudioLoadRequest::get_positional(void) const;
+
+208 8 is_ready 0 4 227 26 AudioLoadRequest::is_ready 0 1 104 242
+/**
+ * Returns true if this request has completed, false if it is still pending.
+ * When this returns true, you may retrieve the sound loaded by calling
+ * get_sound().
+ * Equivalent to `req.done() and not req.cancelled()`.
+ * @see done()
+ */
+51
+inline bool AudioLoadRequest::is_ready(void) const;
+
+209 9 get_sound 0 4 227 27 AudioLoadRequest::get_sound 0 1 105 202
+/**
+ * Returns the sound that was loaded asynchronously, if any, or nullptr if
+ * there was an error.  It is an error to call this unless done() returns
+ * true.
+ * @deprecated Use result() instead.
+ */
+59
+inline AudioSound *AudioLoadRequest::get_sound(void) const;
+
+210 14 get_class_type 0 4 227 32 AudioLoadRequest::get_class_type 0 1 106 0
+57
+static TypeHandle AudioLoadRequest::get_class_type(void);
+
+211 17 ~AudioLoadRequest 0 516 227 35 AudioLoadRequest::~AudioLoadRequest 0 0 0
+42
+AudioLoadRequest::~AudioLoadRequest(void);
+
+106
+1 0 0 7 107 229 0 0 0 0 
+2 0 0 15 107 229 0 0 0 1 6 param0 0 230  
+3 0 0 4 108 232 0 0 42 /**
+ * Removes all DSP postprocessing.
+ */ 1 4 this 3 229  
+4 0 0 4 109 232 0 0 60 /**
+ * Add a lowpass filter to the end of the DSP chain.
+ */ 3 4 this 3 229  11 cutoff_freq 1 218  11 resonance_q 1 218  
+5 0 0 4 110 232 0 0 61 /**
+ * Add a highpass filter to the end of the DSP chain.
+ */ 3 4 this 3 229  11 cutoff_freq 1 218  11 resonance_q 1 218  
+6 0 0 4 111 232 0 0 57 /**
+ * Add a echo filter to the end of the DSP chain.
+ */ 5 4 this 3 229  6 drymix 1 218  6 wetmix 1 218  5 delay 1 218  10 decayratio 1 218  
+7 0 0 4 112 232 0 0 59 /**
+ * Add a flange filter to the end of the DSP chain.
+ */ 5 4 this 3 229  6 drymix 1 218  6 wetmix 1 218  5 depth 1 218  4 rate 1 218  
+8 0 0 4 113 232 0 0 60 /**
+ * Add a distort filter to the end of the DSP chain.
+ */ 2 4 this 3 229  5 level 1 218  
+9 0 0 4 114 232 0 0 62 /**
+ * Add a normalize filter to the end of the DSP chain.
+ */ 4 4 this 3 229  8 fadetime 1 218  9 threshold 1 218  6 maxamp 1 218  
+10 0 0 4 115 232 0 0 60 /**
+ * Add a parameq filter to the end of the DSP chain.
+ */ 4 4 this 3 229  11 center_freq 1 218  9 bandwidth 1 218  4 gain 1 218  
+11 0 0 4 116 232 0 0 63 /**
+ * Add a pitchshift filter to the end of the DSP chain.
+ */ 4 4 this 3 229  5 pitch 1 218  7 fftsize 1 218  7 overlap 1 218  
+12 0 0 4 117 232 0 0 59 /**
+ * Add a chorus filter to the end of the DSP chain.
+ */ 8 4 this 3 229  6 drymix 1 218  4 wet1 1 218  4 wet2 1 218  4 wet3 1 218  5 delay 1 218  4 rate 1 218  5 depth 1 218  
+13 0 0 4 118 232 0 0 59 /**
+ * Add a reverb filter to the end of the DSP chain.
+ */ 15 4 this 3 229  8 drylevel 5 218  4 room 5 218  6 roomhf 5 218  9 decaytime 5 218  12 decayhfratio 5 218  16 reflectionslevel 5 218  16 reflectionsdelay 5 218  11 reverblevel 5 218  11 reverbdelay 5 218  9 diffusion 5 218  7 density 5 218  11 hfreference 5 218  6 roomlf 5 218  11 lfreference 5 218  
+14 0 0 4 119 232 0 0 61 /**
+ * Add a compress filter to the end of the DSP chain.
+ */ 5 4 this 3 229  9 threshold 1 218  6 attack 1 218  7 release 1 218  10 gainmakeup 1 218  
+15 0 0 7 120 234 0 0 0 0 
+16 0 0 4 121 232 0 0 350 // For best compatibility, set the loop_count, volume, and balance, prior to
+// calling play().  You may set them while they're playing, but it's
+// implementation specific whether you get the results.  - Calling play() a
+// second time on the same sound before it is finished will start the sound
+// again (creating a skipping or stuttering effect). 1 4 this 3 235  
+17 0 0 4 122 232 0 0 0 1 4 this 3 235  
+18 0 0 4 123 232 0 0 65 // loop: false = play once; true = play forever.  inits to false. 2 4 this 3 235  4 loop 5 220  
+19 0 0 6 124 220 0 0 0 1 4 this 3 236  
+20 0 0 4 125 232 0 0 73 // loop_count: 0 = forever; 1 = play once; n = play n times.  inits to 1. 2 4 this 3 235  10 loop_count 5 238  
+21 0 0 6 126 238 0 0 0 1 4 this 3 236  
+22 0 0 4 127 232 0 0 65 // loop_start: 0 = beginning.  expressed in seconds.  inits to 0. 2 4 this 3 235  10 loop_start 5 218  
+23 0 0 6 128 218 0 0 0 1 4 this 3 236  
+24 0 0 4 129 232 0 0 656 /**
+   * Control time position within the sound, in seconds.  This is similar (in
+   * concept) to the seek position within a file.  The value starts at 0.0 (the
+   * default) and ends at the value given by the length() method.
+   *
+   * In the past, this call did nothing if the sound was currently playing, and
+   * it was necessary to call play() to effect the change.  This is no longer
+   * the case; the time change takes effect immediately.
+   *
+   * If a sound is playing, calling get_time() repeatedly will return different
+   * results over time.  e.g.
+   * @code
+   * PN_stdfloat percent_complete = s.get_time() / s.length();
+   * @endcode
+   */ 2 4 this 3 235  10 start_time 5 218  
+25 0 0 6 130 218 0 0 0 1 4 this 3 236  
+26 0 0 4 131 232 0 0 45 // 0 = minimum; 1.0 = maximum.  inits to 1.0. 2 4 this 3 235  6 volume 5 218  
+27 0 0 6 132 218 0 0 0 1 4 this 3 236  
+28 0 0 4 133 232 0 0 68 // -1.0 is hard left 0.0 is centered 1.0 is hard right inits to 0.0. 2 4 this 3 235  13 balance_right 5 218  
+29 0 0 6 134 218 0 0 0 1 4 this 3 236  
+30 0 0 4 135 232 0 0 62 // play_rate is any positive PN_stdfloat value.  inits to 1.0. 2 4 this 3 235  9 play_rate 5 218  
+31 0 0 6 136 218 0 0 0 1 4 this 3 236  
+32 0 0 4 137 232 0 0 28 // inits to manager's state. 2 4 this 3 235  4 flag 5 220  
+33 0 0 6 138 220 0 0 0 1 4 this 3 236  
+34 0 0 4 139 232 0 0 126 // Set (or clear) the event that will be thrown when the sound finishes
+// playing.  To clear the event, pass an empty string. 2 4 this 3 235  5 event 1 239  
+35 0 0 6 140 239 0 0 0 1 4 this 3 236  
+36 0 0 6 141 239 0 0 47 // There is no set_name(), this is intentional. 1 4 this 3 236  
+37 0 0 6 142 220 0 0 66 /**
+ * Returns true if this was created as a positional sound.
+ */ 1 4 this 3 236  
+38 0 0 6 143 218 0 0 35 // return: playing time in seconds. 1 4 this 3 236  
+39 0 0 4 144 232 0 0 179 // Controls the position of this sound's emitter.  px, py and pz are the
+// emitter's position.  vx, vy and vz are the emitter's velocity in UNITS
+// PER SECOND (default: meters). 7 4 this 3 235  2 px 1 218  2 py 1 218  2 pz 1 218  2 vx 1 218  2 vy 1 218  2 vz 1 218  
+40 0 0 4 146 232 0 0 87 // Controls the direction of this sound emitter. Currently implemented only for OpenAL. 2 4 this 3 235  1 d 1 240  
+41 0 0 7 147 240 0 0 0 1 4 this 3 236  
+42 0 0 4 148 232 0 0 168 // Controls the distance (in units) that this sound begins to fall off.
+// Also affects the rate it falls off.  Default is 1.0 CloserFaster, <1.0
+// FartherSlower, >1.0 2 4 this 3 235  4 dist 1 218  
+43 0 0 6 149 218 0 0 0 1 4 this 3 236  
+44 0 0 4 150 232 0 0 222 // Controls the maximum distance (in units) that this sound stops falling
+// off.  The sound does not stop at that point, it just doesn't get any
+// quieter.  You should rarely need to adjust this.  Default is 1000000000.0 2 4 this 3 235  4 dist 1 218  
+45 0 0 6 151 218 0 0 0 1 4 this 3 236  
+46 0 0 4 152 232 0 0 169 // Sets the angle of the inner cone of a directional sound source. In the zone inside of the inner cone
+// sound is emitted with the (normal) volume set by set_volume(). 2 4 this 3 235  5 angle 1 218  
+47 0 0 6 153 218 0 0 0 1 4 this 3 236  
+48 0 0 4 154 232 0 0 144 // Sets the angle of the outer cone of a directional sound source. In the zone between
+// the inner and the outer cone the volume is attenuated. 2 4 this 3 235  5 angle 1 218  
+49 0 0 6 155 218 0 0 0 1 4 this 3 236  
+50 0 0 4 156 232 0 0 165 // Sets a factor applied to the volume set by set_volume() for the zone outside the outer cone.
+// By default this is 0 (so no sound is heard inside the outer zone). 2 4 this 3 235  4 gain 1 218  
+51 0 0 6 157 218 0 0 0 1 4 this 3 236  
+52 0 0 6 158 218 0 0 36 // speaker_mix is for use with FMOD. 2 4 this 3 235  7 speaker 1 243  
+53 0 0 4 159 232 0 0 0 9 4 this 3 235  9 frontleft 1 218  10 frontright 1 218  6 center 1 218  3 sub 1 218  8 backleft 1 218  9 backright 1 218  8 sideleft 1 218  9 sideright 1 218  
+54 0 0 6 160 243 0 0 0 1 4 this 3 235  
+55 0 0 4 161 232 0 0 0 2 4 this 3 235  8 priority 1 243  
+56 0 0 6 162 220 0 0 0 2 4 this 3 235  6 config 1 229  
+57 0 0 6 163 215 0 0 0 1 4 this 3 236  
+58 0 0 6 164 220 0 0 0 2 4 this 3 236  3 key 1 239  
+59 0 0 6 165 239 0 0 0 2 4 this 3 236  3 key 1 239  
+60 0 0 6 166 244 0 0 0 1 4 this 3 236  
+61 0 0 6 166 239 0 0 0 2 4 this 3 236  5 index 1 243  
+62 0 0 6 167 243 0 0 0 1 4 this 3 236  
+63 0 0 4 168 232 0 0 0 2 4 this 3 236  3 out 1 248  
+64 0 0 4 169 232 0 0 0 2 4 this 3 236  3 out 1 248  
+65 0 0 7 170 234 0 0 0 0 
+66 0 0 6 171 243 0 0 0 1 4 this 3 250  
+67 0 0 4 172 232 0 0 0 2 4 this 3 250  3 cat 1 223  
+68 0 0 6 173 220 0 0 0 2 4 this 3 250  6 config 1 229  
+69 0 0 7 174 250 0 0 0 0 
+70 0 0 4 175 232 0 0 0 1 4 this 3 250  
+71 0 0 6 176 220 0 0 408 // If you're interested in knowing whether this audio manager is valid,
+// here's the call to do it.  It is not necessary to check whether the audio
+// manager is valid before making other calls.  You are free to use an
+// invalid sound manager, you may get silent sounds from it though.  The
+// sound manager and the sounds it creates should not crash the application
+// even when the objects are not valid. 1 4 this 3 250  
+72 0 0 7 177 235 0 0 15 // Get a sound: 4 4 this 3 250  9 file_name 1 251  10 positional 5 220  4 mode 5 243  
+73 0 0 7 177 235 0 0 0 4 4 this 3 250  6 source 1 253  10 positional 5 220  4 mode 5 243  
+74 0 0 7 178 235 0 0 0 1 4 this 3 250  
+75 0 0 4 179 232 0 0 278 // Tell the AudioManager there is no need to keep this one cached.  This
+// doesn't break any connection between AudioSounds that have already given
+// by get_sound() from this manager.  It's only affecting whether the
+// AudioManager keeps a copy of the sound in its poolcache. 2 4 this 3 250  9 file_name 1 251  
+76 0 0 4 180 232 0 0 0 1 4 this 3 250  
+77 0 0 4 181 232 0 0 0 2 4 this 3 250  5 count 1 255  
+78 0 0 6 182 255 0 0 0 1 4 this 3 256  
+79 0 0 4 183 232 0 0 194 // Control volume: FYI: If you start a sound with the volume off and turn
+// the volume up later, you'll hear the sound playing at that late point.  0
+// = minimum; 1.0 = maximum.  inits to 1.0. 2 4 this 3 250  6 volume 1 218  
+80 0 0 6 184 218 0 0 0 1 4 this 3 256  
+81 0 0 4 185 232 0 0 360 // Turn the manager on or off.  If you play a sound while the manager is
+// inactive, it won't start.  If you deactivate the manager while sounds are
+// playing, they'll stop.  If you activate the manager while looping sounds
+// are playing (those that have a loop_count of zero), they will start
+// playing from the beginning of their loop.  Defaults to true. 2 4 this 3 250  4 flag 1 220  
+82 0 0 6 186 220 0 0 0 1 4 this 3 256  
+83 0 0 4 187 232 0 0 343 // This controls the number of sounds that you allow at once.  This is more
+// of a user choice -- it avoids talk over and the creation of a cacophony.
+// It can also be used to help performance.  0 == unlimited.  1 == mutually
+// exclusive (one sound at a time).  Which is an example of: n == allow n
+// sounds to be playing at the same time. 2 4 this 3 250  5 limit 5 255  
+84 0 0 6 188 255 0 0 0 1 4 this 3 256  
+85 0 0 4 189 232 0 0 369 // This is likely to be a utility function for the concurrent_sound_limit
+// options.  It is exposed as an API, because it's reasonable that it may be
+// useful to be here.  It reduces the number of concurrently playing sounds
+// to count by some implementation specific means.  If the number of sounds
+// currently playing is at or below count then there is no effect. 2 4 this 3 250  5 count 1 255  
+86 0 0 4 190 232 0 0 183 // Stop playback on all sounds managed by this manager.  This is effectively
+// the same as reduce_sounds_playing_to(0), but this call may be for
+// efficient on some implementations. 1 4 this 3 250  
+87 0 0 4 191 232 0 0 76 // This should be called every frame.  Failure to call could cause problems. 1 4 this 3 250  
+88 0 0 4 192 232 0 0 326 // This controls the "set of ears" that listens to 3D spacialized sound px,
+// py, pz are position coordinates.  vx, vy, vz are a velocity vector in
+// UNITS PER SECOND (default: meters). fx, fy and fz are the respective
+// components of a unit forward-vector ux, uy and uz are the respective
+// components of a unit up-vector 13 4 this 3 250  2 px 1 218  2 py 1 218  2 pz 1 218  2 vx 1 218  2 vy 1 218  2 vz 1 218  2 fx 1 218  2 fy 1 218  2 fz 1 218  2 ux 1 218  2 uy 1 218  2 uz 1 218  
+89 0 0 4 194 232 0 0 305 // Control the "relative scale that sets the distance factor" units for 3D
+// spacialized audio. This is a float in units-per-meter. Default value is
+// 1.0, which means that Panda units are understood as meters; for e.g.
+// feet, set 3.28. This factor is applied only to Fmod and OpenAL at the
+// moment. 2 4 this 3 250  6 factor 1 218  
+90 0 0 6 195 218 0 0 0 1 4 this 3 256  
+91 0 0 4 196 232 0 0 123 // Control the presence of the Doppler effect.  Default is 1.0 Exaggerated
+// Doppler, use >1.0 Diminshed Doppler, use <1.0 2 4 this 3 250  6 factor 1 218  
+92 0 0 6 197 218 0 0 0 1 4 this 3 256  
+93 0 0 4 198 232 0 0 155 // Exaggerate or diminish the effect of distance on sound.  Default is 1.0
+// Valid range is 0 to 10 Faster drop off, use >1.0 Slower drop off, use
+// <1.0 2 4 this 3 250  6 factor 1 218  
+94 0 0 6 199 218 0 0 0 1 4 this 3 256  
+95 0 0 7 200 258 0 0 0 0 
+96 0 0 4 201 232 0 0 0 2 4 this 3 256  3 out 1 248  
+97 0 0 4 202 232 0 0 0 2 4 this 3 256  3 out 1 248  
+98 0 0 7 203 234 0 0 0 0 
+99 0 0 7 204 259 211 0 118 /**
+ * Create a new AudioLoadRequest, and add it to the loader via load_async(),
+ * to begin an asynchronous load.
+ */ 3 13 audio_manager 1 250  8 filename 1 251  10 positional 1 220  
+100 0 0 7 204 259 211 0 118 /**
+ * Create a new AudioLoadRequest, and add it to the loader via load_async(),
+ * to begin an asynchronous load.
+ */ 3 13 audio_manager 1 250  6 source 1 253  10 positional 1 220  
+101 0 0 7 205 250 0 0 90 /**
+ * Returns the AudioManager that will serve this asynchronous
+ * AudioLoadRequest.
+ */ 1 4 this 3 260  
+102 0 0 6 206 251 0 0 83 /**
+ * Returns the filename associated with this asynchronous AudioLoadRequest.
+ */ 1 4 this 3 260  
+103 0 0 6 207 220 0 0 93 /**
+ * Returns the positional flag associated with this asynchronous
+ * AudioLoadRequest.
+ */ 1 4 this 3 260  
+104 0 0 6 208 220 0 0 242 /**
+ * Returns true if this request has completed, false if it is still pending.
+ * When this returns true, you may retrieve the sound loaded by calling
+ * get_sound().
+ * Equivalent to `req.done() and not req.cancelled()`.
+ * @see done()
+ */ 1 4 this 3 260  
+105 0 0 7 209 235 0 0 202 /**
+ * Returns the sound that was loaded asynchronously, if any, or nullptr if
+ * there was an error.  It is an error to call this unless done() returns
+ * true.
+ * @deprecated Use result() instead.
+ */ 1 4 this 3 260  
+106 0 0 7 210 234 0 0 0 0 
+50
+212 16 FilterProperties 0 75777 16 FilterProperties 16 FilterProperties 0 0 0 1 107 0 0 13 108 109 110 111 112 113 114 115 116 117 118 119 120 0 0 1 0 213 0 0 0 0 0
+
+213 19 TypedReferenceCount 0 2048 19 TypedReferenceCount 19 TypedReferenceCount 0 0 0 0 0 0 0 0 0 0 0 0 410
+/**
+ * A base class for things which need to inherit from both TypedObject and
+ * from ReferenceCount.  It's convenient to define this intermediate base
+ * class instead of multiply inheriting from the two classes each time they
+ * are needed, so that we can sensibly pass around pointers to things which
+ * are both TypedObjects and ReferenceCounters.
+ *
+ * See also TypedObject for detailed instructions.
+ */
+
+214 10 AudioSound 0 75777 10 AudioSound 10 AudioSound 0 0 0 0 0 9 262 263 264 265 266 267 268 269 270 50 121 122 123 124 125 126 127 128 129 130 131 132 133 134 135 136 137 138 139 140 141 142 143 144 145 146 147 148 149 150 151 152 153 154 155 156 157 158 159 160 161 162 163 164 165 166 167 168 169 170 0 0 1 0 213 0 0 0 1 215 0
+
+215 11 SoundStatus 0 794624 23 AudioSound::SoundStatus 23 AudioSound::SoundStatus 214 0 0 0 0 0 0 0 0 0 3 3 BAD 15 AudioSound::BAD 0
+0 5 READY 17 AudioSound::READY 0
+1 7 PLAYING 19 AudioSound::PLAYING 0
+2 0 0
+
+216 6 string 0 2105344 11 std::string 11 std::string 0 0 217 0 0 0 0 0 0 0 0 0 0
+
+217 20 basic_string< char > 0 2048 25 std::basic_string< char > 25 std::basic_string< char > 0 0 0 0 0 0 0 0 0 0 0 0 0
+
+218 11 PN_stdfloat 0 2105344 11 PN_stdfloat 11 PN_stdfloat 0 0 219 0 0 0 0 0 0 0 0 0 0
+
+219 5 float 0 8194 5 float 5 float 0 2 0 0 0 0 0 0 0 0 0 0 0
+
+220 4 bool 0 8194 4 bool 4 bool 0 4 0 0 0 0 0 0 0 0 0 0 0
+
+221 12 string const 0 8832 17 std::string const 17 std::string const 0 0 216 0 0 0 0 0 0 0 0 0 0
+
+222 12 AudioManager 0 75777 12 AudioManager 12 AudioManager 0 0 0 0 0 1 271 33 171 172 173 174 175 176 177 178 179 180 181 182 183 184 185 186 187 188 189 190 191 192 193 194 195 196 197 198 199 200 201 202 203 0 0 1 0 213 0 0 0 3 223 224 225 0
+
+223 19 SpeakerModeCategory 0 794624 33 AudioManager::SpeakerModeCategory 33 AudioManager::SpeakerModeCategory 222 0 0 0 0 0 0 0 0 0 9 15 SPEAKERMODE_raw 29 AudioManager::SPEAKERMODE_raw 79
+// These enumerants line up one-to-one with the FMOD SPEAKERMODE
+// enumerants.
+0 16 SPEAKERMODE_mono 30 AudioManager::SPEAKERMODE_mono 0
+1 18 SPEAKERMODE_stereo 32 AudioManager::SPEAKERMODE_stereo 0
+2 16 SPEAKERMODE_quad 30 AudioManager::SPEAKERMODE_quad 0
+3 20 SPEAKERMODE_surround 34 AudioManager::SPEAKERMODE_surround 0
+4 19 SPEAKERMODE_5point1 33 AudioManager::SPEAKERMODE_5point1 0
+5 19 SPEAKERMODE_7point1 33 AudioManager::SPEAKERMODE_7point1 0
+6 15 SPEAKERMODE_max 29 AudioManager::SPEAKERMODE_max 0
+7 17 SPEAKERMODE_COUNT 31 AudioManager::SPEAKERMODE_COUNT 0
+8 0 0
+
+224 9 SpeakerId 0 794624 23 AudioManager::SpeakerId 23 AudioManager::SpeakerId 222 0 0 0 0 0 0 0 0 0 10 8 SPK_none 22 AudioManager::SPK_none 0
+0 13 SPK_frontleft 27 AudioManager::SPK_frontleft 0
+1 14 SPK_frontright 28 AudioManager::SPK_frontright 0
+2 10 SPK_center 24 AudioManager::SPK_center 0
+3 7 SPK_sub 21 AudioManager::SPK_sub 0
+4 12 SPK_backleft 26 AudioManager::SPK_backleft 0
+5 13 SPK_backright 27 AudioManager::SPK_backright 0
+6 12 SPK_sideleft 26 AudioManager::SPK_sideleft 0
+7 13 SPK_sideright 27 AudioManager::SPK_sideright 0
+8 9 SPK_COUNT 23 AudioManager::SPK_COUNT 0
+9 0 0
+
+225 10 StreamMode 0 794624 24 AudioManager::StreamMode 24 AudioManager::StreamMode 222 0 0 0 0 0 0 0 0 0 3 12 SM_heuristic 26 AudioManager::SM_heuristic 0
+0 9 SM_sample 23 AudioManager::SM_sample 0
+1 9 SM_stream 23 AudioManager::SM_stream 0
+2 0 0
+
+226 8 Filename 0 2048 8 Filename 8 Filename 0 0 0 0 0 0 0 0 0 0 0 0 839
+/**
+ * The name of a file, such as a texture file or an Egg file.  Stores the full
+ * pathname, and includes functions for extracting out the directory prefix
+ * part and the file extension and stuff.
+ *
+ * A Filename is also aware of the mapping between the Unix-like filename
+ * convention we use internally, and the local OS's specific filename
+ * convention, and it knows how to perform basic OS-specific I/O, like testing
+ * for file existence and searching a searchpath, as well as the best way to
+ * open an fstream for reading or writing.
+ *
+ * Note that the methods of Filename that interact with the filesystem (such
+ * as exists(), open_read(), etc.) directly interface with the operating system
+ * and are not aware of Panda's virtual file system.  To interact with the VFS,
+ * use the methods on VirtualFileSystem instead.
+ */
+
+227 16 AudioLoadRequest 0 141313 16 AudioLoadRequest 16 AudioLoadRequest 0 0 0 1 204 211 0 6 205 206 207 208 209 210 0 0 1 0 228 0 0 0 0 300
+/**
+ * A class object that manages a single asynchronous audio load request.  This
+ * works in conjunction with the Loader class defined in pgraph, or really
+ * with any AsyncTaskManager.  Create a new AudioLoadRequest, and add it to
+ * the loader via load_async(), to begin an asynchronous load.
+ */
+
+228 9 AsyncTask 0 2048 9 AsyncTask 9 AsyncTask 0 0 0 0 0 0 0 0 0 0 0 0 217
+/**
+ * This class represents a concrete task performed by an AsyncManager.
+ * Normally, you would subclass from this class, and override do_task(), to
+ * define the functionality you wish to have the task perform.
+ */
+
+229 18 FilterProperties * 0 8576 18 FilterProperties * 18 FilterProperties * 0 0 212 0 0 0 0 0 0 0 0 0 0
+
+230 24 FilterProperties const * 0 8576 24 FilterProperties const * 24 FilterProperties const * 0 0 231 0 0 0 0 0 0 0 0 0 0
+
+231 22 FilterProperties const 0 8832 22 FilterProperties const 22 FilterProperties const 0 0 212 0 0 0 0 0 0 0 0 0 0
+
+232 4 void 0 8194 4 void 4 void 0 6 0 0 0 0 0 0 0 0 0 0 0
+
+233 10 TypeHandle 0 16779264 10 TypeHandle 10 TypeHandle 0 0 0 0 0 0 0 0 0 0 0 0 732
+/**
+ * TypeHandle is the identifier used to differentiate C++ class types.  Any
+ * C++ classes that inherit from some base class, and must be differentiated
+ * at run time, should store a static TypeHandle object that can be queried
+ * through a static member function named get_class_type().  Most of the time,
+ * it is also desirable to inherit from TypedObject, which provides some
+ * virtual functions to return the TypeHandle for a particular instance.
+ *
+ * At its essence, a TypeHandle is simply a unique identifier that is assigned
+ * by the TypeRegistry.  The TypeRegistry stores a tree of TypeHandles, so
+ * that ancestry of a particular type may be queried, and the type name may be
+ * retrieved for run-time display.
+ */
+
+234 12 TypeHandle * 0 8576 12 TypeHandle * 12 TypeHandle * 0 0 233 0 0 0 0 0 0 0 0 0 0
+
+235 12 AudioSound * 0 8576 12 AudioSound * 12 AudioSound * 0 0 214 0 0 0 0 0 0 0 0 0 0
+
+236 18 AudioSound const * 0 8576 18 AudioSound const * 18 AudioSound const * 0 0 237 0 0 0 0 0 0 0 0 0 0
+
+237 16 AudioSound const 0 8832 16 AudioSound const 16 AudioSound const 0 0 214 0 0 0 0 0 0 0 0 0 0
+
+238 17 unsigned long int 0 8214 17 unsigned long int 17 unsigned long int 0 1 0 0 0 0 0 0 0 0 0 0 0
+
+239 13 atomic string 0 2 13 atomic string 13 atomic string 0 7 0 0 0 0 0 0 0 0 0 0 0
+
+240 10 LVector3 * 0 8576 10 LVector3 * 10 LVector3 * 0 0 241 0 0 0 0 0 0 0 0 0 0
+
+241 8 LVector3 0 2105344 8 LVector3 8 LVector3 0 0 242 0 0 0 0 0 0 0 0 0 0
+
+242 9 LVector3f 0 2048 9 LVector3f 9 LVector3f 0 0 0 0 0 0 0 0 0 0 0 0 338
+/**
+ * This is a three-component vector distance (as opposed to a three-component
+ * point, which represents a particular point in space).  Some of the methods
+ * are slightly different between LPoint3 and LVector3; in particular,
+ * subtraction of two points yields a vector, while addition of a vector and a
+ * point yields a point.
+ */
+
+243 3 int 0 8194 3 int 3 int 0 1 0 0 0 0 0 0 0 0 0 0 0
+
+244 21 vector_string const * 0 8576 21 vector_string const * 21 vector_string const * 0 0 245 0 0 0 0 0 0 0 0 0 0
+
+245 19 vector_string const 0 8832 19 vector_string const 19 vector_string const 0 0 246 0 0 0 0 0 0 0 0 0 0
+
+246 13 vector_string 0 2105344 13 vector_string 13 vector_string 0 0 247 0 0 0 0 0 0 0 0 0 0
+
+247 17 pvector< string > 0 2048 22 pvector< std::string > 22 pvector< std::string > 0 0 0 0 0 0 0 0 0 0 0 0 0
+
+248 9 ostream * 0 8576 14 std::ostream * 14 std::ostream * 0 0 249 0 0 0 0 0 0 0 0 0 0
+
+249 7 ostream 0 2048 12 std::ostream 12 std::ostream 0 0 0 0 0 0 0 0 0 0 0 0 0
+
+250 14 AudioManager * 0 8576 14 AudioManager * 14 AudioManager * 0 0 222 0 0 0 0 0 0 0 0 0 0
+
+251 16 Filename const * 0 8576 16 Filename const * 16 Filename const * 0 0 252 0 0 0 0 0 0 0 0 0 0
+
+252 14 Filename const 0 8832 14 Filename const 14 Filename const 0 0 226 0 0 0 0 0 0 0 0 0 0
+
+253 12 MovieAudio * 0 8576 12 MovieAudio * 12 MovieAudio * 0 0 254 0 0 0 0 0 0 0 0 0 0
+
+254 10 MovieAudio 0 2048 10 MovieAudio 10 MovieAudio 0 0 0 0 0 0 0 0 0 0 0 0 397
+/**
+ * A MovieAudio is actually any source that provides a sequence of audio
+ * samples.  That could include an AVI file, a microphone, or an internet TV
+ * station.
+ *
+ * The difference between a MovieAudio and a MovieAudioCursor is like the
+ * difference between a filename and a file handle.  The MovieAudio just
+ * indicates a particular movie.  The MovieAudioCursor is what allows access.
+ */
+
+255 12 unsigned int 0 8198 12 unsigned int 12 unsigned int 0 1 0 0 0 0 0 0 0 0 0 0 0
+
+256 20 AudioManager const * 0 8576 20 AudioManager const * 20 AudioManager const * 0 0 257 0 0 0 0 0 0 0 0 0 0
+
+257 18 AudioManager const 0 8832 18 AudioManager const 18 AudioManager const 0 0 222 0 0 0 0 0 0 0 0 0 0
+
+258 10 Filename * 0 8576 10 Filename * 10 Filename * 0 0 226 0 0 0 0 0 0 0 0 0 0
+
+259 18 AudioLoadRequest * 0 8576 18 AudioLoadRequest * 18 AudioLoadRequest * 0 0 227 0 0 0 0 0 0 0 0 0 0
+
+260 24 AudioLoadRequest const * 0 8576 24 AudioLoadRequest const * 24 AudioLoadRequest const * 0 0 261 0 0 0 0 0 0 0 0 0 0
+
+261 22 AudioLoadRequest const 0 8832 22 AudioLoadRequest const 22 AudioLoadRequest const 0 0 227 0 0 0 0 0 0 0 0 0 0
+
+0
+10
+262 8 comments 0 138 216 165 0 164 0 0 0 0 0 20 AudioSound::comments 0
+
+263 12 raw_comments 0 66 216 166 0 0 0 0 167 0 0 24 AudioSound::raw_comments 0
+
+264 4 time 0 6 218 130 129 0 0 0 0 0 0 16 AudioSound::time 0
+
+265 6 volume 0 6 218 132 131 0 0 0 0 0 0 18 AudioSound::volume 0
+
+266 7 balance 0 6 218 134 133 0 0 0 0 0 0 19 AudioSound::balance 0
+
+267 9 play_rate 0 6 218 136 135 0 0 0 0 0 0 21 AudioSound::play_rate 0
+
+268 6 active 0 6 220 138 137 0 0 0 0 0 0 18 AudioSound::active 0
+
+269 4 name 0 2 221 141 0 0 0 0 0 0 0 16 AudioSound::name 47
+// There is no set_name(), this is intentional.
+
+270 10 positional 0 2 220 142 0 0 0 0 0 0 0 22 AudioSound::positional 0
+
+271 12 dls_pathname 0 2 226 200 0 0 0 0 0 0 0 26 AudioManager::dls_pathname 0
+
+0

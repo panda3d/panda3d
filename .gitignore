@@ -1,4 +1,8 @@
 thirdparty/
 build/
+built/
 */__pycache__/*
+python-1.11.0*
+pyproject.toml
+uv.lock
 

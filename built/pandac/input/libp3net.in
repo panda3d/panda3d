@@ -1,0 +1,2374 @@
+1775484396
+3 3
+8 libp3net 4 7xrj 11 panda3d.net 
+175
+169 5 clear 0 4 345 34 PointerToBase< Connection >::clear 0 1 10 0
+53
+inline void PointerToBase< Connection >::clear(void);
+
+170 6 output 0 4 345 35 PointerToBase< Connection >::output 0 1 11 0
+66
+void PointerToBase< Connection >::output(std::ostream &out) const;
+
+171 9 PointerTo 0 260 344 34 PointerTo< Connection >::PointerTo 0 4 1 2 3 4 0
+317
+inline constexpr PointerTo< Connection >::PointerTo(void) noexcept = default;
+inline explicit constexpr PointerTo< Connection >::PointerTo(decltype(nullptr) ) noexcept;
+inline PointerTo< Connection >::PointerTo(Connection *ptr) noexcept;
+inline PointerTo< Connection >::PointerTo(PointerTo< Connection > const &copy);
+
+172 1 p 0 4 344 26 PointerTo< Connection >::p 0 1 5 289
+// If your base class is a derivative of TypedObject, you might want to use
+// the DCAST macro defined in typedObject.h instead, e.g.  DCAST(MyType,
+// ptr).  This provides a clean downcast that doesn't require .p() or any
+// double-casting, and it can be run-time checked for correctness.
+70
+constexpr Connection *PointerTo< Connection >::p(void) const noexcept;
+
+173 10 operator = 0 4 344 35 PointerTo< Connection >::operator = 0 2 6 7 0
+151
+inline void PointerTo< Connection >::operator =(Connection *ptr);
+inline void PointerTo< Connection >::operator =(PointerTo< Connection > const &copy);
+
+174 7 is_null 0 4 344 32 PointerTo< Connection >::is_null 0 1 8 0
+57
+inline bool PointerTo< Connection >::is_null(void) const;
+
+175 5 clear 0 4 344 30 PointerTo< Connection >::clear 0 1 9 0
+49
+inline void PointerTo< Connection >::clear(void);
+
+176 10 ~PointerTo 0 516 344 35 PointerTo< Connection >::~PointerTo 0 0 0
+42
+PointerTo< Connection >::~PointerTo(void);
+
+177 10 NetAddress 0 260 347 22 NetAddress::NetAddress 0 3 12 13 14 271
+/**
+ * Constructs an unspecified address.
+ */
+
+/**
+ * Constructs an address from a given Socket_Address.  Normally, this
+ * constructor should not be used by user code; instead, create a default
+ * NetAddress and use one of the set_*() functions to set up an address.
+ */
+142
+NetAddress::NetAddress(void);
+NetAddress::NetAddress(Socket_Address const &addr);
+inline NetAddress::NetAddress(NetAddress const &) = default;
+
+178 7 set_any 0 4 347 19 NetAddress::set_any 0 1 15 179
+/**
+ * Sets the address up to refer to a particular port, but not to any
+ * particular IP.  Returns true if successful, false otherwise (currently,
+ * this only returns true).
+ */
+35
+bool NetAddress::set_any(int port);
+
+179 13 set_localhost 0 4 347 25 NetAddress::set_localhost 0 1 16 75
+/**
+ * Sets the address up to refer to a particular port, on this host.
+ */
+41
+bool NetAddress::set_localhost(int port);
+
+180 13 set_broadcast 0 4 347 25 NetAddress::set_broadcast 0 1 17 53
+/**
+ * Sets the address to the broadcast address.
+ */
+41
+bool NetAddress::set_broadcast(int port);
+
+181 8 set_host 0 4 347 20 NetAddress::set_host 0 1 18 141
+/**
+ * Sets the address up to refer to a particular port on a particular host.
+ * Returns true if the hostname is known, false otherwise.
+ */
+65
+bool NetAddress::set_host(std::string const &hostname, int port);
+
+182 5 clear 0 4 347 17 NetAddress::clear 0 1 19 54
+/**
+ * Resets the NetAddress to its initial state.
+ */
+29
+void NetAddress::clear(void);
+
+183 8 get_port 0 4 347 20 NetAddress::get_port 0 1 20 64
+/**
+ * Returns the port number to which this address refers.
+ */
+37
+int NetAddress::get_port(void) const;
+
+184 8 set_port 0 4 347 20 NetAddress::set_port 0 1 21 73
+/**
+ * Resets the port number without otherwise changing the address.
+ */
+36
+void NetAddress::set_port(int port);
+
+185 13 get_ip_string 0 4 347 25 NetAddress::get_ip_string 0 1 22 86
+/**
+ * Returns the IP address to which this address refers, formatted as a string.
+ */
+50
+std::string NetAddress::get_ip_string(void) const;
+
+186 6 is_any 0 4 347 18 NetAddress::is_any 0 1 23 58
+/**
+ * Returns true if the IP address has only zeroes.
+ */
+36
+bool NetAddress::is_any(void) const;
+
+187 6 get_ip 0 4 347 18 NetAddress::get_ip 0 1 24 158
+/**
+ * Returns the IP address to which this address refers, as a 32-bit integer,
+ * in host byte order.
+ * @deprecated  Does not work with IPv6 addresses.
+ */
+40
+uint32_t NetAddress::get_ip(void) const;
+
+188 16 get_ip_component 0 4 347 28 NetAddress::get_ip_component 0 1 25 213
+/**
+ * Returns the nth 8-bit component of the IP address.  An IP address has four
+ * components; component 0 is the first (leftmost), and component 3 is the
+ * last (rightmost) in the dotted number convention.
+ */
+50
+uint8_t NetAddress::get_ip_component(int n) const;
+
+189 8 get_addr 0 4 347 20 NetAddress::get_addr 0 1 26 55
+/**
+ * Returns the Socket_Address for this address.
+ */
+55
+Socket_Address const &NetAddress::get_addr(void) const;
+
+190 6 output 0 4 347 18 NetAddress::output 0 1 27 10
+/**
+ *
+ */
+49
+void NetAddress::output(std::ostream &out) const;
+
+191 8 get_hash 0 4 347 20 NetAddress::get_hash 0 1 28 10
+/**
+ *
+ */
+45
+std::size_t NetAddress::get_hash(void) const;
+
+192 11 operator == 0 4 347 23 NetAddress::operator == 0 1 29 0
+60
+bool NetAddress::operator ==(NetAddress const &other) const;
+
+193 11 operator != 0 4 347 23 NetAddress::operator != 0 1 30 0
+60
+bool NetAddress::operator !=(NetAddress const &other) const;
+
+194 11 ~NetAddress 0 516 347 23 NetAddress::~NetAddress 0 0 0
+30
+NetAddress::~NetAddress(void);
+
+195 10 Connection 0 260 348 22 Connection::Connection 0 1 31 177
+/**
+ * Creates a connection.  Normally this constructor should not be used
+ * directly by user code; use one of the methods in ConnectionManager to make
+ * a new connection.
+ */
+79
+explicit Connection::Connection(ConnectionManager *manager, Socket_IP *socket);
+
+196 11 get_address 0 4 348 23 Connection::get_address 0 1 32 83
+/**
+ * Returns the address bound to this connection, if it is a TCP connection.
+ */
+47
+NetAddress Connection::get_address(void) const;
+
+197 11 get_manager 0 4 348 23 Connection::get_manager 0 1 33 92
+/**
+ * Returns a pointer to the ConnectionManager object that serves this
+ * connection.
+ */
+55
+ConnectionManager *Connection::get_manager(void) const;
+
+198 10 get_socket 0 4 348 22 Connection::get_socket 0 1 34 70
+/**
+ * Returns the internal Socket_IP that defines the connection.
+ */
+46
+Socket_IP *Connection::get_socket(void) const;
+
+199 15 set_collect_tcp 0 4 348 27 Connection::set_collect_tcp 0 1 35 719
+/**
+ * Enables or disables "collect-tcp" mode.  In this mode, individual TCP
+ * packets are not sent immediately, but rather they are collected together
+ * and accumulated to be sent periodically as one larger TCP packet.  This
+ * cuts down on overhead from the TCP/IP protocol, especially if many small
+ * packets need to be sent on the same connection, but it introduces
+ * additional latency (since packets must be held before they can be sent).
+ *
+ * See set_collect_tcp_interval() to specify the interval of time for which to
+ * hold packets before sending them.
+ *
+ * If you enable this mode, you may also need to periodically call
+ * consider_flush() to flush the queue if no packets have been sent recently.
+ */
+51
+void Connection::set_collect_tcp(bool collect_tcp);
+
+200 15 get_collect_tcp 0 4 348 27 Connection::get_collect_tcp 0 1 36 85
+/**
+ * Returns the current setting of "collect-tcp" mode.  See set_collect_tcp().
+ */
+45
+bool Connection::get_collect_tcp(void) const;
+
+201 24 set_collect_tcp_interval 0 4 348 36 Connection::set_collect_tcp_interval 0 1 37 231
+/**
+ * Specifies the interval in time, in seconds, for which to hold TCP packets
+ * before sending all of the recently received packets at once.  This only has
+ * meaning if "collect-tcp" mode is enabled; see set_collect_tcp().
+ */
+59
+void Connection::set_collect_tcp_interval(double interval);
+
+202 24 get_collect_tcp_interval 0 4 348 36 Connection::get_collect_tcp_interval 0 1 38 229
+/**
+ * Returns the interval in time, in seconds, for which to hold TCP packets
+ * before sending all of the recently received packets at once.  This only has
+ * meaning if "collect-tcp" mode is enabled; see set_collect_tcp().
+ */
+56
+double Connection::get_collect_tcp_interval(void) const;
+
+203 14 consider_flush 0 4 348 26 Connection::consider_flush 0 1 39 153
+/**
+ * Sends the most recently queued TCP datagram(s) if enough time has elapsed.
+ * This only has meaning if set_collect_tcp() has been set to true.
+ */
+38
+bool Connection::consider_flush(void);
+
+204 5 flush 0 4 348 17 Connection::flush 0 1 40 131
+/**
+ * Sends the most recently queued TCP datagram(s) now.  This only has meaning
+ * if set_collect_tcp() has been set to true.
+ */
+29
+bool Connection::flush(void);
+
+205 10 set_linger 0 4 348 22 Connection::set_linger 0 1 41 467
+// Socket options.  void set_nonblock(bool flag);
+
+/**
+ * Sets the time to linger on close if data is present.  If flag is false,
+ * when you close a socket with data available the system attempts to deliver
+ * the data to the peer (the default behavior).  If flag is false but time is
+ * zero, the system discards any undelivered data when you close the socket.
+ * If flag is false but time is nonzero, the system waits up to time seconds
+ * to deliver the data.
+ */
+52
+void Connection::set_linger(bool flag, double time);
+
+206 14 set_reuse_addr 0 4 348 26 Connection::set_reuse_addr 0 1 42 55
+/**
+ * Sets whether local address reuse is allowed.
+ */
+43
+void Connection::set_reuse_addr(bool flag);
+
+207 14 set_keep_alive 0 4 348 26 Connection::set_keep_alive 0 1 43 93
+/**
+ * Sets whether the connection is periodically tested to see if it is still
+ * alive.
+ */
+43
+void Connection::set_keep_alive(bool flag);
+
+208 20 set_recv_buffer_size 0 4 348 32 Connection::set_recv_buffer_size 0 1 44 57
+/**
+ * Sets the size of the receive buffer, in bytes.
+ */
+48
+void Connection::set_recv_buffer_size(int size);
+
+209 20 set_send_buffer_size 0 4 348 32 Connection::set_send_buffer_size 0 1 45 54
+/**
+ * Sets the size of the send buffer, in bytes.
+ */
+48
+void Connection::set_send_buffer_size(int size);
+
+210 19 set_ip_time_to_live 0 4 348 31 Connection::set_ip_time_to_live 0 1 46 32
+/**
+ * Sets IP time-to-live.
+ */
+46
+void Connection::set_ip_time_to_live(int ttl);
+
+211 22 set_ip_type_of_service 0 4 348 34 Connection::set_ip_type_of_service 0 1 47 50
+/**
+ * Sets IP type-of-service and precedence.
+ */
+49
+void Connection::set_ip_type_of_service(int tos);
+
+212 12 set_no_delay 0 4 348 24 Connection::set_no_delay 0 1 48 116
+/**
+ * If flag is true, this disables the Nagle algorithm, and prevents delaying
+ * of send to coalesce packets.
+ */
+41
+void Connection::set_no_delay(bool flag);
+
+213 15 set_max_segment 0 4 348 27 Connection::set_max_segment 0 1 49 41
+/**
+ * Sets the maximum segment size.
+ */
+43
+void Connection::set_max_segment(int size);
+
+214 17 ~ConnectionReader 0 518 350 35 ConnectionReader::~ConnectionReader 0 0 10
+/**
+ *
+ */
+50
+virtual ConnectionReader::~ConnectionReader(void);
+
+215 14 add_connection 0 4 350 32 ConnectionReader::add_connection 0 1 50 504
+/**
+ * Adds a new socket to the list of sockets the ConnectionReader will monitor.
+ * A datagram that comes in on any of the monitored sockets will be reported.
+ * In the case of a ConnectionListener, this adds a new rendezvous socket; any
+ * activity on any of the monitored sockets will cause a connection to be
+ * accepted.
+ *
+ * The return value is true if the connection was added, false if it was
+ * already there.
+ *
+ * add_connection() is thread-safe, and may be called at will by any thread.
+ */
+62
+bool ConnectionReader::add_connection(Connection *connection);
+
+216 17 remove_connection 0 4 350 35 ConnectionReader::remove_connection 0 1 51 264
+/**
+ * Removes a socket from the list of sockets being monitored.  Returns true if
+ * the socket was correctly removed, false if it was not on the list in the
+ * first place.
+ *
+ * remove_connection() is thread-safe, and may be called at will by any
+ * thread.
+ */
+65
+bool ConnectionReader::remove_connection(Connection *connection);
+
+217 16 is_connection_ok 0 4 350 34 ConnectionReader::is_connection_ok 0 1 52 345
+/**
+ * Returns true if the indicated connection has been added to the
+ * ConnectionReader and is being monitored properly, false if it is not known,
+ * or if there was some error condition detected on the connection.  (If there
+ * was an error condition, normally the ConnectionManager would have been
+ * informed and closed the connection.)
+ */
+64
+bool ConnectionReader::is_connection_ok(Connection *connection);
+
+218 4 poll 0 4 350 22 ConnectionReader::poll 0 1 53 328
+/**
+ * Explicitly polls the available sockets to see if any of them have any
+ * noise.  This function does nothing unless this is a polling-type
+ * ConnectionReader, i.e.  it was created with zero threads (and is_polling()
+ * will return true).
+ *
+ * It is not necessary to call this explicitly for a QueuedConnectionReader.
+ */
+34
+void ConnectionReader::poll(void);
+
+219 11 get_manager 0 4 350 29 ConnectionReader::get_manager 0 1 54 98
+/**
+ * Returns a pointer to the ConnectionManager object that serves this
+ * ConnectionReader.
+ */
+61
+ConnectionManager *ConnectionReader::get_manager(void) const;
+
+220 10 is_polling 0 4 350 28 ConnectionReader::is_polling 0 1 55 83
+/**
+ * Returns true if the reader is a polling reader, i.e.  it has no threads.
+ */
+53
+inline bool ConnectionReader::is_polling(void) const;
+
+221 15 get_num_threads 0 4 350 33 ConnectionReader::get_num_threads 0 1 56 84
+/**
+ * Returns the number of threads the ConnectionReader has been created with.
+ */
+50
+int ConnectionReader::get_num_threads(void) const;
+
+222 12 set_raw_mode 0 4 350 30 ConnectionReader::set_raw_mode 0 1 57 314
+/**
+ * Sets the ConnectionReader into raw mode (or turns off raw mode).  In raw
+ * mode, datagram headers are not expected; instead, all the data available on
+ * the pipe is treated as a single datagram.
+ *
+ * This is similar to set_tcp_header_size(0), except that it also turns off
+ * headers for UDP packets.
+ */
+47
+void ConnectionReader::set_raw_mode(bool mode);
+
+223 12 get_raw_mode 0 4 350 30 ConnectionReader::get_raw_mode 0 1 58 81
+/**
+ * Returns the current setting of the raw mode flag.  See set_raw_mode().
+ */
+48
+bool ConnectionReader::get_raw_mode(void) const;
+
+224 19 set_tcp_header_size 0 4 350 37 ConnectionReader::set_tcp_header_size 0 1 59 270
+/**
+ * Sets the header size of TCP packets.  At the present, legal values for this
+ * are 0, 2, or 4; this specifies the number of bytes to use encode the
+ * datagram length at the start of each TCP datagram.  Sender and receiver
+ * must independently agree on this.
+ */
+64
+void ConnectionReader::set_tcp_header_size(int tcp_header_size);
+
+225 19 get_tcp_header_size 0 4 350 37 ConnectionReader::get_tcp_header_size 0 1 60 86
+/**
+ * Returns the current setting of TCP header size.  See set_tcp_header_size().
+ */
+54
+int ConnectionReader::get_tcp_header_size(void) const;
+
+226 8 shutdown 0 4 350 26 ConnectionReader::shutdown 0 1 61 146
+/**
+ * Terminates all threads cleanly.  Normally this is only called by the
+ * destructor, but it may be called explicitly before destruction.
+ */
+38
+void ConnectionReader::shutdown(void);
+
+227 19 ~ConnectionListener 0 516 351 39 ConnectionListener::~ConnectionListener 0 0 0
+46
+ConnectionListener::~ConnectionListener(void);
+
+228 11 NetDatagram 0 260 352 24 NetDatagram::NetDatagram 0 3 62 63 64 130
+/**
+ * Constructs an empty datagram.
+ */
+
+/**
+ * Constructs a datagram from an existing block of data.
+ */
+
+/**
+ *
+ */
+
+/**
+ *
+ */
+192
+NetDatagram::NetDatagram(void);
+NetDatagram::NetDatagram(void const *data, std::size_t size);
+NetDatagram::NetDatagram(Datagram const &copy);
+NetDatagram::NetDatagram(NetDatagram const &copy);
+
+229 10 operator = 0 4 352 23 NetDatagram::operator = 0 2 65 66 0
+106
+void NetDatagram::operator =(Datagram const &copy);
+void NetDatagram::operator =(NetDatagram const &copy);
+
+230 14 set_connection 0 4 352 27 NetDatagram::set_connection 0 1 67 72
+/**
+ * Specifies the socket to which the datagram should be written.
+ */
+76
+void NetDatagram::set_connection(PointerTo< Connection > const &connection);
+
+231 14 get_connection 0 4 352 27 NetDatagram::get_connection 0 1 68 111
+/**
+ * Retrieves the socket from which the datagram was read, or to which it is
+ * scheduled to be written.
+ */
+64
+PointerTo< Connection > NetDatagram::get_connection(void) const;
+
+232 11 set_address 0 4 352 24 NetDatagram::set_address 0 1 69 67
+/**
+ * Specifies the host to which the datagram should be sent.
+ */
+57
+void NetDatagram::set_address(NetAddress const &address);
+
+233 11 get_address 0 4 352 24 NetDatagram::get_address 0 1 70 106
+/**
+ * Retrieves the host from which the datagram was read, or to which it is
+ * scheduled to be sent.
+ */
+55
+NetAddress const &NetDatagram::get_address(void) const;
+
+234 14 get_class_type 0 4 352 27 NetDatagram::get_class_type 0 1 71 0
+52
+static TypeHandle NetDatagram::get_class_type(void);
+
+235 12 ~NetDatagram 0 516 352 25 NetDatagram::~NetDatagram 0 0 0
+32
+NetDatagram::~NetDatagram(void);
+
+236 17 ConnectionManager 0 260 354 36 ConnectionManager::ConnectionManager 0 1 72 10
+/**
+ *
+ */
+43
+ConnectionManager::ConnectionManager(void);
+
+237 18 ~ConnectionManager 0 518 354 37 ConnectionManager::~ConnectionManager 0 0 10
+/**
+ *
+ */
+52
+virtual ConnectionManager::~ConnectionManager(void);
+
+238 19 open_UDP_connection 0 4 354 38 ConnectionManager::open_UDP_connection 0 2 73 74 1047
+/**
+ * Opens a socket for sending and/or receiving UDP packets.  If the port
+ * number is greater than zero, the UDP connection will be opened for
+ * listening on the indicated port; otherwise, it will be useful only for
+ * sending.
+ *
+ * Use a ConnectionReader and ConnectionWriter to handle the actual
+ * communication.
+ */
+
+/**
+ * Opens a socket for sending and/or receiving UDP packets.  If the port
+ * number is greater than zero, the UDP connection will be opened for
+ * listening on the indicated port; otherwise, it will be useful only for
+ * sending.
+ *
+ * This variant accepts both a hostname and port to listen on a particular
+ * interface; if the hostname is empty, all interfaces will be available,
+ * both IPv4 and IPv6.
+ *
+ * If for_broadcast is true, this UDP connection will be configured to send
+ * and/or receive messages on the broadcast address (255.255.255.255);
+ * otherwise, these messages may be automatically filtered by the OS.
+ *
+ * Use a ConnectionReader and ConnectionWriter to handle the actual
+ * communication.
+ */
+218
+PointerTo< Connection > ConnectionManager::open_UDP_connection(uint16_t port = 0);
+PointerTo< Connection > ConnectionManager::open_UDP_connection(std::string const &hostname, uint16_t port, bool for_broadcast = false);
+
+239 26 open_TCP_server_rendezvous 0 4 354 45 ConnectionManager::open_TCP_server_rendezvous 0 3 75 76 77 1436
+/**
+ * Creates a socket to be used as a rendezvous socket for a server to listen
+ * for TCP connections.  The socket returned by this call should only be added
+ * to a ConnectionListener (not to a generic ConnectionReader).
+ *
+ * This variant of this method accepts a single port, and will listen to that
+ * port on all available interfaces, both IPv4 and IPv6.
+ *
+ * backlog is the maximum length of the queue of pending connections.
+ */
+
+/**
+ * Creates a socket to be used as a rendezvous socket for a server to listen
+ * for TCP connections.  The socket returned by this call should only be added
+ * to a ConnectionListener (not to a generic ConnectionReader).
+ *
+ * This variant of this method accepts a "hostname", which is usually just an
+ * IP address in dotted notation, and a port number.  It will listen on the
+ * interface indicated by the IP address.  If the IP address is empty string,
+ * it will listen on all interfaces.
+ *
+ * backlog is the maximum length of the queue of pending connections.
+ */
+
+/**
+ * Creates a socket to be used as a rendezvous socket for a server to listen
+ * for TCP connections.  The socket returned by this call should only be added
+ * to a ConnectionListener (not to a generic ConnectionReader).
+ *
+ * This variant of this method accepts a NetAddress, which allows you to
+ * specify a specific interface to listen to.
+ *
+ * backlog is the maximum length of the queue of pending connections.
+ */
+337
+PointerTo< Connection > ConnectionManager::open_TCP_server_rendezvous(uint16_t port, int backlog);
+PointerTo< Connection > ConnectionManager::open_TCP_server_rendezvous(std::string const &hostname, uint16_t port, int backlog);
+PointerTo< Connection > ConnectionManager::open_TCP_server_rendezvous(NetAddress const &address, int backlog);
+
+240 26 open_TCP_client_connection 0 4 354 45 ConnectionManager::open_TCP_client_connection 0 2 78 79 323
+/**
+ * Attempts to establish a TCP client connection to a server at the indicated
+ * address.  If the connection is not established within timeout_ms
+ * milliseconds, a null connection is returned.
+ */
+
+/**
+ * This is a shorthand version of the function to directly establish
+ * communications to a named host and port.
+ */
+244
+PointerTo< Connection > ConnectionManager::open_TCP_client_connection(NetAddress const &address, int timeout_ms);
+PointerTo< Connection > ConnectionManager::open_TCP_client_connection(std::string const &hostname, uint16_t port, int timeout_ms);
+
+241 16 close_connection 0 4 354 35 ConnectionManager::close_connection 0 1 80 693
+/**
+ * Terminates a UDP or TCP socket previously opened.  This also removes it
+ * from any associated ConnectionReader or ConnectionListeners.
+ *
+ * The socket itself may not be immediately closed--it will not be closed
+ * until all outstanding pointers to it are cleared, including any pointers
+ * remaining in NetDatagrams recently received from the socket.
+ *
+ * The return value is true if the connection was marked to be closed, or
+ * false if close_connection() had already been called (or the connection did
+ * not belong to this ConnectionManager).  In neither case can you infer
+ * anything about whether the connection has *actually* been closed yet based
+ * on the return value.
+ */
+84
+bool ConnectionManager::close_connection(PointerTo< Connection > const &connection);
+
+242 16 wait_for_readers 0 4 354 35 ConnectionManager::wait_for_readers 0 1 81 664
+/**
+ * Blocks the process for timeout number of seconds, or until any data is
+ * available on any of the non-threaded ConnectionReaders or
+ * ConnectionListeners, whichever comes first.  The return value is true if
+ * there is data available (but you have to iterate through all readers to
+ * find it), or false if the timeout occurred without any data.
+ *
+ * If the timeout value is negative, this will block forever or until data is
+ * available.
+ *
+ * This only works if all ConnectionReaders and ConnectionListeners are non-
+ * threaded.  If any threaded ConnectionReaders are part of the
+ * ConnectionManager, the timeout value is implicitly treated as 0.
+ */
+57
+bool ConnectionManager::wait_for_readers(double timeout);
+
+243 13 get_host_name 0 4 354 32 ConnectionManager::get_host_name 0 1 82 145
+/**
+ * Returns the name of this particular machine on the network, if available,
+ * or the empty string if the hostname cannot be determined.
+ */
+58
+static std::string ConnectionManager::get_host_name(void);
+
+244 8 get_name 0 4 355 38 ConnectionManager::Interface::get_name 0 1 87 0
+70
+std::string const &ConnectionManager::Interface::get_name(void) const;
+
+245 15 get_mac_address 0 4 355 45 ConnectionManager::Interface::get_mac_address 0 1 88 0
+77
+std::string const &ConnectionManager::Interface::get_mac_address(void) const;
+
+246 6 has_ip 0 4 355 36 ConnectionManager::Interface::has_ip 0 1 89 0
+54
+bool ConnectionManager::Interface::has_ip(void) const;
+
+247 6 get_ip 0 4 355 36 ConnectionManager::Interface::get_ip 0 1 90 0
+67
+NetAddress const &ConnectionManager::Interface::get_ip(void) const;
+
+248 11 has_netmask 0 4 355 41 ConnectionManager::Interface::has_netmask 0 1 91 0
+59
+bool ConnectionManager::Interface::has_netmask(void) const;
+
+249 11 get_netmask 0 4 355 41 ConnectionManager::Interface::get_netmask 0 1 92 0
+72
+NetAddress const &ConnectionManager::Interface::get_netmask(void) const;
+
+250 13 has_broadcast 0 4 355 43 ConnectionManager::Interface::has_broadcast 0 1 93 0
+61
+bool ConnectionManager::Interface::has_broadcast(void) const;
+
+251 13 get_broadcast 0 4 355 43 ConnectionManager::Interface::get_broadcast 0 1 94 0
+74
+NetAddress const &ConnectionManager::Interface::get_broadcast(void) const;
+
+252 7 has_p2p 0 4 355 37 ConnectionManager::Interface::has_p2p 0 1 95 0
+55
+bool ConnectionManager::Interface::has_p2p(void) const;
+
+253 7 get_p2p 0 4 355 37 ConnectionManager::Interface::get_p2p 0 1 96 0
+68
+NetAddress const &ConnectionManager::Interface::get_p2p(void) const;
+
+254 6 output 0 4 355 36 ConnectionManager::Interface::output 0 1 97 10
+/**
+ *
+ */
+67
+void ConnectionManager::Interface::output(std::ostream &out) const;
+
+255 9 Interface 0 260 355 39 ConnectionManager::Interface::Interface 0 1 86 0
+95
+inline ConnectionManager::Interface::Interface(ConnectionManager::Interface const &) = default;
+
+256 10 ~Interface 0 516 355 40 ConnectionManager::Interface::~Interface 0 0 0
+47
+ConnectionManager::Interface::~Interface(void);
+
+257 15 scan_interfaces 0 4 354 34 ConnectionManager::scan_interfaces 0 1 83 258
+/**
+ * Repopulates the list reported by get_num_interface()/get_interface().  It
+ * is not necessary to call this explicitly, unless you want to re-determine
+ * the connected interfaces (for instance, if you suspect the hardware has
+ * recently changed).
+ */
+46
+void ConnectionManager::scan_interfaces(void);
+
+258 18 get_num_interfaces 0 4 354 37 ConnectionManager::get_num_interfaces 0 1 84 140
+/**
+ * This returns the number of usable network interfaces detected on this
+ * machine.  See scan_interfaces() to repopulate this list.
+ */
+56
+std::size_t ConnectionManager::get_num_interfaces(void);
+
+259 13 get_interface 0 4 354 32 ConnectionManager::get_interface 0 1 85 127
+/**
+ * Returns the nth usable network interface detected on this machine.
+ * See scan_interfaces() to repopulate this list.
+ */
+84
+ConnectionManager::Interface const &ConnectionManager::get_interface(std::size_t n);
+
+260 16 ConnectionWriter 0 260 359 34 ConnectionWriter::ConnectionWriter 0 1 98 224
+/**
+ * Creates a new ConnectionWriter with the indicated number of threads to
+ * handle output.
+ *
+ * If num_threads is 0, all datagrams will be sent immediately instead of
+ * queueing for later transmission by a thread.
+ */
+132
+explicit ConnectionWriter::ConnectionWriter(ConnectionManager *manager, int num_threads, std::string const &thread_name = string());
+
+261 17 ~ConnectionWriter 0 516 359 35 ConnectionWriter::~ConnectionWriter 0 0 10
+/**
+ *
+ */
+42
+ConnectionWriter::~ConnectionWriter(void);
+
+262 18 set_max_queue_size 0 4 359 36 ConnectionWriter::set_max_queue_size 0 1 99 192
+/**
+ * Limits the number of packets that may be pending on the outbound queue.
+ * This only has an effect when using threads; if num_threads is 0, then all
+ * packets are sent immediately.
+ */
+56
+void ConnectionWriter::set_max_queue_size(int max_size);
+
+263 18 get_max_queue_size 0 4 359 36 ConnectionWriter::get_max_queue_size 0 1 100 98
+/**
+ * Returns the maximum size the queue is allowed to grow to.  See
+ * set_max_queue_size().
+ */
+53
+int ConnectionWriter::get_max_queue_size(void) const;
+
+264 22 get_current_queue_size 0 4 359 40 ConnectionWriter::get_current_queue_size 0 1 101 61
+/**
+ * Returns the current number of things in the queue.
+ */
+57
+int ConnectionWriter::get_current_queue_size(void) const;
+
+265 4 send 0 4 359 22 ConnectionWriter::send 0 2 102 103 1230
+/**
+ * Enqueues a datagram for transmittal on the indicated socket.  Since the
+ * host address is not specified with this form, this function should only be
+ * used for sending TCP packets.  Use the other send() method for sending UDP
+ * packets.
+ *
+ * Returns true if successful, false if there was an error.  In the normal,
+ * threaded case, this function only returns false if the send queue is
+ * filled; it's impossible to detect a transmission error at this point.
+ *
+ * If block is true, this will not return false if the send queue is filled;
+ * instead, it will wait until there is space available.
+ */
+
+/**
+ * Enqueues a datagram for transmittal on the indicated socket.  This form of
+ * the function allows the specification of a destination host address, and so
+ * is appropriate for UDP packets.  Use the other send() method for sending
+ * TCP packets.
+ *
+ * Returns true if successful, false if there was an error.  In the normal,
+ * threaded case, this function only returns false if the send queue is
+ * filled; it's impossible to detect a transmission error at this point.
+ *
+ * If block is true, this will not return false if the send queue is filled;
+ * instead, it will wait until there is space available.
+ */
+262
+bool ConnectionWriter::send(Datagram const &datagram, PointerTo< Connection > const &connection, bool block = false);
+bool ConnectionWriter::send(Datagram const &datagram, PointerTo< Connection > const &connection, NetAddress const &address, bool block = false);
+
+266 16 is_valid_for_udp 0 4 359 34 ConnectionWriter::is_valid_for_udp 0 1 104 105
+/**
+ * Returns true if the datagram is small enough to be sent over a UDP packet,
+ * false otherwise.
+ */
+72
+bool ConnectionWriter::is_valid_for_udp(Datagram const &datagram) const;
+
+267 11 get_manager 0 4 359 29 ConnectionWriter::get_manager 0 1 105 98
+/**
+ * Returns a pointer to the ConnectionManager object that serves this
+ * ConnectionWriter.
+ */
+61
+ConnectionManager *ConnectionWriter::get_manager(void) const;
+
+268 12 is_immediate 0 4 359 30 ConnectionWriter::is_immediate 0 1 106 86
+/**
+ * Returns true if the writer is an immediate writer, i.e.  it has no threads.
+ */
+48
+bool ConnectionWriter::is_immediate(void) const;
+
+269 15 get_num_threads 0 4 359 33 ConnectionWriter::get_num_threads 0 1 107 84
+/**
+ * Returns the number of threads the ConnectionWriter has been created with.
+ */
+50
+int ConnectionWriter::get_num_threads(void) const;
+
+270 12 set_raw_mode 0 4 359 30 ConnectionWriter::set_raw_mode 0 1 108 455
+/**
+ * Sets the ConnectionWriter into raw mode (or turns off raw mode).  In raw
+ * mode, datagrams are not sent along with their headers; the bytes in the
+ * datagram are simply sent down the pipe.
+ *
+ * Setting the ConnectionWriter to raw mode must be done with care.  This can
+ * only be done when the matching ConnectionReader is also set to raw mode, or
+ * when the ConnectionWriter is communicating to a process that does not
+ * expect datagrams.
+ */
+47
+void ConnectionWriter::set_raw_mode(bool mode);
+
+271 12 get_raw_mode 0 4 359 30 ConnectionWriter::get_raw_mode 0 1 109 81
+/**
+ * Returns the current setting of the raw mode flag.  See set_raw_mode().
+ */
+48
+bool ConnectionWriter::get_raw_mode(void) const;
+
+272 19 set_tcp_header_size 0 4 359 37 ConnectionWriter::set_tcp_header_size 0 1 110 270
+/**
+ * Sets the header size of TCP packets.  At the present, legal values for this
+ * are 0, 2, or 4; this specifies the number of bytes to use encode the
+ * datagram length at the start of each TCP datagram.  Sender and receiver
+ * must independently agree on this.
+ */
+64
+void ConnectionWriter::set_tcp_header_size(int tcp_header_size);
+
+273 19 get_tcp_header_size 0 4 359 37 ConnectionWriter::get_tcp_header_size 0 1 111 86
+/**
+ * Returns the current setting of TCP header size.  See set_tcp_header_size().
+ */
+54
+int ConnectionWriter::get_tcp_header_size(void) const;
+
+274 8 shutdown 0 4 359 26 ConnectionWriter::shutdown 0 1 112 156
+/**
+ * Stops all the threads and cleans them up.  This is called automatically by
+ * the destructor, but it may be called explicitly before destruction.
+ */
+38
+void ConnectionWriter::shutdown(void);
+
+275 27 upcast_to_DatagramGenerator 0 12 360 49 DatagramGeneratorNet::upcast_to_DatagramGenerator 0 1 117 53
+upcast from DatagramGeneratorNet to DatagramGenerator
+75
+DatagramGenerator *DatagramGeneratorNet::upcast_to_DatagramGenerator(void);
+
+276 32 downcast_to_DatagramGeneratorNet 0 12 361 51 DatagramGenerator::downcast_to_DatagramGeneratorNet 0 0 55
+downcast from DatagramGenerator to DatagramGeneratorNet
+80
+DatagramGeneratorNet *DatagramGenerator::downcast_to_DatagramGeneratorNet(void);
+
+277 26 upcast_to_ConnectionReader 0 12 360 48 DatagramGeneratorNet::upcast_to_ConnectionReader 0 1 118 52
+upcast from DatagramGeneratorNet to ConnectionReader
+73
+ConnectionReader *DatagramGeneratorNet::upcast_to_ConnectionReader(void);
+
+278 32 downcast_to_DatagramGeneratorNet 0 12 350 50 ConnectionReader::downcast_to_DatagramGeneratorNet 0 0 54
+downcast from ConnectionReader to DatagramGeneratorNet
+79
+DatagramGeneratorNet *ConnectionReader::downcast_to_DatagramGeneratorNet(void);
+
+279 18 set_max_queue_size 0 4 362 44 QueuedReturn< Datagram >::set_max_queue_size 0 1 120 0
+64
+void QueuedReturn< Datagram >::set_max_queue_size(int max_size);
+
+280 18 get_max_queue_size 0 4 362 44 QueuedReturn< Datagram >::get_max_queue_size 0 1 121 0
+61
+int QueuedReturn< Datagram >::get_max_queue_size(void) const;
+
+281 22 get_current_queue_size 0 4 362 48 QueuedReturn< Datagram >::get_current_queue_size 0 1 122 0
+65
+int QueuedReturn< Datagram >::get_current_queue_size(void) const;
+
+282 17 get_overflow_flag 0 4 362 43 QueuedReturn< Datagram >::get_overflow_flag 0 1 123 0
+61
+bool QueuedReturn< Datagram >::get_overflow_flag(void) const;
+
+283 19 reset_overflow_flag 0 4 362 45 QueuedReturn< Datagram >::reset_overflow_flag 0 1 124 0
+57
+void QueuedReturn< Datagram >::reset_overflow_flag(void);
+
+284 31 upcast_to_QueuedReturn_Datagram 0 12 360 53 DatagramGeneratorNet::upcast_to_QueuedReturn_Datagram 0 1 119 60
+upcast from DatagramGeneratorNet to QueuedReturn< Datagram >
+86
+QueuedReturn< Datagram > *DatagramGeneratorNet::upcast_to_QueuedReturn_Datagram(void);
+
+285 32 downcast_to_DatagramGeneratorNet 0 12 362 58 QueuedReturn< Datagram >::downcast_to_DatagramGeneratorNet 0 0 62
+downcast from QueuedReturn< Datagram > to DatagramGeneratorNet
+87
+DatagramGeneratorNet *QueuedReturn< Datagram >::downcast_to_DatagramGeneratorNet(void);
+
+286 20 DatagramGeneratorNet 0 260 360 42 DatagramGeneratorNet::DatagramGeneratorNet 0 1 113 243
+/**
+ * Creates a new DatagramGeneratorNet with the indicated number of threads to
+ * handle requests.  Normally num_threads should be either 0 or 1 to guarantee
+ * that datagrams are generated in the same order in which they were received.
+ */
+97
+explicit DatagramGeneratorNet::DatagramGeneratorNet(ConnectionManager *manager, int num_threads);
+
+287 21 ~DatagramGeneratorNet 0 518 360 43 DatagramGeneratorNet::~DatagramGeneratorNet 0 0 10
+/**
+ *
+ */
+58
+virtual DatagramGeneratorNet::~DatagramGeneratorNet(void);
+
+288 12 get_datagram 0 6 360 34 DatagramGeneratorNet::get_datagram 0 1 114 189
+// Inherited from DatagramGenerator
+
+/**
+ * Reads the next datagram from the stream.  Blocks until a datagram is
+ * available.  Returns true on success, false on stream closed or error.
+ */
+64
+virtual bool DatagramGeneratorNet::get_datagram(Datagram &data);
+
+289 6 is_eof 0 6 360 28 DatagramGeneratorNet::is_eof 0 1 115 137
+/**
+ * Returns true if the stream has been closed normally.  This test may only be
+ * made after a call to get_datagram() has failed.
+ */
+48
+virtual bool DatagramGeneratorNet::is_eof(void);
+
+290 8 is_error 0 6 360 30 DatagramGeneratorNet::is_error 0 1 116 61
+/**
+ * Returns true if the stream has an error condition.
+ */
+50
+virtual bool DatagramGeneratorNet::is_error(void);
+
+291 22 upcast_to_DatagramSink 0 12 363 39 DatagramSinkNet::upcast_to_DatagramSink 0 1 131 43
+upcast from DatagramSinkNet to DatagramSink
+60
+DatagramSink *DatagramSinkNet::upcast_to_DatagramSink(void);
+
+292 27 downcast_to_DatagramSinkNet 0 12 364 41 DatagramSink::downcast_to_DatagramSinkNet 0 0 45
+downcast from DatagramSink to DatagramSinkNet
+65
+DatagramSinkNet *DatagramSink::downcast_to_DatagramSinkNet(void);
+
+293 26 upcast_to_ConnectionWriter 0 12 363 43 DatagramSinkNet::upcast_to_ConnectionWriter 0 1 132 47
+upcast from DatagramSinkNet to ConnectionWriter
+68
+ConnectionWriter *DatagramSinkNet::upcast_to_ConnectionWriter(void);
+
+294 27 downcast_to_DatagramSinkNet 0 12 359 45 ConnectionWriter::downcast_to_DatagramSinkNet 0 0 49
+downcast from ConnectionWriter to DatagramSinkNet
+69
+DatagramSinkNet *ConnectionWriter::downcast_to_DatagramSinkNet(void);
+
+295 15 DatagramSinkNet 0 260 363 32 DatagramSinkNet::DatagramSinkNet 0 1 125 233
+/**
+ * Creates a new DatagramSinkNet with the indicated number of threads to
+ * handle writing.  Normally num_threads should be either 0 or 1 to guarantee
+ * that datagrams are delivered in the same order in which they were sent.
+ */
+87
+explicit DatagramSinkNet::DatagramSinkNet(ConnectionManager *manager, int num_threads);
+
+296 10 set_target 0 4 363 27 DatagramSinkNet::set_target 0 1 126 80
+/**
+ * Specifies the Connection that will receive all future Datagrams sent.
+ */
+64
+inline void DatagramSinkNet::set_target(Connection *connection);
+
+297 10 get_target 0 4 363 27 DatagramSinkNet::get_target 0 1 127 115
+/**
+ * Returns the current target Connection, or NULL if the target has not yet
+ * been set.  See set_target().
+ */
+59
+inline Connection *DatagramSinkNet::get_target(void) const;
+
+298 12 put_datagram 0 6 363 29 DatagramSinkNet::put_datagram 0 1 128 187
+// Inherited from DatagramSink
+
+/**
+ * Sends the given datagram to the target.  Returns true on success, false if
+ * there is an error.  Blocks if necessary until the target is ready.
+ */
+65
+virtual bool DatagramSinkNet::put_datagram(Datagram const &data);
+
+299 8 is_error 0 6 363 25 DatagramSinkNet::is_error 0 1 129 110
+/**
+ * Returns true if there is an error on the target connection, or if the
+ * target has never been set.
+ */
+45
+virtual bool DatagramSinkNet::is_error(void);
+
+300 5 flush 0 6 363 22 DatagramSinkNet::flush 0 1 130 90
+/**
+ * Ensures that all datagrams previously written will be visible on the
+ * stream.
+ */
+42
+virtual void DatagramSinkNet::flush(void);
+
+301 16 ~DatagramSinkNet 0 516 363 33 DatagramSinkNet::~DatagramSinkNet 0 0 0
+40
+DatagramSinkNet::~DatagramSinkNet(void);
+
+302 28 upcast_to_ConnectionListener 0 12 365 54 QueuedConnectionListener::upcast_to_ConnectionListener 0 1 137 58
+upcast from QueuedConnectionListener to ConnectionListener
+81
+ConnectionListener *QueuedConnectionListener::upcast_to_ConnectionListener(void);
+
+303 36 downcast_to_QueuedConnectionListener 0 12 351 56 ConnectionListener::downcast_to_QueuedConnectionListener 0 0 60
+downcast from ConnectionListener to QueuedConnectionListener
+89
+QueuedConnectionListener *ConnectionListener::downcast_to_QueuedConnectionListener(void);
+
+304 18 set_max_queue_size 0 4 366 58 QueuedReturn< ConnectionListenerData >::set_max_queue_size 0 1 139 0
+78
+void QueuedReturn< ConnectionListenerData >::set_max_queue_size(int max_size);
+
+305 18 get_max_queue_size 0 4 366 58 QueuedReturn< ConnectionListenerData >::get_max_queue_size 0 1 140 0
+75
+int QueuedReturn< ConnectionListenerData >::get_max_queue_size(void) const;
+
+306 22 get_current_queue_size 0 4 366 62 QueuedReturn< ConnectionListenerData >::get_current_queue_size 0 1 141 0
+79
+int QueuedReturn< ConnectionListenerData >::get_current_queue_size(void) const;
+
+307 17 get_overflow_flag 0 4 366 57 QueuedReturn< ConnectionListenerData >::get_overflow_flag 0 1 142 0
+75
+bool QueuedReturn< ConnectionListenerData >::get_overflow_flag(void) const;
+
+308 19 reset_overflow_flag 0 4 366 59 QueuedReturn< ConnectionListenerData >::reset_overflow_flag 0 1 143 0
+71
+void QueuedReturn< ConnectionListenerData >::reset_overflow_flag(void);
+
+309 45 upcast_to_QueuedReturn_ConnectionListenerData 0 12 365 71 QueuedConnectionListener::upcast_to_QueuedReturn_ConnectionListenerData 0 1 138 78
+upcast from QueuedConnectionListener to QueuedReturn< ConnectionListenerData >
+118
+QueuedReturn< ConnectionListenerData > *QueuedConnectionListener::upcast_to_QueuedReturn_ConnectionListenerData(void);
+
+310 36 downcast_to_QueuedConnectionListener 0 12 366 76 QueuedReturn< ConnectionListenerData >::downcast_to_QueuedConnectionListener 0 0 80
+downcast from QueuedReturn< ConnectionListenerData > to QueuedConnectionListener
+109
+QueuedConnectionListener *QueuedReturn< ConnectionListenerData >::downcast_to_QueuedConnectionListener(void);
+
+311 24 QueuedConnectionListener 0 260 365 50 QueuedConnectionListener::QueuedConnectionListener 0 1 133 10
+/**
+ *
+ */
+105
+explicit QueuedConnectionListener::QueuedConnectionListener(ConnectionManager *manager, int num_threads);
+
+312 25 ~QueuedConnectionListener 0 518 365 51 QueuedConnectionListener::~QueuedConnectionListener 0 0 10
+/**
+ *
+ */
+66
+virtual QueuedConnectionListener::~QueuedConnectionListener(void);
+
+313 24 new_connection_available 0 4 365 50 QueuedConnectionListener::new_connection_available 0 1 134 147
+/**
+ * Returns true if a new connection was recently established; the connection
+ * information may then be retrieved via get_new_connection().
+ */
+62
+bool QueuedConnectionListener::new_connection_available(void);
+
+314 18 get_new_connection 0 4 365 44 QueuedConnectionListener::get_new_connection 0 2 135 136 935
+/**
+ * If a previous call to new_connection_available() returned true, this
+ * function will return information about the newly established connection.
+ *
+ * The rendezvous parameter is the particular rendezvous socket this new
+ * connection originally communicated with; it is provided in case the
+ * ConnectionListener was monitorind more than one and you care which one it
+ * was.  The address parameter is the net address of the new client, and
+ * new_connection is the socket of the newly established connection.
+ *
+ * The return value is true if a connection was successfully returned, or
+ * false if there was, in fact, no new connection.  (This may happen if there
+ * are multiple threads accessing the QueuedConnectionListener).
+ */
+
+/**
+ * This flavor of get_new_connection() simply returns a new connection,
+ * assuming the user doesn't care about the rendezvous socket that originated
+ * it or the address it came from.
+ */
+241
+bool QueuedConnectionListener::get_new_connection(PointerTo< Connection > &rendezvous, NetAddress &address, PointerTo< Connection > &new_connection);
+bool QueuedConnectionListener::get_new_connection(PointerTo< Connection > &new_connection);
+
+315 27 upcast_to_ConnectionManager 0 12 367 52 QueuedConnectionManager::upcast_to_ConnectionManager 0 1 147 56
+upcast from QueuedConnectionManager to ConnectionManager
+78
+ConnectionManager *QueuedConnectionManager::upcast_to_ConnectionManager(void);
+
+316 35 downcast_to_QueuedConnectionManager 0 12 354 54 ConnectionManager::downcast_to_QueuedConnectionManager 0 0 58
+downcast from ConnectionManager to QueuedConnectionManager
+86
+QueuedConnectionManager *ConnectionManager::downcast_to_QueuedConnectionManager(void);
+
+317 18 set_max_queue_size 0 4 368 59 QueuedReturn< PointerTo< Connection > >::set_max_queue_size 0 1 149 0
+79
+void QueuedReturn< PointerTo< Connection > >::set_max_queue_size(int max_size);
+
+318 18 get_max_queue_size 0 4 368 59 QueuedReturn< PointerTo< Connection > >::get_max_queue_size 0 1 150 0
+76
+int QueuedReturn< PointerTo< Connection > >::get_max_queue_size(void) const;
+
+319 22 get_current_queue_size 0 4 368 63 QueuedReturn< PointerTo< Connection > >::get_current_queue_size 0 1 151 0
+80
+int QueuedReturn< PointerTo< Connection > >::get_current_queue_size(void) const;
+
+320 17 get_overflow_flag 0 4 368 58 QueuedReturn< PointerTo< Connection > >::get_overflow_flag 0 1 152 0
+76
+bool QueuedReturn< PointerTo< Connection > >::get_overflow_flag(void) const;
+
+321 19 reset_overflow_flag 0 4 368 60 QueuedReturn< PointerTo< Connection > >::reset_overflow_flag 0 1 153 0
+72
+void QueuedReturn< PointerTo< Connection > >::reset_overflow_flag(void);
+
+322 43 upcast_to_QueuedReturn_PointerTo_Connection 0 12 367 68 QueuedConnectionManager::upcast_to_QueuedReturn_PointerTo_Connection 0 1 148 78
+upcast from QueuedConnectionManager to QueuedReturn< PointerTo< Connection > >
+116
+QueuedReturn< PointerTo< Connection > > *QueuedConnectionManager::upcast_to_QueuedReturn_PointerTo_Connection(void);
+
+323 35 downcast_to_QueuedConnectionManager 0 12 368 76 QueuedReturn< PointerTo< Connection > >::downcast_to_QueuedConnectionManager 0 0 80
+downcast from QueuedReturn< PointerTo< Connection > > to QueuedConnectionManager
+108
+QueuedConnectionManager *QueuedReturn< PointerTo< Connection > >::downcast_to_QueuedConnectionManager(void);
+
+324 23 QueuedConnectionManager 0 260 367 48 QueuedConnectionManager::QueuedConnectionManager 0 1 144 10
+/**
+ *
+ */
+55
+QueuedConnectionManager::QueuedConnectionManager(void);
+
+325 24 ~QueuedConnectionManager 0 518 367 49 QueuedConnectionManager::~QueuedConnectionManager 0 0 10
+/**
+ *
+ */
+64
+virtual QueuedConnectionManager::~QueuedConnectionManager(void);
+
+326 26 reset_connection_available 0 4 367 51 QueuedConnectionManager::reset_connection_available 0 1 145 631
+/**
+ * Returns true if one of the readers/writers/listeners reported a connection
+ * reset recently.  If so, the particular connection that has been reset can
+ * be extracted via get_reset_connection().
+ *
+ * Only connections which were externally reset are certain to appear in this
+ * list.  Those which were explicitly closed via a call to close_connection()
+ * may or may not be reported.  Furthermore, it is the responsibility of the
+ * caller to subsequently call close_connection() with any connection reported
+ * reset by this call.  (There is no harm in calling close_connection() more
+ * than once on a given socket.)
+ */
+69
+bool QueuedConnectionManager::reset_connection_available(void) const;
+
+327 20 get_reset_connection 0 4 367 45 QueuedConnectionManager::get_reset_connection 0 1 146 797
+/**
+ * If a previous call to reset_connection_available() returned true, this
+ * function will return information about the newly reset connection.
+ *
+ * Only connections which were externally reset are certain to appear in this
+ * list.  Those which were explicitly closed via a call to close_connection()
+ * may or may not be reported.  Furthermore, it is the responsibility of the
+ * caller to subsequently call close_connection() with any connection reported
+ * reset by this call.  (There is no harm in calling close_connection() more
+ * than once on a given socket.)
+ *
+ * The return value is true if a connection was successfully returned, or
+ * false if there was, in fact, no reset connection.  (This may happen if
+ * there are multiple threads accessing the QueuedConnectionManager).
+ */
+88
+bool QueuedConnectionManager::get_reset_connection(PointerTo< Connection > &connection);
+
+328 26 upcast_to_ConnectionReader 0 12 369 50 QueuedConnectionReader::upcast_to_ConnectionReader 0 1 158 54
+upcast from QueuedConnectionReader to ConnectionReader
+75
+ConnectionReader *QueuedConnectionReader::upcast_to_ConnectionReader(void);
+
+329 34 downcast_to_QueuedConnectionReader 0 12 350 52 ConnectionReader::downcast_to_QueuedConnectionReader 0 0 56
+downcast from ConnectionReader to QueuedConnectionReader
+83
+QueuedConnectionReader *ConnectionReader::downcast_to_QueuedConnectionReader(void);
+
+330 18 set_max_queue_size 0 4 370 47 QueuedReturn< NetDatagram >::set_max_queue_size 0 1 160 0
+67
+void QueuedReturn< NetDatagram >::set_max_queue_size(int max_size);
+
+331 18 get_max_queue_size 0 4 370 47 QueuedReturn< NetDatagram >::get_max_queue_size 0 1 161 0
+64
+int QueuedReturn< NetDatagram >::get_max_queue_size(void) const;
+
+332 22 get_current_queue_size 0 4 370 51 QueuedReturn< NetDatagram >::get_current_queue_size 0 1 162 0
+68
+int QueuedReturn< NetDatagram >::get_current_queue_size(void) const;
+
+333 17 get_overflow_flag 0 4 370 46 QueuedReturn< NetDatagram >::get_overflow_flag 0 1 163 0
+64
+bool QueuedReturn< NetDatagram >::get_overflow_flag(void) const;
+
+334 19 reset_overflow_flag 0 4 370 48 QueuedReturn< NetDatagram >::reset_overflow_flag 0 1 164 0
+60
+void QueuedReturn< NetDatagram >::reset_overflow_flag(void);
+
+335 34 upcast_to_QueuedReturn_NetDatagram 0 12 369 58 QueuedConnectionReader::upcast_to_QueuedReturn_NetDatagram 0 1 159 65
+upcast from QueuedConnectionReader to QueuedReturn< NetDatagram >
+94
+QueuedReturn< NetDatagram > *QueuedConnectionReader::upcast_to_QueuedReturn_NetDatagram(void);
+
+336 34 downcast_to_QueuedConnectionReader 0 12 370 63 QueuedReturn< NetDatagram >::downcast_to_QueuedConnectionReader 0 0 67
+downcast from QueuedReturn< NetDatagram > to QueuedConnectionReader
+94
+QueuedConnectionReader *QueuedReturn< NetDatagram >::downcast_to_QueuedConnectionReader(void);
+
+337 22 QueuedConnectionReader 0 260 369 46 QueuedConnectionReader::QueuedConnectionReader 0 1 154 10
+/**
+ *
+ */
+101
+explicit QueuedConnectionReader::QueuedConnectionReader(ConnectionManager *manager, int num_threads);
+
+338 23 ~QueuedConnectionReader 0 518 369 47 QueuedConnectionReader::~QueuedConnectionReader 0 0 10
+/**
+ *
+ */
+62
+virtual QueuedConnectionReader::~QueuedConnectionReader(void);
+
+339 14 data_available 0 4 369 38 QueuedConnectionReader::data_available 0 1 155 108
+/**
+ * Returns true if a datagram is available on the queue; call get_data() to
+ * extract the datagram.
+ */
+50
+bool QueuedConnectionReader::data_available(void);
+
+340 8 get_data 0 4 369 32 QueuedConnectionReader::get_data 0 2 156 157 650
+/**
+ * If a previous call to data_available() returned true, this function will
+ * return the datagram that has become available.
+ *
+ * The return value is true if a datagram was successfully returned, or false
+ * if there was, in fact, no datagram available.  (This may happen if there
+ * are multiple threads accessing the QueuedConnectionReader).
+ */
+
+/**
+ * This flavor of QueuedConnectionReader::get_data(), works like the other,
+ * except that it only fills a Datagram object, not a NetDatagram object.
+ * This means that the Datagram cannot be queried for its source Connection
+ * and/or NetAddress, but it is useful in all other respects.
+ */
+116
+bool QueuedConnectionReader::get_data(NetDatagram &result);
+bool QueuedConnectionReader::get_data(Datagram &result);
+
+341 22 RecentConnectionReader 0 260 371 46 RecentConnectionReader::RecentConnectionReader 0 1 165 10
+/**
+ *
+ */
+84
+explicit RecentConnectionReader::RecentConnectionReader(ConnectionManager *manager);
+
+342 14 data_available 0 4 371 38 RecentConnectionReader::data_available 0 1 166 108
+/**
+ * Returns true if a datagram is available on the queue; call get_data() to
+ * extract the datagram.
+ */
+50
+bool RecentConnectionReader::data_available(void);
+
+343 8 get_data 0 4 371 32 RecentConnectionReader::get_data 0 2 167 168 650
+/**
+ * If a previous call to data_available() returned true, this function will
+ * return the datagram that has become available.
+ *
+ * The return value is true if a datagram was successfully returned, or false
+ * if there was, in fact, no datagram available.  (This may happen if there
+ * are multiple threads accessing the RecentConnectionReader).
+ */
+
+/**
+ * This flavor of RecentConnectionReader::get_data(), works like the other,
+ * except that it only fills a Datagram object, not a NetDatagram object.
+ * This means that the Datagram cannot be queried for its source Connection
+ * and/or NetAddress, but it is useful in all other respects.
+ */
+116
+bool RecentConnectionReader::get_data(NetDatagram &result);
+bool RecentConnectionReader::get_data(Datagram &result);
+
+168
+1 0 0 7 171 372 176 0 0 0 
+2 0 0 23 171 372 176 0 0 1 3 ptr 1 373  
+3 0 0 15 171 372 176 0 0 1 4 copy 1 373  
+4 0 0 7 171 372 176 0 0 1 6 param0 0 374  
+5 0 0 7 172 373 0 0 289 // If your base class is a derivative of TypedObject, you might want to use
+// the DCAST macro defined in typedObject.h instead, e.g.  DCAST(MyType,
+// ptr).  This provides a clean downcast that doesn't require .p() or any
+// double-casting, and it can be run-time checked for correctness. 1 4 this 3 375  
+6 0 0 6 173 372 0 0 0 2 4 this 3 372  3 ptr 1 373  
+7 0 0 6 173 372 0 0 0 2 4 this 3 372  4 copy 1 373  
+8 0 0 6 174 377 0 0 0 1 4 this 3 375  
+9 0 0 4 175 378 0 0 0 1 4 this 3 372  
+10 0 0 4 169 378 0 0 0 1 4 this 3 379  
+11 0 0 4 170 378 0 0 0 2 4 this 3 380  3 out 1 382  
+12 0 0 7 177 384 194 0 45 /**
+ * Constructs an unspecified address.
+ */ 0 
+13 0 0 15 177 384 194 0 0 1 6 param0 0 385  
+14 0 0 23 177 384 194 0 224 /**
+ * Constructs an address from a given Socket_Address.  Normally, this
+ * constructor should not be used by user code; instead, create a default
+ * NetAddress and use one of the set_*() functions to set up an address.
+ */ 1 4 addr 1 387  
+15 0 0 6 178 377 0 0 179 /**
+ * Sets the address up to refer to a particular port, but not to any
+ * particular IP.  Returns true if successful, false otherwise (currently,
+ * this only returns true).
+ */ 2 4 this 3 384  4 port 1 390  
+16 0 0 6 179 377 0 0 75 /**
+ * Sets the address up to refer to a particular port, on this host.
+ */ 2 4 this 3 384  4 port 1 390  
+17 0 0 6 180 377 0 0 53 /**
+ * Sets the address to the broadcast address.
+ */ 2 4 this 3 384  4 port 1 390  
+18 0 0 6 181 377 0 0 141 /**
+ * Sets the address up to refer to a particular port on a particular host.
+ * Returns true if the hostname is known, false otherwise.
+ */ 3 4 this 3 384  8 hostname 1 391  4 port 1 390  
+19 0 0 4 182 378 0 0 54 /**
+ * Resets the NetAddress to its initial state.
+ */ 1 4 this 3 384  
+20 0 0 6 183 390 0 0 64 /**
+ * Returns the port number to which this address refers.
+ */ 1 4 this 3 385  
+21 0 0 4 184 378 0 0 73 /**
+ * Resets the port number without otherwise changing the address.
+ */ 2 4 this 3 384  4 port 1 390  
+22 0 0 6 185 391 0 0 86 /**
+ * Returns the IP address to which this address refers, formatted as a string.
+ */ 1 4 this 3 385  
+23 0 0 6 186 377 0 0 58 /**
+ * Returns true if the IP address has only zeroes.
+ */ 1 4 this 3 385  
+24 0 0 6 187 392 0 0 158 /**
+ * Returns the IP address to which this address refers, as a 32-bit integer,
+ * in host byte order.
+ * @deprecated  Does not work with IPv6 addresses.
+ */ 1 4 this 3 385  
+25 0 0 6 188 394 0 0 213 /**
+ * Returns the nth 8-bit component of the IP address.  An IP address has four
+ * components; component 0 is the first (leftmost), and component 3 is the
+ * last (rightmost) in the dotted number convention.
+ */ 2 4 this 3 385  1 n 1 390  
+26 0 0 6 189 387 0 0 55 /**
+ * Returns the Socket_Address for this address.
+ */ 1 4 this 3 385  
+27 0 0 4 190 378 0 0 10 /**
+ *
+ */ 2 4 this 3 385  3 out 1 382  
+28 0 0 6 191 396 0 0 10 /**
+ *
+ */ 1 4 this 3 385  
+29 0 0 6 192 377 0 0 0 2 4 this 3 385  5 other 1 385  
+30 0 0 6 193 377 0 0 0 2 4 this 3 385  5 other 1 385  
+31 0 0 7 195 373 0 0 177 /**
+ * Creates a connection.  Normally this constructor should not be used
+ * directly by user code; use one of the methods in ConnectionManager to make
+ * a new connection.
+ */ 2 7 manager 1 398  6 socket 1 399  
+32 0 0 7 196 384 194 0 83 /**
+ * Returns the address bound to this connection, if it is a TCP connection.
+ */ 1 4 this 3 401  
+33 0 0 6 197 398 0 0 92 /**
+ * Returns a pointer to the ConnectionManager object that serves this
+ * connection.
+ */ 1 4 this 3 401  
+34 0 0 6 198 399 0 0 70 /**
+ * Returns the internal Socket_IP that defines the connection.
+ */ 1 4 this 3 401  
+35 0 0 4 199 378 0 0 719 /**
+ * Enables or disables "collect-tcp" mode.  In this mode, individual TCP
+ * packets are not sent immediately, but rather they are collected together
+ * and accumulated to be sent periodically as one larger TCP packet.  This
+ * cuts down on overhead from the TCP/IP protocol, especially if many small
+ * packets need to be sent on the same connection, but it introduces
+ * additional latency (since packets must be held before they can be sent).
+ *
+ * See set_collect_tcp_interval() to specify the interval of time for which to
+ * hold packets before sending them.
+ *
+ * If you enable this mode, you may also need to periodically call
+ * consider_flush() to flush the queue if no packets have been sent recently.
+ */ 2 4 this 3 373  11 collect_tcp 1 377  
+36 0 0 6 200 377 0 0 85 /**
+ * Returns the current setting of "collect-tcp" mode.  See set_collect_tcp().
+ */ 1 4 this 3 401  
+37 0 0 4 201 378 0 0 231 /**
+ * Specifies the interval in time, in seconds, for which to hold TCP packets
+ * before sending all of the recently received packets at once.  This only has
+ * meaning if "collect-tcp" mode is enabled; see set_collect_tcp().
+ */ 2 4 this 3 373  8 interval 1 403  
+38 0 0 6 202 403 0 0 229 /**
+ * Returns the interval in time, in seconds, for which to hold TCP packets
+ * before sending all of the recently received packets at once.  This only has
+ * meaning if "collect-tcp" mode is enabled; see set_collect_tcp().
+ */ 1 4 this 3 401  
+39 0 0 6 203 377 0 0 153 /**
+ * Sends the most recently queued TCP datagram(s) if enough time has elapsed.
+ * This only has meaning if set_collect_tcp() has been set to true.
+ */ 1 4 this 3 373  
+40 0 0 6 204 377 0 0 131 /**
+ * Sends the most recently queued TCP datagram(s) now.  This only has meaning
+ * if set_collect_tcp() has been set to true.
+ */ 1 4 this 3 373  
+41 0 0 4 205 378 0 0 416 /**
+ * Sets the time to linger on close if data is present.  If flag is false,
+ * when you close a socket with data available the system attempts to deliver
+ * the data to the peer (the default behavior).  If flag is false but time is
+ * zero, the system discards any undelivered data when you close the socket.
+ * If flag is false but time is nonzero, the system waits up to time seconds
+ * to deliver the data.
+ */ 3 4 this 3 373  4 flag 1 377  4 time 1 403  
+42 0 0 4 206 378 0 0 55 /**
+ * Sets whether local address reuse is allowed.
+ */ 2 4 this 3 373  4 flag 1 377  
+43 0 0 4 207 378 0 0 93 /**
+ * Sets whether the connection is periodically tested to see if it is still
+ * alive.
+ */ 2 4 this 3 373  4 flag 1 377  
+44 0 0 4 208 378 0 0 57 /**
+ * Sets the size of the receive buffer, in bytes.
+ */ 2 4 this 3 373  4 size 1 390  
+45 0 0 4 209 378 0 0 54 /**
+ * Sets the size of the send buffer, in bytes.
+ */ 2 4 this 3 373  4 size 1 390  
+46 0 0 4 210 378 0 0 32 /**
+ * Sets IP time-to-live.
+ */ 2 4 this 3 373  3 ttl 1 390  
+47 0 0 4 211 378 0 0 50 /**
+ * Sets IP type-of-service and precedence.
+ */ 2 4 this 3 373  3 tos 1 390  
+48 0 0 4 212 378 0 0 116 /**
+ * If flag is true, this disables the Nagle algorithm, and prevents delaying
+ * of send to coalesce packets.
+ */ 2 4 this 3 373  4 flag 1 377  
+49 0 0 4 213 378 0 0 41 /**
+ * Sets the maximum segment size.
+ */ 2 4 this 3 373  4 size 1 390  
+50 0 0 6 215 377 0 0 504 /**
+ * Adds a new socket to the list of sockets the ConnectionReader will monitor.
+ * A datagram that comes in on any of the monitored sockets will be reported.
+ * In the case of a ConnectionListener, this adds a new rendezvous socket; any
+ * activity on any of the monitored sockets will cause a connection to be
+ * accepted.
+ *
+ * The return value is true if the connection was added, false if it was
+ * already there.
+ *
+ * add_connection() is thread-safe, and may be called at will by any thread.
+ */ 2 4 this 3 404  10 connection 1 373  
+51 0 0 6 216 377 0 0 264 /**
+ * Removes a socket from the list of sockets being monitored.  Returns true if
+ * the socket was correctly removed, false if it was not on the list in the
+ * first place.
+ *
+ * remove_connection() is thread-safe, and may be called at will by any
+ * thread.
+ */ 2 4 this 3 404  10 connection 1 373  
+52 0 0 6 217 377 0 0 345 /**
+ * Returns true if the indicated connection has been added to the
+ * ConnectionReader and is being monitored properly, false if it is not known,
+ * or if there was some error condition detected on the connection.  (If there
+ * was an error condition, normally the ConnectionManager would have been
+ * informed and closed the connection.)
+ */ 2 4 this 3 404  10 connection 1 373  
+53 0 0 4 218 378 0 0 328 /**
+ * Explicitly polls the available sockets to see if any of them have any
+ * noise.  This function does nothing unless this is a polling-type
+ * ConnectionReader, i.e.  it was created with zero threads (and is_polling()
+ * will return true).
+ *
+ * It is not necessary to call this explicitly for a QueuedConnectionReader.
+ */ 1 4 this 3 404  
+54 0 0 6 219 398 0 0 98 /**
+ * Returns a pointer to the ConnectionManager object that serves this
+ * ConnectionReader.
+ */ 1 4 this 3 405  
+55 0 0 6 220 377 0 0 83 /**
+ * Returns true if the reader is a polling reader, i.e.  it has no threads.
+ */ 1 4 this 3 405  
+56 0 0 6 221 390 0 0 84 /**
+ * Returns the number of threads the ConnectionReader has been created with.
+ */ 1 4 this 3 405  
+57 0 0 4 222 378 0 0 314 /**
+ * Sets the ConnectionReader into raw mode (or turns off raw mode).  In raw
+ * mode, datagram headers are not expected; instead, all the data available on
+ * the pipe is treated as a single datagram.
+ *
+ * This is similar to set_tcp_header_size(0), except that it also turns off
+ * headers for UDP packets.
+ */ 2 4 this 3 404  4 mode 1 377  
+58 0 0 6 223 377 0 0 81 /**
+ * Returns the current setting of the raw mode flag.  See set_raw_mode().
+ */ 1 4 this 3 405  
+59 0 0 4 224 378 0 0 270 /**
+ * Sets the header size of TCP packets.  At the present, legal values for this
+ * are 0, 2, or 4; this specifies the number of bytes to use encode the
+ * datagram length at the start of each TCP datagram.  Sender and receiver
+ * must independently agree on this.
+ */ 2 4 this 3 404  15 tcp_header_size 1 390  
+60 0 0 6 225 390 0 0 86 /**
+ * Returns the current setting of TCP header size.  See set_tcp_header_size().
+ */ 1 4 this 3 405  
+61 0 0 4 226 378 0 0 146 /**
+ * Terminates all threads cleanly.  Normally this is only called by the
+ * destructor, but it may be called explicitly before destruction.
+ */ 1 4 this 3 404  
+62 0 0 7 228 407 235 0 40 /**
+ * Constructs an empty datagram.
+ */ 0 
+63 0 0 23 228 407 235 0 10 /**
+ *
+ */ 1 4 copy 1 408  
+64 0 0 15 228 407 235 0 10 /**
+ *
+ */ 1 4 copy 1 410  
+65 0 0 6 229 407 0 0 0 2 4 this 3 407  4 copy 1 408  
+66 0 0 6 229 407 0 0 0 2 4 this 3 407  4 copy 1 410  
+67 0 0 4 230 378 0 0 72 /**
+ * Specifies the socket to which the datagram should be written.
+ */ 2 4 this 3 407  10 connection 1 373  
+68 0 0 7 231 373 0 0 111 /**
+ * Retrieves the socket from which the datagram was read, or to which it is
+ * scheduled to be written.
+ */ 1 4 this 3 410  
+69 0 0 4 232 378 0 0 67 /**
+ * Specifies the host to which the datagram should be sent.
+ */ 2 4 this 3 407  7 address 1 385  
+70 0 0 6 233 385 0 0 106 /**
+ * Retrieves the host from which the datagram was read, or to which it is
+ * scheduled to be sent.
+ */ 1 4 this 3 410  
+71 0 0 7 234 413 0 0 0 0 
+72 0 0 7 236 398 237 0 10 /**
+ *
+ */ 0 
+73 0 0 7 238 373 0 0 720 /**
+ * Opens a socket for sending and/or receiving UDP packets.  If the port
+ * number is greater than zero, the UDP connection will be opened for
+ * listening on the indicated port; otherwise, it will be useful only for
+ * sending.
+ *
+ * This variant accepts both a hostname and port to listen on a particular
+ * interface; if the hostname is empty, all interfaces will be available,
+ * both IPv4 and IPv6.
+ *
+ * If for_broadcast is true, this UDP connection will be configured to send
+ * and/or receive messages on the broadcast address (255.255.255.255);
+ * otherwise, these messages may be automatically filtered by the OS.
+ *
+ * Use a ConnectionReader and ConnectionWriter to handle the actual
+ * communication.
+ */ 4 4 this 3 398  8 hostname 1 391  4 port 1 414  13 for_broadcast 5 377  
+74 0 0 7 238 373 0 0 325 /**
+ * Opens a socket for sending and/or receiving UDP packets.  If the port
+ * number is greater than zero, the UDP connection will be opened for
+ * listening on the indicated port; otherwise, it will be useful only for
+ * sending.
+ *
+ * Use a ConnectionReader and ConnectionWriter to handle the actual
+ * communication.
+ */ 2 4 this 3 398  4 port 5 414  
+75 0 0 7 239 373 0 0 422 /**
+ * Creates a socket to be used as a rendezvous socket for a server to listen
+ * for TCP connections.  The socket returned by this call should only be added
+ * to a ConnectionListener (not to a generic ConnectionReader).
+ *
+ * This variant of this method accepts a NetAddress, which allows you to
+ * specify a specific interface to listen to.
+ *
+ * backlog is the maximum length of the queue of pending connections.
+ */ 3 4 this 3 398  7 address 1 385  7 backlog 1 390  
+76 0 0 7 239 373 0 0 572 /**
+ * Creates a socket to be used as a rendezvous socket for a server to listen
+ * for TCP connections.  The socket returned by this call should only be added
+ * to a ConnectionListener (not to a generic ConnectionReader).
+ *
+ * This variant of this method accepts a "hostname", which is usually just an
+ * IP address in dotted notation, and a port number.  It will listen on the
+ * interface indicated by the IP address.  If the IP address is empty string,
+ * it will listen on all interfaces.
+ *
+ * backlog is the maximum length of the queue of pending connections.
+ */ 4 4 this 3 398  8 hostname 1 391  4 port 1 414  7 backlog 1 390  
+77 0 0 7 239 373 0 0 438 /**
+ * Creates a socket to be used as a rendezvous socket for a server to listen
+ * for TCP connections.  The socket returned by this call should only be added
+ * to a ConnectionListener (not to a generic ConnectionReader).
+ *
+ * This variant of this method accepts a single port, and will listen to that
+ * port on all available interfaces, both IPv4 and IPv6.
+ *
+ * backlog is the maximum length of the queue of pending connections.
+ */ 3 4 this 3 398  4 port 1 414  7 backlog 1 390  
+78 0 0 7 240 373 0 0 201 /**
+ * Attempts to establish a TCP client connection to a server at the indicated
+ * address.  If the connection is not established within timeout_ms
+ * milliseconds, a null connection is returned.
+ */ 3 4 this 3 398  7 address 1 385  10 timeout_ms 1 390  
+79 0 0 7 240 373 0 0 120 /**
+ * This is a shorthand version of the function to directly establish
+ * communications to a named host and port.
+ */ 4 4 this 3 398  8 hostname 1 391  4 port 1 414  10 timeout_ms 1 390  
+80 0 0 6 241 377 0 0 693 /**
+ * Terminates a UDP or TCP socket previously opened.  This also removes it
+ * from any associated ConnectionReader or ConnectionListeners.
+ *
+ * The socket itself may not be immediately closed--it will not be closed
+ * until all outstanding pointers to it are cleared, including any pointers
+ * remaining in NetDatagrams recently received from the socket.
+ *
+ * The return value is true if the connection was marked to be closed, or
+ * false if close_connection() had already been called (or the connection did
+ * not belong to this ConnectionManager).  In neither case can you infer
+ * anything about whether the connection has *actually* been closed yet based
+ * on the return value.
+ */ 2 4 this 3 398  10 connection 1 373  
+81 0 0 6 242 377 0 0 664 /**
+ * Blocks the process for timeout number of seconds, or until any data is
+ * available on any of the non-threaded ConnectionReaders or
+ * ConnectionListeners, whichever comes first.  The return value is true if
+ * there is data available (but you have to iterate through all readers to
+ * find it), or false if the timeout occurred without any data.
+ *
+ * If the timeout value is negative, this will block forever or until data is
+ * available.
+ *
+ * This only works if all ConnectionReaders and ConnectionListeners are non-
+ * threaded.  If any threaded ConnectionReaders are part of the
+ * ConnectionManager, the timeout value is implicitly treated as 0.
+ */ 2 4 this 3 398  7 timeout 1 403  
+82 0 0 6 243 391 0 0 145 /**
+ * Returns the name of this particular machine on the network, if available,
+ * or the empty string if the hostname cannot be determined.
+ */ 0 
+83 0 0 4 257 378 0 0 258 /**
+ * Repopulates the list reported by get_num_interface()/get_interface().  It
+ * is not necessary to call this explicitly, unless you want to re-determine
+ * the connected interfaces (for instance, if you suspect the hardware has
+ * recently changed).
+ */ 1 4 this 3 398  
+84 0 0 6 258 396 0 0 140 /**
+ * This returns the number of usable network interfaces detected on this
+ * machine.  See scan_interfaces() to repopulate this list.
+ */ 1 4 this 3 398  
+85 0 0 6 259 416 0 0 127 /**
+ * Returns the nth usable network interface detected on this machine.
+ * See scan_interfaces() to repopulate this list.
+ */ 2 4 this 3 398  1 n 1 396  
+86 0 0 15 255 417 256 0 0 1 6 param0 0 416  
+87 0 0 6 244 391 0 0 0 1 4 this 3 416  
+88 0 0 6 245 391 0 0 0 1 4 this 3 416  
+89 0 0 6 246 377 0 0 0 1 4 this 3 416  
+90 0 0 6 247 385 0 0 0 1 4 this 3 416  
+91 0 0 6 248 377 0 0 0 1 4 this 3 416  
+92 0 0 6 249 385 0 0 0 1 4 this 3 416  
+93 0 0 6 250 377 0 0 0 1 4 this 3 416  
+94 0 0 6 251 385 0 0 0 1 4 this 3 416  
+95 0 0 6 252 377 0 0 0 1 4 this 3 416  
+96 0 0 6 253 385 0 0 0 1 4 this 3 416  
+97 0 0 4 254 378 0 0 10 /**
+ *
+ */ 2 4 this 3 416  3 out 1 382  
+98 0 0 7 260 418 261 0 224 /**
+ * Creates a new ConnectionWriter with the indicated number of threads to
+ * handle output.
+ *
+ * If num_threads is 0, all datagrams will be sent immediately instead of
+ * queueing for later transmission by a thread.
+ */ 3 7 manager 1 398  11 num_threads 1 390  11 thread_name 5 391  
+99 0 0 4 262 378 0 0 192 /**
+ * Limits the number of packets that may be pending on the outbound queue.
+ * This only has an effect when using threads; if num_threads is 0, then all
+ * packets are sent immediately.
+ */ 2 4 this 3 418  8 max_size 1 390  
+100 0 0 6 263 390 0 0 98 /**
+ * Returns the maximum size the queue is allowed to grow to.  See
+ * set_max_queue_size().
+ */ 1 4 this 3 419  
+101 0 0 6 264 390 0 0 61 /**
+ * Returns the current number of things in the queue.
+ */ 1 4 this 3 419  
+102 0 0 6 265 377 0 0 617 /**
+ * Enqueues a datagram for transmittal on the indicated socket.  This form of
+ * the function allows the specification of a destination host address, and so
+ * is appropriate for UDP packets.  Use the other send() method for sending
+ * TCP packets.
+ *
+ * Returns true if successful, false if there was an error.  In the normal,
+ * threaded case, this function only returns false if the send queue is
+ * filled; it's impossible to detect a transmission error at this point.
+ *
+ * If block is true, this will not return false if the send queue is filled;
+ * instead, it will wait until there is space available.
+ */ 5 4 this 3 418  8 datagram 1 408  10 connection 1 373  7 address 1 385  5 block 5 377  
+103 0 0 6 265 377 0 0 611 /**
+ * Enqueues a datagram for transmittal on the indicated socket.  Since the
+ * host address is not specified with this form, this function should only be
+ * used for sending TCP packets.  Use the other send() method for sending UDP
+ * packets.
+ *
+ * Returns true if successful, false if there was an error.  In the normal,
+ * threaded case, this function only returns false if the send queue is
+ * filled; it's impossible to detect a transmission error at this point.
+ *
+ * If block is true, this will not return false if the send queue is filled;
+ * instead, it will wait until there is space available.
+ */ 4 4 this 3 418  8 datagram 1 408  10 connection 1 373  5 block 5 377  
+104 0 0 6 266 377 0 0 105 /**
+ * Returns true if the datagram is small enough to be sent over a UDP packet,
+ * false otherwise.
+ */ 2 4 this 3 419  8 datagram 1 408  
+105 0 0 6 267 398 0 0 98 /**
+ * Returns a pointer to the ConnectionManager object that serves this
+ * ConnectionWriter.
+ */ 1 4 this 3 419  
+106 0 0 6 268 377 0 0 86 /**
+ * Returns true if the writer is an immediate writer, i.e.  it has no threads.
+ */ 1 4 this 3 419  
+107 0 0 6 269 390 0 0 84 /**
+ * Returns the number of threads the ConnectionWriter has been created with.
+ */ 1 4 this 3 419  
+108 0 0 4 270 378 0 0 455 /**
+ * Sets the ConnectionWriter into raw mode (or turns off raw mode).  In raw
+ * mode, datagrams are not sent along with their headers; the bytes in the
+ * datagram are simply sent down the pipe.
+ *
+ * Setting the ConnectionWriter to raw mode must be done with care.  This can
+ * only be done when the matching ConnectionReader is also set to raw mode, or
+ * when the ConnectionWriter is communicating to a process that does not
+ * expect datagrams.
+ */ 2 4 this 3 418  4 mode 1 377  
+109 0 0 6 271 377 0 0 81 /**
+ * Returns the current setting of the raw mode flag.  See set_raw_mode().
+ */ 1 4 this 3 419  
+110 0 0 4 272 378 0 0 270 /**
+ * Sets the header size of TCP packets.  At the present, legal values for this
+ * are 0, 2, or 4; this specifies the number of bytes to use encode the
+ * datagram length at the start of each TCP datagram.  Sender and receiver
+ * must independently agree on this.
+ */ 2 4 this 3 418  15 tcp_header_size 1 390  
+111 0 0 6 273 390 0 0 86 /**
+ * Returns the current setting of TCP header size.  See set_tcp_header_size().
+ */ 1 4 this 3 419  
+112 0 0 4 274 378 0 0 156 /**
+ * Stops all the threads and cleans them up.  This is called automatically by
+ * the destructor, but it may be called explicitly before destruction.
+ */ 1 4 this 3 418  
+113 0 0 7 286 421 287 0 243 /**
+ * Creates a new DatagramGeneratorNet with the indicated number of threads to
+ * handle requests.  Normally num_threads should be either 0 or 1 to guarantee
+ * that datagrams are generated in the same order in which they were received.
+ */ 2 7 manager 1 398  11 num_threads 1 390  
+114 0 0 6 288 377 0 0 152 /**
+ * Reads the next datagram from the stream.  Blocks until a datagram is
+ * available.  Returns true on success, false on stream closed or error.
+ */ 2 4 this 3 421  4 data 1 422  
+115 0 0 6 289 377 0 0 137 /**
+ * Returns true if the stream has been closed normally.  This test may only be
+ * made after a call to get_datagram() has failed.
+ */ 1 4 this 3 421  
+116 0 0 6 290 377 0 0 61 /**
+ * Returns true if the stream has an error condition.
+ */ 1 4 this 3 421  
+117 0 0 6 275 423 0 0 0 1 4 this 3 421  
+118 0 0 6 277 404 0 0 0 1 4 this 3 421  
+119 0 0 6 284 424 0 0 0 1 4 this 3 421  
+120 0 0 4 279 378 0 0 0 2 4 this 3 424  8 max_size 1 390  
+121 0 0 6 280 390 0 0 0 1 4 this 3 425  
+122 0 0 6 281 390 0 0 0 1 4 this 3 425  
+123 0 0 6 282 377 0 0 0 1 4 this 3 425  
+124 0 0 4 283 378 0 0 0 1 4 this 3 424  
+125 0 0 7 295 427 301 0 233 /**
+ * Creates a new DatagramSinkNet with the indicated number of threads to
+ * handle writing.  Normally num_threads should be either 0 or 1 to guarantee
+ * that datagrams are delivered in the same order in which they were sent.
+ */ 2 7 manager 1 398  11 num_threads 1 390  
+126 0 0 4 296 378 0 0 80 /**
+ * Specifies the Connection that will receive all future Datagrams sent.
+ */ 2 4 this 3 427  10 connection 1 373  
+127 0 0 7 297 373 0 0 115 /**
+ * Returns the current target Connection, or NULL if the target has not yet
+ * been set.  See set_target().
+ */ 1 4 this 3 428  
+128 0 0 6 298 377 0 0 155 /**
+ * Sends the given datagram to the target.  Returns true on success, false if
+ * there is an error.  Blocks if necessary until the target is ready.
+ */ 2 4 this 3 427  4 data 1 408  
+129 0 0 6 299 377 0 0 110 /**
+ * Returns true if there is an error on the target connection, or if the
+ * target has never been set.
+ */ 1 4 this 3 427  
+130 0 0 4 300 378 0 0 90 /**
+ * Ensures that all datagrams previously written will be visible on the
+ * stream.
+ */ 1 4 this 3 427  
+131 0 0 6 291 430 0 0 0 1 4 this 3 427  
+132 0 0 6 293 418 0 0 0 1 4 this 3 427  
+133 0 0 7 311 431 312 0 10 /**
+ *
+ */ 2 7 manager 1 398  11 num_threads 1 390  
+134 0 0 6 313 377 0 0 147 /**
+ * Returns true if a new connection was recently established; the connection
+ * information may then be retrieved via get_new_connection().
+ */ 1 4 this 3 431  
+135 0 0 6 314 377 0 0 192 /**
+ * This flavor of get_new_connection() simply returns a new connection,
+ * assuming the user doesn't care about the rendezvous socket that originated
+ * it or the address it came from.
+ */ 2 4 this 3 431  14 new_connection 1 372  
+136 0 0 6 314 377 0 0 741 /**
+ * If a previous call to new_connection_available() returned true, this
+ * function will return information about the newly established connection.
+ *
+ * The rendezvous parameter is the particular rendezvous socket this new
+ * connection originally communicated with; it is provided in case the
+ * ConnectionListener was monitorind more than one and you care which one it
+ * was.  The address parameter is the net address of the new client, and
+ * new_connection is the socket of the newly established connection.
+ *
+ * The return value is true if a connection was successfully returned, or
+ * false if there was, in fact, no new connection.  (This may happen if there
+ * are multiple threads accessing the QueuedConnectionListener).
+ */ 4 4 this 3 431  10 rendezvous 1 372  7 address 1 384  14 new_connection 1 372  
+137 0 0 6 302 432 0 0 0 1 4 this 3 431  
+138 0 0 6 309 433 0 0 0 1 4 this 3 431  
+139 0 0 4 304 378 0 0 0 2 4 this 3 433  8 max_size 1 390  
+140 0 0 6 305 390 0 0 0 1 4 this 3 434  
+141 0 0 6 306 390 0 0 0 1 4 this 3 434  
+142 0 0 6 307 377 0 0 0 1 4 this 3 434  
+143 0 0 4 308 378 0 0 0 1 4 this 3 433  
+144 0 0 7 324 436 325 0 10 /**
+ *
+ */ 0 
+145 0 0 6 326 377 0 0 631 /**
+ * Returns true if one of the readers/writers/listeners reported a connection
+ * reset recently.  If so, the particular connection that has been reset can
+ * be extracted via get_reset_connection().
+ *
+ * Only connections which were externally reset are certain to appear in this
+ * list.  Those which were explicitly closed via a call to close_connection()
+ * may or may not be reported.  Furthermore, it is the responsibility of the
+ * caller to subsequently call close_connection() with any connection reported
+ * reset by this call.  (There is no harm in calling close_connection() more
+ * than once on a given socket.)
+ */ 1 4 this 3 437  
+146 0 0 6 327 377 0 0 797 /**
+ * If a previous call to reset_connection_available() returned true, this
+ * function will return information about the newly reset connection.
+ *
+ * Only connections which were externally reset are certain to appear in this
+ * list.  Those which were explicitly closed via a call to close_connection()
+ * may or may not be reported.  Furthermore, it is the responsibility of the
+ * caller to subsequently call close_connection() with any connection reported
+ * reset by this call.  (There is no harm in calling close_connection() more
+ * than once on a given socket.)
+ *
+ * The return value is true if a connection was successfully returned, or
+ * false if there was, in fact, no reset connection.  (This may happen if
+ * there are multiple threads accessing the QueuedConnectionManager).
+ */ 2 4 this 3 436  10 connection 1 372  
+147 0 0 6 315 398 0 0 0 1 4 this 3 436  
+148 0 0 6 322 439 0 0 0 1 4 this 3 436  
+149 0 0 4 317 378 0 0 0 2 4 this 3 439  8 max_size 1 390  
+150 0 0 6 318 390 0 0 0 1 4 this 3 440  
+151 0 0 6 319 390 0 0 0 1 4 this 3 440  
+152 0 0 6 320 377 0 0 0 1 4 this 3 440  
+153 0 0 4 321 378 0 0 0 1 4 this 3 439  
+154 0 0 7 337 442 338 0 10 /**
+ *
+ */ 2 7 manager 1 398  11 num_threads 1 390  
+155 0 0 6 339 377 0 0 108 /**
+ * Returns true if a datagram is available on the queue; call get_data() to
+ * extract the datagram.
+ */ 1 4 this 3 442  
+156 0 0 6 340 377 0 0 295 /**
+ * This flavor of QueuedConnectionReader::get_data(), works like the other,
+ * except that it only fills a Datagram object, not a NetDatagram object.
+ * This means that the Datagram cannot be queried for its source Connection
+ * and/or NetAddress, but it is useful in all other respects.
+ */ 2 4 this 3 442  6 result 1 422  
+157 0 0 6 340 377 0 0 353 /**
+ * If a previous call to data_available() returned true, this function will
+ * return the datagram that has become available.
+ *
+ * The return value is true if a datagram was successfully returned, or false
+ * if there was, in fact, no datagram available.  (This may happen if there
+ * are multiple threads accessing the QueuedConnectionReader).
+ */ 2 4 this 3 442  6 result 1 407  
+158 0 0 6 328 404 0 0 0 1 4 this 3 442  
+159 0 0 6 335 443 0 0 0 1 4 this 3 442  
+160 0 0 4 330 378 0 0 0 2 4 this 3 443  8 max_size 1 390  
+161 0 0 6 331 390 0 0 0 1 4 this 3 444  
+162 0 0 6 332 390 0 0 0 1 4 this 3 444  
+163 0 0 6 333 377 0 0 0 1 4 this 3 444  
+164 0 0 4 334 378 0 0 0 1 4 this 3 443  
+165 0 0 7 341 446 214 0 10 /**
+ *
+ */ 1 7 manager 1 398  
+166 0 0 6 342 377 0 0 108 /**
+ * Returns true if a datagram is available on the queue; call get_data() to
+ * extract the datagram.
+ */ 1 4 this 3 446  
+167 0 0 6 343 377 0 0 295 /**
+ * This flavor of RecentConnectionReader::get_data(), works like the other,
+ * except that it only fills a Datagram object, not a NetDatagram object.
+ * This means that the Datagram cannot be queried for its source Connection
+ * and/or NetAddress, but it is useful in all other respects.
+ */ 2 4 this 3 446  6 result 1 422  
+168 0 0 6 343 377 0 0 353 /**
+ * If a previous call to data_available() returned true, this function will
+ * return the datagram that has become available.
+ *
+ * The return value is true if a datagram was successfully returned, or false
+ * if there was, in fact, no datagram available.  (This may happen if there
+ * are multiple threads accessing the RecentConnectionReader).
+ */ 2 4 this 3 446  6 result 1 407  
+103
+344 23 PointerTo< Connection > 0 141313 23 PointerTo< Connection > 23 PointerTo< Connection > 0 0 0 1 171 176 0 4 172 173 174 175 0 0 1 0 345 0 0 0 0 0
+
+345 27 PointerToBase< Connection > 0 43009 27 PointerToBase< Connection > 27 PointerToBase< Connection > 0 0 0 0 0 0 2 169 170 0 0 1 0 346 0 0 0 0 0
+
+346 13 PointerToVoid 0 2048 13 PointerToVoid 13 PointerToVoid 0 0 0 0 0 0 0 0 0 0 0 0 373
+/**
+ * This is the non-template part of the base class for PointerTo and
+ * ConstPointerTo.  It is necessary so we can keep a pointer to a non-template
+ * class within the ReferenceCount object, to implement weak reference
+ * pointers--we need to have something to clean up when the ReferenceCount
+ * object destructs.
+ *
+ * This is the base class for PointerToBase<T>.
+ */
+
+347 10 NetAddress 0 141313 10 NetAddress 10 NetAddress 0 0 0 1 177 194 0 16 178 179 180 181 182 183 184 185 186 187 188 189 190 191 192 193 0 0 0 0 0 114
+/**
+ * Represents a network address to which UDP packets may be sent or to which a
+ * TCP socket may be bound.
+ */
+
+348 10 Connection 0 75777 10 Connection 10 Connection 0 0 0 1 195 0 0 18 196 197 198 199 200 201 202 203 204 205 206 207 208 209 210 211 212 213 0 0 1 0 349 0 0 0 0 69
+/**
+ * Represents a single TCP or UDP socket for input or output.
+ */
+
+349 14 ReferenceCount 0 2048 14 ReferenceCount 14 ReferenceCount 0 0 0 0 0 0 0 0 0 0 0 0 203
+/**
+ * A base class for all things that want to be reference-counted.
+ * ReferenceCount works in conjunction with PointerTo to automatically delete
+ * objects when the last pointer to them goes away.
+ */
+
+350 16 ConnectionReader 0 26625 16 ConnectionReader 16 ConnectionReader 0 0 0 0 214 0 12 215 216 217 218 219 220 221 222 223 224 225 226 0 0 0 0 0 844
+/**
+ * This is an abstract base class for a family of classes that listen for
+ * activity on a socket and respond to it, for instance by reading a datagram
+ * and serving it (or queueing it up for later service).
+ *
+ * A ConnectionReader may define an arbitrary number of threads (at least one)
+ * to process datagrams coming in from an arbitrary number of sockets that it
+ * is monitoring.  The number of threads is specified at construction time and
+ * cannot be changed, but the set of sockets that is to be monitored may be
+ * constantly modified at will.
+ *
+ * This is an abstract class because it doesn't define how to process each
+ * received datagram.  See QueuedConnectionReader.  Also note that
+ * ConnectionListener derives from this class, extending it to accept
+ * connections on a rendezvous socket rather than read datagrams.
+ */
+
+351 18 ConnectionListener 0 141313 18 ConnectionListener 18 ConnectionListener 0 0 0 0 227 0 0 0 0 1 0 350 0 0 0 0 339
+/**
+ * This is a special kind of ConnectionReader that waits for activity on a
+ * rendezvous port and accepts a TCP connection (instead of attempting to read
+ * a datagram from the rendezvous port).
+ *
+ * It is itself an abstract class, as it doesn't define what to do with the
+ * established connection.  See QueuedConnectionListener.
+ */
+
+352 11 NetDatagram 0 141313 11 NetDatagram 11 NetDatagram 0 0 0 1 228 235 0 6 229 230 231 232 233 234 0 0 1 0 353 0 0 0 0 219
+/**
+ * A specific kind of Datagram, especially for sending across or receiving
+ * from a network.  It's different only in that it knows which Connection
+ * and/or NetAddress it is to be sent to or was received from.
+ */
+
+353 8 Datagram 0 2048 8 Datagram 8 Datagram 0 0 0 0 0 0 0 0 0 0 0 0 565
+/**
+ * An ordered list of data elements, formatted in memory for transmission over
+ * a socket or writing to a data file.
+ *
+ * Data elements should be added one at a time, in order, to the Datagram.
+ * The nature and contents of the data elements are totally up to the user.
+ * When a Datagram has been transmitted and received, its data elements may be
+ * extracted using a DatagramIterator; it is up to the caller to know the
+ * correct type of each data element in order.
+ *
+ * A Datagram is itself headerless; it is simply a collection of data
+ * elements.
+ */
+
+354 17 ConnectionManager 0 26625 17 ConnectionManager 17 ConnectionManager 0 0 0 1 236 237 2 447 448 9 238 239 240 241 242 243 257 258 259 1 449 0 0 0 1 355 573
+/**
+ * The primary interface to the low-level networking layer in this package.  A
+ * ConnectionManager is used to establish and destroy TCP and UDP connections.
+ * Communication on these connections, once established, is handled via
+ * ConnectionReader, ConnectionWriter, and ConnectionListener.
+ *
+ * You may use this class directly if you don't care about tracking which
+ * connections have been unexpectedly closed; otherwise, you should use
+ * QueuedConnectionManager to get reports about these events (or derive your
+ * own class to handle these events properly).
+ */
+
+355 9 Interface 0 403457 28 ConnectionManager::Interface 28 ConnectionManager::Interface 354 0 0 1 255 256 0 11 244 245 246 247 248 249 250 251 252 253 254 0 0 0 0 0 0
+
+356 6 string 0 2105344 11 std::string 11 std::string 0 0 357 0 0 0 0 0 0 0 0 0 0
+
+357 20 basic_string< char > 0 2048 25 std::basic_string< char > 25 std::basic_string< char > 0 0 0 0 0 0 0 0 0 0 0 0 0
+
+358 15 Interface const 0 8832 34 ConnectionManager::Interface const 34 ConnectionManager::Interface const 0 0 355 0 0 0 0 0 0 0 0 0 0
+
+359 16 ConnectionWriter 0 26625 16 ConnectionWriter 16 ConnectionWriter 0 0 0 1 260 261 0 13 262 263 264 265 266 267 268 269 270 271 272 273 274 0 0 0 0 0 294
+/**
+ * This class handles threaded delivery of datagrams to various TCP or UDP
+ * sockets.
+ *
+ * A ConnectionWriter may define an arbitrary number of threads (0 or more) to
+ * write its datagrams to sockets.  The number of threads is specified at
+ * construction time and cannot be changed.
+ */
+
+360 20 DatagramGeneratorNet 0 26625 20 DatagramGeneratorNet 20 DatagramGeneratorNet 0 0 0 1 286 287 0 3 288 289 290 0 0 3 3 361 275 276 3 350 277 278 3 362 284 285 0 0 186
+/**
+ * This class provides datagrams one-at-a-time as read directly from the net,
+ * via a TCP connection.  If a datagram is not available, get_datagram() will
+ * block until one is.
+ */
+
+361 17 DatagramGenerator 0 2048 17 DatagramGenerator 17 DatagramGenerator 0 0 0 0 0 0 0 0 0 0 0 0 125
+/**
+ * This class defines the abstract interace to any source of datagrams,
+ * whether it be from a file or from the net.
+ */
+
+362 24 QueuedReturn< Datagram > 0 43009 24 QueuedReturn< Datagram > 24 QueuedReturn< Datagram > 0 0 0 0 0 0 5 279 280 281 282 283 0 0 0 0 0 0
+
+363 15 DatagramSinkNet 0 141313 15 DatagramSinkNet 15 DatagramSinkNet 0 0 0 1 295 301 0 5 296 297 298 299 300 0 0 2 3 364 291 292 3 359 293 294 0 0 107
+/**
+ * This class accepts datagrams one-at-a-time and sends them over the net, via
+ * a TCP connection.
+ */
+
+364 12 DatagramSink 0 2048 12 DatagramSink 12 DatagramSink 0 0 0 0 0 0 0 0 0 0 0 0 135
+/**
+ * This class defines the abstract interface to sending datagrams to any
+ * target, whether it be into a file or across the net
+ */
+
+365 24 QueuedConnectionListener 0 26625 24 QueuedConnectionListener 24 QueuedConnectionListener 0 0 0 1 311 312 0 2 313 314 0 0 2 3 351 302 303 3 366 309 310 0 0 143
+/**
+ * This flavor of ConnectionListener will queue up all of the TCP connections
+ * it established for later detection by the client code.
+ */
+
+366 38 QueuedReturn< ConnectionListenerData > 0 43009 38 QueuedReturn< ConnectionListenerData > 38 QueuedReturn< ConnectionListenerData > 0 0 0 0 0 0 5 304 305 306 307 308 0 0 0 0 0 0
+
+367 23 QueuedConnectionManager 0 26625 23 QueuedConnectionManager 23 QueuedConnectionManager 0 0 0 1 324 325 0 2 326 327 0 0 2 3 354 315 316 3 368 322 323 0 0 423
+/**
+ * This flavor of ConnectionManager will queue up all of the reset-connection
+ * messages from the ConnectionReaders and ConnectionWriters and report them
+ * to the client on demand.
+ *
+ * When a reset connection has been discovered via
+ * reset_connection_available()/get_reset_connection(), it is still the
+ * responsibility of the client to call close_connection() on that connection
+ * to free up its resources.
+ */
+
+368 39 QueuedReturn< PointerTo< Connection > > 0 43009 39 QueuedReturn< PointerTo< Connection > > 39 QueuedReturn< PointerTo< Connection > > 0 0 0 0 0 0 5 317 318 319 320 321 0 0 0 0 0 0
+
+369 22 QueuedConnectionReader 0 26625 22 QueuedConnectionReader 22 QueuedConnectionReader 0 0 0 1 337 338 0 2 339 340 0 0 2 3 350 328 329 3 370 335 336 0 0 291
+/**
+ * This flavor of ConnectionReader will read from its sockets and queue up all
+ * of the datagrams read for later receipt by the client code.  This class is
+ * useful for client code that doesn't want to deal with threading and is
+ * willing to poll for datagrams at its convenience.
+ */
+
+370 27 QueuedReturn< NetDatagram > 0 43009 27 QueuedReturn< NetDatagram > 27 QueuedReturn< NetDatagram > 0 0 0 0 0 0 5 330 331 332 333 334 0 0 0 0 0 0
+
+371 22 RecentConnectionReader 0 75777 22 RecentConnectionReader 22 RecentConnectionReader 0 0 0 1 341 214 0 2 342 343 0 0 1 0 350 0 0 0 0 430
+/**
+ * This flavor of ConnectionReader will read from its sockets and retain only
+ * the single most recent datagram for inspection by client code.  It's useful
+ * particularly for reading telemetry-type data from UDP sockets where you
+ * don't care about getting every last socket, and in fact if the sockets are
+ * coming too fast you'd prefer to skip some of them.
+ *
+ * This class will always create one thread for itself.
+ */
+
+372 25 PointerTo< Connection > * 0 8576 25 PointerTo< Connection > * 25 PointerTo< Connection > * 0 0 344 0 0 0 0 0 0 0 0 0 0
+
+373 12 Connection * 0 8576 12 Connection * 12 Connection * 0 0 348 0 0 0 0 0 0 0 0 0 0
+
+374 17 decltype(nullptr) 0 8194 17 decltype(nullptr) 17 decltype(nullptr) 0 9 0 0 0 0 0 0 0 0 0 0 0
+
+375 31 PointerTo< Connection > const * 0 8576 31 PointerTo< Connection > const * 31 PointerTo< Connection > const * 0 0 376 0 0 0 0 0 0 0 0 0 0
+
+376 29 PointerTo< Connection > const 0 8832 29 PointerTo< Connection > const 29 PointerTo< Connection > const 0 0 344 0 0 0 0 0 0 0 0 0 0
+
+377 4 bool 0 8194 4 bool 4 bool 0 4 0 0 0 0 0 0 0 0 0 0 0
+
+378 4 void 0 8194 4 void 4 void 0 6 0 0 0 0 0 0 0 0 0 0 0
+
+379 29 PointerToBase< Connection > * 0 8576 29 PointerToBase< Connection > * 29 PointerToBase< Connection > * 0 0 345 0 0 0 0 0 0 0 0 0 0
+
+380 35 PointerToBase< Connection > const * 0 8576 35 PointerToBase< Connection > const * 35 PointerToBase< Connection > const * 0 0 381 0 0 0 0 0 0 0 0 0 0
+
+381 33 PointerToBase< Connection > const 0 8832 33 PointerToBase< Connection > const 33 PointerToBase< Connection > const 0 0 345 0 0 0 0 0 0 0 0 0 0
+
+382 9 ostream * 0 8576 14 std::ostream * 14 std::ostream * 0 0 383 0 0 0 0 0 0 0 0 0 0
+
+383 7 ostream 0 2048 12 std::ostream 12 std::ostream 0 0 0 0 0 0 0 0 0 0 0 0 0
+
+384 12 NetAddress * 0 8576 12 NetAddress * 12 NetAddress * 0 0 347 0 0 0 0 0 0 0 0 0 0
+
+385 18 NetAddress const * 0 8576 18 NetAddress const * 18 NetAddress const * 0 0 386 0 0 0 0 0 0 0 0 0 0
+
+386 16 NetAddress const 0 8832 16 NetAddress const 16 NetAddress const 0 0 347 0 0 0 0 0 0 0 0 0 0
+
+387 22 Socket_Address const * 0 8576 22 Socket_Address const * 22 Socket_Address const * 0 0 388 0 0 0 0 0 0 0 0 0 0
+
+388 20 Socket_Address const 0 8832 20 Socket_Address const 20 Socket_Address const 0 0 389 0 0 0 0 0 0 0 0 0 0
+
+389 14 Socket_Address 0 2048 14 Socket_Address 14 Socket_Address 0 0 0 0 0 0 0 0 0 0 0 0 97
+/**
+ * A simple place to store and manipulate tcp and port address for
+ * communication layer
+ */
+
+390 3 int 0 8194 3 int 3 int 0 1 0 0 0 0 0 0 0 0 0 0 0
+
+391 13 atomic string 0 2 13 atomic string 13 atomic string 0 7 0 0 0 0 0 0 0 0 0 0 0
+
+392 8 uint32_t 0 2105344 8 uint32_t 8 uint32_t 0 0 393 0 0 0 0 0 0 0 0 0 0
+
+393 12 unsigned int 0 8198 12 unsigned int 12 unsigned int 0 1 0 0 0 0 0 0 0 0 0 0 0
+
+394 7 uint8_t 0 2105344 7 uint8_t 7 uint8_t 0 0 395 0 0 0 0 0 0 0 0 0 0
+
+395 13 unsigned char 0 8198 13 unsigned char 13 unsigned char 0 5 0 0 0 0 0 0 0 0 0 0 0
+
+396 6 size_t 0 2105344 11 std::size_t 11 std::size_t 0 0 397 0 0 0 0 0 0 0 0 0 0
+
+397 17 unsigned long int 0 8214 17 unsigned long int 17 unsigned long int 0 1 0 0 0 0 0 0 0 0 0 0 0
+
+398 19 ConnectionManager * 0 8576 19 ConnectionManager * 19 ConnectionManager * 0 0 354 0 0 0 0 0 0 0 0 0 0
+
+399 11 Socket_IP * 0 8576 11 Socket_IP * 11 Socket_IP * 0 0 400 0 0 0 0 0 0 0 0 0 0
+
+400 9 Socket_IP 0 2048 9 Socket_IP 9 Socket_IP 0 0 0 0 0 0 0 0 0 0 0 0 354
+/**
+ * Base functionality for a INET domain Socket This call should be the
+ * starting point for all other unix domain sockets.
+ *
+ * SocketIP |
+ * ------------------------------------------------------------------- |
+ * |                       |                           | SocketTCP
+ * SocketTCP_Listen    SocketUDP_Incoming   SocketUDP_OutBound
+ *
+ */
+
+401 18 Connection const * 0 8576 18 Connection const * 18 Connection const * 0 0 402 0 0 0 0 0 0 0 0 0 0
+
+402 16 Connection const 0 8832 16 Connection const 16 Connection const 0 0 348 0 0 0 0 0 0 0 0 0 0
+
+403 6 double 0 8194 6 double 6 double 0 3 0 0 0 0 0 0 0 0 0 0 0
+
+404 18 ConnectionReader * 0 8576 18 ConnectionReader * 18 ConnectionReader * 0 0 350 0 0 0 0 0 0 0 0 0 0
+
+405 24 ConnectionReader const * 0 8576 24 ConnectionReader const * 24 ConnectionReader const * 0 0 406 0 0 0 0 0 0 0 0 0 0
+
+406 22 ConnectionReader const 0 8832 22 ConnectionReader const 22 ConnectionReader const 0 0 350 0 0 0 0 0 0 0 0 0 0
+
+407 13 NetDatagram * 0 8576 13 NetDatagram * 13 NetDatagram * 0 0 352 0 0 0 0 0 0 0 0 0 0
+
+408 16 Datagram const * 0 8576 16 Datagram const * 16 Datagram const * 0 0 409 0 0 0 0 0 0 0 0 0 0
+
+409 14 Datagram const 0 8832 14 Datagram const 14 Datagram const 0 0 353 0 0 0 0 0 0 0 0 0 0
+
+410 19 NetDatagram const * 0 8576 19 NetDatagram const * 19 NetDatagram const * 0 0 411 0 0 0 0 0 0 0 0 0 0
+
+411 17 NetDatagram const 0 8832 17 NetDatagram const 17 NetDatagram const 0 0 352 0 0 0 0 0 0 0 0 0 0
+
+412 10 TypeHandle 0 16779264 10 TypeHandle 10 TypeHandle 0 0 0 0 0 0 0 0 0 0 0 0 732
+/**
+ * TypeHandle is the identifier used to differentiate C++ class types.  Any
+ * C++ classes that inherit from some base class, and must be differentiated
+ * at run time, should store a static TypeHandle object that can be queried
+ * through a static member function named get_class_type().  Most of the time,
+ * it is also desirable to inherit from TypedObject, which provides some
+ * virtual functions to return the TypeHandle for a particular instance.
+ *
+ * At its essence, a TypeHandle is simply a unique identifier that is assigned
+ * by the TypeRegistry.  The TypeRegistry stores a tree of TypeHandles, so
+ * that ancestry of a particular type may be queried, and the type name may be
+ * retrieved for run-time display.
+ */
+
+413 12 TypeHandle * 0 8576 12 TypeHandle * 12 TypeHandle * 0 0 412 0 0 0 0 0 0 0 0 0 0
+
+414 8 uint16_t 0 2105344 8 uint16_t 8 uint16_t 0 0 415 0 0 0 0 0 0 0 0 0 0
+
+415 18 unsigned short int 0 8262 18 unsigned short int 18 unsigned short int 0 1 0 0 0 0 0 0 0 0 0 0 0
+
+416 17 Interface const * 0 8576 36 ConnectionManager::Interface const * 36 ConnectionManager::Interface const * 0 0 358 0 0 0 0 0 0 0 0 0 0
+
+417 11 Interface * 0 8576 30 ConnectionManager::Interface * 30 ConnectionManager::Interface * 0 0 355 0 0 0 0 0 0 0 0 0 0
+
+418 18 ConnectionWriter * 0 8576 18 ConnectionWriter * 18 ConnectionWriter * 0 0 359 0 0 0 0 0 0 0 0 0 0
+
+419 24 ConnectionWriter const * 0 8576 24 ConnectionWriter const * 24 ConnectionWriter const * 0 0 420 0 0 0 0 0 0 0 0 0 0
+
+420 22 ConnectionWriter const 0 8832 22 ConnectionWriter const 22 ConnectionWriter const 0 0 359 0 0 0 0 0 0 0 0 0 0
+
+421 22 DatagramGeneratorNet * 0 8576 22 DatagramGeneratorNet * 22 DatagramGeneratorNet * 0 0 360 0 0 0 0 0 0 0 0 0 0
+
+422 10 Datagram * 0 8576 10 Datagram * 10 Datagram * 0 0 353 0 0 0 0 0 0 0 0 0 0
+
+423 19 DatagramGenerator * 0 8576 19 DatagramGenerator * 19 DatagramGenerator * 0 0 361 0 0 0 0 0 0 0 0 0 0
+
+424 26 QueuedReturn< Datagram > * 0 8576 26 QueuedReturn< Datagram > * 26 QueuedReturn< Datagram > * 0 0 362 0 0 0 0 0 0 0 0 0 0
+
+425 32 QueuedReturn< Datagram > const * 0 8576 32 QueuedReturn< Datagram > const * 32 QueuedReturn< Datagram > const * 0 0 426 0 0 0 0 0 0 0 0 0 0
+
+426 30 QueuedReturn< Datagram > const 0 8832 30 QueuedReturn< Datagram > const 30 QueuedReturn< Datagram > const 0 0 362 0 0 0 0 0 0 0 0 0 0
+
+427 17 DatagramSinkNet * 0 8576 17 DatagramSinkNet * 17 DatagramSinkNet * 0 0 363 0 0 0 0 0 0 0 0 0 0
+
+428 23 DatagramSinkNet const * 0 8576 23 DatagramSinkNet const * 23 DatagramSinkNet const * 0 0 429 0 0 0 0 0 0 0 0 0 0
+
+429 21 DatagramSinkNet const 0 8832 21 DatagramSinkNet const 21 DatagramSinkNet const 0 0 363 0 0 0 0 0 0 0 0 0 0
+
+430 14 DatagramSink * 0 8576 14 DatagramSink * 14 DatagramSink * 0 0 364 0 0 0 0 0 0 0 0 0 0
+
+431 26 QueuedConnectionListener * 0 8576 26 QueuedConnectionListener * 26 QueuedConnectionListener * 0 0 365 0 0 0 0 0 0 0 0 0 0
+
+432 20 ConnectionListener * 0 8576 20 ConnectionListener * 20 ConnectionListener * 0 0 351 0 0 0 0 0 0 0 0 0 0
+
+433 40 QueuedReturn< ConnectionListenerData > * 0 8576 40 QueuedReturn< ConnectionListenerData > * 40 QueuedReturn< ConnectionListenerData > * 0 0 366 0 0 0 0 0 0 0 0 0 0
+
+434 46 QueuedReturn< ConnectionListenerData > const * 0 8576 46 QueuedReturn< ConnectionListenerData > const * 46 QueuedReturn< ConnectionListenerData > const * 0 0 435 0 0 0 0 0 0 0 0 0 0
+
+435 44 QueuedReturn< ConnectionListenerData > const 0 8832 44 QueuedReturn< ConnectionListenerData > const 44 QueuedReturn< ConnectionListenerData > const 0 0 366 0 0 0 0 0 0 0 0 0 0
+
+436 25 QueuedConnectionManager * 0 8576 25 QueuedConnectionManager * 25 QueuedConnectionManager * 0 0 367 0 0 0 0 0 0 0 0 0 0
+
+437 31 QueuedConnectionManager const * 0 8576 31 QueuedConnectionManager const * 31 QueuedConnectionManager const * 0 0 438 0 0 0 0 0 0 0 0 0 0
+
+438 29 QueuedConnectionManager const 0 8832 29 QueuedConnectionManager const 29 QueuedConnectionManager const 0 0 367 0 0 0 0 0 0 0 0 0 0
+
+439 41 QueuedReturn< PointerTo< Connection > > * 0 8576 41 QueuedReturn< PointerTo< Connection > > * 41 QueuedReturn< PointerTo< Connection > > * 0 0 368 0 0 0 0 0 0 0 0 0 0
+
+440 47 QueuedReturn< PointerTo< Connection > > const * 0 8576 47 QueuedReturn< PointerTo< Connection > > const * 47 QueuedReturn< PointerTo< Connection > > const * 0 0 441 0 0 0 0 0 0 0 0 0 0
+
+441 45 QueuedReturn< PointerTo< Connection > > const 0 8832 45 QueuedReturn< PointerTo< Connection > > const 45 QueuedReturn< PointerTo< Connection > > const 0 0 368 0 0 0 0 0 0 0 0 0 0
+
+442 24 QueuedConnectionReader * 0 8576 24 QueuedConnectionReader * 24 QueuedConnectionReader * 0 0 369 0 0 0 0 0 0 0 0 0 0
+
+443 29 QueuedReturn< NetDatagram > * 0 8576 29 QueuedReturn< NetDatagram > * 29 QueuedReturn< NetDatagram > * 0 0 370 0 0 0 0 0 0 0 0 0 0
+
+444 35 QueuedReturn< NetDatagram > const * 0 8576 35 QueuedReturn< NetDatagram > const * 35 QueuedReturn< NetDatagram > const * 0 0 445 0 0 0 0 0 0 0 0 0 0
+
+445 33 QueuedReturn< NetDatagram > const 0 8832 33 QueuedReturn< NetDatagram > const 33 QueuedReturn< NetDatagram > const 0 0 370 0 0 0 0 0 0 0 0 0 0
+
+446 24 RecentConnectionReader * 0 8576 24 RecentConnectionReader * 24 RecentConnectionReader * 0 0 371 0 0 0 0 0 0 0 0 0 0
+
+0
+2
+447 9 host_name 0 2 356 243 0 0 0 0 0 0 0 28 ConnectionManager::host_name 0
+
+448 10 interfaces 0 66 358 259 0 0 0 0 258 0 0 29 ConnectionManager::interfaces 0
+
+1
+449 14 get_interfaces 0 258 259 33 ConnectionManager::get_interfaces 0
+

@@ -1,0 +1,35 @@
+// Filename: algorithm
+// Created by:  drose (12May00)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) Carnegie Mellon University.  All rights reserved.
+//
+// All use of this software is subject to the terms of the revised BSD
+// license.  You should have received a copy of this license along
+// with this source code in a file named "LICENSE."
+//
+////////////////////////////////////////////////////////////////////
+
+// This file, and all the other files in this directory, aren't
+// intended to be compiled--they're just parsed by CPPParser (and
+// interrogate) in lieu of the actual system headers, to generate the
+// interrogate database.
+
+#ifndef ALGORITHM_H
+#define ALGORITHM_H
+
+namespace std {
+  template<class T>
+  constexpr const T &min(const T &a, const T &b);
+  template<class T>
+  constexpr const T &max(const T &a, const T &b);
+
+  template<class RandomIt>
+  void sort(RandomIt first, RandomIt last);
+  template<class RandomIt, class Compare>
+  void sort(RandomIt first, RandomIt last, Compare comp);
+}
+
+#endif

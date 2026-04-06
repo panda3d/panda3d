@@ -99,13 +99,13 @@ OpenALAudioSound(OpenALAudioManager *manager,
  */
 OpenALAudioSound::
 OpenALAudioSound(const OpenALAudioSound &copy_sound) :
-  AudioSound(copy_sound.AudioSound.is_positional()),
+  AudioSound(copy_sound.is_positional()),
   _movie(copy_sound._movie),
   _sd(copy_sound._sd),
   _playing_loops(copy_sound._playing_loops),
   _playing_rate(copy_sound._playing_rate),
   _loops_completed(copy_sound._loops_completed),
-  _source(copy_sound.source),
+  _source(copy_sound._source),
   _manager(copy_sound._manager),
   _volume(copy_sound._volume),
   _balance(copy_sound._balance),
@@ -192,8 +192,8 @@ make_copy() {
   OpenALAudioSound *copy_sound = new OpenALAudioSound(*this);
 
   // throw errors if the copied-to node doesn't match the copied-from
-  nassertv(copy_sound.is_valid() == this->is_valid());
-  nassertv(copy_sound.has_sound_data() == this->has_sound_data());
+  nassertr(copy_sound->is_valid() == this->is_valid(), nullptr);
+  nassertr(copy_sound->has_sound_data() == this->has_sound_data(), nullptr);
 
   return copy_sound;
 }

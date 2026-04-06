@@ -1,0 +1,269 @@
+This document introduces the basic use of the DCPacker class, which is
+available to C++ and Python programs for high-level packing and
+unpacking of messages into bytestreams for shipping over the network,
+especially via Panda's DistributedObject system.  See also the
+comments in direct/src/dcparser/dcPacker.h and related source files.
+
+
+OVERVIEW
+
+The DCPacker has four modes of operation: pack (sequential write),
+unpack (sequential read), unpack (random read), and repack (random
+write).
+
+To enter one of these four modes, call begin_pack(), begin_unpack(),
+or begin_repack().  (begin_unpack() is used for both kinds of unpack
+modes.)  Once you have called begin, you can call a series of
+pack_this() or unpack_that() methods, and then you finish up by
+calling end_pack(), end_unpack(), or end_repack().
+
+The return value of the end method will be true to indicate that no
+errors have occurred during the packing/unpacking process, or false if
+something went wrong (in which case you should probably disregard the
+output).
+
+In general, when packing or unpacking a series of values, you call
+pack_int(), pack_uint(), pack_double(), or pack_string() (or the
+corresponding unpack methods) according to what kind of data type you
+have for each value; it will be coerced into the appropriate data size
+as indicated by the DC file and written to the output buffer.
+
+To pack an array or an embedded class, or any element which itself is
+made up of sub-elements, you must bracket the packs for the
+sub-elements between calls to push() and pop().  This also applies to
+the individual elements of a DCField; so to pack all the elements of a
+field, you would call push(), followed by the appropriate pack() for
+each element, then pop().
+
+
+PACK MODE (sequential write)
+
+Pack mode is used to build up a network message from scratch.  Call
+begin_pack() and pass it the pointer to a DCField object.  You must
+immediately call push() to indicate that you will be packing the
+individual elements of the field, then make a series of pack calls,
+one for each element on the field in order, followed by a call to
+pop(), and finally end_pack().
+
+You must pack all of the elements of the field, from beginning to
+end--it is an error to leave out any elements, including the elements
+on the end.
+
+If end_pack() returns false, there was an error (see ADDITIONAL NOTES,
+below).  Otherwise, you may call get_data() to get a pointer to the
+packed data record, and get_length() to get the number of bytes in the
+record.  If you immediately call begin_pack() again, you will append
+additional data onto the end of the pack buffer--to reset the buffer
+between pack sessions, call clear_data().
+
+  DCField *field = dclass->get_field_by_name("setChat");
+
+  DCPacker packer;
+  packer.begin_pack(field);
+  packer.push();
+  packer.pack_string(chatString);
+  packer.pack_int(0);
+  packer.pop();
+  if (!packer.end_pack()) {
+    cerr << "error occurred while packing.\n";
+    return;
+  }
+
+  memcpy(result, packer.get_data(), packer.get_length());
+
+
+
+UNPACK MODE (sequential read)
+
+You can also unpack all the elements of a field, from beginning to
+end.  This is very similar to pack mode, above.  Start with a call to
+set_unpack_data() to specify the existing data record for the field,
+and then call begin_unpack() with the pointer to the DCField itself.
+Then call push(), followed by the appropriate number and type of
+unpack calls, followed by pop() and end_unpack().
+
+As above, you must unpack all fields; it is an error not to unpack the
+fields on the end.  However, it is not an error if there are
+additional bytes in the data buffer; the assumption is the data buffer
+may be part of a larger buffer.  After end_unpack(), you can call
+get_num_unpacked_bytes() to determine how many bytes of the buffer
+were consumed.  (If you immediately call begin_unpack() again, you
+will begin to unpack the next record from the current point in the
+buffer.)
+
+  DCField *field = dclass->get_field_by_name("setChat");
+
+  DCPacker packer;
+  packer.set_unpack_data(source_buffer, source_size, false);
+  packer.begin_unpack(field);
+  packer.push();
+  string chat = packer.unpack_string();
+  int chatFlags = packer.unpack_int();
+  packer.pop();
+  if (!packer.end_unpack()) {
+    cerr << "error occurred while unpacking.\n";
+    return;
+  }
+
+
+UNPACK MODE (random read)
+
+You can also unpack just the particular elements that you care about
+by name, in no particular order.  To do this, call seek() for each
+element you wish to unpack, specifying the name of the element.  You
+can only do this for elements that have been given names in the DC
+file.
+
+In this case, it is not necessary to bracket the outer unpack calls
+with push() and pop() (since you are not walking through all the
+elements of the field).  However, you still need to use push() and
+pop() to unpack the nested elements of an array that you seek to.
+
+  DCField *field = dclass->get_field_by_name("setChat");
+
+  DCPacker packer;
+  packer.set_unpack_data(source_buffer, source_size, false);
+  packer.begin_unpack(field);
+  packer.seek("chat");
+  string chat = packer.unpack_string();
+  if (!packer.end_unpack()) {
+    cerr << "error occurred while unpacking.\n";
+    return;
+  }
+
+To seek to a field nested within another structure, use a dot to
+compose the names: "parentName.fieldName".
+
+In unpack mode, you may seek to any field that has a name, including a
+field within the currently active case of a switch.  You may also seek
+to a switch parameter variable.  
+
+
+REPACK MODE (random write)
+
+Repack mode allows you to modify some elements of a previously-packed
+field, without disturbing the elements you don't specify.  First, call
+set_unpack_data() as in unpack mode, then begin_repack(); then call
+seek() for each field you want to modify followed by the appropriate
+pack call.
+
+After end_repack() returns true, you can retrieve the newly-repacked
+field with get_data() and get_length(), just as in pack mode.
+
+  DCField *field = dclass->get_field_by_name("setChat");
+
+  DCPacker packer;
+  packer.set_unpack_data(source_buffer, source_size, false);
+  packer.begin_repack(field);
+  packer.seek("chat");
+  packer.pack_string(chatString);
+  if (!packer.end_repack()) {
+    cerr << "error occurred while repacking.\n";
+    return;
+  }
+
+  memcpy(result, packer.get_data(), packer.get_length());
+
+In repack mode, you may not traverse from beginning to end of the
+record--you must explicitly seek to each field you intend to repack.
+You may seek to a field within the currently active case of a switch.
+You may not seek directly to a switch parameter variable--repacking
+this would invalidate the remaining contents of the switch--but you
+may seek to the switch itself (if it has a name) and repack the entire
+contents of the switch at once.
+
+
+ADDITIONAL NOTES
+
+It is acceptable to call pack_int() for a uint type element and
+vice-versa; the data type will be range-checked and converted to the
+appropriate signedness.  In general, all of the numeric types are
+interchangeable--just call the appropriate one according to the data
+type you already have; don't worry about matching to the data type
+defined in the DC file.  However, if you are trying to write a general
+algorithm and you need a hint, you can call get_pack_type() to return
+a suggested type for the next pack call; this will return one of
+PT_int, PT_uint, PT_double, PT_string, etc.
+
+The same is true when unpacking: unpack_int() or unpack_uint() may be
+used interchangeably on signed or unsigned data (but if you call
+unpack_uint() and the data in the record happens to be negative, you
+will trigger a pack error).  As above, get_pack_type() may be called
+to return the suggested type for the next unpack call.
+
+
+If end_pack() or end_repack() returns false, there are two possible
+causes.  (1) You tried to pack some value that exceeded the range
+specified in the DC file (or the limits of the datatype).  In this
+case, had_range_error() will return true.  (2) There was some other,
+more serious error while packing the data, such as a mismatched type
+(e.g. pack_string() where a uint16 was expected), or you did not pack
+the right number of elements.  In this case, had_pack_error() will
+return true.  It might be the case that both error flags are
+triggered.
+
+If end_unpack() returns false, there are two similar causes.  (1)
+There was an invalid value in the record that exceeded the limits
+specified in the DC file.  This will be indicated by
+had_range_error().  (2) Some mismatched data type (unpack_string() for
+a uint16) or the wrong number of elements.  This is indicated by
+had_pack_error().  Note that specifying a too-small return value
+(e.g. unpack_uint() to retrieve a signed value, or unpack_int() to
+retrieve a float64 or int64 value greater than 2^32) is considered a
+pack error, not a range error.
+
+
+You may call pack_literal_value() for any element for which you want
+to supply a pre-packed data value (for instance, a default value
+returned by DCAtomicField::get_element_default()).  This will be
+accepted without further validation.  Similarly,
+unpack_literal_value() will return a string corresponding to the
+pre-packed value of the current element.  Both of these work for
+composite elements as well as for single-component elements (that is,
+you may call unpack_literal_value() instead of calling push()
+.. unpack .. pop() to retrieve an entire pre-packed array in one
+string).
+
+Python programmers may be especially interested in pack_object() and
+unpack_object().  pack_object() will accept any Python object and call
+the appropriate pack function for it.  Python tuple or list will
+implicitly call push(), followed by pack_object() for all the elements
+in the list, followed by pop(), so pack_object() can pack deeply
+nested structures with a single call, and with no need to call push()
+and pop() explicitly.  Conversely, unpack_object() will unpack a
+deeply nested structure and return an appropriate Python tuple or list
+or other object.  You may also consider DCField::pack_args() and
+DCField::unpack_args(), which automatically invokes the DCPacker for
+you.
+
+You may also find parse_and_pack() and unpack_and_format() useful for
+presenting data to (and accepting data from) a human user.
+parse_and_pack() accepts a string formatted in the DC file syntax
+(that is, with the same syntax accepted for a DC file default value),
+and packs that value for the current element.  It may be a single
+value or a deeply nested value, with brackets and braces embedded as
+appropriate.  Similarly, unpack_and_format() will unpack a single
+value or a deeply nested value into the same formatted string.  As
+with pack_object() and unpack_object(), these methods are also
+implemented on the DCField class for convenience, as parse_string()
+and format_data().
+
+
+RANGE VALIDATION
+
+The DCPacker automatically verifies that all data passing through its
+fundamental pack or unpack methods fits within the ranges (if any)
+specified in the DC file for each data type.  Violating a range
+restriction triggers a range error, which is indicated by a false
+return value from end_pack() / end_unpack() / end_repack() and by a
+true return value from had_range_error().
+
+If you just want to verify that a message contains legal values
+without otherwise inspecting the values, you can use unpack_validate()
+for this purpose.  Since unpack_validate() will work on deeply nested
+structures, you can just call it once in lieu of the entire push()
+.. pack .. pop() loop.  Furthermore, as in unpack_object() and
+unpack_and_format(), above, there is a convenience function for this
+on DCField; just call DCField::validate_ranges() to ensure that the
+data in the record for the given field fits within its specified
+limits.

@@ -1,0 +1,55 @@
+// Filename: hash_set
+// Created by:  drose (28Sep04)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) Carnegie Mellon University.  All rights reserved.
+//
+// All use of this software is subject to the terms of the revised BSD
+// license.  You should have received a copy of this license along
+// with this source code in a file named "LICENSE."
+//
+////////////////////////////////////////////////////////////////////
+
+// This file, and all the other files in this directory, aren't
+// intended to be compiled--they're just parsed by CPPParser (and
+// interrogate) in lieu of the actual system headers, to generate the
+// interrogate database.
+
+#ifndef HASH_SET_H
+#define HASH_SET_H
+
+#include <stdtypedefs.h>
+#include <stdcompare.h>
+
+namespace stdext {
+
+  template<class key, class compare = hash_compare<key, less<key> > >
+  class hash_set {
+  public:
+    typedef key key_type;
+    typedef key value_type;
+    typedef compare key_compare;
+    typedef compare value_compare;
+
+    typedef key *pointer;
+    typedef const key *const_pointer;
+    typedef key &reference;
+    typedef const key &const_reference;
+
+    class iterator;
+    class const_iterator;
+    class reverse_iterator;
+    class const_reverse_iterator;
+    typedef size_t size_type;
+    class difference_type;
+  };
+
+  template<class key, class compare = hash_compare<key, less<key> > >
+  class hash_multiset : public hash_set<key, compare> {
+  };
+
+};
+
+#endif

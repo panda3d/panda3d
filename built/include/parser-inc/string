@@ -1,0 +1,101 @@
+// Filename: string
+// Created by:  drose (12May00)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) Carnegie Mellon University.  All rights reserved.
+//
+// All use of this software is subject to the terms of the revised BSD
+// license.  You should have received a copy of this license along
+// with this source code in a file named "LICENSE."
+//
+////////////////////////////////////////////////////////////////////
+
+// This file, and all the other files in this directory, aren't
+// intended to be compiled--they're just parsed by CPPParser (and
+// interrogate) in lieu of the actual system headers, to generate the
+// interrogate database.
+
+#ifndef STRING_H
+#define STRING_H
+
+#include <stdtypedefs.h>
+#include <cwchar>
+#include <stdint.h>
+
+namespace std {
+  template<class charT> struct char_traits;
+  template<class T> class allocator;
+
+  template<> struct char_traits<char> {
+    using char_type = char;
+    using int_type = int;
+    using state_type = mbstate_t;
+  };
+
+  template<> struct char_traits<char16_t> {
+    using char_type = char16_t;
+    using int_type = uint_least16_t;
+    using state_type = mbstate_t;
+  };
+
+  template<> struct char_traits<char32_t> {
+    using char_type = char32_t;
+    using int_type = uint_least32_t;
+    using state_type = mbstate_t;
+  };
+
+  template<> struct char_traits<wchar_t> {
+    using char_type = wchar_t;
+    using int_type = wint_t;
+    using state_type = mbstate_t;
+  };
+
+  template<class CharT, class Traits = std::char_traits<CharT>, class Allocator = std::allocator<CharT> >
+  class basic_string {
+  public:
+    struct iterator;
+    struct const_iterator;
+    struct reverse_iterator;
+    struct const_reverse_iterator;
+
+    typedef typename size_t size_type;
+    static const size_t npos = -1;
+
+    basic_string();
+    basic_string(const basic_string<CharT> &copy);
+    void operator = (const basic_string<CharT> &copy);
+    basic_string(const CharT *string);
+    ~basic_string();
+
+    const CharT *c_str() const;
+    size_t length() const;
+
+    CharT at(size_t pos) const;
+    CharT operator[](size_t pos) const;
+    CharT &operator[](size_t pos);
+  };
+
+  typedef basic_string<char> string;
+  typedef basic_string<wchar_t> wstring;
+  typedef basic_string<char16_t> u16string;
+  typedef basic_string<char32_t> u32string;
+
+  template<class T> struct hash;
+  template<> struct hash<string>;
+  template<> struct hash<u16string>;
+  template<> struct hash<u32string>;
+  template<> struct hash<wstring>;
+
+  inline namespace literals {
+    inline namespace string_literals {
+      string operator "" s(const char *str, size_t len);
+      wstring operator "" s(const wchar_t *str, size_t len);
+      u16string operator "" s(const char16_t *str, size_t len);
+      u32string operator "" s(const char32_t *str, size_t len);
+    }
+  }
+}
+
+#endif

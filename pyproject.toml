@@ -1,0 +1,15 @@
+[project]
+name = "panda3d"
+version = "0.1.0"
+requires-python = ">=3.14"
+dependencies = [
+    "pytest>=9.0.2",
+]
+
+[dependency-groups]
+dev = [
+    "panda3d",
+]
+
+[tool.uv.sources]
+panda3d = { workspace = true }

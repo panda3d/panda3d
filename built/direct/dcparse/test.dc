@@ -1,0 +1,21 @@
+// Define a distributed object with a position.
+
+dclass Movable {
+
+  // Declare a few atomic fields
+  set_xyz(int16 x = 1024 / 1000, int16 y / 1000 = 1.024, int16 z / 1000 = 0.512) required broadcast ram;
+  set_hpr(int16 h, int16 p , int16 r = 0) required broadcast ram;
+
+  // And a molecular field
+  set_xyzhpr : set_xyz, set_hpr;
+};
+
+// Define a distributed object with a position and an attitude.
+dclass Attitude : Movable {
+  // methods are inherited from parent class.
+
+  set_attitude(int16array attitude = { 1 * 3 }) required broadcast ram;
+
+  // This molecular field uses some inherited atomic fields.
+  set_xyzhprattitude : set_xyz, set_hpr, set_attitude;
+};

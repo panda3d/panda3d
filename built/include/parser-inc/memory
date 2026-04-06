@@ -1,0 +1,190 @@
+/**
+ * PANDA 3D SOFTWARE
+ * Copyright (c) Carnegie Mellon University.  All rights reserved.
+ *
+ * All use of this software is subject to the terms of the revised BSD
+ * license.  You should have received a copy of this license along
+ * with this source code in a file named "LICENSE."
+ *
+ * @file memory
+ * @author tobspr
+ * @date 2016-11-01
+ */
+
+// This file, and all the other files in this directory, aren't
+// intended to be compiled--they're just parsed by CPPParser (and
+// interrogate) in lieu of the actual system headers, to generate the
+// interrogate database.
+
+#ifndef ALLOCATOR_H
+#define ALLOCATOR_H
+
+#include <stdtypedefs.h>
+#include <iterator>
+
+
+#ifdef GCC_STYLE_ALLOCATOR
+
+class alloc {
+public:
+  static void *allocate(size_t n);
+  static void deallocate(void *p, size_t n);
+};
+
+#else  // GCC_STYLE_ALLOCATOR
+
+namespace std {
+
+    // pointer traits
+    template <class Ptr> struct pointer_traits;
+    template <class T> struct pointer_traits<T*>;
+ 
+    // pointer safety
+    enum class pointer_safety { relaxed, preferred, strict };
+    
+    // allocator argument tag
+    struct allocator_arg_t { };
+    constexpr allocator_arg_t allocator_arg = allocator_arg_t();
+ 
+    // uses_allocator
+    template <class T, class Alloc> struct uses_allocator;
+ 
+    // allocator traits
+    template <class Alloc> struct allocator_traits;
+ 
+    // the default allocator:
+    template <class T> class allocator;
+    template <> class allocator<void>;
+    
+    // raw storage iterator:
+    template <class OutputIterator, class T> class raw_storage_iterator;
+ 
+    // class template unique_ptr:
+    template <class T> class default_delete;
+    template <class T> class default_delete<T[]>;
+    template <class T, class D = default_delete<T>> class unique_ptr;
+    template <class T, class D> class unique_ptr<T[], D>;
+    // class bad_weak_ptr:
+    class bad_weak_ptr;
+ 
+    // class template shared_ptr:
+    template<class T> class shared_ptr;
+    // class template weak_ptr:
+    template<class T> class weak_ptr;
+ 
+    // class template owner_less:
+    template<class T> class owner_less;
+ 
+    // class template enable_shared_from_this:
+    template<class T> class enable_shared_from_this;
+ 
+    //  hash support
+    template <class T> struct hash;
+    template <class T, class D> struct hash<unique_ptr<T, D> >;
+    template <class T> struct hash<shared_ptr<T> >;
+ 
+    // auto_ptr (deprecated)
+    template <class X> class auto_ptr;
+
+    template <class Ptr> struct pointer_traits {
+        typedef Ptr         pointer;
+        typedef Ptr         element_type;
+        typedef ptrdiff_t   difference_type;
+ 
+        template <class U> using rebind = U; 
+    };
+
+    template <class T> struct pointer_traits<T*> {
+        typedef T*          pointer;
+        typedef T           element_type;
+        typedef ptrdiff_t   difference_type;
+ 
+        template <class U> using rebind = U*;
+    };
+
+
+    template <class Alloc> struct allocator_traits {
+        typedef Alloc allocator_type;
+ 
+        typedef typename Alloc::value_type value_type;
+ 
+        typedef void* pointer;
+        typedef const void* const_pointer;
+        typedef void* void_pointer;
+        typedef const void* const_void_pointer;
+ 
+        typedef std::ptrdiff_t difference_type;
+        typedef size_t size_type;
+ 
+        struct propagate_on_container_copy_assignment;
+        struct propagate_on_container_move_assignment;
+        struct propagate_on_container_swap;
+        struct is_always_equal;
+ 
+        template <class T> using rebind_alloc = size_t;
+        //template <class T> using rebind_traits = allocator_traits<rebind_alloc<T> >;
+    };
+
+    template <class T> class allocator;
+    // specialize for void:
+    template <> class allocator<void> {
+    public:
+        typedef void*           pointer;
+        typedef const void*     const_pointer;
+        // reference-to-void members are impossible.
+        typedef void            value_type;
+        template <class U> struct rebind { typedef allocator<U> other; };
+    };
+    template <class T> class allocator {
+    public:
+        struct true_type_; // do not depend on type_traits header
+        typedef size_t          size_type;
+        typedef ptrdiff_t       difference_type;
+        typedef T*              pointer;
+        typedef const T*        const_pointer;
+        typedef T&              reference;
+        typedef const T&        const_reference;
+        typedef T               value_type;
+        template <class U> struct rebind { typedef allocator<U> other; };
+        typedef true_type_       propagate_on_container_move_assignment;
+        typedef true_type_       is_always_equal;
+ 
+    };
+
+    template <class OutputIterator, class T>
+    class raw_storage_iterator
+        : public iterator<output_iterator_tag,void,void,void,void> {
+    public:
+    };
+
+
+    template <class T> struct default_delete {};
+ 
+    template <class T> struct default_delete<T[]> {};
+
+    //  unique_ptr for single objects
+    template <class T, class D = default_delete<T>> class unique_ptr {
+    public:
+        typedef T* pointer;
+        typedef T  element_type;
+        typedef D  deleter_type;
+    };
+ 
+    class bad_weak_ptr: public std::exception {};
+
+    template<class T> class shared_ptr {
+    public:
+        typedef T element_type;
+    };
+
+    template<class T> class weak_ptr {
+    public:
+        typedef T element_type;
+    };
+
+    template<class T> class enable_shared_from_this {};
+}
+
+#endif  // GCC_STYLE_ALLOCATOR
+
+#endif

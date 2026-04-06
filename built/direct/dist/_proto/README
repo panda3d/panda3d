@@ -1,0 +1,4 @@
+The files in this directory were generated from the .proto files in the
+bundletool and aapt2 repositories.
+
+They are used by installer.py when generating an Android App Bundle.
