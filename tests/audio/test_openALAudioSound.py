@@ -3,18 +3,17 @@ import pytest
 
 def test_copy(audiomgr):
     if "openal" not in str(audiomgr).lower():
-        # NULL audio manager (as well as fmod) don't support comment reading
-        pytest.skip("Comment reading is only supported on OpenAL")
+        # NULL audio manager (as well as fmod) don't support copying yet
+        pytest.skip("Copying is currently only supported on OpenAL")
 
-    test_sound = AudioSound()
+    test_sound = audiomgr.get_sound("../models/audio/sfx/GUI_click.wav")
     test_sound.setActive(1)
-    test_sound.set3dMaxDistance(200.0)
+    test_sound.set3dMaxDistance(20.0)
     test_copy = test_sound.make_copy()
 
-    # checking a few values for consistency
     assert(test_copy.getActive() == test_sound.getActive())
-    assert(test_copy.getName() == (test_sound.getName() + "_copy"))
+    assert(test_copy.getName() == test_sound.getName())
     assert(test_copy.get3dMaxDistance() == test_sound.get3dMaxDistance())
-
-    base.run()
+    # check that make_copy hasn't changed user-modified value
+    assert(test_copy.get3dMaxDistance == 20.0) 
 

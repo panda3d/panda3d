@@ -119,8 +119,8 @@ OpenALAudioSound(const OpenALAudioSound &copy_sound) :
   _desired_mode(copy_sound._desired_mode),
   _start_time(copy_sound._start_time),
   _current_time(0.0),
-  _basename(copy_sound._basename << "_copy"),
-  _active(manager->get_active()),
+  _basename(copy_sound._basename),
+  _active(copy_sound._active),
   _paused(copy_sound._paused),
   _cone_inner_angle(copy_sound._cone_inner_angle),
   _cone_outer_angle(copy_sound._cone_outer_angle),
@@ -143,9 +143,9 @@ OpenALAudioSound(const OpenALAudioSound &copy_sound) :
     return;
   }
 
-  if (copy_sound.AudioSound.is_positional()) {
+  if (copy_sound.is_positional()) {
     if (_sd->_channels != 1) {
-      audio_warning("copied stereo sound " << movie->get_filename() << " will not be spatialized");
+      audio_warning("copied stereo sound " << _movie->get_filename() << " will not be spatialized");
     }
   }
 
@@ -185,15 +185,15 @@ cleanup() {
 /**
  * Copies an OpenALAudioSound into another OpenALAudioSound.
  */
-OpenALAudioSound OpenALAudioSound::
+OpenALAudioSound *OpenALAudioSound::
 make_copy() {
   ReMutexHolder holder(OpenALAudioManager::_lock);
 
   OpenALAudioSound *copy_sound = new OpenALAudioSound(*this);
 
   // throw errors if the copied-to node doesn't match the copied-from
-  nassertr(copy_sound.is_valid() == this->is_valid());
-  nassertr(copy_sound.has_sound_data() == this->has_sound_data());
+  nassertv(copy_sound.is_valid() == this->is_valid());
+  nassertv(copy_sound.has_sound_data() == this->has_sound_data());
 
   return copy_sound;
 }
