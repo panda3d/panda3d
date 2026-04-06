@@ -2188,9 +2188,44 @@ static PyObject *Dtool_Wrap_FilterProperties(void *from_this, PyTypeObject *from
  */
 /**
  * Python function wrapper for:
+ * virtual AudioSound *AudioSound::make_copy(void)
+ */
+static PyObject *Dtool_AudioSound_make_copy_18(PyObject *self, PyObject *) {
+  AudioSound *local_this = nullptr;
+  if (!Dtool_Call_ExtractThisPointer_NonConst(self, Dtool_AudioSound, (void **)&local_this, "AudioSound.make_copy")) {
+    return nullptr;
+  }
+  // 1-virtual AudioSound *AudioSound::make_copy(void)
+  AudioSound *return_value = ((*local_this).make_copy)();
+  if (return_value != nullptr) {
+    return_value->ref();
+  }
+  if (Dtool_CheckErrorOccurred()) {
+    if (return_value != nullptr) {
+      unref_delete(return_value);
+    }
+    return nullptr;
+  }
+  if (return_value == nullptr) {
+    return Py_NewRef(Py_None);
+  } else {
+    return DTool_CreatePyInstanceTyped((void *)return_value, *Dtool_Ptr_AudioSound, true, false, return_value->as_typed_object()->get_type_index());
+  }
+}
+
+#ifndef NDEBUG
+static const char *Dtool_AudioSound_make_copy_18_comment =
+  "C++ Interface:\n"
+  "make_copy(const AudioSound self)\n";
+#else
+static const char *Dtool_AudioSound_make_copy_18_comment = nullptr;
+#endif
+
+/**
+ * Python function wrapper for:
  * virtual void AudioSound::play(void) = 0
  */
-static PyObject *Dtool_AudioSound_play_18(PyObject *self, PyObject *) {
+static PyObject *Dtool_AudioSound_play_19(PyObject *self, PyObject *) {
   AudioSound *local_this = nullptr;
   if (!Dtool_Call_ExtractThisPointer_NonConst(self, Dtool_AudioSound, (void **)&local_this, "AudioSound.play")) {
     return nullptr;
@@ -2201,7 +2236,7 @@ static PyObject *Dtool_AudioSound_play_18(PyObject *self, PyObject *) {
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioSound_play_18_comment =
+static const char *Dtool_AudioSound_play_19_comment =
   "C++ Interface:\n"
   "play(const AudioSound self)\n"
   "\n"
@@ -2211,14 +2246,14 @@ static const char *Dtool_AudioSound_play_18_comment =
   "// second time on the same sound before it is finished will start the sound\n"
   "// again (creating a skipping or stuttering effect).";
 #else
-static const char *Dtool_AudioSound_play_18_comment = nullptr;
+static const char *Dtool_AudioSound_play_19_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * virtual void AudioSound::stop(void) = 0
  */
-static PyObject *Dtool_AudioSound_stop_19(PyObject *self, PyObject *) {
+static PyObject *Dtool_AudioSound_stop_20(PyObject *self, PyObject *) {
   AudioSound *local_this = nullptr;
   if (!Dtool_Call_ExtractThisPointer_NonConst(self, Dtool_AudioSound, (void **)&local_this, "AudioSound.stop")) {
     return nullptr;
@@ -2229,18 +2264,18 @@ static PyObject *Dtool_AudioSound_stop_19(PyObject *self, PyObject *) {
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioSound_stop_19_comment =
+static const char *Dtool_AudioSound_stop_20_comment =
   "C++ Interface:\n"
   "stop(const AudioSound self)\n";
 #else
-static const char *Dtool_AudioSound_stop_19_comment = nullptr;
+static const char *Dtool_AudioSound_stop_20_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * virtual void AudioSound::set_loop(bool loop = true) = 0
  */
-static PyObject *Dtool_AudioSound_set_loop_20(PyObject *self, PyObject *args, PyObject *kwds) {
+static PyObject *Dtool_AudioSound_set_loop_21(PyObject *self, PyObject *args, PyObject *kwds) {
   AudioSound *local_this = nullptr;
   if (!Dtool_Call_ExtractThisPointer_NonConst(self, Dtool_AudioSound, (void **)&local_this, "AudioSound.set_loop")) {
     return nullptr;
@@ -2256,20 +2291,20 @@ static PyObject *Dtool_AudioSound_set_loop_20(PyObject *self, PyObject *args, Py
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioSound_set_loop_20_comment =
+static const char *Dtool_AudioSound_set_loop_21_comment =
   "C++ Interface:\n"
   "set_loop(const AudioSound self, bool loop)\n"
   "\n"
   "// loop: false = play once; true = play forever.  inits to false.";
 #else
-static const char *Dtool_AudioSound_set_loop_20_comment = nullptr;
+static const char *Dtool_AudioSound_set_loop_21_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * virtual bool AudioSound::get_loop(void) const = 0
  */
-static PyObject *Dtool_AudioSound_get_loop_21(PyObject *self, PyObject *) {
+static PyObject *Dtool_AudioSound_get_loop_22(PyObject *self, PyObject *) {
   AudioSound *local_this = nullptr;
   if (!DtoolInstance_GetPointer(self, local_this, Dtool_AudioSound)) {
     return nullptr;
@@ -2280,18 +2315,18 @@ static PyObject *Dtool_AudioSound_get_loop_21(PyObject *self, PyObject *) {
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioSound_get_loop_21_comment =
+static const char *Dtool_AudioSound_get_loop_22_comment =
   "C++ Interface:\n"
   "get_loop(AudioSound self)\n";
 #else
-static const char *Dtool_AudioSound_get_loop_21_comment = nullptr;
+static const char *Dtool_AudioSound_get_loop_22_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * virtual void AudioSound::set_loop_count(unsigned long int loop_count = 1) = 0
  */
-static PyObject *Dtool_AudioSound_set_loop_count_22(PyObject *self, PyObject *args, PyObject *kwds) {
+static PyObject *Dtool_AudioSound_set_loop_count_23(PyObject *self, PyObject *args, PyObject *kwds) {
   AudioSound *local_this = nullptr;
   if (!Dtool_Call_ExtractThisPointer_NonConst(self, Dtool_AudioSound, (void **)&local_this, "AudioSound.set_loop_count")) {
     return nullptr;
@@ -2308,20 +2343,20 @@ static PyObject *Dtool_AudioSound_set_loop_count_22(PyObject *self, PyObject *ar
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioSound_set_loop_count_22_comment =
+static const char *Dtool_AudioSound_set_loop_count_23_comment =
   "C++ Interface:\n"
   "set_loop_count(const AudioSound self, int loop_count)\n"
   "\n"
   "// loop_count: 0 = forever; 1 = play once; n = play n times.  inits to 1.";
 #else
-static const char *Dtool_AudioSound_set_loop_count_22_comment = nullptr;
+static const char *Dtool_AudioSound_set_loop_count_23_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * virtual unsigned long int AudioSound::get_loop_count(void) const = 0
  */
-static PyObject *Dtool_AudioSound_get_loop_count_23(PyObject *self, PyObject *) {
+static PyObject *Dtool_AudioSound_get_loop_count_24(PyObject *self, PyObject *) {
   AudioSound *local_this = nullptr;
   if (!DtoolInstance_GetPointer(self, local_this, Dtool_AudioSound)) {
     return nullptr;
@@ -2335,18 +2370,18 @@ static PyObject *Dtool_AudioSound_get_loop_count_23(PyObject *self, PyObject *) 
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioSound_get_loop_count_23_comment =
+static const char *Dtool_AudioSound_get_loop_count_24_comment =
   "C++ Interface:\n"
   "get_loop_count(AudioSound self)\n";
 #else
-static const char *Dtool_AudioSound_get_loop_count_23_comment = nullptr;
+static const char *Dtool_AudioSound_get_loop_count_24_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * virtual void AudioSound::set_loop_start(PN_stdfloat loop_start = 0) = 0
  */
-static PyObject *Dtool_AudioSound_set_loop_start_24(PyObject *self, PyObject *args, PyObject *kwds) {
+static PyObject *Dtool_AudioSound_set_loop_start_25(PyObject *self, PyObject *args, PyObject *kwds) {
   AudioSound *local_this = nullptr;
   if (!Dtool_Call_ExtractThisPointer_NonConst(self, Dtool_AudioSound, (void **)&local_this, "AudioSound.set_loop_start")) {
     return nullptr;
@@ -2363,20 +2398,20 @@ static PyObject *Dtool_AudioSound_set_loop_start_24(PyObject *self, PyObject *ar
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioSound_set_loop_start_24_comment =
+static const char *Dtool_AudioSound_set_loop_start_25_comment =
   "C++ Interface:\n"
   "set_loop_start(const AudioSound self, float loop_start)\n"
   "\n"
   "// loop_start: 0 = beginning.  expressed in seconds.  inits to 0.";
 #else
-static const char *Dtool_AudioSound_set_loop_start_24_comment = nullptr;
+static const char *Dtool_AudioSound_set_loop_start_25_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * virtual PN_stdfloat AudioSound::get_loop_start(void) const = 0
  */
-static PyObject *Dtool_AudioSound_get_loop_start_25(PyObject *self, PyObject *) {
+static PyObject *Dtool_AudioSound_get_loop_start_26(PyObject *self, PyObject *) {
   AudioSound *local_this = nullptr;
   if (!DtoolInstance_GetPointer(self, local_this, Dtool_AudioSound)) {
     return nullptr;
@@ -2390,18 +2425,18 @@ static PyObject *Dtool_AudioSound_get_loop_start_25(PyObject *self, PyObject *) 
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioSound_get_loop_start_25_comment =
+static const char *Dtool_AudioSound_get_loop_start_26_comment =
   "C++ Interface:\n"
   "get_loop_start(AudioSound self)\n";
 #else
-static const char *Dtool_AudioSound_get_loop_start_25_comment = nullptr;
+static const char *Dtool_AudioSound_get_loop_start_26_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * virtual void AudioSound::set_time(PN_stdfloat start_time = 0.0) = 0
  */
-static PyObject *Dtool_AudioSound_set_time_26(PyObject *self, PyObject *args, PyObject *kwds) {
+static PyObject *Dtool_AudioSound_set_time_27(PyObject *self, PyObject *args, PyObject *kwds) {
   AudioSound *local_this = nullptr;
   if (!Dtool_Call_ExtractThisPointer_NonConst(self, Dtool_AudioSound, (void **)&local_this, "AudioSound.set_time")) {
     return nullptr;
@@ -2418,7 +2453,7 @@ static PyObject *Dtool_AudioSound_set_time_26(PyObject *self, PyObject *args, Py
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioSound_set_time_26_comment =
+static const char *Dtool_AudioSound_set_time_27_comment =
   "C++ Interface:\n"
   "set_time(const AudioSound self, float start_time)\n"
   "\n"
@@ -2454,14 +2489,14 @@ static const char *Dtool_AudioSound_set_time_26_comment =
   "   * @endcode\n"
   "   */";
 #else
-static const char *Dtool_AudioSound_set_time_26_comment = nullptr;
+static const char *Dtool_AudioSound_set_time_27_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * virtual PN_stdfloat AudioSound::get_time(void) const = 0
  */
-static PyObject *Dtool_AudioSound_get_time_27(PyObject *self, PyObject *) {
+static PyObject *Dtool_AudioSound_get_time_28(PyObject *self, PyObject *) {
   AudioSound *local_this = nullptr;
   if (!DtoolInstance_GetPointer(self, local_this, Dtool_AudioSound)) {
     return nullptr;
@@ -2475,18 +2510,18 @@ static PyObject *Dtool_AudioSound_get_time_27(PyObject *self, PyObject *) {
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioSound_get_time_27_comment =
+static const char *Dtool_AudioSound_get_time_28_comment =
   "C++ Interface:\n"
   "get_time(AudioSound self)\n";
 #else
-static const char *Dtool_AudioSound_get_time_27_comment = nullptr;
+static const char *Dtool_AudioSound_get_time_28_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * virtual void AudioSound::set_volume(PN_stdfloat volume = 1.0) = 0
  */
-static PyObject *Dtool_AudioSound_set_volume_28(PyObject *self, PyObject *args, PyObject *kwds) {
+static PyObject *Dtool_AudioSound_set_volume_29(PyObject *self, PyObject *args, PyObject *kwds) {
   AudioSound *local_this = nullptr;
   if (!Dtool_Call_ExtractThisPointer_NonConst(self, Dtool_AudioSound, (void **)&local_this, "AudioSound.set_volume")) {
     return nullptr;
@@ -2503,7 +2538,7 @@ static PyObject *Dtool_AudioSound_set_volume_28(PyObject *self, PyObject *args, 
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioSound_set_volume_28_comment =
+static const char *Dtool_AudioSound_set_volume_29_comment =
   "C++ Interface:\n"
   "set_volume(const AudioSound self, float volume)\n"
   "\n"
@@ -2511,14 +2546,14 @@ static const char *Dtool_AudioSound_set_volume_28_comment =
   "\n"
   "// 0 = minimum; 1.0 = maximum.  inits to 1.0.";
 #else
-static const char *Dtool_AudioSound_set_volume_28_comment = nullptr;
+static const char *Dtool_AudioSound_set_volume_29_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * virtual PN_stdfloat AudioSound::get_volume(void) const = 0
  */
-static PyObject *Dtool_AudioSound_get_volume_29(PyObject *self, PyObject *) {
+static PyObject *Dtool_AudioSound_get_volume_30(PyObject *self, PyObject *) {
   AudioSound *local_this = nullptr;
   if (!DtoolInstance_GetPointer(self, local_this, Dtool_AudioSound)) {
     return nullptr;
@@ -2532,18 +2567,18 @@ static PyObject *Dtool_AudioSound_get_volume_29(PyObject *self, PyObject *) {
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioSound_get_volume_29_comment =
+static const char *Dtool_AudioSound_get_volume_30_comment =
   "C++ Interface:\n"
   "get_volume(AudioSound self)\n";
 #else
-static const char *Dtool_AudioSound_get_volume_29_comment = nullptr;
+static const char *Dtool_AudioSound_get_volume_30_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * virtual void AudioSound::set_balance(PN_stdfloat balance_right = 0.0) = 0
  */
-static PyObject *Dtool_AudioSound_set_balance_30(PyObject *self, PyObject *args, PyObject *kwds) {
+static PyObject *Dtool_AudioSound_set_balance_31(PyObject *self, PyObject *args, PyObject *kwds) {
   AudioSound *local_this = nullptr;
   if (!Dtool_Call_ExtractThisPointer_NonConst(self, Dtool_AudioSound, (void **)&local_this, "AudioSound.set_balance")) {
     return nullptr;
@@ -2560,7 +2595,7 @@ static PyObject *Dtool_AudioSound_set_balance_30(PyObject *self, PyObject *args,
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioSound_set_balance_30_comment =
+static const char *Dtool_AudioSound_set_balance_31_comment =
   "C++ Interface:\n"
   "set_balance(const AudioSound self, float balance_right)\n"
   "\n"
@@ -2568,14 +2603,14 @@ static const char *Dtool_AudioSound_set_balance_30_comment =
   "\n"
   "// -1.0 is hard left 0.0 is centered 1.0 is hard right inits to 0.0.";
 #else
-static const char *Dtool_AudioSound_set_balance_30_comment = nullptr;
+static const char *Dtool_AudioSound_set_balance_31_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * virtual PN_stdfloat AudioSound::get_balance(void) const = 0
  */
-static PyObject *Dtool_AudioSound_get_balance_31(PyObject *self, PyObject *) {
+static PyObject *Dtool_AudioSound_get_balance_32(PyObject *self, PyObject *) {
   AudioSound *local_this = nullptr;
   if (!DtoolInstance_GetPointer(self, local_this, Dtool_AudioSound)) {
     return nullptr;
@@ -2589,18 +2624,18 @@ static PyObject *Dtool_AudioSound_get_balance_31(PyObject *self, PyObject *) {
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioSound_get_balance_31_comment =
+static const char *Dtool_AudioSound_get_balance_32_comment =
   "C++ Interface:\n"
   "get_balance(AudioSound self)\n";
 #else
-static const char *Dtool_AudioSound_get_balance_31_comment = nullptr;
+static const char *Dtool_AudioSound_get_balance_32_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * virtual void AudioSound::set_play_rate(PN_stdfloat play_rate = 1.0) = 0
  */
-static PyObject *Dtool_AudioSound_set_play_rate_32(PyObject *self, PyObject *args, PyObject *kwds) {
+static PyObject *Dtool_AudioSound_set_play_rate_33(PyObject *self, PyObject *args, PyObject *kwds) {
   AudioSound *local_this = nullptr;
   if (!Dtool_Call_ExtractThisPointer_NonConst(self, Dtool_AudioSound, (void **)&local_this, "AudioSound.set_play_rate")) {
     return nullptr;
@@ -2617,7 +2652,7 @@ static PyObject *Dtool_AudioSound_set_play_rate_32(PyObject *self, PyObject *arg
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioSound_set_play_rate_32_comment =
+static const char *Dtool_AudioSound_set_play_rate_33_comment =
   "C++ Interface:\n"
   "set_play_rate(const AudioSound self, float play_rate)\n"
   "\n"
@@ -2625,14 +2660,14 @@ static const char *Dtool_AudioSound_set_play_rate_32_comment =
   "\n"
   "// play_rate is any positive PN_stdfloat value.  inits to 1.0.";
 #else
-static const char *Dtool_AudioSound_set_play_rate_32_comment = nullptr;
+static const char *Dtool_AudioSound_set_play_rate_33_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * virtual PN_stdfloat AudioSound::get_play_rate(void) const = 0
  */
-static PyObject *Dtool_AudioSound_get_play_rate_33(PyObject *self, PyObject *) {
+static PyObject *Dtool_AudioSound_get_play_rate_34(PyObject *self, PyObject *) {
   AudioSound *local_this = nullptr;
   if (!DtoolInstance_GetPointer(self, local_this, Dtool_AudioSound)) {
     return nullptr;
@@ -2646,18 +2681,18 @@ static PyObject *Dtool_AudioSound_get_play_rate_33(PyObject *self, PyObject *) {
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioSound_get_play_rate_33_comment =
+static const char *Dtool_AudioSound_get_play_rate_34_comment =
   "C++ Interface:\n"
   "get_play_rate(AudioSound self)\n";
 #else
-static const char *Dtool_AudioSound_get_play_rate_33_comment = nullptr;
+static const char *Dtool_AudioSound_get_play_rate_34_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * virtual void AudioSound::set_active(bool flag = true) = 0
  */
-static PyObject *Dtool_AudioSound_set_active_34(PyObject *self, PyObject *args, PyObject *kwds) {
+static PyObject *Dtool_AudioSound_set_active_35(PyObject *self, PyObject *args, PyObject *kwds) {
   AudioSound *local_this = nullptr;
   if (!Dtool_Call_ExtractThisPointer_NonConst(self, Dtool_AudioSound, (void **)&local_this, "AudioSound.set_active")) {
     return nullptr;
@@ -2673,7 +2708,7 @@ static PyObject *Dtool_AudioSound_set_active_34(PyObject *self, PyObject *args, 
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioSound_set_active_34_comment =
+static const char *Dtool_AudioSound_set_active_35_comment =
   "C++ Interface:\n"
   "set_active(const AudioSound self, bool flag)\n"
   "\n"
@@ -2681,14 +2716,14 @@ static const char *Dtool_AudioSound_set_active_34_comment =
   "\n"
   "// inits to manager's state.";
 #else
-static const char *Dtool_AudioSound_set_active_34_comment = nullptr;
+static const char *Dtool_AudioSound_set_active_35_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * virtual bool AudioSound::get_active(void) const = 0
  */
-static PyObject *Dtool_AudioSound_get_active_35(PyObject *self, PyObject *) {
+static PyObject *Dtool_AudioSound_get_active_36(PyObject *self, PyObject *) {
   AudioSound *local_this = nullptr;
   if (!DtoolInstance_GetPointer(self, local_this, Dtool_AudioSound)) {
     return nullptr;
@@ -2699,18 +2734,18 @@ static PyObject *Dtool_AudioSound_get_active_35(PyObject *self, PyObject *) {
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioSound_get_active_35_comment =
+static const char *Dtool_AudioSound_get_active_36_comment =
   "C++ Interface:\n"
   "get_active(AudioSound self)\n";
 #else
-static const char *Dtool_AudioSound_get_active_35_comment = nullptr;
+static const char *Dtool_AudioSound_get_active_36_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * virtual void AudioSound::set_finished_event(std::string const &event) = 0
  */
-static PyObject *Dtool_AudioSound_set_finished_event_36(PyObject *self, PyObject *arg) {
+static PyObject *Dtool_AudioSound_set_finished_event_37(PyObject *self, PyObject *arg) {
   AudioSound *local_this = nullptr;
   if (!Dtool_Call_ExtractThisPointer_NonConst(self, Dtool_AudioSound, (void **)&local_this, "AudioSound.set_finished_event")) {
     return nullptr;
@@ -2734,21 +2769,21 @@ static PyObject *Dtool_AudioSound_set_finished_event_36(PyObject *self, PyObject
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioSound_set_finished_event_36_comment =
+static const char *Dtool_AudioSound_set_finished_event_37_comment =
   "C++ Interface:\n"
   "set_finished_event(const AudioSound self, str event)\n"
   "\n"
   "// Set (or clear) the event that will be thrown when the sound finishes\n"
   "// playing.  To clear the event, pass an empty string.";
 #else
-static const char *Dtool_AudioSound_set_finished_event_36_comment = nullptr;
+static const char *Dtool_AudioSound_set_finished_event_37_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * virtual std::string const &AudioSound::get_finished_event(void) const = 0
  */
-static PyObject *Dtool_AudioSound_get_finished_event_37(PyObject *self, PyObject *) {
+static PyObject *Dtool_AudioSound_get_finished_event_38(PyObject *self, PyObject *) {
   AudioSound *local_this = nullptr;
   if (!DtoolInstance_GetPointer(self, local_this, Dtool_AudioSound)) {
     return nullptr;
@@ -2762,18 +2797,18 @@ static PyObject *Dtool_AudioSound_get_finished_event_37(PyObject *self, PyObject
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioSound_get_finished_event_37_comment =
+static const char *Dtool_AudioSound_get_finished_event_38_comment =
   "C++ Interface:\n"
   "get_finished_event(AudioSound self)\n";
 #else
-static const char *Dtool_AudioSound_get_finished_event_37_comment = nullptr;
+static const char *Dtool_AudioSound_get_finished_event_38_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * virtual std::string const &AudioSound::get_name(void) const = 0
  */
-static PyObject *Dtool_AudioSound_get_name_38(PyObject *self, PyObject *) {
+static PyObject *Dtool_AudioSound_get_name_39(PyObject *self, PyObject *) {
   AudioSound *local_this = nullptr;
   if (!DtoolInstance_GetPointer(self, local_this, Dtool_AudioSound)) {
     return nullptr;
@@ -2787,7 +2822,7 @@ static PyObject *Dtool_AudioSound_get_name_38(PyObject *self, PyObject *) {
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioSound_get_name_38_comment =
+static const char *Dtool_AudioSound_get_name_39_comment =
   "C++ Interface:\n"
   "get_name(AudioSound self)\n"
   "\n"
@@ -2795,14 +2830,14 @@ static const char *Dtool_AudioSound_get_name_38_comment =
   "\n"
   "// There is no set_name(), this is intentional.";
 #else
-static const char *Dtool_AudioSound_get_name_38_comment = nullptr;
+static const char *Dtool_AudioSound_get_name_39_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * inline bool AudioSound::is_positional(void) const
  */
-static PyObject *Dtool_AudioSound_is_positional_39(PyObject *self, PyObject *) {
+static PyObject *Dtool_AudioSound_is_positional_40(PyObject *self, PyObject *) {
   AudioSound *local_this = nullptr;
   if (!DtoolInstance_GetPointer(self, local_this, Dtool_AudioSound)) {
     return nullptr;
@@ -2813,7 +2848,7 @@ static PyObject *Dtool_AudioSound_is_positional_39(PyObject *self, PyObject *) {
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioSound_is_positional_39_comment =
+static const char *Dtool_AudioSound_is_positional_40_comment =
   "C++ Interface:\n"
   "is_positional(AudioSound self)\n"
   "\n"
@@ -2821,14 +2856,14 @@ static const char *Dtool_AudioSound_is_positional_39_comment =
   " * Returns true if this was created as a positional sound.\n"
   " */";
 #else
-static const char *Dtool_AudioSound_is_positional_39_comment = nullptr;
+static const char *Dtool_AudioSound_is_positional_40_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * virtual PN_stdfloat AudioSound::length(void) const = 0
  */
-static PyObject *Dtool_AudioSound_length_40(PyObject *self, PyObject *) {
+static PyObject *Dtool_AudioSound_length_41(PyObject *self, PyObject *) {
   AudioSound *local_this = nullptr;
   if (!DtoolInstance_GetPointer(self, local_this, Dtool_AudioSound)) {
     return nullptr;
@@ -2842,20 +2877,20 @@ static PyObject *Dtool_AudioSound_length_40(PyObject *self, PyObject *) {
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioSound_length_40_comment =
+static const char *Dtool_AudioSound_length_41_comment =
   "C++ Interface:\n"
   "length(AudioSound self)\n"
   "\n"
   "// return: playing time in seconds.";
 #else
-static const char *Dtool_AudioSound_length_40_comment = nullptr;
+static const char *Dtool_AudioSound_length_41_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * virtual void AudioSound::set_3d_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx, PN_stdfloat vy, PN_stdfloat vz)
  */
-static PyObject *Dtool_AudioSound_set_3d_attributes_41(PyObject *self, PyObject *args, PyObject *kwds) {
+static PyObject *Dtool_AudioSound_set_3d_attributes_42(PyObject *self, PyObject *args, PyObject *kwds) {
   AudioSound *local_this = nullptr;
   if (!Dtool_Call_ExtractThisPointer_NonConst(self, Dtool_AudioSound, (void **)&local_this, "AudioSound.set_3d_attributes")) {
     return nullptr;
@@ -2877,7 +2912,7 @@ static PyObject *Dtool_AudioSound_set_3d_attributes_41(PyObject *self, PyObject 
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioSound_set_3d_attributes_41_comment =
+static const char *Dtool_AudioSound_set_3d_attributes_42_comment =
   "C++ Interface:\n"
   "set_3d_attributes(const AudioSound self, float px, float py, float pz, float vx, float vy, float vz)\n"
   "\n"
@@ -2885,14 +2920,14 @@ static const char *Dtool_AudioSound_set_3d_attributes_41_comment =
   "// emitter's position.  vx, vy and vz are the emitter's velocity in UNITS\n"
   "// PER SECOND (default: meters).";
 #else
-static const char *Dtool_AudioSound_set_3d_attributes_41_comment = nullptr;
+static const char *Dtool_AudioSound_set_3d_attributes_42_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * virtual void AudioSound::set_3d_direction(LVector3 d)
  */
-static PyObject *Dtool_AudioSound_set_3d_direction_43(PyObject *self, PyObject *arg) {
+static PyObject *Dtool_AudioSound_set_3d_direction_44(PyObject *self, PyObject *arg) {
   AudioSound *local_this = nullptr;
   if (!Dtool_Call_ExtractThisPointer_NonConst(self, Dtool_AudioSound, (void **)&local_this, "AudioSound.set_3d_direction")) {
     return nullptr;
@@ -2908,20 +2943,20 @@ static PyObject *Dtool_AudioSound_set_3d_direction_43(PyObject *self, PyObject *
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioSound_set_3d_direction_43_comment =
+static const char *Dtool_AudioSound_set_3d_direction_44_comment =
   "C++ Interface:\n"
   "set_3d_direction(const AudioSound self, LVector3f d)\n"
   "\n"
   "// Controls the direction of this sound emitter. Currently implemented only for OpenAL.";
 #else
-static const char *Dtool_AudioSound_set_3d_direction_43_comment = nullptr;
+static const char *Dtool_AudioSound_set_3d_direction_44_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * virtual LVector3 AudioSound::get_3d_direction(void) const
  */
-static PyObject *Dtool_AudioSound_get_3d_direction_44(PyObject *self, PyObject *) {
+static PyObject *Dtool_AudioSound_get_3d_direction_45(PyObject *self, PyObject *) {
   AudioSound *local_this = nullptr;
   if (!DtoolInstance_GetPointer(self, local_this, Dtool_AudioSound)) {
     return nullptr;
@@ -2939,18 +2974,18 @@ static PyObject *Dtool_AudioSound_get_3d_direction_44(PyObject *self, PyObject *
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioSound_get_3d_direction_44_comment =
+static const char *Dtool_AudioSound_get_3d_direction_45_comment =
   "C++ Interface:\n"
   "get_3d_direction(AudioSound self)\n";
 #else
-static const char *Dtool_AudioSound_get_3d_direction_44_comment = nullptr;
+static const char *Dtool_AudioSound_get_3d_direction_45_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * virtual void AudioSound::set_3d_min_distance(PN_stdfloat dist)
  */
-static PyObject *Dtool_AudioSound_set_3d_min_distance_45(PyObject *self, PyObject *arg) {
+static PyObject *Dtool_AudioSound_set_3d_min_distance_46(PyObject *self, PyObject *arg) {
   AudioSound *local_this = nullptr;
   if (!Dtool_Call_ExtractThisPointer_NonConst(self, Dtool_AudioSound, (void **)&local_this, "AudioSound.set_3d_min_distance")) {
     return nullptr;
@@ -2965,7 +3000,7 @@ static PyObject *Dtool_AudioSound_set_3d_min_distance_45(PyObject *self, PyObjec
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioSound_set_3d_min_distance_45_comment =
+static const char *Dtool_AudioSound_set_3d_min_distance_46_comment =
   "C++ Interface:\n"
   "set_3d_min_distance(const AudioSound self, float dist)\n"
   "\n"
@@ -2973,14 +3008,14 @@ static const char *Dtool_AudioSound_set_3d_min_distance_45_comment =
   "// Also affects the rate it falls off.  Default is 1.0 CloserFaster, <1.0\n"
   "// FartherSlower, >1.0";
 #else
-static const char *Dtool_AudioSound_set_3d_min_distance_45_comment = nullptr;
+static const char *Dtool_AudioSound_set_3d_min_distance_46_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * virtual PN_stdfloat AudioSound::get_3d_min_distance(void) const
  */
-static PyObject *Dtool_AudioSound_get_3d_min_distance_46(PyObject *self, PyObject *) {
+static PyObject *Dtool_AudioSound_get_3d_min_distance_47(PyObject *self, PyObject *) {
   AudioSound *local_this = nullptr;
   if (!DtoolInstance_GetPointer(self, local_this, Dtool_AudioSound)) {
     return nullptr;
@@ -2994,18 +3029,18 @@ static PyObject *Dtool_AudioSound_get_3d_min_distance_46(PyObject *self, PyObjec
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioSound_get_3d_min_distance_46_comment =
+static const char *Dtool_AudioSound_get_3d_min_distance_47_comment =
   "C++ Interface:\n"
   "get_3d_min_distance(AudioSound self)\n";
 #else
-static const char *Dtool_AudioSound_get_3d_min_distance_46_comment = nullptr;
+static const char *Dtool_AudioSound_get_3d_min_distance_47_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * virtual void AudioSound::set_3d_max_distance(PN_stdfloat dist)
  */
-static PyObject *Dtool_AudioSound_set_3d_max_distance_47(PyObject *self, PyObject *arg) {
+static PyObject *Dtool_AudioSound_set_3d_max_distance_48(PyObject *self, PyObject *arg) {
   AudioSound *local_this = nullptr;
   if (!Dtool_Call_ExtractThisPointer_NonConst(self, Dtool_AudioSound, (void **)&local_this, "AudioSound.set_3d_max_distance")) {
     return nullptr;
@@ -3020,7 +3055,7 @@ static PyObject *Dtool_AudioSound_set_3d_max_distance_47(PyObject *self, PyObjec
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioSound_set_3d_max_distance_47_comment =
+static const char *Dtool_AudioSound_set_3d_max_distance_48_comment =
   "C++ Interface:\n"
   "set_3d_max_distance(const AudioSound self, float dist)\n"
   "\n"
@@ -3028,14 +3063,14 @@ static const char *Dtool_AudioSound_set_3d_max_distance_47_comment =
   "// off.  The sound does not stop at that point, it just doesn't get any\n"
   "// quieter.  You should rarely need to adjust this.  Default is 1000000000.0";
 #else
-static const char *Dtool_AudioSound_set_3d_max_distance_47_comment = nullptr;
+static const char *Dtool_AudioSound_set_3d_max_distance_48_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * virtual PN_stdfloat AudioSound::get_3d_max_distance(void) const
  */
-static PyObject *Dtool_AudioSound_get_3d_max_distance_48(PyObject *self, PyObject *) {
+static PyObject *Dtool_AudioSound_get_3d_max_distance_49(PyObject *self, PyObject *) {
   AudioSound *local_this = nullptr;
   if (!DtoolInstance_GetPointer(self, local_this, Dtool_AudioSound)) {
     return nullptr;
@@ -3049,18 +3084,18 @@ static PyObject *Dtool_AudioSound_get_3d_max_distance_48(PyObject *self, PyObjec
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioSound_get_3d_max_distance_48_comment =
+static const char *Dtool_AudioSound_get_3d_max_distance_49_comment =
   "C++ Interface:\n"
   "get_3d_max_distance(AudioSound self)\n";
 #else
-static const char *Dtool_AudioSound_get_3d_max_distance_48_comment = nullptr;
+static const char *Dtool_AudioSound_get_3d_max_distance_49_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * virtual void AudioSound::set_3d_cone_inner_angle(PN_stdfloat angle)
  */
-static PyObject *Dtool_AudioSound_set_3d_cone_inner_angle_49(PyObject *self, PyObject *arg) {
+static PyObject *Dtool_AudioSound_set_3d_cone_inner_angle_50(PyObject *self, PyObject *arg) {
   AudioSound *local_this = nullptr;
   if (!Dtool_Call_ExtractThisPointer_NonConst(self, Dtool_AudioSound, (void **)&local_this, "AudioSound.set_3d_cone_inner_angle")) {
     return nullptr;
@@ -3075,21 +3110,21 @@ static PyObject *Dtool_AudioSound_set_3d_cone_inner_angle_49(PyObject *self, PyO
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioSound_set_3d_cone_inner_angle_49_comment =
+static const char *Dtool_AudioSound_set_3d_cone_inner_angle_50_comment =
   "C++ Interface:\n"
   "set_3d_cone_inner_angle(const AudioSound self, float angle)\n"
   "\n"
   "// Sets the angle of the inner cone of a directional sound source. In the zone inside of the inner cone\n"
   "// sound is emitted with the (normal) volume set by set_volume().";
 #else
-static const char *Dtool_AudioSound_set_3d_cone_inner_angle_49_comment = nullptr;
+static const char *Dtool_AudioSound_set_3d_cone_inner_angle_50_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * virtual PN_stdfloat AudioSound::get_3d_cone_inner_angle(void) const
  */
-static PyObject *Dtool_AudioSound_get_3d_cone_inner_angle_50(PyObject *self, PyObject *) {
+static PyObject *Dtool_AudioSound_get_3d_cone_inner_angle_51(PyObject *self, PyObject *) {
   AudioSound *local_this = nullptr;
   if (!DtoolInstance_GetPointer(self, local_this, Dtool_AudioSound)) {
     return nullptr;
@@ -3103,18 +3138,18 @@ static PyObject *Dtool_AudioSound_get_3d_cone_inner_angle_50(PyObject *self, PyO
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioSound_get_3d_cone_inner_angle_50_comment =
+static const char *Dtool_AudioSound_get_3d_cone_inner_angle_51_comment =
   "C++ Interface:\n"
   "get_3d_cone_inner_angle(AudioSound self)\n";
 #else
-static const char *Dtool_AudioSound_get_3d_cone_inner_angle_50_comment = nullptr;
+static const char *Dtool_AudioSound_get_3d_cone_inner_angle_51_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * virtual void AudioSound::set_3d_cone_outer_angle(PN_stdfloat angle)
  */
-static PyObject *Dtool_AudioSound_set_3d_cone_outer_angle_51(PyObject *self, PyObject *arg) {
+static PyObject *Dtool_AudioSound_set_3d_cone_outer_angle_52(PyObject *self, PyObject *arg) {
   AudioSound *local_this = nullptr;
   if (!Dtool_Call_ExtractThisPointer_NonConst(self, Dtool_AudioSound, (void **)&local_this, "AudioSound.set_3d_cone_outer_angle")) {
     return nullptr;
@@ -3129,21 +3164,21 @@ static PyObject *Dtool_AudioSound_set_3d_cone_outer_angle_51(PyObject *self, PyO
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioSound_set_3d_cone_outer_angle_51_comment =
+static const char *Dtool_AudioSound_set_3d_cone_outer_angle_52_comment =
   "C++ Interface:\n"
   "set_3d_cone_outer_angle(const AudioSound self, float angle)\n"
   "\n"
   "// Sets the angle of the outer cone of a directional sound source. In the zone between\n"
   "// the inner and the outer cone the volume is attenuated.";
 #else
-static const char *Dtool_AudioSound_set_3d_cone_outer_angle_51_comment = nullptr;
+static const char *Dtool_AudioSound_set_3d_cone_outer_angle_52_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * virtual PN_stdfloat AudioSound::get_3d_cone_outer_angle(void) const
  */
-static PyObject *Dtool_AudioSound_get_3d_cone_outer_angle_52(PyObject *self, PyObject *) {
+static PyObject *Dtool_AudioSound_get_3d_cone_outer_angle_53(PyObject *self, PyObject *) {
   AudioSound *local_this = nullptr;
   if (!DtoolInstance_GetPointer(self, local_this, Dtool_AudioSound)) {
     return nullptr;
@@ -3157,18 +3192,18 @@ static PyObject *Dtool_AudioSound_get_3d_cone_outer_angle_52(PyObject *self, PyO
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioSound_get_3d_cone_outer_angle_52_comment =
+static const char *Dtool_AudioSound_get_3d_cone_outer_angle_53_comment =
   "C++ Interface:\n"
   "get_3d_cone_outer_angle(AudioSound self)\n";
 #else
-static const char *Dtool_AudioSound_get_3d_cone_outer_angle_52_comment = nullptr;
+static const char *Dtool_AudioSound_get_3d_cone_outer_angle_53_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * virtual void AudioSound::set_3d_cone_outer_gain(PN_stdfloat gain)
  */
-static PyObject *Dtool_AudioSound_set_3d_cone_outer_gain_53(PyObject *self, PyObject *arg) {
+static PyObject *Dtool_AudioSound_set_3d_cone_outer_gain_54(PyObject *self, PyObject *arg) {
   AudioSound *local_this = nullptr;
   if (!Dtool_Call_ExtractThisPointer_NonConst(self, Dtool_AudioSound, (void **)&local_this, "AudioSound.set_3d_cone_outer_gain")) {
     return nullptr;
@@ -3183,21 +3218,21 @@ static PyObject *Dtool_AudioSound_set_3d_cone_outer_gain_53(PyObject *self, PyOb
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioSound_set_3d_cone_outer_gain_53_comment =
+static const char *Dtool_AudioSound_set_3d_cone_outer_gain_54_comment =
   "C++ Interface:\n"
   "set_3d_cone_outer_gain(const AudioSound self, float gain)\n"
   "\n"
   "// Sets a factor applied to the volume set by set_volume() for the zone outside the outer cone.\n"
   "// By default this is 0 (so no sound is heard inside the outer zone).";
 #else
-static const char *Dtool_AudioSound_set_3d_cone_outer_gain_53_comment = nullptr;
+static const char *Dtool_AudioSound_set_3d_cone_outer_gain_54_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * virtual PN_stdfloat AudioSound::get_3d_cone_outer_gain(void) const
  */
-static PyObject *Dtool_AudioSound_get_3d_cone_outer_gain_54(PyObject *self, PyObject *) {
+static PyObject *Dtool_AudioSound_get_3d_cone_outer_gain_55(PyObject *self, PyObject *) {
   AudioSound *local_this = nullptr;
   if (!DtoolInstance_GetPointer(self, local_this, Dtool_AudioSound)) {
     return nullptr;
@@ -3211,18 +3246,18 @@ static PyObject *Dtool_AudioSound_get_3d_cone_outer_gain_54(PyObject *self, PyOb
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioSound_get_3d_cone_outer_gain_54_comment =
+static const char *Dtool_AudioSound_get_3d_cone_outer_gain_55_comment =
   "C++ Interface:\n"
   "get_3d_cone_outer_gain(AudioSound self)\n";
 #else
-static const char *Dtool_AudioSound_get_3d_cone_outer_gain_54_comment = nullptr;
+static const char *Dtool_AudioSound_get_3d_cone_outer_gain_55_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * virtual PN_stdfloat AudioSound::get_speaker_mix(int speaker)
  */
-static PyObject *Dtool_AudioSound_get_speaker_mix_55(PyObject *self, PyObject *arg) {
+static PyObject *Dtool_AudioSound_get_speaker_mix_56(PyObject *self, PyObject *arg) {
   AudioSound *local_this = nullptr;
   if (!Dtool_Call_ExtractThisPointer_NonConst(self, Dtool_AudioSound, (void **)&local_this, "AudioSound.get_speaker_mix")) {
     return nullptr;
@@ -3248,20 +3283,20 @@ static PyObject *Dtool_AudioSound_get_speaker_mix_55(PyObject *self, PyObject *a
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioSound_get_speaker_mix_55_comment =
+static const char *Dtool_AudioSound_get_speaker_mix_56_comment =
   "C++ Interface:\n"
   "get_speaker_mix(const AudioSound self, int speaker)\n"
   "\n"
   "// speaker_mix is for use with FMOD.";
 #else
-static const char *Dtool_AudioSound_get_speaker_mix_55_comment = nullptr;
+static const char *Dtool_AudioSound_get_speaker_mix_56_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * virtual void AudioSound::set_speaker_mix(PN_stdfloat frontleft, PN_stdfloat frontright, PN_stdfloat center, PN_stdfloat sub, PN_stdfloat backleft, PN_stdfloat backright, PN_stdfloat sideleft, PN_stdfloat sideright)
  */
-static PyObject *Dtool_AudioSound_set_speaker_mix_56(PyObject *self, PyObject *args, PyObject *kwds) {
+static PyObject *Dtool_AudioSound_set_speaker_mix_57(PyObject *self, PyObject *args, PyObject *kwds) {
   AudioSound *local_this = nullptr;
   if (!Dtool_Call_ExtractThisPointer_NonConst(self, Dtool_AudioSound, (void **)&local_this, "AudioSound.set_speaker_mix")) {
     return nullptr;
@@ -3285,18 +3320,18 @@ static PyObject *Dtool_AudioSound_set_speaker_mix_56(PyObject *self, PyObject *a
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioSound_set_speaker_mix_56_comment =
+static const char *Dtool_AudioSound_set_speaker_mix_57_comment =
   "C++ Interface:\n"
   "set_speaker_mix(const AudioSound self, float frontleft, float frontright, float center, float sub, float backleft, float backright, float sideleft, float sideright)\n";
 #else
-static const char *Dtool_AudioSound_set_speaker_mix_56_comment = nullptr;
+static const char *Dtool_AudioSound_set_speaker_mix_57_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * virtual int AudioSound::get_priority(void)
  */
-static PyObject *Dtool_AudioSound_get_priority_57(PyObject *self, PyObject *) {
+static PyObject *Dtool_AudioSound_get_priority_58(PyObject *self, PyObject *) {
   AudioSound *local_this = nullptr;
   if (!Dtool_Call_ExtractThisPointer_NonConst(self, Dtool_AudioSound, (void **)&local_this, "AudioSound.get_priority")) {
     return nullptr;
@@ -3310,18 +3345,18 @@ static PyObject *Dtool_AudioSound_get_priority_57(PyObject *self, PyObject *) {
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioSound_get_priority_57_comment =
+static const char *Dtool_AudioSound_get_priority_58_comment =
   "C++ Interface:\n"
   "get_priority(const AudioSound self)\n";
 #else
-static const char *Dtool_AudioSound_get_priority_57_comment = nullptr;
+static const char *Dtool_AudioSound_get_priority_58_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * virtual void AudioSound::set_priority(int priority)
  */
-static PyObject *Dtool_AudioSound_set_priority_58(PyObject *self, PyObject *arg) {
+static PyObject *Dtool_AudioSound_set_priority_59(PyObject *self, PyObject *arg) {
   AudioSound *local_this = nullptr;
   if (!Dtool_Call_ExtractThisPointer_NonConst(self, Dtool_AudioSound, (void **)&local_this, "AudioSound.set_priority")) {
     return nullptr;
@@ -3344,18 +3379,18 @@ static PyObject *Dtool_AudioSound_set_priority_58(PyObject *self, PyObject *arg)
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioSound_set_priority_58_comment =
+static const char *Dtool_AudioSound_set_priority_59_comment =
   "C++ Interface:\n"
   "set_priority(const AudioSound self, int priority)\n";
 #else
-static const char *Dtool_AudioSound_set_priority_58_comment = nullptr;
+static const char *Dtool_AudioSound_set_priority_59_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * virtual bool AudioSound::configure_filters(FilterProperties *config)
  */
-static PyObject *Dtool_AudioSound_configure_filters_59(PyObject *self, PyObject *arg) {
+static PyObject *Dtool_AudioSound_configure_filters_60(PyObject *self, PyObject *arg) {
   AudioSound *local_this = nullptr;
   if (!Dtool_Call_ExtractThisPointer_NonConst(self, Dtool_AudioSound, (void **)&local_this, "AudioSound.configure_filters")) {
     return nullptr;
@@ -3371,18 +3406,18 @@ static PyObject *Dtool_AudioSound_configure_filters_59(PyObject *self, PyObject 
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioSound_configure_filters_59_comment =
+static const char *Dtool_AudioSound_configure_filters_60_comment =
   "C++ Interface:\n"
   "configure_filters(const AudioSound self, FilterProperties config)\n";
 #else
-static const char *Dtool_AudioSound_configure_filters_59_comment = nullptr;
+static const char *Dtool_AudioSound_configure_filters_60_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * virtual AudioSound::SoundStatus AudioSound::status(void) const = 0
  */
-static PyObject *Dtool_AudioSound_status_61(PyObject *self, PyObject *) {
+static PyObject *Dtool_AudioSound_status_62(PyObject *self, PyObject *) {
   AudioSound *local_this = nullptr;
   if (!DtoolInstance_GetPointer(self, local_this, Dtool_AudioSound)) {
     return nullptr;
@@ -3396,18 +3431,18 @@ static PyObject *Dtool_AudioSound_status_61(PyObject *self, PyObject *) {
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioSound_status_61_comment =
+static const char *Dtool_AudioSound_status_62_comment =
   "C++ Interface:\n"
   "status(AudioSound self)\n";
 #else
-static const char *Dtool_AudioSound_status_61_comment = nullptr;
+static const char *Dtool_AudioSound_status_62_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * bool AudioSound::has_comment(std::string const &key) const
  */
-static PyObject *Dtool_AudioSound_has_comment_62(PyObject *self, PyObject *arg) {
+static PyObject *Dtool_AudioSound_has_comment_63(PyObject *self, PyObject *arg) {
   AudioSound *local_this = nullptr;
   if (!DtoolInstance_GetPointer(self, local_this, Dtool_AudioSound)) {
     return nullptr;
@@ -3431,18 +3466,18 @@ static PyObject *Dtool_AudioSound_has_comment_62(PyObject *self, PyObject *arg) 
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioSound_has_comment_62_comment =
+static const char *Dtool_AudioSound_has_comment_63_comment =
   "C++ Interface:\n"
   "has_comment(AudioSound self, str key)\n";
 #else
-static const char *Dtool_AudioSound_has_comment_62_comment = nullptr;
+static const char *Dtool_AudioSound_has_comment_63_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * std::string AudioSound::get_comment(std::string const &key) const
  */
-static PyObject *Dtool_AudioSound_get_comment_63(PyObject *self, PyObject *arg) {
+static PyObject *Dtool_AudioSound_get_comment_64(PyObject *self, PyObject *arg) {
   AudioSound *local_this = nullptr;
   if (!DtoolInstance_GetPointer(self, local_this, Dtool_AudioSound)) {
     return nullptr;
@@ -3469,11 +3504,11 @@ static PyObject *Dtool_AudioSound_get_comment_63(PyObject *self, PyObject *arg) 
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioSound_get_comment_63_comment =
+static const char *Dtool_AudioSound_get_comment_64_comment =
   "C++ Interface:\n"
   "get_comment(AudioSound self, str key)\n";
 #else
-static const char *Dtool_AudioSound_get_comment_63_comment = nullptr;
+static const char *Dtool_AudioSound_get_comment_64_comment = nullptr;
 #endif
 
 /**
@@ -3481,7 +3516,7 @@ static const char *Dtool_AudioSound_get_comment_63_comment = nullptr;
  * Rejected Remap [virtual vector_string const &AudioSound::get_raw_comment(void) const]
  * std::string AudioSound::get_raw_comment(int index) const
  */
-static PyObject *Dtool_AudioSound_get_raw_comment_67(PyObject *self, PyObject *args) {
+static PyObject *Dtool_AudioSound_get_raw_comment_68(PyObject *self, PyObject *args) {
   AudioSound *local_this = nullptr;
   if (!DtoolInstance_GetPointer(self, local_this, Dtool_AudioSound)) {
     return nullptr;
@@ -3500,18 +3535,18 @@ static PyObject *Dtool_AudioSound_get_raw_comment_67(PyObject *self, PyObject *a
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioSound_get_raw_comment_67_comment =
+static const char *Dtool_AudioSound_get_raw_comment_68_comment =
   "C++ Interface:\n"
   "get_raw_comment(AudioSound self, int index)\n";
 #else
-static const char *Dtool_AudioSound_get_raw_comment_67_comment = nullptr;
+static const char *Dtool_AudioSound_get_raw_comment_68_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * int AudioSound::get_num_raw_comments(void) const
  */
-static PyObject *Dtool_AudioSound_get_num_raw_comments_68(PyObject *self, PyObject *) {
+static PyObject *Dtool_AudioSound_get_num_raw_comments_69(PyObject *self, PyObject *) {
   AudioSound *local_this = nullptr;
   if (!DtoolInstance_GetPointer(self, local_this, Dtool_AudioSound)) {
     return nullptr;
@@ -3525,18 +3560,18 @@ static PyObject *Dtool_AudioSound_get_num_raw_comments_68(PyObject *self, PyObje
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioSound_get_num_raw_comments_68_comment =
+static const char *Dtool_AudioSound_get_num_raw_comments_69_comment =
   "C++ Interface:\n"
   "get_num_raw_comments(AudioSound self)\n";
 #else
-static const char *Dtool_AudioSound_get_num_raw_comments_68_comment = nullptr;
+static const char *Dtool_AudioSound_get_num_raw_comments_69_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * virtual void AudioSound::output(std::ostream &out) const
  */
-static PyObject *Dtool_AudioSound_output_70(PyObject *self, PyObject *arg) {
+static PyObject *Dtool_AudioSound_output_71(PyObject *self, PyObject *arg) {
   AudioSound *local_this = nullptr;
   if (!DtoolInstance_GetPointer(self, local_this, Dtool_AudioSound)) {
     return nullptr;
@@ -3552,18 +3587,18 @@ static PyObject *Dtool_AudioSound_output_70(PyObject *self, PyObject *arg) {
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioSound_output_70_comment =
+static const char *Dtool_AudioSound_output_71_comment =
   "C++ Interface:\n"
   "output(AudioSound self, ostream out)\n";
 #else
-static const char *Dtool_AudioSound_output_70_comment = nullptr;
+static const char *Dtool_AudioSound_output_71_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * virtual void AudioSound::write(std::ostream &out) const
  */
-static PyObject *Dtool_AudioSound_write_71(PyObject *self, PyObject *arg) {
+static PyObject *Dtool_AudioSound_write_72(PyObject *self, PyObject *arg) {
   AudioSound *local_this = nullptr;
   if (!DtoolInstance_GetPointer(self, local_this, Dtool_AudioSound)) {
     return nullptr;
@@ -3579,18 +3614,18 @@ static PyObject *Dtool_AudioSound_write_71(PyObject *self, PyObject *arg) {
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioSound_write_71_comment =
+static const char *Dtool_AudioSound_write_72_comment =
   "C++ Interface:\n"
   "write(AudioSound self, ostream out)\n";
 #else
-static const char *Dtool_AudioSound_write_71_comment = nullptr;
+static const char *Dtool_AudioSound_write_72_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * static TypeHandle AudioSound::get_class_type(void)
  */
-static PyObject *Dtool_AudioSound_get_class_type_83(PyObject *, PyObject *) {
+static PyObject *Dtool_AudioSound_get_class_type_84(PyObject *, PyObject *) {
   // 1-static TypeHandle AudioSound::get_class_type(void)
   TypeHandle *return_value = new TypeHandle((AudioSound::get_class_type)());
   if (return_value == nullptr) {
@@ -3604,11 +3639,11 @@ static PyObject *Dtool_AudioSound_get_class_type_83(PyObject *, PyObject *) {
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioSound_get_class_type_83_comment =
+static const char *Dtool_AudioSound_get_class_type_84_comment =
   "C++ Interface:\n"
   "get_class_type()\n";
 #else
-static const char *Dtool_AudioSound_get_class_type_83_comment = nullptr;
+static const char *Dtool_AudioSound_get_class_type_84_comment = nullptr;
 #endif
 
 /**
@@ -4024,7 +4059,7 @@ static PyObject *Dtool_Wrap_AudioSound(void *from_this, PyTypeObject *from_type)
  * Python function wrapper for:
  * virtual int AudioManager::get_speaker_setup(void)
  */
-static PyObject *Dtool_AudioManager_get_speaker_setup_88(PyObject *self, PyObject *) {
+static PyObject *Dtool_AudioManager_get_speaker_setup_89(PyObject *self, PyObject *) {
   AudioManager *local_this = nullptr;
   if (!Dtool_Call_ExtractThisPointer_NonConst(self, Dtool_AudioManager, (void **)&local_this, "AudioManager.get_speaker_setup")) {
     return nullptr;
@@ -4038,18 +4073,18 @@ static PyObject *Dtool_AudioManager_get_speaker_setup_88(PyObject *self, PyObjec
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioManager_get_speaker_setup_88_comment =
+static const char *Dtool_AudioManager_get_speaker_setup_89_comment =
   "C++ Interface:\n"
   "get_speaker_setup(const AudioManager self)\n";
 #else
-static const char *Dtool_AudioManager_get_speaker_setup_88_comment = nullptr;
+static const char *Dtool_AudioManager_get_speaker_setup_89_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * virtual void AudioManager::set_speaker_setup(AudioManager::SpeakerModeCategory cat)
  */
-static PyObject *Dtool_AudioManager_set_speaker_setup_89(PyObject *self, PyObject *arg) {
+static PyObject *Dtool_AudioManager_set_speaker_setup_90(PyObject *self, PyObject *arg) {
   AudioManager *local_this = nullptr;
   if (!Dtool_Call_ExtractThisPointer_NonConst(self, Dtool_AudioManager, (void **)&local_this, "AudioManager.set_speaker_setup")) {
     return nullptr;
@@ -4072,18 +4107,18 @@ static PyObject *Dtool_AudioManager_set_speaker_setup_89(PyObject *self, PyObjec
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioManager_set_speaker_setup_89_comment =
+static const char *Dtool_AudioManager_set_speaker_setup_90_comment =
   "C++ Interface:\n"
   "set_speaker_setup(const AudioManager self, int cat)\n";
 #else
-static const char *Dtool_AudioManager_set_speaker_setup_89_comment = nullptr;
+static const char *Dtool_AudioManager_set_speaker_setup_90_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * virtual bool AudioManager::configure_filters(FilterProperties *config)
  */
-static PyObject *Dtool_AudioManager_configure_filters_90(PyObject *self, PyObject *arg) {
+static PyObject *Dtool_AudioManager_configure_filters_91(PyObject *self, PyObject *arg) {
   AudioManager *local_this = nullptr;
   if (!Dtool_Call_ExtractThisPointer_NonConst(self, Dtool_AudioManager, (void **)&local_this, "AudioManager.configure_filters")) {
     return nullptr;
@@ -4099,18 +4134,18 @@ static PyObject *Dtool_AudioManager_configure_filters_90(PyObject *self, PyObjec
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioManager_configure_filters_90_comment =
+static const char *Dtool_AudioManager_configure_filters_91_comment =
   "C++ Interface:\n"
   "configure_filters(const AudioManager self, FilterProperties config)\n";
 #else
-static const char *Dtool_AudioManager_configure_filters_90_comment = nullptr;
+static const char *Dtool_AudioManager_configure_filters_91_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * static PointerTo< AudioManager > AudioManager::create_AudioManager(void)
  */
-static PyObject *Dtool_AudioManager_create_AudioManager_91(PyObject *, PyObject *) {
+static PyObject *Dtool_AudioManager_create_AudioManager_92(PyObject *, PyObject *) {
   // 1-static PointerTo< AudioManager > AudioManager::create_AudioManager(void)
   PointerTo< AudioManager > return_value = (AudioManager::create_AudioManager)();
   if (Dtool_CheckErrorOccurred()) {
@@ -4127,18 +4162,18 @@ static PyObject *Dtool_AudioManager_create_AudioManager_91(PyObject *, PyObject 
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioManager_create_AudioManager_91_comment =
+static const char *Dtool_AudioManager_create_AudioManager_92_comment =
   "C++ Interface:\n"
   "create_AudioManager()\n";
 #else
-static const char *Dtool_AudioManager_create_AudioManager_91_comment = nullptr;
+static const char *Dtool_AudioManager_create_AudioManager_92_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * virtual void AudioManager::shutdown(void)
  */
-static PyObject *Dtool_AudioManager_shutdown_92(PyObject *self, PyObject *) {
+static PyObject *Dtool_AudioManager_shutdown_93(PyObject *self, PyObject *) {
   AudioManager *local_this = nullptr;
   if (!Dtool_Call_ExtractThisPointer_NonConst(self, Dtool_AudioManager, (void **)&local_this, "AudioManager.shutdown")) {
     return nullptr;
@@ -4149,18 +4184,18 @@ static PyObject *Dtool_AudioManager_shutdown_92(PyObject *self, PyObject *) {
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioManager_shutdown_92_comment =
+static const char *Dtool_AudioManager_shutdown_93_comment =
   "C++ Interface:\n"
   "shutdown(const AudioManager self)\n";
 #else
-static const char *Dtool_AudioManager_shutdown_92_comment = nullptr;
+static const char *Dtool_AudioManager_shutdown_93_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * virtual bool AudioManager::is_valid(void) = 0
  */
-static PyObject *Dtool_AudioManager_is_valid_93(PyObject *self, PyObject *) {
+static PyObject *Dtool_AudioManager_is_valid_94(PyObject *self, PyObject *) {
   AudioManager *local_this = nullptr;
   if (!Dtool_Call_ExtractThisPointer_NonConst(self, Dtool_AudioManager, (void **)&local_this, "AudioManager.is_valid")) {
     return nullptr;
@@ -4171,7 +4206,7 @@ static PyObject *Dtool_AudioManager_is_valid_93(PyObject *self, PyObject *) {
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioManager_is_valid_93_comment =
+static const char *Dtool_AudioManager_is_valid_94_comment =
   "C++ Interface:\n"
   "is_valid(const AudioManager self)\n"
   "\n"
@@ -4182,7 +4217,7 @@ static const char *Dtool_AudioManager_is_valid_93_comment =
   "// sound manager and the sounds it creates should not crash the application\n"
   "// even when the objects are not valid.";
 #else
-static const char *Dtool_AudioManager_is_valid_93_comment = nullptr;
+static const char *Dtool_AudioManager_is_valid_94_comment = nullptr;
 #endif
 
 /**
@@ -4190,7 +4225,7 @@ static const char *Dtool_AudioManager_is_valid_93_comment = nullptr;
  * virtual PointerTo< AudioSound > AudioManager::get_sound(Filename const &file_name, bool positional = false, int mode = ::AudioManager::SM_heuristic) = 0
  * virtual PointerTo< AudioSound > AudioManager::get_sound(MovieAudio *source, bool positional = false, int mode = ::AudioManager::SM_heuristic) = 0
  */
-static PyObject *Dtool_AudioManager_get_sound_94(PyObject *self, PyObject *args, PyObject *kwds) {
+static PyObject *Dtool_AudioManager_get_sound_95(PyObject *self, PyObject *args, PyObject *kwds) {
   AudioManager *local_this = nullptr;
   if (!Dtool_Call_ExtractThisPointer_NonConst(self, Dtool_AudioManager, (void **)&local_this, "AudioManager.get_sound")) {
     return nullptr;
@@ -4254,20 +4289,20 @@ static PyObject *Dtool_AudioManager_get_sound_94(PyObject *self, PyObject *args,
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioManager_get_sound_94_comment =
+static const char *Dtool_AudioManager_get_sound_95_comment =
   "C++ Interface:\n"
   "get_sound(const AudioManager self, MovieAudio source, bool positional, int mode)\n"
   "\n"
   "// Get a sound:";
 #else
-static const char *Dtool_AudioManager_get_sound_94_comment = nullptr;
+static const char *Dtool_AudioManager_get_sound_95_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * PointerTo< AudioSound > AudioManager::get_null_sound(void)
  */
-static PyObject *Dtool_AudioManager_get_null_sound_95(PyObject *self, PyObject *) {
+static PyObject *Dtool_AudioManager_get_null_sound_96(PyObject *self, PyObject *) {
   AudioManager *local_this = nullptr;
   if (!Dtool_Call_ExtractThisPointer_NonConst(self, Dtool_AudioManager, (void **)&local_this, "AudioManager.get_null_sound")) {
     return nullptr;
@@ -4288,18 +4323,18 @@ static PyObject *Dtool_AudioManager_get_null_sound_95(PyObject *self, PyObject *
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioManager_get_null_sound_95_comment =
+static const char *Dtool_AudioManager_get_null_sound_96_comment =
   "C++ Interface:\n"
   "get_null_sound(const AudioManager self)\n";
 #else
-static const char *Dtool_AudioManager_get_null_sound_95_comment = nullptr;
+static const char *Dtool_AudioManager_get_null_sound_96_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * virtual void AudioManager::uncache_sound(Filename const &file_name) = 0
  */
-static PyObject *Dtool_AudioManager_uncache_sound_96(PyObject *self, PyObject *arg) {
+static PyObject *Dtool_AudioManager_uncache_sound_97(PyObject *self, PyObject *arg) {
   AudioManager *local_this = nullptr;
   if (!Dtool_Call_ExtractThisPointer_NonConst(self, Dtool_AudioManager, (void **)&local_this, "AudioManager.uncache_sound")) {
     return nullptr;
@@ -4315,7 +4350,7 @@ static PyObject *Dtool_AudioManager_uncache_sound_96(PyObject *self, PyObject *a
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioManager_uncache_sound_96_comment =
+static const char *Dtool_AudioManager_uncache_sound_97_comment =
   "C++ Interface:\n"
   "uncache_sound(const AudioManager self, const Filename file_name)\n"
   "\n"
@@ -4324,14 +4359,14 @@ static const char *Dtool_AudioManager_uncache_sound_96_comment =
   "// by get_sound() from this manager.  It's only affecting whether the\n"
   "// AudioManager keeps a copy of the sound in its poolcache.";
 #else
-static const char *Dtool_AudioManager_uncache_sound_96_comment = nullptr;
+static const char *Dtool_AudioManager_uncache_sound_97_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * virtual void AudioManager::clear_cache(void) = 0
  */
-static PyObject *Dtool_AudioManager_clear_cache_97(PyObject *self, PyObject *) {
+static PyObject *Dtool_AudioManager_clear_cache_98(PyObject *self, PyObject *) {
   AudioManager *local_this = nullptr;
   if (!Dtool_Call_ExtractThisPointer_NonConst(self, Dtool_AudioManager, (void **)&local_this, "AudioManager.clear_cache")) {
     return nullptr;
@@ -4342,18 +4377,18 @@ static PyObject *Dtool_AudioManager_clear_cache_97(PyObject *self, PyObject *) {
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioManager_clear_cache_97_comment =
+static const char *Dtool_AudioManager_clear_cache_98_comment =
   "C++ Interface:\n"
   "clear_cache(const AudioManager self)\n";
 #else
-static const char *Dtool_AudioManager_clear_cache_97_comment = nullptr;
+static const char *Dtool_AudioManager_clear_cache_98_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * virtual void AudioManager::set_cache_limit(unsigned int count) = 0
  */
-static PyObject *Dtool_AudioManager_set_cache_limit_98(PyObject *self, PyObject *arg) {
+static PyObject *Dtool_AudioManager_set_cache_limit_99(PyObject *self, PyObject *arg) {
   AudioManager *local_this = nullptr;
   if (!Dtool_Call_ExtractThisPointer_NonConst(self, Dtool_AudioManager, (void **)&local_this, "AudioManager.set_cache_limit")) {
     return nullptr;
@@ -4376,18 +4411,18 @@ static PyObject *Dtool_AudioManager_set_cache_limit_98(PyObject *self, PyObject 
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioManager_set_cache_limit_98_comment =
+static const char *Dtool_AudioManager_set_cache_limit_99_comment =
   "C++ Interface:\n"
   "set_cache_limit(const AudioManager self, int count)\n";
 #else
-static const char *Dtool_AudioManager_set_cache_limit_98_comment = nullptr;
+static const char *Dtool_AudioManager_set_cache_limit_99_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * virtual unsigned int AudioManager::get_cache_limit(void) const = 0
  */
-static PyObject *Dtool_AudioManager_get_cache_limit_99(PyObject *self, PyObject *) {
+static PyObject *Dtool_AudioManager_get_cache_limit_100(PyObject *self, PyObject *) {
   AudioManager *local_this = nullptr;
   if (!DtoolInstance_GetPointer(self, local_this, Dtool_AudioManager)) {
     return nullptr;
@@ -4401,18 +4436,18 @@ static PyObject *Dtool_AudioManager_get_cache_limit_99(PyObject *self, PyObject 
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioManager_get_cache_limit_99_comment =
+static const char *Dtool_AudioManager_get_cache_limit_100_comment =
   "C++ Interface:\n"
   "get_cache_limit(AudioManager self)\n";
 #else
-static const char *Dtool_AudioManager_get_cache_limit_99_comment = nullptr;
+static const char *Dtool_AudioManager_get_cache_limit_100_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * virtual void AudioManager::set_volume(PN_stdfloat volume) = 0
  */
-static PyObject *Dtool_AudioManager_set_volume_100(PyObject *self, PyObject *arg) {
+static PyObject *Dtool_AudioManager_set_volume_101(PyObject *self, PyObject *arg) {
   AudioManager *local_this = nullptr;
   if (!Dtool_Call_ExtractThisPointer_NonConst(self, Dtool_AudioManager, (void **)&local_this, "AudioManager.set_volume")) {
     return nullptr;
@@ -4427,7 +4462,7 @@ static PyObject *Dtool_AudioManager_set_volume_100(PyObject *self, PyObject *arg
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioManager_set_volume_100_comment =
+static const char *Dtool_AudioManager_set_volume_101_comment =
   "C++ Interface:\n"
   "set_volume(const AudioManager self, float volume)\n"
   "\n"
@@ -4435,14 +4470,14 @@ static const char *Dtool_AudioManager_set_volume_100_comment =
   "// the volume up later, you'll hear the sound playing at that late point.  0\n"
   "// = minimum; 1.0 = maximum.  inits to 1.0.";
 #else
-static const char *Dtool_AudioManager_set_volume_100_comment = nullptr;
+static const char *Dtool_AudioManager_set_volume_101_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * virtual PN_stdfloat AudioManager::get_volume(void) const = 0
  */
-static PyObject *Dtool_AudioManager_get_volume_101(PyObject *self, PyObject *) {
+static PyObject *Dtool_AudioManager_get_volume_102(PyObject *self, PyObject *) {
   AudioManager *local_this = nullptr;
   if (!DtoolInstance_GetPointer(self, local_this, Dtool_AudioManager)) {
     return nullptr;
@@ -4456,18 +4491,18 @@ static PyObject *Dtool_AudioManager_get_volume_101(PyObject *self, PyObject *) {
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioManager_get_volume_101_comment =
+static const char *Dtool_AudioManager_get_volume_102_comment =
   "C++ Interface:\n"
   "get_volume(AudioManager self)\n";
 #else
-static const char *Dtool_AudioManager_get_volume_101_comment = nullptr;
+static const char *Dtool_AudioManager_get_volume_102_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * virtual void AudioManager::set_active(bool flag) = 0
  */
-static PyObject *Dtool_AudioManager_set_active_102(PyObject *self, PyObject *arg) {
+static PyObject *Dtool_AudioManager_set_active_103(PyObject *self, PyObject *arg) {
   AudioManager *local_this = nullptr;
   if (!Dtool_Call_ExtractThisPointer_NonConst(self, Dtool_AudioManager, (void **)&local_this, "AudioManager.set_active")) {
     return nullptr;
@@ -4478,7 +4513,7 @@ static PyObject *Dtool_AudioManager_set_active_102(PyObject *self, PyObject *arg
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioManager_set_active_102_comment =
+static const char *Dtool_AudioManager_set_active_103_comment =
   "C++ Interface:\n"
   "set_active(const AudioManager self, bool flag)\n"
   "\n"
@@ -4488,14 +4523,14 @@ static const char *Dtool_AudioManager_set_active_102_comment =
   "// are playing (those that have a loop_count of zero), they will start\n"
   "// playing from the beginning of their loop.  Defaults to true.";
 #else
-static const char *Dtool_AudioManager_set_active_102_comment = nullptr;
+static const char *Dtool_AudioManager_set_active_103_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * virtual bool AudioManager::get_active(void) const = 0
  */
-static PyObject *Dtool_AudioManager_get_active_103(PyObject *self, PyObject *) {
+static PyObject *Dtool_AudioManager_get_active_104(PyObject *self, PyObject *) {
   AudioManager *local_this = nullptr;
   if (!DtoolInstance_GetPointer(self, local_this, Dtool_AudioManager)) {
     return nullptr;
@@ -4506,18 +4541,18 @@ static PyObject *Dtool_AudioManager_get_active_103(PyObject *self, PyObject *) {
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioManager_get_active_103_comment =
+static const char *Dtool_AudioManager_get_active_104_comment =
   "C++ Interface:\n"
   "get_active(AudioManager self)\n";
 #else
-static const char *Dtool_AudioManager_get_active_103_comment = nullptr;
+static const char *Dtool_AudioManager_get_active_104_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * virtual void AudioManager::set_concurrent_sound_limit(unsigned int limit = 0) = 0
  */
-static PyObject *Dtool_AudioManager_set_concurrent_sound_limit_104(PyObject *self, PyObject *args, PyObject *kwds) {
+static PyObject *Dtool_AudioManager_set_concurrent_sound_limit_105(PyObject *self, PyObject *args, PyObject *kwds) {
   AudioManager *local_this = nullptr;
   if (!Dtool_Call_ExtractThisPointer_NonConst(self, Dtool_AudioManager, (void **)&local_this, "AudioManager.set_concurrent_sound_limit")) {
     return nullptr;
@@ -4541,7 +4576,7 @@ static PyObject *Dtool_AudioManager_set_concurrent_sound_limit_104(PyObject *sel
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioManager_set_concurrent_sound_limit_104_comment =
+static const char *Dtool_AudioManager_set_concurrent_sound_limit_105_comment =
   "C++ Interface:\n"
   "set_concurrent_sound_limit(const AudioManager self, int limit)\n"
   "\n"
@@ -4551,14 +4586,14 @@ static const char *Dtool_AudioManager_set_concurrent_sound_limit_104_comment =
   "// exclusive (one sound at a time).  Which is an example of: n == allow n\n"
   "// sounds to be playing at the same time.";
 #else
-static const char *Dtool_AudioManager_set_concurrent_sound_limit_104_comment = nullptr;
+static const char *Dtool_AudioManager_set_concurrent_sound_limit_105_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * virtual unsigned int AudioManager::get_concurrent_sound_limit(void) const = 0
  */
-static PyObject *Dtool_AudioManager_get_concurrent_sound_limit_105(PyObject *self, PyObject *) {
+static PyObject *Dtool_AudioManager_get_concurrent_sound_limit_106(PyObject *self, PyObject *) {
   AudioManager *local_this = nullptr;
   if (!DtoolInstance_GetPointer(self, local_this, Dtool_AudioManager)) {
     return nullptr;
@@ -4572,18 +4607,18 @@ static PyObject *Dtool_AudioManager_get_concurrent_sound_limit_105(PyObject *sel
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioManager_get_concurrent_sound_limit_105_comment =
+static const char *Dtool_AudioManager_get_concurrent_sound_limit_106_comment =
   "C++ Interface:\n"
   "get_concurrent_sound_limit(AudioManager self)\n";
 #else
-static const char *Dtool_AudioManager_get_concurrent_sound_limit_105_comment = nullptr;
+static const char *Dtool_AudioManager_get_concurrent_sound_limit_106_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * virtual void AudioManager::reduce_sounds_playing_to(unsigned int count) = 0
  */
-static PyObject *Dtool_AudioManager_reduce_sounds_playing_to_106(PyObject *self, PyObject *arg) {
+static PyObject *Dtool_AudioManager_reduce_sounds_playing_to_107(PyObject *self, PyObject *arg) {
   AudioManager *local_this = nullptr;
   if (!Dtool_Call_ExtractThisPointer_NonConst(self, Dtool_AudioManager, (void **)&local_this, "AudioManager.reduce_sounds_playing_to")) {
     return nullptr;
@@ -4606,7 +4641,7 @@ static PyObject *Dtool_AudioManager_reduce_sounds_playing_to_106(PyObject *self,
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioManager_reduce_sounds_playing_to_106_comment =
+static const char *Dtool_AudioManager_reduce_sounds_playing_to_107_comment =
   "C++ Interface:\n"
   "reduce_sounds_playing_to(const AudioManager self, int count)\n"
   "\n"
@@ -4616,14 +4651,14 @@ static const char *Dtool_AudioManager_reduce_sounds_playing_to_106_comment =
   "// to count by some implementation specific means.  If the number of sounds\n"
   "// currently playing is at or below count then there is no effect.";
 #else
-static const char *Dtool_AudioManager_reduce_sounds_playing_to_106_comment = nullptr;
+static const char *Dtool_AudioManager_reduce_sounds_playing_to_107_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * virtual void AudioManager::stop_all_sounds(void) = 0
  */
-static PyObject *Dtool_AudioManager_stop_all_sounds_107(PyObject *self, PyObject *) {
+static PyObject *Dtool_AudioManager_stop_all_sounds_108(PyObject *self, PyObject *) {
   AudioManager *local_this = nullptr;
   if (!Dtool_Call_ExtractThisPointer_NonConst(self, Dtool_AudioManager, (void **)&local_this, "AudioManager.stop_all_sounds")) {
     return nullptr;
@@ -4634,7 +4669,7 @@ static PyObject *Dtool_AudioManager_stop_all_sounds_107(PyObject *self, PyObject
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioManager_stop_all_sounds_107_comment =
+static const char *Dtool_AudioManager_stop_all_sounds_108_comment =
   "C++ Interface:\n"
   "stop_all_sounds(const AudioManager self)\n"
   "\n"
@@ -4642,14 +4677,14 @@ static const char *Dtool_AudioManager_stop_all_sounds_107_comment =
   "// the same as reduce_sounds_playing_to(0), but this call may be for\n"
   "// efficient on some implementations.";
 #else
-static const char *Dtool_AudioManager_stop_all_sounds_107_comment = nullptr;
+static const char *Dtool_AudioManager_stop_all_sounds_108_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * virtual void AudioManager::update(void)
  */
-static PyObject *Dtool_AudioManager_update_108(PyObject *self, PyObject *) {
+static PyObject *Dtool_AudioManager_update_109(PyObject *self, PyObject *) {
   AudioManager *local_this = nullptr;
   if (!Dtool_Call_ExtractThisPointer_NonConst(self, Dtool_AudioManager, (void **)&local_this, "AudioManager.update")) {
     return nullptr;
@@ -4660,20 +4695,20 @@ static PyObject *Dtool_AudioManager_update_108(PyObject *self, PyObject *) {
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioManager_update_108_comment =
+static const char *Dtool_AudioManager_update_109_comment =
   "C++ Interface:\n"
   "update(const AudioManager self)\n"
   "\n"
   "// This should be called every frame.  Failure to call could cause problems.";
 #else
-static const char *Dtool_AudioManager_update_108_comment = nullptr;
+static const char *Dtool_AudioManager_update_109_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * virtual void AudioManager::audio_3d_set_listener_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx, PN_stdfloat vy, PN_stdfloat vz, PN_stdfloat fx, PN_stdfloat fy, PN_stdfloat fz, PN_stdfloat ux, PN_stdfloat uy, PN_stdfloat uz)
  */
-static PyObject *Dtool_AudioManager_audio_3d_set_listener_attributes_109(PyObject *self, PyObject *args, PyObject *kwds) {
+static PyObject *Dtool_AudioManager_audio_3d_set_listener_attributes_110(PyObject *self, PyObject *args, PyObject *kwds) {
   AudioManager *local_this = nullptr;
   if (!Dtool_Call_ExtractThisPointer_NonConst(self, Dtool_AudioManager, (void **)&local_this, "AudioManager.audio_3d_set_listener_attributes")) {
     return nullptr;
@@ -4701,7 +4736,7 @@ static PyObject *Dtool_AudioManager_audio_3d_set_listener_attributes_109(PyObjec
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioManager_audio_3d_set_listener_attributes_109_comment =
+static const char *Dtool_AudioManager_audio_3d_set_listener_attributes_110_comment =
   "C++ Interface:\n"
   "audio_3d_set_listener_attributes(const AudioManager self, float px, float py, float pz, float vx, float vy, float vz, float fx, float fy, float fz, float ux, float uy, float uz)\n"
   "\n"
@@ -4711,14 +4746,14 @@ static const char *Dtool_AudioManager_audio_3d_set_listener_attributes_109_comme
   "// components of a unit forward-vector ux, uy and uz are the respective\n"
   "// components of a unit up-vector";
 #else
-static const char *Dtool_AudioManager_audio_3d_set_listener_attributes_109_comment = nullptr;
+static const char *Dtool_AudioManager_audio_3d_set_listener_attributes_110_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * virtual void AudioManager::audio_3d_set_distance_factor(PN_stdfloat factor)
  */
-static PyObject *Dtool_AudioManager_audio_3d_set_distance_factor_111(PyObject *self, PyObject *arg) {
+static PyObject *Dtool_AudioManager_audio_3d_set_distance_factor_112(PyObject *self, PyObject *arg) {
   AudioManager *local_this = nullptr;
   if (!Dtool_Call_ExtractThisPointer_NonConst(self, Dtool_AudioManager, (void **)&local_this, "AudioManager.audio_3d_set_distance_factor")) {
     return nullptr;
@@ -4733,7 +4768,7 @@ static PyObject *Dtool_AudioManager_audio_3d_set_distance_factor_111(PyObject *s
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioManager_audio_3d_set_distance_factor_111_comment =
+static const char *Dtool_AudioManager_audio_3d_set_distance_factor_112_comment =
   "C++ Interface:\n"
   "audio_3d_set_distance_factor(const AudioManager self, float factor)\n"
   "\n"
@@ -4743,14 +4778,14 @@ static const char *Dtool_AudioManager_audio_3d_set_distance_factor_111_comment =
   "// feet, set 3.28. This factor is applied only to Fmod and OpenAL at the\n"
   "// moment.";
 #else
-static const char *Dtool_AudioManager_audio_3d_set_distance_factor_111_comment = nullptr;
+static const char *Dtool_AudioManager_audio_3d_set_distance_factor_112_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * virtual PN_stdfloat AudioManager::audio_3d_get_distance_factor(void) const
  */
-static PyObject *Dtool_AudioManager_audio_3d_get_distance_factor_112(PyObject *self, PyObject *) {
+static PyObject *Dtool_AudioManager_audio_3d_get_distance_factor_113(PyObject *self, PyObject *) {
   AudioManager *local_this = nullptr;
   if (!DtoolInstance_GetPointer(self, local_this, Dtool_AudioManager)) {
     return nullptr;
@@ -4764,18 +4799,18 @@ static PyObject *Dtool_AudioManager_audio_3d_get_distance_factor_112(PyObject *s
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioManager_audio_3d_get_distance_factor_112_comment =
+static const char *Dtool_AudioManager_audio_3d_get_distance_factor_113_comment =
   "C++ Interface:\n"
   "audio_3d_get_distance_factor(AudioManager self)\n";
 #else
-static const char *Dtool_AudioManager_audio_3d_get_distance_factor_112_comment = nullptr;
+static const char *Dtool_AudioManager_audio_3d_get_distance_factor_113_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * virtual void AudioManager::audio_3d_set_doppler_factor(PN_stdfloat factor)
  */
-static PyObject *Dtool_AudioManager_audio_3d_set_doppler_factor_113(PyObject *self, PyObject *arg) {
+static PyObject *Dtool_AudioManager_audio_3d_set_doppler_factor_114(PyObject *self, PyObject *arg) {
   AudioManager *local_this = nullptr;
   if (!Dtool_Call_ExtractThisPointer_NonConst(self, Dtool_AudioManager, (void **)&local_this, "AudioManager.audio_3d_set_doppler_factor")) {
     return nullptr;
@@ -4790,21 +4825,21 @@ static PyObject *Dtool_AudioManager_audio_3d_set_doppler_factor_113(PyObject *se
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioManager_audio_3d_set_doppler_factor_113_comment =
+static const char *Dtool_AudioManager_audio_3d_set_doppler_factor_114_comment =
   "C++ Interface:\n"
   "audio_3d_set_doppler_factor(const AudioManager self, float factor)\n"
   "\n"
   "// Control the presence of the Doppler effect.  Default is 1.0 Exaggerated\n"
   "// Doppler, use >1.0 Diminshed Doppler, use <1.0";
 #else
-static const char *Dtool_AudioManager_audio_3d_set_doppler_factor_113_comment = nullptr;
+static const char *Dtool_AudioManager_audio_3d_set_doppler_factor_114_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * virtual PN_stdfloat AudioManager::audio_3d_get_doppler_factor(void) const
  */
-static PyObject *Dtool_AudioManager_audio_3d_get_doppler_factor_114(PyObject *self, PyObject *) {
+static PyObject *Dtool_AudioManager_audio_3d_get_doppler_factor_115(PyObject *self, PyObject *) {
   AudioManager *local_this = nullptr;
   if (!DtoolInstance_GetPointer(self, local_this, Dtool_AudioManager)) {
     return nullptr;
@@ -4818,18 +4853,18 @@ static PyObject *Dtool_AudioManager_audio_3d_get_doppler_factor_114(PyObject *se
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioManager_audio_3d_get_doppler_factor_114_comment =
+static const char *Dtool_AudioManager_audio_3d_get_doppler_factor_115_comment =
   "C++ Interface:\n"
   "audio_3d_get_doppler_factor(AudioManager self)\n";
 #else
-static const char *Dtool_AudioManager_audio_3d_get_doppler_factor_114_comment = nullptr;
+static const char *Dtool_AudioManager_audio_3d_get_doppler_factor_115_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * virtual void AudioManager::audio_3d_set_drop_off_factor(PN_stdfloat factor)
  */
-static PyObject *Dtool_AudioManager_audio_3d_set_drop_off_factor_115(PyObject *self, PyObject *arg) {
+static PyObject *Dtool_AudioManager_audio_3d_set_drop_off_factor_116(PyObject *self, PyObject *arg) {
   AudioManager *local_this = nullptr;
   if (!Dtool_Call_ExtractThisPointer_NonConst(self, Dtool_AudioManager, (void **)&local_this, "AudioManager.audio_3d_set_drop_off_factor")) {
     return nullptr;
@@ -4844,7 +4879,7 @@ static PyObject *Dtool_AudioManager_audio_3d_set_drop_off_factor_115(PyObject *s
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioManager_audio_3d_set_drop_off_factor_115_comment =
+static const char *Dtool_AudioManager_audio_3d_set_drop_off_factor_116_comment =
   "C++ Interface:\n"
   "audio_3d_set_drop_off_factor(const AudioManager self, float factor)\n"
   "\n"
@@ -4852,14 +4887,14 @@ static const char *Dtool_AudioManager_audio_3d_set_drop_off_factor_115_comment =
   "// Valid range is 0 to 10 Faster drop off, use >1.0 Slower drop off, use\n"
   "// <1.0";
 #else
-static const char *Dtool_AudioManager_audio_3d_set_drop_off_factor_115_comment = nullptr;
+static const char *Dtool_AudioManager_audio_3d_set_drop_off_factor_116_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * virtual PN_stdfloat AudioManager::audio_3d_get_drop_off_factor(void) const
  */
-static PyObject *Dtool_AudioManager_audio_3d_get_drop_off_factor_116(PyObject *self, PyObject *) {
+static PyObject *Dtool_AudioManager_audio_3d_get_drop_off_factor_117(PyObject *self, PyObject *) {
   AudioManager *local_this = nullptr;
   if (!DtoolInstance_GetPointer(self, local_this, Dtool_AudioManager)) {
     return nullptr;
@@ -4873,18 +4908,18 @@ static PyObject *Dtool_AudioManager_audio_3d_get_drop_off_factor_116(PyObject *s
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioManager_audio_3d_get_drop_off_factor_116_comment =
+static const char *Dtool_AudioManager_audio_3d_get_drop_off_factor_117_comment =
   "C++ Interface:\n"
   "audio_3d_get_drop_off_factor(AudioManager self)\n";
 #else
-static const char *Dtool_AudioManager_audio_3d_get_drop_off_factor_116_comment = nullptr;
+static const char *Dtool_AudioManager_audio_3d_get_drop_off_factor_117_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * static Filename AudioManager::get_dls_pathname(void)
  */
-static PyObject *Dtool_AudioManager_get_dls_pathname_117(PyObject *, PyObject *) {
+static PyObject *Dtool_AudioManager_get_dls_pathname_118(PyObject *, PyObject *) {
   // 1-static Filename AudioManager::get_dls_pathname(void)
   Filename *return_value = new Filename((AudioManager::get_dls_pathname)());
   if (return_value == nullptr) {
@@ -4898,18 +4933,18 @@ static PyObject *Dtool_AudioManager_get_dls_pathname_117(PyObject *, PyObject *)
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioManager_get_dls_pathname_117_comment =
+static const char *Dtool_AudioManager_get_dls_pathname_118_comment =
   "C++ Interface:\n"
   "get_dls_pathname()\n";
 #else
-static const char *Dtool_AudioManager_get_dls_pathname_117_comment = nullptr;
+static const char *Dtool_AudioManager_get_dls_pathname_118_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * virtual void AudioManager::output(std::ostream &out) const
  */
-static PyObject *Dtool_AudioManager_output_120(PyObject *self, PyObject *arg) {
+static PyObject *Dtool_AudioManager_output_121(PyObject *self, PyObject *arg) {
   AudioManager *local_this = nullptr;
   if (!DtoolInstance_GetPointer(self, local_this, Dtool_AudioManager)) {
     return nullptr;
@@ -4925,18 +4960,18 @@ static PyObject *Dtool_AudioManager_output_120(PyObject *self, PyObject *arg) {
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioManager_output_120_comment =
+static const char *Dtool_AudioManager_output_121_comment =
   "C++ Interface:\n"
   "output(AudioManager self, ostream out)\n";
 #else
-static const char *Dtool_AudioManager_output_120_comment = nullptr;
+static const char *Dtool_AudioManager_output_121_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * virtual void AudioManager::write(std::ostream &out) const
  */
-static PyObject *Dtool_AudioManager_write_121(PyObject *self, PyObject *arg) {
+static PyObject *Dtool_AudioManager_write_122(PyObject *self, PyObject *arg) {
   AudioManager *local_this = nullptr;
   if (!DtoolInstance_GetPointer(self, local_this, Dtool_AudioManager)) {
     return nullptr;
@@ -4952,18 +4987,18 @@ static PyObject *Dtool_AudioManager_write_121(PyObject *self, PyObject *arg) {
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioManager_write_121_comment =
+static const char *Dtool_AudioManager_write_122_comment =
   "C++ Interface:\n"
   "write(AudioManager self, ostream out)\n";
 #else
-static const char *Dtool_AudioManager_write_121_comment = nullptr;
+static const char *Dtool_AudioManager_write_122_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * static TypeHandle AudioManager::get_class_type(void)
  */
-static PyObject *Dtool_AudioManager_get_class_type_122(PyObject *, PyObject *) {
+static PyObject *Dtool_AudioManager_get_class_type_123(PyObject *, PyObject *) {
   // 1-static TypeHandle AudioManager::get_class_type(void)
   TypeHandle *return_value = new TypeHandle((AudioManager::get_class_type)());
   if (return_value == nullptr) {
@@ -4977,11 +5012,11 @@ static PyObject *Dtool_AudioManager_get_class_type_122(PyObject *, PyObject *) {
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioManager_get_class_type_122_comment =
+static const char *Dtool_AudioManager_get_class_type_123_comment =
   "C++ Interface:\n"
   "get_class_type()\n";
 #else
-static const char *Dtool_AudioManager_get_class_type_122_comment = nullptr;
+static const char *Dtool_AudioManager_get_class_type_123_comment = nullptr;
 #endif
 
 static PyObject *Dtool_AudioManager_dls_pathname_Getter(PyObject *self, void *) {
@@ -5152,7 +5187,7 @@ static PyObject *Dtool_WrapProxy_AudioLoadRequest(void *from_this, PyTypeObject 
  * Python function wrapper for:
  * inline AudioManager *AudioLoadRequest::get_audio_manager(void) const
  */
-static PyObject *Dtool_AudioLoadRequest_get_audio_manager_126(PyObject *self, PyObject *) {
+static PyObject *Dtool_AudioLoadRequest_get_audio_manager_127(PyObject *self, PyObject *) {
   AudioLoadRequest *local_this = nullptr;
   if (!DtoolInstance_GetPointer(self, local_this, Dtool_AudioLoadRequest)) {
     return nullptr;
@@ -5176,7 +5211,7 @@ static PyObject *Dtool_AudioLoadRequest_get_audio_manager_126(PyObject *self, Py
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioLoadRequest_get_audio_manager_126_comment =
+static const char *Dtool_AudioLoadRequest_get_audio_manager_127_comment =
   "C++ Interface:\n"
   "get_audio_manager(AudioLoadRequest self)\n"
   "\n"
@@ -5185,14 +5220,14 @@ static const char *Dtool_AudioLoadRequest_get_audio_manager_126_comment =
   " * AudioLoadRequest.\n"
   " */";
 #else
-static const char *Dtool_AudioLoadRequest_get_audio_manager_126_comment = nullptr;
+static const char *Dtool_AudioLoadRequest_get_audio_manager_127_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * inline Filename const &AudioLoadRequest::get_filename(void) const
  */
-static PyObject *Dtool_AudioLoadRequest_get_filename_127(PyObject *self, PyObject *) {
+static PyObject *Dtool_AudioLoadRequest_get_filename_128(PyObject *self, PyObject *) {
   AudioLoadRequest *local_this = nullptr;
   if (!DtoolInstance_GetPointer(self, local_this, Dtool_AudioLoadRequest)) {
     return nullptr;
@@ -5206,7 +5241,7 @@ static PyObject *Dtool_AudioLoadRequest_get_filename_127(PyObject *self, PyObjec
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioLoadRequest_get_filename_127_comment =
+static const char *Dtool_AudioLoadRequest_get_filename_128_comment =
   "C++ Interface:\n"
   "get_filename(AudioLoadRequest self)\n"
   "\n"
@@ -5214,14 +5249,14 @@ static const char *Dtool_AudioLoadRequest_get_filename_127_comment =
   " * Returns the filename associated with this asynchronous AudioLoadRequest.\n"
   " */";
 #else
-static const char *Dtool_AudioLoadRequest_get_filename_127_comment = nullptr;
+static const char *Dtool_AudioLoadRequest_get_filename_128_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * inline bool AudioLoadRequest::get_positional(void) const
  */
-static PyObject *Dtool_AudioLoadRequest_get_positional_128(PyObject *self, PyObject *) {
+static PyObject *Dtool_AudioLoadRequest_get_positional_129(PyObject *self, PyObject *) {
   AudioLoadRequest *local_this = nullptr;
   if (!DtoolInstance_GetPointer(self, local_this, Dtool_AudioLoadRequest)) {
     return nullptr;
@@ -5232,7 +5267,7 @@ static PyObject *Dtool_AudioLoadRequest_get_positional_128(PyObject *self, PyObj
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioLoadRequest_get_positional_128_comment =
+static const char *Dtool_AudioLoadRequest_get_positional_129_comment =
   "C++ Interface:\n"
   "get_positional(AudioLoadRequest self)\n"
   "\n"
@@ -5241,14 +5276,14 @@ static const char *Dtool_AudioLoadRequest_get_positional_128_comment =
   " * AudioLoadRequest.\n"
   " */";
 #else
-static const char *Dtool_AudioLoadRequest_get_positional_128_comment = nullptr;
+static const char *Dtool_AudioLoadRequest_get_positional_129_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * inline bool AudioLoadRequest::is_ready(void) const
  */
-static PyObject *Dtool_AudioLoadRequest_is_ready_129(PyObject *self, PyObject *) {
+static PyObject *Dtool_AudioLoadRequest_is_ready_130(PyObject *self, PyObject *) {
   AudioLoadRequest *local_this = nullptr;
   if (!DtoolInstance_GetPointer(self, local_this, Dtool_AudioLoadRequest)) {
     return nullptr;
@@ -5259,7 +5294,7 @@ static PyObject *Dtool_AudioLoadRequest_is_ready_129(PyObject *self, PyObject *)
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioLoadRequest_is_ready_129_comment =
+static const char *Dtool_AudioLoadRequest_is_ready_130_comment =
   "C++ Interface:\n"
   "is_ready(AudioLoadRequest self)\n"
   "\n"
@@ -5271,14 +5306,14 @@ static const char *Dtool_AudioLoadRequest_is_ready_129_comment =
   " * @see done()\n"
   " */";
 #else
-static const char *Dtool_AudioLoadRequest_is_ready_129_comment = nullptr;
+static const char *Dtool_AudioLoadRequest_is_ready_130_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * inline AudioSound *AudioLoadRequest::get_sound(void) const
  */
-static PyObject *Dtool_AudioLoadRequest_get_sound_130(PyObject *self, PyObject *) {
+static PyObject *Dtool_AudioLoadRequest_get_sound_131(PyObject *self, PyObject *) {
   AudioLoadRequest *local_this = nullptr;
   if (!DtoolInstance_GetPointer(self, local_this, Dtool_AudioLoadRequest)) {
     return nullptr;
@@ -5302,7 +5337,7 @@ static PyObject *Dtool_AudioLoadRequest_get_sound_130(PyObject *self, PyObject *
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioLoadRequest_get_sound_130_comment =
+static const char *Dtool_AudioLoadRequest_get_sound_131_comment =
   "C++ Interface:\n"
   "get_sound(AudioLoadRequest self)\n"
   "\n"
@@ -5313,14 +5348,14 @@ static const char *Dtool_AudioLoadRequest_get_sound_130_comment =
   " * @deprecated Use result() instead.\n"
   " */";
 #else
-static const char *Dtool_AudioLoadRequest_get_sound_130_comment = nullptr;
+static const char *Dtool_AudioLoadRequest_get_sound_131_comment = nullptr;
 #endif
 
 /**
  * Python function wrapper for:
  * static TypeHandle AudioLoadRequest::get_class_type(void)
  */
-static PyObject *Dtool_AudioLoadRequest_get_class_type_131(PyObject *, PyObject *) {
+static PyObject *Dtool_AudioLoadRequest_get_class_type_132(PyObject *, PyObject *) {
   // 1-static TypeHandle AudioLoadRequest::get_class_type(void)
   TypeHandle *return_value = new TypeHandle((AudioLoadRequest::get_class_type)());
   if (return_value == nullptr) {
@@ -5334,11 +5369,11 @@ static PyObject *Dtool_AudioLoadRequest_get_class_type_131(PyObject *, PyObject 
 }
 
 #ifndef NDEBUG
-static const char *Dtool_AudioLoadRequest_get_class_type_131_comment =
+static const char *Dtool_AudioLoadRequest_get_class_type_132_comment =
   "C++ Interface:\n"
   "get_class_type()\n";
 #else
-static const char *Dtool_AudioLoadRequest_get_class_type_131_comment = nullptr;
+static const char *Dtool_AudioLoadRequest_get_class_type_132_comment = nullptr;
 #endif
 
 /**
@@ -5751,98 +5786,102 @@ static void Dtool_PyModuleClassInit_FilterProperties(PyObject *module) {
  * Python method tables for AudioSound (AudioSound)
  */
 static PyMethodDef Dtool_Methods_AudioSound[] = {
-  {"play", &Dtool_AudioSound_play_18, METH_NOARGS, (const char *)Dtool_AudioSound_play_18_comment},
-  {"stop", &Dtool_AudioSound_stop_19, METH_NOARGS, (const char *)Dtool_AudioSound_stop_19_comment},
-  {"set_loop", (PyCFunction) &Dtool_AudioSound_set_loop_20, METH_VARARGS | METH_KEYWORDS, (const char *)Dtool_AudioSound_set_loop_20_comment},
-  {"setLoop", (PyCFunction) &Dtool_AudioSound_set_loop_20, METH_VARARGS | METH_KEYWORDS, (const char *)Dtool_AudioSound_set_loop_20_comment},
-  {"get_loop", &Dtool_AudioSound_get_loop_21, METH_NOARGS, (const char *)Dtool_AudioSound_get_loop_21_comment},
-  {"getLoop", &Dtool_AudioSound_get_loop_21, METH_NOARGS, (const char *)Dtool_AudioSound_get_loop_21_comment},
-  {"set_loop_count", (PyCFunction) &Dtool_AudioSound_set_loop_count_22, METH_VARARGS | METH_KEYWORDS, (const char *)Dtool_AudioSound_set_loop_count_22_comment},
-  {"setLoopCount", (PyCFunction) &Dtool_AudioSound_set_loop_count_22, METH_VARARGS | METH_KEYWORDS, (const char *)Dtool_AudioSound_set_loop_count_22_comment},
-  {"get_loop_count", &Dtool_AudioSound_get_loop_count_23, METH_NOARGS, (const char *)Dtool_AudioSound_get_loop_count_23_comment},
-  {"getLoopCount", &Dtool_AudioSound_get_loop_count_23, METH_NOARGS, (const char *)Dtool_AudioSound_get_loop_count_23_comment},
-  {"set_loop_start", (PyCFunction) &Dtool_AudioSound_set_loop_start_24, METH_VARARGS | METH_KEYWORDS, (const char *)Dtool_AudioSound_set_loop_start_24_comment},
-  {"setLoopStart", (PyCFunction) &Dtool_AudioSound_set_loop_start_24, METH_VARARGS | METH_KEYWORDS, (const char *)Dtool_AudioSound_set_loop_start_24_comment},
-  {"get_loop_start", &Dtool_AudioSound_get_loop_start_25, METH_NOARGS, (const char *)Dtool_AudioSound_get_loop_start_25_comment},
-  {"getLoopStart", &Dtool_AudioSound_get_loop_start_25, METH_NOARGS, (const char *)Dtool_AudioSound_get_loop_start_25_comment},
-  {"set_time", (PyCFunction) &Dtool_AudioSound_set_time_26, METH_VARARGS | METH_KEYWORDS, (const char *)Dtool_AudioSound_set_time_26_comment},
-  {"setTime", (PyCFunction) &Dtool_AudioSound_set_time_26, METH_VARARGS | METH_KEYWORDS, (const char *)Dtool_AudioSound_set_time_26_comment},
-  {"get_time", &Dtool_AudioSound_get_time_27, METH_NOARGS, (const char *)Dtool_AudioSound_get_time_27_comment},
-  {"getTime", &Dtool_AudioSound_get_time_27, METH_NOARGS, (const char *)Dtool_AudioSound_get_time_27_comment},
-  {"set_volume", (PyCFunction) &Dtool_AudioSound_set_volume_28, METH_VARARGS | METH_KEYWORDS, (const char *)Dtool_AudioSound_set_volume_28_comment},
-  {"setVolume", (PyCFunction) &Dtool_AudioSound_set_volume_28, METH_VARARGS | METH_KEYWORDS, (const char *)Dtool_AudioSound_set_volume_28_comment},
-  {"get_volume", &Dtool_AudioSound_get_volume_29, METH_NOARGS, (const char *)Dtool_AudioSound_get_volume_29_comment},
-  {"getVolume", &Dtool_AudioSound_get_volume_29, METH_NOARGS, (const char *)Dtool_AudioSound_get_volume_29_comment},
-  {"set_balance", (PyCFunction) &Dtool_AudioSound_set_balance_30, METH_VARARGS | METH_KEYWORDS, (const char *)Dtool_AudioSound_set_balance_30_comment},
-  {"setBalance", (PyCFunction) &Dtool_AudioSound_set_balance_30, METH_VARARGS | METH_KEYWORDS, (const char *)Dtool_AudioSound_set_balance_30_comment},
-  {"get_balance", &Dtool_AudioSound_get_balance_31, METH_NOARGS, (const char *)Dtool_AudioSound_get_balance_31_comment},
-  {"getBalance", &Dtool_AudioSound_get_balance_31, METH_NOARGS, (const char *)Dtool_AudioSound_get_balance_31_comment},
-  {"set_play_rate", (PyCFunction) &Dtool_AudioSound_set_play_rate_32, METH_VARARGS | METH_KEYWORDS, (const char *)Dtool_AudioSound_set_play_rate_32_comment},
-  {"setPlayRate", (PyCFunction) &Dtool_AudioSound_set_play_rate_32, METH_VARARGS | METH_KEYWORDS, (const char *)Dtool_AudioSound_set_play_rate_32_comment},
-  {"get_play_rate", &Dtool_AudioSound_get_play_rate_33, METH_NOARGS, (const char *)Dtool_AudioSound_get_play_rate_33_comment},
-  {"getPlayRate", &Dtool_AudioSound_get_play_rate_33, METH_NOARGS, (const char *)Dtool_AudioSound_get_play_rate_33_comment},
-  {"set_active", (PyCFunction) &Dtool_AudioSound_set_active_34, METH_VARARGS | METH_KEYWORDS, (const char *)Dtool_AudioSound_set_active_34_comment},
-  {"setActive", (PyCFunction) &Dtool_AudioSound_set_active_34, METH_VARARGS | METH_KEYWORDS, (const char *)Dtool_AudioSound_set_active_34_comment},
-  {"get_active", &Dtool_AudioSound_get_active_35, METH_NOARGS, (const char *)Dtool_AudioSound_get_active_35_comment},
-  {"getActive", &Dtool_AudioSound_get_active_35, METH_NOARGS, (const char *)Dtool_AudioSound_get_active_35_comment},
-  {"set_finished_event", &Dtool_AudioSound_set_finished_event_36, METH_O, (const char *)Dtool_AudioSound_set_finished_event_36_comment},
-  {"setFinishedEvent", &Dtool_AudioSound_set_finished_event_36, METH_O, (const char *)Dtool_AudioSound_set_finished_event_36_comment},
-  {"get_finished_event", &Dtool_AudioSound_get_finished_event_37, METH_NOARGS, (const char *)Dtool_AudioSound_get_finished_event_37_comment},
-  {"getFinishedEvent", &Dtool_AudioSound_get_finished_event_37, METH_NOARGS, (const char *)Dtool_AudioSound_get_finished_event_37_comment},
-  {"get_name", &Dtool_AudioSound_get_name_38, METH_NOARGS, (const char *)Dtool_AudioSound_get_name_38_comment},
-  {"getName", &Dtool_AudioSound_get_name_38, METH_NOARGS, (const char *)Dtool_AudioSound_get_name_38_comment},
-  {"is_positional", &Dtool_AudioSound_is_positional_39, METH_NOARGS, (const char *)Dtool_AudioSound_is_positional_39_comment},
-  {"isPositional", &Dtool_AudioSound_is_positional_39, METH_NOARGS, (const char *)Dtool_AudioSound_is_positional_39_comment},
-  {"length", &Dtool_AudioSound_length_40, METH_NOARGS, (const char *)Dtool_AudioSound_length_40_comment},
-  {"set_3d_attributes", (PyCFunction) &Dtool_AudioSound_set_3d_attributes_41, METH_VARARGS | METH_KEYWORDS, (const char *)Dtool_AudioSound_set_3d_attributes_41_comment},
-  {"set3dAttributes", (PyCFunction) &Dtool_AudioSound_set_3d_attributes_41, METH_VARARGS | METH_KEYWORDS, (const char *)Dtool_AudioSound_set_3d_attributes_41_comment},
-  {"set_3d_direction", &Dtool_AudioSound_set_3d_direction_43, METH_O, (const char *)Dtool_AudioSound_set_3d_direction_43_comment},
-  {"set3dDirection", &Dtool_AudioSound_set_3d_direction_43, METH_O, (const char *)Dtool_AudioSound_set_3d_direction_43_comment},
-  {"get_3d_direction", &Dtool_AudioSound_get_3d_direction_44, METH_NOARGS, (const char *)Dtool_AudioSound_get_3d_direction_44_comment},
-  {"get3dDirection", &Dtool_AudioSound_get_3d_direction_44, METH_NOARGS, (const char *)Dtool_AudioSound_get_3d_direction_44_comment},
-  {"set_3d_min_distance", &Dtool_AudioSound_set_3d_min_distance_45, METH_O, (const char *)Dtool_AudioSound_set_3d_min_distance_45_comment},
-  {"set3dMinDistance", &Dtool_AudioSound_set_3d_min_distance_45, METH_O, (const char *)Dtool_AudioSound_set_3d_min_distance_45_comment},
-  {"get_3d_min_distance", &Dtool_AudioSound_get_3d_min_distance_46, METH_NOARGS, (const char *)Dtool_AudioSound_get_3d_min_distance_46_comment},
-  {"get3dMinDistance", &Dtool_AudioSound_get_3d_min_distance_46, METH_NOARGS, (const char *)Dtool_AudioSound_get_3d_min_distance_46_comment},
-  {"set_3d_max_distance", &Dtool_AudioSound_set_3d_max_distance_47, METH_O, (const char *)Dtool_AudioSound_set_3d_max_distance_47_comment},
-  {"set3dMaxDistance", &Dtool_AudioSound_set_3d_max_distance_47, METH_O, (const char *)Dtool_AudioSound_set_3d_max_distance_47_comment},
-  {"get_3d_max_distance", &Dtool_AudioSound_get_3d_max_distance_48, METH_NOARGS, (const char *)Dtool_AudioSound_get_3d_max_distance_48_comment},
-  {"get3dMaxDistance", &Dtool_AudioSound_get_3d_max_distance_48, METH_NOARGS, (const char *)Dtool_AudioSound_get_3d_max_distance_48_comment},
-  {"set_3d_cone_inner_angle", &Dtool_AudioSound_set_3d_cone_inner_angle_49, METH_O, (const char *)Dtool_AudioSound_set_3d_cone_inner_angle_49_comment},
-  {"set3dConeInnerAngle", &Dtool_AudioSound_set_3d_cone_inner_angle_49, METH_O, (const char *)Dtool_AudioSound_set_3d_cone_inner_angle_49_comment},
-  {"get_3d_cone_inner_angle", &Dtool_AudioSound_get_3d_cone_inner_angle_50, METH_NOARGS, (const char *)Dtool_AudioSound_get_3d_cone_inner_angle_50_comment},
-  {"get3dConeInnerAngle", &Dtool_AudioSound_get_3d_cone_inner_angle_50, METH_NOARGS, (const char *)Dtool_AudioSound_get_3d_cone_inner_angle_50_comment},
-  {"set_3d_cone_outer_angle", &Dtool_AudioSound_set_3d_cone_outer_angle_51, METH_O, (const char *)Dtool_AudioSound_set_3d_cone_outer_angle_51_comment},
-  {"set3dConeOuterAngle", &Dtool_AudioSound_set_3d_cone_outer_angle_51, METH_O, (const char *)Dtool_AudioSound_set_3d_cone_outer_angle_51_comment},
-  {"get_3d_cone_outer_angle", &Dtool_AudioSound_get_3d_cone_outer_angle_52, METH_NOARGS, (const char *)Dtool_AudioSound_get_3d_cone_outer_angle_52_comment},
-  {"get3dConeOuterAngle", &Dtool_AudioSound_get_3d_cone_outer_angle_52, METH_NOARGS, (const char *)Dtool_AudioSound_get_3d_cone_outer_angle_52_comment},
-  {"set_3d_cone_outer_gain", &Dtool_AudioSound_set_3d_cone_outer_gain_53, METH_O, (const char *)Dtool_AudioSound_set_3d_cone_outer_gain_53_comment},
-  {"set3dConeOuterGain", &Dtool_AudioSound_set_3d_cone_outer_gain_53, METH_O, (const char *)Dtool_AudioSound_set_3d_cone_outer_gain_53_comment},
-  {"get_3d_cone_outer_gain", &Dtool_AudioSound_get_3d_cone_outer_gain_54, METH_NOARGS, (const char *)Dtool_AudioSound_get_3d_cone_outer_gain_54_comment},
-  {"get3dConeOuterGain", &Dtool_AudioSound_get_3d_cone_outer_gain_54, METH_NOARGS, (const char *)Dtool_AudioSound_get_3d_cone_outer_gain_54_comment},
-  {"get_speaker_mix", &Dtool_AudioSound_get_speaker_mix_55, METH_O, (const char *)Dtool_AudioSound_get_speaker_mix_55_comment},
-  {"getSpeakerMix", &Dtool_AudioSound_get_speaker_mix_55, METH_O, (const char *)Dtool_AudioSound_get_speaker_mix_55_comment},
-  {"set_speaker_mix", (PyCFunction) &Dtool_AudioSound_set_speaker_mix_56, METH_VARARGS | METH_KEYWORDS, (const char *)Dtool_AudioSound_set_speaker_mix_56_comment},
-  {"setSpeakerMix", (PyCFunction) &Dtool_AudioSound_set_speaker_mix_56, METH_VARARGS | METH_KEYWORDS, (const char *)Dtool_AudioSound_set_speaker_mix_56_comment},
-  {"get_priority", &Dtool_AudioSound_get_priority_57, METH_NOARGS, (const char *)Dtool_AudioSound_get_priority_57_comment},
-  {"getPriority", &Dtool_AudioSound_get_priority_57, METH_NOARGS, (const char *)Dtool_AudioSound_get_priority_57_comment},
-  {"set_priority", &Dtool_AudioSound_set_priority_58, METH_O, (const char *)Dtool_AudioSound_set_priority_58_comment},
-  {"setPriority", &Dtool_AudioSound_set_priority_58, METH_O, (const char *)Dtool_AudioSound_set_priority_58_comment},
-  {"configure_filters", &Dtool_AudioSound_configure_filters_59, METH_O, (const char *)Dtool_AudioSound_configure_filters_59_comment},
-  {"configureFilters", &Dtool_AudioSound_configure_filters_59, METH_O, (const char *)Dtool_AudioSound_configure_filters_59_comment},
-  {"status", &Dtool_AudioSound_status_61, METH_NOARGS, (const char *)Dtool_AudioSound_status_61_comment},
-  {"has_comment", &Dtool_AudioSound_has_comment_62, METH_O, (const char *)Dtool_AudioSound_has_comment_62_comment},
-  {"hasComment", &Dtool_AudioSound_has_comment_62, METH_O, (const char *)Dtool_AudioSound_has_comment_62_comment},
-  {"get_comment", &Dtool_AudioSound_get_comment_63, METH_O, (const char *)Dtool_AudioSound_get_comment_63_comment},
-  {"getComment", &Dtool_AudioSound_get_comment_63, METH_O, (const char *)Dtool_AudioSound_get_comment_63_comment},
-  {"get_raw_comment", &Dtool_AudioSound_get_raw_comment_67, METH_VARARGS, (const char *)Dtool_AudioSound_get_raw_comment_67_comment},
-  {"getRawComment", &Dtool_AudioSound_get_raw_comment_67, METH_VARARGS, (const char *)Dtool_AudioSound_get_raw_comment_67_comment},
-  {"get_num_raw_comments", &Dtool_AudioSound_get_num_raw_comments_68, METH_NOARGS, (const char *)Dtool_AudioSound_get_num_raw_comments_68_comment},
-  {"getNumRawComments", &Dtool_AudioSound_get_num_raw_comments_68, METH_NOARGS, (const char *)Dtool_AudioSound_get_num_raw_comments_68_comment},
-  {"output", &Dtool_AudioSound_output_70, METH_O, (const char *)Dtool_AudioSound_output_70_comment},
-  {"write", &Dtool_AudioSound_write_71, METH_O, (const char *)Dtool_AudioSound_write_71_comment},
-  {"get_class_type", &Dtool_AudioSound_get_class_type_83, METH_NOARGS | METH_STATIC, (const char *)Dtool_AudioSound_get_class_type_83_comment},
-  {"getClassType", &Dtool_AudioSound_get_class_type_83, METH_NOARGS | METH_STATIC, (const char *)Dtool_AudioSound_get_class_type_83_comment},
+  {"make_copy", &Dtool_AudioSound_make_copy_18, METH_NOARGS, (const char *)Dtool_AudioSound_make_copy_18_comment},
+  {"makeCopy", &Dtool_AudioSound_make_copy_18, METH_NOARGS, (const char *)Dtool_AudioSound_make_copy_18_comment},
+  {"play", &Dtool_AudioSound_play_19, METH_NOARGS, (const char *)Dtool_AudioSound_play_19_comment},
+  {"stop", &Dtool_AudioSound_stop_20, METH_NOARGS, (const char *)Dtool_AudioSound_stop_20_comment},
+  {"set_loop", (PyCFunction) &Dtool_AudioSound_set_loop_21, METH_VARARGS | METH_KEYWORDS, (const char *)Dtool_AudioSound_set_loop_21_comment},
+  {"setLoop", (PyCFunction) &Dtool_AudioSound_set_loop_21, METH_VARARGS | METH_KEYWORDS, (const char *)Dtool_AudioSound_set_loop_21_comment},
+  {"get_loop", &Dtool_AudioSound_get_loop_22, METH_NOARGS, (const char *)Dtool_AudioSound_get_loop_22_comment},
+  {"getLoop", &Dtool_AudioSound_get_loop_22, METH_NOARGS, (const char *)Dtool_AudioSound_get_loop_22_comment},
+  {"set_loop_count", (PyCFunction) &Dtool_AudioSound_set_loop_count_23, METH_VARARGS | METH_KEYWORDS, (const char *)Dtool_AudioSound_set_loop_count_23_comment},
+  {"setLoopCount", (PyCFunction) &Dtool_AudioSound_set_loop_count_23, METH_VARARGS | METH_KEYWORDS, (const char *)Dtool_AudioSound_set_loop_count_23_comment},
+  {"get_loop_count", &Dtool_AudioSound_get_loop_count_24, METH_NOARGS, (const char *)Dtool_AudioSound_get_loop_count_24_comment},
+  {"getLoopCount", &Dtool_AudioSound_get_loop_count_24, METH_NOARGS, (const char *)Dtool_AudioSound_get_loop_count_24_comment},
+  {"set_loop_start", (PyCFunction) &Dtool_AudioSound_set_loop_start_25, METH_VARARGS | METH_KEYWORDS, (const char *)Dtool_AudioSound_set_loop_start_25_comment},
+  {"setLoopStart", (PyCFunction) &Dtool_AudioSound_set_loop_start_25, METH_VARARGS | METH_KEYWORDS, (const char *)Dtool_AudioSound_set_loop_start_25_comment},
+  {"get_loop_start", &Dtool_AudioSound_get_loop_start_26, METH_NOARGS, (const char *)Dtool_AudioSound_get_loop_start_26_comment},
+  {"getLoopStart", &Dtool_AudioSound_get_loop_start_26, METH_NOARGS, (const char *)Dtool_AudioSound_get_loop_start_26_comment},
+  {"set_time", (PyCFunction) &Dtool_AudioSound_set_time_27, METH_VARARGS | METH_KEYWORDS, (const char *)Dtool_AudioSound_set_time_27_comment},
+  {"setTime", (PyCFunction) &Dtool_AudioSound_set_time_27, METH_VARARGS | METH_KEYWORDS, (const char *)Dtool_AudioSound_set_time_27_comment},
+  {"get_time", &Dtool_AudioSound_get_time_28, METH_NOARGS, (const char *)Dtool_AudioSound_get_time_28_comment},
+  {"getTime", &Dtool_AudioSound_get_time_28, METH_NOARGS, (const char *)Dtool_AudioSound_get_time_28_comment},
+  {"set_volume", (PyCFunction) &Dtool_AudioSound_set_volume_29, METH_VARARGS | METH_KEYWORDS, (const char *)Dtool_AudioSound_set_volume_29_comment},
+  {"setVolume", (PyCFunction) &Dtool_AudioSound_set_volume_29, METH_VARARGS | METH_KEYWORDS, (const char *)Dtool_AudioSound_set_volume_29_comment},
+  {"get_volume", &Dtool_AudioSound_get_volume_30, METH_NOARGS, (const char *)Dtool_AudioSound_get_volume_30_comment},
+  {"getVolume", &Dtool_AudioSound_get_volume_30, METH_NOARGS, (const char *)Dtool_AudioSound_get_volume_30_comment},
+  {"set_balance", (PyCFunction) &Dtool_AudioSound_set_balance_31, METH_VARARGS | METH_KEYWORDS, (const char *)Dtool_AudioSound_set_balance_31_comment},
+  {"setBalance", (PyCFunction) &Dtool_AudioSound_set_balance_31, METH_VARARGS | METH_KEYWORDS, (const char *)Dtool_AudioSound_set_balance_31_comment},
+  {"get_balance", &Dtool_AudioSound_get_balance_32, METH_NOARGS, (const char *)Dtool_AudioSound_get_balance_32_comment},
+  {"getBalance", &Dtool_AudioSound_get_balance_32, METH_NOARGS, (const char *)Dtool_AudioSound_get_balance_32_comment},
+  {"set_play_rate", (PyCFunction) &Dtool_AudioSound_set_play_rate_33, METH_VARARGS | METH_KEYWORDS, (const char *)Dtool_AudioSound_set_play_rate_33_comment},
+  {"setPlayRate", (PyCFunction) &Dtool_AudioSound_set_play_rate_33, METH_VARARGS | METH_KEYWORDS, (const char *)Dtool_AudioSound_set_play_rate_33_comment},
+  {"get_play_rate", &Dtool_AudioSound_get_play_rate_34, METH_NOARGS, (const char *)Dtool_AudioSound_get_play_rate_34_comment},
+  {"getPlayRate", &Dtool_AudioSound_get_play_rate_34, METH_NOARGS, (const char *)Dtool_AudioSound_get_play_rate_34_comment},
+  {"set_active", (PyCFunction) &Dtool_AudioSound_set_active_35, METH_VARARGS | METH_KEYWORDS, (const char *)Dtool_AudioSound_set_active_35_comment},
+  {"setActive", (PyCFunction) &Dtool_AudioSound_set_active_35, METH_VARARGS | METH_KEYWORDS, (const char *)Dtool_AudioSound_set_active_35_comment},
+  {"get_active", &Dtool_AudioSound_get_active_36, METH_NOARGS, (const char *)Dtool_AudioSound_get_active_36_comment},
+  {"getActive", &Dtool_AudioSound_get_active_36, METH_NOARGS, (const char *)Dtool_AudioSound_get_active_36_comment},
+  {"set_finished_event", &Dtool_AudioSound_set_finished_event_37, METH_O, (const char *)Dtool_AudioSound_set_finished_event_37_comment},
+  {"setFinishedEvent", &Dtool_AudioSound_set_finished_event_37, METH_O, (const char *)Dtool_AudioSound_set_finished_event_37_comment},
+  {"get_finished_event", &Dtool_AudioSound_get_finished_event_38, METH_NOARGS, (const char *)Dtool_AudioSound_get_finished_event_38_comment},
+  {"getFinishedEvent", &Dtool_AudioSound_get_finished_event_38, METH_NOARGS, (const char *)Dtool_AudioSound_get_finished_event_38_comment},
+  {"get_name", &Dtool_AudioSound_get_name_39, METH_NOARGS, (const char *)Dtool_AudioSound_get_name_39_comment},
+  {"getName", &Dtool_AudioSound_get_name_39, METH_NOARGS, (const char *)Dtool_AudioSound_get_name_39_comment},
+  {"is_positional", &Dtool_AudioSound_is_positional_40, METH_NOARGS, (const char *)Dtool_AudioSound_is_positional_40_comment},
+  {"isPositional", &Dtool_AudioSound_is_positional_40, METH_NOARGS, (const char *)Dtool_AudioSound_is_positional_40_comment},
+  {"length", &Dtool_AudioSound_length_41, METH_NOARGS, (const char *)Dtool_AudioSound_length_41_comment},
+  {"set_3d_attributes", (PyCFunction) &Dtool_AudioSound_set_3d_attributes_42, METH_VARARGS | METH_KEYWORDS, (const char *)Dtool_AudioSound_set_3d_attributes_42_comment},
+  {"set3dAttributes", (PyCFunction) &Dtool_AudioSound_set_3d_attributes_42, METH_VARARGS | METH_KEYWORDS, (const char *)Dtool_AudioSound_set_3d_attributes_42_comment},
+  {"set_3d_direction", &Dtool_AudioSound_set_3d_direction_44, METH_O, (const char *)Dtool_AudioSound_set_3d_direction_44_comment},
+  {"set3dDirection", &Dtool_AudioSound_set_3d_direction_44, METH_O, (const char *)Dtool_AudioSound_set_3d_direction_44_comment},
+  {"get_3d_direction", &Dtool_AudioSound_get_3d_direction_45, METH_NOARGS, (const char *)Dtool_AudioSound_get_3d_direction_45_comment},
+  {"get3dDirection", &Dtool_AudioSound_get_3d_direction_45, METH_NOARGS, (const char *)Dtool_AudioSound_get_3d_direction_45_comment},
+  {"set_3d_min_distance", &Dtool_AudioSound_set_3d_min_distance_46, METH_O, (const char *)Dtool_AudioSound_set_3d_min_distance_46_comment},
+  {"set3dMinDistance", &Dtool_AudioSound_set_3d_min_distance_46, METH_O, (const char *)Dtool_AudioSound_set_3d_min_distance_46_comment},
+  {"get_3d_min_distance", &Dtool_AudioSound_get_3d_min_distance_47, METH_NOARGS, (const char *)Dtool_AudioSound_get_3d_min_distance_47_comment},
+  {"get3dMinDistance", &Dtool_AudioSound_get_3d_min_distance_47, METH_NOARGS, (const char *)Dtool_AudioSound_get_3d_min_distance_47_comment},
+  {"set_3d_max_distance", &Dtool_AudioSound_set_3d_max_distance_48, METH_O, (const char *)Dtool_AudioSound_set_3d_max_distance_48_comment},
+  {"set3dMaxDistance", &Dtool_AudioSound_set_3d_max_distance_48, METH_O, (const char *)Dtool_AudioSound_set_3d_max_distance_48_comment},
+  {"get_3d_max_distance", &Dtool_AudioSound_get_3d_max_distance_49, METH_NOARGS, (const char *)Dtool_AudioSound_get_3d_max_distance_49_comment},
+  {"get3dMaxDistance", &Dtool_AudioSound_get_3d_max_distance_49, METH_NOARGS, (const char *)Dtool_AudioSound_get_3d_max_distance_49_comment},
+  {"set_3d_cone_inner_angle", &Dtool_AudioSound_set_3d_cone_inner_angle_50, METH_O, (const char *)Dtool_AudioSound_set_3d_cone_inner_angle_50_comment},
+  {"set3dConeInnerAngle", &Dtool_AudioSound_set_3d_cone_inner_angle_50, METH_O, (const char *)Dtool_AudioSound_set_3d_cone_inner_angle_50_comment},
+  {"get_3d_cone_inner_angle", &Dtool_AudioSound_get_3d_cone_inner_angle_51, METH_NOARGS, (const char *)Dtool_AudioSound_get_3d_cone_inner_angle_51_comment},
+  {"get3dConeInnerAngle", &Dtool_AudioSound_get_3d_cone_inner_angle_51, METH_NOARGS, (const char *)Dtool_AudioSound_get_3d_cone_inner_angle_51_comment},
+  {"set_3d_cone_outer_angle", &Dtool_AudioSound_set_3d_cone_outer_angle_52, METH_O, (const char *)Dtool_AudioSound_set_3d_cone_outer_angle_52_comment},
+  {"set3dConeOuterAngle", &Dtool_AudioSound_set_3d_cone_outer_angle_52, METH_O, (const char *)Dtool_AudioSound_set_3d_cone_outer_angle_52_comment},
+  {"get_3d_cone_outer_angle", &Dtool_AudioSound_get_3d_cone_outer_angle_53, METH_NOARGS, (const char *)Dtool_AudioSound_get_3d_cone_outer_angle_53_comment},
+  {"get3dConeOuterAngle", &Dtool_AudioSound_get_3d_cone_outer_angle_53, METH_NOARGS, (const char *)Dtool_AudioSound_get_3d_cone_outer_angle_53_comment},
+  {"set_3d_cone_outer_gain", &Dtool_AudioSound_set_3d_cone_outer_gain_54, METH_O, (const char *)Dtool_AudioSound_set_3d_cone_outer_gain_54_comment},
+  {"set3dConeOuterGain", &Dtool_AudioSound_set_3d_cone_outer_gain_54, METH_O, (const char *)Dtool_AudioSound_set_3d_cone_outer_gain_54_comment},
+  {"get_3d_cone_outer_gain", &Dtool_AudioSound_get_3d_cone_outer_gain_55, METH_NOARGS, (const char *)Dtool_AudioSound_get_3d_cone_outer_gain_55_comment},
+  {"get3dConeOuterGain", &Dtool_AudioSound_get_3d_cone_outer_gain_55, METH_NOARGS, (const char *)Dtool_AudioSound_get_3d_cone_outer_gain_55_comment},
+  {"get_speaker_mix", &Dtool_AudioSound_get_speaker_mix_56, METH_O, (const char *)Dtool_AudioSound_get_speaker_mix_56_comment},
+  {"getSpeakerMix", &Dtool_AudioSound_get_speaker_mix_56, METH_O, (const char *)Dtool_AudioSound_get_speaker_mix_56_comment},
+  {"set_speaker_mix", (PyCFunction) &Dtool_AudioSound_set_speaker_mix_57, METH_VARARGS | METH_KEYWORDS, (const char *)Dtool_AudioSound_set_speaker_mix_57_comment},
+  {"setSpeakerMix", (PyCFunction) &Dtool_AudioSound_set_speaker_mix_57, METH_VARARGS | METH_KEYWORDS, (const char *)Dtool_AudioSound_set_speaker_mix_57_comment},
+  {"get_priority", &Dtool_AudioSound_get_priority_58, METH_NOARGS, (const char *)Dtool_AudioSound_get_priority_58_comment},
+  {"getPriority", &Dtool_AudioSound_get_priority_58, METH_NOARGS, (const char *)Dtool_AudioSound_get_priority_58_comment},
+  {"set_priority", &Dtool_AudioSound_set_priority_59, METH_O, (const char *)Dtool_AudioSound_set_priority_59_comment},
+  {"setPriority", &Dtool_AudioSound_set_priority_59, METH_O, (const char *)Dtool_AudioSound_set_priority_59_comment},
+  {"configure_filters", &Dtool_AudioSound_configure_filters_60, METH_O, (const char *)Dtool_AudioSound_configure_filters_60_comment},
+  {"configureFilters", &Dtool_AudioSound_configure_filters_60, METH_O, (const char *)Dtool_AudioSound_configure_filters_60_comment},
+  {"status", &Dtool_AudioSound_status_62, METH_NOARGS, (const char *)Dtool_AudioSound_status_62_comment},
+  {"has_comment", &Dtool_AudioSound_has_comment_63, METH_O, (const char *)Dtool_AudioSound_has_comment_63_comment},
+  {"hasComment", &Dtool_AudioSound_has_comment_63, METH_O, (const char *)Dtool_AudioSound_has_comment_63_comment},
+  {"get_comment", &Dtool_AudioSound_get_comment_64, METH_O, (const char *)Dtool_AudioSound_get_comment_64_comment},
+  {"getComment", &Dtool_AudioSound_get_comment_64, METH_O, (const char *)Dtool_AudioSound_get_comment_64_comment},
+  {"get_raw_comment", &Dtool_AudioSound_get_raw_comment_68, METH_VARARGS, (const char *)Dtool_AudioSound_get_raw_comment_68_comment},
+  {"getRawComment", &Dtool_AudioSound_get_raw_comment_68, METH_VARARGS, (const char *)Dtool_AudioSound_get_raw_comment_68_comment},
+  {"get_num_raw_comments", &Dtool_AudioSound_get_num_raw_comments_69, METH_NOARGS, (const char *)Dtool_AudioSound_get_num_raw_comments_69_comment},
+  {"getNumRawComments", &Dtool_AudioSound_get_num_raw_comments_69, METH_NOARGS, (const char *)Dtool_AudioSound_get_num_raw_comments_69_comment},
+  {"output", &Dtool_AudioSound_output_71, METH_O, (const char *)Dtool_AudioSound_output_71_comment},
+  {"write", &Dtool_AudioSound_write_72, METH_O, (const char *)Dtool_AudioSound_write_72_comment},
+  {"get_class_type", &Dtool_AudioSound_get_class_type_84, METH_NOARGS | METH_STATIC, (const char *)Dtool_AudioSound_get_class_type_84_comment},
+  {"getClassType", &Dtool_AudioSound_get_class_type_84, METH_NOARGS | METH_STATIC, (const char *)Dtool_AudioSound_get_class_type_84_comment},
+  {"__copy__", &copy_from_make_copy, METH_NOARGS, nullptr},
+  {"__deepcopy__", &map_deepcopy_to_copy, METH_VARARGS, nullptr},
   {nullptr, nullptr, 0, nullptr}
 };
 
@@ -6099,66 +6138,66 @@ static void Dtool_PyModuleClassInit_AudioSound(PyObject *module) {
  * Python method tables for AudioManager (AudioManager)
  */
 static PyMethodDef Dtool_Methods_AudioManager[] = {
-  {"get_speaker_setup", &Dtool_AudioManager_get_speaker_setup_88, METH_NOARGS, (const char *)Dtool_AudioManager_get_speaker_setup_88_comment},
-  {"getSpeakerSetup", &Dtool_AudioManager_get_speaker_setup_88, METH_NOARGS, (const char *)Dtool_AudioManager_get_speaker_setup_88_comment},
-  {"set_speaker_setup", &Dtool_AudioManager_set_speaker_setup_89, METH_O, (const char *)Dtool_AudioManager_set_speaker_setup_89_comment},
-  {"setSpeakerSetup", &Dtool_AudioManager_set_speaker_setup_89, METH_O, (const char *)Dtool_AudioManager_set_speaker_setup_89_comment},
-  {"configure_filters", &Dtool_AudioManager_configure_filters_90, METH_O, (const char *)Dtool_AudioManager_configure_filters_90_comment},
-  {"configureFilters", &Dtool_AudioManager_configure_filters_90, METH_O, (const char *)Dtool_AudioManager_configure_filters_90_comment},
-  {"create_AudioManager", &Dtool_AudioManager_create_AudioManager_91, METH_NOARGS | METH_STATIC, (const char *)Dtool_AudioManager_create_AudioManager_91_comment},
-  {"createAudioManager", &Dtool_AudioManager_create_AudioManager_91, METH_NOARGS | METH_STATIC, (const char *)Dtool_AudioManager_create_AudioManager_91_comment},
-  {"shutdown", &Dtool_AudioManager_shutdown_92, METH_NOARGS, (const char *)Dtool_AudioManager_shutdown_92_comment},
-  {"is_valid", &Dtool_AudioManager_is_valid_93, METH_NOARGS, (const char *)Dtool_AudioManager_is_valid_93_comment},
-  {"isValid", &Dtool_AudioManager_is_valid_93, METH_NOARGS, (const char *)Dtool_AudioManager_is_valid_93_comment},
-  {"get_sound", (PyCFunction) &Dtool_AudioManager_get_sound_94, METH_VARARGS | METH_KEYWORDS, (const char *)Dtool_AudioManager_get_sound_94_comment},
-  {"getSound", (PyCFunction) &Dtool_AudioManager_get_sound_94, METH_VARARGS | METH_KEYWORDS, (const char *)Dtool_AudioManager_get_sound_94_comment},
-  {"get_null_sound", &Dtool_AudioManager_get_null_sound_95, METH_NOARGS, (const char *)Dtool_AudioManager_get_null_sound_95_comment},
-  {"getNullSound", &Dtool_AudioManager_get_null_sound_95, METH_NOARGS, (const char *)Dtool_AudioManager_get_null_sound_95_comment},
-  {"uncache_sound", &Dtool_AudioManager_uncache_sound_96, METH_O, (const char *)Dtool_AudioManager_uncache_sound_96_comment},
-  {"uncacheSound", &Dtool_AudioManager_uncache_sound_96, METH_O, (const char *)Dtool_AudioManager_uncache_sound_96_comment},
-  {"clear_cache", &Dtool_AudioManager_clear_cache_97, METH_NOARGS, (const char *)Dtool_AudioManager_clear_cache_97_comment},
-  {"clearCache", &Dtool_AudioManager_clear_cache_97, METH_NOARGS, (const char *)Dtool_AudioManager_clear_cache_97_comment},
-  {"set_cache_limit", &Dtool_AudioManager_set_cache_limit_98, METH_O, (const char *)Dtool_AudioManager_set_cache_limit_98_comment},
-  {"setCacheLimit", &Dtool_AudioManager_set_cache_limit_98, METH_O, (const char *)Dtool_AudioManager_set_cache_limit_98_comment},
-  {"get_cache_limit", &Dtool_AudioManager_get_cache_limit_99, METH_NOARGS, (const char *)Dtool_AudioManager_get_cache_limit_99_comment},
-  {"getCacheLimit", &Dtool_AudioManager_get_cache_limit_99, METH_NOARGS, (const char *)Dtool_AudioManager_get_cache_limit_99_comment},
-  {"set_volume", &Dtool_AudioManager_set_volume_100, METH_O, (const char *)Dtool_AudioManager_set_volume_100_comment},
-  {"setVolume", &Dtool_AudioManager_set_volume_100, METH_O, (const char *)Dtool_AudioManager_set_volume_100_comment},
-  {"get_volume", &Dtool_AudioManager_get_volume_101, METH_NOARGS, (const char *)Dtool_AudioManager_get_volume_101_comment},
-  {"getVolume", &Dtool_AudioManager_get_volume_101, METH_NOARGS, (const char *)Dtool_AudioManager_get_volume_101_comment},
-  {"set_active", &Dtool_AudioManager_set_active_102, METH_O, (const char *)Dtool_AudioManager_set_active_102_comment},
-  {"setActive", &Dtool_AudioManager_set_active_102, METH_O, (const char *)Dtool_AudioManager_set_active_102_comment},
-  {"get_active", &Dtool_AudioManager_get_active_103, METH_NOARGS, (const char *)Dtool_AudioManager_get_active_103_comment},
-  {"getActive", &Dtool_AudioManager_get_active_103, METH_NOARGS, (const char *)Dtool_AudioManager_get_active_103_comment},
-  {"set_concurrent_sound_limit", (PyCFunction) &Dtool_AudioManager_set_concurrent_sound_limit_104, METH_VARARGS | METH_KEYWORDS, (const char *)Dtool_AudioManager_set_concurrent_sound_limit_104_comment},
-  {"setConcurrentSoundLimit", (PyCFunction) &Dtool_AudioManager_set_concurrent_sound_limit_104, METH_VARARGS | METH_KEYWORDS, (const char *)Dtool_AudioManager_set_concurrent_sound_limit_104_comment},
-  {"get_concurrent_sound_limit", &Dtool_AudioManager_get_concurrent_sound_limit_105, METH_NOARGS, (const char *)Dtool_AudioManager_get_concurrent_sound_limit_105_comment},
-  {"getConcurrentSoundLimit", &Dtool_AudioManager_get_concurrent_sound_limit_105, METH_NOARGS, (const char *)Dtool_AudioManager_get_concurrent_sound_limit_105_comment},
-  {"reduce_sounds_playing_to", &Dtool_AudioManager_reduce_sounds_playing_to_106, METH_O, (const char *)Dtool_AudioManager_reduce_sounds_playing_to_106_comment},
-  {"reduceSoundsPlayingTo", &Dtool_AudioManager_reduce_sounds_playing_to_106, METH_O, (const char *)Dtool_AudioManager_reduce_sounds_playing_to_106_comment},
-  {"stop_all_sounds", &Dtool_AudioManager_stop_all_sounds_107, METH_NOARGS, (const char *)Dtool_AudioManager_stop_all_sounds_107_comment},
-  {"stopAllSounds", &Dtool_AudioManager_stop_all_sounds_107, METH_NOARGS, (const char *)Dtool_AudioManager_stop_all_sounds_107_comment},
-  {"update", &Dtool_AudioManager_update_108, METH_NOARGS, (const char *)Dtool_AudioManager_update_108_comment},
-  {"audio_3d_set_listener_attributes", (PyCFunction) &Dtool_AudioManager_audio_3d_set_listener_attributes_109, METH_VARARGS | METH_KEYWORDS, (const char *)Dtool_AudioManager_audio_3d_set_listener_attributes_109_comment},
-  {"audio3dSetListenerAttributes", (PyCFunction) &Dtool_AudioManager_audio_3d_set_listener_attributes_109, METH_VARARGS | METH_KEYWORDS, (const char *)Dtool_AudioManager_audio_3d_set_listener_attributes_109_comment},
-  {"audio_3d_set_distance_factor", &Dtool_AudioManager_audio_3d_set_distance_factor_111, METH_O, (const char *)Dtool_AudioManager_audio_3d_set_distance_factor_111_comment},
-  {"audio3dSetDistanceFactor", &Dtool_AudioManager_audio_3d_set_distance_factor_111, METH_O, (const char *)Dtool_AudioManager_audio_3d_set_distance_factor_111_comment},
-  {"audio_3d_get_distance_factor", &Dtool_AudioManager_audio_3d_get_distance_factor_112, METH_NOARGS, (const char *)Dtool_AudioManager_audio_3d_get_distance_factor_112_comment},
-  {"audio3dGetDistanceFactor", &Dtool_AudioManager_audio_3d_get_distance_factor_112, METH_NOARGS, (const char *)Dtool_AudioManager_audio_3d_get_distance_factor_112_comment},
-  {"audio_3d_set_doppler_factor", &Dtool_AudioManager_audio_3d_set_doppler_factor_113, METH_O, (const char *)Dtool_AudioManager_audio_3d_set_doppler_factor_113_comment},
-  {"audio3dSetDopplerFactor", &Dtool_AudioManager_audio_3d_set_doppler_factor_113, METH_O, (const char *)Dtool_AudioManager_audio_3d_set_doppler_factor_113_comment},
-  {"audio_3d_get_doppler_factor", &Dtool_AudioManager_audio_3d_get_doppler_factor_114, METH_NOARGS, (const char *)Dtool_AudioManager_audio_3d_get_doppler_factor_114_comment},
-  {"audio3dGetDopplerFactor", &Dtool_AudioManager_audio_3d_get_doppler_factor_114, METH_NOARGS, (const char *)Dtool_AudioManager_audio_3d_get_doppler_factor_114_comment},
-  {"audio_3d_set_drop_off_factor", &Dtool_AudioManager_audio_3d_set_drop_off_factor_115, METH_O, (const char *)Dtool_AudioManager_audio_3d_set_drop_off_factor_115_comment},
-  {"audio3dSetDropOffFactor", &Dtool_AudioManager_audio_3d_set_drop_off_factor_115, METH_O, (const char *)Dtool_AudioManager_audio_3d_set_drop_off_factor_115_comment},
-  {"audio_3d_get_drop_off_factor", &Dtool_AudioManager_audio_3d_get_drop_off_factor_116, METH_NOARGS, (const char *)Dtool_AudioManager_audio_3d_get_drop_off_factor_116_comment},
-  {"audio3dGetDropOffFactor", &Dtool_AudioManager_audio_3d_get_drop_off_factor_116, METH_NOARGS, (const char *)Dtool_AudioManager_audio_3d_get_drop_off_factor_116_comment},
-  {"get_dls_pathname", &Dtool_AudioManager_get_dls_pathname_117, METH_NOARGS | METH_STATIC, (const char *)Dtool_AudioManager_get_dls_pathname_117_comment},
-  {"getDlsPathname", &Dtool_AudioManager_get_dls_pathname_117, METH_NOARGS | METH_STATIC, (const char *)Dtool_AudioManager_get_dls_pathname_117_comment},
-  {"output", &Dtool_AudioManager_output_120, METH_O, (const char *)Dtool_AudioManager_output_120_comment},
-  {"write", &Dtool_AudioManager_write_121, METH_O, (const char *)Dtool_AudioManager_write_121_comment},
-  {"get_class_type", &Dtool_AudioManager_get_class_type_122, METH_NOARGS | METH_STATIC, (const char *)Dtool_AudioManager_get_class_type_122_comment},
-  {"getClassType", &Dtool_AudioManager_get_class_type_122, METH_NOARGS | METH_STATIC, (const char *)Dtool_AudioManager_get_class_type_122_comment},
+  {"get_speaker_setup", &Dtool_AudioManager_get_speaker_setup_89, METH_NOARGS, (const char *)Dtool_AudioManager_get_speaker_setup_89_comment},
+  {"getSpeakerSetup", &Dtool_AudioManager_get_speaker_setup_89, METH_NOARGS, (const char *)Dtool_AudioManager_get_speaker_setup_89_comment},
+  {"set_speaker_setup", &Dtool_AudioManager_set_speaker_setup_90, METH_O, (const char *)Dtool_AudioManager_set_speaker_setup_90_comment},
+  {"setSpeakerSetup", &Dtool_AudioManager_set_speaker_setup_90, METH_O, (const char *)Dtool_AudioManager_set_speaker_setup_90_comment},
+  {"configure_filters", &Dtool_AudioManager_configure_filters_91, METH_O, (const char *)Dtool_AudioManager_configure_filters_91_comment},
+  {"configureFilters", &Dtool_AudioManager_configure_filters_91, METH_O, (const char *)Dtool_AudioManager_configure_filters_91_comment},
+  {"create_AudioManager", &Dtool_AudioManager_create_AudioManager_92, METH_NOARGS | METH_STATIC, (const char *)Dtool_AudioManager_create_AudioManager_92_comment},
+  {"createAudioManager", &Dtool_AudioManager_create_AudioManager_92, METH_NOARGS | METH_STATIC, (const char *)Dtool_AudioManager_create_AudioManager_92_comment},
+  {"shutdown", &Dtool_AudioManager_shutdown_93, METH_NOARGS, (const char *)Dtool_AudioManager_shutdown_93_comment},
+  {"is_valid", &Dtool_AudioManager_is_valid_94, METH_NOARGS, (const char *)Dtool_AudioManager_is_valid_94_comment},
+  {"isValid", &Dtool_AudioManager_is_valid_94, METH_NOARGS, (const char *)Dtool_AudioManager_is_valid_94_comment},
+  {"get_sound", (PyCFunction) &Dtool_AudioManager_get_sound_95, METH_VARARGS | METH_KEYWORDS, (const char *)Dtool_AudioManager_get_sound_95_comment},
+  {"getSound", (PyCFunction) &Dtool_AudioManager_get_sound_95, METH_VARARGS | METH_KEYWORDS, (const char *)Dtool_AudioManager_get_sound_95_comment},
+  {"get_null_sound", &Dtool_AudioManager_get_null_sound_96, METH_NOARGS, (const char *)Dtool_AudioManager_get_null_sound_96_comment},
+  {"getNullSound", &Dtool_AudioManager_get_null_sound_96, METH_NOARGS, (const char *)Dtool_AudioManager_get_null_sound_96_comment},
+  {"uncache_sound", &Dtool_AudioManager_uncache_sound_97, METH_O, (const char *)Dtool_AudioManager_uncache_sound_97_comment},
+  {"uncacheSound", &Dtool_AudioManager_uncache_sound_97, METH_O, (const char *)Dtool_AudioManager_uncache_sound_97_comment},
+  {"clear_cache", &Dtool_AudioManager_clear_cache_98, METH_NOARGS, (const char *)Dtool_AudioManager_clear_cache_98_comment},
+  {"clearCache", &Dtool_AudioManager_clear_cache_98, METH_NOARGS, (const char *)Dtool_AudioManager_clear_cache_98_comment},
+  {"set_cache_limit", &Dtool_AudioManager_set_cache_limit_99, METH_O, (const char *)Dtool_AudioManager_set_cache_limit_99_comment},
+  {"setCacheLimit", &Dtool_AudioManager_set_cache_limit_99, METH_O, (const char *)Dtool_AudioManager_set_cache_limit_99_comment},
+  {"get_cache_limit", &Dtool_AudioManager_get_cache_limit_100, METH_NOARGS, (const char *)Dtool_AudioManager_get_cache_limit_100_comment},
+  {"getCacheLimit", &Dtool_AudioManager_get_cache_limit_100, METH_NOARGS, (const char *)Dtool_AudioManager_get_cache_limit_100_comment},
+  {"set_volume", &Dtool_AudioManager_set_volume_101, METH_O, (const char *)Dtool_AudioManager_set_volume_101_comment},
+  {"setVolume", &Dtool_AudioManager_set_volume_101, METH_O, (const char *)Dtool_AudioManager_set_volume_101_comment},
+  {"get_volume", &Dtool_AudioManager_get_volume_102, METH_NOARGS, (const char *)Dtool_AudioManager_get_volume_102_comment},
+  {"getVolume", &Dtool_AudioManager_get_volume_102, METH_NOARGS, (const char *)Dtool_AudioManager_get_volume_102_comment},
+  {"set_active", &Dtool_AudioManager_set_active_103, METH_O, (const char *)Dtool_AudioManager_set_active_103_comment},
+  {"setActive", &Dtool_AudioManager_set_active_103, METH_O, (const char *)Dtool_AudioManager_set_active_103_comment},
+  {"get_active", &Dtool_AudioManager_get_active_104, METH_NOARGS, (const char *)Dtool_AudioManager_get_active_104_comment},
+  {"getActive", &Dtool_AudioManager_get_active_104, METH_NOARGS, (const char *)Dtool_AudioManager_get_active_104_comment},
+  {"set_concurrent_sound_limit", (PyCFunction) &Dtool_AudioManager_set_concurrent_sound_limit_105, METH_VARARGS | METH_KEYWORDS, (const char *)Dtool_AudioManager_set_concurrent_sound_limit_105_comment},
+  {"setConcurrentSoundLimit", (PyCFunction) &Dtool_AudioManager_set_concurrent_sound_limit_105, METH_VARARGS | METH_KEYWORDS, (const char *)Dtool_AudioManager_set_concurrent_sound_limit_105_comment},
+  {"get_concurrent_sound_limit", &Dtool_AudioManager_get_concurrent_sound_limit_106, METH_NOARGS, (const char *)Dtool_AudioManager_get_concurrent_sound_limit_106_comment},
+  {"getConcurrentSoundLimit", &Dtool_AudioManager_get_concurrent_sound_limit_106, METH_NOARGS, (const char *)Dtool_AudioManager_get_concurrent_sound_limit_106_comment},
+  {"reduce_sounds_playing_to", &Dtool_AudioManager_reduce_sounds_playing_to_107, METH_O, (const char *)Dtool_AudioManager_reduce_sounds_playing_to_107_comment},
+  {"reduceSoundsPlayingTo", &Dtool_AudioManager_reduce_sounds_playing_to_107, METH_O, (const char *)Dtool_AudioManager_reduce_sounds_playing_to_107_comment},
+  {"stop_all_sounds", &Dtool_AudioManager_stop_all_sounds_108, METH_NOARGS, (const char *)Dtool_AudioManager_stop_all_sounds_108_comment},
+  {"stopAllSounds", &Dtool_AudioManager_stop_all_sounds_108, METH_NOARGS, (const char *)Dtool_AudioManager_stop_all_sounds_108_comment},
+  {"update", &Dtool_AudioManager_update_109, METH_NOARGS, (const char *)Dtool_AudioManager_update_109_comment},
+  {"audio_3d_set_listener_attributes", (PyCFunction) &Dtool_AudioManager_audio_3d_set_listener_attributes_110, METH_VARARGS | METH_KEYWORDS, (const char *)Dtool_AudioManager_audio_3d_set_listener_attributes_110_comment},
+  {"audio3dSetListenerAttributes", (PyCFunction) &Dtool_AudioManager_audio_3d_set_listener_attributes_110, METH_VARARGS | METH_KEYWORDS, (const char *)Dtool_AudioManager_audio_3d_set_listener_attributes_110_comment},
+  {"audio_3d_set_distance_factor", &Dtool_AudioManager_audio_3d_set_distance_factor_112, METH_O, (const char *)Dtool_AudioManager_audio_3d_set_distance_factor_112_comment},
+  {"audio3dSetDistanceFactor", &Dtool_AudioManager_audio_3d_set_distance_factor_112, METH_O, (const char *)Dtool_AudioManager_audio_3d_set_distance_factor_112_comment},
+  {"audio_3d_get_distance_factor", &Dtool_AudioManager_audio_3d_get_distance_factor_113, METH_NOARGS, (const char *)Dtool_AudioManager_audio_3d_get_distance_factor_113_comment},
+  {"audio3dGetDistanceFactor", &Dtool_AudioManager_audio_3d_get_distance_factor_113, METH_NOARGS, (const char *)Dtool_AudioManager_audio_3d_get_distance_factor_113_comment},
+  {"audio_3d_set_doppler_factor", &Dtool_AudioManager_audio_3d_set_doppler_factor_114, METH_O, (const char *)Dtool_AudioManager_audio_3d_set_doppler_factor_114_comment},
+  {"audio3dSetDopplerFactor", &Dtool_AudioManager_audio_3d_set_doppler_factor_114, METH_O, (const char *)Dtool_AudioManager_audio_3d_set_doppler_factor_114_comment},
+  {"audio_3d_get_doppler_factor", &Dtool_AudioManager_audio_3d_get_doppler_factor_115, METH_NOARGS, (const char *)Dtool_AudioManager_audio_3d_get_doppler_factor_115_comment},
+  {"audio3dGetDopplerFactor", &Dtool_AudioManager_audio_3d_get_doppler_factor_115, METH_NOARGS, (const char *)Dtool_AudioManager_audio_3d_get_doppler_factor_115_comment},
+  {"audio_3d_set_drop_off_factor", &Dtool_AudioManager_audio_3d_set_drop_off_factor_116, METH_O, (const char *)Dtool_AudioManager_audio_3d_set_drop_off_factor_116_comment},
+  {"audio3dSetDropOffFactor", &Dtool_AudioManager_audio_3d_set_drop_off_factor_116, METH_O, (const char *)Dtool_AudioManager_audio_3d_set_drop_off_factor_116_comment},
+  {"audio_3d_get_drop_off_factor", &Dtool_AudioManager_audio_3d_get_drop_off_factor_117, METH_NOARGS, (const char *)Dtool_AudioManager_audio_3d_get_drop_off_factor_117_comment},
+  {"audio3dGetDropOffFactor", &Dtool_AudioManager_audio_3d_get_drop_off_factor_117, METH_NOARGS, (const char *)Dtool_AudioManager_audio_3d_get_drop_off_factor_117_comment},
+  {"get_dls_pathname", &Dtool_AudioManager_get_dls_pathname_118, METH_NOARGS | METH_STATIC, (const char *)Dtool_AudioManager_get_dls_pathname_118_comment},
+  {"getDlsPathname", &Dtool_AudioManager_get_dls_pathname_118, METH_NOARGS | METH_STATIC, (const char *)Dtool_AudioManager_get_dls_pathname_118_comment},
+  {"output", &Dtool_AudioManager_output_121, METH_O, (const char *)Dtool_AudioManager_output_121_comment},
+  {"write", &Dtool_AudioManager_write_122, METH_O, (const char *)Dtool_AudioManager_write_122_comment},
+  {"get_class_type", &Dtool_AudioManager_get_class_type_123, METH_NOARGS | METH_STATIC, (const char *)Dtool_AudioManager_get_class_type_123_comment},
+  {"getClassType", &Dtool_AudioManager_get_class_type_123, METH_NOARGS | METH_STATIC, (const char *)Dtool_AudioManager_get_class_type_123_comment},
   {nullptr, nullptr, 0, nullptr}
 };
 
@@ -6445,18 +6484,18 @@ static void Dtool_PyModuleClassInit_AudioManager(PyObject *module) {
  * Python method tables for AudioLoadRequest (AudioLoadRequest)
  */
 static PyMethodDef Dtool_Methods_AudioLoadRequest[] = {
-  {"get_audio_manager", &Dtool_AudioLoadRequest_get_audio_manager_126, METH_NOARGS, (const char *)Dtool_AudioLoadRequest_get_audio_manager_126_comment},
-  {"getAudioManager", &Dtool_AudioLoadRequest_get_audio_manager_126, METH_NOARGS, (const char *)Dtool_AudioLoadRequest_get_audio_manager_126_comment},
-  {"get_filename", &Dtool_AudioLoadRequest_get_filename_127, METH_NOARGS, (const char *)Dtool_AudioLoadRequest_get_filename_127_comment},
-  {"getFilename", &Dtool_AudioLoadRequest_get_filename_127, METH_NOARGS, (const char *)Dtool_AudioLoadRequest_get_filename_127_comment},
-  {"get_positional", &Dtool_AudioLoadRequest_get_positional_128, METH_NOARGS, (const char *)Dtool_AudioLoadRequest_get_positional_128_comment},
-  {"getPositional", &Dtool_AudioLoadRequest_get_positional_128, METH_NOARGS, (const char *)Dtool_AudioLoadRequest_get_positional_128_comment},
-  {"is_ready", &Dtool_AudioLoadRequest_is_ready_129, METH_NOARGS, (const char *)Dtool_AudioLoadRequest_is_ready_129_comment},
-  {"isReady", &Dtool_AudioLoadRequest_is_ready_129, METH_NOARGS, (const char *)Dtool_AudioLoadRequest_is_ready_129_comment},
-  {"get_sound", &Dtool_AudioLoadRequest_get_sound_130, METH_NOARGS, (const char *)Dtool_AudioLoadRequest_get_sound_130_comment},
-  {"getSound", &Dtool_AudioLoadRequest_get_sound_130, METH_NOARGS, (const char *)Dtool_AudioLoadRequest_get_sound_130_comment},
-  {"get_class_type", &Dtool_AudioLoadRequest_get_class_type_131, METH_NOARGS | METH_STATIC, (const char *)Dtool_AudioLoadRequest_get_class_type_131_comment},
-  {"getClassType", &Dtool_AudioLoadRequest_get_class_type_131, METH_NOARGS | METH_STATIC, (const char *)Dtool_AudioLoadRequest_get_class_type_131_comment},
+  {"get_audio_manager", &Dtool_AudioLoadRequest_get_audio_manager_127, METH_NOARGS, (const char *)Dtool_AudioLoadRequest_get_audio_manager_127_comment},
+  {"getAudioManager", &Dtool_AudioLoadRequest_get_audio_manager_127, METH_NOARGS, (const char *)Dtool_AudioLoadRequest_get_audio_manager_127_comment},
+  {"get_filename", &Dtool_AudioLoadRequest_get_filename_128, METH_NOARGS, (const char *)Dtool_AudioLoadRequest_get_filename_128_comment},
+  {"getFilename", &Dtool_AudioLoadRequest_get_filename_128, METH_NOARGS, (const char *)Dtool_AudioLoadRequest_get_filename_128_comment},
+  {"get_positional", &Dtool_AudioLoadRequest_get_positional_129, METH_NOARGS, (const char *)Dtool_AudioLoadRequest_get_positional_129_comment},
+  {"getPositional", &Dtool_AudioLoadRequest_get_positional_129, METH_NOARGS, (const char *)Dtool_AudioLoadRequest_get_positional_129_comment},
+  {"is_ready", &Dtool_AudioLoadRequest_is_ready_130, METH_NOARGS, (const char *)Dtool_AudioLoadRequest_is_ready_130_comment},
+  {"isReady", &Dtool_AudioLoadRequest_is_ready_130, METH_NOARGS, (const char *)Dtool_AudioLoadRequest_is_ready_130_comment},
+  {"get_sound", &Dtool_AudioLoadRequest_get_sound_131, METH_NOARGS, (const char *)Dtool_AudioLoadRequest_get_sound_131_comment},
+  {"getSound", &Dtool_AudioLoadRequest_get_sound_131, METH_NOARGS, (const char *)Dtool_AudioLoadRequest_get_sound_131_comment},
+  {"get_class_type", &Dtool_AudioLoadRequest_get_class_type_132, METH_NOARGS | METH_STATIC, (const char *)Dtool_AudioLoadRequest_get_class_type_132_comment},
+  {"getClassType", &Dtool_AudioLoadRequest_get_class_type_132, METH_NOARGS | METH_STATIC, (const char *)Dtool_AudioLoadRequest_get_class_type_132_comment},
   {nullptr, nullptr, 0, nullptr}
 };
 
@@ -6745,7 +6784,7 @@ static PyMethodDef python_simple_funcs[] = {
 };
 
 static const InterrogateModuleDef _in_module_def = {
-  1775484104,  /* file_identifier */
+  1775500702,  /* file_identifier */
   "libp3audio",  /* library_name */
   "M_1l",  /* library_hash_name */
   "panda3d.core",  /* module_name */
@@ -6755,7 +6794,7 @@ static const InterrogateModuleDef _in_module_def = {
   nullptr,  /* fptrs */
   0,  /* num_fptrs */
   1,  /* first_index */
-  272  /* next_index */
+  274  /* next_index */
 };
 
 #ifdef LINK_ALL_STATIC

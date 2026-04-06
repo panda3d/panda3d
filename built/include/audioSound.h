@@ -28,6 +28,8 @@ class EXPCL_PANDA_AUDIO AudioSound : public TypedReferenceCount {
 PUBLISHED:
   virtual ~AudioSound();
 
+  virtual AudioSound *make_copy();
+
   // For best compatibility, set the loop_count, volume, and balance, prior to
   // calling play().  You may set them while they're playing, but it's
   // implementation specific whether you get the results.  - Calling play() a

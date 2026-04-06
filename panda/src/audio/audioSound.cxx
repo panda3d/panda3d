@@ -34,6 +34,11 @@ AudioSound(bool positional) : _positional(positional) {
   // Intentionally blank.
 }
 
+AudioSound *AudioSound::
+make_copy() {
+  // Intentionally blank.
+  return nullptr;
+}
 
 void AudioSound::
 set_3d_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx, PN_stdfloat vy, PN_stdfloat vz) {
