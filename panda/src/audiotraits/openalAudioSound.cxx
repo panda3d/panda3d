@@ -185,8 +185,8 @@ cleanup() {
 /**
  * Copies an OpenALAudioSound into another OpenALAudioSound.
  */
-OpenALAudioSound *OpenALAudioSound::
-make_copy() {
+AudioSound *OpenALAudioSound::
+make_copy() const {
   ReMutexHolder holder(OpenALAudioManager::_lock);
 
   OpenALAudioSound *copy_sound = new OpenALAudioSound(*this);

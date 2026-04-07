@@ -36,7 +36,7 @@ AudioSound(bool positional) : _positional(positional) {
 }
 
 AudioSound *AudioSound::
-make_copy() {
+make_copy() const {
   // Intentionally blank.
   audio_cat.error() << "Copying " << (*this) << "failed: copying an AudioSound object is currently only available with OpenAL.\n";
   return nullptr;

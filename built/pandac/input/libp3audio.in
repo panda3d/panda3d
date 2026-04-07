@@ -1,4 +1,4 @@
-1775572389
+1775577052
 3 3
 10 libp3audio 4 M_1l 12 panda3d.core 
 106
@@ -96,8 +96,8 @@ inline void FilterProperties::add_compress(PN_stdfloat threshold, PN_stdfloat at
 static TypeHandle FilterProperties::get_class_type(void);
 
 122 9 make_copy 0 6 216 21 AudioSound::make_copy 0 1 16 0
-48
-virtual AudioSound *AudioSound::make_copy(void);
+54
+virtual AudioSound *AudioSound::make_copy(void) const;
 
 123 4 play 0 6 216 16 AudioSound::play 0 1 17 350
 // For best compatibility, set the loop_count, volume, and balance, prior to
@@ -664,19 +664,19 @@ AudioLoadRequest::~AudioLoadRequest(void);
  * Add a compress filter to the end of the DSP chain.
  */ 5 4 this 3 231  9 threshold 1 220  6 attack 1 220  7 release 1 220  10 gainmakeup 1 220  
 15 0 0 7 121 236 0 0 0 0 
-16 0 0 7 122 237 0 0 0 1 4 this 3 237  
+16 0 0 7 122 239 0 0 0 1 4 this 3 237  
 17 0 0 4 123 234 0 0 350 // For best compatibility, set the loop_count, volume, and balance, prior to
 // calling play().  You may set them while they're playing, but it's
 // implementation specific whether you get the results.  - Calling play() a
 // second time on the same sound before it is finished will start the sound
-// again (creating a skipping or stuttering effect). 1 4 this 3 237  
-18 0 0 4 124 234 0 0 0 1 4 this 3 237  
-19 0 0 4 125 234 0 0 65 // loop: false = play once; true = play forever.  inits to false. 2 4 this 3 237  4 loop 5 222  
-20 0 0 6 126 222 0 0 0 1 4 this 3 238  
-21 0 0 4 127 234 0 0 73 // loop_count: 0 = forever; 1 = play once; n = play n times.  inits to 1. 2 4 this 3 237  10 loop_count 5 240  
-22 0 0 6 128 240 0 0 0 1 4 this 3 238  
-23 0 0 4 129 234 0 0 65 // loop_start: 0 = beginning.  expressed in seconds.  inits to 0. 2 4 this 3 237  10 loop_start 5 220  
-24 0 0 6 130 220 0 0 0 1 4 this 3 238  
+// again (creating a skipping or stuttering effect). 1 4 this 3 239  
+18 0 0 4 124 234 0 0 0 1 4 this 3 239  
+19 0 0 4 125 234 0 0 65 // loop: false = play once; true = play forever.  inits to false. 2 4 this 3 239  4 loop 5 222  
+20 0 0 6 126 222 0 0 0 1 4 this 3 237  
+21 0 0 4 127 234 0 0 73 // loop_count: 0 = forever; 1 = play once; n = play n times.  inits to 1. 2 4 this 3 239  10 loop_count 5 240  
+22 0 0 6 128 240 0 0 0 1 4 this 3 237  
+23 0 0 4 129 234 0 0 65 // loop_start: 0 = beginning.  expressed in seconds.  inits to 0. 2 4 this 3 239  10 loop_start 5 220  
+24 0 0 6 130 220 0 0 0 1 4 this 3 237  
 25 0 0 4 131 234 0 0 656 /**
    * Control time position within the sound, in seconds.  This is similar (in
    * concept) to the seek position within a file.  The value starts at 0.0 (the
@@ -691,59 +691,59 @@ AudioLoadRequest::~AudioLoadRequest(void);
    * @code
    * PN_stdfloat percent_complete = s.get_time() / s.length();
    * @endcode
-   */ 2 4 this 3 237  10 start_time 5 220  
-26 0 0 6 132 220 0 0 0 1 4 this 3 238  
-27 0 0 4 133 234 0 0 45 // 0 = minimum; 1.0 = maximum.  inits to 1.0. 2 4 this 3 237  6 volume 5 220  
-28 0 0 6 134 220 0 0 0 1 4 this 3 238  
-29 0 0 4 135 234 0 0 68 // -1.0 is hard left 0.0 is centered 1.0 is hard right inits to 0.0. 2 4 this 3 237  13 balance_right 5 220  
-30 0 0 6 136 220 0 0 0 1 4 this 3 238  
-31 0 0 4 137 234 0 0 62 // play_rate is any positive PN_stdfloat value.  inits to 1.0. 2 4 this 3 237  9 play_rate 5 220  
-32 0 0 6 138 220 0 0 0 1 4 this 3 238  
-33 0 0 4 139 234 0 0 28 // inits to manager's state. 2 4 this 3 237  4 flag 5 222  
-34 0 0 6 140 222 0 0 0 1 4 this 3 238  
+   */ 2 4 this 3 239  10 start_time 5 220  
+26 0 0 6 132 220 0 0 0 1 4 this 3 237  
+27 0 0 4 133 234 0 0 45 // 0 = minimum; 1.0 = maximum.  inits to 1.0. 2 4 this 3 239  6 volume 5 220  
+28 0 0 6 134 220 0 0 0 1 4 this 3 237  
+29 0 0 4 135 234 0 0 68 // -1.0 is hard left 0.0 is centered 1.0 is hard right inits to 0.0. 2 4 this 3 239  13 balance_right 5 220  
+30 0 0 6 136 220 0 0 0 1 4 this 3 237  
+31 0 0 4 137 234 0 0 62 // play_rate is any positive PN_stdfloat value.  inits to 1.0. 2 4 this 3 239  9 play_rate 5 220  
+32 0 0 6 138 220 0 0 0 1 4 this 3 237  
+33 0 0 4 139 234 0 0 28 // inits to manager's state. 2 4 this 3 239  4 flag 5 222  
+34 0 0 6 140 222 0 0 0 1 4 this 3 237  
 35 0 0 4 141 234 0 0 126 // Set (or clear) the event that will be thrown when the sound finishes
-// playing.  To clear the event, pass an empty string. 2 4 this 3 237  5 event 1 241  
-36 0 0 6 142 241 0 0 0 1 4 this 3 238  
-37 0 0 6 143 241 0 0 47 // There is no set_name(), this is intentional. 1 4 this 3 238  
+// playing.  To clear the event, pass an empty string. 2 4 this 3 239  5 event 1 241  
+36 0 0 6 142 241 0 0 0 1 4 this 3 237  
+37 0 0 6 143 241 0 0 47 // There is no set_name(), this is intentional. 1 4 this 3 237  
 38 0 0 6 144 222 0 0 66 /**
  * Returns true if this was created as a positional sound.
- */ 1 4 this 3 238  
-39 0 0 6 145 220 0 0 35 // return: playing time in seconds. 1 4 this 3 238  
+ */ 1 4 this 3 237  
+39 0 0 6 145 220 0 0 35 // return: playing time in seconds. 1 4 this 3 237  
 40 0 0 4 146 234 0 0 179 // Controls the position of this sound's emitter.  px, py and pz are the
 // emitter's position.  vx, vy and vz are the emitter's velocity in UNITS
-// PER SECOND (default: meters). 7 4 this 3 237  2 px 1 220  2 py 1 220  2 pz 1 220  2 vx 1 220  2 vy 1 220  2 vz 1 220  
-41 0 0 4 148 234 0 0 87 // Controls the direction of this sound emitter. Currently implemented only for OpenAL. 2 4 this 3 237  1 d 1 242  
-42 0 0 7 149 242 0 0 0 1 4 this 3 238  
+// PER SECOND (default: meters). 7 4 this 3 239  2 px 1 220  2 py 1 220  2 pz 1 220  2 vx 1 220  2 vy 1 220  2 vz 1 220  
+41 0 0 4 148 234 0 0 87 // Controls the direction of this sound emitter. Currently implemented only for OpenAL. 2 4 this 3 239  1 d 1 242  
+42 0 0 7 149 242 0 0 0 1 4 this 3 237  
 43 0 0 4 150 234 0 0 168 // Controls the distance (in units) that this sound begins to fall off.
 // Also affects the rate it falls off.  Default is 1.0 CloserFaster, <1.0
-// FartherSlower, >1.0 2 4 this 3 237  4 dist 1 220  
-44 0 0 6 151 220 0 0 0 1 4 this 3 238  
+// FartherSlower, >1.0 2 4 this 3 239  4 dist 1 220  
+44 0 0 6 151 220 0 0 0 1 4 this 3 237  
 45 0 0 4 152 234 0 0 222 // Controls the maximum distance (in units) that this sound stops falling
 // off.  The sound does not stop at that point, it just doesn't get any
-// quieter.  You should rarely need to adjust this.  Default is 1000000000.0 2 4 this 3 237  4 dist 1 220  
-46 0 0 6 153 220 0 0 0 1 4 this 3 238  
+// quieter.  You should rarely need to adjust this.  Default is 1000000000.0 2 4 this 3 239  4 dist 1 220  
+46 0 0 6 153 220 0 0 0 1 4 this 3 237  
 47 0 0 4 154 234 0 0 169 // Sets the angle of the inner cone of a directional sound source. In the zone inside of the inner cone
-// sound is emitted with the (normal) volume set by set_volume(). 2 4 this 3 237  5 angle 1 220  
-48 0 0 6 155 220 0 0 0 1 4 this 3 238  
+// sound is emitted with the (normal) volume set by set_volume(). 2 4 this 3 239  5 angle 1 220  
+48 0 0 6 155 220 0 0 0 1 4 this 3 237  
 49 0 0 4 156 234 0 0 144 // Sets the angle of the outer cone of a directional sound source. In the zone between
-// the inner and the outer cone the volume is attenuated. 2 4 this 3 237  5 angle 1 220  
-50 0 0 6 157 220 0 0 0 1 4 this 3 238  
+// the inner and the outer cone the volume is attenuated. 2 4 this 3 239  5 angle 1 220  
+50 0 0 6 157 220 0 0 0 1 4 this 3 237  
 51 0 0 4 158 234 0 0 165 // Sets a factor applied to the volume set by set_volume() for the zone outside the outer cone.
-// By default this is 0 (so no sound is heard inside the outer zone). 2 4 this 3 237  4 gain 1 220  
-52 0 0 6 159 220 0 0 0 1 4 this 3 238  
-53 0 0 6 160 220 0 0 36 // speaker_mix is for use with FMOD. 2 4 this 3 237  7 speaker 1 245  
-54 0 0 4 161 234 0 0 0 9 4 this 3 237  9 frontleft 1 220  10 frontright 1 220  6 center 1 220  3 sub 1 220  8 backleft 1 220  9 backright 1 220  8 sideleft 1 220  9 sideright 1 220  
-55 0 0 6 162 245 0 0 0 1 4 this 3 237  
-56 0 0 4 163 234 0 0 0 2 4 this 3 237  8 priority 1 245  
-57 0 0 6 164 222 0 0 0 2 4 this 3 237  6 config 1 231  
-58 0 0 6 165 217 0 0 0 1 4 this 3 238  
-59 0 0 6 166 222 0 0 0 2 4 this 3 238  3 key 1 241  
-60 0 0 6 167 241 0 0 0 2 4 this 3 238  3 key 1 241  
-61 0 0 6 168 246 0 0 0 1 4 this 3 238  
-62 0 0 6 168 241 0 0 0 2 4 this 3 238  5 index 1 245  
-63 0 0 6 169 245 0 0 0 1 4 this 3 238  
-64 0 0 4 170 234 0 0 0 2 4 this 3 238  3 out 1 250  
-65 0 0 4 171 234 0 0 0 2 4 this 3 238  3 out 1 250  
+// By default this is 0 (so no sound is heard inside the outer zone). 2 4 this 3 239  4 gain 1 220  
+52 0 0 6 159 220 0 0 0 1 4 this 3 237  
+53 0 0 6 160 220 0 0 36 // speaker_mix is for use with FMOD. 2 4 this 3 239  7 speaker 1 245  
+54 0 0 4 161 234 0 0 0 9 4 this 3 239  9 frontleft 1 220  10 frontright 1 220  6 center 1 220  3 sub 1 220  8 backleft 1 220  9 backright 1 220  8 sideleft 1 220  9 sideright 1 220  
+55 0 0 6 162 245 0 0 0 1 4 this 3 239  
+56 0 0 4 163 234 0 0 0 2 4 this 3 239  8 priority 1 245  
+57 0 0 6 164 222 0 0 0 2 4 this 3 239  6 config 1 231  
+58 0 0 6 165 217 0 0 0 1 4 this 3 237  
+59 0 0 6 166 222 0 0 0 2 4 this 3 237  3 key 1 241  
+60 0 0 6 167 241 0 0 0 2 4 this 3 237  3 key 1 241  
+61 0 0 6 168 246 0 0 0 1 4 this 3 237  
+62 0 0 6 168 241 0 0 0 2 4 this 3 237  5 index 1 245  
+63 0 0 6 169 245 0 0 0 1 4 this 3 237  
+64 0 0 4 170 234 0 0 0 2 4 this 3 237  3 out 1 250  
+65 0 0 4 171 234 0 0 0 2 4 this 3 237  3 out 1 250  
 66 0 0 7 172 236 0 0 0 0 
 67 0 0 6 173 245 0 0 0 1 4 this 3 252  
 68 0 0 4 174 234 0 0 0 2 4 this 3 252  3 cat 1 225  
@@ -756,9 +756,9 @@ AudioLoadRequest::~AudioLoadRequest(void);
 // invalid sound manager, you may get silent sounds from it though.  The
 // sound manager and the sounds it creates should not crash the application
 // even when the objects are not valid. 1 4 this 3 252  
-73 0 0 7 179 237 0 0 15 // Get a sound: 4 4 this 3 252  9 file_name 1 253  10 positional 5 222  4 mode 5 245  
-74 0 0 7 179 237 0 0 0 4 4 this 3 252  6 source 1 255  10 positional 5 222  4 mode 5 245  
-75 0 0 7 180 237 0 0 0 1 4 this 3 252  
+73 0 0 7 179 239 0 0 15 // Get a sound: 4 4 this 3 252  9 file_name 1 253  10 positional 5 222  4 mode 5 245  
+74 0 0 7 179 239 0 0 0 4 4 this 3 252  6 source 1 255  10 positional 5 222  4 mode 5 245  
+75 0 0 7 180 239 0 0 0 1 4 this 3 252  
 76 0 0 4 181 234 0 0 278 // Tell the AudioManager there is no need to keep this one cached.  This
 // doesn't break any connection between AudioSounds that have already given
 // by get_sound() from this manager.  It's only affecting whether the
@@ -839,7 +839,7 @@ AudioLoadRequest::~AudioLoadRequest(void);
  * Equivalent to `req.done() and not req.cancelled()`.
  * @see done()
  */ 1 4 this 3 262  
-106 0 0 7 211 237 0 0 202 /**
+106 0 0 7 211 239 0 0 202 /**
  * Returns the sound that was loaded asynchronously, if any, or nullptr if
  * there was an error.  It is an error to call this unless done() returns
  * true.
@@ -969,11 +969,11 @@ AudioLoadRequest::~AudioLoadRequest(void);
 
 236 12 TypeHandle * 0 8576 12 TypeHandle * 12 TypeHandle * 0 0 235 0 0 0 0 0 0 0 0 0 0
 
-237 12 AudioSound * 0 8576 12 AudioSound * 12 AudioSound * 0 0 216 0 0 0 0 0 0 0 0 0 0
+237 18 AudioSound const * 0 8576 18 AudioSound const * 18 AudioSound const * 0 0 238 0 0 0 0 0 0 0 0 0 0
 
-238 18 AudioSound const * 0 8576 18 AudioSound const * 18 AudioSound const * 0 0 239 0 0 0 0 0 0 0 0 0 0
+238 16 AudioSound const 0 8832 16 AudioSound const 16 AudioSound const 0 0 216 0 0 0 0 0 0 0 0 0 0
 
-239 16 AudioSound const 0 8832 16 AudioSound const 16 AudioSound const 0 0 216 0 0 0 0 0 0 0 0 0 0
+239 12 AudioSound * 0 8576 12 AudioSound * 12 AudioSound * 0 0 216 0 0 0 0 0 0 0 0 0 0
 
 240 17 unsigned long int 0 8214 17 unsigned long int 17 unsigned long int 0 1 0 0 0 0 0 0 0 0 0 0 0
 

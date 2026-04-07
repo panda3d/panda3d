@@ -2188,15 +2188,15 @@ static PyObject *Dtool_Wrap_FilterProperties(void *from_this, PyTypeObject *from
  */
 /**
  * Python function wrapper for:
- * virtual AudioSound *AudioSound::make_copy(void)
+ * virtual AudioSound *AudioSound::make_copy(void) const
  */
 static PyObject *Dtool_AudioSound_make_copy_18(PyObject *self, PyObject *) {
   AudioSound *local_this = nullptr;
-  if (!Dtool_Call_ExtractThisPointer_NonConst(self, Dtool_AudioSound, (void **)&local_this, "AudioSound.make_copy")) {
+  if (!DtoolInstance_GetPointer(self, local_this, Dtool_AudioSound)) {
     return nullptr;
   }
-  // 1-virtual AudioSound *AudioSound::make_copy(void)
-  AudioSound *return_value = ((*local_this).make_copy)();
+  // 1-virtual AudioSound *AudioSound::make_copy(void) const
+  AudioSound *return_value = ((*(const AudioSound*)local_this).make_copy)();
   if (return_value != nullptr) {
     return_value->ref();
   }
@@ -2216,7 +2216,7 @@ static PyObject *Dtool_AudioSound_make_copy_18(PyObject *self, PyObject *) {
 #ifndef NDEBUG
 static const char *Dtool_AudioSound_make_copy_18_comment =
   "C++ Interface:\n"
-  "make_copy(const AudioSound self)\n";
+  "make_copy(AudioSound self)\n";
 #else
 static const char *Dtool_AudioSound_make_copy_18_comment = nullptr;
 #endif
@@ -6784,7 +6784,7 @@ static PyMethodDef python_simple_funcs[] = {
 };
 
 static const InterrogateModuleDef _in_module_def = {
-  1775572389,  /* file_identifier */
+  1775577052,  /* file_identifier */
   "libp3audio",  /* library_name */
   "M_1l",  /* library_hash_name */
   "panda3d.core",  /* module_name */
