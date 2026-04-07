@@ -62588,7 +62588,7 @@ static PyMethodDef python_simple_funcs[] = {
 };
 
 static const InterrogateModuleDef _in_module_def = {
-  1775485909,  /* file_identifier */
+  1775569334,  /* file_identifier */
   "libp3egg",  /* library_name */
   "hhEq",  /* library_hash_name */
   "panda3d.egg",  /* module_name */

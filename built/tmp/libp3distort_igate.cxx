@@ -6343,7 +6343,7 @@ static PyMethodDef python_simple_funcs[] = {
 };
 
 static const InterrogateModuleDef _in_module_def = {
-  1775485846,  /* file_identifier */
+  1775569244,  /* file_identifier */
   "libp3distort",  /* library_name */
   "2YN4",  /* library_hash_name */
   "panda3d.fx",  /* module_name */

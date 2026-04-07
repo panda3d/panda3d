@@ -15342,7 +15342,7 @@ static PyMethodDef python_simple_funcs[] = {
 };
 
 static const InterrogateModuleDef _in_module_def = {
-  1775486738,  /* file_identifier */
+  1775570418,  /* file_identifier */
   "libp3interval",  /* library_name */
   "ceEZ",  /* library_hash_name */
   "panda3d.direct",  /* module_name */

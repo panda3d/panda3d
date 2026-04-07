@@ -21438,7 +21438,7 @@ static PyMethodDef python_simple_funcs[] = {
 };
 
 static const InterrogateModuleDef _in_module_def = {
-  1775486121,  /* file_identifier */
+  1775569674,  /* file_identifier */
   "libp3particlesystem",  /* library_name */
   "BxOc",  /* library_hash_name */
   "panda3d.physics",  /* module_name */

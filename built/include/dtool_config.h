@@ -42,10 +42,10 @@
 #define HAVE_IOS_BINARY 1
 #define HAVE_IOS_TYPEDEFS 1
 #define HAVE_JPEG 1
-#undef HAVE_MIMALLOC
+#define HAVE_MIMALLOC 1
 #define HAVE_NET 1
 #undef HAVE_OPENAL_FRAMEWORK
-#undef HAVE_OPENEXR
+#define HAVE_OPENEXR 1
 #define HAVE_OPENSSL 1
 #undef HAVE_OPUS
 #define HAVE_PNG 1

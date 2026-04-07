@@ -12,6 +12,7 @@
  * Prior system by: cary
  */
 
+#include "throw_event.h"
 #include "audioSound.h"
 #include "vector_string.h"
 
@@ -37,6 +38,7 @@ AudioSound(bool positional) : _positional(positional) {
 AudioSound *AudioSound::
 make_copy() {
   // Intentionally blank.
+  audio_cat.error() << "Copying " << (*this) << "failed: copying an AudioSound object is currently only available with OpenAL.\n";
   return nullptr;
 }
 

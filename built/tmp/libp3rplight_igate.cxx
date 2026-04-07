@@ -9437,7 +9437,7 @@ static PyMethodDef python_simple_funcs[] = {
 };
 
 static const InterrogateModuleDef _in_module_def = {
-  1775487359,  /* file_identifier */
+  1775570941,  /* file_identifier */
   "libp3rplight",  /* library_name */
   "_K37",  /* library_hash_name */
   "panda3d._rplight",  /* module_name */

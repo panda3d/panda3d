@@ -2148,7 +2148,7 @@ static PyMethodDef python_simple_funcs[] = {
 };
 
 static const InterrogateModuleDef _in_module_def = {
-  1775485823,  /* file_identifier */
+  1775569215,  /* file_identifier */
   "libp3vision",  /* library_name */
   "nRMq",  /* library_hash_name */
   "panda3d.vision",  /* module_name */

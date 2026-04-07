@@ -39,6 +39,11 @@ try:
 except ImportError as err:
     if "No module named egg" not in str(err):
         raise
+try:
+    from panda3d.ode import *
+except ImportError as err:
+    if "No module named ode" not in str(err):
+        raise
 
 from direct.showbase import DConfig
 
