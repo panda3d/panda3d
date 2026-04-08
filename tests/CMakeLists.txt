@@ -2,8 +2,6 @@ if(NOT INTERROGATE_PYTHON_INTERFACE)
   return()
 endif()
 
-cmake_minimum_required(VERSION 4.3)
-
 add_executable(run_pytest main.c)
 target_link_libraries(run_pytest panda)
 target_link_libraries(run_pytest Python::Python)
