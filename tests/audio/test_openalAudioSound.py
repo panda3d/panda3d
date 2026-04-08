@@ -3,7 +3,11 @@ import os
 import pytest
 from panda3d.core import Filename, MovieAudio
 
-def make_test_sound(audiomgr):
+def test_make_copy(audiomgr):
+    if "openal" not in str(audiomgr).lower():
+        # NULL audio manager (as well as fmod) don't support copying yet
+        pytest.skip("Copying is currently only supported on OpenAL")
+
     sound_path = os.path.join(os.path.dirname(__file__), "wav_test.wav")
     sound_path = Filename.from_os_specific(sound_path)
     test_sound = MovieAudio.get(sound_path)
@@ -12,14 +16,6 @@ def make_test_sound(audiomgr):
     test_sound = audiomgr.get_sound(test_sound)
     if str(test_sound).startswith("NullAudioSound"):
         pytest.skip("Sound loading failed")
-    return test_sound
-
-def test_make_copy(audiomgr):
-    if "openal" not in str(audiomgr).lower():
-        # NULL audio manager (as well as fmod) don't support copying yet
-        pytest.skip("Copying is currently only supported on OpenAL")
-
-    test_sound = make_test_sound(audiomgr)
 
     test_sound.setActive(1)
     test_sound.set3dMaxDistance(20.0)
@@ -30,13 +26,4 @@ def test_make_copy(audiomgr):
     assert(test_copy.get3dMaxDistance() == test_sound.get3dMaxDistance())
     # check that make_copy has copied manually-modified parameters
     assert(test_copy.get3dMaxDistance() == 20.0) 
-    test_sound.finished()
 
-def test_set_calibrated_clock(audiomgr):
-    test_sound = make_test_sound(audiomgr)
-    # get time
-    init_clock = test_sound.getCalibratedClock(rtc) # get init clock val
-    # set clock val
-    # get new time
-    # get new clock val
-    # compare clock vals with time diff
