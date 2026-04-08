@@ -28,6 +28,8 @@ class EXPCL_PANDA_AUDIO NullAudioSound : public AudioSound {
 public:
   ~NullAudioSound();
 
+  AudioSound *make_copy() const;
+
   void play();
   void stop();
 
