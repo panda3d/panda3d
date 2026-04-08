@@ -183,7 +183,7 @@ cleanup() {
 }
 
 /**
- * Copies an OpenALAudioSound into another OpenALAudioSound.
+ * Copies an OpenALAudioSound into a new OpenALAudioSound.
  */
 AudioSound *OpenALAudioSound::
 make_copy() const {

@@ -24,6 +24,6 @@ def test_make_copy(audiomgr):
     assert(test_copy.getActive() == test_sound.getActive())
     assert(test_copy.getName() == test_sound.getName())
     assert(test_copy.get3dMaxDistance() == test_sound.get3dMaxDistance())
-    # check that make_copy hasn't changed user-modified value
+    # check that make_copy has copied manually-modified parameters
     assert(test_copy.get3dMaxDistance() == 20.0) 
 

@@ -35,6 +35,10 @@ AudioSound(bool positional) : _positional(positional) {
   // Intentionally blank.
 }
 
+/*
+ * Copies an OpenALAudioSound into a new OpenALAudioSound.
+ * Not implemented in FMOD!
+ */
 AudioSound *AudioSound::
 make_copy() const {
   // Intentionally blank.

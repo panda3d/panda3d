@@ -114,7 +114,7 @@ public:
   void set_3d_cone_outer_gain(PN_stdfloat gain);
   PN_stdfloat get_3d_cone_outer_gain() const;
 
-  // Construct a near-identical copy of this object and return a pointer to the new copy
+  // Construct a near-identical copy of this object on the heap and return a pointer to the new copy
   virtual AudioSound *make_copy() const;
 
   AudioSound::SoundStatus status() const;
