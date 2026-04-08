@@ -1,3 +1,0 @@
-namespace Awesomium {
-  class WebCore;
-};

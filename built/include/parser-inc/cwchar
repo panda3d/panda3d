@@ -1,8 +1,0 @@
-#pragma once
-
-#include <stdtypedefs.h>
-
-namespace std {
-  struct mbstate_t;
-  typedef int wint_t;
-}

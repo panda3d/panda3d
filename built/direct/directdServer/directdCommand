@@ -1,3 +1,0 @@
-tcsh -c ppython -c "from ShowBaseGlobal import *; d=DirectD(); d.serverReady('DRMINE-D02', 8002); run()"
-
-
