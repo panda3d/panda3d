@@ -427,6 +427,15 @@ add_vertex(EggVertex *vertex, int index) {
 
   if (index == -1) {
     index = get_highest_index() + 1;
+
+    // If we reached wraparound, try harder to look for an unused index.
+    if (index < 0) {
+      for (index = 0; index < INT_MAX; ++index) {
+        if (!_index_vertices.count(index)) {
+          break;
+        }
+      }
+    }
   }
   // Always supply an index number >= 0.
   nassertr(index >= 0, nullptr);
