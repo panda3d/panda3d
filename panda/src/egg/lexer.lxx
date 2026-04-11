@@ -82,8 +82,17 @@ eggyyerror(YYLTYPE *loc, yyscan_t scanner, const std::string &msg) {
         << " at line " << loc->first_line << ", column " << loc->first_column << ":\n"
         << std::setiosflags(Notify::get_literal_flag())
         << lexer_state->_current_line << "\n";
-      indent(out, loc->first_column - 1)
-        << "^";
+
+      // Make sure we preserve the original indentation so that tab characters
+      // have the same amount of indentation.
+      for (int i = 0; i < loc->first_column - 1 && i < (int)sizeof(lexer_state->_current_line); ++i) {
+        char c = lexer_state->_current_line[i];
+        if (c == '\0') {
+          break;
+        }
+        out.put(isspace(c) ? c : ' ');
+      }
+      out.put('^');
 
       int last_column;
       if (loc->first_line == loc->last_line) {
@@ -122,8 +131,17 @@ eggyywarning(YYLTYPE *loc, yyscan_t scanner, const std::string &msg) {
         << " at line " << loc->first_line << ", column " << loc->first_column << ":\n"
         << std::setiosflags(Notify::get_literal_flag())
         << lexer_state->_current_line << "\n";
-      indent(out, loc->first_column - 1)
-        << "^";
+
+      // Make sure we preserve the original indentation so that tab characters
+      // have the same amount of indentation.
+      for (int i = 0; i < loc->first_column - 1 && i < (int)sizeof(lexer_state->_current_line); ++i) {
+        char c = lexer_state->_current_line[i];
+        if (c == '\0') {
+          break;
+        }
+        out.put(isspace(c) ? c : ' ');
+      }
+      out.put('^');
 
       int last_column;
       if (loc->first_line == loc->last_line) {

@@ -1,8 +1,8 @@
-/* A Bison parser, made by GNU Bison 3.7.2.  */
+/* A Bison parser, made by GNU Bison 3.8.2.  */
 
 /* Bison implementation for Yacc-like parsers in C
 
-   Copyright (C) 1984, 1989-1990, 2000-2015, 2018-2020 Free Software Foundation,
+   Copyright (C) 1984, 1989-1990, 2000-2015, 2018-2021 Free Software Foundation,
    Inc.
 
    This program is free software: you can redistribute it and/or modify
@@ -16,7 +16,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 /* As a special exception, you may create a larger work that contains
    part or all of the Bison parser skeleton and distribute that work
@@ -45,11 +45,11 @@
    define necessary library symbols; they are noted "INFRINGES ON
    USER NAME SPACE" below.  */
 
-/* Identify Bison output.  */
-#define YYBISON 1
+/* Identify Bison output, and Bison version.  */
+#define YYBISON 30802
 
-/* Bison version.  */
-#define YYBISON_VERSION "3.7.2"
+/* Bison version string.  */
+#define YYBISON_VERSION "3.8.2"
 
 /* Skeleton name.  */
 #define YYSKELETON_NAME "yacc.c"
@@ -230,7 +230,7 @@ eggyywarning(YYLTYPE *loc, EggParserState &state, yyscan_t scanner, const string
 }
 
 
-#line 234 "built/tmp/parser.yxx.c"
+#line 234 "built/tmp/parser.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -522,6 +522,18 @@ typedef int_least16_t yytype_int16;
 typedef short yytype_int16;
 #endif
 
+/* Work around bug in HP-UX 11.23, which defines these macros
+   incorrectly for preprocessor constants.  This workaround can likely
+   be removed in 2023, as HPE has promised support for HP-UX 11.23
+   (aka HP-UX 11i v2) only through the end of 2022; see Table 2 of
+   <https://h20195.www2.hpe.com/V2/getpdf.aspx/4AA4-7673ENW.pdf>.  */
+#ifdef __hpux
+# undef UINT_LEAST8_MAX
+# undef UINT_LEAST16_MAX
+# define UINT_LEAST8_MAX 255
+# define UINT_LEAST16_MAX 65535
+#endif
+
 #if defined __UINT_LEAST8_MAX__ && __UINT_LEAST8_MAX__ <= __INT_MAX__
 typedef __UINT_LEAST8_TYPE__ yytype_uint8;
 #elif (!defined __UINT_LEAST8_MAX__ && defined YY_STDINT_H \
@@ -619,17 +631,23 @@ typedef int yy_state_fast_t;
 
 /* Suppress unused-variable warnings by "using" E.  */
 #if ! defined lint || defined __GNUC__
-# define YYUSE(E) ((void) (E))
+# define YY_USE(E) ((void) (E))
 #else
-# define YYUSE(E) /* empty */
+# define YY_USE(E) /* empty */
 #endif
 
-#if defined __GNUC__ && ! defined __ICC && 407 <= __GNUC__ * 100 + __GNUC_MINOR__
 /* Suppress an incorrect diagnostic about yylval being uninitialized.  */
-# define YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN                            \
+#if defined __GNUC__ && ! defined __ICC && 406 <= __GNUC__ * 100 + __GNUC_MINOR__
+# if __GNUC__ * 100 + __GNUC_MINOR__ < 407
+#  define YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN                           \
+    _Pragma ("GCC diagnostic push")                                     \
+    _Pragma ("GCC diagnostic ignored \"-Wuninitialized\"")
+# else
+#  define YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN                           \
     _Pragma ("GCC diagnostic push")                                     \
     _Pragma ("GCC diagnostic ignored \"-Wuninitialized\"")              \
     _Pragma ("GCC diagnostic ignored \"-Wmaybe-uninitialized\"")
+# endif
 # define YY_IGNORE_MAYBE_UNINITIALIZED_END      \
     _Pragma ("GCC diagnostic pop")
 #else
@@ -855,37 +873,37 @@ static const yytype_int8 yytranslate[] =
 };
 
 #if YYDEBUG
-  /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
+/* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
        0,   245,   245,   246,   247,   248,   259,   260,   276,   277,
      278,   279,   280,   281,   282,   283,   284,   285,   286,   287,
      288,   289,   290,   291,   292,   293,   294,   305,   328,   343,
      342,   370,   371,   726,   738,   737,   764,   765,   886,   893,
-     914,   913,   953,   954,   966,   965,   977,   976,  1022,  1026,
-    1030,  1034,  1039,  1038,  1054,  1053,  1068,  1069,  1070,  1078,
-    1097,  1101,  1105,  1113,  1121,  1129,  1137,  1145,  1153,  1170,
-    1171,  1185,  1189,  1197,  1215,  1219,  1227,  1246,  1245,  1271,
-    1270,  1292,  1291,  1316,  1317,  1465,  1477,  1482,  1489,  1495,
-    1508,  1515,  1528,  1534,  1540,  1546,  1551,  1557,  1558,  1559,
-    1560,  1561,  1570,  1584,  1614,  1615,  1638,  1637,  1654,  1653,
-    1674,  1675,  1676,  1677,  1678,  1679,  1680,  1681,  1682,  1683,
-    1684,  1685,  1686,  1690,  1697,  1704,  1711,  1718,  1725,  1732,
-    1739,  1746,  1753,  1760,  1764,  1765,  1777,  1781,  1782,  1804,
-    1837,  1841,  1866,  1878,  1883,  1901,  1900,  1920,  1919,  1939,
-    1938,  1958,  1957,  1977,  1976,  1996,  1995,  2015,  2014,  2034,
-    2033,  2053,  2054,  2055,  2066,  2068,  2067,  2088,  2089,  2090,
-    2091,  2092,  2093,  2094,  2095,  2170,  2171,  2172,  2173,  2174,
-    2175,  2176,  2177,  2178,  2179,  2180,  2181,  2187,  2188,  2254,
-    2255,  2256,  2257,  2258,  2259,  2260,  2261,  2262,  2263,  2264,
-    2335,  2352,  2392,  2409,  2413,  2421,  2439,  2443,  2451,  2469,
-    2485,  2516,  2534,  2554,  2574,  2579,  2590,  2596,  2615,  2631,
-    2653,  2652,  2676,  2675,  2696,  2697,  2701,  2705,  2709,  2713,
-    2729,  2728,  2749,  2750,  2762,  2777,  2776,  2797,  2798,  2815,
-    2830,  2829,  2850,  2851,  2866,  2882,  2881,  2902,  2903,  2927,
-    2931,  2945,  2949,  2963,  2984,  3005,  3030,  3051,  3056,  3068,
-    3080,  3085,  3096,  3100,  3114,  3118,  3122,  3135,  3139,  3155,
-    3159,  3173,  3174,  3189,  3195,  3201,  3218,  3226,  3232
+     914,   913,   953,   954,   966,   965,   977,   976,  1026,  1030,
+    1034,  1038,  1043,  1042,  1058,  1057,  1072,  1073,  1074,  1082,
+    1101,  1105,  1109,  1117,  1125,  1133,  1141,  1149,  1157,  1174,
+    1175,  1189,  1193,  1201,  1219,  1223,  1231,  1250,  1249,  1275,
+    1274,  1296,  1295,  1320,  1321,  1469,  1481,  1486,  1493,  1499,
+    1512,  1519,  1532,  1538,  1544,  1550,  1555,  1561,  1562,  1563,
+    1564,  1565,  1574,  1588,  1618,  1619,  1642,  1641,  1658,  1657,
+    1678,  1679,  1680,  1681,  1682,  1683,  1684,  1685,  1686,  1687,
+    1688,  1689,  1690,  1694,  1701,  1708,  1715,  1722,  1729,  1736,
+    1743,  1750,  1757,  1764,  1768,  1769,  1781,  1785,  1786,  1808,
+    1841,  1845,  1870,  1882,  1887,  1905,  1904,  1924,  1923,  1943,
+    1942,  1962,  1961,  1981,  1980,  2000,  1999,  2019,  2018,  2038,
+    2037,  2057,  2058,  2059,  2070,  2072,  2071,  2092,  2093,  2094,
+    2095,  2096,  2097,  2098,  2099,  2174,  2175,  2176,  2177,  2178,
+    2179,  2180,  2181,  2182,  2183,  2184,  2185,  2191,  2192,  2258,
+    2259,  2260,  2261,  2262,  2263,  2264,  2265,  2266,  2267,  2268,
+    2339,  2356,  2396,  2413,  2417,  2425,  2443,  2447,  2455,  2473,
+    2489,  2524,  2542,  2562,  2582,  2587,  2598,  2604,  2623,  2639,
+    2661,  2660,  2684,  2683,  2704,  2705,  2709,  2713,  2717,  2721,
+    2737,  2736,  2757,  2758,  2770,  2785,  2784,  2805,  2806,  2823,
+    2838,  2837,  2858,  2859,  2874,  2890,  2889,  2910,  2911,  2935,
+    2939,  2953,  2957,  2971,  2992,  3013,  3038,  3059,  3064,  3076,
+    3088,  3093,  3104,  3108,  3122,  3126,  3130,  3143,  3147,  3163,
+    3167,  3181,  3182,  3197,  3203,  3209,  3226,  3238,  3244
 };
 #endif
 
@@ -955,24 +973,6 @@ yysymbol_name (yysymbol_kind_t yysymbol)
 }
 #endif
 
-#ifdef YYPRINT
-/* YYTOKNUM[NUM] -- (External) token number corresponding to the
-   (internal) symbol number NUM (which must be that of a token).  */
-static const yytype_int16 yytoknum[] =
-{
-       0,   256,   257,   258,   259,   260,   261,   262,   263,   264,
-     265,   266,   267,   268,   269,   270,   271,   272,   273,   274,
-     275,   276,   277,   278,   279,   280,   281,   282,   283,   284,
-     285,   286,   287,   288,   289,   290,   291,   292,   293,   294,
-     295,   296,   297,   298,   299,   300,   301,   302,   303,   304,
-     305,   306,   307,   308,   309,   310,   311,   312,   313,   314,
-     315,   316,   317,   318,   319,   320,   321,   322,   323,   324,
-     325,   326,   327,   328,   329,   330,   331,   332,   333,   334,
-     335,   336,   337,   338,   339,   340,   341,   342,   343,   344,
-     345,   346,   123,   125
-};
-#endif
-
 #define YYPACT_NINF (-430)
 
 #define yypact_value_is_default(Yyn) \
@@ -983,8 +983,8 @@ static const yytype_int16 yytoknum[] =
 #define yytable_value_is_error(Yyn) \
   0
 
-  /* YYPACT[STATE-NUM] -- Index in YYTABLE of the portion describing
-     STATE-NUM.  */
+/* YYPACT[STATE-NUM] -- Index in YYTABLE of the portion describing
+   STATE-NUM.  */
 static const yytype_int16 yypact[] =
 {
      211,  -430,  -430,  -430,  -430,    14,  1060,  -430,  1206,  -430,
@@ -1066,9 +1066,9 @@ static const yytype_int16 yypact[] =
     -430,  -430,  -430,   255,  -430
 };
 
-  /* YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
-     Performed when YYTABLE does not specify something else to do.  Zero
-     means the default is an error.  */
+/* YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
+   Performed when YYTABLE does not specify something else to do.  Zero
+   means the default is an error.  */
 static const yytype_int16 yydefact[] =
 {
        0,   278,   278,   278,   278,     0,     2,     6,     3,    83,
@@ -1150,7 +1150,7 @@ static const yytype_int16 yydefact[] =
       68,    66,    63,     0,   138
 };
 
-  /* YYPGOTO[NTERM-NUM].  */
+/* YYPGOTO[NTERM-NUM].  */
 static const yytype_int16 yypgoto[] =
 {
     -430,  -430,  -430,   160,  -430,  -430,  -430,  -430,  -106,  -430,
@@ -1168,10 +1168,10 @@ static const yytype_int16 yypgoto[] =
       -6,   359,  -430,     3,  -169,   -14,   752
 };
 
-  /* YYDEFGOTO[NTERM-NUM].  */
+/* YYDEFGOTO[NTERM-NUM].  */
 static const yytype_int16 yydefgoto[] =
 {
-      -1,     5,     6,    74,    38,    39,    40,   290,    10,    41,
+       0,     5,     6,    74,    38,    39,    40,   290,    10,    41,
      218,   279,    42,    43,   164,   293,   388,   441,   500,   553,
      664,   665,   683,   685,   640,   642,    44,   150,    45,   151,
       46,   152,     8,   232,   297,    75,   130,    76,   121,   238,
@@ -1186,9 +1186,9 @@ static const yytype_int16 yydefgoto[] =
      103,   209,   210,   528,   246,   191,   104
 };
 
-  /* YYTABLE[YYPACT[STATE-NUM]] -- What to do in state STATE-NUM.  If
-     positive, shift that token.  If negative, reduce the rule whose
-     number is the opposite.  If YYTABLE_NINF, syntax error.  */
+/* YYTABLE[YYPACT[STATE-NUM]] -- What to do in state STATE-NUM.  If
+   positive, shift that token.  If negative, reduce the rule whose
+   number is the opposite.  If YYTABLE_NINF, syntax error.  */
 static const yytype_int16 yytable[] =
 {
       57,    80,    57,   378,   368,   492,   494,    15,    16,    17,
@@ -1475,8 +1475,8 @@ static const yytype_int16 yycheck[] =
       -1,    -1,    -1,    -1,    -1,    -1,   634,    -1,   636
 };
 
-  /* YYSTOS[STATE-NUM] -- The (internal number of the) accessing
-     symbol of state STATE-NUM.  */
+/* YYSTOS[STATE-NUM] -- The symbol kind of the accessing symbol of
+   state STATE-NUM.  */
 static const yytype_uint8 yystos[] =
 {
        0,    88,    89,    90,    91,    95,    96,   220,   126,   220,
@@ -1558,7 +1558,7 @@ static const yytype_uint8 yystos[] =
       93,    93,    93,   217,   217
 };
 
-  /* YYR1[YYN] -- Symbol number of symbol that rule YYN derives.  */
+/* YYR1[RULE-NUM] -- Symbol kind of the left-hand side of rule RULE-NUM.  */
 static const yytype_uint8 yyr1[] =
 {
        0,    94,    95,    95,    95,    95,    96,    96,    97,    97,
@@ -1591,7 +1591,7 @@ static const yytype_uint8 yyr1[] =
      216,   217,   217,   218,   218,   218,   219,   219,   220
 };
 
-  /* YYR2[YYN] -- Number of symbols on the right hand side of rule YYN.  */
+/* YYR2[RULE-NUM] -- Number of symbols on the right-hand side of rule RULE-NUM.  */
 static const yytype_int8 yyr2[] =
 {
        0,     2,     2,     2,     2,     2,     1,     2,     1,     1,
@@ -1633,6 +1633,7 @@ enum { YYENOMEM = -2 };
 #define YYACCEPT        goto yyacceptlab
 #define YYABORT         goto yyabortlab
 #define YYERROR         goto yyerrorlab
+#define YYNOMEM         goto yyexhaustedlab
 
 
 #define YYRECOVERING()  (!!yyerrstatus)
@@ -1700,12 +1701,19 @@ do {                                            \
 } while (0)
 
 
-/* YY_LOCATION_PRINT -- Print the location on the stream.
+/* YYLOCATION_PRINT -- Print the location on the stream.
    This macro was not mandated originally: define only if we know
    we won't break user code: when these are the locations we know.  */
 
-# ifndef YY_LOCATION_PRINT
-#  if defined YYLTYPE_IS_TRIVIAL && YYLTYPE_IS_TRIVIAL
+# ifndef YYLOCATION_PRINT
+
+#  if defined YY_LOCATION_PRINT
+
+   /* Temporary convenience wrapper in case some people defined the
+      undocumented and private YY_LOCATION_PRINT macros.  */
+#   define YYLOCATION_PRINT(File, Loc)  YY_LOCATION_PRINT(File, *(Loc))
+
+#  elif defined YYLTYPE_IS_TRIVIAL && YYLTYPE_IS_TRIVIAL
 
 /* Print *YYLOCP on YYO.  Private, do not rely on its existence. */
 
@@ -1733,15 +1741,23 @@ yy_location_print_ (FILE *yyo, YYLTYPE const * const yylocp)
         res += YYFPRINTF (yyo, "-%d", end_col);
     }
   return res;
- }
+}
 
-#   define YY_LOCATION_PRINT(File, Loc)          \
-  yy_location_print_ (File, &(Loc))
+#   define YYLOCATION_PRINT  yy_location_print_
+
+    /* Temporary convenience wrapper in case some people defined the
+       undocumented and private YY_LOCATION_PRINT macros.  */
+#   define YY_LOCATION_PRINT(File, Loc)  YYLOCATION_PRINT(File, &(Loc))
 
 #  else
-#   define YY_LOCATION_PRINT(File, Loc) ((void) 0)
+
+#   define YYLOCATION_PRINT(File, Loc) ((void) 0)
+    /* Temporary convenience wrapper in case some people defined the
+       undocumented and private YY_LOCATION_PRINT macros.  */
+#   define YY_LOCATION_PRINT  YYLOCATION_PRINT
+
 #  endif
-# endif /* !defined YY_LOCATION_PRINT */
+# endif /* !defined YYLOCATION_PRINT */
 
 
 # define YY_SYMBOL_PRINT(Title, Kind, Value, Location)                    \
@@ -1765,18 +1781,14 @@ yy_symbol_value_print (FILE *yyo,
                        yysymbol_kind_t yykind, YYSTYPE const * const yyvaluep, YYLTYPE const * const yylocationp, EggParserState &state, yyscan_t scanner)
 {
   FILE *yyoutput = yyo;
-  YYUSE (yyoutput);
-  YYUSE (yylocationp);
-  YYUSE (state);
-  YYUSE (scanner);
+  YY_USE (yyoutput);
+  YY_USE (yylocationp);
+  YY_USE (state);
+  YY_USE (scanner);
   if (!yyvaluep)
     return;
-# ifdef YYPRINT
-  if (yykind < YYNTOKENS)
-    YYPRINT (yyo, yytoknum[yykind], *yyvaluep);
-# endif
   YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN
-  YYUSE (yykind);
+  YY_USE (yykind);
   YY_IGNORE_MAYBE_UNINITIALIZED_END
 }
 
@@ -1792,7 +1804,7 @@ yy_symbol_print (FILE *yyo,
   YYFPRINTF (yyo, "%s %s (",
              yykind < YYNTOKENS ? "token" : "nterm", yysymbol_name (yykind));
 
-  YY_LOCATION_PRINT (yyo, *yylocationp);
+  YYLOCATION_PRINT (yyo, yylocationp);
   YYFPRINTF (yyo, ": ");
   yy_symbol_value_print (yyo, yykind, yyvaluep, yylocationp, state, scanner);
   YYFPRINTF (yyo, ")");
@@ -1893,16 +1905,16 @@ static void
 yydestruct (const char *yymsg,
             yysymbol_kind_t yykind, YYSTYPE *yyvaluep, YYLTYPE *yylocationp, EggParserState &state, yyscan_t scanner)
 {
-  YYUSE (yyvaluep);
-  YYUSE (yylocationp);
-  YYUSE (state);
-  YYUSE (scanner);
+  YY_USE (yyvaluep);
+  YY_USE (yylocationp);
+  YY_USE (state);
+  YY_USE (scanner);
   if (!yymsg)
     yymsg = "Deleting";
   YY_SYMBOL_PRINT (yymsg, yykind, yyvaluep, yylocationp);
 
   YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN
-  YYUSE (yykind);
+  YY_USE (yykind);
   YY_IGNORE_MAYBE_UNINITIALIZED_END
 }
 
@@ -1988,6 +2000,7 @@ YYLTYPE yylloc = yyloc_default;
   YYDPRINTF ((stderr, "Starting parse\n"));
 
   yychar = YYEMPTY; /* Cause a token to be read.  */
+
   yylsp[0] = yylloc;
   goto yysetstate;
 
@@ -2014,7 +2027,7 @@ yysetstate:
 
   if (yyss + yystacksize - 1 <= yyssp)
 #if !defined yyoverflow && !defined YYSTACK_RELOCATE
-    goto yyexhaustedlab;
+    YYNOMEM;
 #else
     {
       /* Get the current used size of the three stacks, in elements.  */
@@ -2045,7 +2058,7 @@ yysetstate:
 # else /* defined YYSTACK_RELOCATE */
       /* Extend the stack our own way.  */
       if (YYMAXDEPTH <= yystacksize)
-        goto yyexhaustedlab;
+        YYNOMEM;
       yystacksize *= 2;
       if (YYMAXDEPTH < yystacksize)
         yystacksize = YYMAXDEPTH;
@@ -2056,7 +2069,7 @@ yysetstate:
           YY_CAST (union yyalloc *,
                    YYSTACK_ALLOC (YY_CAST (YYSIZE_T, YYSTACK_BYTES (yystacksize))));
         if (! yyptr)
-          goto yyexhaustedlab;
+          YYNOMEM;
         YYSTACK_RELOCATE (yyss_alloc, yyss);
         YYSTACK_RELOCATE (yyvs_alloc, yyvs);
         YYSTACK_RELOCATE (yyls_alloc, yyls);
@@ -2079,6 +2092,7 @@ yysetstate:
         YYABORT;
     }
 #endif /* !defined yyoverflow && !defined YYSTACK_RELOCATE */
+
 
   if (yystate == YYFINAL)
     YYACCEPT;
@@ -2201,7 +2215,7 @@ yyreduce:
   assert(!state.stack.empty());
   DCAST(EggData, state.stack.back())->add_child(DCAST(EggNode, (yyvsp[0]._egg)));
 }
-#line 2205 "built/tmp/parser.yxx.c"
+#line 2219 "built/tmp/parser.c"
     break;
 
   case 27: /* coordsystem: COORDSYSTEM '{' required_string '}'  */
@@ -2218,7 +2232,7 @@ yyreduce:
   }
   (yyval._egg) = cs;
 }
-#line 2222 "built/tmp/parser.yxx.c"
+#line 2236 "built/tmp/parser.c"
     break;
 
   case 28: /* comment: COMMENT optional_name '{' repeated_string '}'  */
@@ -2226,7 +2240,7 @@ yyreduce:
 {
   (yyval._egg) = new EggComment((yyvsp[-3]._string), (yyvsp[-1]._string));
 }
-#line 2230 "built/tmp/parser.yxx.c"
+#line 2244 "built/tmp/parser.c"
     break;
 
   case 29: /* $@1: %empty  */
@@ -2243,7 +2257,7 @@ yyreduce:
 
   state.stack.push_back(texture);
 }
-#line 2247 "built/tmp/parser.yxx.c"
+#line 2261 "built/tmp/parser.c"
     break;
 
   case 30: /* texture: TEXTURE required_name '{' required_string $@1 texture_body '}'  */
@@ -2252,7 +2266,7 @@ yyreduce:
   (yyval._egg) = state.stack.back();
   state.stack.pop_back();
 }
-#line 2256 "built/tmp/parser.yxx.c"
+#line 2270 "built/tmp/parser.c"
     break;
 
   case 32: /* texture_body: texture_body SCALAR required_name '{' real_or_string '}'  */
@@ -2608,10 +2622,10 @@ yyreduce:
     texture->set_lod_bias(value);
 
   } else {
-    eggyywarning(&(yylsp[-4]), scanner, "Unsupported texture scalar: " + name);
+    eggyywarning(&(yylsp[-3]), scanner, "Unsupported texture scalar: " + name);
   }
 }
-#line 2615 "built/tmp/parser.yxx.c"
+#line 2629 "built/tmp/parser.c"
     break;
 
   case 34: /* $@2: %empty  */
@@ -2627,7 +2641,7 @@ yyreduce:
 
   state.stack.push_back(material);
 }
-#line 2631 "built/tmp/parser.yxx.c"
+#line 2645 "built/tmp/parser.c"
     break;
 
   case 35: /* material: MATERIAL required_name '{' $@2 material_body '}'  */
@@ -2636,7 +2650,7 @@ yyreduce:
   (yyval._egg) = state.stack.back();
   state.stack.pop_back();
 }
-#line 2640 "built/tmp/parser.yxx.c"
+#line 2654 "built/tmp/parser.c"
     break;
 
   case 37: /* material_body: material_body SCALAR required_name '{' real_or_string '}'  */
@@ -2750,7 +2764,7 @@ yyreduce:
     eggyywarning(&(yylsp[-3]), scanner, "Unsupported material scalar: " + name);
   }
 }
-#line 2754 "built/tmp/parser.yxx.c"
+#line 2768 "built/tmp/parser.c"
     break;
 
   case 38: /* external_reference: EXTERNAL_FILE optional_name '{' required_string '}'  */
@@ -2761,7 +2775,7 @@ yyreduce:
   EggExternalReference *ref = new EggExternalReference(node_name, filename);
   (yyval._egg) = ref;
 }
-#line 2765 "built/tmp/parser.yxx.c"
+#line 2779 "built/tmp/parser.c"
     break;
 
   case 39: /* external_reference: string EXTERNAL_FILE optional_name '{' required_string '}'  */
@@ -2775,7 +2789,7 @@ yyreduce:
   EggExternalReference *ref = new EggExternalReference(node_name, filename);
   (yyval._egg) = ref;
 }
-#line 2779 "built/tmp/parser.yxx.c"
+#line 2793 "built/tmp/parser.c"
     break;
 
   case 40: /* $@3: %empty  */
@@ -2803,7 +2817,7 @@ yyreduce:
 
   state.stack.push_back(pool);
 }
-#line 2807 "built/tmp/parser.yxx.c"
+#line 2821 "built/tmp/parser.c"
     break;
 
   case 41: /* vertex_pool: VERTEXPOOL required_name $@3 '{' vertex_pool_body '}'  */
@@ -2812,7 +2826,7 @@ yyreduce:
   (yyval._egg) = state.stack.back();
   state.stack.pop_back();
 }
-#line 2816 "built/tmp/parser.yxx.c"
+#line 2830 "built/tmp/parser.c"
     break;
 
   case 44: /* $@4: %empty  */
@@ -2820,7 +2834,7 @@ yyreduce:
 {
   state.stack.push_back(new EggVertex);
 }
-#line 2824 "built/tmp/parser.yxx.c"
+#line 2838 "built/tmp/parser.c"
     break;
 
   case 45: /* vertex: VERTEX $@4 '{' vertex_body '}'  */
@@ -2831,12 +2845,16 @@ yyreduce:
 
   DCAST(EggVertexPool, state.stack.back())->add_vertex(vtx);
 }
-#line 2835 "built/tmp/parser.yxx.c"
+#line 2849 "built/tmp/parser.c"
     break;
 
   case 46: /* $@5: %empty  */
 #line 977 "panda/src/egg/parser.yxx"
 {
+  if ((yyvsp[0]._number) < 0.0) {
+    eggyyerror(&(yylsp[0]), scanner, "Vertex index may not be negative.");
+  }
+
   state.vertex_index = (int)(yyvsp[0]._number);
   EggVertexPool *pool = DCAST(EggVertexPool, state.stack.back());
 
@@ -2860,11 +2878,11 @@ yyreduce:
 
   state.stack.push_back(new EggVertex);
 }
-#line 2864 "built/tmp/parser.yxx.c"
+#line 2882 "built/tmp/parser.c"
     break;
 
   case 47: /* vertex: VERTEX integer $@5 '{' vertex_body '}'  */
-#line 1002 "panda/src/egg/parser.yxx"
+#line 1006 "panda/src/egg/parser.yxx"
 {
   PT(EggVertex) vtx = DCAST(EggVertex, state.stack.back());
   state.stack.pop_back();
@@ -2874,43 +2892,43 @@ yyreduce:
     pool->add_vertex(vtx, state.vertex_index);
   }
 }
-#line 2878 "built/tmp/parser.yxx.c"
+#line 2896 "built/tmp/parser.c"
     break;
 
   case 48: /* vertex_body: real  */
-#line 1023 "panda/src/egg/parser.yxx"
+#line 1027 "panda/src/egg/parser.yxx"
 {
   DCAST(EggVertex, state.stack.back())->set_pos((yyvsp[0]._number));
 }
-#line 2886 "built/tmp/parser.yxx.c"
+#line 2904 "built/tmp/parser.c"
     break;
 
   case 49: /* vertex_body: real real  */
-#line 1027 "panda/src/egg/parser.yxx"
+#line 1031 "panda/src/egg/parser.yxx"
 {
   DCAST(EggVertex, state.stack.back())->set_pos(LPoint2d((yyvsp[-1]._number), (yyvsp[0]._number)));
 }
-#line 2894 "built/tmp/parser.yxx.c"
+#line 2912 "built/tmp/parser.c"
     break;
 
   case 50: /* vertex_body: real real real  */
-#line 1031 "panda/src/egg/parser.yxx"
+#line 1035 "panda/src/egg/parser.yxx"
 {
   DCAST(EggVertex, state.stack.back())->set_pos(LPoint3d((yyvsp[-2]._number), (yyvsp[-1]._number), (yyvsp[0]._number)));
 }
-#line 2902 "built/tmp/parser.yxx.c"
+#line 2920 "built/tmp/parser.c"
     break;
 
   case 51: /* vertex_body: real real real real  */
-#line 1035 "panda/src/egg/parser.yxx"
+#line 1039 "panda/src/egg/parser.yxx"
 {
   DCAST(EggVertex, state.stack.back())->set_pos(LPoint4d((yyvsp[-3]._number), (yyvsp[-2]._number), (yyvsp[-1]._number), (yyvsp[0]._number)));
 }
-#line 2910 "built/tmp/parser.yxx.c"
+#line 2928 "built/tmp/parser.c"
     break;
 
   case 52: /* $@6: %empty  */
-#line 1039 "panda/src/egg/parser.yxx"
+#line 1043 "panda/src/egg/parser.yxx"
 {
   EggVertex *vertex = DCAST(EggVertex, state.stack.back());
   EggVertexUV *uv = new EggVertexUV((yyvsp[-1]._string), LTexCoordd::zero());
@@ -2921,19 +2939,19 @@ yyreduce:
     vertex->set_uv_obj(uv);
   }
 }
-#line 2925 "built/tmp/parser.yxx.c"
+#line 2943 "built/tmp/parser.c"
     break;
 
   case 53: /* vertex_body: vertex_body UV optional_name '{' $@6 vertex_uv_body '}'  */
-#line 1050 "panda/src/egg/parser.yxx"
+#line 1054 "panda/src/egg/parser.yxx"
 {
   state.stack.pop_back();
 }
-#line 2933 "built/tmp/parser.yxx.c"
+#line 2951 "built/tmp/parser.c"
     break;
 
   case 54: /* $@7: %empty  */
-#line 1054 "panda/src/egg/parser.yxx"
+#line 1058 "panda/src/egg/parser.yxx"
 {
   EggVertex *vertex = DCAST(EggVertex, state.stack.back());
   EggVertexAux *aux = new EggVertexAux((yyvsp[-1]._string), LVecBase4d::zero());
@@ -2944,19 +2962,19 @@ yyreduce:
     vertex->set_aux_obj(aux);
   }
 }
-#line 2948 "built/tmp/parser.yxx.c"
+#line 2966 "built/tmp/parser.c"
     break;
 
   case 55: /* vertex_body: vertex_body AUX required_name '{' $@7 vertex_aux_body '}'  */
-#line 1065 "panda/src/egg/parser.yxx"
+#line 1069 "panda/src/egg/parser.yxx"
 {
   state.stack.pop_back();
 }
-#line 2956 "built/tmp/parser.yxx.c"
+#line 2974 "built/tmp/parser.c"
     break;
 
   case 58: /* vertex_body: vertex_body DXYZ string '{' real real real '}'  */
-#line 1071 "panda/src/egg/parser.yxx"
+#line 1075 "panda/src/egg/parser.yxx"
 {
   bool inserted = DCAST(EggVertex, state.stack.back())->_dxyzs.
     insert(EggMorphVertex((yyvsp[-5]._string), LVector3d((yyvsp[-3]._number), (yyvsp[-2]._number), (yyvsp[-1]._number)))).second;
@@ -2964,11 +2982,11 @@ yyreduce:
     eggyywarning(&(yylsp[-5]), scanner, "Ignoring repeated morph name " + (yyvsp[-5]._string));
   }
 }
-#line 2968 "built/tmp/parser.yxx.c"
+#line 2986 "built/tmp/parser.c"
     break;
 
   case 59: /* vertex_body: vertex_body DXYZ '{' string real real real '}'  */
-#line 1079 "panda/src/egg/parser.yxx"
+#line 1083 "panda/src/egg/parser.yxx"
 {
   bool inserted = DCAST(EggVertex, state.stack.back())->_dxyzs.
     insert(EggMorphVertex((yyvsp[-4]._string), LVector3d((yyvsp[-3]._number), (yyvsp[-2]._number), (yyvsp[-1]._number)))).second;
@@ -2976,27 +2994,27 @@ yyreduce:
     eggyywarning(&(yylsp[-4]), scanner, "Ignoring repeated morph name " + (yyvsp[-4]._string));
   }
 }
-#line 2980 "built/tmp/parser.yxx.c"
+#line 2998 "built/tmp/parser.c"
     break;
 
   case 60: /* vertex_uv_body: real real  */
-#line 1098 "panda/src/egg/parser.yxx"
+#line 1102 "panda/src/egg/parser.yxx"
 {
   DCAST(EggVertexUV, state.stack.back())->set_uv(LTexCoordd((yyvsp[-1]._number), (yyvsp[0]._number)));
 }
-#line 2988 "built/tmp/parser.yxx.c"
+#line 3006 "built/tmp/parser.c"
     break;
 
   case 61: /* vertex_uv_body: real real real  */
-#line 1102 "panda/src/egg/parser.yxx"
+#line 1106 "panda/src/egg/parser.yxx"
 {
   DCAST(EggVertexUV, state.stack.back())->set_uvw(LVecBase3d((yyvsp[-2]._number), (yyvsp[-1]._number), (yyvsp[0]._number)));
 }
-#line 2996 "built/tmp/parser.yxx.c"
+#line 3014 "built/tmp/parser.c"
     break;
 
   case 62: /* vertex_uv_body: vertex_uv_body TANGENT '{' real real real '}'  */
-#line 1106 "panda/src/egg/parser.yxx"
+#line 1110 "panda/src/egg/parser.yxx"
 {
   if (DCAST(EggVertexUV, state.stack.back())->has_tangent()) {
     eggyywarning(&(yylsp[-5]), scanner, "Ignoring repeated tangent");
@@ -3004,11 +3022,11 @@ yyreduce:
     DCAST(EggVertexUV, state.stack.back())->set_tangent(LNormald((yyvsp[-3]._number), (yyvsp[-2]._number), (yyvsp[-1]._number)));
   }
 }
-#line 3008 "built/tmp/parser.yxx.c"
+#line 3026 "built/tmp/parser.c"
     break;
 
   case 63: /* vertex_uv_body: vertex_uv_body TANGENT '{' real real real real '}'  */
-#line 1114 "panda/src/egg/parser.yxx"
+#line 1118 "panda/src/egg/parser.yxx"
 {
   if (DCAST(EggVertexUV, state.stack.back())->has_tangent()) {
     eggyywarning(&(yylsp[-6]), scanner, "Ignoring repeated tangent");
@@ -3016,11 +3034,11 @@ yyreduce:
     DCAST(EggVertexUV, state.stack.back())->set_tangent4(LVecBase4d((yyvsp[-4]._number), (yyvsp[-3]._number), (yyvsp[-2]._number), (yyvsp[-1]._number)));
   }
 }
-#line 3020 "built/tmp/parser.yxx.c"
+#line 3038 "built/tmp/parser.c"
     break;
 
   case 64: /* vertex_uv_body: vertex_uv_body BINORMAL '{' real real real '}'  */
-#line 1122 "panda/src/egg/parser.yxx"
+#line 1126 "panda/src/egg/parser.yxx"
 {
   if (DCAST(EggVertexUV, state.stack.back())->has_binormal()) {
     eggyywarning(&(yylsp[-5]), scanner, "Ignoring repeated binormal");
@@ -3028,11 +3046,11 @@ yyreduce:
     DCAST(EggVertexUV, state.stack.back())->set_binormal(LNormald((yyvsp[-3]._number), (yyvsp[-2]._number), (yyvsp[-1]._number)));
   }
 }
-#line 3032 "built/tmp/parser.yxx.c"
+#line 3050 "built/tmp/parser.c"
     break;
 
   case 65: /* vertex_uv_body: vertex_uv_body DUV string '{' real real '}'  */
-#line 1130 "panda/src/egg/parser.yxx"
+#line 1134 "panda/src/egg/parser.yxx"
 {
   bool inserted = DCAST(EggVertexUV, state.stack.back())->_duvs.
     insert(EggMorphTexCoord((yyvsp[-4]._string), LVector3d((yyvsp[-2]._number), (yyvsp[-1]._number), 0.0))).second;
@@ -3040,11 +3058,11 @@ yyreduce:
     eggyywarning(&(yylsp[-4]), scanner, "Ignoring repeated morph name " + (yyvsp[-4]._string));
   }
 }
-#line 3044 "built/tmp/parser.yxx.c"
+#line 3062 "built/tmp/parser.c"
     break;
 
   case 66: /* vertex_uv_body: vertex_uv_body DUV string '{' real real real '}'  */
-#line 1138 "panda/src/egg/parser.yxx"
+#line 1142 "panda/src/egg/parser.yxx"
 {
   bool inserted = DCAST(EggVertexUV, state.stack.back())->_duvs.
     insert(EggMorphTexCoord((yyvsp[-5]._string), LVector3d((yyvsp[-3]._number), (yyvsp[-2]._number), (yyvsp[-1]._number)))).second;
@@ -3052,11 +3070,11 @@ yyreduce:
     eggyywarning(&(yylsp[-5]), scanner, "Ignoring repeated morph name " + (yyvsp[-5]._string));
   }
 }
-#line 3056 "built/tmp/parser.yxx.c"
+#line 3074 "built/tmp/parser.c"
     break;
 
   case 67: /* vertex_uv_body: vertex_uv_body DUV '{' string real real '}'  */
-#line 1146 "panda/src/egg/parser.yxx"
+#line 1150 "panda/src/egg/parser.yxx"
 {
   bool inserted = DCAST(EggVertexUV, state.stack.back())->_duvs.
     insert(EggMorphTexCoord((yyvsp[-3]._string), LVector3d((yyvsp[-2]._number), (yyvsp[-1]._number), 0.0))).second;
@@ -3064,11 +3082,11 @@ yyreduce:
     eggyywarning(&(yylsp[-3]), scanner, "Ignoring repeated morph name " + (yyvsp[-3]._string));
   }
 }
-#line 3068 "built/tmp/parser.yxx.c"
+#line 3086 "built/tmp/parser.c"
     break;
 
   case 68: /* vertex_uv_body: vertex_uv_body DUV '{' string real real real '}'  */
-#line 1154 "panda/src/egg/parser.yxx"
+#line 1158 "panda/src/egg/parser.yxx"
 {
   bool inserted = DCAST(EggVertexUV, state.stack.back())->_duvs.
     insert(EggMorphTexCoord((yyvsp[-4]._string), LVector3d((yyvsp[-3]._number), (yyvsp[-2]._number), (yyvsp[-1]._number)))).second;
@@ -3076,27 +3094,27 @@ yyreduce:
     eggyywarning(&(yylsp[-4]), scanner, "Ignoring repeated morph name " + (yyvsp[-4]._string));
   }
 }
-#line 3080 "built/tmp/parser.yxx.c"
+#line 3098 "built/tmp/parser.c"
     break;
 
   case 70: /* vertex_aux_body: real real real real  */
-#line 1172 "panda/src/egg/parser.yxx"
+#line 1176 "panda/src/egg/parser.yxx"
 {
   DCAST(EggVertexAux, state.stack.back())->set_aux(LVecBase4d((yyvsp[-3]._number), (yyvsp[-2]._number), (yyvsp[-1]._number), (yyvsp[0]._number)));
 }
-#line 3088 "built/tmp/parser.yxx.c"
+#line 3106 "built/tmp/parser.c"
     break;
 
   case 71: /* vertex_normal_body: real real real  */
-#line 1186 "panda/src/egg/parser.yxx"
+#line 1190 "panda/src/egg/parser.yxx"
 {
   DCAST(EggVertex, state.stack.back())->set_normal(LNormald((yyvsp[-2]._number), (yyvsp[-1]._number), (yyvsp[0]._number)));
 }
-#line 3096 "built/tmp/parser.yxx.c"
+#line 3114 "built/tmp/parser.c"
     break;
 
   case 72: /* vertex_normal_body: vertex_normal_body DNORMAL string '{' real real real '}'  */
-#line 1190 "panda/src/egg/parser.yxx"
+#line 1194 "panda/src/egg/parser.yxx"
 {
   bool inserted = DCAST(EggVertex, state.stack.back())->_dnormals.
     insert(EggMorphNormal((yyvsp[-5]._string), LVector3d((yyvsp[-3]._number), (yyvsp[-2]._number), (yyvsp[-1]._number)))).second;
@@ -3104,11 +3122,11 @@ yyreduce:
     eggyywarning(&(yylsp[-5]), scanner, "Ignoring repeated morph name " + (yyvsp[-5]._string));
   }
 }
-#line 3108 "built/tmp/parser.yxx.c"
+#line 3126 "built/tmp/parser.c"
     break;
 
   case 73: /* vertex_normal_body: vertex_normal_body DNORMAL '{' string real real real '}'  */
-#line 1198 "panda/src/egg/parser.yxx"
+#line 1202 "panda/src/egg/parser.yxx"
 {
   bool inserted = DCAST(EggVertex, state.stack.back())->_dnormals.
     insert(EggMorphNormal((yyvsp[-4]._string), LVector3d((yyvsp[-3]._number), (yyvsp[-2]._number), (yyvsp[-1]._number)))).second;
@@ -3116,19 +3134,19 @@ yyreduce:
     eggyywarning(&(yylsp[-4]), scanner, "Ignoring repeated morph name " + (yyvsp[-4]._string));
   }
 }
-#line 3120 "built/tmp/parser.yxx.c"
+#line 3138 "built/tmp/parser.c"
     break;
 
   case 74: /* vertex_color_body: real real real real  */
-#line 1216 "panda/src/egg/parser.yxx"
+#line 1220 "panda/src/egg/parser.yxx"
 {
   DCAST(EggVertex, state.stack.back())->set_color(LColor((yyvsp[-3]._number), (yyvsp[-2]._number), (yyvsp[-1]._number), (yyvsp[0]._number)));
 }
-#line 3128 "built/tmp/parser.yxx.c"
+#line 3146 "built/tmp/parser.c"
     break;
 
   case 75: /* vertex_color_body: vertex_color_body DRGBA string '{' real real real real '}'  */
-#line 1220 "panda/src/egg/parser.yxx"
+#line 1224 "panda/src/egg/parser.yxx"
 {
   bool inserted = DCAST(EggVertex, state.stack.back())->_drgbas.
     insert(EggMorphColor((yyvsp[-6]._string), LVector4((yyvsp[-4]._number), (yyvsp[-3]._number), (yyvsp[-2]._number), (yyvsp[-1]._number)))).second;
@@ -3136,11 +3154,11 @@ yyreduce:
     eggyywarning(&(yylsp[-6]), scanner, "Ignoring repeated morph name " + (yyvsp[-6]._string));
   }
 }
-#line 3140 "built/tmp/parser.yxx.c"
+#line 3158 "built/tmp/parser.c"
     break;
 
   case 76: /* vertex_color_body: vertex_color_body DRGBA '{' string real real real real '}'  */
-#line 1228 "panda/src/egg/parser.yxx"
+#line 1232 "panda/src/egg/parser.yxx"
 {
   bool inserted = DCAST(EggVertex, state.stack.back())->_drgbas.
     insert(EggMorphColor((yyvsp[-5]._string), LVector4((yyvsp[-4]._number), (yyvsp[-3]._number), (yyvsp[-2]._number), (yyvsp[-1]._number)))).second;
@@ -3148,20 +3166,20 @@ yyreduce:
     eggyywarning(&(yylsp[-5]), scanner, "Ignoring repeated morph name " + (yyvsp[-5]._string));
   }
 }
-#line 3152 "built/tmp/parser.yxx.c"
+#line 3170 "built/tmp/parser.c"
     break;
 
   case 77: /* $@8: %empty  */
-#line 1246 "panda/src/egg/parser.yxx"
+#line 1250 "panda/src/egg/parser.yxx"
 {
   EggGroup *group = new EggGroup((yyvsp[0]._string));
   state.stack.push_back(group);
 }
-#line 3161 "built/tmp/parser.yxx.c"
+#line 3179 "built/tmp/parser.c"
     break;
 
   case 78: /* group: GROUP optional_name $@8 '{' group_body '}'  */
-#line 1251 "panda/src/egg/parser.yxx"
+#line 1255 "panda/src/egg/parser.yxx"
 {
   EggGroup *group = DCAST(EggGroup, state.stack.back());
   (yyval._egg) = group;
@@ -3171,40 +3189,40 @@ yyreduce:
   }
   Thread::consider_yield();
 }
-#line 3175 "built/tmp/parser.yxx.c"
+#line 3193 "built/tmp/parser.c"
     break;
 
   case 79: /* $@9: %empty  */
-#line 1271 "panda/src/egg/parser.yxx"
+#line 1275 "panda/src/egg/parser.yxx"
 {
   EggGroup *group = new EggGroup((yyvsp[0]._string));
   group->set_group_type(EggGroup::GT_joint);
   state.stack.push_back(group);
 }
-#line 3185 "built/tmp/parser.yxx.c"
+#line 3203 "built/tmp/parser.c"
     break;
 
   case 80: /* joint: JOINT optional_name $@9 '{' group_body '}'  */
-#line 1277 "panda/src/egg/parser.yxx"
+#line 1281 "panda/src/egg/parser.yxx"
 {
   (yyval._egg) = state.stack.back();
   state.stack.pop_back();
 }
-#line 3194 "built/tmp/parser.yxx.c"
+#line 3212 "built/tmp/parser.c"
     break;
 
   case 81: /* $@10: %empty  */
-#line 1292 "panda/src/egg/parser.yxx"
+#line 1296 "panda/src/egg/parser.yxx"
 {
   EggGroup *group = new EggGroup((yyvsp[0]._string));
   group->set_group_type(EggGroup::GT_instance);
   state.stack.push_back(group);
 }
-#line 3204 "built/tmp/parser.yxx.c"
+#line 3222 "built/tmp/parser.c"
     break;
 
   case 82: /* instance: INSTANCE optional_name $@10 '{' group_body '}'  */
-#line 1298 "panda/src/egg/parser.yxx"
+#line 1302 "panda/src/egg/parser.yxx"
 {
   EggGroup *group = DCAST(EggGroup, state.stack.back());
   (yyval._egg) = group;
@@ -3213,11 +3231,11 @@ yyreduce:
     state.groups[group->get_name()] = group;
   }
 }
-#line 3217 "built/tmp/parser.yxx.c"
+#line 3235 "built/tmp/parser.c"
     break;
 
   case 84: /* group_body: group_body SCALAR required_name '{' real_or_string '}'  */
-#line 1318 "panda/src/egg/parser.yxx"
+#line 1322 "panda/src/egg/parser.yxx"
 {
   EggGroup *group = DCAST(EggGroup, state.stack.back());
   string name = (yyvsp[-3]._string);
@@ -3365,11 +3383,11 @@ yyreduce:
     eggyywarning(&(yylsp[-3]), scanner, "Unknown group scalar " + name);
   }
 }
-#line 3369 "built/tmp/parser.yxx.c"
+#line 3387 "built/tmp/parser.c"
     break;
 
   case 85: /* group_body: group_body BILLBOARD '{' string '}'  */
-#line 1466 "panda/src/egg/parser.yxx"
+#line 1470 "panda/src/egg/parser.yxx"
 {
   EggGroup *group = DCAST(EggGroup, state.stack.back());
   string strval = (yyvsp[-1]._string);
@@ -3381,41 +3399,41 @@ yyreduce:
     group->set_billboard_type(f);
   }
 }
-#line 3385 "built/tmp/parser.yxx.c"
+#line 3403 "built/tmp/parser.c"
     break;
 
   case 86: /* group_body: group_body BILLBOARDCENTER '{' real real real '}'  */
-#line 1478 "panda/src/egg/parser.yxx"
+#line 1482 "panda/src/egg/parser.yxx"
 {
   EggGroup *group = DCAST(EggGroup, state.stack.back());
   group->set_billboard_center(LPoint3d((yyvsp[-3]._number), (yyvsp[-2]._number), (yyvsp[-1]._number)));
 }
-#line 3394 "built/tmp/parser.yxx.c"
+#line 3412 "built/tmp/parser.c"
     break;
 
   case 87: /* group_body: group_body COLLIDE optional_name '{' cs_type collide_flags '}'  */
-#line 1483 "panda/src/egg/parser.yxx"
+#line 1487 "panda/src/egg/parser.yxx"
 {
   EggGroup *group = DCAST(EggGroup, state.stack.back());
   string name = (yyvsp[-4]._string);
 
   group->set_collision_name(name);
 }
-#line 3405 "built/tmp/parser.yxx.c"
+#line 3423 "built/tmp/parser.c"
     break;
 
   case 88: /* group_body: group_body DCS '{' integer '}'  */
-#line 1490 "panda/src/egg/parser.yxx"
+#line 1494 "panda/src/egg/parser.yxx"
 {
   EggGroup *group = DCAST(EggGroup, state.stack.back());
   int value = (int)(yyvsp[-1]._number);
   group->set_dcs_type(value!=0 ? EggGroup::DC_default : EggGroup::DC_none);
 }
-#line 3415 "built/tmp/parser.yxx.c"
+#line 3433 "built/tmp/parser.c"
     break;
 
   case 89: /* group_body: group_body DCS '{' EGG_STRING '}'  */
-#line 1496 "panda/src/egg/parser.yxx"
+#line 1500 "panda/src/egg/parser.yxx"
 {
   // The special flavor of DCS, with { sync } or { nosync }.
   EggGroup *group = DCAST(EggGroup, state.stack.back());
@@ -3428,22 +3446,22 @@ yyreduce:
     group->set_dcs_type(f);
   }
 }
-#line 3432 "built/tmp/parser.yxx.c"
+#line 3450 "built/tmp/parser.c"
     break;
 
   case 90: /* group_body: group_body DART '{' integer '}'  */
-#line 1509 "panda/src/egg/parser.yxx"
+#line 1513 "panda/src/egg/parser.yxx"
 {
   // The traditional flavor of DART, with { 0 } or { 1 }.
   EggGroup *group = DCAST(EggGroup, state.stack.back());
   int value = (int)(yyvsp[-1]._number);
   group->set_dart_type(value!=0 ? EggGroup::DT_default : EggGroup::DT_none);
 }
-#line 3443 "built/tmp/parser.yxx.c"
+#line 3461 "built/tmp/parser.c"
     break;
 
   case 91: /* group_body: group_body DART '{' EGG_STRING '}'  */
-#line 1516 "panda/src/egg/parser.yxx"
+#line 1520 "panda/src/egg/parser.yxx"
 {
   // The special flavor of DART, with { sync } or { nosync }.
   EggGroup *group = DCAST(EggGroup, state.stack.back());
@@ -3456,60 +3474,60 @@ yyreduce:
     group->set_dart_type(f);
   }
 }
-#line 3460 "built/tmp/parser.yxx.c"
+#line 3478 "built/tmp/parser.c"
     break;
 
   case 92: /* group_body: group_body SWITCH '{' integer '}'  */
-#line 1529 "panda/src/egg/parser.yxx"
+#line 1533 "panda/src/egg/parser.yxx"
 {
   EggGroup *group = DCAST(EggGroup, state.stack.back());
   int value = (int)(yyvsp[-1]._number);
   group->set_switch_flag(value!=0);
 }
-#line 3470 "built/tmp/parser.yxx.c"
+#line 3488 "built/tmp/parser.c"
     break;
 
   case 93: /* group_body: group_body OBJECTTYPE '{' required_string '}'  */
-#line 1535 "panda/src/egg/parser.yxx"
+#line 1539 "panda/src/egg/parser.yxx"
 {
   EggGroup *group = DCAST(EggGroup, state.stack.back());
   string type = (yyvsp[-1]._string);
   group->add_object_type(type);
 }
-#line 3480 "built/tmp/parser.yxx.c"
+#line 3498 "built/tmp/parser.c"
     break;
 
   case 94: /* group_body: group_body MODEL '{' integer '}'  */
-#line 1541 "panda/src/egg/parser.yxx"
+#line 1545 "panda/src/egg/parser.yxx"
 {
   EggGroup *group = DCAST(EggGroup, state.stack.back());
   int value = (int)(yyvsp[-1]._number);
   group->set_model_flag(value!=0);
 }
-#line 3490 "built/tmp/parser.yxx.c"
+#line 3508 "built/tmp/parser.c"
     break;
 
   case 95: /* group_body: group_body TAG optional_name '{' repeated_string '}'  */
-#line 1547 "panda/src/egg/parser.yxx"
+#line 1551 "panda/src/egg/parser.yxx"
 {
   EggGroup *group = DCAST(EggGroup, state.stack.back());
   group->set_tag((yyvsp[-3]._string), (yyvsp[-1]._string));
 }
-#line 3499 "built/tmp/parser.yxx.c"
+#line 3517 "built/tmp/parser.c"
     break;
 
   case 96: /* group_body: group_body TEXLIST '{' integer '}'  */
-#line 1552 "panda/src/egg/parser.yxx"
+#line 1556 "panda/src/egg/parser.yxx"
 {
   EggGroup *group = DCAST(EggGroup, state.stack.back());
   int value = (int)(yyvsp[-1]._number);
   group->set_texlist_flag(value!=0);
 }
-#line 3509 "built/tmp/parser.yxx.c"
+#line 3527 "built/tmp/parser.c"
     break;
 
   case 101: /* group_body: group_body REF '{' group_name '}'  */
-#line 1562 "panda/src/egg/parser.yxx"
+#line 1566 "panda/src/egg/parser.yxx"
 {
   EggGroup *group = DCAST(EggGroup, state.stack.back());
   if (group->get_group_type() != EggGroup::GT_instance) {
@@ -3518,19 +3536,19 @@ yyreduce:
     group->add_group_ref(DCAST(EggGroup, (yyvsp[-1]._egg)));
   }
 }
-#line 3522 "built/tmp/parser.yxx.c"
+#line 3540 "built/tmp/parser.c"
     break;
 
   case 102: /* group_body: group_body node  */
-#line 1571 "panda/src/egg/parser.yxx"
+#line 1575 "panda/src/egg/parser.yxx"
 {
   DCAST(EggGroup, state.stack.back())->add_child(DCAST(EggNode, (yyvsp[0]._egg)));
 }
-#line 3530 "built/tmp/parser.yxx.c"
+#line 3548 "built/tmp/parser.c"
     break;
 
   case 103: /* cs_type: string  */
-#line 1585 "panda/src/egg/parser.yxx"
+#line 1589 "panda/src/egg/parser.yxx"
 {
   EggGroup *group = DCAST(EggGroup, state.stack.back());
   string strval = (yyvsp[0]._string);
@@ -3550,11 +3568,11 @@ yyreduce:
     }
   }
 }
-#line 3554 "built/tmp/parser.yxx.c"
+#line 3572 "built/tmp/parser.c"
     break;
 
   case 105: /* collide_flags: collide_flags string  */
-#line 1616 "panda/src/egg/parser.yxx"
+#line 1620 "panda/src/egg/parser.yxx"
 {
   EggGroup *group = DCAST(EggGroup, state.stack.back());
   string strval = (yyvsp[0]._string);
@@ -3566,20 +3584,20 @@ yyreduce:
     group->set_collide_flags(group->get_collide_flags() | f);
   }
 }
-#line 3570 "built/tmp/parser.yxx.c"
+#line 3588 "built/tmp/parser.c"
     break;
 
   case 106: /* $@11: %empty  */
-#line 1638 "panda/src/egg/parser.yxx"
+#line 1642 "panda/src/egg/parser.yxx"
 {
   state.top_transform = state.stack.back()->as_transform();
   state.top_transform->clear_transform();
 }
-#line 3579 "built/tmp/parser.yxx.c"
+#line 3597 "built/tmp/parser.c"
     break;
 
   case 108: /* $@12: %empty  */
-#line 1654 "panda/src/egg/parser.yxx"
+#line 1658 "panda/src/egg/parser.yxx"
 {
   EggGroup *group = DCAST(EggGroup, state.stack.back());
   if (group->get_group_type() != EggGroup::GT_joint) {
@@ -3588,102 +3606,102 @@ yyreduce:
   state.top_transform = &group->modify_default_pose();
   state.top_transform->clear_transform();
 }
-#line 3592 "built/tmp/parser.yxx.c"
+#line 3610 "built/tmp/parser.c"
     break;
 
   case 123: /* translate2d: TRANSLATE '{' real real '}'  */
-#line 1691 "panda/src/egg/parser.yxx"
+#line 1695 "panda/src/egg/parser.yxx"
 {
   state.top_transform->add_translate2d(LVector2d((yyvsp[-2]._number), (yyvsp[-1]._number)));
 }
-#line 3600 "built/tmp/parser.yxx.c"
+#line 3618 "built/tmp/parser.c"
     break;
 
   case 124: /* translate3d: TRANSLATE '{' real real real '}'  */
-#line 1698 "panda/src/egg/parser.yxx"
+#line 1702 "panda/src/egg/parser.yxx"
 {
   state.top_transform->add_translate3d(LVector3d((yyvsp[-3]._number), (yyvsp[-2]._number), (yyvsp[-1]._number)));
 }
-#line 3608 "built/tmp/parser.yxx.c"
+#line 3626 "built/tmp/parser.c"
     break;
 
   case 125: /* rotate2d: ROTATE '{' real '}'  */
-#line 1705 "panda/src/egg/parser.yxx"
+#line 1709 "panda/src/egg/parser.yxx"
 {
   state.top_transform->add_rotate2d((yyvsp[-1]._number));
 }
-#line 3616 "built/tmp/parser.yxx.c"
+#line 3634 "built/tmp/parser.c"
     break;
 
   case 126: /* rotx: ROTX '{' real '}'  */
-#line 1712 "panda/src/egg/parser.yxx"
+#line 1716 "panda/src/egg/parser.yxx"
 {
   state.top_transform->add_rotx((yyvsp[-1]._number));
 }
-#line 3624 "built/tmp/parser.yxx.c"
+#line 3642 "built/tmp/parser.c"
     break;
 
   case 127: /* roty: ROTY '{' real '}'  */
-#line 1719 "panda/src/egg/parser.yxx"
+#line 1723 "panda/src/egg/parser.yxx"
 {
   state.top_transform->add_roty((yyvsp[-1]._number));
 }
-#line 3632 "built/tmp/parser.yxx.c"
+#line 3650 "built/tmp/parser.c"
     break;
 
   case 128: /* rotz: ROTZ '{' real '}'  */
-#line 1726 "panda/src/egg/parser.yxx"
+#line 1730 "panda/src/egg/parser.yxx"
 {
   state.top_transform->add_rotz((yyvsp[-1]._number));
 }
-#line 3640 "built/tmp/parser.yxx.c"
+#line 3658 "built/tmp/parser.c"
     break;
 
   case 129: /* rotate3d: ROTATE '{' real real real real '}'  */
-#line 1733 "panda/src/egg/parser.yxx"
+#line 1737 "panda/src/egg/parser.yxx"
 {
   state.top_transform->add_rotate3d((yyvsp[-4]._number), LVector3d((yyvsp[-3]._number), (yyvsp[-2]._number), (yyvsp[-1]._number)));
 }
-#line 3648 "built/tmp/parser.yxx.c"
+#line 3666 "built/tmp/parser.c"
     break;
 
   case 130: /* scale2d: SCALE '{' real real '}'  */
-#line 1740 "panda/src/egg/parser.yxx"
+#line 1744 "panda/src/egg/parser.yxx"
 {
   state.top_transform->add_scale2d(LVecBase2d((yyvsp[-2]._number), (yyvsp[-1]._number)));
 }
-#line 3656 "built/tmp/parser.yxx.c"
+#line 3674 "built/tmp/parser.c"
     break;
 
   case 131: /* scale3d: SCALE '{' real real real '}'  */
-#line 1747 "panda/src/egg/parser.yxx"
+#line 1751 "panda/src/egg/parser.yxx"
 {
   state.top_transform->add_scale3d(LVecBase3d((yyvsp[-3]._number), (yyvsp[-2]._number), (yyvsp[-1]._number)));
 }
-#line 3664 "built/tmp/parser.yxx.c"
+#line 3682 "built/tmp/parser.c"
     break;
 
   case 132: /* uniform_scale: SCALE '{' real '}'  */
-#line 1754 "panda/src/egg/parser.yxx"
+#line 1758 "panda/src/egg/parser.yxx"
 {
   state.top_transform->add_uniform_scale((yyvsp[-1]._number));
 }
-#line 3672 "built/tmp/parser.yxx.c"
+#line 3690 "built/tmp/parser.c"
     break;
 
   case 135: /* matrix3_body: real real real real real real real real real  */
-#line 1768 "panda/src/egg/parser.yxx"
+#line 1772 "panda/src/egg/parser.yxx"
 {
   state.top_transform->add_matrix3
     (LMatrix3d((yyvsp[-8]._number), (yyvsp[-7]._number), (yyvsp[-6]._number),
                (yyvsp[-5]._number), (yyvsp[-4]._number), (yyvsp[-3]._number),
                (yyvsp[-2]._number), (yyvsp[-1]._number), (yyvsp[0]._number)));
 }
-#line 3683 "built/tmp/parser.yxx.c"
+#line 3701 "built/tmp/parser.c"
     break;
 
   case 138: /* matrix4_body: real real real real real real real real real real real real real real real real  */
-#line 1786 "panda/src/egg/parser.yxx"
+#line 1790 "panda/src/egg/parser.yxx"
 {
   state.top_transform->add_matrix4
     (LMatrix4d((yyvsp[-15]._number), (yyvsp[-14]._number), (yyvsp[-13]._number), (yyvsp[-12]._number),
@@ -3691,11 +3709,11 @@ yyreduce:
                (yyvsp[-7]._number), (yyvsp[-6]._number), (yyvsp[-5]._number), (yyvsp[-4]._number),
                (yyvsp[-3]._number), (yyvsp[-2]._number), (yyvsp[-1]._number), (yyvsp[0]._number)));
 }
-#line 3695 "built/tmp/parser.yxx.c"
+#line 3713 "built/tmp/parser.c"
     break;
 
   case 139: /* group_vertex_ref: VERTEXREF '{' integer_list group_vertex_membership REF '{' vertex_pool_name '}' '}'  */
-#line 1805 "panda/src/egg/parser.yxx"
+#line 1809 "panda/src/egg/parser.yxx"
 {
   if ((yyvsp[-2]._egg) != nullptr) {
     EggVertexPool *pool = DCAST(EggVertexPool, (yyvsp[-2]._egg));
@@ -3717,19 +3735,19 @@ yyreduce:
     }
   }
 }
-#line 3721 "built/tmp/parser.yxx.c"
+#line 3739 "built/tmp/parser.c"
     break;
 
   case 140: /* group_vertex_membership: empty  */
-#line 1838 "panda/src/egg/parser.yxx"
+#line 1842 "panda/src/egg/parser.yxx"
 {
   (yyval._number) = 1.0;
 }
-#line 3729 "built/tmp/parser.yxx.c"
+#line 3747 "built/tmp/parser.c"
     break;
 
   case 141: /* group_vertex_membership: group_vertex_membership SCALAR required_name '{' real_or_string '}'  */
-#line 1842 "panda/src/egg/parser.yxx"
+#line 1846 "panda/src/egg/parser.yxx"
 {
   string name = (yyvsp[-3]._string);
   double value = (yyvsp[-1]._number);
@@ -3743,165 +3761,165 @@ yyreduce:
 
   (yyval._number) = result;
 }
-#line 3747 "built/tmp/parser.yxx.c"
+#line 3765 "built/tmp/parser.c"
     break;
 
   case 143: /* switchcondition_body: DISTANCE '{' real real VERTEX '{' real real real '}' '}'  */
-#line 1879 "panda/src/egg/parser.yxx"
+#line 1883 "panda/src/egg/parser.yxx"
 {
   EggGroup *group = DCAST(EggGroup, state.stack.back());
   group->set_lod(EggSwitchConditionDistance((yyvsp[-8]._number), (yyvsp[-7]._number), LPoint3d((yyvsp[-4]._number), (yyvsp[-3]._number), (yyvsp[-2]._number))));
 }
-#line 3756 "built/tmp/parser.yxx.c"
+#line 3774 "built/tmp/parser.c"
     break;
 
   case 144: /* switchcondition_body: DISTANCE '{' real real real VERTEX '{' real real real '}' '}'  */
-#line 1884 "panda/src/egg/parser.yxx"
+#line 1888 "panda/src/egg/parser.yxx"
 {
   EggGroup *group = DCAST(EggGroup, state.stack.back());
   group->set_lod(EggSwitchConditionDistance((yyvsp[-9]._number), (yyvsp[-8]._number), LPoint3d((yyvsp[-4]._number), (yyvsp[-3]._number), (yyvsp[-2]._number)), (yyvsp[-7]._number)));
 }
-#line 3765 "built/tmp/parser.yxx.c"
+#line 3783 "built/tmp/parser.c"
     break;
 
   case 145: /* $@13: %empty  */
-#line 1901 "panda/src/egg/parser.yxx"
+#line 1905 "panda/src/egg/parser.yxx"
 {
   state.stack.push_back(new EggPolygon((yyvsp[0]._string)));
 }
-#line 3773 "built/tmp/parser.yxx.c"
+#line 3791 "built/tmp/parser.c"
     break;
 
   case 146: /* polygon: POLYGON optional_name $@13 '{' primitive_body '}'  */
-#line 1905 "panda/src/egg/parser.yxx"
+#line 1909 "panda/src/egg/parser.yxx"
 {
   (yyval._egg) = state.stack.back();
   state.stack.pop_back();
 }
-#line 3782 "built/tmp/parser.yxx.c"
+#line 3800 "built/tmp/parser.c"
     break;
 
   case 147: /* $@14: %empty  */
-#line 1920 "panda/src/egg/parser.yxx"
+#line 1924 "panda/src/egg/parser.yxx"
 {
   state.stack.push_back(new EggTriangleFan((yyvsp[0]._string)));
 }
-#line 3790 "built/tmp/parser.yxx.c"
+#line 3808 "built/tmp/parser.c"
     break;
 
   case 148: /* trianglefan: TRIANGLEFAN optional_name $@14 '{' primitive_body '}'  */
-#line 1924 "panda/src/egg/parser.yxx"
+#line 1928 "panda/src/egg/parser.yxx"
 {
   (yyval._egg) = state.stack.back();
   state.stack.pop_back();
 }
-#line 3799 "built/tmp/parser.yxx.c"
+#line 3817 "built/tmp/parser.c"
     break;
 
   case 149: /* $@15: %empty  */
-#line 1939 "panda/src/egg/parser.yxx"
+#line 1943 "panda/src/egg/parser.yxx"
 {
   state.stack.push_back(new EggTriangleStrip((yyvsp[0]._string)));
 }
-#line 3807 "built/tmp/parser.yxx.c"
+#line 3825 "built/tmp/parser.c"
     break;
 
   case 150: /* trianglestrip: TRIANGLESTRIP optional_name $@15 '{' primitive_body '}'  */
-#line 1943 "panda/src/egg/parser.yxx"
+#line 1947 "panda/src/egg/parser.yxx"
 {
   (yyval._egg) = state.stack.back();
   state.stack.pop_back();
 }
-#line 3816 "built/tmp/parser.yxx.c"
+#line 3834 "built/tmp/parser.c"
     break;
 
   case 151: /* $@16: %empty  */
-#line 1958 "panda/src/egg/parser.yxx"
+#line 1962 "panda/src/egg/parser.yxx"
 {
   state.stack.push_back(new EggPatch((yyvsp[0]._string)));
 }
-#line 3824 "built/tmp/parser.yxx.c"
+#line 3842 "built/tmp/parser.c"
     break;
 
   case 152: /* patch: PATCH optional_name $@16 '{' primitive_body '}'  */
-#line 1962 "panda/src/egg/parser.yxx"
+#line 1966 "panda/src/egg/parser.yxx"
 {
   (yyval._egg) = state.stack.back();
   state.stack.pop_back();
 }
-#line 3833 "built/tmp/parser.yxx.c"
+#line 3851 "built/tmp/parser.c"
     break;
 
   case 153: /* $@17: %empty  */
-#line 1977 "panda/src/egg/parser.yxx"
+#line 1981 "panda/src/egg/parser.yxx"
 {
   state.stack.push_back(new EggPoint((yyvsp[0]._string)));
 }
-#line 3841 "built/tmp/parser.yxx.c"
+#line 3859 "built/tmp/parser.c"
     break;
 
   case 154: /* point_light: POINTLIGHT optional_name $@17 '{' primitive_body '}'  */
-#line 1981 "panda/src/egg/parser.yxx"
+#line 1985 "panda/src/egg/parser.yxx"
 {
   (yyval._egg) = state.stack.back();
   state.stack.pop_back();
 }
-#line 3850 "built/tmp/parser.yxx.c"
+#line 3868 "built/tmp/parser.c"
     break;
 
   case 155: /* $@18: %empty  */
-#line 1996 "panda/src/egg/parser.yxx"
+#line 2000 "panda/src/egg/parser.yxx"
 {
   state.stack.push_back(new EggLine((yyvsp[0]._string)));
 }
-#line 3858 "built/tmp/parser.yxx.c"
+#line 3876 "built/tmp/parser.c"
     break;
 
   case 156: /* line: LINE optional_name $@18 '{' primitive_body '}'  */
-#line 2000 "panda/src/egg/parser.yxx"
+#line 2004 "panda/src/egg/parser.yxx"
 {
   (yyval._egg) = state.stack.back();
   state.stack.pop_back();
 }
-#line 3867 "built/tmp/parser.yxx.c"
+#line 3885 "built/tmp/parser.c"
     break;
 
   case 157: /* $@19: %empty  */
-#line 2015 "panda/src/egg/parser.yxx"
+#line 2019 "panda/src/egg/parser.yxx"
 {
   state.stack.push_back(new EggNurbsSurface((yyvsp[0]._string)));
 }
-#line 3875 "built/tmp/parser.yxx.c"
+#line 3893 "built/tmp/parser.c"
     break;
 
   case 158: /* nurbs_surface: NURBSSURFACE optional_name $@19 '{' nurbs_surface_body '}'  */
-#line 2019 "panda/src/egg/parser.yxx"
+#line 2023 "panda/src/egg/parser.yxx"
 {
   (yyval._egg) = state.stack.back();
   state.stack.pop_back();
 }
-#line 3884 "built/tmp/parser.yxx.c"
+#line 3902 "built/tmp/parser.c"
     break;
 
   case 159: /* $@20: %empty  */
-#line 2034 "panda/src/egg/parser.yxx"
+#line 2038 "panda/src/egg/parser.yxx"
 {
   state.stack.push_back(new EggNurbsCurve((yyvsp[0]._string)));
 }
-#line 3892 "built/tmp/parser.yxx.c"
+#line 3910 "built/tmp/parser.c"
     break;
 
   case 160: /* nurbs_curve: NURBSCURVE optional_name $@20 '{' nurbs_curve_body '}'  */
-#line 2038 "panda/src/egg/parser.yxx"
+#line 2042 "panda/src/egg/parser.yxx"
 {
   (yyval._egg) = state.stack.back();
   state.stack.pop_back();
 }
-#line 3901 "built/tmp/parser.yxx.c"
+#line 3919 "built/tmp/parser.c"
     break;
 
   case 165: /* $@21: %empty  */
-#line 2068 "panda/src/egg/parser.yxx"
+#line 2072 "panda/src/egg/parser.yxx"
 {
   if (!state.stack.back()->is_of_type(EggCompositePrimitive::get_class_type())) {
     eggyyerror(&(yylsp[-2]), scanner, "Not a composite primitive; components are not allowed here.");
@@ -3915,22 +3933,22 @@ yyreduce:
   // the component attributes.
   state.stack.push_back(new EggPolygon);
 }
-#line 3919 "built/tmp/parser.yxx.c"
+#line 3937 "built/tmp/parser.c"
     break;
 
   case 166: /* primitive_body: primitive_body COMPONENT integer '{' $@21 primitive_component_body '}'  */
-#line 2082 "panda/src/egg/parser.yxx"
+#line 2086 "panda/src/egg/parser.yxx"
 {
   PT(EggPrimitive) prim = DCAST(EggPrimitive, state.stack.back());
   state.stack.pop_back();
   PT(EggCompositePrimitive) comp = DCAST(EggCompositePrimitive, state.stack.back());
   comp->set_component((int)(yyvsp[-4]._number), prim);
 }
-#line 3930 "built/tmp/parser.yxx.c"
+#line 3948 "built/tmp/parser.c"
     break;
 
   case 174: /* primitive_body: primitive_body SCALAR required_name '{' real_or_string '}'  */
-#line 2096 "panda/src/egg/parser.yxx"
+#line 2100 "panda/src/egg/parser.yxx"
 {
   EggPrimitive *primitive = DCAST(EggPrimitive, state.stack.back());
   string name = (yyvsp[-3]._string);
@@ -3995,21 +4013,21 @@ yyreduce:
     eggyywarning(&(yylsp[-3]), scanner, "Unknown scalar " + name);
   }
 }
-#line 3999 "built/tmp/parser.yxx.c"
+#line 4017 "built/tmp/parser.c"
     break;
 
   case 186: /* nurbs_surface_body: nurbs_surface_body nurbs_curve  */
-#line 2182 "panda/src/egg/parser.yxx"
+#line 2186 "panda/src/egg/parser.yxx"
 {
   EggNurbsCurve *curve = DCAST(EggNurbsCurve, (yyvsp[0]._egg));
   EggNurbsSurface *nurbs = DCAST(EggNurbsSurface, state.stack.back());
   nurbs->_curves_on_surface.push_back(curve);
 }
-#line 4009 "built/tmp/parser.yxx.c"
+#line 4027 "built/tmp/parser.c"
     break;
 
   case 188: /* nurbs_surface_body: nurbs_surface_body SCALAR required_name '{' real_or_string '}'  */
-#line 2189 "panda/src/egg/parser.yxx"
+#line 2193 "panda/src/egg/parser.yxx"
 {
   EggNurbsSurface *primitive = DCAST(EggNurbsSurface, state.stack.back());
   string name = (yyvsp[-3]._string);
@@ -4064,11 +4082,11 @@ yyreduce:
     eggyywarning(&(yylsp[-3]), scanner, "Unknown scalar " + name);
   }
 }
-#line 4068 "built/tmp/parser.yxx.c"
+#line 4086 "built/tmp/parser.c"
     break;
 
   case 199: /* nurbs_curve_body: nurbs_curve_body SCALAR required_name '{' real_or_string '}'  */
-#line 2265 "panda/src/egg/parser.yxx"
+#line 2269 "panda/src/egg/parser.yxx"
 {
   EggNurbsCurve *primitive = DCAST(EggNurbsCurve, state.stack.back());
   string name = (yyvsp[-3]._string);
@@ -4129,22 +4147,22 @@ yyreduce:
     eggyywarning(&(yylsp[-3]), scanner, "Unknown scalar " + name);
   }
 }
-#line 4133 "built/tmp/parser.yxx.c"
+#line 4151 "built/tmp/parser.c"
     break;
 
   case 200: /* primitive_tref_body: texture_name  */
-#line 2336 "panda/src/egg/parser.yxx"
+#line 2340 "panda/src/egg/parser.yxx"
 {
   if ((yyvsp[0]._egg) != nullptr) {
     EggTexture *texture = DCAST(EggTexture, (yyvsp[0]._egg));
     DCAST(EggPrimitive, state.stack.back())->add_texture(texture);
   }
 }
-#line 4144 "built/tmp/parser.yxx.c"
+#line 4162 "built/tmp/parser.c"
     break;
 
   case 201: /* primitive_texture_body: required_name  */
-#line 2353 "panda/src/egg/parser.yxx"
+#line 2357 "panda/src/egg/parser.yxx"
 {
   EggTexture *texture = nullptr;
 
@@ -4174,30 +4192,30 @@ yyreduce:
   nassertr(texture != nullptr, 0);
   DCAST(EggPrimitive, state.stack.back())->add_texture(texture);
 }
-#line 4178 "built/tmp/parser.yxx.c"
+#line 4196 "built/tmp/parser.c"
     break;
 
   case 202: /* primitive_material_body: material_name  */
-#line 2393 "panda/src/egg/parser.yxx"
+#line 2397 "panda/src/egg/parser.yxx"
 {
   if ((yyvsp[0]._egg) != nullptr) {
     EggMaterial *material = DCAST(EggMaterial, (yyvsp[0]._egg));
     DCAST(EggPrimitive, state.stack.back())->set_material(material);
   }
 }
-#line 4189 "built/tmp/parser.yxx.c"
+#line 4207 "built/tmp/parser.c"
     break;
 
   case 203: /* primitive_normal_body: real real real  */
-#line 2410 "panda/src/egg/parser.yxx"
+#line 2414 "panda/src/egg/parser.yxx"
 {
   DCAST(EggPrimitive, state.stack.back())->set_normal(LNormald((yyvsp[-2]._number), (yyvsp[-1]._number), (yyvsp[0]._number)));
 }
-#line 4197 "built/tmp/parser.yxx.c"
+#line 4215 "built/tmp/parser.c"
     break;
 
   case 204: /* primitive_normal_body: primitive_normal_body DNORMAL string '{' real real real '}'  */
-#line 2414 "panda/src/egg/parser.yxx"
+#line 2418 "panda/src/egg/parser.yxx"
 {
   bool inserted = DCAST(EggPrimitive, state.stack.back())->_dnormals.
     insert(EggMorphNormal((yyvsp[-5]._string), LVector3d((yyvsp[-3]._number), (yyvsp[-2]._number), (yyvsp[-1]._number)))).second;
@@ -4205,11 +4223,11 @@ yyreduce:
     eggyywarning(&(yylsp[-5]), scanner, "Ignoring repeated morph name " + (yyvsp[-5]._string));
   }
 }
-#line 4209 "built/tmp/parser.yxx.c"
+#line 4227 "built/tmp/parser.c"
     break;
 
   case 205: /* primitive_normal_body: primitive_normal_body DNORMAL '{' string real real real '}'  */
-#line 2422 "panda/src/egg/parser.yxx"
+#line 2426 "panda/src/egg/parser.yxx"
 {
   bool inserted = DCAST(EggPrimitive, state.stack.back())->_dnormals.
     insert(EggMorphNormal((yyvsp[-4]._string), LVector3d((yyvsp[-3]._number), (yyvsp[-2]._number), (yyvsp[-1]._number)))).second;
@@ -4217,19 +4235,19 @@ yyreduce:
     eggyywarning(&(yylsp[-4]), scanner, "Ignoring repeated morph name " + (yyvsp[-4]._string));
   }
 }
-#line 4221 "built/tmp/parser.yxx.c"
+#line 4239 "built/tmp/parser.c"
     break;
 
   case 206: /* primitive_color_body: real real real real  */
-#line 2440 "panda/src/egg/parser.yxx"
+#line 2444 "panda/src/egg/parser.yxx"
 {
   DCAST(EggPrimitive, state.stack.back())->set_color(LColor((yyvsp[-3]._number), (yyvsp[-2]._number), (yyvsp[-1]._number), (yyvsp[0]._number)));
 }
-#line 4229 "built/tmp/parser.yxx.c"
+#line 4247 "built/tmp/parser.c"
     break;
 
   case 207: /* primitive_color_body: primitive_color_body DRGBA string '{' real real real real '}'  */
-#line 2444 "panda/src/egg/parser.yxx"
+#line 2448 "panda/src/egg/parser.yxx"
 {
   bool inserted = DCAST(EggPrimitive, state.stack.back())->_drgbas.
     insert(EggMorphColor((yyvsp[-6]._string), LVector4((yyvsp[-4]._number), (yyvsp[-3]._number), (yyvsp[-2]._number), (yyvsp[-1]._number)))).second;
@@ -4237,11 +4255,11 @@ yyreduce:
     eggyywarning(&(yylsp[-6]), scanner, "Ignoring repeated morph name " + (yyvsp[-6]._string));
   }
 }
-#line 4241 "built/tmp/parser.yxx.c"
+#line 4259 "built/tmp/parser.c"
     break;
 
   case 208: /* primitive_color_body: primitive_color_body DRGBA '{' string real real real real '}'  */
-#line 2452 "panda/src/egg/parser.yxx"
+#line 2456 "panda/src/egg/parser.yxx"
 {
   bool inserted = DCAST(EggPrimitive, state.stack.back())->_drgbas.
     insert(EggMorphColor((yyvsp[-5]._string), LVector4((yyvsp[-4]._number), (yyvsp[-3]._number), (yyvsp[-2]._number), (yyvsp[-1]._number)))).second;
@@ -4249,21 +4267,21 @@ yyreduce:
     eggyywarning(&(yylsp[-5]), scanner, "Ignoring repeated morph name " + (yyvsp[-5]._string));
   }
 }
-#line 4253 "built/tmp/parser.yxx.c"
+#line 4271 "built/tmp/parser.c"
     break;
 
   case 209: /* primitive_bface_body: integer  */
-#line 2470 "panda/src/egg/parser.yxx"
+#line 2474 "panda/src/egg/parser.yxx"
 {
   EggPrimitive *primitive = DCAST(EggPrimitive, state.stack.back());
   int value = (int)(yyvsp[0]._number);
   primitive->set_bface_flag(value!=0);
 }
-#line 4263 "built/tmp/parser.yxx.c"
+#line 4281 "built/tmp/parser.c"
     break;
 
   case 210: /* primitive_vertex_ref: VERTEXREF '{' integer_list REF '{' vertex_pool_name '}' '}'  */
-#line 2486 "panda/src/egg/parser.yxx"
+#line 2490 "panda/src/egg/parser.yxx"
 {
   if ((yyvsp[-2]._egg) != nullptr) {
     EggVertexPool *pool = DCAST(EggVertexPool, (yyvsp[-2]._egg));
@@ -4288,11 +4306,11 @@ yyreduce:
     }
   }
 }
-#line 4288 "built/tmp/parser.yxx.c"
+#line 4310 "built/tmp/parser.c"
     break;
 
   case 211: /* nurbs_surface_order_body: integer integer  */
-#line 2517 "panda/src/egg/parser.yxx"
+#line 2525 "panda/src/egg/parser.yxx"
 {
   EggNurbsSurface *nurbs = DCAST(EggNurbsSurface, state.stack.back());
   int u_order = (int)(yyvsp[-1]._number);
@@ -4300,11 +4318,11 @@ yyreduce:
   nurbs->set_u_order(u_order);
   nurbs->set_v_order(v_order);
 }
-#line 4300 "built/tmp/parser.yxx.c"
+#line 4322 "built/tmp/parser.c"
     break;
 
   case 212: /* nurbs_surface_uknots_body: real_list  */
-#line 2535 "panda/src/egg/parser.yxx"
+#line 2543 "panda/src/egg/parser.yxx"
 {
   EggNurbsSurface *nurbs = DCAST(EggNurbsSurface, state.stack.back());
   PTA_double nums = (yyvsp[0]._number_list);
@@ -4314,11 +4332,11 @@ yyreduce:
     nurbs->set_u_knot(i, nums[i]);
   }
 }
-#line 4314 "built/tmp/parser.yxx.c"
+#line 4336 "built/tmp/parser.c"
     break;
 
   case 213: /* nurbs_surface_vknots_body: real_list  */
-#line 2555 "panda/src/egg/parser.yxx"
+#line 2563 "panda/src/egg/parser.yxx"
 {
   EggNurbsSurface *nurbs = DCAST(EggNurbsSurface, state.stack.back());
   PTA_double nums = (yyvsp[0]._number_list);
@@ -4328,30 +4346,30 @@ yyreduce:
     nurbs->set_v_knot(i, nums[i]);
   }
 }
-#line 4328 "built/tmp/parser.yxx.c"
+#line 4350 "built/tmp/parser.c"
     break;
 
   case 214: /* nurbs_surface_trim_body: empty  */
-#line 2575 "panda/src/egg/parser.yxx"
+#line 2583 "panda/src/egg/parser.yxx"
 {
   EggNurbsSurface *nurbs = DCAST(EggNurbsSurface, state.stack.back());
   nurbs->_trims.push_back(EggNurbsSurface::Trim());
 }
-#line 4337 "built/tmp/parser.yxx.c"
+#line 4359 "built/tmp/parser.c"
     break;
 
   case 216: /* nurbs_surface_trim_loop_body: empty  */
-#line 2591 "panda/src/egg/parser.yxx"
+#line 2599 "panda/src/egg/parser.yxx"
 {
   EggNurbsSurface *nurbs = DCAST(EggNurbsSurface, state.stack.back());
   nassertr(!nurbs->_trims.empty(), 0);
   nurbs->_trims.back().push_back(EggNurbsSurface::Loop());
 }
-#line 4347 "built/tmp/parser.yxx.c"
+#line 4369 "built/tmp/parser.c"
     break;
 
   case 217: /* nurbs_surface_trim_loop_body: nurbs_surface_trim_loop_body nurbs_curve  */
-#line 2597 "panda/src/egg/parser.yxx"
+#line 2605 "panda/src/egg/parser.yxx"
 {
   EggNurbsSurface *nurbs = DCAST(EggNurbsSurface, state.stack.back());
   nassertr(!nurbs->_trims.empty(), 0);
@@ -4359,21 +4377,21 @@ yyreduce:
   EggNurbsCurve *curve = DCAST(EggNurbsCurve, (yyvsp[0]._egg));
   nurbs->_trims.back().back().push_back(curve);
 }
-#line 4359 "built/tmp/parser.yxx.c"
+#line 4381 "built/tmp/parser.c"
     break;
 
   case 218: /* nurbs_curve_order_body: integer  */
-#line 2616 "panda/src/egg/parser.yxx"
+#line 2624 "panda/src/egg/parser.yxx"
 {
   EggNurbsCurve *nurbs = DCAST(EggNurbsCurve, state.stack.back());
   int order = (int)(yyvsp[0]._number);
   nurbs->set_order(order);
 }
-#line 4369 "built/tmp/parser.yxx.c"
+#line 4391 "built/tmp/parser.c"
     break;
 
   case 219: /* nurbs_curve_knots_body: real_list  */
-#line 2632 "panda/src/egg/parser.yxx"
+#line 2640 "panda/src/egg/parser.yxx"
 {
   EggNurbsCurve *nurbs = DCAST(EggNurbsCurve, state.stack.back());
   PTA_double nums = (yyvsp[0]._number_list);
@@ -4383,108 +4401,108 @@ yyreduce:
     nurbs->set_knot(i, nums[i]);
   }
 }
-#line 4383 "built/tmp/parser.yxx.c"
+#line 4405 "built/tmp/parser.c"
     break;
 
   case 220: /* $@22: %empty  */
-#line 2653 "panda/src/egg/parser.yxx"
+#line 2661 "panda/src/egg/parser.yxx"
 {
   EggTable *table = new EggTable((yyvsp[0]._string));
   table->set_table_type(EggTable::TT_table);
   state.stack.push_back(table);
 }
-#line 4393 "built/tmp/parser.yxx.c"
+#line 4415 "built/tmp/parser.c"
     break;
 
   case 221: /* table: TABLE optional_name $@22 '{' table_body '}'  */
-#line 2659 "panda/src/egg/parser.yxx"
+#line 2667 "panda/src/egg/parser.yxx"
 {
   (yyval._egg) = state.stack.back();
   state.stack.pop_back();
   Thread::consider_yield();
 }
-#line 4403 "built/tmp/parser.yxx.c"
+#line 4425 "built/tmp/parser.c"
     break;
 
   case 222: /* $@23: %empty  */
-#line 2676 "panda/src/egg/parser.yxx"
+#line 2684 "panda/src/egg/parser.yxx"
 {
   EggTable *table = new EggTable((yyvsp[0]._string));
   table->set_table_type(EggTable::TT_bundle);
   state.stack.push_back(table);
 }
-#line 4413 "built/tmp/parser.yxx.c"
+#line 4435 "built/tmp/parser.c"
     break;
 
   case 223: /* bundle: BUNDLE optional_name $@23 '{' table_body '}'  */
-#line 2682 "panda/src/egg/parser.yxx"
+#line 2690 "panda/src/egg/parser.yxx"
 {
   (yyval._egg) = state.stack.back();
   state.stack.pop_back();
 }
-#line 4422 "built/tmp/parser.yxx.c"
+#line 4444 "built/tmp/parser.c"
     break;
 
   case 225: /* table_body: table_body table  */
-#line 2698 "panda/src/egg/parser.yxx"
-{
-  DCAST(EggTable, state.stack.back())->add_child(DCAST(EggNode, (yyvsp[0]._egg)));
-}
-#line 4430 "built/tmp/parser.yxx.c"
-    break;
-
-  case 226: /* table_body: table_body bundle  */
-#line 2702 "panda/src/egg/parser.yxx"
-{
-  DCAST(EggTable, state.stack.back())->add_child(DCAST(EggNode, (yyvsp[0]._egg)));
-}
-#line 4438 "built/tmp/parser.yxx.c"
-    break;
-
-  case 227: /* table_body: table_body sanim  */
 #line 2706 "panda/src/egg/parser.yxx"
 {
   DCAST(EggTable, state.stack.back())->add_child(DCAST(EggNode, (yyvsp[0]._egg)));
 }
-#line 4446 "built/tmp/parser.yxx.c"
+#line 4452 "built/tmp/parser.c"
     break;
 
-  case 228: /* table_body: table_body xfmanim  */
+  case 226: /* table_body: table_body bundle  */
 #line 2710 "panda/src/egg/parser.yxx"
 {
   DCAST(EggTable, state.stack.back())->add_child(DCAST(EggNode, (yyvsp[0]._egg)));
 }
-#line 4454 "built/tmp/parser.yxx.c"
+#line 4460 "built/tmp/parser.c"
     break;
 
-  case 229: /* table_body: table_body xfm_s_anim  */
+  case 227: /* table_body: table_body sanim  */
 #line 2714 "panda/src/egg/parser.yxx"
 {
   DCAST(EggTable, state.stack.back())->add_child(DCAST(EggNode, (yyvsp[0]._egg)));
 }
-#line 4462 "built/tmp/parser.yxx.c"
+#line 4468 "built/tmp/parser.c"
+    break;
+
+  case 228: /* table_body: table_body xfmanim  */
+#line 2718 "panda/src/egg/parser.yxx"
+{
+  DCAST(EggTable, state.stack.back())->add_child(DCAST(EggNode, (yyvsp[0]._egg)));
+}
+#line 4476 "built/tmp/parser.c"
+    break;
+
+  case 229: /* table_body: table_body xfm_s_anim  */
+#line 2722 "panda/src/egg/parser.yxx"
+{
+  DCAST(EggTable, state.stack.back())->add_child(DCAST(EggNode, (yyvsp[0]._egg)));
+}
+#line 4484 "built/tmp/parser.c"
     break;
 
   case 230: /* $@24: %empty  */
-#line 2729 "panda/src/egg/parser.yxx"
+#line 2737 "panda/src/egg/parser.yxx"
 {
   EggSAnimData *anim_data = new EggSAnimData((yyvsp[0]._string));
   state.stack.push_back(anim_data);
 }
-#line 4471 "built/tmp/parser.yxx.c"
+#line 4493 "built/tmp/parser.c"
     break;
 
   case 231: /* sanim: SANIM optional_name $@24 '{' sanim_body '}'  */
-#line 2734 "panda/src/egg/parser.yxx"
+#line 2742 "panda/src/egg/parser.yxx"
 {
   (yyval._egg) = state.stack.back();
   state.stack.pop_back();
 }
-#line 4480 "built/tmp/parser.yxx.c"
+#line 4502 "built/tmp/parser.c"
     break;
 
   case 233: /* sanim_body: sanim_body SCALAR required_name '{' real_or_string '}'  */
-#line 2751 "panda/src/egg/parser.yxx"
+#line 2759 "panda/src/egg/parser.yxx"
 {
   EggSAnimData *anim_data = DCAST(EggSAnimData, state.stack.back());
   string name = (yyvsp[-3]._string);
@@ -4496,37 +4514,37 @@ yyreduce:
     eggyywarning(&(yylsp[-3]), scanner, "Unsupported S$Anim scalar: " + name);
   }
 }
-#line 4496 "built/tmp/parser.yxx.c"
+#line 4518 "built/tmp/parser.c"
     break;
 
   case 234: /* sanim_body: sanim_body TABLE_V '{' real_list '}'  */
-#line 2763 "panda/src/egg/parser.yxx"
+#line 2771 "panda/src/egg/parser.yxx"
 {
   DCAST(EggSAnimData, state.stack.back())->set_data((yyvsp[-1]._number_list));
 }
-#line 4504 "built/tmp/parser.yxx.c"
+#line 4526 "built/tmp/parser.c"
     break;
 
   case 235: /* $@25: %empty  */
-#line 2777 "panda/src/egg/parser.yxx"
+#line 2785 "panda/src/egg/parser.yxx"
 {
   EggXfmAnimData *anim_data = new EggXfmAnimData((yyvsp[0]._string));
   state.stack.push_back(anim_data);
 }
-#line 4513 "built/tmp/parser.yxx.c"
+#line 4535 "built/tmp/parser.c"
     break;
 
   case 236: /* xfmanim: XFMANIM optional_name $@25 '{' xfmanim_body '}'  */
-#line 2782 "panda/src/egg/parser.yxx"
+#line 2790 "panda/src/egg/parser.yxx"
 {
   (yyval._egg) = state.stack.back();
   state.stack.pop_back();
 }
-#line 4522 "built/tmp/parser.yxx.c"
+#line 4544 "built/tmp/parser.c"
     break;
 
   case 238: /* xfmanim_body: xfmanim_body SCALAR required_name '{' real_or_string '}'  */
-#line 2799 "panda/src/egg/parser.yxx"
+#line 2807 "panda/src/egg/parser.yxx"
 {
   EggXfmAnimData *anim_data = DCAST(EggXfmAnimData, state.stack.back());
   string name = (yyvsp[-3]._string);
@@ -4543,37 +4561,37 @@ yyreduce:
     eggyywarning(&(yylsp[-3]), scanner, "Unsupported Xfm$Anim scalar: " + name);
   }
 }
-#line 4543 "built/tmp/parser.yxx.c"
+#line 4565 "built/tmp/parser.c"
     break;
 
   case 239: /* xfmanim_body: xfmanim_body TABLE_V '{' real_list '}'  */
-#line 2816 "panda/src/egg/parser.yxx"
+#line 2824 "panda/src/egg/parser.yxx"
 {
   DCAST(EggXfmAnimData, state.stack.back())->set_data((yyvsp[-1]._number_list));
 }
-#line 4551 "built/tmp/parser.yxx.c"
+#line 4573 "built/tmp/parser.c"
     break;
 
   case 240: /* $@26: %empty  */
-#line 2830 "panda/src/egg/parser.yxx"
+#line 2838 "panda/src/egg/parser.yxx"
 {
   EggXfmSAnim *anim_group = new EggXfmSAnim((yyvsp[0]._string));
   state.stack.push_back(anim_group);
 }
-#line 4560 "built/tmp/parser.yxx.c"
+#line 4582 "built/tmp/parser.c"
     break;
 
   case 241: /* xfm_s_anim: XFMSANIM optional_name $@26 '{' xfm_s_anim_body '}'  */
-#line 2835 "panda/src/egg/parser.yxx"
+#line 2843 "panda/src/egg/parser.yxx"
 {
   (yyval._egg) = state.stack.back();
   state.stack.pop_back();
 }
-#line 4569 "built/tmp/parser.yxx.c"
+#line 4591 "built/tmp/parser.c"
     break;
 
   case 243: /* xfm_s_anim_body: xfm_s_anim_body SCALAR required_name '{' real_or_string '}'  */
-#line 2852 "panda/src/egg/parser.yxx"
+#line 2860 "panda/src/egg/parser.yxx"
 {
   EggXfmSAnim *anim_group = DCAST(EggXfmSAnim, state.stack.back());
   string name = (yyvsp[-3]._string);
@@ -4588,37 +4606,37 @@ yyreduce:
     eggyywarning(&(yylsp[-3]), scanner, "Unsupported Xfm$Anim_S$ scalar: " + name);
   }
 }
-#line 4588 "built/tmp/parser.yxx.c"
+#line 4610 "built/tmp/parser.c"
     break;
 
   case 244: /* xfm_s_anim_body: xfm_s_anim_body sanim  */
-#line 2867 "panda/src/egg/parser.yxx"
+#line 2875 "panda/src/egg/parser.yxx"
 {
   DCAST(EggXfmSAnim, state.stack.back())->add_child(DCAST(EggNode, (yyvsp[0]._egg)));
 }
-#line 4596 "built/tmp/parser.yxx.c"
+#line 4618 "built/tmp/parser.c"
     break;
 
   case 245: /* $@27: %empty  */
-#line 2882 "panda/src/egg/parser.yxx"
+#line 2890 "panda/src/egg/parser.yxx"
 {
   EggAnimPreload *anim_preload = new EggAnimPreload((yyvsp[0]._string));
   state.stack.push_back(anim_preload);
 }
-#line 4605 "built/tmp/parser.yxx.c"
+#line 4627 "built/tmp/parser.c"
     break;
 
   case 246: /* anim_preload: ANIMPRELOAD optional_name $@27 '{' anim_preload_body '}'  */
-#line 2887 "panda/src/egg/parser.yxx"
+#line 2895 "panda/src/egg/parser.yxx"
 {
   (yyval._egg) = state.stack.back();
   state.stack.pop_back();
 }
-#line 4614 "built/tmp/parser.yxx.c"
+#line 4636 "built/tmp/parser.c"
     break;
 
   case 248: /* anim_preload_body: anim_preload_body SCALAR required_name '{' real_or_string '}'  */
-#line 2904 "panda/src/egg/parser.yxx"
+#line 2912 "panda/src/egg/parser.yxx"
 {
   EggAnimPreload *anim_preload = DCAST(EggAnimPreload, state.stack.back());
   string name = (yyvsp[-3]._string);
@@ -4632,43 +4650,43 @@ yyreduce:
     eggyywarning(&(yylsp[-3]), scanner, "Unsupported AnimPreload scalar: " + name);
   }
 }
-#line 4632 "built/tmp/parser.yxx.c"
+#line 4654 "built/tmp/parser.c"
     break;
 
   case 249: /* integer_list: empty  */
-#line 2928 "panda/src/egg/parser.yxx"
+#line 2936 "panda/src/egg/parser.yxx"
 {
   (yyval._number_list) = PTA_double::empty_array(0);
 }
-#line 4640 "built/tmp/parser.yxx.c"
+#line 4662 "built/tmp/parser.c"
     break;
 
   case 250: /* integer_list: integer_list integer  */
-#line 2932 "panda/src/egg/parser.yxx"
+#line 2940 "panda/src/egg/parser.yxx"
 {
   (yyval._number_list).push_back((double)(yyvsp[0]._number));
 }
-#line 4648 "built/tmp/parser.yxx.c"
+#line 4670 "built/tmp/parser.c"
     break;
 
   case 251: /* real_list: empty  */
-#line 2946 "panda/src/egg/parser.yxx"
+#line 2954 "panda/src/egg/parser.yxx"
 {
   (yyval._number_list) = PTA_double::empty_array(0);
 }
-#line 4656 "built/tmp/parser.yxx.c"
+#line 4678 "built/tmp/parser.c"
     break;
 
   case 252: /* real_list: real_list real  */
-#line 2950 "panda/src/egg/parser.yxx"
+#line 2958 "panda/src/egg/parser.yxx"
 {
   (yyval._number_list).push_back((yyvsp[0]._number));
 }
-#line 4664 "built/tmp/parser.yxx.c"
+#line 4686 "built/tmp/parser.c"
     break;
 
   case 253: /* texture_name: required_name  */
-#line 2964 "panda/src/egg/parser.yxx"
+#line 2972 "panda/src/egg/parser.yxx"
 {
   string name = (yyvsp[0]._string);
   Textures::iterator vpi = state.textures.find(name);
@@ -4679,11 +4697,11 @@ yyreduce:
     (yyval._egg) = (*vpi).second;
   }
 }
-#line 4679 "built/tmp/parser.yxx.c"
+#line 4701 "built/tmp/parser.c"
     break;
 
   case 254: /* material_name: required_name  */
-#line 2985 "panda/src/egg/parser.yxx"
+#line 2993 "panda/src/egg/parser.yxx"
 {
   string name = (yyvsp[0]._string);
   Materials::iterator vpi = state.materials.find(name);
@@ -4694,11 +4712,11 @@ yyreduce:
     (yyval._egg) = (*vpi).second;
   }
 }
-#line 4694 "built/tmp/parser.yxx.c"
+#line 4716 "built/tmp/parser.c"
     break;
 
   case 255: /* vertex_pool_name: required_name  */
-#line 3006 "panda/src/egg/parser.yxx"
+#line 3014 "panda/src/egg/parser.yxx"
 {
   string name = (yyvsp[0]._string);
   VertexPools::iterator vpi = state.vertex_pools.find(name);
@@ -4713,11 +4731,11 @@ yyreduce:
     (yyval._egg) = (*vpi).second;
   }
 }
-#line 4713 "built/tmp/parser.yxx.c"
+#line 4735 "built/tmp/parser.c"
     break;
 
   case 256: /* group_name: required_name  */
-#line 3031 "panda/src/egg/parser.yxx"
+#line 3039 "panda/src/egg/parser.yxx"
 {
   string name = (yyvsp[0]._string);
   Groups::iterator vpi = state.groups.find(name);
@@ -4728,143 +4746,147 @@ yyreduce:
     (yyval._egg) = (*vpi).second;
   }
 }
-#line 4728 "built/tmp/parser.yxx.c"
+#line 4750 "built/tmp/parser.c"
     break;
 
   case 257: /* required_name: empty  */
-#line 3052 "panda/src/egg/parser.yxx"
+#line 3060 "panda/src/egg/parser.yxx"
 {
   eggyyerror(&(yylsp[0]), scanner, "Name required.");
   (yyval._string) = "";
 }
-#line 4737 "built/tmp/parser.yxx.c"
+#line 4759 "built/tmp/parser.c"
     break;
 
   case 260: /* required_string: empty  */
-#line 3081 "panda/src/egg/parser.yxx"
+#line 3089 "panda/src/egg/parser.yxx"
 {
   eggyyerror(&(yylsp[0]), scanner, "String required.");
   (yyval._string) = "";
 }
-#line 4746 "built/tmp/parser.yxx.c"
+#line 4768 "built/tmp/parser.c"
     break;
 
   case 262: /* optional_string: empty  */
-#line 3097 "panda/src/egg/parser.yxx"
+#line 3105 "panda/src/egg/parser.yxx"
 {
   (yyval._string) = "";
 }
-#line 4754 "built/tmp/parser.yxx.c"
+#line 4776 "built/tmp/parser.c"
     break;
 
   case 264: /* string: EGG_NUMBER  */
-#line 3115 "panda/src/egg/parser.yxx"
+#line 3123 "panda/src/egg/parser.yxx"
 {
   (yyval._string) = (yyvsp[0]._string);
 }
-#line 4762 "built/tmp/parser.yxx.c"
+#line 4784 "built/tmp/parser.c"
     break;
 
   case 265: /* string: EGG_ULONG  */
-#line 3119 "panda/src/egg/parser.yxx"
+#line 3127 "panda/src/egg/parser.yxx"
 {
   (yyval._string) = (yyvsp[0]._string);
 }
-#line 4770 "built/tmp/parser.yxx.c"
+#line 4792 "built/tmp/parser.c"
     break;
 
   case 267: /* repeated_string: empty  */
-#line 3136 "panda/src/egg/parser.yxx"
+#line 3144 "panda/src/egg/parser.yxx"
 {
   (yyval._string) = "";
 }
-#line 4778 "built/tmp/parser.yxx.c"
+#line 4800 "built/tmp/parser.c"
     break;
 
   case 268: /* repeated_string: repeated_string_body  */
-#line 3140 "panda/src/egg/parser.yxx"
+#line 3148 "panda/src/egg/parser.yxx"
 {
   (yyval._string) = (yyvsp[0]._string);
 }
-#line 4786 "built/tmp/parser.yxx.c"
+#line 4808 "built/tmp/parser.c"
     break;
 
   case 269: /* repeated_string_body: string  */
-#line 3156 "panda/src/egg/parser.yxx"
+#line 3164 "panda/src/egg/parser.yxx"
 {
   (yyval._string) = (yyvsp[0]._string);
 }
-#line 4794 "built/tmp/parser.yxx.c"
+#line 4816 "built/tmp/parser.c"
     break;
 
   case 270: /* repeated_string_body: repeated_string_body string  */
-#line 3160 "panda/src/egg/parser.yxx"
+#line 3168 "panda/src/egg/parser.yxx"
 {
   (yyval._string) = (yyvsp[-1]._string) + "\n" + (yyvsp[0]._string);
 }
-#line 4802 "built/tmp/parser.yxx.c"
+#line 4824 "built/tmp/parser.c"
     break;
 
   case 272: /* real: EGG_ULONG  */
-#line 3175 "panda/src/egg/parser.yxx"
+#line 3183 "panda/src/egg/parser.yxx"
 {
   (yyval._number) = (yyvsp[0]._ulong);
 }
-#line 4810 "built/tmp/parser.yxx.c"
+#line 4832 "built/tmp/parser.c"
     break;
 
   case 273: /* real_or_string: EGG_NUMBER  */
-#line 3190 "panda/src/egg/parser.yxx"
+#line 3198 "panda/src/egg/parser.yxx"
 {
   (yyval._number) = (yyvsp[0]._number);
   (yyval._ulong) = (unsigned long)(yyvsp[0]._number);
   (yyval._string) = (yyvsp[0]._string);
 }
-#line 4820 "built/tmp/parser.yxx.c"
+#line 4842 "built/tmp/parser.c"
     break;
 
   case 274: /* real_or_string: EGG_ULONG  */
-#line 3196 "panda/src/egg/parser.yxx"
+#line 3204 "panda/src/egg/parser.yxx"
 {
   (yyval._number) = (yyvsp[0]._ulong);
   (yyval._ulong) = (yyvsp[0]._ulong);
   (yyval._string) = (yyvsp[0]._string);
 }
-#line 4830 "built/tmp/parser.yxx.c"
+#line 4852 "built/tmp/parser.c"
     break;
 
   case 275: /* real_or_string: EGG_STRING  */
-#line 3202 "panda/src/egg/parser.yxx"
+#line 3210 "panda/src/egg/parser.yxx"
 {
   (yyval._number) = 0.0;
   (yyval._ulong) = 0;
   (yyval._string) = (yyvsp[0]._string);
 }
-#line 4840 "built/tmp/parser.yxx.c"
+#line 4862 "built/tmp/parser.c"
     break;
 
   case 276: /* integer: EGG_NUMBER  */
-#line 3219 "panda/src/egg/parser.yxx"
+#line 3227 "panda/src/egg/parser.yxx"
 {
-  int i = (int)(yyvsp[0]._number);
-  if ((double)i != (yyvsp[0]._number)) {
-    eggyywarning(&(yylsp[0]), scanner, "Integer expected.");
-    (yyval._number) = (double)i;
+  if ((yyvsp[0]._number) > (double)INT_MAX) {
+    eggyywarning(&(yylsp[0]), scanner, "Integer value too high");
+  } else {
+    int i = (int)(yyvsp[0]._number);
+    if ((double)i != (yyvsp[0]._number)) {
+      eggyywarning(&(yylsp[0]), scanner, "Integer expected.");
+      (yyval._number) = (double)i;
+    }
   }
 }
-#line 4852 "built/tmp/parser.yxx.c"
+#line 4878 "built/tmp/parser.c"
     break;
 
   case 277: /* integer: EGG_ULONG  */
-#line 3227 "panda/src/egg/parser.yxx"
+#line 3239 "panda/src/egg/parser.yxx"
 {
   (yyval._number) = (yyvsp[0]._ulong);
 }
-#line 4860 "built/tmp/parser.yxx.c"
+#line 4886 "built/tmp/parser.c"
     break;
 
 
-#line 4864 "built/tmp/parser.yxx.c"
+#line 4890 "built/tmp/parser.c"
 
       default: break;
     }
@@ -4948,6 +4970,7 @@ yyerrorlab:
      label yyerrorlab therefore never appears in user code.  */
   if (0)
     YYERROR;
+  ++yynerrs;
 
   /* Do not reclaim the symbols of the rule whose action triggered
      this YYERROR.  */
@@ -5011,7 +5034,7 @@ yyerrlab1:
 `-------------------------------------*/
 yyacceptlab:
   yyresult = 0;
-  goto yyreturn;
+  goto yyreturnlab;
 
 
 /*-----------------------------------.
@@ -5019,24 +5042,22 @@ yyacceptlab:
 `-----------------------------------*/
 yyabortlab:
   yyresult = 1;
-  goto yyreturn;
+  goto yyreturnlab;
 
 
-#if !defined yyoverflow
-/*-------------------------------------------------.
-| yyexhaustedlab -- memory exhaustion comes here.  |
-`-------------------------------------------------*/
+/*-----------------------------------------------------------.
+| yyexhaustedlab -- YYNOMEM (memory exhaustion) comes here.  |
+`-----------------------------------------------------------*/
 yyexhaustedlab:
   yyerror (&yylloc, state, scanner, YY_("memory exhausted"));
   yyresult = 2;
-  goto yyreturn;
-#endif
+  goto yyreturnlab;
 
 
-/*-------------------------------------------------------.
-| yyreturn -- parsing is finished, clean up and return.  |
-`-------------------------------------------------------*/
-yyreturn:
+/*----------------------------------------------------------.
+| yyreturnlab -- parsing is finished, clean up and return.  |
+`----------------------------------------------------------*/
+yyreturnlab:
   if (yychar != YYEMPTY)
     {
       /* Make sure we have latest lookahead translation.  See comments at
@@ -5062,3 +5083,4 @@ yyreturn:
 
   return yyresult;
 }
+

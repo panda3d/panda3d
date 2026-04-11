@@ -720,7 +720,7 @@ texture_body:
     texture->set_lod_bias(value);
 
   } else {
-    eggyywarning(&@2, scanner, "Unsupported texture scalar: " + name);
+    eggyywarning(&@3, scanner, "Unsupported texture scalar: " + name);
   }
 }
         | texture_body transform
@@ -975,6 +975,10 @@ vertex:
 }
         | VERTEX integer
 {
+  if ($2 < 0.0) {
+    eggyyerror(&@2, scanner, "Vertex index may not be negative.");
+  }
+
   state.vertex_index = (int)$2;
   EggVertexPool *pool = DCAST(EggVertexPool, state.stack.back());
 
@@ -3221,10 +3225,14 @@ real_or_string:
 integer:
         EGG_NUMBER
 {
-  int i = (int)$1;
-  if ((double)i != $1) {
-    eggyywarning(&@1, scanner, "Integer expected.");
-    $$ = (double)i;
+  if ($1 > (double)INT_MAX) {
+    eggyywarning(&@1, scanner, "Integer value too high");
+  } else {
+    int i = (int)$1;
+    if ((double)i != $1) {
+      eggyywarning(&@1, scanner, "Integer expected.");
+      $$ = (double)i;
+    }
   }
 }
         | EGG_ULONG
