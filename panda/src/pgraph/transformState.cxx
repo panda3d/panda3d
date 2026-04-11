@@ -2362,9 +2362,17 @@ make_from_bam(const FactoryParams &params) {
 void TransformState::
 fillin(DatagramIterator &scan, BamReader *manager) {
   TypedWritable::fillin(scan, manager);
+
+  if (!manager->expect_remaining_size(scan, 4)) {
+    return;
+  }
+
   _flags = scan.get_uint32();
 
-  if ((_flags & F_components_given) != 0) {
+  size_t float_size = manager->get_file_stdfloat_double() ? 8 : 4;
+
+  if ((_flags & F_components_given) != 0 &&
+      manager->expect_remaining_size(scan, float_size * 12)) {
     // Componentwise transform.
     _pos.read_datagram(scan);
     if ((_flags & F_quat_given) != 0) {
@@ -2378,7 +2386,8 @@ fillin(DatagramIterator &scan, BamReader *manager) {
     check_uniform_scale();
   }
 
-  if ((_flags & F_mat_known) != 0) {
+  if ((_flags & F_mat_known) != 0 &&
+      manager->expect_remaining_size(scan, float_size * 16)) {
     // General matrix.
     _mat.read_datagram(scan);
   }

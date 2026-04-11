@@ -225,7 +225,11 @@ private:
 
   INLINE bool get_datagram(Datagram &datagram);
 
+  void error_remaining_size(DatagramIterator &scan, size_t num_bytes);
+
 public:
+  INLINE bool expect_remaining_size(DatagramIterator &scan, size_t num_bytes);
+
   // Inherit from this class to piggyback additional temporary data on the
   // bamReader (via set_aux_data() and get_aux_data()) for any particular
   // objects during the bam reading process.
@@ -243,6 +247,8 @@ private:
 
   bool _long_object_id;
   bool _long_pta_id;
+
+  bool _has_error = false;
 
   // This maps the type index numbers encountered within the Bam file to
   // actual TypeHandles.

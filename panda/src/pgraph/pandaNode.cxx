@@ -789,26 +789,33 @@ remove_all_children(Thread *current_thread) {
     Down::iterator di;
     for (di = down->begin(); di != down->end(); ++di) {
       PT(PandaNode) child_node = (*di).get_child();
-      CDStageWriter cdata_child(child_node->_cycler, pipeline_stage,
-                                     current_thread);
-      cdata_child->modify_up()->erase(UpConnection(this));
 
-      sever_connection(this, child_node, pipeline_stage, current_thread);
-      child_node->parents_changed();
-      child_node->mark_bam_modified();
+      // This cannot normally be null, but it may occur temporarily while
+      // reading a .bam file.
+      if (child_node != nullptr) {
+        CDStageWriter cdata_child(child_node->_cycler, pipeline_stage,
+                                       current_thread);
+        cdata_child->modify_up()->erase(UpConnection(this));
+
+        sever_connection(this, child_node, pipeline_stage, current_thread);
+        child_node->parents_changed();
+        child_node->mark_bam_modified();
+      }
     }
     down->clear();
 
     Down &stashed = *cdata->modify_stashed();
     for (di = stashed.begin(); di != stashed.end(); ++di) {
       PT(PandaNode) child_node = (*di).get_child();
-      CDStageWriter cdata_child(child_node->_cycler, pipeline_stage,
-                                     current_thread);
-      cdata_child->modify_up()->erase(UpConnection(this));
+      if (child_node != nullptr) {
+        CDStageWriter cdata_child(child_node->_cycler, pipeline_stage,
+                                       current_thread);
+        cdata_child->modify_up()->erase(UpConnection(this));
 
-      sever_connection(this, child_node, pipeline_stage, current_thread);
-      child_node->parents_changed();
-      child_node->mark_bam_modified();
+        sever_connection(this, child_node, pipeline_stage, current_thread);
+        child_node->parents_changed();
+        child_node->mark_bam_modified();
+      }
     }
     stashed.clear();
   }
@@ -2207,7 +2214,9 @@ force_bounds_stale(int pipeline_stage, Thread *current_thread) {
   int num_parents = parents.get_num_parents();
   for (int i = 0; i < num_parents; ++i) {
     PandaNode *parent = parents.get_parent(i);
-    parent->mark_bounds_stale(pipeline_stage, current_thread);
+    if (parent != nullptr) {
+      parent->mark_bounds_stale(pipeline_stage, current_thread);
+    }
   }
 }
 
@@ -4071,7 +4080,10 @@ complete_down_list(PandaNode::Down &down_list, const string &tag,
 void PandaNode::CData::
 fillin_up_list(PandaNode::Up &up_list, const string &tag,
                DatagramIterator &scan, BamReader *manager) {
-  int num_parents = scan.get_uint16();
+  int num_parents = 0;
+  if (manager->expect_remaining_size(scan, 2)) {
+    num_parents = scan.get_uint16();
+  }
   manager->set_int_tag(tag, num_parents);
   manager->read_pointers(scan, num_parents);
 }
@@ -4083,7 +4095,10 @@ fillin_up_list(PandaNode::Up &up_list, const string &tag,
 void PandaNode::CData::
 fillin_down_list(PandaNode::Down &down_list, const string &tag,
                  DatagramIterator &scan, BamReader *manager) {
-  int num_children = scan.get_uint16();
+  int num_children = 0;
+  if (manager->expect_remaining_size(scan, 2)) {
+    num_children = scan.get_uint16();
+  }
 
   // Create a temporary down_list, with the right number of elements, but a
   // NULL value for each pointer (we'll fill in the pointers later).  We need
@@ -4092,6 +4107,11 @@ fillin_down_list(PandaNode::Down &down_list, const string &tag,
   new_down_list.reserve(num_children);
   for (int i = 0; i < num_children; i++) {
     manager->read_pointer(scan);
+
+    if (!manager->expect_remaining_size(scan, 4)) {
+      break;
+    }
+
     int sort = scan.get_int32();
     DownConnection connection(nullptr, sort);
     new_down_list.push_back(connection);

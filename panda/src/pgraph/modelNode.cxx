@@ -203,6 +203,10 @@ void ModelNode::
 fillin(DatagramIterator &scan, BamReader *manager) {
   PandaNode::fillin(scan, manager);
 
+  if (!manager->expect_remaining_size(scan, 3)) {
+    return;
+  }
+
   _preserve_transform = (PreserveTransform)scan.get_uint8();
   _preserve_attributes = scan.get_uint16();
 }

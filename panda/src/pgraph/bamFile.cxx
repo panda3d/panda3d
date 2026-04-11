@@ -147,7 +147,13 @@ read_node(bool report_errors) {
 
   if (object == nullptr) {
     if (report_errors) {
-      loader_cat.error() << "Bam file " << _bam_filename << " is empty.\n";
+      if (is_eof()) {
+        loader_cat.error()
+          << "Bam file " << _bam_filename << " is empty.\n";
+      } else {
+        loader_cat.error()
+          << "Bam file " << _bam_filename << " contained errors.\n";
+      }
     }
 
   } else if (!object->is_of_type(PandaNode::get_class_type())) {
