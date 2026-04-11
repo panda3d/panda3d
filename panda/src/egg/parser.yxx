@@ -2497,8 +2497,12 @@ primitive_vertex_ref:
         errmsg << "No vertex " << index << " in pool " << pool->get_name()
                << std::ends;
         eggyyerror(&@3, scanner, errmsg.str());
-      } else {
+      }
+      else if (prim->empty() || prim->get_pool() == pool) {
         prim->add_vertex(vertex);
+      }
+      else {
+        eggyyerror(&@6, scanner, "Primitive references vertices from two different pools!");
       }
     }
   }

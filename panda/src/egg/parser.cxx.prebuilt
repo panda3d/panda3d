@@ -4278,8 +4278,12 @@ yyreduce:
         errmsg << "No vertex " << index << " in pool " << pool->get_name()
                << std::ends;
         eggyyerror(&(yylsp[-5]), scanner, errmsg.str());
-      } else {
+      }
+      else if (prim->empty() || prim->get_pool() == pool) {
         prim->add_vertex(vertex);
+      }
+      else {
+        eggyyerror(&(yylsp[-2]), scanner, "Primitive references vertices from two different pools!");
       }
     }
   }
