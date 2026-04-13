@@ -560,7 +560,7 @@ jobs:
         sudo apt-get install build-essential ninja-build bison flex nodejs python3-pip
 
     - name: Setup emsdk
-      uses: mymindstorm/setup-emsdk@v14
+      uses: mymindstorm/setup-emsdk@v16
       with:
         version: 4.0.2
         actions-cache-folder: 'emsdk-cache'
