@@ -28,6 +28,7 @@ class FactoryParams;
 class EXPCL_PANDA_PGRAPH StencilAttrib final : public RenderAttrib {
 
 private:
+  friend class StaticObject<StencilAttrib>;
   StencilAttrib();
 
 PUBLISHED:
@@ -173,8 +174,8 @@ public:
     RenderAttrib::init_type();
     register_type(_type_handle, "StencilAttrib",
                   RenderAttrib::get_class_type());
-    alignas(StencilAttrib) static char storage[sizeof(StencilAttrib)];
-    _attrib_slot = register_slot(_type_handle, 100, new (storage) StencilAttrib);
+    static StaticObject<StencilAttrib> default_attrib;
+    _attrib_slot = register_slot(_type_handle, 100, default_attrib);
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

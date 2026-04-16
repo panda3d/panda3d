@@ -31,6 +31,7 @@
  */
 class EXPCL_PANDA_PGRAPH TextureAttrib final : public RenderAttrib {
 protected:
+  friend class StaticObject<TextureAttrib>;
   INLINE TextureAttrib();
   INLINE TextureAttrib(const TextureAttrib &copy);
 
@@ -191,8 +192,8 @@ public:
     RenderAttrib::init_type();
     register_type(_type_handle, "TextureAttrib",
                   RenderAttrib::get_class_type());
-    alignas(TextureAttrib) static char storage[sizeof(TextureAttrib)];
-    _attrib_slot = register_slot(_type_handle, 30, new (storage) TextureAttrib);
+    static StaticObject<TextureAttrib> default_attrib;
+    _attrib_slot = register_slot(_type_handle, 30, default_attrib);
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

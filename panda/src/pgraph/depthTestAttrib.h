@@ -25,6 +25,7 @@ class FactoryParams;
  */
 class EXPCL_PANDA_PGRAPH DepthTestAttrib final : public RenderAttrib {
 private:
+  friend class StaticObject<DepthTestAttrib>;
   INLINE DepthTestAttrib(PandaCompareFunc mode = M_less);
 
 PUBLISHED:
@@ -71,8 +72,8 @@ public:
     RenderAttrib::init_type();
     register_type(_type_handle, "DepthTestAttrib",
                   RenderAttrib::get_class_type());
-    alignas(DepthTestAttrib) static char storage[sizeof(DepthTestAttrib)];
-    _attrib_slot = register_slot(_type_handle, 100, new (storage) DepthTestAttrib);
+    static StaticObject<DepthTestAttrib> default_attrib;
+    _attrib_slot = register_slot(_type_handle, 100, default_attrib);
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

@@ -250,7 +250,6 @@ init_type() {
    PRC_DESC("Set this true to enable the M_auto antialiasing mode for all "
             "nodes by default."));
 
-  alignas(AntialiasAttrib) static char storage[sizeof(AntialiasAttrib)];
-  _attrib_slot = register_slot(_type_handle, 100,
-    new (storage) AntialiasAttrib(default_antialias_enable ? M_auto : M_none));
+  static StaticObject<AntialiasAttrib> default_attrib(default_antialias_enable ? M_auto : M_none);
+  _attrib_slot = register_slot(_type_handle, 100, default_attrib);
 }

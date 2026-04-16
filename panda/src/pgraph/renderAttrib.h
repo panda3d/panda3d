@@ -18,6 +18,7 @@
 
 #include "config_pgraph.h"
 #include "typedWritableReferenceCount.h"
+#include "staticObject.h"
 #include "renderAttribRegistry.h"
 #include "pointerTo.h"
 #include "simpleHashMap.h"

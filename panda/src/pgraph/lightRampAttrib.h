@@ -27,6 +27,7 @@ class FactoryParams;
  */
 class EXPCL_PANDA_PGRAPH LightRampAttrib final : public RenderAttrib {
 private:
+  friend class StaticObject<LightRampAttrib>;
   INLINE LightRampAttrib();
 
 PUBLISHED:
@@ -94,8 +95,8 @@ public:
     RenderAttrib::init_type();
     register_type(_type_handle, "LightRampAttrib",
                   RenderAttrib::get_class_type());
-    alignas(LightRampAttrib) static char storage[sizeof(LightRampAttrib)];
-    _attrib_slot = register_slot(_type_handle, 100, new (storage) LightRampAttrib);
+    static StaticObject<LightRampAttrib> default_attrib;
+    _attrib_slot = register_slot(_type_handle, 100, default_attrib);
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

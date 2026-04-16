@@ -29,6 +29,7 @@ class FactoryParams;
  */
 class EXPCL_PANDA_PGRAPH TexMatrixAttrib final : public RenderAttrib {
 protected:
+  friend class StaticObject<TexMatrixAttrib>;
   INLINE TexMatrixAttrib();
   INLINE TexMatrixAttrib(const TexMatrixAttrib &copy);
 
@@ -120,8 +121,8 @@ public:
     RenderAttrib::init_type();
     register_type(_type_handle, "TexMatrixAttrib",
                   RenderAttrib::get_class_type());
-    alignas(TexMatrixAttrib) static char storage[sizeof(TexMatrixAttrib)];
-    _attrib_slot = register_slot(_type_handle, 100, new (storage) TexMatrixAttrib);
+    static StaticObject<TexMatrixAttrib> default_attrib;
+    _attrib_slot = register_slot(_type_handle, 100, default_attrib);
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

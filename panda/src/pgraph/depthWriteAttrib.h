@@ -31,6 +31,7 @@ PUBLISHED:
   };
 
 private:
+  friend class StaticObject<DepthWriteAttrib>;
   INLINE DepthWriteAttrib(Mode mode = M_on);
 
 PUBLISHED:
@@ -77,8 +78,8 @@ public:
     RenderAttrib::init_type();
     register_type(_type_handle, "DepthWriteAttrib",
                   RenderAttrib::get_class_type());
-    alignas(DepthWriteAttrib) static char storage[sizeof(DepthWriteAttrib)];
-    _attrib_slot = register_slot(_type_handle, 100, new (storage) DepthWriteAttrib);
+    static StaticObject<DepthWriteAttrib> default_attrib;
+    _attrib_slot = register_slot(_type_handle, 100, default_attrib);
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
