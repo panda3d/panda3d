@@ -12,7 +12,6 @@
  * Prior system by: cary
  */
 
-#include "throw_event.h"
 #include "audioSound.h"
 #include "vector_string.h"
 

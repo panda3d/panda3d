@@ -187,8 +187,6 @@ cleanup() {
  */
 AudioSound *OpenALAudioSound::
 make_copy() const {
-  ReMutexHolder holder(OpenALAudioManager::_lock);
-
   OpenALAudioSound *copy_sound = new OpenALAudioSound(*this);
 
   // throw errors if the copied-to node doesn't match the copied-from

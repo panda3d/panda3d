@@ -17,13 +17,13 @@ def test_make_copy(audiomgr):
     if str(test_sound).startswith("NullAudioSound"):
         pytest.skip("Sound loading failed")
 
-    test_sound.setActive(1)
-    test_sound.set3dMaxDistance(20.0)
+    test_sound.set_active(1)
+    test_sound.set_3d_max_distance(20.0)
     test_copy = test_sound.make_copy()
 
-    assert(test_copy.getActive() == test_sound.getActive())
-    assert(test_copy.getName() == test_sound.getName())
-    assert(test_copy.get3dMaxDistance() == test_sound.get3dMaxDistance())
+    assert test_copy.get_active() == test_sound.get_active()
+    assert test_copy.get_name() == test_sound.get_name()
+    assert test_copy.get_3d_max_distance() == test_sound.get_3d_max_distance()
     # check that make_copy has copied manually-modified parameters
-    assert(test_copy.get3dMaxDistance() == 20.0) 
+    assert test_copy.get_3d_max_distance() == 20.0 
 

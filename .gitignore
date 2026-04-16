@@ -64,9 +64,6 @@ ehthumbs.db
 __pycache__/
 *.pyc
 *.pyo
-python-1.11.0*
-pyproject.toml
-uv.lock
 
 # Test tool cache directories
 .tox/
