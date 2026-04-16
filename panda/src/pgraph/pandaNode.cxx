@@ -3882,6 +3882,10 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
  */
 void PandaNode::CData::
 fillin(DatagramIterator &scan, BamReader *manager) {
+  if (!manager->expect_remaining_size(scan, 18)) {
+    return;
+  }
+
   // Read the state and transform pointers.
   manager->read_pointer(scan);
   manager->read_pointer(scan);
