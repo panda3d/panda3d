@@ -1576,19 +1576,24 @@ reset_geom_rendering(Geom::CData *cdata) {
   for (pi = cdata->_primitives.begin();
        pi != cdata->_primitives.end();
        ++pi) {
-    cdata->_geom_rendering |= (*pi).get_read_pointer()->get_geom_rendering();
+    CPT(GeomPrimitive) prim = (*pi).get_read_pointer();
+    if (prim != nullptr) {
+      cdata->_geom_rendering |= prim->get_geom_rendering();
+    }
   }
 
   if ((cdata->_geom_rendering & GR_point) != 0) {
     CPT(GeomVertexData) data = cdata->_data.get_read_pointer();
-    if (data->has_column(InternalName::get_size())) {
-      cdata->_geom_rendering |= GR_per_point_size;
-    }
-    if (data->has_column(InternalName::get_aspect_ratio())) {
-      cdata->_geom_rendering |= GR_point_aspect_ratio;
-    }
-    if (data->has_column(InternalName::get_rotate())) {
-      cdata->_geom_rendering |= GR_point_rotate;
+    if (data != nullptr) {
+      if (data->has_column(InternalName::get_size())) {
+        cdata->_geom_rendering |= GR_per_point_size;
+      }
+      if (data->has_column(InternalName::get_aspect_ratio())) {
+        cdata->_geom_rendering |= GR_point_aspect_ratio;
+      }
+      if (data->has_column(InternalName::get_rotate())) {
+        cdata->_geom_rendering |= GR_point_rotate;
+      }
     }
   }
 

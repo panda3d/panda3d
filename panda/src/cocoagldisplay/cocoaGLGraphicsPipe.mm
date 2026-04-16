@@ -148,3 +148,12 @@ PT(GraphicsStateGuardian) CocoaGLGraphicsPipe::
 make_callback_gsg(GraphicsEngine *engine) {
   return new CocoaGLGraphicsStateGuardian(engine, this, nullptr);
 }
+
+/**
+ * Releases the graphics context that is currently bound on the calling
+ * thread, if any.
+ */
+void CocoaGLGraphicsPipe::
+release_current_context() {
+  [NSOpenGLContext clearCurrentContext];
+}

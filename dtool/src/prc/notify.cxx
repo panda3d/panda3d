@@ -48,6 +48,10 @@
 #endif
 #endif  // NDEBUG
 
+#ifdef __SANITIZE_ADDRESS__
+extern "C" void __sanitizer_print_stack_trace();
+#endif
+
 using std::cerr;
 using std::cout;
 using std::ostream;
@@ -395,7 +399,10 @@ assert_failure(const char *expression, int line,
     nout.flush();
 
     // Capture and list a stack trace.
-#ifdef NDEBUG
+#ifdef __SANITIZE_ADDRESS__
+    // When we're building with ASan, use it to display a nicer stack trace.
+    __sanitizer_print_stack_trace();
+#elif defined(NDEBUG)
 #elif defined(PHAVE_EXECINFO_H)
     void *trace[64];
     int size = backtrace(trace, 64);

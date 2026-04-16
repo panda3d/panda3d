@@ -110,6 +110,7 @@ public:
     PWT_draw
   };
   virtual PreferredWindowThread get_preferred_window_thread() const;
+  virtual void release_current_context();
 
   INLINE GraphicsDevice *get_device() const;
   virtual PT(GraphicsDevice) make_device(void *scrn = nullptr);

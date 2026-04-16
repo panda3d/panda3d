@@ -224,6 +224,15 @@ pipe_constructor() {
 }
 
 /**
+ * Releases the graphics context that is currently bound on the calling
+ * thread, if any.
+ */
+void eglGraphicsPipe::
+release_current_context() {
+  eglMakeCurrent(_egl_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+}
+
+/**
  * Creates a new window on the pipe, if possible.
  */
 PT(GraphicsOutput) eglGraphicsPipe::

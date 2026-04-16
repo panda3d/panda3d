@@ -35,6 +35,7 @@ class FactoryParams;
  */
 class EXPCL_PANDA_PGRAPH ScissorAttrib final : public RenderAttrib {
 private:
+  friend class StaticObject<ScissorAttrib>;
   ScissorAttrib(const LVecBase4 &frame);
 
 PUBLISHED:
@@ -89,9 +90,9 @@ public:
     register_type(_type_handle, "ScissorAttrib",
                   RenderAttrib::get_class_type());
 
-    ScissorAttrib *attrib = new ScissorAttrib(LVecBase4(0, 1, 0, 1));
-    attrib->_off = true;
-    _attrib_slot = register_slot(_type_handle, 100, attrib);
+    static StaticObject<ScissorAttrib> default_attrib(LVecBase4(0, 1, 0, 1));
+    default_attrib->_off = true;
+    _attrib_slot = register_slot(_type_handle, 100, default_attrib);
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

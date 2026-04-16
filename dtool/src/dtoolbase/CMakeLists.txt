@@ -41,6 +41,7 @@ set(P3DTOOLBASE_HEADERS
   pstrtod.h
   register_type.I register_type.h
   selectThreadImpl.h
+  staticObject.h
   stl_compares.I stl_compares.h
   typeHandle.I typeHandle.h
   typeRegistry.I typeRegistry.h

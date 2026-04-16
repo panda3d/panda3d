@@ -128,7 +128,8 @@ read_object() {
   if (!success) {
     if (_this->is_eof()) {
       PyErr_SetNone(PyExc_EOFError);
-      return nullptr;
+    } else {
+      PyErr_SetString(PyExc_Exception, "Error reading .bam file");
     }
     return nullptr;
   }

@@ -225,3 +225,13 @@ make_callback_gsg(GraphicsEngine *engine) {
   // not have anything to do with the glx interface.
   return new PosixGraphicsStateGuardian(engine, this);
 }
+
+/**
+ * Releases the graphics context that is currently bound on the calling
+ * thread, if any.
+ */
+void glxGraphicsPipe::
+release_current_context() {
+  LightReMutexHolder holder(_x_mutex);
+  glXMakeCurrent(get_display(), None, nullptr);
+}

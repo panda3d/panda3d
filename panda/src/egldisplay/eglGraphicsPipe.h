@@ -77,6 +77,8 @@ protected:
                                          int retry,
                                          bool &precertify);
 
+  virtual void release_current_context();
+
 private:
   EGLDisplay _egl_display = 0;
 

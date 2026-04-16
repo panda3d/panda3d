@@ -188,6 +188,7 @@ private:
   void do_add_window(GraphicsOutput *window);
   void do_add_gsg(GraphicsStateGuardian *gsg, GraphicsPipe *pipe);
   void do_remove_window(GraphicsOutput *window, Thread *current_thread);
+  void do_reassign_windows(Thread *current_thread);
   void do_resort_windows();
   void terminate_threads(Thread *current_thread);
   void auto_adjust_capabilities(GraphicsStateGuardian *gsg);
@@ -357,6 +358,7 @@ private:
   typedef pmap<std::string, PT(RenderThread) > Threads;
   Threads _threads;
   GraphicsThreadingModel _threading_model;
+  bool _threading_model_changed;
   bool _auto_flip;
   bool _portal_enabled; //toggle to portal culling on/off
   PT(Loader) _default_loader;
