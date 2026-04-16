@@ -2369,6 +2369,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   TypedWritable::fillin(scan, manager);
 
   if (!manager->expect_remaining_size(scan, 4)) {
+    _flags = F_is_invalid;
     return;
   }
 
@@ -2389,11 +2390,19 @@ fillin(DatagramIterator &scan, BamReader *manager) {
     _shear.read_datagram(scan);
 
     check_uniform_scale();
+  } else {
+    _flags &= ~(F_quat_given | F_quat_known | F_hpr_given | F_hpr_known | F_components_given | F_components_known);
   }
 
   if ((_flags & F_mat_known) != 0 &&
       manager->expect_remaining_size(scan, float_size * 16)) {
     // General matrix.
     _mat.read_datagram(scan);
+  } else {
+    _flags &= ~(F_mat_known);
+  }
+
+  if ((_flags & (F_is_identity | F_mat_known | F_components_known)) == 0) {
+    _flags |= F_is_invalid;
   }
 }
