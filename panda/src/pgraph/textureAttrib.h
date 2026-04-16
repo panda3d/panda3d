@@ -191,7 +191,8 @@ public:
     RenderAttrib::init_type();
     register_type(_type_handle, "TextureAttrib",
                   RenderAttrib::get_class_type());
-    _attrib_slot = register_slot(_type_handle, 30, new TextureAttrib);
+    alignas(TextureAttrib) static char storage[sizeof(TextureAttrib)];
+    _attrib_slot = register_slot(_type_handle, 30, new (storage) TextureAttrib);
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

@@ -89,7 +89,8 @@ public:
     register_type(_type_handle, "ScissorAttrib",
                   RenderAttrib::get_class_type());
 
-    ScissorAttrib *attrib = new ScissorAttrib(LVecBase4(0, 1, 0, 1));
+    alignas(ScissorAttrib) static char storage[sizeof(ScissorAttrib)];
+    ScissorAttrib *attrib = new (storage) ScissorAttrib(LVecBase4(0, 1, 0, 1));
     attrib->_off = true;
     _attrib_slot = register_slot(_type_handle, 100, attrib);
   }

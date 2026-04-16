@@ -92,8 +92,9 @@ public:
     RenderAttrib::init_type();
     register_type(_type_handle, "ColorScaleAttrib",
                   RenderAttrib::get_class_type());
+    alignas(ColorScaleAttrib) static char storage[sizeof(ColorScaleAttrib)];
     _attrib_slot = register_slot(_type_handle, 100,
-      new ColorScaleAttrib(false, LVecBase4(1, 1, 1, 1)));
+      new (storage) ColorScaleAttrib(false, LVecBase4(1, 1, 1, 1)));
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

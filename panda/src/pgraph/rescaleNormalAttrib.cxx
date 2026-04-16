@@ -152,8 +152,9 @@ init_type() {
             "graph.  Turning it off ('none') may produce a small performance "
             "benefit."));
 
+  alignas(RescaleNormalAttrib) static char storage[sizeof(RescaleNormalAttrib)];
   Mode mode = rescale_normals;
-  RescaleNormalAttrib *attrib = new RescaleNormalAttrib(mode);
+  RescaleNormalAttrib *attrib = new (storage) RescaleNormalAttrib(mode);
   _attrib_slot = register_slot(_type_handle, 100, attrib);
   _attribs[mode] = attrib;
 }

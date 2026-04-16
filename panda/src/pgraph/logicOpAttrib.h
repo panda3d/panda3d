@@ -95,7 +95,8 @@ public:
     RenderAttrib::init_type();
     register_type(_type_handle, "LogicOpAttrib",
                   RenderAttrib::get_class_type());
-    _attrib_slot = register_slot(_type_handle, 100, new LogicOpAttrib(O_none));
+    alignas(LogicOpAttrib) static char storage[sizeof(LogicOpAttrib)];
+    _attrib_slot = register_slot(_type_handle, 100, new (storage) LogicOpAttrib(O_none));
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

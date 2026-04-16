@@ -76,7 +76,8 @@ public:
     RenderAttrib::init_type();
     register_type(_type_handle, "AlphaTestAttrib",
                   RenderAttrib::get_class_type());
-    _attrib_slot = register_slot(_type_handle, 100, new AlphaTestAttrib);
+    alignas(AlphaTestAttrib) static char storage[sizeof(AlphaTestAttrib)];
+    _attrib_slot = register_slot(_type_handle, 100, new (storage) AlphaTestAttrib);
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

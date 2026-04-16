@@ -120,7 +120,8 @@ public:
     RenderAttrib::init_type();
     register_type(_type_handle, "TexMatrixAttrib",
                   RenderAttrib::get_class_type());
-    _attrib_slot = register_slot(_type_handle, 100, new TexMatrixAttrib);
+    alignas(TexMatrixAttrib) static char storage[sizeof(TexMatrixAttrib)];
+    _attrib_slot = register_slot(_type_handle, 100, new (storage) TexMatrixAttrib);
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

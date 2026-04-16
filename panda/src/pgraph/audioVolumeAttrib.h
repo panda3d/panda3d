@@ -83,7 +83,8 @@ public:
     RenderAttrib::init_type();
     register_type(_type_handle, "AudioVolumeAttrib",
                   RenderAttrib::get_class_type());
-    _attrib_slot = register_slot(_type_handle, 100, new AudioVolumeAttrib(false, 1));
+    alignas(AudioVolumeAttrib) static char storage[sizeof(AudioVolumeAttrib)];
+    _attrib_slot = register_slot(_type_handle, 100, new (storage) AudioVolumeAttrib(false, 1));
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

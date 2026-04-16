@@ -1395,7 +1395,10 @@ init_states() {
   // The identity and invalid states are asked for so often, we make them a
   // special case and store a pointer forever.
   {
-    TransformState *state = new TransformState;
+    alignas(TransformState) static char storage[sizeof(TransformState)];
+    alignas(LMatrix4) static char inv_mat_storage[sizeof(LMatrix4)];
+    TransformState *state = new (storage) TransformState;
+    state->local_object();
     state->_pos.set(0.0f, 0.0f, 0.0f);
     state->_scale.set(1.0f, 1.0f, 1.0f);
     state->_shear.set(0.0f, 0.0f, 0.0f);
@@ -1406,7 +1409,7 @@ init_states() {
                     0.0f, 1.0f, 0.0f, 0.0f,
                     0.0f, 0.0f, 1.0f, 0.0f,
                     0.0f, 0.0f, 0.0f, 1.0f);
-    state->_inv_mat = new LMatrix4(state->_mat);
+    state->_inv_mat = new (inv_mat_storage) LMatrix4(LMatrix4::ident_mat());
     state->_hash = H_identity;
     state->_flags = F_is_identity | F_singular_known | F_components_known
                   | F_has_components | F_mat_known | F_quat_known | F_hpr_known
@@ -1417,7 +1420,9 @@ init_states() {
     _identity_state = state;
   }
   {
-    TransformState *state = new TransformState;
+    alignas(TransformState) static char storage[sizeof(TransformState)];
+    TransformState *state = new (storage) TransformState;
+    state->local_object();
     state->_hash = H_invalid;
     state->_flags = F_is_singular | F_singular_known | F_components_known
                   | F_mat_known | F_is_invalid;

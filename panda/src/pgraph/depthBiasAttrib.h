@@ -99,8 +99,9 @@ public:
     RenderAttrib::init_type();
     register_type(_type_handle, "DepthBiasAttrib",
                   RenderAttrib::get_class_type());
+    alignas(DepthBiasAttrib) static char storage[sizeof(DepthBiasAttrib)];
     _attrib_slot = register_slot(_type_handle, 100,
-                                 new DepthBiasAttrib(0, 0, 0));
+                                 new (storage) DepthBiasAttrib(0, 0, 0));
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

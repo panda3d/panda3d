@@ -71,7 +71,8 @@ public:
     RenderAttrib::init_type();
     register_type(_type_handle, "DepthTestAttrib",
                   RenderAttrib::get_class_type());
-    _attrib_slot = register_slot(_type_handle, 100, new DepthTestAttrib);
+    alignas(DepthTestAttrib) static char storage[sizeof(DepthTestAttrib)];
+    _attrib_slot = register_slot(_type_handle, 100, new (storage) DepthTestAttrib);
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

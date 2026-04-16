@@ -73,7 +73,8 @@ public:
     RenderAttrib::init_type();
     register_type(_type_handle, "FogAttrib",
                   RenderAttrib::get_class_type());
-    _attrib_slot = register_slot(_type_handle, 100, new FogAttrib);
+    alignas(FogAttrib) static char storage[sizeof(FogAttrib)];
+    _attrib_slot = register_slot(_type_handle, 100, new (storage) FogAttrib);
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

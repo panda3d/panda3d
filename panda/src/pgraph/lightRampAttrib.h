@@ -94,7 +94,8 @@ public:
     RenderAttrib::init_type();
     register_type(_type_handle, "LightRampAttrib",
                   RenderAttrib::get_class_type());
-    _attrib_slot = register_slot(_type_handle, 100, new LightRampAttrib);
+    alignas(LightRampAttrib) static char storage[sizeof(LightRampAttrib)];
+    _attrib_slot = register_slot(_type_handle, 100, new (storage) LightRampAttrib);
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
