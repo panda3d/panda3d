@@ -12,6 +12,9 @@
  */
 
 #include "inputDeviceManager.h"
+#ifdef HAVE_GAMEINPUT
+#include "gameInputManager.h"
+#endif
 #include "ioKitInputDeviceManager.h"
 #include "linuxInputDeviceManager.h"
 #include "winInputDeviceManager.h"
@@ -37,7 +40,11 @@ make_global_ptr() {
   init_libputil();
 
 #ifdef _WIN32
+#ifdef HAVE_GAMEINPUT
+  _global_ptr = new GameInputManager;
+#else
   _global_ptr = new WinInputDeviceManager;
+#endif
 #elif defined(__APPLE__)
   _global_ptr = new IOKitInputDeviceManager;
 #elif defined(PHAVE_LINUX_INPUT_H) && !defined(ANDROID)
