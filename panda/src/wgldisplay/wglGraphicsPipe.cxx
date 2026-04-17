@@ -236,6 +236,14 @@ make_callback_gsg(GraphicsEngine *engine) {
   return new wglGraphicsStateGuardian(engine, this, nullptr);
 }
 
+/**
+ * Releases the graphics context that is currently bound on the calling
+ * thread, if any.
+ */
+void wglGraphicsPipe::
+release_current_context() {
+  wgl_make_current(0, 0, nullptr);
+}
 
 /**
  * Returns pfd_flags formatted as a string in a user-friendly way.

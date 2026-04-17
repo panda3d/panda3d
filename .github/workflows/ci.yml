@@ -137,14 +137,13 @@ jobs:
         key: ci-cmake-${{ runner.OS }}-thirdparty-v1.10.16-r1
     - name: Install dependencies (Windows)
       if: runner.os == 'Windows'
-      shell: powershell
+      shell: bash
       run: |
-        if (!(Test-Path thirdparty/win-libs-vc14-x64)) {
-          $wc = New-Object System.Net.WebClient
-          $wc.DownloadFile("https://www.panda3d.org/download/panda3d-1.10.16/panda3d-1.10.16-tools-win64.zip", "thirdparty-tools.zip")
-          Expand-Archive -Path thirdparty-tools.zip
-          Move-Item -Path thirdparty-tools/panda3d-1.10.16/thirdparty -Destination .
-        }
+        if [ ! -d thirdparty/win-libs-vc14-x64 ]; then
+          curl --retry 5 --retry-delay 10 --retry-all-errors -fLo thirdparty-tools.zip "https://www.panda3d.org/download/panda3d-1.10.16/panda3d-1.10.16-tools-win64.zip"
+          unzip -q thirdparty-tools.zip -d thirdparty-tools
+          mv thirdparty-tools/panda3d-1.10.16/thirdparty .
+        fi
 
     - name: ccache (non-Windows)
       if: runner.os != 'Windows'
@@ -424,14 +423,21 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install build-essential bison flex libfreetype6-dev libgl1-mesa-dev libegl1-mesa-dev libgl1-mesa-dri mesa-utils-extra libjpeg-dev libode-dev libopenal-dev libpng-dev libssl-dev libvorbis-dev libx11-dev libxcursor-dev libxrandr-dev nvidia-cg-toolkit zlib1g-dev
+    - name: Cache thirdparty packages (Windows)
+      if: runner.os == 'Windows'
+      uses: actions/cache@v5
+      with:
+        path: thirdparty
+        key: ci-makepanda-${{ runner.OS }}-thirdparty-v1.10.16
     - name: Get thirdparty packages (Windows)
       if: runner.os == 'Windows'
-      shell: powershell
+      shell: bash
       run: |
-        $wc = New-Object System.Net.WebClient
-        $wc.DownloadFile("https://www.panda3d.org/download/panda3d-1.10.16/panda3d-1.10.16-tools-win64.zip", "thirdparty-tools.zip")
-        Expand-Archive -Path thirdparty-tools.zip
-        Move-Item -Path thirdparty-tools/panda3d-1.10.16/thirdparty -Destination .
+        if [ ! -d thirdparty/win-libs-vc14-x64 ]; then
+          curl --retry 5 --retry-delay 10 --retry-all-errors -fLo thirdparty-tools.zip "https://www.panda3d.org/download/panda3d-1.10.16/panda3d-1.10.16-tools-win64.zip"
+          unzip -q thirdparty-tools.zip -d thirdparty-tools
+          mv thirdparty-tools/panda3d-1.10.16/thirdparty .
+        fi
     - name: Get thirdparty packages (macOS)
       if: runner.os == 'macOS'
       run: |

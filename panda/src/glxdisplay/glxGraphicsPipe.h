@@ -92,6 +92,7 @@ protected:
                                          int retry,
                                          bool &precertify);
   virtual PT(GraphicsStateGuardian) make_callback_gsg(GraphicsEngine *engine);
+  virtual void release_current_context();
 
 public:
   static TypeHandle get_class_type() {

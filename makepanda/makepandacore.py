@@ -89,6 +89,7 @@ MSVCVERSIONINFO = {
     (14,1): {"vsversion":(15,0), "vsname":"Visual Studio 2017"},
     (14,2): {"vsversion":(16,0), "vsname":"Visual Studio 2019"},
     (14,3): {"vsversion":(17,0), "vsname":"Visual Studio 2022"},
+    (14,5): {"vsversion":(18,0), "vsname":"Visual Studio 2026"},
 }
 
 ########################################################################
@@ -2276,6 +2277,9 @@ def SdkLocatePython(prefer_thirdparty_python=False):
 
 def SdkLocateVisualStudio(version=(10,0)):
     if (GetHost() != "windows"): return
+
+    if version == (14, 4):
+        exit("There is no MSVC 14.4; Visual Studio 2026 uses MSVC 14.5.")
 
     try:
         msvcinfo = MSVCVERSIONINFO[version]

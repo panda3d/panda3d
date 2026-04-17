@@ -285,7 +285,7 @@ read_object(TypedWritable *&ptr, ReferenceCount *&ref_ptr) {
   // done.
   while (_nesting_level > start_level) {
     int nested_object = p_read_object();
-    if (nested_object == 0) {
+    if (nested_object == 0 && _nesting_level > start_level) {
       bam_cat.warning()
         << "Reached end of bam source while reading nested object.\n";
       _nesting_level = start_level;

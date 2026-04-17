@@ -38,6 +38,7 @@
  */
 class EXPCL_PANDA_PGRAPH ShaderAttrib final : public RenderAttrib {
 private:
+  friend class StaticObject<ShaderAttrib>;
   INLINE ShaderAttrib();
   INLINE ShaderAttrib(const ShaderAttrib &copy);
 
@@ -179,7 +180,8 @@ public:
     RenderAttrib::init_type();
     register_type(_type_handle, "ShaderAttrib",
                   RenderAttrib::get_class_type());
-    _attrib_slot = register_slot(_type_handle, 10, new ShaderAttrib);
+    static StaticObject<ShaderAttrib> default_attrib;
+    _attrib_slot = register_slot(_type_handle, 10, default_attrib);
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

@@ -136,6 +136,12 @@ fillin(DatagramIterator &scan, BamReader *manager) {
  */
 void RescaleNormalAttrib::
 init_type() {
+  static bool inited = false;
+  if (inited) {
+    return;
+  }
+  inited = true;
+
   RenderAttrib::init_type();
   register_type(_type_handle, "RescaleNormalAttrib",
                 RenderAttrib::get_class_type());
@@ -153,9 +159,9 @@ init_type() {
             "benefit."));
 
   Mode mode = rescale_normals;
-  RescaleNormalAttrib *attrib = new RescaleNormalAttrib(mode);
-  _attrib_slot = register_slot(_type_handle, 100, attrib);
-  _attribs[mode] = attrib;
+  static StaticObject<RescaleNormalAttrib> default_attrib(mode);
+  _attrib_slot = register_slot(_type_handle, 100, default_attrib);
+  _attribs[mode] = default_attrib;
 }
 
 /**
