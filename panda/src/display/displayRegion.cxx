@@ -20,6 +20,7 @@
 #include "camera.h"
 #include "dcast.h"
 #include "pnmImage.h"
+#include "cmath.h"
 
 #include <time.h>
 
@@ -656,25 +657,25 @@ do_compute_pixels(int i, int x_size, int y_size, CData *cdata) {
 
   Region &region = cdata->_regions[i];
 
-  region._pixels[0] = int((region._dimensions[0] * x_size) + 0.5);
-  region._pixels[1] = int((region._dimensions[1] * x_size) + 0.5);
+  region._pixels[0] = (int)cfloor((region._dimensions[0] * x_size) + 0.5);
+  region._pixels[1] = (int)cfloor((region._dimensions[1] * x_size) + 0.5);
   region._pixels_i[0] = region._pixels[0];
   region._pixels_i[1] = region._pixels[1];
 
   nassertv(_window != nullptr);
   if (_window->get_inverted()) {
     // The window is inverted; compute the DisplayRegion accordingly.
-    region._pixels[2] = int(((1.0f - region._dimensions[3]) * y_size) + 0.5);
-    region._pixels[3] = int(((1.0f - region._dimensions[2]) * y_size) + 0.5);
-    region._pixels_i[2] = int((region._dimensions[3] * y_size) + 0.5);
-    region._pixels_i[3] = int((region._dimensions[2] * y_size) + 0.5);
+    region._pixels[2] = (int)cfloor(((1.0f - region._dimensions[3]) * y_size) + 0.5);
+    region._pixels[3] = (int)cfloor(((1.0f - region._dimensions[2]) * y_size) + 0.5);
+    region._pixels_i[2] = (int)cfloor((region._dimensions[3] * y_size) + 0.5);
+    region._pixels_i[3] = (int)cfloor((region._dimensions[2] * y_size) + 0.5);
 
   } else {
     // The window is normal.
-    region._pixels[2] = int((region._dimensions[2] * y_size) + 0.5);
-    region._pixels[3] = int((region._dimensions[3] * y_size) + 0.5);
-    region._pixels_i[2] = int(((1.0f - region._dimensions[2]) * y_size) + 0.5);
-    region._pixels_i[3] = int(((1.0f - region._dimensions[3]) * y_size) + 0.5);
+    region._pixels[2] = (int)cfloor((region._dimensions[2] * y_size) + 0.5);
+    region._pixels[3] = (int)cfloor((region._dimensions[3] * y_size) + 0.5);
+    region._pixels_i[2] = (int)cfloor(((1.0f - region._dimensions[2]) * y_size) + 0.5);
+    region._pixels_i[3] = (int)cfloor(((1.0f - region._dimensions[3]) * y_size) + 0.5);
   }
 }
 
