@@ -34,6 +34,16 @@ AudioSound(bool positional) : _positional(positional) {
   // Intentionally blank.
 }
 
+/*
+ * Copies an OpenALAudioSound into a new OpenALAudioSound.
+ * Not implemented in FMOD!
+ */
+AudioSound *AudioSound::
+make_copy() const {
+  // Intentionally blank.
+  audio_cat.error() << "Copying " << (*this) << "failed: copying an AudioSound object is currently only available with OpenAL.\n";
+  return nullptr;
+}
 
 void AudioSound::
 set_3d_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx, PN_stdfloat vy, PN_stdfloat vz) {

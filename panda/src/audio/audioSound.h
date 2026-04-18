@@ -28,6 +28,10 @@ class EXPCL_PANDA_AUDIO AudioSound : public TypedReferenceCount {
 PUBLISHED:
   virtual ~AudioSound();
 
+  // Construct a near-identical copy of this object on the heap and 
+  // return a pointer to the new copy. Currently only implemented for OpenAL.
+  virtual AudioSound *make_copy() const;
+
   // For best compatibility, set the loop_count, volume, and balance, prior to
   // calling play().  You may set them while they're playing, but it's
   // implementation specific whether you get the results.  - Calling play() a
