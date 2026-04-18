@@ -386,13 +386,15 @@ def MakeInstallerLinux(version, debversion=None, rpmversion=None, rpmrelease=1,
         txt = INSTALLER_SPEC_FILE[1:]
 
         # Add the MIME associations if we have pview or pstats
-        if not PkgSkip("PVIEW") or not PkgSkip("PSTATS"):
+        have_pview = not PkgSkip("PVIEW")
+        have_pstats = os.path.exists(outputdir + "/bin/pstats")
+        if have_pview or have_pstats:
             txt += INSTALLER_SPEC_FILE_MIME
 
-            if not PkgSkip("PVIEW"):
+            if have_pview:
                 txt += "/usr/share/applications/pview.desktop\n"
 
-            if not PkgSkip("PSTATS"):
+            if have_pstats:
                 txt += "/usr/share/applications/pstats.desktop\n"
 
         # Add the platform-specific Python directories.
