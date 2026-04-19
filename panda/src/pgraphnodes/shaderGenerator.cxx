@@ -1746,7 +1746,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     case TextureStage::M_blend_color_scale:
       text << "\t result.rgb = lerp(result.rgb, texcolor_" << i << ".rgb * attr_colorscale.rgb, tex" << i << ".rgb);\n";
       if (key._calc_primary_alpha) {
-        text << "\t result.a *= texcolor_" << i << ".a * attr_colorscale.a;\n";
+        text << "\t result.a *= tex" << i << ".a;\n";
       }
       break;
     default:
