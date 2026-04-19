@@ -540,7 +540,7 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
     }
 
     // Does this stage need a texcolor_# input?
-    if (stage->uses_color()) {
+    if (stage->uses_color() || stage->involves_color_scale()) {
       info._flags |= ShaderKey::TF_uses_color;
     }
 
@@ -1976,7 +1976,7 @@ combine_source_as_string(const ShaderKey::TextureInfo &info, short num, bool alp
       csource << "result";
       break;
     case TextureStage::CS_constant_color_scale:
-      csource << "attr_colorscale";
+      csource << "(attr_colorscale * texcolor_" << texindex << ")";
       break;
     case TextureStage::CS_last_saved_result:
       csource << "last_saved_result";
