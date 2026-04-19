@@ -21,6 +21,7 @@
 #include "namable.h"
 #include "pmap.h"
 #include "pointerTo.h"
+#include "updateSeq.h"
 
 /**
  * An encapsulation of a font; i.e.  a set of glyphs that may be assembled
@@ -79,6 +80,7 @@ PUBLISHED:
   virtual void write(std::ostream &out, int indent_level) const;
 
 public:
+  INLINE UpdateSeq get_modified() const;
   INLINE PN_stdfloat get_total_poly_margin() const;
 
   virtual bool get_glyph(int character, CPT(TextGlyph) &glyph)=0;
@@ -95,6 +97,7 @@ protected:
   PN_stdfloat _space_advance;
   PN_stdfloat _total_poly_margin;
   PT(TextGlyph) _invalid_glyph;
+  UpdateSeq _modified;
 
 public:
   static TypeHandle get_class_type() {

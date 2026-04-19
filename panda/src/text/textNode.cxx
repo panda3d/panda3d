@@ -568,6 +568,7 @@ void TextNode::
 do_rebuild(CData *cdata) {
   cdata->_flags &= ~(F_needs_rebuild | F_needs_measure);
   cdata->_internal_geom = do_generate(cdata);
+  cdata->_font_modified = get_font()->get_modified();
 }
 
 /**
@@ -748,7 +749,13 @@ do_generate(CData *cdata) {
 PT(PandaNode) TextNode::
 do_get_internal_geom() const {
   CDLockedReader cdata(_cycler);
-  if ((cdata->_flags & F_needs_rebuild) != 0) {
+
+  bool needs_rebuild = (cdata->_flags & F_needs_rebuild) != 0;
+  if (!needs_rebuild && cdata->_font_modified != get_font()->get_modified()) {
+    needs_rebuild = true;
+  }
+
+  if (needs_rebuild) {
     // Propagate the generated text upstream if the upstream stages have no
     // changes to the text.
     CDWriter cdataw(((TextNode *)this)->_cycler, cdata, false);

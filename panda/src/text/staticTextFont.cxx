@@ -100,6 +100,7 @@ StaticTextFont(PandaNode *font_def, CoordinateSystem cs) {
   }
 
   set_name(font_def->get_name());
+  ++_modified;
 }
 
 /**

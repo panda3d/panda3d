@@ -359,6 +359,7 @@ private:
     PN_stdfloat _frame_width;
     PN_stdfloat _card_border_size;
     PN_stdfloat _card_border_uv_portion;
+    UpdateSeq _font_modified;
 
     LVector2 _frame_ul, _frame_lr;
     LVector2 _card_ul, _card_lr;
