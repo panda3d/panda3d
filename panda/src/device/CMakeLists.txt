@@ -10,6 +10,8 @@ set(P3DEVICE_HEADERS
   config_device.h
   dialNode.h dialNode.I
   evdevInputDevice.h evdevInputDevice.I
+  gameInputDevice.h
+  gameInputManager.h
   inputDevice.h inputDevice.I
   inputDeviceManager.h inputDeviceManager.I
   inputDeviceNode.h
@@ -38,6 +40,8 @@ set(P3DEVICE_SOURCES
   config_device.cxx
   dialNode.cxx
   evdevInputDevice.cxx
+  gameInputDevice.cxx
+  gameInputManager.cxx
   inputDevice.cxx
   inputDeviceManager.cxx
   inputDeviceNode.cxx
@@ -61,7 +65,16 @@ target_link_libraries(p3device p3dgraph)
 target_interrogate(p3device ALL)
 
 if(WIN32)
-  target_link_libraries(p3device cfgmgr32.lib)
+  # Check for the GameInput API (available on Windows 10 version 1903+
+  # with the Windows SDK 10.0.22621.0 or later).
+  include(CheckIncludeFileCXX)
+  check_include_file_cxx("GameInput.h" HAVE_GAMEINPUT)
+  if(HAVE_GAMEINPUT)
+    target_compile_definitions(p3device PRIVATE HAVE_GAMEINPUT)
+    target_link_libraries(p3device cfgmgr32.lib GameInput.lib)
+  else()
+    target_link_libraries(p3device cfgmgr32.lib)
+  endif()
 
 elseif(APPLE)
   find_library(IOKIT_LIBRARY IOKit)
