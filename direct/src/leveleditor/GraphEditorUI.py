@@ -192,7 +192,7 @@ class GraphEditorWindow(wx.Window):
         return [[(x1,y1),0],[(x2,y2),0],[(x3,y3),0],[t1x,t1y],[t2x,t2y]]
 
     def InitBuffer(self):
-        self.buffer = wx.EmptyBitmap(self.w, self.h)
+        self.buffer = wx.Bitmap(self.w, self.h)
         dc = wx.BufferedDC(wx.ClientDC(self), self.buffer)
         self.DrawXCoord(dc)
         self.DrawYCoord(dc)
@@ -217,10 +217,10 @@ class GraphEditorWindow(wx.Window):
         dc.SetBrush(wx.BLACK_BRUSH)
         dc.SetFont(wx.Font(8, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
 
-        dc.DrawLine(self.zeroPos[0], 0.0, self.zeroPos[0], self.h)
+        dc.DrawLine(int(self.zeroPos[0]), 0, int(self.zeroPos[0]), int(self.h))
         st = str(self.zero)
         self.tw,self.th = dc.GetTextExtent(st)
-        dc.DrawText(st, self.zeroPos[0]+1.0, self.h-self.th-0.5)
+        dc.DrawText(st, int(self.zeroPos[0] + 1.0), int(self.h - self.th - 0.5))
 
         dc.SetPen(wx.Pen(wx.Colour(150, 150, 150)))
         dc.SetBrush(wx.Brush(wx.Colour(150, 150, 150)))
@@ -229,7 +229,7 @@ class GraphEditorWindow(wx.Window):
             posPos = self.zeroPos[0]+self.unitWidth
             posNum = self.zero + 1
             while posPos <= self.w:
-                dc.DrawLine(posPos, 0.0, posPos, self.h)
+                dc.DrawLine(int(posPos), 0, int(posPos), int(self.h))
                 st = str(posNum)
                 self.drawXNumber(dc, st, posPos)
                 posPos += self.unitWidth
@@ -238,7 +238,7 @@ class GraphEditorWindow(wx.Window):
             negPos = self.zeroPos[0]-self.unitWidth
             negNum = self.zero - 1
             while negPos >= 0.0:
-                dc.DrawLine(negPos, 0.0, negPos, self.h)
+                dc.DrawLine(int(negPos), 0, int(negPos), int(self.h))
                 st = str(negNum)
                 self.drawXNumber(dc, st, negPos)
                 negPos -= self.unitWidth
@@ -248,7 +248,7 @@ class GraphEditorWindow(wx.Window):
             posPos = self.zeroPos[0]+self.unitWidth*2.0
             posNum = self.zero + 2
             while posPos <= self.w:
-                dc.DrawLine(posPos, 0.0, posPos, self.h)
+                dc.DrawLine(int(posPos), 0, int(posPos), int(self.h))
                 st = str(posNum)
                 self.drawXNumber(dc, st, posPos)
                 posPos += self.unitWidth*2.0
@@ -257,7 +257,7 @@ class GraphEditorWindow(wx.Window):
             negPos = self.zeroPos[0]-self.unitWidth*2.0
             negNum = self.zero - 2
             while negPos >= 0.0:
-                dc.DrawLine(negPos, 0.0, negPos, self.h)
+                dc.DrawLine(int(negPos), 0, int(negPos), int(self.h))
                 st = str(negNum)
                 self.drawXNumber(dc, st, negPos)
                 negPos -= self.unitWidth*2.0
@@ -267,7 +267,7 @@ class GraphEditorWindow(wx.Window):
             posPos = self.zeroPos[0]+self.unitWidth*float(5)
             posNum = self.zero + 5
             while posPos <= self.w:
-                dc.DrawLine(posPos, 0.0, posPos, self.h)
+                dc.DrawLine(int(posPos), 0, int(posPos), int(self.h))
                 st = str(posNum)
                 self.drawXNumber(dc, st, posPos)
                 posPos += self.unitWidth*float(5)
@@ -276,7 +276,7 @@ class GraphEditorWindow(wx.Window):
             negPos = self.zeroPos[0]-self.unitWidth*float(5)
             negNum = self.zero - 5
             while negPos >= 0.0:
-                dc.DrawLine(negPos, 0.0, negPos, self.h)
+                dc.DrawLine(int(negPos), 0, int(negPos), int(self.h))
                 st = str(negNum)
                 self.drawXNumber(dc, st, negPos)
                 negPos -= self.unitWidth*float(5)
@@ -287,9 +287,9 @@ class GraphEditorWindow(wx.Window):
         dc.SetBrush(wx.BLACK_BRUSH)
         dc.SetFont(wx.Font(8, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL))
 
-        dc.DrawLine(0.0, self.zeroPos[1], self.w, self.zeroPos[1])
+        dc.DrawLine(0, int(self.zeroPos[1]), int(self.w), int(self.zeroPos[1]))
         st = str(self.zero)
-        dc.DrawText(st, 5.0, self.zeroPos[1]-1.0)
+        dc.DrawText(st, 5, int(self.zeroPos[1] - 1.0))
 
         dc.SetPen(wx.Pen(wx.Colour(150, 150, 150)))
         dc.SetBrush(wx.Brush(wx.Colour(150, 150, 150)))
@@ -298,7 +298,7 @@ class GraphEditorWindow(wx.Window):
         posPos = self.zeroPos[1]-self.unitHeight*float(5)
         posNum = self.zero + 5
         while posPos >= 0.0:
-            dc.DrawLine(0.0, posPos, self.w, posPos)
+            dc.DrawLine(0, int(posPos), int(self.w), int(posPos))
             st = str(posNum)
             self.drawYNumber(dc, st, posPos)
             posPos -= self.unitHeight*float(5)
@@ -307,7 +307,7 @@ class GraphEditorWindow(wx.Window):
         negPos = self.zeroPos[1]+self.unitHeight*float(5)
         negNum = self.zero - 5
         while negPos <= self.h:
-            dc.DrawLine(0.0, negPos, self.w, negPos)
+            dc.DrawLine(0, int(negPos), int(self.w), int(negPos))
             st = str(negNum)
             self.drawYNumber(dc, st, negPos)
             negPos += self.unitHeight*float(5)
@@ -318,7 +318,7 @@ class GraphEditorWindow(wx.Window):
 
         dc.SetPen(wx.BLACK_PEN)
         dc.SetBrush(wx.BLACK_BRUSH)
-        dc.DrawText(st, pos+1.0, self.h-self.th-0.5)
+        dc.DrawText(st, int(pos + 1.0), int(self.h - self.th - 0.5))
 
         dc.SetPen(oldPen)
         dc.SetBrush(oldBrush)
@@ -329,7 +329,7 @@ class GraphEditorWindow(wx.Window):
 
         dc.SetPen(wx.BLACK_PEN)
         dc.SetBrush(wx.BLACK_BRUSH)
-        dc.DrawText(st, 5.0, pos-1.0)
+        dc.DrawText(st, 5, int(pos - 1.0))
 
         dc.SetPen(oldPen)
         dc.SetBrush(oldBrush)
@@ -340,7 +340,7 @@ class GraphEditorWindow(wx.Window):
             curFramePos = self.zeroPos[0]+self.curFrame*self.unitWidth
             dc.SetPen(wx.Pen("red"))
             dc.SetBrush(wx.Brush("red"))
-            dc.DrawLine(curFramePos, 0.0, curFramePos, self.h)
+            dc.DrawLine(int(curFramePos), 0, int(curFramePos), int(self.h))
         else:
             pass
 
@@ -387,7 +387,7 @@ class GraphEditorWindow(wx.Window):
             return
 
         if len(list) == 2:
-            dc.DrawLine(list[0][AG.KEYFRAME][AG.LOCAL_VALUE][0], list[0][AG.KEYFRAME][AG.LOCAL_VALUE][1], list[1][AG.KEYFRAME][AG.LOCAL_VALUE][0], list[1][AG.KEYFRAME][AG.LOCAL_VALUE][1])
+            dc.DrawLine(int(list[0][AG.KEYFRAME][AG.LOCAL_VALUE][0]), int(list[0][AG.KEYFRAME][AG.LOCAL_VALUE][1]), int(list[1][AG.KEYFRAME][AG.LOCAL_VALUE][0]), int(list[1][AG.KEYFRAME][AG.LOCAL_VALUE][1]))
             return
 
         if len(list) >= 3:
@@ -433,7 +433,7 @@ class GraphEditorWindow(wx.Window):
                     curX = x
                     curY = y
 
-                    dc.DrawLine(preX, preY, curX, curY)
+                    dc.DrawLine(int(preX), int(preY), int(curX), int(curY))
 
                     preX = curX
                     preY = curY
@@ -470,7 +470,7 @@ class GraphEditorWindow(wx.Window):
                             dc.DrawCircle(X, Y, 2)
 
                             dc.SetPen(wx.Pen("cyan", 1))
-                            dc.DrawLine(X1, Y1, X, Y)
+                            dc.DrawLine(int(X1), int(Y1), int(X), int(Y))
 
                         if list[i][j][AG.SELECT] == 0:
                             dc.SetPen(wx.Pen("brown", 3))
@@ -478,7 +478,7 @@ class GraphEditorWindow(wx.Window):
                             dc.DrawCircle(X, Y, 2)
 
                             dc.SetPen(wx.Pen("brown", 1))
-                            dc.DrawLine(X1, Y1, X, Y)
+                            dc.DrawLine(int(X1), int(Y1), int(X), int(Y))
 
                 if self._OneTangent is False:
                     if list[i][AG.IN_TANGENT][AG.SELECT] == 1:
@@ -489,7 +489,7 @@ class GraphEditorWindow(wx.Window):
                         dc.DrawCircle(X, Y, 2)
 
                         dc.SetPen(wx.Pen("cyan", 1))
-                        dc.DrawLine(X1, Y1, X, Y)
+                        dc.DrawLine(int(X1), int(Y1), int(X), int(Y))
 
                     if list[i][AG.IN_TANGENT][AG.SELECT] == 0:
                         X = list[i][AG.IN_TANGENT][AG.LOCAL_VALUE][0]
@@ -499,7 +499,7 @@ class GraphEditorWindow(wx.Window):
                         dc.DrawCircle(X, Y, 2)
 
                         dc.SetPen(wx.Pen("navy", 1))
-                        dc.DrawLine(X1, Y1, X, Y)
+                        dc.DrawLine(int(X1), int(Y1), int(X), int(Y))
 
                     if list[i][AG.OUT_TANGENT][AG.SELECT] == 1:
                         X = list[i][AG.OUT_TANGENT][AG.LOCAL_VALUE][0]
@@ -509,7 +509,7 @@ class GraphEditorWindow(wx.Window):
                         dc.DrawCircle(X, Y, 2)
 
                         dc.SetPen(wx.Pen("cyan", 1))
-                        dc.DrawLine(X1, Y1, X, Y)
+                        dc.DrawLine(int(X1), int(Y1), int(X), int(Y))
 
                     if list[i][AG.OUT_TANGENT][AG.SELECT] == 0:
                         X = list[i][AG.OUT_TANGENT][AG.LOCAL_VALUE][0]
@@ -519,17 +519,17 @@ class GraphEditorWindow(wx.Window):
                         dc.DrawCircle(X, Y, 2)
 
                         dc.SetPen(wx.Pen("brown", 1))
-                        dc.DrawLine(X1, Y1, X, Y)
+                        dc.DrawLine(int(X1), int(Y1), int(X), int(Y))
 
     def DrawSelectRec(self, dc):
         if self._selectRec is True:
             dc.SetPen(wx.Pen("navy", 1))
             dc.SetBrush(wx.Brush("navy"))
             ## dc.SetLogicalFunction(wx.AND)
-            dc.DrawLine(self.pos[0], self.pos[1], self.pos[0], self.newPos[1])
-            dc.DrawLine(self.pos[0], self.pos[1], self.newPos[0], self.pos[1])
-            dc.DrawLine(self.newPos[0], self.newPos[1], self.pos[0], self.newPos[1])
-            dc.DrawLine(self.newPos[0], self.newPos[1], self.newPos[0], self.pos[1])
+            dc.DrawLine(int(self.pos[0]), int(self.pos[1]), int(self.pos[0]), int(self.newPos[1]))
+            dc.DrawLine(int(self.pos[0]), int(self.pos[1]), int(self.newPos[0]), int(self.pos[1]))
+            dc.DrawLine(int(self.newPos[0]), int(self.newPos[1]), int(self.pos[0]), int(self.newPos[1]))
+            dc.DrawLine(int(self.newPos[0]), int(self.newPos[1]), int(self.newPos[0]), int(self.pos[1]))
 
     def OnSize(self, evt):
         self.InitBuffer()
@@ -854,8 +854,8 @@ class GraphEditorUI(wx.Dialog):
         self.mainPanel1.SetSizerAndFit(mainSizer1)
         self.mainPanel2.SetSizer(mainSizer2)
 
-        dialogSizer.Add(self.mainPanel2, 0, wx.ALIGN_CENTER_VERTICAL|wx.TOP, 10)
-        dialogSizer.Add(self.mainPanel1, 0, wx.ALIGN_CENTER_VERTICAL|wx.TOP, 5)
+        dialogSizer.Add(self.mainPanel2, 0, wx.EXPAND | wx.TOP, 10)
+        dialogSizer.Add(self.mainPanel1, 0, wx.EXPAND | wx.TOP, 5)
 
         self.SetSizer(dialogSizer)
         self.Layout()

@@ -71,7 +71,7 @@ class CurveAnimUI(wx.Dialog):
 
         self.mainPanel.SetSizerAndFit(mainSizer)
 
-        dialogSizer.Add(self.mainPanel, 1, wx.ALIGN_CENTER_VERTICAL | wx.ALL, 5)
+        dialogSizer.Add(self.mainPanel, 1, wx.TOP | wx.ALL, 5)
 
         self.SetSizer(dialogSizer)
         self.Layout()

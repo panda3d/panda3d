@@ -213,7 +213,7 @@ class TimeSlider(wx.Window):
 
     def InitBuffer(self):
         self.w,self.h = self.GetClientSize()
-        self.buffer = wx.EmptyBitmap(self.w, self.h)
+        self.buffer = wx.Bitmap(self.w, self.h)
         dc = wx.BufferedDC(wx.ClientDC(self), self.buffer)
         self.DrawTimeSlider(dc)
         self.DrawNumber(dc)
@@ -248,134 +248,147 @@ class TimeSlider(wx.Window):
 
         if self.frameNum <= 20:
 
-            self.points.append(((float(0),self.h),(float(0),self.h-15)))
+            self.points.append(((int(0), int(self.h)), (int(0), int(self.h-15))))
 
             for i in range(1,self.frameNum):
                 temp = self.points[i-1][0][0]+self.unitWidth
-                self.points.append(((temp,self.h),(temp,self.h-15)))
+                x = int(round(temp))
+                self.points.append(((x, int(self.h)), (x, int(self.h-15))))
 
             for i in range(self.frameNum):
                 self.numbers.append(self.sliderStartFrame+i)
 
             for i in range(self.frameNum):
-                dc.DrawLine(self.points[i][0][0], self.points[i][0][1], self.points[i][1][0], self.points[i][1][1])
+                dc.DrawLine(int(self.points[i][0][0]), int(self.points[i][0][1]), int(self.points[i][1][0]), int(self.points[i][1][1]))
                 st = str(self.numbers[i])
                 tw,th = dc.GetTextExtent(st)
-                dc.DrawText(st, self.points[i][0][0]+2, 0.5)
+                dc.DrawText(st, int(self.points[i][0][0])+2, 0)
 
         elif self.frameNum <= 70:
 
-            self.points.append(((self.unitWidth,self.h),(self.unitWidth,self.h-15)))
+            x0 = int(round(self.unitWidth))
+            self.points.append(((x0, int(self.h)), (x0, int(self.h-15))))
 
             for i in range(1,int((self.frameNum+1)/2)):
                 temp = self.points[i-1][0][0]+2*self.unitWidth
-                self.points.append(((temp,self.h),(temp,self.h-15)))
+                x = int(round(temp))
+                self.points.append(((x, int(self.h)), (x, int(self.h-15))))
 
-            for i in range(1,self.frameNum/2+1):
+            for i in range(1,int(self.frameNum/2+1)):
                 self.numbers.append(self.sliderStartFrame-1+i*2)
 
             for i in range(int((self.frameNum+1)/2)):
-                dc.DrawLine(self.points[i][0][0], self.points[i][0][1], self.points[i][1][0], self.points[i][1][1])
+                dc.DrawLine(int(self.points[i][0][0]), int(self.points[i][0][1]), int(self.points[i][1][0]), int(self.points[i][1][1]))
 
-            for i in range(self.frameNum/2):
+            for i in range(int(self.frameNum/2)):
                 st = str(self.numbers[i])
                 tw,th = dc.GetTextExtent(st)
-                dc.DrawText(st, self.points[i][0][0]+2, 0.5)
+                dc.DrawText(st, int(self.points[i][0][0])+2, 0)
 
         elif self.frameNum <= 150:
 
-            self.points.append(((self.unitWidth*4.0,self.h),(self.unitWidth*4.0,self.h-15)))
+            x0 = int(round(self.unitWidth*4.0))
+            self.points.append(((x0, int(self.h)), (x0, int(self.h-15))))
 
             for i in range(1,int(self.frameNum/5)):
                 temp = self.points[i-1][0][0]+5*self.unitWidth
-                self.points.append(((temp,self.h),(temp,self.h-15)))
+                x = int(round(temp))
+                self.points.append(((x, int(self.h)), (x, int(self.h-15))))
 
-            for i in range(1,self.frameNum/5+1):
+            for i in range(1,int(self.frameNum/5+1)):
                 self.numbers.append(self.sliderStartFrame-1+i*5)
 
             for i in range(int(self.frameNum/5)):
-                dc.DrawLine(self.points[i][0][0], self.points[i][0][1], self.points[i][1][0], self.points[i][1][1])
+                dc.DrawLine(int(self.points[i][0][0]), int(self.points[i][0][1]), int(self.points[i][1][0]), int(self.points[i][1][1]))
 
-            for i in range(self.frameNum/5):
+            for i in range(int(self.frameNum/5)):
                 st = str(self.numbers[i])
                 tw,th = dc.GetTextExtent(st)
-                dc.DrawText(st, self.points[i][0][0]+2, 0.5)
+                dc.DrawText(st, int(self.points[i][0][0])+2, 0)
 
         elif self.frameNum <= 250:
 
-            self.points.append(((self.unitWidth*9.0,self.h),(self.unitWidth*9.0,self.h-15)))
+            x0 = int(round(self.unitWidth*9.0))
+            self.points.append(((x0, int(self.h)), (x0, int(self.h-15))))
 
             for i in range(1,int(self.frameNum/10)):
                 temp = self.points[i-1][0][0]+10*self.unitWidth
-                self.points.append(((temp,self.h),(temp,self.h-15)))
+                x = int(round(temp))
+                self.points.append(((x, int(self.h)), (x, int(self.h-15))))
 
-            for i in range(1,self.frameNum/10+1):
+            for i in range(1,int(self.frameNum/10+1)):
                 self.numbers.append(self.sliderStartFrame+i*10)
 
             for i in range(int(self.frameNum/10)):
-                dc.DrawLine(self.points[i][0][0], self.points[i][0][1], self.points[i][1][0], self.points[i][1][1])
+                dc.DrawLine(int(self.points[i][0][0]), int(self.points[i][0][1]), int(self.points[i][1][0]), int(self.points[i][1][1]))
 
-            for i in range(self.frameNum/10):
+            for i in range(int(self.frameNum/10)):
                 st = str(self.numbers[i])
                 tw,th = dc.GetTextExtent(st)
-                dc.DrawText(st, self.points[i][0][0]+2, 0.5)
+                dc.DrawText(st, int(self.points[i][0][0])+2, 0)
 
         elif self.frameNum <= 1000:
 
-            self.points.append(((self.unitWidth*49.0,self.h),(self.unitWidth*49.0,self.h-15)))
+            x0 = int(round(self.unitWidth*49.0))
+            self.points.append(((x0, int(self.h)), (x0, int(self.h-15))))
 
             for i in range(1,int(self.frameNum/50)):
                 temp = self.points[i-1][0][0]+50*self.unitWidth
-                self.points.append(((temp,self.h),(temp,self.h-15)))
+                x = int(round(temp))
+                self.points.append(((x, int(self.h)), (x, int(self.h-15))))
 
-            for i in range(1,self.frameNum/50+1):
+            for i in range(1,int(self.frameNum/50+1)):
                 self.numbers.append(self.sliderStartFrame-1+i*50)
 
             for i in range(int(self.frameNum/50)):
-                dc.DrawLine(self.points[i][0][0], self.points[i][0][1], self.points[i][1][0], self.points[i][1][1])
+                dc.DrawLine(int(self.points[i][0][0]), int(self.points[i][0][1]), int(self.points[i][1][0]), int(self.points[i][1][1]))
 
-            for i in range(self.frameNum/50):
+            for i in range(int(self.frameNum/50)):
                 st = str(self.numbers[i])
                 tw,th = dc.GetTextExtent(st)
-                dc.DrawText(st, self.points[i][0][0]+2, 0.5)
+                dc.DrawText(st, int(self.points[i][0][0])+2, 0)
 
         elif self.frameNum <= 2000:
 
-            self.points.append(((self.unitWidth*99.0,self.h),(self.unitWidth*99.0,self.h-15)))
+            x0 = int(round(self.unitWidth*99.0))
+            self.points.append(((x0, int(self.h)), (x0, int(self.h-15))))
 
             for i in range(1,int(self.frameNum/100)):
                 temp = self.points[i-1][0][0]+100*self.unitWidth
-                self.points.append(((temp,self.h),(temp,self.h-15)))
+                x = int(round(temp))
+                self.points.append(((x, int(self.h)), (x, int(self.h-15))))
 
-            for i in range(1,self.frameNum/100+1):
+            for i in range(1,int(self.frameNum/100+1)):
                 self.numbers.append(self.sliderStartFrame-1+i*100)
 
             for i in range(int(self.frameNum/100)):
-                dc.DrawLine(self.points[i][0][0], self.points[i][0][1], self.points[i][1][0], self.points[i][1][1])
+                dc.DrawLine(int(self.points[i][0][0]), int(self.points[i][0][1]), int(self.points[i][1][0]), int(self.points[i][1][1]))
 
-            for i in range(self.frameNum/100):
+            for i in range(int(self.frameNum/100)):
                 st = str(self.numbers[i])
                 tw,th = dc.GetTextExtent(st)
-                dc.DrawText(st, self.points[i][0][0]+2, 0.5)
+                dc.DrawText(st, int(self.points[i][0][0])+2, 0)
 
         elif self.frameNum <= 10000:
 
-            self.points.append(((self.unitWidth*999.0,self.h),(self.unitWidth*999.0,self.h-15)))
+            x0 = int(round(self.unitWidth*999.0))
+            self.points.append(((x0, int(self.h)), (x0, int(self.h-15))))
 
             for i in range(1,int(self.frameNum/1000)):
                 temp = self.points[i-1][0][0]+1000*self.unitWidth
-                self.points.append(((temp,self.h),(temp,self.h-15)))
+                x = int(round(temp))
+                self.points.append(((x, int(self.h)), (x, int(self.h-15))))
 
-            for i in range(1,self.frameNum/1000+1):
+            for i in range(1,int(self.frameNum/1000+1)):
                 self.numbers.append(self.sliderStartFrame-1+i*1000)
 
             for i in range(int(self.frameNum/1000)):
-                dc.DrawLine(self.points[i][0][0], self.points[i][0][1], self.points[i][1][0], self.points[i][1][1])
+                dc.DrawLine(int(self.points[i][0][0]), int(self.points[i][0][1]), int(self.points[i][1][0]), int(self.points[i][1][1]))
 
-            for i in range(self.frameNum/1000):
+            for i in range(int(self.frameNum/1000)):
                 st = str(self.numbers[i])
                 tw,th = dc.GetTextExtent(st)
-                dc.DrawText(st, self.points[i][0][0]+2, 0.5)
+                dc.DrawText(st, int(self.points[i][0][0])+2, 0)
 
         else:
             pass
@@ -389,12 +402,12 @@ class TimeSlider(wx.Window):
         i = self.curFrame-self.sliderStartFrame
         st = str(self.curFrame)
         tw,th = dc.GetTextExtent(st)
-        dc.DrawText(st, float(self.unitWidth)*float(i)+2, self.h-th-0.5)
+        dc.DrawText(st, int(round(float(self.unitWidth)*float(i)))+2, int(self.h-th))
 
     def DrawFrame(self, dc):
         i = self.curFrame-self.sliderStartFrame
         pos = float(self.unitWidth)*float(i)
-        self.curRect = wx.Rect(pos, float(0), self.unitWidth, self.h)
+        self.curRect = wx.Rect(int(round(pos)), 0, int(round(self.unitWidth)), int(self.h))
 
         oldPen, oldBrush, oldMode = dc.GetPen(), dc.GetBrush(), dc.GetLogicalFunction()
 
@@ -404,7 +417,7 @@ class TimeSlider(wx.Window):
         dc.SetPen(grayPen)
         dc.SetBrush(grayBrush)
         dc.SetLogicalFunction(wx.XOR)
-        dc.DrawRectangleRect(self.curRect)
+        dc.DrawRectangle(self.curRect)
 
         dc.SetPen(oldPen)
         dc.SetBrush(oldBrush)
@@ -415,14 +428,14 @@ class TimeSlider(wx.Window):
             for key in self._mainDialog.keys:
                 keyFrame = key
                 i = keyFrame-self.sliderStartFrame
-                pos = float(self.unitWidth)*float(i)
+                pos = int(round(float(self.unitWidth)*float(i)))
 
                 oldPen, oldBrush, oldMode = dc.GetPen(), dc.GetBrush(), dc.GetLogicalFunction()
 
                 dc.SetPen(wx.Pen("red"))
                 dc.SetBrush(wx.Brush("red"))
                 dc.SetLogicalFunction(wx.AND)
-                dc.DrawLine(pos, float(0), pos, self.h)
+                dc.DrawLine(int(pos), 0, int(pos), int(self.h))
 
                 dc.SetPen(oldPen)
                 dc.SetBrush(oldBrush)
@@ -498,7 +511,7 @@ class TimeRange(wx.Window):
 
     def InitBuffer(self):
         self.w,self.h = self.GetClientSize()
-        self.buffer = wx.EmptyBitmap(self.w, self.h)
+        self.buffer = wx.Bitmap(self.w, self.h)
         dc = wx.BufferedDC(wx.ClientDC(self), self.buffer)
         self.DrawTimeRange(dc)
 
@@ -527,9 +540,14 @@ class TimeRange(wx.Window):
         self.rangePosY = 2.0
         self.rangeWidth = float(self.sliderEndFrame-self.sliderStartFrame+1)*self.unitWidth
         self.rangeHeight = self.h-4.0
-        self.curRect = wx.Rect(self.rangePosX, self.rangePosY, self.rangeWidth, self.rangeHeight)
+        self.curRect = wx.Rect(
+            int(round(self.rangePosX)),
+            int(round(self.rangePosY)),
+            int(round(self.rangeWidth)),
+            int(round(self.rangeHeight)),
+        )
 
-        dc.DrawRoundedRectangleRect(self.curRect, radius = 2)
+        dc.DrawRoundedRectangle(self.curRect, radius = 2)
 
     def OnSize(self, evt):
         self.InitBuffer()
@@ -600,7 +618,7 @@ class AnimControlUI(wx.Dialog):
     """
     def __init__(self, parent, editor):
         wx.Dialog.__init__(self, parent, id=wx.ID_ANY, title="Animation Controller",
-                           pos=wx.DefaultPosition, size=(920, 110))
+                           pos=wx.DefaultPosition, size=(950, 150))
 
         self.editor = editor
         self._initOver = False
@@ -697,6 +715,16 @@ class AnimControlUI(wx.Dialog):
         self.timeEndSpin.SetValue(self.endFrame)
 
     def DoLayout(self):
+        oldSizer1 = self.mainPanel1.GetSizer()
+        if oldSizer1 is not None:
+            oldSizer1.Clear(False)
+        oldSizer2 = self.mainPanel2.GetSizer()
+        if oldSizer2 is not None:
+            oldSizer2.Clear(False)
+        oldDialogSizer = self.GetSizer()
+        if oldDialogSizer is not None:
+            oldDialogSizer.Clear(False)
+
         dialogSizer = wx.BoxSizer(wx.VERTICAL)
         mainSizer1 = wx.FlexGridSizer(1, 10, 0, 0)
         mainSizer2 = wx.FlexGridSizer(1, 6, 0, 0)
@@ -723,8 +751,8 @@ class AnimControlUI(wx.Dialog):
         self.mainPanel1.SetSizerAndFit(mainSizer1)
         self.mainPanel2.SetSizerAndFit(mainSizer2)
 
-        dialogSizer.Add(self.mainPanel1, 1, wx.ALIGN_CENTER_VERTICAL|wx.TOP, 5)
-        dialogSizer.Add(self.mainPanel2, 1, wx.ALIGN_CENTER_VERTICAL|wx.TOP, 7)
+        dialogSizer.Add(self.mainPanel1, 1, wx.TOP, 5)
+        dialogSizer.Add(self.mainPanel2, 1, wx.TOP, 7)
 
         self.SetSizer(dialogSizer)
         self.Layout()
@@ -794,7 +822,7 @@ class AnimControlUI(wx.Dialog):
             self.DoLayout()
             self.prePlay = True
             self.stop = False
-            self.timer.Start(self.timeUnit)
+            self.timer.Start(int(self.timeUnit))
             evt.Skip()
 
         elif self.prePlay is True and self.stop is False and self.play is False:
@@ -813,7 +841,7 @@ class AnimControlUI(wx.Dialog):
             self.DoLayout()
             self.play = True
             self.stop = False
-            self.timer.Start(self.timeUnit)
+            self.timer.Start(int(self.timeUnit))
             evt.Skip()
 
         elif self.play is True and self.stop is False and self.prePlay is False:
@@ -912,11 +940,20 @@ class AnimControlUI(wx.Dialog):
 
     def OnAnimation(self, curFrame):
         time = float(curFrame-1)/float(24)
+        if self.parallel is None:
+            self.OnPropKey()
+            if self.parallel is None:
+                return
         self.parallel.setT(time)
         if self.editor.GRAPH_EDITOR is True:
             self.editor.ui.graphEditorUI.curFrameChange()
 
     def OnExit(self, evt):
+        if self.prePlay is True or self.play is True or self.stop is False:
+            self.prePlay = False
+            self.play = False
+            self.stop = True
+            self.timer.Stop()
         for actor in self.editor.objectMgr.Actor:
             actorAnim = os.path.basename(actor[OG.OBJ_ANIM])
             actor[OG.OBJ_NP].loop(actorAnim)
