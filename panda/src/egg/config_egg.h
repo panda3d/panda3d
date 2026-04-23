@@ -41,6 +41,7 @@ extern EXPCL_PANDA_EGG ConfigVariableDouble egg_coplanar_threshold;
 extern EXPCL_PANDA_EGG ConfigVariableInt egg_test_vref_integrity;
 extern EXPCL_PANDA_EGG ConfigVariableInt egg_recursion_limit;
 extern EXPCL_PANDA_EGG ConfigVariableInt egg_precision;
+extern EXPCL_PANDA_EGG ConfigVariableBool egg_rebuild_object_types;
 
 extern EXPCL_PANDA_EGG void init_libegg();
 
