@@ -10641,7 +10641,7 @@ do_fillin_body(CData *cdata, DatagramIterator &scan, BamReader *manager) {
 
   if (manager->get_file_minor_ver() >= 45) {
     cdata->_has_clear_color = scan.get_bool();
-    if (cdata->_has_clear_color) {
+    if (cdata->_has_clear_color && manager->expect_remaining_size(scan, 16)) {
       cdata->_clear_color.read_datagram(scan);
     }
   }
@@ -10891,6 +10891,8 @@ do_assign(const Texture::CData *copy) {
   _simple_x_size = copy->_simple_x_size;
   _simple_y_size = copy->_simple_y_size;
   _simple_ram_image = copy->_simple_ram_image;
+  _has_clear_color = copy->_has_clear_color;
+  _clear_color = copy->_clear_color;
 }
 
 /**
