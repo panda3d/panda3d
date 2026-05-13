@@ -46,13 +46,13 @@ ConfigVariableBool stm_use_hexagonal_layout
           "visible due to the vertices not matching exactly."));
 
 ConfigVariableInt stm_max_chunk_count
-("stm-max-chunk-count", 2048,
+("stm-max-chunk-count", 1024,
  PRC_DESC("Controls the maximum amount of chunks the Terrain can display. If you use "
           "a high LOD, you might have to increment this value. The lower this value is "
           "the less data has to be transferred to the GPU."));
 
 ConfigVariableInt stm_max_views
-("stm-max-views", 8,
+("stm-max-views", 4,
  PRC_DESC("Controls the maximum amount of different views the Terrain can be rendered "
           "with. Each camera rendering the terrain corresponds to a view. Lowering this "
           "value will reduce the data that has to be transferred to the GPU."));
