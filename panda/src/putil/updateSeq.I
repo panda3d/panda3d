@@ -14,14 +14,14 @@
 /**
  * Creates an UpdateSeq in the given state.
  */
-constexpr UpdateSeq::
+INLINE UpdateSeq::
 UpdateSeq(unsigned int seq) : _seq(seq) {
 }
 
 /**
  * Creates an UpdateSeq in the 'initial' state.
  */
-constexpr UpdateSeq::
+INLINE UpdateSeq::
 UpdateSeq() : _seq((unsigned int)SC_initial) {
 }
 
