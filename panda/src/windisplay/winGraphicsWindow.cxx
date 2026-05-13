@@ -2149,11 +2149,12 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
                       get_message_time());
       handle_raw_keypress(lookup_raw_key(lparam), get_message_time());
 
-      // wparam does not contain leftright information for SHIFT, CONTROL, or
+      // wparam does not contain left/right information for SHIFT, CONTROL, or
       // ALT, so we have to track their status and do the right thing.  We'll
-      // send the leftright specific key event along with the general key
+      // send the left/right-specific key event along with the general key
       // event.
-      if (wparam == VK_SHIFT) {
+      switch (wparam) {
+      case VK_SHIFT:
         if ((GetKeyState(VK_LSHIFT) & 0x8000) != 0 && ! _lshift_down) {
           handle_keypress(KeyboardButton::lshift(), point.x, point.y,
                           get_message_time());
@@ -2164,7 +2165,9 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
                           get_message_time());
           _rshift_down = true;
         }
-      } else if(wparam == VK_CONTROL) {
+        break;
+
+      case VK_CONTROL:
         if ((GetKeyState(VK_LCONTROL) & 0x8000) != 0 && ! _lcontrol_down) {
           handle_keypress(KeyboardButton::lcontrol(), point.x, point.y,
                           get_message_time());
@@ -2175,6 +2178,15 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
                           get_message_time());
           _rcontrol_down = true;
         }
+        break;
+
+      case VK_LWIN:
+      case VK_RWIN:
+        // The opposite problem: there is no VK_WIN sent, so we explicitly have
+        // to send a generic meta() event.
+        handle_keypress(KeyboardButton::meta(), point.x, point.y,
+                        get_message_time());
+        break;
       }
 
       // Handle Cntrl-V paste from clipboard.  Is there a better way to detect
@@ -2274,10 +2286,11 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     handle_keyrelease(lookup_key(wparam), get_message_time());
     handle_raw_keyrelease(lookup_raw_key(lparam), get_message_time());
 
-    // wparam does not contain leftright information for SHIFT, CONTROL, or
+    // wparam does not contain left/right information for SHIFT, CONTROL, or
     // ALT, so we have to track their status and do the right thing.  We'll
-    // send the leftright specific key event along with the general key event.
-    if (wparam == VK_SHIFT) {
+    // send the left/right specific key event along with the general key event.
+    switch (wparam) {
+    case VK_SHIFT:
       if ((GetKeyState(VK_LSHIFT) & 0x8000) == 0 && _lshift_down) {
         handle_keyrelease(KeyboardButton::lshift(), get_message_time());
         _lshift_down = false;
@@ -2286,7 +2299,9 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
         handle_keyrelease(KeyboardButton::rshift(), get_message_time());
         _rshift_down = false;
       }
-    } else if(wparam == VK_CONTROL) {
+      break;
+
+    case VK_CONTROL:
       if ((GetKeyState(VK_LCONTROL) & 0x8000) == 0 && _lcontrol_down) {
         handle_keyrelease(KeyboardButton::lcontrol(), get_message_time());
         _lcontrol_down = false;
@@ -2295,7 +2310,9 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
         handle_keyrelease(KeyboardButton::rcontrol(), get_message_time());
         _rcontrol_down = false;
       }
-    } else if(wparam == VK_MENU) {
+      break;
+
+    case VK_MENU:
       if ((GetKeyState(VK_LMENU) & 0x8000) == 0 && _lalt_down) {
         handle_keyrelease(KeyboardButton::lalt(), get_message_time());
         _lalt_down = false;
@@ -2304,6 +2321,14 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
         handle_keyrelease(KeyboardButton::ralt(), get_message_time());
         _ralt_down = false;
       }
+      break;
+
+    case VK_LWIN:
+    case VK_RWIN:
+      // The opposite problem: there is no VK_WIN sent, so we explicitly have
+      // to send the generic meta() event here.
+      handle_keyrelease(KeyboardButton::meta(), get_message_time());
+      break;
     }
     break;
 
