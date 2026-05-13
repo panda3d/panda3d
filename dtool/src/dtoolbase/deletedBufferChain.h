@@ -17,7 +17,6 @@
 #include "dtoolbase.h"
 #include "neverFreeMemory.h"
 #include "mutexImpl.h"
-#include "atomicAdjust.h"
 #include "numeric_types.h"
 #include "typeHandle.h"
 #include "patomic.h"
@@ -104,7 +103,7 @@ private:
 
 #else
   // Otherwise, we need space for the integer.
-  static const size_t flag_reserved_bytes = sizeof(AtomicAdjust::Integer);
+  static const size_t flag_reserved_bytes = sizeof(patomic<DeletedChainFlag>);
 #endif  // USE_DELETEDCHAINFLAG
 
   friend class MemoryHook;

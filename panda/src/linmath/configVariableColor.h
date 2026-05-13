@@ -57,7 +57,7 @@ private:
   void set_default_value(const LColor &default_value);
 
 private:
-  mutable AtomicAdjust::Integer _local_modified;
+  mutable Modified _local_modified;
   mutable LColor _cache;
 };
 

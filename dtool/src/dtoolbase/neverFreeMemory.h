@@ -17,6 +17,7 @@
 #include "dtoolbase.h"
 
 #include "mutexImpl.h"
+#include "patomic.h"
 #include <set>
 
 /**
@@ -63,7 +64,7 @@ private:
   size_t _total_alloc;
   size_t _total_used;
   MutexImpl _lock;
-  static NeverFreeMemory * TVOLATILE _global_ptr;
+  static patomic<NeverFreeMemory *> _global_ptr;
 };
 
 #include "neverFreeMemory.I"

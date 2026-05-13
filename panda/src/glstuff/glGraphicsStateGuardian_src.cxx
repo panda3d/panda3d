@@ -107,7 +107,7 @@ static PStatCollector _create_map_pbo_pcollector("Draw:Transfer data:Texture:Cre
 static PStatCollector _load_texture_copy_pcollector("Draw:Transfer data:Texture:Copy/Convert");
 
 #if defined(HAVE_CG) && !defined(OPENGLES)
-AtomicAdjust::Integer CLP(GraphicsStateGuardian)::_num_gsgs_with_cg_contexts = 0;
+patomic<int> CLP(GraphicsStateGuardian)::_num_gsgs_with_cg_contexts { 0 };
 small_vector<CGcontext> CLP(GraphicsStateGuardian)::_destroyed_cg_contexts;
 #endif
 
@@ -13102,7 +13102,7 @@ free_pointers() {
 
     // Don't destroy the Cg context until the last GSG that uses Cg has been
     // destroyed.  This works around a Cg bug, see #1117.
-    if (!AtomicAdjust::dec(_num_gsgs_with_cg_contexts)) {
+    if (_num_gsgs_with_cg_contexts.fetch_sub(1, std::memory_order_acq_rel) == 1) {
       for (CGcontext context : _destroyed_cg_contexts) {
         cgDestroyContext(context);
       }
@@ -13130,7 +13130,7 @@ get_cg_context() {
     }
 #endif
 
-    AtomicAdjust::inc(_num_gsgs_with_cg_contexts);
+    _num_gsgs_with_cg_contexts.fetch_add(1, std::memory_order_relaxed);
     _cg_context = context;
   }
 

@@ -58,7 +58,7 @@ LightLensNode::
 
   // If this triggers, the number of attrib_ref() didn't match the number of
   // attrib_unref() calls, probably indicating a bug in LightAttrib.
-  nassertv(AtomicAdjust::get(_attrib_count) == 0);
+  nassertv(_attrib_count.load(std::memory_order_acquire) == 0);
 }
 
 /**
@@ -182,7 +182,7 @@ setup_shadow_map() {
  */
 void LightLensNode::
 attrib_ref() {
-  AtomicAdjust::inc(_attrib_count);
+  _attrib_count.fetch_add(1, std::memory_order_relaxed);
 }
 
 /**
@@ -193,7 +193,7 @@ attrib_unref() {
   // When it is removed from the last LightAttrib, destroy the shadow buffers.
   // This is necessary to break the circular reference that the buffer holds
   // on this node, via the display region's camera.
-  if (!AtomicAdjust::dec(_attrib_count)) {
+  if (_attrib_count.fetch_sub(1, std::memory_order_release) == 1) {
     clear_shadow_buffers();
   }
 }

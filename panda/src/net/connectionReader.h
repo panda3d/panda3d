@@ -24,7 +24,7 @@
 #include "pvector.h"
 #include "pset.h"
 #include "socket_fdset.h"
-#include "atomicAdjust.h"
+#include "patomic.h"
 
 class NetDatagram;
 class ConnectionManager;
@@ -160,7 +160,7 @@ private:
   // This is atomically updated with the index (in _threads) of the thread
   // that is currently waiting on the PR_Poll() call.  It contains -1 if no
   // thread is so waiting.
-  AtomicAdjust::Integer _currently_polling_thread;
+  patomic<int> _currently_polling_thread;
 
   friend class ConnectionManager;
   friend class ReaderThread;

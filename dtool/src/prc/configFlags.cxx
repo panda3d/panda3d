@@ -13,7 +13,7 @@
 
 #include "configFlags.h"
 
-TVOLATILE AtomicAdjust::Integer ConfigFlags::_global_modified;
+patomic<ConfigFlags::Modified> ConfigFlags::_global_modified { 0 };
 
 /**
  *

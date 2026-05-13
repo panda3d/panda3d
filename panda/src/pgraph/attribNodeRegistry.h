@@ -18,6 +18,7 @@
 #include "nodePath.h"
 #include "ordered_vector.h"
 #include "lightMutex.h"
+#include "patomic.h"
 
 /**
  * This global object records NodePaths that are referenced by scene graph
@@ -74,7 +75,7 @@ private:
 
   LightMutex _lock;
 
-  static AttribNodeRegistry * TVOLATILE _global_ptr;
+  static patomic<AttribNodeRegistry *> _global_ptr;
 };
 
 #include "attribNodeRegistry.I"

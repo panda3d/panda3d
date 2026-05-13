@@ -758,7 +758,7 @@ protected:
 
 #if defined(HAVE_CG) && !defined(OPENGLES)
   CGcontext _cg_context;
-  static AtomicAdjust::Integer _num_gsgs_with_cg_contexts;
+  static patomic<int> _num_gsgs_with_cg_contexts;
   static small_vector<CGcontext> _destroyed_cg_contexts;
 #endif
 

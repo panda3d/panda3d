@@ -89,7 +89,7 @@ private:
 
   static long _server_delta; // not a time_t because server delta may be signed.
 
-  AtomicAdjust::Integer _local_modified;
+  Modified _local_modified;
   NotifySeverity _severity_cache;
 
   friend class Notify;

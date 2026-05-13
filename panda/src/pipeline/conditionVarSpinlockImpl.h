@@ -21,7 +21,7 @@
 
 #include "mutexSpinlockImpl.h"
 #include "pnotify.h"
-#include "atomicAdjust.h"
+#include "patomic.h"
 
 class MutexSpinlockImpl;
 
@@ -43,7 +43,7 @@ public:
 
 private:
   MutexSpinlockImpl &_mutex;
-  TVOLATILE AtomicAdjust::Integer _event;
+  patomic<unsigned int> _event { 0 };
 };
 
 #include "conditionVarSpinlockImpl.I"

@@ -84,7 +84,7 @@ private:
     BamWriter *_writer;
     BamWriterLink *_next;
   };
-  AtomicAdjust::Pointer _bam_writers; // Tagged pointer
+  patomic<BamWriterLink *> _bam_writers; // Tagged pointer
 
   UpdateSeq _bam_modified;
 

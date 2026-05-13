@@ -80,7 +80,7 @@ PUBLISHED:
   INLINE void clear_name();
   std::string get_name_prefix() const;
 
-  INLINE AtomicAdjust::Integer get_task_id() const;
+  INLINE int get_task_id() const;
 
   void set_task_chain(const std::string &chain_name);
   INLINE const std::string &get_task_chain() const;
@@ -133,7 +133,7 @@ protected:
   virtual void upon_death(AsyncTaskManager *manager, bool clean_exit);
 
 protected:
-  AtomicAdjust::Integer _task_id;
+  int _task_id;
   std::string _chain_name;
   double _delay;
   bool _has_delay;
@@ -154,7 +154,7 @@ protected:
   double _total_dt;
   int _num_frames;
 
-  static AtomicAdjust::Integer _next_task_id;
+  static patomic<int> _next_task_id;
 
   static PStatCollector _tasks_pcollector;
   PStatCollector _task_pcollector;

@@ -1410,7 +1410,7 @@ init_states() {
                     0.0f, 0.0f, 1.0f, 0.0f,
                     0.0f, 0.0f, 0.0f, 1.0f);
     state->_inv_mat = new (inv_mat_storage) LMatrix4(LMatrix4::ident_mat());
-    state->_hash = H_identity;
+    state->_hash.store(H_identity, std::memory_order_relaxed);
     state->_flags = F_is_identity | F_singular_known | F_components_known
                   | F_has_components | F_mat_known | F_quat_known | F_hpr_known
                   | F_uniform_scale | F_identity_scale | F_is_2d
@@ -1423,7 +1423,7 @@ init_states() {
     alignas(TransformState) static char storage[sizeof(TransformState)];
     TransformState *state = new (storage) TransformState;
     state->local_object();
-    state->_hash = H_invalid;
+    state->_hash.store(H_invalid, std::memory_order_relaxed);
     state->_flags = F_is_singular | F_singular_known | F_components_known
                   | F_mat_known | F_is_invalid;
     state->cache_ref();
@@ -2013,7 +2013,7 @@ calc_hash() const {
   // cached values (only given components are considered), and (2) the hash
   // itself is set atomically.
   PStatTimer timer(_transform_hash_pcollector);
-  AtomicAdjust::Integer hash = 0;
+  size_t hash = 0;
 
   static const int significant_flags =
     (F_is_invalid | F_is_identity | F_components_given | F_hpr_given | F_is_2d);
@@ -2062,7 +2062,7 @@ calc_hash() const {
 
   // We don't care if some other thread set this in the meantime, since every
   // thread should have computed the same hash.
-  AtomicAdjust::set(_hash, hash);
+  _hash.store(hash, std::memory_order_relaxed);
 }
 
 /**

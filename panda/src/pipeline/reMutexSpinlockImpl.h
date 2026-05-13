@@ -19,7 +19,7 @@
 
 #ifdef MUTEX_SPINLOCK
 
-#include "atomicAdjust.h"
+#include "patomic.h"
 
 class Thread;
 
@@ -42,7 +42,7 @@ public:
   INLINE void unlock();
 
 private:
-  AtomicAdjust::Pointer _locking_thread = nullptr;
+  patomic<Thread *> _locking_thread { nullptr };
   unsigned int _counter = 0;
 };
 

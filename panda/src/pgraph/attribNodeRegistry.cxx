@@ -14,7 +14,7 @@
 #include "attribNodeRegistry.h"
 #include "lightMutexHolder.h"
 
-AttribNodeRegistry * TVOLATILE AttribNodeRegistry::_global_ptr;
+patomic<AttribNodeRegistry *> AttribNodeRegistry::_global_ptr { nullptr };
 
 /**
  *
@@ -228,11 +228,12 @@ write(std::ostream &out) const {
 void AttribNodeRegistry::
 make_global_ptr() {
   AttribNodeRegistry *ptr = new AttribNodeRegistry;
-  void *result = AtomicAdjust::compare_and_exchange_ptr
-    ((void * TVOLATILE &)_global_ptr, nullptr, (void *)ptr);
-  if (result != nullptr) {
+  AttribNodeRegistry *expected = nullptr;
+  if (!_global_ptr.compare_exchange_strong(expected, ptr,
+                                           std::memory_order_release,
+                                           std::memory_order_consume)) {
     // Someone else got there first.
     delete ptr;
   }
-  assert(_global_ptr != nullptr);
+  assert(_global_ptr.load(std::memory_order_relaxed) != nullptr);
 }

@@ -55,7 +55,7 @@ private:
   void set_default_value(int64_t default_value);
 
 private:
-  AtomicAdjust::Integer _local_modified;
+  Modified _local_modified;
   int64_t _cache;
 };
 

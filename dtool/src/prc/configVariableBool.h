@@ -50,7 +50,7 @@ PUBLISHED:
 private:
   void reload_value() const;
 
-  mutable AtomicAdjust::Integer _local_modified;
+  mutable Modified _local_modified;
   mutable bool _cache;
 };
 

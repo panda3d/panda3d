@@ -57,7 +57,7 @@ private:
   void reload_cache();
 
 private:
-  AtomicAdjust::Integer _local_modified;
+  Modified _local_modified;
   std::string _cache;
 };
 

@@ -21,8 +21,7 @@
  * inheritance.
  */
 INLINE NodeCachedReferenceCount::
-NodeCachedReferenceCount() {
-  _node_ref_count = 0;
+NodeCachedReferenceCount() : _node_ref_count(0) {
 }
 
 /**
@@ -34,8 +33,7 @@ NodeCachedReferenceCount() {
  * try.
  */
 INLINE NodeCachedReferenceCount::
-NodeCachedReferenceCount(const NodeCachedReferenceCount &copy) : CachedTypedWritableReferenceCount(copy) {
-  _node_ref_count = 0;
+NodeCachedReferenceCount(const NodeCachedReferenceCount &copy) : CachedTypedWritableReferenceCount(copy), _node_ref_count(0) {
 }
 
 /**
@@ -55,7 +53,7 @@ operator = (const NodeCachedReferenceCount &copy) {
   // to create an automatic (local variable) instance of a class that derives
   // from ReferenceCount.  Or maybe your headers are out of sync, and you need
   // to make clean in direct or some higher tree.
-  nassertv(_node_ref_count != -100);
+  nassertv(_node_ref_count.load(std::memory_order_relaxed) != -100);
 
   CachedTypedWritableReferenceCount::operator = (copy);
 }
@@ -69,17 +67,19 @@ operator = (const NodeCachedReferenceCount &copy) {
  */
 INLINE NodeCachedReferenceCount::
 ~NodeCachedReferenceCount() {
+  int ref_count = _node_ref_count.load(std::memory_order_relaxed);
+
   // If this assertion fails, we're trying to delete an object that was just
   // deleted.  Possibly you used a real pointer instead of a PointerTo at some
   // point, and the object was deleted when the PointerTo went out of scope.
   // Maybe you tried to create an automatic (local variable) instance of a
   // class that derives from ReferenceCount.  Or maybe your headers are out of
   // sync, and you need to make clean in direct or some higher tree.
-  nassertv(_node_ref_count != -100);
+  nassertv(ref_count != -100);
 
   // If this assertion fails, the reference counts are all screwed up
   // altogether.  Maybe some errant code stomped all over memory somewhere.
-  nassertv(_node_ref_count >= 0);
+  nassertv(ref_count >= 0);
 
   // If this assertion fails, someone tried to delete this object while its
   // reference count was still positive.  Maybe you tried to point a PointerTo
@@ -90,13 +90,13 @@ INLINE NodeCachedReferenceCount::
   // Another possibility is you inadvertently omitted a copy constructor for a
   // ReferenceCount object, and then bitwise copied a dynamically allocated
   // value--reference count and all--onto a locally allocated one.
-  nassertv(_node_ref_count == 0);
+  nassertv(ref_count == 0);
 
 #ifndef NDEBUG
   // Ok, all clear to delete.  Now set the reference count to -100, so we'll
   // have a better chance of noticing if we happen to have a stray pointer to
   // it still out there.
-  _node_ref_count = -100;
+  _node_ref_count.store(-100, std::memory_order_relaxed);
 #endif
 }
 
@@ -108,7 +108,7 @@ get_node_ref_count() const {
 #ifdef _DEBUG
   test_ref_count_integrity();
 #endif
-  return (int)AtomicAdjust::get(_node_ref_count);
+  return _node_ref_count.load(std::memory_order_acquire);
 }
 
 /**
@@ -126,7 +126,7 @@ node_ref() const {
 #endif
 
   ref();
-  AtomicAdjust::inc(((NodeCachedReferenceCount *)this)->_node_ref_count);
+  _node_ref_count.fetch_add(1, std::memory_order_relaxed);
 }
 
 /**
@@ -190,7 +190,7 @@ node_unref_only() const {
   // If this assertion fails, you tried to unref an object with a zero
   // reference count.  Are you using ref() and unref() directly?  Are you sure
   // you can't use PointerTo's?
-  nassertv(_node_ref_count > 0);
+  nassertv(_node_ref_count.load(std::memory_order_relaxed) > 0);
 
-  AtomicAdjust::dec(((NodeCachedReferenceCount *)this)->_node_ref_count);
+  _node_ref_count.fetch_sub(1, std::memory_order_release);
 }

@@ -20,7 +20,7 @@
 
 using std::string;
 
-AtomicAdjust::Integer AsyncTask::_next_task_id;
+patomic<int> AsyncTask::_next_task_id { 0 };
 PStatCollector AsyncTask::_tasks_pcollector("App:Tasks");
 TypeHandle AsyncTask::_type_handle;
 
@@ -47,13 +47,8 @@ AsyncTask(const string &name) :
 {
   set_name(name);
 
-  // Carefully copy _next_task_id and increment it so that we get a unique ID.
-  AtomicAdjust::Integer current_id = _next_task_id;
-  while (AtomicAdjust::compare_and_exchange(_next_task_id, current_id, current_id + 1) != current_id) {
-    current_id = _next_task_id;
-  }
-
-  _task_id = current_id;
+  // Atomically increment _next_task_id so that we get a unique ID.
+  _task_id = _next_task_id.fetch_add(1, std::memory_order_relaxed);
 }
 
 /**
@@ -406,20 +401,22 @@ unlock_and_do_task() {
   Thread *current_thread = Thread::get_current_thread();
   nassertr(current_thread->_current_task == nullptr, DS_interrupt);
 
+  TypedReferenceCount *expected = nullptr;
 #ifdef __GNUC__
   __attribute__((unused))
 #endif
-  void *ptr = AtomicAdjust::compare_and_exchange_ptr
-    (current_thread->_current_task, nullptr, (TypedReferenceCount *)this);
+  bool exchanged = current_thread->_current_task.compare_exchange_strong(
+    expected, (TypedReferenceCount *)this,
+    std::memory_order_release, std::memory_order_relaxed);
 
-  // If the return value is other than nullptr, someone else must have
-  // assigned the task first, in another thread.  That shouldn't be possible.
+  // If the exchange didn't happen, someone else must have assigned the task
+  // first, in another thread.  That shouldn't be possible.
 
   // But different versions of gcc appear to have problems compiling these
   // assertions correctly.
 #ifndef __GNUC__
-  nassertr(ptr == nullptr, DS_interrupt);
-  nassertr(current_thread->_current_task == this, DS_interrupt);
+  nassertr(exchanged, DS_interrupt);
+  nassertr(current_thread->_current_task.load(std::memory_order_relaxed) == this, DS_interrupt);
 #endif  // __GNUC__
 
   // It's important to release the lock while the task is being serviced.
@@ -441,19 +438,21 @@ unlock_and_do_task() {
   _chain->_time_in_frame += _dt;
 
   // Now indicate that this is no longer the current task.
-  nassertr(current_thread->_current_task == this, status);
+  nassertr(current_thread->_current_task.load(std::memory_order_relaxed) == this, status);
 
-  ptr = AtomicAdjust::compare_and_exchange_ptr
-    (current_thread->_current_task, (TypedReferenceCount *)this, nullptr);
+  expected = (TypedReferenceCount *)this;
+  exchanged = current_thread->_current_task.compare_exchange_strong(
+    expected, nullptr,
+    std::memory_order_release, std::memory_order_relaxed);
 
-  // If the return value is other than this, someone else must have assigned
-  // the task first, in another thread.  That shouldn't be possible.
+  // If the exchange didn't happen, someone else must have assigned the task
+  // first, in another thread.  That shouldn't be possible.
 
   // But different versions of gcc appear to have problems compiling these
   // assertions correctly.
 #ifndef __GNUC__
-  nassertr(ptr == this, DS_interrupt);
-  nassertr(current_thread->_current_task == nullptr, DS_interrupt);
+  nassertr(exchanged, DS_interrupt);
+  nassertr(current_thread->_current_task.load(std::memory_order_relaxed) == nullptr, DS_interrupt);
 #endif  // __GNUC__
 
   return status;

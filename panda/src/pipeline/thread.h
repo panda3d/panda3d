@@ -22,6 +22,7 @@
 #include "threadImpl.h"
 #include "pnotify.h"
 #include "config_pipeline.h"
+#include "patomic.h"
 
 #ifdef ANDROID
 typedef struct _JNIEnv JNIEnv;
@@ -153,7 +154,7 @@ private:
   int _pipeline_stage;
   PStatsCallback *_pstats_callback;
   bool _joinable;
-  AtomicAdjust::Pointer _current_task;
+  patomic<TypedReferenceCount *> _current_task;
 
   int _python_index;
 

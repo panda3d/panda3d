@@ -49,7 +49,7 @@ Thread(const std::string &name, const std::string &sync_name) :
   _pstats_callback = nullptr;
   _pipeline_stage = 0;
   _joinable = false;
-  _current_task = nullptr;
+  _current_task.store(nullptr, std::memory_order_relaxed);
 
 #ifdef DEBUG_THREADS
   _blocked_on_mutex = nullptr;

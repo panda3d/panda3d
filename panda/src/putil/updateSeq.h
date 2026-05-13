@@ -17,7 +17,7 @@
 #include "pandabase.h"
 #include "pmutex.h"
 #include "mutexHolder.h"
-#include "atomicAdjust.h"
+#include "patomic.h"
 #include "numeric_types.h"
 
 /**
@@ -45,7 +45,7 @@ PUBLISHED:
   constexpr static UpdateSeq fresh() { return UpdateSeq(SC_fresh); }
 
   INLINE UpdateSeq(const UpdateSeq &copy);
-  constexpr UpdateSeq(const UpdateSeq &&from) noexcept;
+  INLINE UpdateSeq(const UpdateSeq &&from) noexcept;
   INLINE UpdateSeq &operator = (const UpdateSeq &copy);
 
   INLINE void clear();
@@ -65,15 +65,15 @@ PUBLISHED:
   INLINE UpdateSeq operator ++ ();
   INLINE UpdateSeq operator ++ (int);
 
-  INLINE AtomicAdjust::Integer get_seq() const;
+  INLINE unsigned int get_seq() const;
   MAKE_PROPERTY(seq, get_seq);
 
   INLINE void output(std::ostream &out) const;
 
 private:
-  INLINE static bool priv_is_special(AtomicAdjust::Integer seq);
-  INLINE static bool priv_lt(AtomicAdjust::Integer a, AtomicAdjust::Integer b);
-  INLINE static bool priv_le(AtomicAdjust::Integer a, AtomicAdjust::Integer b);
+  INLINE static bool priv_is_special(unsigned int seq);
+  INLINE static bool priv_lt(unsigned int a, unsigned int b);
+  INLINE static bool priv_le(unsigned int a, unsigned int b);
 
 private:
   enum SpecialCases : unsigned int {
@@ -82,7 +82,7 @@ private:
     SC_fresh = ~(unsigned int)0,
   };
 
-  AtomicAdjust::Integer _seq;
+  patomic<unsigned int> _seq;
 };
 
 INLINE std::ostream &operator << (std::ostream &out, const UpdateSeq &value);

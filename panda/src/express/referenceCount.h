@@ -20,7 +20,6 @@
 #include "memoryUsage.h"
 #include "memoryBase.h"
 #include "config_express.h"
-#include "atomicAdjust.h"
 #include "numeric_types.h"
 #include "deletedChain.h"
 #include "patomic.h"

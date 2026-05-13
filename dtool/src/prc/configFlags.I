@@ -17,8 +17,8 @@
  * value).
  */
 ALWAYS_INLINE bool ConfigFlags::
-is_cache_valid(AtomicAdjust::Integer local_modified) {
-  return local_modified == _global_modified;
+is_cache_valid(Modified local_modified) {
+  return local_modified == _global_modified.load(std::memory_order_acquire);
 }
 
 /**
@@ -26,8 +26,8 @@ is_cache_valid(AtomicAdjust::Integer local_modified) {
  * be valid, until someone next calls invalidate_cache().
  */
 ALWAYS_INLINE void ConfigFlags::
-mark_cache_valid(AtomicAdjust::Integer &local_modified) {
-  local_modified = _global_modified;
+mark_cache_valid(Modified &local_modified) {
+  local_modified = _global_modified.load(std::memory_order_acquire);
 }
 
 /**
@@ -35,9 +35,9 @@ mark_cache_valid(AtomicAdjust::Integer &local_modified) {
  * value.  This value will indicate an invalid cache in the next call to
  * is_cache_valid().
  */
-INLINE AtomicAdjust::Integer ConfigFlags::
+INLINE ConfigFlags::Modified ConfigFlags::
 initial_invalid_cache() {
-  return _global_modified - 1;
+  return _global_modified.load(std::memory_order_relaxed) - 1;
 }
 
 /**
@@ -46,5 +46,5 @@ initial_invalid_cache() {
  */
 INLINE void ConfigFlags::
 invalidate_cache() {
-  AtomicAdjust::inc(_global_modified);
+  _global_modified.fetch_add(1, std::memory_order_release);
 }

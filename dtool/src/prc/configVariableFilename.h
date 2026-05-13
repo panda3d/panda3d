@@ -70,7 +70,7 @@ private:
   INLINE const Filename &get_ref_value() const;
 
 private:
-  AtomicAdjust::Integer _local_modified;
+  Modified _local_modified;
   Filename _cache;
 };
 

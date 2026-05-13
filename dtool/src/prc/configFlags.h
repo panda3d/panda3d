@@ -16,7 +16,7 @@
 
 #include "dtoolbase.h"
 #include "numeric_types.h"
-#include "atomicAdjust.h"
+#include "patomic.h"
 #include "memoryBase.h"
 
 /**
@@ -58,14 +58,17 @@ PUBLISHED:
     F_dconfig           = 0x00008000,
   };
 
+public:
+  typedef unsigned int Modified;
+
 protected:
-  ALWAYS_INLINE static bool is_cache_valid(AtomicAdjust::Integer local_modified);
-  ALWAYS_INLINE static void mark_cache_valid(AtomicAdjust::Integer &local_modified);
-  INLINE static AtomicAdjust::Integer initial_invalid_cache();
+  ALWAYS_INLINE static bool is_cache_valid(Modified local_modified);
+  ALWAYS_INLINE static void mark_cache_valid(Modified &local_modified);
+  INLINE static Modified initial_invalid_cache();
   INLINE static void invalidate_cache();
 
 private:
-  static TVOLATILE AtomicAdjust::Integer _global_modified;
+  static patomic<Modified> _global_modified;
 };
 
 std::ostream &operator << (std::ostream &out, ConfigFlags::ValueType type);

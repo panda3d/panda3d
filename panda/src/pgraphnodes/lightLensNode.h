@@ -20,7 +20,7 @@
 #include "camera.h"
 #include "graphicsStateGuardianBase.h"
 #include "graphicsOutputBase.h"
-#include "atomicAdjust.h"
+#include "patomic.h"
 
 class ShaderGenerator;
 class GraphicsStateGuardian;
@@ -76,7 +76,7 @@ protected:
 
   // This counts how many LightAttribs in the world are referencing this
   // LightLensNode object.
-  AtomicAdjust::Integer _attrib_count;
+  patomic<int> _attrib_count { 0 };
 
 public:
   virtual void attrib_ref();

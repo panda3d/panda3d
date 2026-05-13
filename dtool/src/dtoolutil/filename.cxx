@@ -2656,7 +2656,7 @@ get_hash() const {
  * (small) file with the specified contents, assuming it hasn't changed since
  * the last time the file was read.
  *
- * This is designed to be similar to AtomicAdjust::compare_and_exchange().
+ * This is designed to be similar to patomic::compare_exchange_strong().
  * The method writes new_contents to the file, completely replacing the
  * original contents; but only if the original contents exactly matched
  * old_contents.  If the file was modified, returns true.  If, however, the

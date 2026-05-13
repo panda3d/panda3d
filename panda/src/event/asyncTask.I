@@ -138,7 +138,7 @@ clear_name() {
  * Returns a number guaranteed to be unique for each different AsyncTask
  * object in the universe.
  */
-INLINE AtomicAdjust::Integer AsyncTask::
+INLINE int AsyncTask::
 get_task_id() const {
   return _task_id;
 }
