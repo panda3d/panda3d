@@ -20,7 +20,7 @@
 #include "luse.h"
 #include "filterProperties.h"
 #include "movieAudio.h"
-#include "atomicAdjust.h"
+#include "patomic.h"
 
 typedef AudioManager *Create_AudioManager_proc();
 
@@ -187,7 +187,7 @@ protected:
   // flexibility.
 
   static Create_AudioManager_proc* _create_AudioManager;
-  AtomicAdjust::Pointer _null_sound;
+  patomic<AudioSound *> _null_sound;
 
   AudioManager();
 
