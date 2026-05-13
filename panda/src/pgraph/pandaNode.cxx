@@ -3289,7 +3289,7 @@ update_cached(bool update_bounds, int pipeline_stage, PandaNode::CDLockedStageRe
     // environment the pointers might go away while we're working (since we're
     // not holding a lock on our set of children right now).  But we also need
     // the regular pointers, to pass to BoundingVolume::around().
-    const BoundingVolume **child_volumes;
+    const BoundingVolume **child_volumes = nullptr;
 #if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
     pvector<CPT(BoundingVolume) > child_volumes_ref;
     if (update_bounds) {
@@ -3353,17 +3353,21 @@ update_cached(bool update_bounds, int pipeline_stage, PandaNode::CDLockedStageRe
           // the pairing of the corresponding bit from the control mask and
           // from the show mask:
 
-          // 00 : not a renderable node   (control 0, show 0) 01 : a normally
-          // visible node (control 0, show 1) 10 : a hidden node
-          // (control 1, show 0) 11 : a show-through node     (control 1, show
-          // 1)
+          //   00 : not a renderable node   (control 0, show 0)
+          //   01 : a normally visible node (control 0, show 1)
+          //   10 : a hidden node           (control 1, show 0)
+          //   11 : a show-through node     (control 1, show 1)
 
-          // Now, when we accumulate these masks, we want to do so according
-          // to the following table, for each bit position:
+          // Now, when we accumulate these masks, we want to do so
+          // according to the following table, for each bit position:
 
-          // 00   01   10   11     (child) --------------------- 00 | 00   01
-          // 10   11 01 | 01   01   01*  11 10 | 10   01*  10   11 11 | 11
-          // 11   11   11 (parent)
+          //          00   01   10   11     (child)
+          //        ---------------------
+          //     00 | 00   01   10   11
+          //     01 | 01   01   01*  11
+          //     10 | 10   01*  10   11
+          //     11 | 11   11   11   11
+          // (parent)
 
           // This table is almost the same as the union of both masks, with
           // one exception, marked with a * in the above table: if one is 10
