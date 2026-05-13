@@ -1979,8 +1979,7 @@ INCLUDE_FILE_PATTERNS  =
 # recursively expanded use the := operator instead of the = operator.
 # This tag requires that the tag ENABLE_PREPROCESSING is set to YES.
 
-PREDEFINED             = TVOLATILE= \
-                         INLINE=inline \
+PREDEFINED             = INLINE=inline \
                          ALWAYS_INLINE=inline \
                          PUBLISHED=public \
                          protected=private \
