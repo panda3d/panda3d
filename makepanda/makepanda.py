@@ -1194,7 +1194,7 @@ def CompileCxx(obj,src,opts):
             # Set the minimum version to Windows Vista.
             cmd += "/DWINVER=0x600 "
 
-            cmd += "/Fo" + obj + " /nologo /c"
+            cmd += "/Fo" + obj + " /nologo /c /std:c++17"
             if GetTargetArch() == 'x86':
                 # x86 (32 bit) MSVC 2015+ defaults to /arch:SSE2
                 if not PkgSkip("SSE2") or 'SSE2' in opts:   # x86 with SSE2
@@ -1320,7 +1320,7 @@ def CompileCxx(obj,src,opts):
 
     if (COMPILER=="GCC"):
         if (src.endswith(".c")): cmd = GetCC() +' -fPIC -c -o ' + obj
-        else:                    cmd = GetCXX()+' -std=gnu++14 -ftemplate-depth-70 -fPIC -c -o ' + obj
+        else:                    cmd = GetCXX()+' -std=gnu++17 -ftemplate-depth-70 -fPIC -c -o ' + obj
         for (opt, dir) in INCDIRECTORIES:
             if (opt=="ALWAYS") or (opt in opts): cmd += ' -I' + BracketNameWithQuotes(dir)
         for (opt, dir) in FRAMEWORKDIRECTORIES:

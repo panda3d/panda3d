@@ -61,8 +61,8 @@ if(ENABLE_ASAN)
   endif()
 endif()
 
-# Panda3D is now a C++14 project.
-set(CMAKE_CXX_STANDARD 14)
+# Panda3D is now a C++17 project.
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Set certain CMake flags we expect
