@@ -19,7 +19,7 @@ class FLOATNAME(LVector3);
 /**
  * This is the base class for all three-component vectors and points.
  */
-class EXPCL_PANDA_LINMATH ALIGN_LINMATH FLOATNAME(LVecBase4) : public MemoryBase {
+class EXPCL_PANDA_LINMATH ALIGN_LINMATH FLOATNAME(LVecBase4) {
 PUBLISHED:
   typedef FLOATTYPE numeric_type;
   typedef const FLOATTYPE *iterator;
@@ -41,7 +41,13 @@ PUBLISHED:
   INLINE_LINMATH explicit FLOATNAME(LVecBase4)(const FLOATNAME(LVecBase3) &copy, FLOATTYPE w);
   INLINE_LINMATH FLOATNAME(LVecBase4)(const FLOATNAME(LPoint3) &point);
   INLINE_LINMATH FLOATNAME(LVecBase4)(const FLOATNAME(LVector3) &vector);
+
+#ifdef USE_DELETED_CHAIN
   ALLOC_DELETED_CHAIN(FLOATNAME(LVecBase4));
+#else
+  // Don't inherit from MemoryBase directly to work around GCC<10.1 bug.
+  ALLOC_MEMORY_BASE;
+#endif
 
 #ifdef CPPPARSER
   FLOATNAME(LVecBase4) &operator = (const FLOATNAME(LVecBase4) &copy) = default;
