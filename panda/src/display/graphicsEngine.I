@@ -195,29 +195,20 @@ run_on_draw_thread(Callable &&callable) -> decltype(callable()) {
  */
 template<class Callable>
 INLINE auto GraphicsEngine::RenderThread::
-run_on_thread(Callable &&callable) ->
-  typename std::enable_if<!std::is_void<decltype(callable())>::value, decltype(callable())>::type {
-
+run_on_thread(Callable &&callable) -> decltype(callable()) {
   using ReturnType = decltype(callable());
-  alignas(ReturnType) unsigned char storage[sizeof(ReturnType)];
+  if constexpr (std::is_void<ReturnType>::value) {
+    run_on_thread([] (RenderThread *data) {
+      std::move(*(Callable *)data->_callback_data)();
+    }, &callable, nullptr);
+  } else {
+    alignas(ReturnType) unsigned char storage[sizeof(ReturnType)];
 
-  run_on_thread([] (RenderThread *data) {
-    new (data->_return_data) ReturnType(std::move(*(Callable *)data->_callback_data)());
-  }, &callable, storage);
+    run_on_thread([] (RenderThread *data) {
+      new (data->_return_data) ReturnType(std::move(*(Callable *)data->_callback_data)());
+    }, &callable, storage);
 
-  return *(ReturnType *)storage;
-}
-
-/**
- * Waits for this thread to become idle, then runs the given function on it.
- */
-template<class Callable>
-INLINE auto GraphicsEngine::RenderThread::
-run_on_thread(Callable &&callable) ->
-  typename std::enable_if<std::is_void<decltype(callable())>::value, decltype(callable())>::type {
-
-  run_on_thread([] (RenderThread *data) {
-    std::move(*(Callable *)data->_callback_data)();
-  }, &callable, nullptr);
+    return *(ReturnType *)storage;
+  }
 }
 #endif  // CPPPARSER

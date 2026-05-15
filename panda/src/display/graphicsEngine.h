@@ -321,12 +321,7 @@ private:
 
 #ifndef CPPPARSER
     template<class Callable>
-    INLINE auto run_on_thread(Callable &&callable) ->
-      typename std::enable_if<!std::is_void<decltype(callable())>::value, decltype(callable())>::type;
-
-    template<class Callable>
-    INLINE auto run_on_thread(Callable &&callable) ->
-      typename std::enable_if<std::is_void<decltype(callable())>::value, decltype(callable())>::type;
+    INLINE auto run_on_thread(Callable &&callable) -> decltype(callable());
 #endif
 
     GraphicsEngine *_engine;
