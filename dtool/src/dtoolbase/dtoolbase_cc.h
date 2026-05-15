@@ -56,42 +56,19 @@ typedef int ios_seekdir;
 
 #else  // CPPPARSER
 
-#ifdef PHAVE_IOSTREAM
 #include <iostream>
 #include <fstream>
 #include <iomanip>
-#else
-#include <iostream.h>
-#include <fstream.h>
-#include <iomanip.h>
-#endif
-
-#ifdef PHAVE_SSTREAM
 #include <sstream>
-#else
-#include "fakestringstream.h"
-#endif
-
-#ifdef PHAVE_NEW
 #include <new>
-#endif
-
 #include <string>
 #include <utility>
 #include <algorithm>
 
-#ifndef HAVE_IOS_TYPEDEFS
-typedef int ios_openmode;
-typedef int ios_fmtflags;
-typedef int ios_iostate;
-// Old iostream libraries used ios::seek_dir instead of ios::seekdir.
-typedef ios::seek_dir ios_seekdir;
-#else
 typedef std::ios::openmode ios_openmode;
 typedef std::ios::fmtflags ios_fmtflags;
 typedef std::ios::iostate ios_iostate;
 typedef std::ios::seekdir ios_seekdir;
-#endif
 
 #ifdef _MSC_VER
 #define ALWAYS_INLINE __forceinline

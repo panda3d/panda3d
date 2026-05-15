@@ -101,17 +101,10 @@ EncryptStreamBuf() {
   _read_overflow_buffer = nullptr;
   _in_read_overflow_buffer = 0;
 
-#ifdef PHAVE_IOSTREAM
   char *buf = new char[4096];
   char *ebuf = buf + 4096;
   setg(buf, ebuf, ebuf);
   setp(buf, ebuf);
-
-#else
-  allocate();
-  setg(base(), ebuf(), ebuf());
-  setp(base(), ebuf());
-#endif
 }
 
 /**
@@ -122,9 +115,7 @@ EncryptStreamBuf::
   close_read();
   close_write();
 
-#ifdef PHAVE_IOSTREAM
   delete[] eback();
-#endif
 }
 
 /**

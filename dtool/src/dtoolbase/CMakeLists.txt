@@ -12,7 +12,6 @@ set(P3DTOOLBASE_HEADERS
   dtoolbase.h dtoolbase_cc.h dtoolsymbols.h
   dtool_platform.h
   extension.h
-  fakestringstream.h
   indent.I indent.h
   memoryBase.h
   memoryHook.h memoryHook.I

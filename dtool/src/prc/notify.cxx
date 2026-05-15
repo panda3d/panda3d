@@ -129,13 +129,9 @@ get_literal_flag() {
   static ios_fmtflags flag;
 
   if (!got_flag) {
-#ifndef PHAVE_IOSTREAM
-    flag = std::ios::bitalloc();
-#else
-    // We lost bitalloc in the new iostream?  Ok, this feature will just be
-    // disabled for now.  No big deal.
+    // bitalloc was removed from the standard iostream library, so this
+    // feature is disabled.  No big deal.
     flag = (ios_fmtflags)0;
-#endif
     got_flag = true;
   }
 

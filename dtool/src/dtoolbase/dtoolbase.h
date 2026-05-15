@@ -185,9 +185,7 @@ typedef struct _typeobject PyTypeObject;
 #include <string.h>
 #endif // PHAVE_STRING_H
 
-#ifdef PHAVE_STDLIB_H
 #include <stdlib.h>
-#endif // PHAVE_STDLIB_H
 
 #ifdef PHAVE_LIMITS_H
 #include <limits.h>
@@ -197,9 +195,7 @@ typedef struct _typeobject PyTypeObject;
 #include <sys/time.h>
 #endif // PHAVE_SYS_TIME_H
 
-#ifdef PHAVE_STDINT_H
 #include <stdint.h>
-#endif // PHAVE_STDINT_H
 
 #ifdef CPPPARSER
 #include <stdtypedefs.h>

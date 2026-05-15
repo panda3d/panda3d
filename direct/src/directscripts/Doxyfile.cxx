@@ -807,7 +807,6 @@ EXCLUDE                = dtool/src/parser-inc \
                          panda/src/wgldisplay/wglext.h \
                          panda/src/glxdisplay/panda_glxext.h \
                          pandatool/src/gtk-stats \
-                         dtool/src/dtoolbase/fakestringstream.h \
                          dtool/src/dtoolbase/pdtoa.cxx \
                          dtool/src/dtoolutil/panda_getopt_long.h \
                          dtool/src/dtoolutil/panda_getopt_impl.h \
