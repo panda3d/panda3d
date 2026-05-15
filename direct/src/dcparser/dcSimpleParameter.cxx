@@ -94,7 +94,7 @@ DCSimpleParameter(DCSubatomicType type, unsigned int divisor) :
 
   case ST_blob32:
     _num_length_bytes = 4;
-    // fall through
+    [[fallthrough]];
   case ST_blob:
     // For blob and string, we will present an array interface as an array of
     // uint8, but we will also accept a set_value() with a string parameter.

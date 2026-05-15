@@ -476,7 +476,7 @@ set_properties_now(WindowProperties &properties) {
         if (!enable_raw_input()) {
           break;
         }
-        // Fall through
+        [[fallthrough]];
 
       case WindowProperties::M_confined:
         // If we are not the foreground window, we defer confining the cursor

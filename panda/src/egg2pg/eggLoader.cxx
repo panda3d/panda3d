@@ -982,7 +982,7 @@ load_texture(TextureDef &def, EggTexture *egg_tex) {
   case EggTexture::TT_unspecified:
   case EggTexture::TT_1d_texture:
     options.set_texture_flags(options.get_texture_flags() | LoaderOptions::TF_allow_1d);
-    // Fall through.
+    [[fallthrough]];
 
   case EggTexture::TT_2d_texture:
     if (egg_tex->has_alpha_filename() && wanted_alpha) {
@@ -3851,7 +3851,7 @@ get_combine_mode(const EggTexture *egg_tex,
                  EggTexture::CombineChannel channel) {
   switch (egg_tex->get_combine_mode(channel)) {
   case EggTexture::CM_unspecified:
-    // fall through
+    [[fallthrough]];
 
   case EggTexture::CM_modulate:
     return TextureStage::CM_modulate;
@@ -3900,7 +3900,7 @@ get_combine_source(const EggTexture *egg_tex,
     case 2:
       return TextureStage::CS_constant;
     }
-    // Otherwise, fall through
+    [[fallthrough]];
 
   case EggTexture::CS_texture:
     return TextureStage::CS_texture;

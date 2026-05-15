@@ -424,7 +424,7 @@ match_texture(TextureImage *texture) const {
     case ST_explicit_3:
       request._got_num_channels = true;
       request._num_channels = _num_channels;
-      // fall through
+      [[fallthrough]];
 
     case ST_explicit_2:
       request._got_size = true;

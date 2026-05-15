@@ -812,7 +812,7 @@ cg_recurse_parameters(CGparameter parameter, const ShaderType &type,
 
             arg_dim[0]  = cgGetArraySize(parameter, 0);
 
-            // Fall through
+            [[fallthrough]];
           default: {
             arg_dim[1] = cgGetParameterRows(parameter);
             arg_dim[2] = cgGetParameterColumns(parameter);

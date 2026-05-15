@@ -1390,7 +1390,7 @@ compute_internal_bounds(Geom::CData *cdata, Thread *current_thread) const {
                                      pmax[2] - pmin[2]));
         avg_box_area = ((min_extent * min_extent) + (max_extent * max_extent)) / 2;
       }
-      // Fall through
+      [[fallthrough]];
     case BoundingVolume::BT_sphere:
       {
         // Determine the best radius for a bounding sphere.
@@ -1444,7 +1444,7 @@ compute_internal_bounds(Geom::CData *cdata, Thread *current_thread) const {
           break;
         }
       }
-      // Fall through.
+      [[fallthrough]];
 
     case BoundingVolume::BT_box:
       cdata->_internal_bounds = new BoundingBox(pmin, pmax);

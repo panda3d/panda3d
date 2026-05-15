@@ -412,7 +412,7 @@ matches_substr(string::const_iterator pi, string::const_iterator pend,
     if (pi == pend) {
       return false;
     }
-    // fall through.
+    [[fallthrough]];
 
   default:
     // Anything else means to match exactly that.

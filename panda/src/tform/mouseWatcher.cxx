@@ -1382,7 +1382,7 @@ do_transmit_data(DataGraphTraverser *trav, const DataNodeTransmit &input,
           break;
         }
         // The button was already depressed, so this is really just keyrepeat.
-        // Fall through.
+        [[fallthrough]];
 
       case ButtonEvent::T_repeat:
         _current_buttons_down.set_bit(be._button.get_index());

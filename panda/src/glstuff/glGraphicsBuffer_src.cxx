@@ -1570,7 +1570,7 @@ attach_tex(GLenum attachpoint, CLP(TextureContext) *gtc, int view, int layer) {
 #endif
   case GL_TEXTURE_CUBE_MAP:
     target = GL_TEXTURE_CUBE_MAP_POSITIVE_X + layer;
-    // fall through
+    [[fallthrough]];
   default:
     glgsg->_glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, attachpoint,
                                    target, index, 0);

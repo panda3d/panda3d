@@ -65,7 +65,7 @@ get_string() const {
     case '"':
     case '\\':
       result << '\\';
-      // fall through
+      [[fallthrough]];
 
     default:
       result << (*ti);

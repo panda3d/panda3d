@@ -865,7 +865,7 @@ do_python_task() {
     case DS_again:
       Py_XDECREF(_generator);
       _generator = nullptr;
-      // Fall through.
+      [[fallthrough]];
 
     case DS_done:
     case DS_cont:

@@ -756,7 +756,7 @@ fill_image(PNMImage &image) {
 
     case EggTexture::WM_mirror_once:
       sy = (sy < y_size) ? sy : 2 * y_size - sy - 1;
-      // Fall through
+      [[fallthrough]];
 
     case EggTexture::WM_border_color:
       if (sy < 0 || sy >= y_size) {
@@ -786,7 +786,7 @@ fill_image(PNMImage &image) {
 
       case EggTexture::WM_mirror_once:
         sx = (sx >= 0) ? sx : ~sx;
-        // Fall through
+        [[fallthrough]];
 
       case EggTexture::WM_border_color:
         if (sx < 0 || sx >= x_size) {
