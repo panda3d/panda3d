@@ -23,9 +23,9 @@ using std::wstring;
 // Case-insensitive string comparison, from Stroustrup's C++ third edition.
 // Works like strcmp().
 int
-cmp_nocase(const string &s, const string &s2) {
-  string::const_iterator p = s.begin();
-  string::const_iterator p2 = s2.begin();
+cmp_nocase(std::string_view s, std::string_view s2) {
+  std::string_view::const_iterator p = s.begin();
+  std::string_view::const_iterator p2 = s2.begin();
 
   while (p != s.end() && p2 != s2.end()) {
     if (toupper(*p) != toupper(*p2)) {
@@ -46,9 +46,9 @@ toupper_uh(int ch) {
 
 
 int
-cmp_nocase_uh(const string &s, const string &s2) {
-  string::const_iterator p = s.begin();
-  string::const_iterator p2 = s2.begin();
+cmp_nocase_uh(std::string_view s, std::string_view s2) {
+  std::string_view::const_iterator p = s.begin();
+  std::string_view::const_iterator p2 = s2.begin();
 
   while (p != s.end() && p2 != s2.end()) {
     if (toupper_uh(*p) != toupper_uh(*p2)) {
@@ -68,10 +68,10 @@ cmp_nocase_uh(const string &s, const string &s2) {
  * Returns the input string with all uppercase letters converted to lowercase.
  */
 string
-downcase(const string &s) {
+downcase(std::string_view s) {
   string result;
   result.reserve(s.size());
-  string::const_iterator p;
+  std::string_view::const_iterator p;
   for (p = s.begin(); p != s.end(); ++p) {
     result += tolower(*p);
   }
@@ -82,10 +82,10 @@ downcase(const string &s) {
  * Returns the input string with all lowercase letters converted to uppercase.
  */
 string
-upcase(const string &s) {
+upcase(std::string_view s) {
   string result;
   result.reserve(s.size());
-  string::const_iterator p;
+  std::string_view::const_iterator p;
   for (p = s.begin(); p != s.end(); ++p) {
     result += toupper(*p);
   }
@@ -102,7 +102,7 @@ upcase(const string &s) {
  * The return value is the number of words extracted.
  */
 int
-extract_words(const string &str, vector_string &words) {
+extract_words(std::string_view str, vector_string &words) {
   int num_words = 0;
 
   size_t pos = 0;
@@ -114,7 +114,7 @@ extract_words(const string &str, vector_string &words) {
     while (pos < str.length() && !isspace((unsigned int)str[pos])) {
       pos++;
     }
-    words.push_back(str.substr(word_start, pos - word_start));
+    words.push_back(string(str.substr(word_start, pos - word_start)));
     num_words++;
 
     while (pos < str.length() && isspace((unsigned int)str[pos])) {
@@ -134,7 +134,7 @@ extract_words(const string &str, vector_string &words) {
  * The return value is the number of words extracted.
  */
 int
-extract_words(const wstring &str, pvector<wstring> &words) {
+extract_words(std::wstring_view str, pvector<wstring> &words) {
   int num_words = 0;
 
   size_t pos = 0;
@@ -146,7 +146,7 @@ extract_words(const wstring &str, pvector<wstring> &words) {
     while (pos < str.length() && !TextEncoder::unicode_isspace(str[pos])) {
       pos++;
     }
-    words.push_back(str.substr(word_start, pos - word_start));
+    words.push_back(wstring(str.substr(word_start, pos - word_start)));
     num_words++;
 
     while (pos < str.length() && TextEncoder::unicode_isspace(str[pos])) {
@@ -167,19 +167,19 @@ extract_words(const wstring &str, pvector<wstring> &words) {
  * end of the vector.
  */
 void
-tokenize(const string &str, vector_string &words, const string &delimiters,
+tokenize(std::string_view str, vector_string &words, std::string_view delimiters,
          bool discard_repeated_delimiters) {
   size_t p = 0;
   while (p < str.length()) {
     size_t q = str.find_first_of(delimiters, p);
     if (q == string::npos) {
       if (q - p || !discard_repeated_delimiters){
-        words.push_back(str.substr(p));
+        words.push_back(string(str.substr(p)));
       }
       return;
     }
     if (q - p || !discard_repeated_delimiters){
-        words.push_back(str.substr(p, q - p));
+        words.push_back(string(str.substr(p, q - p)));
     }
     p = q + 1;
   }
@@ -196,19 +196,19 @@ tokenize(const string &str, vector_string &words, const string &delimiters,
  * end of the vector.
  */
 void
-tokenize(const wstring &str, pvector<wstring> &words, const wstring &delimiters,
+tokenize(std::wstring_view str, pvector<wstring> &words, std::wstring_view delimiters,
          bool discard_repeated_delimiters) {
   size_t p = 0;
   while (p < str.length()) {
     size_t q = str.find_first_of(delimiters, p);
     if (q == string::npos) {
       if (q - p || !discard_repeated_delimiters){
-        words.push_back(str.substr(p));
+        words.push_back(wstring(str.substr(p)));
       }
       return;
     }
     if (q - p || !discard_repeated_delimiters){
-      words.push_back(str.substr(p, q - p));
+      words.push_back(wstring(str.substr(p, q - p)));
     }
     p = q + 1;
   }
@@ -220,13 +220,13 @@ tokenize(const wstring &str, pvector<wstring> &words, const wstring &delimiters,
  * leading whitespace removed.
  */
 string
-trim_left(const string &str) {
+trim_left(std::string_view str) {
   size_t begin = 0;
   while (begin < str.size() && isspace((unsigned int)str[begin])) {
     begin++;
   }
 
-  return str.substr(begin);
+  return string(str.substr(begin));
 }
 
 /**
@@ -234,13 +234,13 @@ trim_left(const string &str) {
  * leading whitespace removed.
  */
 wstring
-trim_left(const wstring &str) {
+trim_left(std::wstring_view str) {
   size_t begin = 0;
   while (begin < str.size() && TextEncoder::unicode_isspace(str[begin])) {
     begin++;
   }
 
-  return str.substr(begin);
+  return wstring(str.substr(begin));
 }
 
 /**
@@ -248,14 +248,14 @@ trim_left(const wstring &str) {
  * trailing whitespace removed.
  */
 string
-trim_right(const string &str) {
+trim_right(std::string_view str) {
   size_t begin = 0;
   size_t end = str.size();
   while (end > begin && isspace((unsigned int)str[end - 1])) {
     end--;
   }
 
-  return str.substr(begin, end - begin);
+  return string(str.substr(begin, end - begin));
 }
 
 /**
@@ -263,14 +263,14 @@ trim_right(const string &str) {
  * trailing whitespace removed.
  */
 wstring
-trim_right(const wstring &str) {
+trim_right(std::wstring_view str) {
   size_t begin = 0;
   size_t end = str.size();
   while (end > begin && TextEncoder::unicode_isspace(str[end - 1])) {
     end--;
   }
 
-  return str.substr(begin, end - begin);
+  return wstring(str.substr(begin, end - begin));
 }
 
 /**
@@ -278,7 +278,7 @@ trim_right(const wstring &str) {
  * both leading and trailing whitespace removed.
  */
 string
-trim(const string &str) {
+trim(std::string_view str) {
   size_t begin = 0;
   while (begin < str.size() && isspace((unsigned int)str[begin])) {
     begin++;
@@ -289,7 +289,7 @@ trim(const string &str) {
     end--;
   }
 
-  return str.substr(begin, end - begin);
+  return string(str.substr(begin, end - begin));
 }
 
 /**
@@ -297,7 +297,7 @@ trim(const string &str) {
  * both leading and trailing whitespace removed.
  */
 wstring
-trim(const wstring &str) {
+trim(std::wstring_view str) {
   size_t begin = 0;
   while (begin < str.size() && TextEncoder::unicode_isspace(str[begin])) {
     begin++;
@@ -308,7 +308,7 @@ trim(const wstring &str) {
     end--;
   }
 
-  return str.substr(begin, end - begin);
+  return wstring(str.substr(begin, end - begin));
 }
 
 /**

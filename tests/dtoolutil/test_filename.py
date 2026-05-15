@@ -13,6 +13,20 @@ def test_filename_open():
     open(fn, 'rb')
 
 
+def test_filename_set_extension():
+    fn = Filename('test.txt')
+    fn.set_extension('abc')
+    assert fn.get_fullpath() == 'test.abc'
+
+    fn = Filename('test.a.b')
+    fn.set_extension('c')
+    assert fn.get_fullpath() == 'test.a.c'
+
+    fn = Filename('test')
+    fn.set_extension('ext')
+    assert fn.get_fullpath() == 'test.ext'
+
+
 def test_filename_ctor_pathlib():
     pathlib = pytest.importorskip('pathlib')
 

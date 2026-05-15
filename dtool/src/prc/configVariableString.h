@@ -17,6 +17,8 @@
 #include "dtoolbase.h"
 #include "configVariable.h"
 
+#include <string_view>
+
 /**
  * This is a convenience class to specialize ConfigVariable as a string type.
  */
@@ -30,6 +32,7 @@ PUBLISHED:
 
   INLINE void operator = (const std::string &value);
   INLINE operator const std::string & () const;
+  INLINE operator std::string_view () const;
 
   // These methods help the ConfigVariableString act like a C++ string object.
   INLINE const char *c_str() const;

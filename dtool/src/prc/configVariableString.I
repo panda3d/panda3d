@@ -56,6 +56,14 @@ operator const std::string & () const {
 }
 
 /**
+ * Returns the variable's value.
+ */
+INLINE ConfigVariableString::
+operator std::string_view () const {
+  return get_value();
+}
+
+/**
  *
  */
 INLINE const char *ConfigVariableString::

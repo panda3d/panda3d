@@ -237,7 +237,7 @@ encode_wchar(char32_t ch, TextEncoder::Encoding encoding) {
  * given encoding.
  */
 string TextEncoder::
-encode_wtext(const wstring &wtext, TextEncoder::Encoding encoding) {
+encode_wtext(std::wstring_view wtext, TextEncoder::Encoding encoding) {
   string result;
 
   for (size_t i = 0; i < wtext.size(); ++i) {
@@ -269,7 +269,7 @@ encode_wtext(const wstring &wtext, TextEncoder::Encoding encoding) {
  * encoding system.
  */
 wstring TextEncoder::
-decode_text(const string &text, TextEncoder::Encoding encoding) {
+decode_text(std::string_view text, TextEncoder::Encoding encoding) {
   switch (encoding) {
   case E_utf8:
     {

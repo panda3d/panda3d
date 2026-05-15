@@ -18,6 +18,7 @@
 #include "unicodeLatinMap.h"
 
 #include <ctype.h>
+#include <string_view>
 
 class StringDecoder;
 
@@ -58,8 +59,8 @@ PUBLISHED:
   EXTEND void set_text(PyObject *text);
   EXTEND void set_text(PyObject *text, Encoding encoding);
 #else
-  INLINE void set_text(const std::string &text);
-  INLINE void set_text(const std::string &text, Encoding encoding);
+  INLINE void set_text(std::string_view text);
+  INLINE void set_text(std::string_view text, Encoding encoding);
 #endif
   INLINE void clear_text();
   INLINE bool has_text() const;
@@ -84,7 +85,7 @@ PUBLISHED:
   INLINE std::string get_encoded_char(size_t index, Encoding encoding) const;
   INLINE std::string get_text_as_ascii() const;
 
-  INLINE static std::string reencode_text(const std::string &text, Encoding from, Encoding to);
+  INLINE static std::string reencode_text(std::string_view text, Encoding from, Encoding to);
 
   INLINE static bool unicode_isalpha(char32_t character);
   INLINE static bool unicode_isdigit(char32_t character);
@@ -102,24 +103,24 @@ PUBLISHED:
 
   // Direct support for wide-character strings.  Now publishable with the new
   // wstring support in interrogate.
-  INLINE void set_wtext(const std::wstring &wtext);
+  INLINE void set_wtext(std::wstring_view wtext);
   INLINE const std::wstring &get_wtext() const;
-  INLINE void append_wtext(const std::wstring &text);
+  INLINE void append_wtext(std::wstring_view text);
   std::wstring get_wtext_as_ascii() const;
   bool is_wtext() const;
 
 #if defined(CPPPARSER) && defined(HAVE_PYTHON)
   EXTEND static PyObject *encode_wchar(char32_t ch, Encoding encoding);
-  EXTEND INLINE PyObject *encode_wtext(const std::wstring &wtext) const;
-  EXTEND static PyObject *encode_wtext(const std::wstring &wtext, Encoding encoding);
+  EXTEND INLINE PyObject *encode_wtext(std::wstring_view wtext) const;
+  EXTEND static PyObject *encode_wtext(std::wstring_view wtext, Encoding encoding);
   EXTEND INLINE PyObject *decode_text(PyObject *text) const;
   EXTEND static PyObject *decode_text(PyObject *text, Encoding encoding);
 #else
   static std::string encode_wchar(char32_t ch, Encoding encoding);
-  INLINE std::string encode_wtext(const std::wstring &wtext) const;
-  static std::string encode_wtext(const std::wstring &wtext, Encoding encoding);
-  INLINE std::wstring decode_text(const std::string &text) const;
-  static std::wstring decode_text(const std::string &text, Encoding encoding);
+  INLINE std::string encode_wtext(std::wstring_view wtext) const;
+  static std::string encode_wtext(std::wstring_view wtext, Encoding encoding);
+  INLINE std::wstring decode_text(std::string_view text) const;
+  static std::wstring decode_text(std::string_view text, Encoding encoding);
 #endif
 
   MAKE_PROPERTY(text, get_text, set_text);

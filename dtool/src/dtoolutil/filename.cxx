@@ -722,7 +722,7 @@ get_common_appdata_directory() {
  * also be achieved with the assignment operator.
  */
 void Filename::
-set_fullpath(const string &s) {
+set_fullpath(std::string_view s) {
   (*this) = s;
 }
 
@@ -731,7 +731,7 @@ set_fullpath(const string &s) {
  * filename up to, but not including the rightmost slash.
  */
 void Filename::
-set_dirname(const string &s) {
+set_dirname(std::string_view s) {
   if (s.empty()) {
     // Remove the directory prefix altogether.
     _filename.replace(0, _basename_start, "");
@@ -747,11 +747,9 @@ set_dirname(const string &s) {
     // Replace the existing directory prefix, or insert a new one.
 
     // We build the string ss to include the terminal slash.
-    string ss;
-    if (s[s.length()-1] == '/') {
-      ss = s;
-    } else {
-      ss = s+'/';
+    string ss(s);
+    if (ss.back() != '/') {
+      ss += '/';
     }
 
     int length_change = (int)ss.length() - (int)_basename_start;
@@ -781,19 +779,18 @@ set_dirname(const string &s) {
  * filename after the rightmost slash, including any extensions.
  */
 void Filename::
-set_basename(const string &s) {
+set_basename(std::string_view s) {
   _filename.replace(_basename_start, string::npos, s);
   locate_extension();
   locate_hash();
 }
-
 
 /**
  * Replaces the full filename--directory and basename parts--except for the
  * extension.
  */
 void Filename::
-set_fullpath_wo_extension(const string &s) {
+set_fullpath_wo_extension(std::string_view s) {
   int length_change = (int)s.length() - (int)_basename_end;
 
   _filename.replace(0, _basename_end, s);
@@ -805,12 +802,11 @@ set_fullpath_wo_extension(const string &s) {
   locate_hash();
 }
 
-
 /**
  * Replaces the basename part of the filename, without the file extension.
  */
 void Filename::
-set_basename_wo_extension(const string &s) {
+set_basename_wo_extension(std::string_view s) {
   int length_change = (int)s.length() - (int)(_basename_end - _basename_start);
 
   if (_basename_end == string::npos) {
@@ -825,13 +821,12 @@ set_basename_wo_extension(const string &s) {
   locate_hash();
 }
 
-
 /**
  * Replaces the file extension.  This is everything after the rightmost dot,
  * if there is one, or the empty string if there is not.
  */
 void Filename::
-set_extension(const string &s) {
+set_extension(std::string_view s) {
   if (s.empty()) {
     // Remove the extension altogether.
     if (_basename_end != string::npos) {
@@ -844,7 +839,8 @@ set_extension(const string &s) {
     // Insert an extension where there was none before.
     _basename_end = _filename.length();
     _extension_start = _filename.length() + 1;
-    _filename += '.' + s;
+    _filename += '.';
+    _filename += s;
 
   } else {
     // Replace an existing extension.

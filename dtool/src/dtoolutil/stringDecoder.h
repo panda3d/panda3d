@@ -15,6 +15,7 @@
 #define STRINGDECODER_H
 
 #include "dtoolbase.h"
+#include <string_view>
 
 /**
  * The base class to a family of classes that decode various kinds of encoded
@@ -23,7 +24,7 @@
  */
 class EXPCL_DTOOL_DTOOLUTIL StringDecoder {
 public:
-  INLINE StringDecoder(const std::string &input);
+  INLINE StringDecoder(std::string_view input);
   virtual ~StringDecoder();
 
   virtual char32_t get_next_character();
@@ -46,7 +47,7 @@ protected:
  */
 class StringUtf8Decoder : public StringDecoder {
 public:
-  INLINE StringUtf8Decoder(const std::string &input);
+  INLINE StringUtf8Decoder(std::string_view input);
 
   virtual char32_t get_next_character();
 };
@@ -57,7 +58,7 @@ public:
  */
 class StringUtf16Decoder : public StringDecoder {
 public:
-  INLINE StringUtf16Decoder(const std::string &input);
+  INLINE StringUtf16Decoder(std::string_view input);
 
   virtual char32_t get_next_character();
 };

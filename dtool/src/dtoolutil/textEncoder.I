@@ -86,7 +86,7 @@ get_default_encoding() {
  * decoded version of the string.
  */
 INLINE void TextEncoder::
-set_text(const std::string &text) {
+set_text(std::string_view text) {
   if (!has_text() || _text != text) {
     _text = text;
     _flags = (_flags | F_got_text) & ~F_got_wtext;
@@ -101,7 +101,7 @@ set_text(const std::string &text) {
  * whichever encoding is specified by set_encoding().
  */
 INLINE void TextEncoder::
-set_text(const std::string &text, TextEncoder::Encoding encoding) {
+set_text(std::string_view text, TextEncoder::Encoding encoding) {
   if (encoding == _encoding) {
     set_text(text);
   } else {
@@ -273,7 +273,7 @@ get_text_as_ascii() const {
  * properties on the TextEncoder itself.
  */
 INLINE std::string TextEncoder::
-reencode_text(const std::string &text, TextEncoder::Encoding from,
+reencode_text(std::string_view text, TextEncoder::Encoding from,
               TextEncoder::Encoding to) {
   return encode_wtext(decode_text(text, from), to);
 }
@@ -440,7 +440,7 @@ lower(const std::string &source, TextEncoder::Encoding encoding) {
  * encoded version of the string.
  */
 INLINE void TextEncoder::
-set_wtext(const std::wstring &wtext) {
+set_wtext(std::wstring_view wtext) {
   if (!has_text() || _wtext != wtext) {
     _wtext = wtext;
     _flags = (_flags | F_got_wtext) & ~F_got_text;
@@ -465,9 +465,10 @@ get_wtext() const {
  * Appends the indicates string to the end of the stored wide-character text.
  */
 INLINE void TextEncoder::
-append_wtext(const std::wstring &wtext) {
+append_wtext(std::wstring_view wtext) {
   if (!wtext.empty()) {
-    _wtext = get_wtext() + wtext;
+    (void)get_wtext();
+    _wtext += wtext;
     _flags = (_flags | F_got_wtext) & ~F_got_text;
     text_changed();
   }
@@ -478,7 +479,7 @@ append_wtext(const std::wstring &wtext) {
  * current encoding.
  */
 INLINE std::string TextEncoder::
-encode_wtext(const std::wstring &wtext) const {
+encode_wtext(std::wstring_view wtext) const {
   return encode_wtext(wtext, _encoding);
 }
 
@@ -487,7 +488,7 @@ encode_wtext(const std::wstring &wtext) const {
  * encoding system.
  */
 INLINE std::wstring TextEncoder::
-decode_text(const std::string &text) const {
+decode_text(std::string_view text) const {
   return decode_text(text, _encoding);
 }
 

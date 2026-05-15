@@ -23,6 +23,7 @@
 #include "patomic.h"
 
 #include <assert.h>
+#include <string_view>
 
 class DSearchPath;
 
@@ -63,6 +64,8 @@ public:
   INLINE Filename(const char *filename);
   INLINE Filename(const std::string &filename);
   INLINE Filename(const std::wstring &filename);
+  INLINE Filename(std::string_view filename);
+  INLINE Filename(std::wstring_view filename);
   INLINE Filename(const Filename &copy);
   INLINE Filename(std::string &&filename) noexcept;
   INLINE Filename(Filename &&from) noexcept;
@@ -78,14 +81,12 @@ PUBLISHED:
   // Static constructors to explicitly create a filename that refers to a text
   // or binary file.  This is in lieu of calling set_text() or set_binary() or
   // set_type().
-  INLINE static Filename text_filename(const Filename &filename);
-  INLINE static Filename text_filename(const std::string &filename);
-  INLINE static Filename binary_filename(const Filename &filename);
-  INLINE static Filename binary_filename(const std::string &filename);
-  INLINE static Filename dso_filename(const std::string &filename);
-  INLINE static Filename executable_filename(const std::string &filename);
+  INLINE static Filename text_filename(Filename filename);
+  INLINE static Filename binary_filename(Filename filename);
+  INLINE static Filename dso_filename(Filename filename);
+  INLINE static Filename executable_filename(Filename filename);
 
-  INLINE static Filename pattern_filename(const std::string &filename);
+  INLINE static Filename pattern_filename(std::string_view filename);
 
   static Filename from_os_specific(const std::string &os_specific,
                                    Type type = T_general);
@@ -103,15 +104,21 @@ PUBLISHED:
   static const Filename &get_common_appdata_directory();
 
   // Assignment is via the = operator.
+public:
+  INLINE Filename &operator = (const char *filename);
   INLINE Filename &operator = (const std::string &filename);
   INLINE Filename &operator = (const std::wstring &filename);
-  INLINE Filename &operator = (const char *filename);
+
+PUBLISHED:
+  INLINE Filename &operator = (std::string_view filename);
+  INLINE Filename &operator = (std::wstring_view filename);
   INLINE Filename &operator = (const Filename &copy);
   INLINE Filename &operator = (std::string &&filename) noexcept;
   INLINE Filename &operator = (Filename &&from) noexcept;
 
   // And retrieval is by any of the classic string operations.
   INLINE operator const std::string & () const;
+  INLINE operator std::string_view () const;
   INLINE const char *c_str() const;
   INLINE bool empty() const;
   INLINE size_t length() const;
@@ -137,12 +144,12 @@ PUBLISHED:
   INLINE std::string get_extension() const;
 
   // You can also use any of these to reassign pieces of the filename.
-  void set_fullpath(const std::string &s);
-  void set_dirname(const std::string &s);
-  void set_basename(const std::string &s);
-  void set_fullpath_wo_extension(const std::string &s);
-  void set_basename_wo_extension(const std::string &s);
-  void set_extension(const std::string &s);
+  void set_fullpath(std::string_view s);
+  void set_dirname(std::string_view s);
+  void set_basename(std::string_view s);
+  void set_fullpath_wo_extension(std::string_view s);
+  void set_basename_wo_extension(std::string_view s);
+  void set_extension(std::string_view s);
 
   // Setting these flags appropriately is helpful when opening or searching
   // for a file; it helps the Filename resolve OS-specific conventions (for

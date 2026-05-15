@@ -37,8 +37,8 @@ public:
   void append_text(PyObject *text);
 
   static PyObject *encode_wchar(char32_t ch, TextEncoder::Encoding encoding);
-  INLINE PyObject *encode_wtext(const std::wstring &wtext) const;
-  static PyObject *encode_wtext(const std::wstring &wtext, TextEncoder::Encoding encoding);
+  INLINE PyObject *encode_wtext(std::wstring_view wtext) const;
+  static PyObject *encode_wtext(std::wstring_view wtext, TextEncoder::Encoding encoding);
   INLINE PyObject *decode_text(PyObject *text) const;
   static PyObject *decode_text(PyObject *text, TextEncoder::Encoding encoding);
 };

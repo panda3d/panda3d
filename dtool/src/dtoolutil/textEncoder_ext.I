@@ -16,7 +16,7 @@
  * current encoding.
  */
 INLINE PyObject *Extension<TextEncoder>::
-encode_wtext(const std::wstring &wtext) const {
+encode_wtext(std::wstring_view wtext) const {
   return encode_wtext(wtext, _this->get_encoding());
 }
 
