@@ -36,13 +36,13 @@
  */
 class EXPCL_PANDA_PUTIL UpdateSeq {
 private:
-  INLINE UpdateSeq(unsigned int seq);
+  constexpr UpdateSeq(unsigned int seq);
 
 PUBLISHED:
-  INLINE UpdateSeq();
-  INLINE static UpdateSeq initial() { return UpdateSeq(SC_initial); }
-  INLINE static UpdateSeq old() { return UpdateSeq(SC_old); }
-  INLINE static UpdateSeq fresh() { return UpdateSeq(SC_fresh); }
+  constexpr UpdateSeq();
+  constexpr static UpdateSeq initial() { return UpdateSeq(SC_initial); }
+  constexpr static UpdateSeq old() { return UpdateSeq(SC_old); }
+  constexpr static UpdateSeq fresh() { return UpdateSeq(SC_fresh); }
 
   INLINE UpdateSeq(const UpdateSeq &copy);
   INLINE UpdateSeq(const UpdateSeq &&from) noexcept;
