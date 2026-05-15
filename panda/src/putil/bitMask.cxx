@@ -20,7 +20,9 @@ template class BitMask<uint64_t, 64>;
 #if !defined(CPPPARSER) && !defined(__APPLE__)
 #include <type_traits>
 
+#if __cplusplus < 201703L
 static_assert(std::is_literal_type<BitMask16>::value, "BitMask16 is not a literal type");
 static_assert(std::is_literal_type<BitMask32>::value, "BitMask32 is not a literal type");
 static_assert(std::is_literal_type<BitMask64>::value, "BitMask64 is not a literal type");
+#endif
 #endif
