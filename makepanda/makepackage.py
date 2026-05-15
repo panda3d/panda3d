@@ -664,7 +664,7 @@ def MakeInstallerOSX(version, python_versions=[], installdir=None, **kwargs):
     dist.write('<installer-script minSpecVersion="1.000000" authoringTool="com.apple.PackageMaker" authoringToolVersion="3.0.3" authoringToolBuild="174">\n')
     dist.write('    <title>Panda3D SDK %s</title>\n' % (version))
     dist.write('    <allowed-os-versions>\n')
-    dist.write('        <os-version min="10.9"/>\n')
+    dist.write('        <os-version min="10.13"/>\n')
     dist.write('    </allowed-os-versions>\n')
     dist.write('    <options customize="always" allow-external-scripts="no" rootVolumeOnly="false" hostArchitectures="x86_64"/>\n')
     dist.write('    <license language="en" mime-type="text/plain">%s</license>\n' % ReadFile("doc/LICENSE"))

@@ -27,7 +27,7 @@ if(APPLE)
   # Needed for enable_language(OBJCXX)
   cmake_minimum_required(VERSION 3.16)
 
-  set(CMAKE_OSX_DEPLOYMENT_TARGET "10.9" CACHE STRING "Minimum macOS version to target")
+  set(CMAKE_OSX_DEPLOYMENT_TARGET "10.13" CACHE STRING "Minimum macOS version to target")
   set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++")
 
   if(CMAKE_VERSION VERSION_LESS "3.19" AND NOT CMAKE_OSX_SYSROOT)

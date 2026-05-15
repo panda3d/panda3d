@@ -2478,7 +2478,7 @@ def SdkLocateMacOSX(archs = []):
     sdk_versions = []
     if 'arm64' not in archs:
         # Prefer pre-10.14 for now so that we can keep building FMOD.
-        sdk_versions += ["10.13", "10.12"]
+        sdk_versions += ["10.13"]
 
     sdk_versions += ["15.5", "15.4", "15.2", "15.1", "15.0", "14.5", "14.4", "14.2", "14.0", "13.3", "13.1", "13.0", "12.3", "11.3", "11.1", "11.0"]
 

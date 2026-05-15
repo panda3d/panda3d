@@ -358,7 +358,7 @@ if GetHost() == "darwin":
     if tuple(OSX_ARCHS) == ('arm64',):
         os.environ["MACOSX_DEPLOYMENT_TARGET"] = "11.0"
     else:
-        os.environ["MACOSX_DEPLOYMENT_TARGET"] = "10.9"
+        os.environ["MACOSX_DEPLOYMENT_TARGET"] = "10.13"
 
 ########################################################################
 ##
@@ -421,10 +421,8 @@ elif target == 'darwin':
 
     if arch_tag == 'arm64':
         PLATFORM = 'macosx-11.0-' + arch_tag
-    elif sys.version_info >= (3, 13):
-        PLATFORM = 'macosx-10.13-' + arch_tag
     else:
-        PLATFORM = 'macosx-10.9-' + arch_tag
+        PLATFORM = 'macosx-10.13-' + arch_tag
 
 elif target == 'linux' and (os.path.isfile("/lib/libc-2.5.so") or os.path.isfile("/lib64/libc-2.5.so")) and os.path.isdir("/opt/python"):
     # This is manylinux1.  A bit of a sloppy check, though.
@@ -817,7 +815,7 @@ if (COMPILER=="GCC"):
              not os.path.isfile(SDK.get("MACOSX", "") + '/usr/lib/libstdc++.6.0.9.dylib'):
             # Also, we can't target FMOD Ex on 10.14 and above
             if not PkgSkip("FMODEX"):
-                Warn("thirdparty package fmodex requires one of MacOSX 10.9-10.13 SDK, excluding from build")
+                Warn("thirdparty package fmodex requires macOS 10.13 SDK, excluding from build")
             PkgDisable("FMODEX")
 
     #if not PkgSkip("PYTHON"):
@@ -1345,7 +1343,7 @@ def CompileCxx(obj,src,opts):
             if tuple(OSX_ARCHS) == ('arm64',):
                 cmd += " -mmacosx-version-min=11.0"
             else:
-                cmd += " -mmacosx-version-min=10.9"
+                cmd += " -mmacosx-version-min=10.13"
 
             # Use libc++ to enable C++11 features.
             cmd += " -stdlib=libc++"
@@ -1884,10 +1882,8 @@ def CompileLink(dll, obj, opts):
 
             if tuple(OSX_ARCHS) == ('arm64',):
                 cmd += " -mmacosx-version-min=11.0"
-            elif sys.version_info >= (3, 13) and 'PYTHON' in opts:
-                cmd += " -mmacosx-version-min=10.13"
             else:
-                cmd += " -mmacosx-version-min=10.9"
+                cmd += " -mmacosx-version-min=10.13"
 
             # Use libc++ to enable C++11 features.
             cmd += " -stdlib=libc++"
