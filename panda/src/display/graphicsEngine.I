@@ -208,7 +208,7 @@ run_on_thread(Callable &&callable) -> decltype(callable()) {
       new (data->_return_data) ReturnType(std::move(*(Callable *)data->_callback_data)());
     }, &callable, storage);
 
-    return *(ReturnType *)storage;
+    return *std::launder(reinterpret_cast<ReturnType *>(storage));
   }
 }
 #endif  // CPPPARSER

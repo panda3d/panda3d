@@ -37,11 +37,11 @@ public:
   }
 
   operator T *() {
-    return (T *)_storage;
+    return std::launder(reinterpret_cast<T *>(_storage));
   }
 
   T *operator ->() {
-    return (T *)_storage;
+    return std::launder(reinterpret_cast<T *>(_storage));
   }
 
 private:
