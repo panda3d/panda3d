@@ -367,7 +367,7 @@ add_subfile(const std::string &subfile_name, std::istream *subfile_data,
 
   std::string name = standardize_subfile_name(subfile_name);
   if (!name.empty()) {
-    Subfile *subfile = new Subfile(subfile_name, compression_level, data_alignment);
+    Subfile *subfile = new Subfile(name, compression_level, data_alignment);
 
     // Write it straight away, overwriting the index at the end of the file.
     // This index will be rewritten at the next call to flush() or close().
