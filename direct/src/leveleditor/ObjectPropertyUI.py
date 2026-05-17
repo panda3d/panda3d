@@ -24,6 +24,13 @@ Key = PyEmbeddedImage(
     "EMaYtpbOXlu01vf5Hz/wDRuDdIDl5WtQAAAAAElFTkSuQmCC")
 #----------------------------------------------------------------------
 
+_KEY_BITMAP = None
+def get_key_bitmap():
+    global _KEY_BITMAP
+    if _KEY_BITMAP is None:
+        _KEY_BITMAP = Key.GetBitmap()
+    return _KEY_BITMAP
+
 
 class AnimFileDrop(wx.FileDropTarget):
     def __init__(self, editor):
@@ -71,7 +78,7 @@ class ObjectPropUI(wx.Panel):
         self.label = wx.StaticText(self.labelPane, label=label)
         self.labelSizer = wx.BoxSizer(wx.HORIZONTAL)
         self.labelSizer.Add(self.label)
-        bmpKey = Key.GetBitmap()
+        bmpKey = get_key_bitmap()
         self.setKeyButton = wx.BitmapButton(self.labelPane, -1, bmpKey, size = (15,15),style = wx.BU_AUTODRAW)
         self.labelSizer.Add(self.setKeyButton)
         self.labelPane.SetSizer(self.labelSizer)
@@ -123,7 +130,8 @@ class ObjectPropUI(wx.Panel):
             evt.Skip()
 
     def setValue(self, value):
-        self.ui.SetValue(value)
+        if not self.ui or not self.ui.IsBeingDeleted():
+            self.ui.SetValue(int(round(value)))
 
     def getValue(self):
         return self.ui.GetValue()
@@ -140,8 +148,9 @@ class ObjectPropUIEntry(ObjectPropUI):
 
     def __init__(self, parent, label):
         ObjectPropUI.__init__(self, parent, label)
-        self.ui = wx.TextCtrl(self.uiPane, -1)
+        self.ui = wx.TextCtrl(self.uiPane, -1, style=wx.TE_PROCESS_ENTER)
         self.eventType = wx.EVT_TEXT_ENTER
+
         self.Layout()
 
     def setValue(self, value):
@@ -335,9 +344,13 @@ class ObjectPropertyUI(ScrolledPanel):
         sizer = self.GetSizer()
         if sizer is not None:
             self.lastPropTab = self.nb.GetCurrentPage().GetName()
-            sizer.Remove(self.propPane)
+            item = sizer.GetItem(self.propPane)
+            if item:
+                sizer.Detach(self.propPane)
+
             self.propPane.Destroy()
             self.SetSizer(None)
+
         self.Layout()
         self.SetupScrolling(self, scroll_y=True, rate_y=20)
 

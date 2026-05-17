@@ -33,13 +33,13 @@ class PandaTextDropTarget(wx.TextDropTarget):
         # create new object
         parentNPRef = [None]
         if not self.editor.propMeetsReq(text, parentNPRef):
-            return
+            return False
         action = ActionAddNewObj(self.editor, text, parent=parentNPRef[0])
         self.editor.actionMgr.push(action)
         newobj = action()
         print(newobj)
         if newobj is None:
-            return
+            return False
 
         # change window coordinate to mouse coordinate
         mx = 2 * (x/float(self.view.ClientSize.GetWidth()) - 0.5)
@@ -89,7 +89,7 @@ class PandaTextDropTarget(wx.TextDropTarget):
             np = NodePath('temp')
             np.setPos(self.view.camera, hitPt)
 
-            if ShowBaseGlobal.direct.manipulationControl.fGridSnap:
+            if base.direct.manipulationControl.fGridSnap:
                 snappedPos = self.view.grid.computeSnapPoint(np.getPos())
                 np.setPos(snappedPos)
 
@@ -101,10 +101,12 @@ class PandaTextDropTarget(wx.TextDropTarget):
             obj = self.editor.objectMgr.findObjectByNodePath(newobj)
             action2 = ActionTransformObj(self.editor, obj[OG.OBJ_UID], Mat4(np.getMat()))
             self.editor.actionMgr.push(action2)
-            np.remove()
+            np.remove_node()
             action2()
         iRay.collisionNodePath.removeNode()
         del iRay
+        return True
+
 
 
 ID_NEW = 101
@@ -251,13 +253,13 @@ class LevelEditorUIBase(WxPandaShell):
         WxPandaShell.createMenu(self)
 
     def onGraphEditor(self, e):
-        if ShowBaseGlobal.direct.selected.last is None:
+        if base.direct.selected.last is None:
             dlg = wx.MessageDialog(None, 'Please select a object first.', 'NOTICE', wx.OK)
             dlg.ShowModal()
             dlg.Destroy()
             self.graphEditorMenuItem.Check(False)
         else:
-            currentObj = self.editor.objectMgr.findObjectByNodePath(ShowBaseGlobal.direct.selected.last)
+            currentObj = self.editor.objectMgr.findObjectByNodePath(base.direct.selected.last)
             self.graphEditorUI = GraphEditorUI(self, self.editor, currentObj)
             self.graphEditorUI.Show()
             self.graphEditorMenuItem.Check(True)
@@ -299,7 +301,7 @@ class LevelEditorUIBase(WxPandaShell):
                     degreeUI = CurveDegreeUI(self, -1, 'Curve Degree')
                     degreeUI.ShowModal()
                     degreeUI.Destroy()
-                    ShowBaseGlobal.direct.manipulationControl.disableManipulation()
+                    base.direct.manipulationControl.disableManipulation()
                     self.editCurveMenuItem.Check(False)
 
     def onEditCurve(self, e):
@@ -314,15 +316,15 @@ class LevelEditorUIBase(WxPandaShell):
                 self.createCurveMenuItem.Check(False)
                 self.onEditCurve(None)
             else:
-                if ShowBaseGlobal.direct.selected.last is None:
+                if base.direct.selected.last is None:
                     dlg = wx.MessageDialog(None, 'Please select a curve first.', 'NOTICE', wx.OK)
                     dlg.ShowModal()
                     dlg.Destroy()
                     self.editCurveMenuItem.Check(False)
-                if ShowBaseGlobal.direct.selected.last is not None:
-                    ShowBaseGlobal.direct.manipulationControl.enableManipulation()
+                if base.direct.selected.last is not None:
+                    base.direct.manipulationControl.enableManipulation()
                     self.createCurveMenuItem.Check(False)
-                    self.curveObj = self.editor.objectMgr.findObjectByNodePath(ShowBaseGlobal.direct.selected.last)
+                    self.curveObj = self.editor.objectMgr.findObjectByNodePath(base.direct.selected.last)
                     if self.curveObj[OG.OBJ_DEF].name == '__Curve__':
                         self.editor.mode = self.editor.EDIT_CURVE_MODE
                         self.editor.updateStatusReadout('Please press ENTER to end the curve editing.')
@@ -340,8 +342,8 @@ class LevelEditorUIBase(WxPandaShell):
 
     def updateMenu(self):
         hotKeyDict = {}
-        for hotKey in ShowBaseGlobal.direct.hotKeyMap.keys():
-            desc = ShowBaseGlobal.direct.hotKeyMap[hotKey]
+        for hotKey in base.direct.hotKeyMap.keys():
+            desc = base.direct.hotKeyMap[hotKey]
             hotKeyDict[desc[1]] = hotKey
 
         for id in self.MENU_TEXTS.keys():
@@ -350,7 +352,11 @@ class LevelEditorUIBase(WxPandaShell):
                 menuItem = self.menuBar.FindItemById(id)
                 hotKey = hotKeyDict.get(desc[1])
                 if hotKey:
-                    menuItem.SetText(desc[0] + "\t%s"%hotKey)
+                    label = desc[0] + "\t%s"%hotKey
+                    if hasattr(menuItem, 'SetItemLabel'):
+                        menuItem.SetItemLabel(label)
+                    else:
+                        menuItem.SetText(label)
 
     def createInterface(self):
         WxPandaShell.createInterface(self)
@@ -402,16 +408,16 @@ class LevelEditorUIBase(WxPandaShell):
         else:
             mpos = evt.GetPosition()
 
-        ShowBaseGlobal.direct.fMouse3 = 0
+        base.direct.fMouse3 = 0
         self.PopupMenu(self.contextMenu, mpos)
 
     def onKeyDownEvent(self, evt):
         if evt.GetKeyCode() == wx.WXK_ALT:
-            ShowBaseGlobal.direct.fAlt = 1
+            base.direct.fAlt = 1
         elif evt.GetKeyCode() == wx.WXK_CONTROL:
-            ShowBaseGlobal.direct.fControl = 1
+            base.direct.fControl = 1
         elif evt.GetKeyCode() == wx.WXK_SHIFT:
-            ShowBaseGlobal.direct.fShift = 1
+            base.direct.fShift = 1
         elif evt.GetKeyCode() == wx.WXK_UP:
             messenger.send('arrow_up')
         elif evt.GetKeyCode() == wx.WXK_DOWN:
@@ -429,11 +435,11 @@ class LevelEditorUIBase(WxPandaShell):
 
     def onKeyUpEvent(self, evt):
         if evt.GetKeyCode() == wx.WXK_ALT:
-            ShowBaseGlobal.direct.fAlt = 0
+            base.direct.fAlt = 0
         elif evt.GetKeyCode() == wx.WXK_CONTROL:
-            ShowBaseGlobal.direct.fControl = 0
+            base.direct.fControl = 0
         elif evt.GetKeyCode() == wx.WXK_SHIFT:
-            ShowBaseGlobal.direct.fShift = 0
+            base.direct.fShift = 0
         elif evt.GetKeyCode() == wx.WXK_UP:
             messenger.send('arrow_up-up')
         elif evt.GetKeyCode() == wx.WXK_DOWN:
@@ -474,8 +480,8 @@ class LevelEditorUIBase(WxPandaShell):
                 input = 'control-%s'%chr(evt.GetKeyCode())
             elif evt.GetKeyCode() < 256:
                 input = chr(evt.GetKeyCode())
-        if input in ShowBaseGlobal.direct.hotKeyMap.keys():
-            keyDesc = ShowBaseGlobal.direct.hotKeyMap[input]
+        if input in base.direct.hotKeyMap.keys():
+            keyDesc = base.direct.hotKeyMap[input]
             messenger.send(keyDesc[1])
 
     def reset(self):
@@ -534,12 +540,12 @@ class LevelEditorUIBase(WxPandaShell):
 
     def toggleGridSnap(self, evt):
         if self.gridSnapMenuItem.IsChecked():
-            ShowBaseGlobal.direct.manipulationControl.fGridSnap = 1
+            base.direct.manipulationControl.fGridSnap = 1
             for grid in [self.perspView.grid, self.topView.grid, self.frontView.grid, self.leftView.grid]:
                 grid.fXyzSnap = 1
 
         else:
-            ShowBaseGlobal.direct.manipulationControl.fGridSnap = 0
+            base.direct.manipulationControl.fGridSnap = 0
             for grid in [self.perspView.grid, self.topView.grid, self.frontView.grid, self.leftView.grid]:
                 grid.fXyzSnap = 0
 
@@ -580,7 +586,7 @@ class LevelEditorUIBase(WxPandaShell):
 
     def buildContextMenu(self, nodePath):
         for menuItem in self.contextMenu.GetMenuItems():
-            self.contextMenu.RemoveItem(menuItem)
+            self.contextMenu.Remove(menuItem)
 
         self.contextMenu.addItem('Replace This', call=lambda\
                                  p0=None, p1=False:self.replaceObject(p0, p1))
@@ -590,7 +596,7 @@ class LevelEditorUIBase(WxPandaShell):
         self.contextMenu.AppendSeparator()
 
     def replaceObject(self, evt, all=False):
-        currObj = self.editor.objectMgr.findObjectByNodePath(ShowBaseGlobal.direct.selected.last)
+        currObj = self.editor.objectMgr.findObjectByNodePath(base.direct.selected.last)
         if currObj is None:
             print('No valid object is selected for replacement')
             return
@@ -637,13 +643,13 @@ class GridSizeUI(wx.Dialog):
         vbox.Add(okButton, 1, wx.ALIGN_CENTER | wx.TOP | wx.BOTTOM, 5)
 
         self.SetSizer(vbox)
-        ShowBaseGlobal.base.le.ui.bindKeyEvents(False)
+        base.le.ui.bindKeyEvents(False)
 
     def onApply(self, evt):
         newSize = self.gridSizeSlider.GetValue()
         newSpacing = self.gridSpacingSlider.GetValue()
         self.parent.updateGrids(newSize, newSpacing)
-        ShowBaseGlobal.base.le.ui.bindKeyEvents(True)
+        base.le.ui.bindKeyEvents(True)
         self.Destroy()
 
 
@@ -659,7 +665,7 @@ class ViewportMenu(wx.Menu):
         if parent is None:
             parent = self
         item = wx.MenuItem(parent, id, name)
-        parent.AppendItem(item)
+        parent.Append(item)
         if call is not None:
             self.Bind(wx.EVT_MENU, call, item)
 
@@ -684,7 +690,7 @@ class CurveDegreeUI(wx.Dialog):
         degreeList = ['2','3','4']
 
         self.degree = wx.RadioBox(panel, -1, 'Curve Degree', (5, 5), wx.DefaultSize, degreeList, 3, wx.RA_SPECIFY_COLS)
-        self.degree.SetToolTipString("Select the degree of the curve.")
+        self.degree.SetToolTip("Select the degree of the curve.")
         self.degree.SetSelection(1)
 
         okButton = wx.Button(self, -1, 'Apply', size=(70, 20))

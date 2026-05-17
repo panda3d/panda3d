@@ -19,6 +19,7 @@ class LevelEditor(LevelEditorBase):
     """ Class for Panda3D LevelEditor """
     def __init__(self):
         LevelEditorBase.__init__(self)
+        base.le = self  # type: ignore[attr-defined]
 
         # define your own config file similar to this
         self.settingsFile = os.path.dirname(__file__) + '/LevelEditor.cfg'
