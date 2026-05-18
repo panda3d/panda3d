@@ -65,29 +65,28 @@ PUBLISHED:
   INLINE void set_record_timestamp(bool record_timestamp);
   INLINE bool get_record_timestamp() const;
 
-  std::string add_subfile(const std::string &subfile_name, const Filename &filename,
+  std::string add_subfile(std::string_view subfile_name, const Filename &filename,
                           int compression_level, size_t data_alignment=0);
-  std::string add_subfile(const std::string &subfile_name, std::istream *subfile_data,
+  std::string add_subfile(std::string_view subfile_name, std::istream *subfile_data,
                           int compression_level, size_t data_alignment=0);
-  std::string update_subfile(const std::string &subfile_name, const Filename &filename,
+  std::string update_subfile(std::string_view subfile_name, const Filename &filename,
                              int compression_level, size_t data_alignment=0);
 
 #ifdef HAVE_OPENSSL
   bool add_jar_signature(const Filename &certificate, const Filename &pkey,
                          const std::string &password = "",
-                         const std::string &alias = "cert");
+                         std::string_view alias = "cert");
 #endif
 
   BLOCKING bool flush();
   BLOCKING bool repack();
 
   int get_num_subfiles() const;
-  int find_subfile(const std::string &subfile_name) const;
-  bool has_directory(const std::string &subfile_name) const;
-  bool scan_directory(vector_string &contents,
-                      const std::string &subfile_name) const;
+  int find_subfile(std::string_view subfile_name) const;
+  bool has_directory(std::string subfile_name) const;
+  bool scan_directory(vector_string &contents, std::string subfile_name) const;
   void remove_subfile(int index);
-  INLINE bool remove_subfile(const std::string &subfile_name);
+  INLINE bool remove_subfile(std::string_view subfile_name);
   const std::string &get_subfile_name(int index) const;
   MAKE_SEQ(get_subfile_names, get_num_subfiles, get_subfile_name);
   size_t get_subfile_length(int index) const;
@@ -108,12 +107,12 @@ PUBLISHED:
   void output(std::ostream &out) const;
   void ls(std::ostream &out = std::cout) const;
 
-  void set_comment(const std::string &comment);
+  void set_comment(std::string comment);
   INLINE const std::string &get_comment() const;
 
 public:
 #ifdef HAVE_OPENSSL
-  bool add_jar_signature(X509 *cert, EVP_PKEY *pkey, const std::string &alias);
+  bool add_jar_signature(X509 *cert, EVP_PKEY *pkey, std::string_view alias);
 #endif  // HAVE_OPENSSL
 
   bool read_subfile(int index, std::string &result);
@@ -152,7 +151,7 @@ private:
   class Subfile {
   public:
     Subfile() = default;
-    Subfile(const std::string &name, int compression_level,
+    Subfile(std::string name, int compression_level,
             size_t data_alignment=0);
 
     INLINE bool operator < (const Subfile &other) const;
@@ -186,7 +185,7 @@ private:
 
   void add_new_subfile(Subfile *subfile, int compression_level);
   std::istream *open_read_subfile(Subfile *subfile);
-  std::string standardize_subfile_name(const std::string &subfile_name) const;
+  std::string standardize_subfile_name(std::string_view subfile_name) const;
 
   void clear_subfiles();
   bool read_index();

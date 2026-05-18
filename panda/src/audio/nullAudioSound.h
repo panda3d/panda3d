@@ -57,7 +57,7 @@ public:
   void set_active(bool);
   bool get_active() const;
 
-  void set_finished_event(const std::string& event);
+  void set_finished_event(std::string event);
   const std::string& get_finished_event() const;
 
   const std::string& get_name() const;

@@ -77,7 +77,7 @@ PUBLISHED:
   MAKE_PROPERTY(size, get_size);
 
   INLINE std::string get_comment() const;
-  INLINE void set_comment(const std::string &comment);
+  INLINE void set_comment(std::string comment);
   MAKE_PROPERTY(comment, get_comment, set_comment);
 
   INLINE bool has_type() const;
@@ -87,7 +87,7 @@ PUBLISHED:
 
   BLOCKING bool read_header(const Filename &filename, PNMFileType *type = nullptr,
                             bool report_unknown_type = true);
-  BLOCKING bool read_header(std::istream &data, const std::string &filename = std::string(),
+  BLOCKING bool read_header(std::istream &data, std::string_view filename = std::string_view(),
                             PNMFileType *type = nullptr, bool report_unknown_type = true);
 
   PNMReader *make_reader(const Filename &filename,

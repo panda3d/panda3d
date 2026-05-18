@@ -27,14 +27,14 @@ using std::string;
  *
  */
 QtessInputEntry::
-QtessInputEntry(const string &name) {
+QtessInputEntry(std::string name) {
   _type = T_undefined;
   _num_patches = 0.0;
   _auto_place = QtessGlobals::_auto_place;
   _auto_distribute = QtessGlobals::_auto_distribute;
   _curvature_ratio = QtessGlobals::_curvature_ratio;
   if (!name.empty()) {
-    add_node_name(name);
+    add_node_name(std::move(name));
   }
 }
 

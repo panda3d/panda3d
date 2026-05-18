@@ -38,7 +38,7 @@ class HashGenerator;
 class EXPCL_DIRECT_DCPARSER DCField : public DCPackerInterface, public DCKeywordList {
 public:
   DCField();
-  DCField(const std::string &name, DCClass *dclass);
+  DCField(std::string name, DCClass *dclass);
   virtual ~DCField();
 
 PUBLISHED:
@@ -55,7 +55,7 @@ PUBLISHED:
   virtual const DCParameter *as_parameter() const;
 
   std::string format_data(const vector_uchar &packed_data, bool show_field_names = true);
-  vector_uchar parse_string(const std::string &formatted_string);
+  vector_uchar parse_string(std::string formatted_string);
 
   bool validate_ranges(const vector_uchar &packed_data) const;
 
@@ -94,7 +94,7 @@ public:
   virtual void write(std::ostream &out, bool brief, int indent_level) const=0;
   virtual void generate_hash(HashGenerator &hashgen) const;
   virtual bool pack_default_value(DCPackData &pack_data, bool &pack_error) const;
-  virtual void set_name(const std::string &name);
+  virtual void set_name(std::string name);
 
   INLINE void set_number(int number);
   INLINE void set_class(DCClass *dclass);

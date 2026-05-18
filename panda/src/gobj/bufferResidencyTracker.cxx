@@ -22,7 +22,7 @@ PStatCollector BufferResidencyTracker::_gmem_collector("Graphics memory");
  *
  */
 BufferResidencyTracker::
-BufferResidencyTracker(const std::string &pgo_name, const std::string &type_name) :
+BufferResidencyTracker(std::string_view pgo_name, std::string_view type_name) :
   _pgo_collector(_gmem_collector, pgo_name),
   _active_resident_collector(PStatCollector(_pgo_collector, "Active"), type_name),
   _active_nonresident_collector(PStatCollector(_pgo_collector, "Thrashing"), type_name),

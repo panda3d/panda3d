@@ -31,7 +31,7 @@
  */
 class EXPCL_DTOOL_PRC NotifyCategory : public MemoryBase, public ConfigFlags {
 private:
-  NotifyCategory(const std::string &fullname, const std::string &basename,
+  NotifyCategory(std::string fullname, std::string_view basename,
                  NotifyCategory *parent);
 
 PUBLISHED:

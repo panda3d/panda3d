@@ -60,7 +60,7 @@ class DisplayRegion;
  */
 class EXPCL_PANDA_TFORM MouseWatcher : public DataNode, public MouseWatcherBase {
 PUBLISHED:
-  explicit MouseWatcher(const std::string &name = "");
+  explicit MouseWatcher(std::string name = "");
   ~MouseWatcher();
 
   bool remove_region(MouseWatcherRegion *region);
@@ -86,25 +86,25 @@ PUBLISHED:
   INLINE bool is_button_down(ButtonHandle button) const;
   INLINE bool is_raw_button_down(ButtonHandle button) const;
 
-  INLINE void set_button_down_pattern(const std::string &pattern);
+  INLINE void set_button_down_pattern(std::string pattern);
   INLINE const std::string &get_button_down_pattern() const;
 
-  INLINE void set_button_up_pattern(const std::string &pattern);
+  INLINE void set_button_up_pattern(std::string pattern);
   INLINE const std::string &get_button_up_pattern() const;
 
-  INLINE void set_button_repeat_pattern(const std::string &pattern);
+  INLINE void set_button_repeat_pattern(std::string pattern);
   INLINE const std::string &get_button_repeat_pattern() const;
 
-  INLINE void set_enter_pattern(const std::string &pattern);
+  INLINE void set_enter_pattern(std::string pattern);
   INLINE const std::string &get_enter_pattern() const;
 
-  INLINE void set_leave_pattern(const std::string &pattern);
+  INLINE void set_leave_pattern(std::string pattern);
   INLINE const std::string &get_leave_pattern() const;
 
-  INLINE void set_within_pattern(const std::string &pattern);
+  INLINE void set_within_pattern(std::string pattern);
   INLINE const std::string &get_within_pattern() const;
 
-  INLINE void set_without_pattern(const std::string &pattern);
+  INLINE void set_without_pattern(std::string pattern);
   INLINE const std::string &get_without_pattern() const;
 
   INLINE void set_geometry(PandaNode *node);
@@ -135,7 +135,7 @@ PUBLISHED:
   INLINE double get_inactivity_timeout() const;
   INLINE void clear_inactivity_timeout();
 
-  INLINE void set_inactivity_timeout_event(const std::string &event);
+  INLINE void set_inactivity_timeout_event(std::string event);
   INLINE const std::string &get_inactivity_timeout_event() const;
 
   INLINE CPT(PointerEventList) get_trail_log() const;
@@ -172,7 +172,7 @@ protected:
   static bool has_region_in(const Regions &regions,
                             MouseWatcherRegion *region);
 
-  void throw_event_pattern(const std::string &pattern,
+  void throw_event_pattern(std::string_view pattern,
                            const MouseWatcherRegion *region,
                            const ButtonHandle &button);
 

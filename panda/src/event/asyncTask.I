@@ -176,9 +176,9 @@ get_priority() const {
  * returns S_inactive).
  */
 INLINE void AsyncTask::
-set_done_event(const std::string &done_event) {
+set_done_event(std::string done_event) {
   nassertv(_state == S_inactive);
-  _done_event = done_event;
+  _done_event = std::move(done_event);
 }
 
 /**

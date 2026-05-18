@@ -52,8 +52,8 @@ TypeHandle GeomNode::_type_handle;
  *
  */
 GeomNode::
-GeomNode(const std::string &name) :
-  PandaNode(name)
+GeomNode(std::string name) :
+  PandaNode(std::move(name))
 {
   _preserved = preserve_geom_nodes;
 

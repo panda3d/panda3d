@@ -545,8 +545,8 @@ reload_implicit_pages() {
  * declarations that are defined in previous pages.
  */
 ConfigPage *ConfigPageManager::
-make_explicit_page(const string &name) {
-  ConfigPage *page = new ConfigPage(name, false, _next_page_seq);
+make_explicit_page(std::string name) {
+  ConfigPage *page = new ConfigPage(std::move(name), false, _next_page_seq);
   ++_next_page_seq;
   _explicit_pages.push_back(page);
   _pages_sorted = false;

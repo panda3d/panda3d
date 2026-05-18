@@ -75,14 +75,14 @@ class FrameBufferProperties;
  */
 class glxGraphicsPipe : public x11GraphicsPipe {
 public:
-  glxGraphicsPipe(const std::string &display = std::string());
+  glxGraphicsPipe(std::string display = std::string());
   virtual ~glxGraphicsPipe() {};
 
   virtual std::string get_interface_name() const;
   static PT(GraphicsPipe) pipe_constructor();
 
 protected:
-  virtual PT(GraphicsOutput) make_output(const std::string &name,
+  virtual PT(GraphicsOutput) make_output(std::string_view name,
                                          const FrameBufferProperties &fb_prop,
                                          const WindowProperties &win_prop,
                                          int flags,

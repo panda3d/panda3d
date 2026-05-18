@@ -22,7 +22,7 @@ TypeHandle PGWaitBar::_type_handle;
  *
  */
 PGWaitBar::
-PGWaitBar(const std::string &name) : PGItem(name)
+PGWaitBar(std::string name) : PGItem(std::move(name))
 {
   set_cull_callback();
 

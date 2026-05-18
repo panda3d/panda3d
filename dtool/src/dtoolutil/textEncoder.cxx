@@ -65,7 +65,7 @@ TextEncoder::Encoding TextEncoder::_default_encoding = TextEncoder::E_utf8;
  */
 void TextEncoder::
 make_upper() {
-  get_wtext();
+  ensure_wtext();
   wstring::iterator si;
   for (si = _wtext.begin(); si != _wtext.end(); ++si) {
     (*si) = unicode_toupper(*si);
@@ -80,7 +80,7 @@ make_upper() {
  */
 void TextEncoder::
 make_lower() {
-  get_wtext();
+  ensure_wtext();
   wstring::iterator si;
   for (si = _wtext.begin(); si != _wtext.end(); ++si) {
     (*si) = unicode_tolower(*si);
@@ -104,7 +104,7 @@ make_lower() {
  */
 wstring TextEncoder::
 get_wtext_as_ascii() const {
-  get_wtext();
+  ensure_wtext();
   wstring result;
   wstring::const_iterator si;
   for (si = _wtext.begin(); si != _wtext.end(); ++si) {
@@ -133,7 +133,7 @@ get_wtext_as_ascii() const {
  */
 bool TextEncoder::
 is_wtext() const {
-  get_wtext();
+  ensure_wtext();
   wstring::const_iterator ti;
   for (ti = _wtext.begin(); ti != _wtext.end(); ++ti) {
     if (((*ti) & ~0x7f) != 0) {

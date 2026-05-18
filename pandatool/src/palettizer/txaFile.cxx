@@ -34,7 +34,7 @@ TxaFile() {
  * there is an error.
  */
 bool TxaFile::
-read(std::istream &in, const string &filename) {
+read(std::istream &in, std::string_view filename) {
   string line;
   int line_number = 1;
 

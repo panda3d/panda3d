@@ -41,7 +41,7 @@ class EXPCL_PANDA_PGRAPH CullBin : public TypedReferenceCount, public CullBinEnu
 protected:
   INLINE CullBin(const CullBin &copy);
 public:
-  INLINE CullBin(const std::string &name, BinType bin_type,
+  INLINE CullBin(std::string name, BinType bin_type,
                  GraphicsStateGuardianBase *gsg,
                  const PStatCollector &draw_region_pcollector);
   virtual ~CullBin();

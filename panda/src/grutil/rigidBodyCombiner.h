@@ -43,7 +43,7 @@ class NodePath;
  */
 class EXPCL_PANDA_GRUTIL RigidBodyCombiner : public PandaNode {
 PUBLISHED:
-  explicit RigidBodyCombiner(const std::string &name);
+  explicit RigidBodyCombiner(std::string name);
 protected:
   RigidBodyCombiner(const RigidBodyCombiner &copy);
   virtual PandaNode *make_copy() const;

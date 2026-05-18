@@ -316,7 +316,7 @@ close() {
  * or empty string on failure.
  */
 std::string ZipArchive::
-add_subfile(const std::string &subfile_name, const Filename &filename,
+add_subfile(std::string_view subfile_name, const Filename &filename,
             int compression_level, size_t data_alignment) {
   nassertr(is_write_valid(), std::string());
 
@@ -355,7 +355,7 @@ add_subfile(const std::string &subfile_name, const Filename &filename,
  * or empty string on failure.
  */
 std::string ZipArchive::
-add_subfile(const std::string &subfile_name, std::istream *subfile_data,
+add_subfile(std::string_view subfile_name, std::istream *subfile_data,
             int compression_level, size_t data_alignment) {
   nassertr(is_write_valid(), string());
 
@@ -405,7 +405,7 @@ add_subfile(const std::string &subfile_name, std::istream *subfile_data,
  * called, the text flag will be set on the subfile.
  */
 string ZipArchive::
-update_subfile(const std::string &subfile_name, const Filename &filename,
+update_subfile(std::string_view subfile_name, const Filename &filename,
                int compression_level, size_t data_alignment) {
   nassertr(is_write_valid(), string());
 
@@ -460,7 +460,7 @@ update_subfile(const std::string &subfile_name, const Filename &filename,
  */
 bool ZipArchive::
 add_jar_signature(const Filename &certificate, const Filename &pkey,
-                  const string &password, const string &alias) {
+                  const string &password, std::string_view alias) {
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
 
   // Read the certificate file from VFS.  First, read the complete file into
@@ -528,7 +528,7 @@ add_jar_signature(const Filename &certificate, const Filename &pkey,
  * The private key is expected to match the first certificate in the chain.
  */
 bool ZipArchive::
-add_jar_signature(X509 *cert, EVP_PKEY *pkey, const std::string &alias) {
+add_jar_signature(X509 *cert, EVP_PKEY *pkey, std::string_view alias) {
   nassertr(is_write_valid() && is_read_valid(), false);
   nassertr(cert != nullptr, false);
   nassertr(pkey != nullptr, false);
@@ -835,7 +835,7 @@ get_num_subfiles() const {
  * named subfile is not within the ZipArchive.
  */
 int ZipArchive::
-find_subfile(const std::string &subfile_name) const {
+find_subfile(std::string_view subfile_name) const {
   Subfile find_subfile;
   find_subfile._name = standardize_subfile_name(subfile_name);
   Subfiles::const_iterator fi;
@@ -853,8 +853,8 @@ find_subfile(const std::string &subfile_name) const {
  * least one file named "subfile_name/...".
  */
 bool ZipArchive::
-has_directory(const std::string &subfile_name) const {
-  string prefix = subfile_name;
+has_directory(std::string subfile_name) const {
+  string prefix = std::move(subfile_name);
   if (!prefix.empty()) {
     prefix += '/';
   }
@@ -885,8 +885,8 @@ has_directory(const std::string &subfile_name) const {
  * Returns true if successful, false otherwise.
  */
 bool ZipArchive::
-scan_directory(vector_string &contents, const std::string &subfile_name) const {
-  string prefix = subfile_name;
+scan_directory(vector_string &contents, std::string subfile_name) const {
+  string prefix = std::move(subfile_name);
   if (!prefix.empty()) {
     prefix += '/';
   }
@@ -1221,11 +1221,11 @@ ls(std::ostream &out) const {
  * This string may not be longer than 65535 characters.
  */
 void ZipArchive::
-set_comment(const std::string &comment) {
+set_comment(std::string comment) {
   nassertv(comment.size() <= 65535);
 
   if (_comment != comment) {
-    _comment = comment;
+    _comment = std::move(comment);
     _index_changed = true;
   }
 }
@@ -1401,8 +1401,8 @@ open_read_subfile(Subfile *subfile) {
  * Returns the standard form of the subfile name.
  */
 string ZipArchive::
-standardize_subfile_name(const std::string &subfile_name) const {
-  Filename name = subfile_name;
+standardize_subfile_name(std::string_view subfile_name) const {
+  Filename name(subfile_name);
   name.standardize();
   if (name.empty() || name == "/") {
     // Invalid empty name.
@@ -1669,14 +1669,14 @@ write_index(std::ostream &write, std::streampos &fpos) {
  * Creates a new subfile record.
  */
 ZipArchive::Subfile::
-Subfile(const std::string &name, int compression_level, size_t data_alignment) :
-  _name(name),
+Subfile(std::string name, int compression_level, size_t data_alignment) :
+  _name(std::move(name)),
   _timestamp(dos_epoch),
   _compression_method((compression_level > 0) ? CM_deflate : CM_store),
   _data_alignment(data_alignment)
 {
   // If the name contains any non-ASCII characters, we set the UTF-8 flag.
-  for (char c : name) {
+  for (char c : _name) {
     if (c & ~0x7f) {
       _flags |= SF_utf8_encoding;
       break;

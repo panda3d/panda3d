@@ -18,7 +18,6 @@
 #include "unicodeLatinMap.h"
 
 #include <ctype.h>
-#include <string_view>
 
 class StringDecoder;
 
@@ -75,7 +74,7 @@ PUBLISHED:
 #else
   INLINE std::string get_text() const;
   INLINE std::string get_text(Encoding encoding) const;
-  INLINE void append_text(const std::string &text);
+  INLINE void append_text(std::string_view text);
 #endif
   INLINE void append_unicode_char(char32_t character);
   INLINE size_t get_num_chars() const;
@@ -96,10 +95,10 @@ PUBLISHED:
   INLINE static int unicode_toupper(char32_t character);
   INLINE static int unicode_tolower(char32_t character);
 
-  INLINE static std::string upper(const std::string &source);
-  INLINE static std::string upper(const std::string &source, Encoding encoding);
-  INLINE static std::string lower(const std::string &source);
-  INLINE static std::string lower(const std::string &source, Encoding encoding);
+  INLINE static std::string upper(std::string_view source);
+  INLINE static std::string upper(std::string_view source, Encoding encoding);
+  INLINE static std::string lower(std::string_view source);
+  INLINE static std::string lower(std::string_view source, Encoding encoding);
 
   // Direct support for wide-character strings.  Now publishable with the new
   // wstring support in interrogate.
@@ -126,6 +125,9 @@ PUBLISHED:
   MAKE_PROPERTY(text, get_text, set_text);
 
 protected:
+  INLINE void ensure_text() const;
+  INLINE void ensure_wtext() const;
+
   virtual void text_changed();
 
 private:

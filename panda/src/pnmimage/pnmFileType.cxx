@@ -82,7 +82,7 @@ has_magic_number() const {
  * otherwise.
  */
 bool PNMFileType::
-matches_magic_number(const string &) const {
+matches_magic_number(std::string_view) const {
   return false;
 }
 
@@ -92,7 +92,7 @@ matches_magic_number(const string &) const {
  * returns NULL.
  */
 PNMReader *PNMFileType::
-make_reader(std::istream *, bool, const string &) {
+make_reader(std::istream *, bool, std::string_view) {
   return nullptr;
 }
 

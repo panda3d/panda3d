@@ -74,8 +74,8 @@ TypeHandle PandaNodePipelineReader::_type_handle;
  *
  */
 PandaNode::
-PandaNode(const string &name) :
-  Namable(name),
+PandaNode(std::string name) :
+  Namable(std::move(name)),
   _paths_lock("PandaNode::_paths_lock"),
   _prev_transform_valid(_reset_prev_transform_seq)
 {
@@ -1222,7 +1222,7 @@ copy_tags(PandaNode *other) {
  * of the associated tag keys.
  */
 void PandaNode::
-list_tags(ostream &out, const string &separator) const {
+list_tags(ostream &out, std::string_view separator) const {
   CDReader cdata(_cycler);
   for (size_t n = 0; n < cdata->_tag_data.size(); ++n) {
     if (n > 0) {

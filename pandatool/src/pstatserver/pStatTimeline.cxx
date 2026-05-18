@@ -776,7 +776,7 @@ draw_guide_bar(int x, GuideBarStyle style) {
  * given collector, for the indicated horizontal pixel range.
  */
 void PStatTimeline::
-draw_bar(int, int, int, int, const std::string &) {
+draw_bar(int, int, int, int, std::string_view) {
 }
 
 /**

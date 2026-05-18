@@ -75,7 +75,7 @@ register_type(LoaderFileType *type) {
  * register_type() when it initializes, thus making the extension loadable.
  */
 void LoaderFileTypeRegistry::
-register_deferred_type(const string &extension, const string &library) {
+register_deferred_type(std::string_view extension, std::string library) {
   string dcextension = downcase(extension);
 
   Extensions::const_iterator ei;
@@ -110,7 +110,7 @@ register_deferred_type(const string &extension, const string &library) {
     }
   }
 
-  _deferred_types[dcextension] = library;
+  _deferred_types[std::move(dcextension)] = std::move(library);
 }
 
 /**
@@ -170,7 +170,7 @@ get_type(int n) const {
  * leading dot).  Returns NULL if the extension matches no known file types.
  */
 LoaderFileType *LoaderFileTypeRegistry::
-get_type_from_extension(const string &extension) {
+get_type_from_extension(std::string_view extension) {
   string dcextension = downcase(extension);
 
   Extensions::const_iterator ei;
@@ -278,8 +278,14 @@ get_global_ptr() {
  * Records a filename extension recognized by a loader file type.
  */
 void LoaderFileTypeRegistry::
-record_extension(const string &extension, LoaderFileType *type) {
+record_extension(std::string_view extension, LoaderFileType *type) {
   string dcextension = downcase(extension);
+
+  DeferredTypes::iterator di = _deferred_types.find(dcextension);
+  if (di != _deferred_types.end()) {
+    _deferred_types.erase(di);
+  }
+
   Extensions::const_iterator ei;
   ei = _extensions.find(dcextension);
   if (ei != _extensions.end()) {
@@ -289,8 +295,6 @@ record_extension(const string &extension, LoaderFileType *type) {
         << dcextension << "\n";
     }
   } else {
-    _extensions.insert(Extensions::value_type(dcextension, type));
+    _extensions.insert(Extensions::value_type(std::move(dcextension), type));
   }
-
-  _deferred_types.erase(dcextension);
 }

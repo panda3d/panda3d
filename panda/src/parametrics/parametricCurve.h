@@ -116,8 +116,8 @@ protected:
   void invalidate(PN_stdfloat t1, PN_stdfloat t2);
   void invalidate_all();
 
-  virtual bool format_egg(std::ostream &out, const std::string &name,
-                          const std::string &curve_type, int indent_level) const;
+  virtual bool format_egg(std::ostream &out, std::string_view name,
+                          std::string_view curve_type, int indent_level) const;
 
 private:
   PN_stdfloat r_calc_length(PN_stdfloat t1, PN_stdfloat t2,

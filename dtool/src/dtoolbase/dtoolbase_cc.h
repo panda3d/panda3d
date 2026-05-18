@@ -35,6 +35,7 @@
 #include <iostream>
 #include <iomanip>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <algorithm>
 
@@ -62,6 +63,7 @@ typedef int ios_seekdir;
 #include <sstream>
 #include <new>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <algorithm>
 

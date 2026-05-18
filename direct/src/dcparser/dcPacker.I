@@ -206,7 +206,7 @@ pack_uint64(uint64_t value) {
  * Packs the indicated numeric or string value into the stream.
  */
 INLINE void DCPacker::
-pack_string(const std::string &value) {
+pack_string(std::string_view value) {
   nassertv(_mode == M_pack || _mode == M_repack);
   if (_current_field == nullptr) {
     _pack_error = true;
@@ -782,7 +782,7 @@ raw_pack_float64(double value) {
  * Packs the data into the buffer between packing sessions.
  */
 INLINE void DCPacker::
-raw_pack_string(const std::string &value) {
+raw_pack_string(std::string_view value) {
   nassertv(_mode == M_idle);
   DCPackerInterface::do_pack_uint16(_pack_data.get_write_pointer(2), value.length());
   _pack_data.append_data(value.data(), value.length());

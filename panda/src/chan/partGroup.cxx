@@ -34,8 +34,8 @@ TypeHandle PartGroup::_type_handle;
  * to delete it subsequently is to delete the entire hierarchy.
  */
 PartGroup::
-PartGroup(PartGroup *parent, const std::string &name) :
-  Namable(name),
+PartGroup(PartGroup *parent, std::string name) :
+  Namable(std::move(name)),
   _children(get_class_type())
 {
   nassertv(parent != nullptr);
@@ -115,10 +115,8 @@ get_child(int n) const {
  * find_child().
  */
 PartGroup *PartGroup::
-get_child_named(const std::string &name) const {
-  Children::const_iterator ci;
-  for (ci = _children.begin(); ci != _children.end(); ++ci) {
-    PartGroup *child = (*ci);
+get_child_named(std::string_view name) const {
+  for (PartGroup *child : _children) {
     if (child->get_name() == name) {
       return child;
     }
@@ -133,10 +131,8 @@ get_child_named(const std::string &name) const {
  * this PartGroup; see also get_child_named().
  */
 PartGroup *PartGroup::
-find_child(const std::string &name) const {
-  Children::const_iterator ci;
-  for (ci = _children.begin(); ci != _children.end(); ++ci) {
-    PartGroup *child = (*ci);
+find_child(std::string_view name) const {
+  for (PartGroup *child : _children) {
     if (child->get_name() == name) {
       return child;
     }

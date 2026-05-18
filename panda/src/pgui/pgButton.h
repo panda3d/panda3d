@@ -28,7 +28,7 @@
  */
 class EXPCL_PANDA_PGUI PGButton : public PGItem {
 PUBLISHED:
-  explicit PGButton(const std::string &name);
+  explicit PGButton(std::string name);
   virtual ~PGButton();
 
 protected:
@@ -55,7 +55,7 @@ PUBLISHED:
     S_inactive
   };
 
-  void setup(const std::string &label, PN_stdfloat bevel = 0.1f);
+  void setup(std::string_view label, PN_stdfloat bevel = 0.1f);
   INLINE void setup(const NodePath &ready);
   INLINE void setup(const NodePath &ready, const NodePath &depressed);
   INLINE void setup(const NodePath &ready, const NodePath &depressed,

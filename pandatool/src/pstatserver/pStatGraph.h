@@ -57,7 +57,7 @@ public:
 
   class GuideBar {
   public:
-    GuideBar(double height, const std::string &label, GuideBarStyle style);
+    GuideBar(double height, std::string label, GuideBarStyle style);
     GuideBar(const GuideBar &copy);
 
     double _height;
@@ -84,12 +84,12 @@ public:
 
   INLINE void set_guide_bar_units(int unit_mask);
   INLINE int get_guide_bar_units() const;
-  INLINE void set_guide_bar_unit_name(const std::string &unit_name);
+  INLINE void set_guide_bar_unit_name(std::string unit_name);
   INLINE const std::string &get_guide_bar_unit_name() const;
 
   static std::string format_number(double value);
   static std::string format_number(double value, int guide_bar_units,
-                              const std::string &unit_name = std::string());
+                              std::string_view unit_name = std::string_view());
 
   virtual void write_datagram(Datagram &dg) const;
   virtual void read_datagram(DatagramIterator &scan);

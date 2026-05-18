@@ -24,8 +24,8 @@ TypeHandle MouseAndKeyboard::_type_handle;
  *
  */
 MouseAndKeyboard::
-MouseAndKeyboard(GraphicsWindow *window, int device, const std::string &name) :
-  DataNode(name),
+MouseAndKeyboard(GraphicsWindow *window, int device, std::string name) :
+  DataNode(std::move(name)),
   _window(window),
   _device(window->get_input_device(device))
 {

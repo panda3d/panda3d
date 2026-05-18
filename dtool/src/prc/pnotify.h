@@ -61,16 +61,16 @@ PUBLISHED:
   INLINE void clear_assert_failed();
 
   NotifyCategory *get_top_category();
-  NotifyCategory *get_category(const std::string &basename,
+  NotifyCategory *get_category(std::string_view basename,
                                NotifyCategory *parent_category);
-  NotifyCategory *get_category(const std::string &basename,
-                               const std::string &parent_fullname);
-  NotifyCategory *get_category(const std::string &fullname);
+  NotifyCategory *get_category(std::string_view basename,
+                               std::string_view parent_fullname);
+  NotifyCategory *get_category(std::string_view fullname);
 
   static std::ostream &out(NotifySeverity severity);
   static std::ostream &out();
   static std::ostream &null();
-  static void write_string(const std::string &str);
+  static void write_string(std::string_view str);
   static Notify *ptr();
 
 public:
@@ -83,7 +83,7 @@ public:
 
   static void write_backtrace(void **trace, int size);
 
-  static NotifySeverity string_severity(const std::string &string);
+  static NotifySeverity string_severity(std::string_view string);
 
   static void config_initialized();
 
@@ -98,7 +98,7 @@ private:
 
   // This shouldn't be a pmap, since it might be invoked before we initialize
   // the global malloc pointers.
-  typedef std::map<std::string, NotifyCategory *> Categories;
+  typedef std::map<std::string, NotifyCategory *, std::less<>> Categories;
   Categories _categories;
 
 #if defined(ANDROID)

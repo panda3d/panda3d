@@ -96,7 +96,7 @@ filter_name(EggNode *node) {
  * uniquely-generated number that may be useful for synthesizing the name.
  */
 string EggGroupUniquifier::
-generate_name(EggNode *node, const string &category, int index) {
+generate_name(EggNode *node, std::string_view category, int index) {
   std::ostringstream str;
   str << node->get_name() << "_group" << index;
   return str.str();

@@ -26,10 +26,10 @@ class DCParameter;
 class DCKeyword;
 class DCPacker;
 
-void dc_init_parser(std::istream &in, const std::string &filename, DCFile &file);
-void dc_init_parser_parameter_value(std::istream &in, const std::string &filename,
+void dc_init_parser(std::istream &in, std::string filename, DCFile &file);
+void dc_init_parser_parameter_value(std::istream &in, std::string filename,
                                     DCPacker &packer);
-void dc_init_parser_parameter_description(std::istream &in, const std::string &filename,
+void dc_init_parser_parameter_description(std::istream &in, std::string filename,
                                           DCFile *file);
 DCField *dc_get_parameter_description();
 void dc_cleanup_parser();

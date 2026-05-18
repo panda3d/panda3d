@@ -43,8 +43,8 @@ TypeHandle MouseWatcher::_type_handle;
  *
  */
 MouseWatcher::
-MouseWatcher(const string &name) :
-  DataNode(name)
+MouseWatcher(std::string name) :
+  DataNode(std::move(name))
 {
   _pixel_xy_input = define_input("pixel_xy", EventStoreVec2::get_class_type());
   _pixel_size_input = define_input("pixel_size", EventStoreVec2::get_class_type());
@@ -849,7 +849,7 @@ has_region_in(const MouseWatcher::Regions &regions,
  * pattern.
  */
 void MouseWatcher::
-throw_event_pattern(const string &pattern, const MouseWatcherRegion *region,
+throw_event_pattern(std::string_view pattern, const MouseWatcherRegion *region,
                     const ButtonHandle &button) {
   if (pattern.empty()) {
     return;
@@ -873,7 +873,7 @@ throw_event_pattern(const string &pattern, const MouseWatcherRegion *region,
   string event;
   for (size_t p = 0; p < pattern.size(); ++p) {
     if (pattern[p] == '%') {
-      string cmd = pattern.substr(p + 1, 1);
+      std::string_view cmd = pattern.substr(p + 1, 1);
       p++;
       if (cmd == "r") {
         if (region != nullptr) {

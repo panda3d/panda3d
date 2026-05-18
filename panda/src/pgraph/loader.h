@@ -70,11 +70,11 @@ PUBLISHED:
     Files _files;
   };
 
-  explicit Loader(const std::string &name = "loader");
+  explicit Loader(std::string name = "loader");
 
   INLINE void set_task_manager(AsyncTaskManager *task_manager);
   INLINE AsyncTaskManager *get_task_manager() const;
-  INLINE void set_task_chain(const std::string &task_chain);
+  INLINE void set_task_chain(std::string task_chain);
   INLINE const std::string &get_task_chain() const;
 
   BLOCKING INLINE void stop_threads();

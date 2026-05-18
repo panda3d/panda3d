@@ -122,7 +122,7 @@ EncryptStreamBuf::
  *
  */
 void EncryptStreamBuf::
-open_read(std::istream *source, bool owns_source, const std::string &password) {
+open_read(std::istream *source, bool owns_source, std::string_view password) {
   OpenSSL_add_all_algorithms();
 
   _source = source;
@@ -254,7 +254,7 @@ close_read() {
  *
  */
 void EncryptStreamBuf::
-open_write(std::ostream *dest, bool owns_dest, const std::string &password) {
+open_write(std::ostream *dest, bool owns_dest, std::string_view password) {
   OpenSSL_add_all_algorithms();
 
   close_write();

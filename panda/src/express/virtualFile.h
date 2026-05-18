@@ -77,11 +77,11 @@ PUBLISHED:
   virtual bool get_system_info(SubfileInfo &info);
 
 public:
-  virtual bool atomic_compare_and_exchange_contents(std::string &orig_contents, const std::string &old_contents, const std::string &new_contents);
+  virtual bool atomic_compare_and_exchange_contents(std::string &orig_contents, std::string_view old_contents, std::string_view new_contents);
   virtual bool atomic_read_contents(std::string &contents) const;
 
   INLINE std::string read_file(bool auto_unwrap) const;
-  INLINE bool write_file(const std::string &data, bool auto_wrap);
+  INLINE bool write_file(std::string_view data, bool auto_wrap);
 
   INLINE void set_original_filename(const Filename &filename);
   virtual bool read_file(std::string &result, bool auto_unwrap) const;

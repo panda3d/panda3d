@@ -15,7 +15,7 @@
  *
  */
 INLINE FisheyeMaker::
-FisheyeMaker(const std::string &name) : Namable(name) {
+FisheyeMaker(std::string name) : Namable(std::move(name)) {
   reset();
 }
 

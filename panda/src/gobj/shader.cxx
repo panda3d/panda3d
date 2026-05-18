@@ -47,7 +47,7 @@ CGcontext Shader::_cg_context = 0;
  * parameter.
  */
 void Shader::
-cp_report_error(ShaderArgInfo &p, const string &msg) {
+cp_report_error(ShaderArgInfo &p, std::string_view msg) {
 
   string vstr;
   if (p._varying) {

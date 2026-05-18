@@ -23,7 +23,6 @@
 #include "patomic.h"
 
 #include <assert.h>
-#include <string_view>
 
 class DSearchPath;
 
@@ -88,13 +87,13 @@ PUBLISHED:
 
   INLINE static Filename pattern_filename(std::string_view filename);
 
-  static Filename from_os_specific(const std::string &os_specific,
+  static Filename from_os_specific(std::string_view os_specific,
                                    Type type = T_general);
-  static Filename from_os_specific_w(const std::wstring &os_specific,
+  static Filename from_os_specific_w(std::wstring_view os_specific,
                                      Type type = T_general);
-  static Filename expand_from(const std::string &user_string,
+  static Filename expand_from(std::string_view user_string,
                               Type type = T_general);
-  static Filename temporary(const std::string &dirname, const std::string &prefix,
+  static Filename temporary(std::string_view dirname, const std::string &prefix,
                             const std::string &suffix = std::string(),
                             Type type = T_general);
 
@@ -129,8 +128,8 @@ PUBLISHED:
 
   INLINE std::string substr(size_t begin) const;
   INLINE std::string substr(size_t begin, size_t end) const;
-  INLINE void operator += (const std::string &other);
-  INLINE Filename operator + (const std::string &other) const;
+  INLINE void operator += (std::string_view other);
+  INLINE Filename operator + (std::string_view other) const;
 
   INLINE Filename operator / (const Filename &other) const;
 
@@ -171,7 +170,7 @@ PUBLISHED:
   Filename get_filename_index(int index) const;
 
   INLINE std::string get_hash_to_end() const;
-  void set_hash_to_end(const std::string &s);
+  void set_hash_to_end(std::string_view s);
 
   void extract_components(vector_string &components) const;
   void standardize();
@@ -205,7 +204,7 @@ PUBLISHED:
   std::streamsize get_file_size() const;
 
   bool resolve_filename(const DSearchPath &searchpath,
-                        const std::string &default_extension = std::string());
+                        std::string_view default_extension = std::string_view());
   bool make_relative_to(Filename directory, bool allow_backups = true);
   int find_on_searchpath(const DSearchPath &searchpath);
 
@@ -237,9 +236,9 @@ PUBLISHED:
   bool rmdir() const;
 
   // Comparison operators are handy.
-  INLINE bool operator == (const std::string &other) const;
-  INLINE bool operator != (const std::string &other) const;
-  INLINE bool operator < (const std::string &other) const;
+  INLINE bool operator == (std::string_view other) const;
+  INLINE bool operator != (std::string_view other) const;
+  INLINE bool operator < (std::string_view other) const;
   INLINE int compare_to(const Filename &other) const;
   INLINE bool __bool__() const;
   int get_hash() const;
@@ -250,15 +249,15 @@ PUBLISHED:
   INLINE static TextEncoder::Encoding get_filesystem_encoding();
 
 public:
-  bool atomic_compare_and_exchange_contents(std::string &orig_contents, const std::string &old_contents, const std::string &new_contents) const;
+  bool atomic_compare_and_exchange_contents(std::string &orig_contents, std::string_view old_contents, std::string_view new_contents) const;
   bool atomic_read_contents(std::string &contents) const;
 
 protected:
   void locate_basename();
   void locate_extension();
   void locate_hash();
-  size_t get_common_prefix(const std::string &other) const;
-  static int count_slashes(const std::string &str);
+  size_t get_common_prefix(std::string_view other) const;
+  static int count_slashes(std::string_view str);
   bool r_make_canonical(const Filename &cwd);
 
   std::string _filename;

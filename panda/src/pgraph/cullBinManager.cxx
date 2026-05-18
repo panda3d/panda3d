@@ -49,7 +49,7 @@ CullBinManager::
  * had the same properties; otherwise, reports an error and returns -1.
  */
 int CullBinManager::
-add_bin(const string &name, BinType type, int sort) {
+add_bin(string name, BinType type, int sort) {
   BinsByName::const_iterator bni = _bins_by_name.find(name);
   if (bni != _bins_by_name.end()) {
     // We already have such a bin.  This is not a problem if the bin has the
@@ -95,7 +95,6 @@ add_bin(const string &name, BinType type, int sort) {
 
   BinDefinition &def = _bin_definitions[new_bin_index];
   def._in_use = true;
-  def._name = name;
   def._type = type;
   def._sort = sort;
   def._active = true;
@@ -113,6 +112,7 @@ add_bin(const string &name, BinType type, int sort) {
 #endif
 
   _bins_by_name.insert(BinsByName::value_type(name, new_bin_index));
+  def._name = std::move(name);
   _sorted_bins.push_back(new_bin_index);
   _bins_are_sorted = false;
 
@@ -154,7 +154,7 @@ remove_bin(int bin_index) {
  * no bin has that name.
  */
 int CullBinManager::
-find_bin(const string &name) const {
+find_bin(std::string_view name) const {
   BinsByName::const_iterator bni;
   bni = _bins_by_name.find(name);
   if (bni != _bins_by_name.end()) {
@@ -294,7 +294,7 @@ setup_initial_bins() {
  * BT_invalid if it is an unknown type.
  */
 CullBinManager::BinType CullBinManager::
-parse_bin_type(const string &bin_type) {
+parse_bin_type(std::string_view bin_type) {
   if (cmp_nocase_uh(bin_type, "unsorted") == 0) {
     return BT_unsorted;
 

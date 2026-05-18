@@ -31,7 +31,7 @@ TypeHandle SubprocessWindow::_type_handle;
  */
 SubprocessWindow::
 SubprocessWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
-                 const string &name,
+                 std::string name,
                  const FrameBufferProperties &fb_prop,
                  const WindowProperties &win_prop,
                  int flags,
@@ -48,7 +48,7 @@ SubprocessWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
 
   // Create a texture to receive the contents of the framebuffer from the
   // offscreen buffer.
-  _texture = new Texture(name);
+  _texture = new Texture(std::move(name));
 
   _fd = -1;
   _mmap_size = 0;

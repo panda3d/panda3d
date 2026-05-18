@@ -80,15 +80,14 @@ dump_hex(std::ostream &out, unsigned int indent) const {
  * Adds a variable-length wstring to the datagram.
  */
 void Datagram::
-add_wstring(const std::wstring &str) {
+add_wstring(std::wstring_view str) {
   // By convention, wstrings are marked with 32-bit lengths.
   add_uint32((uint32_t)str.length());
 
   // Now append each character in the string.  We store each code little-
   // endian, for no real good reason.
-  std::wstring::const_iterator ci;
-  for (ci = str.begin(); ci != str.end(); ++ci) {
-    add_uint16((uint16_t)*ci);
+  for (wchar_t ch : str) {
+    add_uint16((uint16_t)ch);
   }
 }
 

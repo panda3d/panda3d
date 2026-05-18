@@ -46,7 +46,7 @@ protected:
   virtual void draw_separator(int row);
   virtual void draw_guide_bar(int x, GuideBarStyle style);
   virtual void draw_bar(int row, int from_x, int to_x, int collector_index,
-                        const std::string &collector_name);
+                        std::string_view collector_name);
   virtual void end_draw();
   virtual void idle();
 

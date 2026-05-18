@@ -128,19 +128,19 @@ get_mechanism() const {
  * the given username:password.
  */
 string HTTPDigestAuthorization::
-generate(HTTPEnum::Method method, const string &request_path,
-         const string &username, const string &body) {
+generate(HTTPEnum::Method method, std::string_view request_path,
+         std::string_view username, std::string_view body) {
   _nonce_count++;
 
   size_t colon = username.find(':');
-  string username_only = username.substr(0, colon);
-  string password_only = username.substr(colon + 1);
+  std::string_view username_only = username.substr(0, colon);
+  std::string_view password_only = username.substr(colon + 1);
 
   string digest = calc_request_digest(username_only, password_only,
                                       method, request_path, body);
 
   ostringstream strm;
-  strm << "Digest username=\"" << username.substr(0, colon) << "\""
+  strm << "Digest username=\"" << username_only << "\""
        << ", realm=\"" << get_realm() << "\""
        << ", nonce=\"" << _nonce << "\""
        << ", uri=" << request_path
@@ -165,7 +165,7 @@ generate(HTTPEnum::Method method, const string &request_path,
  * if the token string is unrecognized.
  */
 int HTTPDigestAuthorization::
-match_qop_token(const string &token) {
+match_qop_token(std::string_view token) {
   if (token == "auth") {
     return Q_auth;
   } else if (token == "auth-int") {
@@ -178,9 +178,9 @@ match_qop_token(const string &token) {
  * Calculates the appropriate digest response, according to RFC 2617.
  */
 string HTTPDigestAuthorization::
-calc_request_digest(const string &username, const string &password,
-                    HTTPEnum::Method method, const string &request_path,
-                    const string &body) {
+calc_request_digest(std::string_view username, std::string_view password,
+                    HTTPEnum::Method method, std::string_view request_path,
+                    std::string_view body) {
   _chosen_qop = Q_unused;
   string h_a1 = calc_h(get_a1(username, password));
   string h_a2 = calc_h(get_a2(method, request_path, body));
@@ -205,7 +205,7 @@ calc_request_digest(const string &username, const string &password,
  * 2617.
  */
 string HTTPDigestAuthorization::
-calc_h(const string &data) const {
+calc_h(std::string_view data) const {
   switch (_algorithm) {
   case A_unknown:
   case A_md5:
@@ -221,12 +221,16 @@ calc_h(const string &data) const {
  * indicated secret, according to RFC 2617.
  */
 string HTTPDigestAuthorization::
-calc_kd(const string &secret, const string &data) const {
+calc_kd(std::string_view secret, std::string_view data) const {
   switch (_algorithm) {
   case A_unknown:
   case A_md5:
-  case A_md5_sess:
-    return calc_h(secret + ":" + data);
+  case A_md5_sess: {
+    string combined;
+    combined.reserve(secret.size() + 1 + data.size());
+    combined.append(secret).append(1, ':').append(data);
+    return calc_h(combined);
+  }
   }
 
   return string();
@@ -236,16 +240,24 @@ calc_kd(const string &secret, const string &data) const {
  * Returns the A1 value, as defined by RFC 2617.
  */
 string HTTPDigestAuthorization::
-get_a1(const string &username, const string &password) {
+get_a1(std::string_view username, std::string_view password) {
   switch (_algorithm) {
   case A_unknown:
-  case A_md5:
-    return username + ":" + get_realm() + ":" + password;
+  case A_md5: {
+    const std::string &realm = get_realm();
+    string a1;
+    a1.reserve(username.size() + 1 + realm.size() + 1 + password.size());
+    a1.append(username).append(1, ':').append(realm).append(1, ':').append(password);
+    return a1;
+  }
 
   case A_md5_sess:
     if (_a1.empty()) {
-      _a1 = calc_h(username + ":" + get_realm() + ":" + password) +
-        ":" + _nonce + ":" + _cnonce;
+      const std::string &realm = get_realm();
+      string base;
+      base.reserve(username.size() + 1 + realm.size() + 1 + password.size());
+      base.append(username).append(1, ':').append(realm).append(1, ':').append(password);
+      _a1 = calc_h(base) + ":" + _nonce + ":" + _cnonce;
     }
     return _a1;
   }
@@ -257,8 +269,8 @@ get_a1(const string &username, const string &password) {
  * Returns the A2 value, as defined by RFC 2617.
  */
 string HTTPDigestAuthorization::
-get_a2(HTTPEnum::Method method, const string &request_path,
-       const string &body) {
+get_a2(HTTPEnum::Method method, std::string_view request_path,
+       std::string_view body) {
   ostringstream strm;
 
   if ((_qop & Q_auth_int) != 0 && !body.empty()) {
@@ -290,7 +302,7 @@ get_hex_nonce_count() const {
  * hexadecimal string of 32 ASCII characters.
  */
 string HTTPDigestAuthorization::
-calc_md5(const string &source) {
+calc_md5(std::string_view source) {
   HashVal hv;
   hv.hash_string(source);
   return hv.as_hex();

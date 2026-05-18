@@ -38,9 +38,9 @@ PStatCollectorDef() {
  *
  */
 PStatCollectorDef::
-PStatCollectorDef(int index, const std::string &name) :
+PStatCollectorDef(int index, std::string name) :
   _index(index),
-  _name(name)
+  _name(std::move(name))
 {
   _parent_index = 0;
   _suggested_color.r = 0.0;

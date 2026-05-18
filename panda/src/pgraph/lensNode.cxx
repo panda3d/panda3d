@@ -26,8 +26,8 @@ TypeHandle LensNode::_type_handle;
  *
  */
 LensNode::
-LensNode(const std::string &name, Lens *lens) :
-  PandaNode(name)
+LensNode(std::string name, Lens *lens) :
+  PandaNode(std::move(name))
 {
   if (lens == nullptr) {
     lens = new PerspectiveLens;

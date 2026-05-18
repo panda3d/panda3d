@@ -56,9 +56,9 @@ is_right(const LVector2 &v1, const LVector2 &v2) {
  *
  */
 PGItem::
-PGItem(const string &name) :
-  PandaNode(name),
-  _lock(name),
+PGItem(std::string name) :
+  PandaNode(std::move(name)),
+  _lock(get_name()),
   _notify(nullptr),
   _has_frame(false),
   _frame(0, 0, 0, 0),
@@ -1031,18 +1031,21 @@ set_frame_style(int state, const PGFrameStyle &style) {
  * Sets the sound that will be played whenever the indicated event occurs.
  */
 void PGItem::
-set_sound(const string &event, AudioSound *sound) {
+set_sound(std::string_view event, AudioSound *sound) {
   LightReMutexHolder holder(_lock);
-  _sounds[event] = sound;
+  _sounds[std::string(event)] = sound;
 }
 
 /**
  * Removes the sound associated with the indicated event.
  */
 void PGItem::
-clear_sound(const string &event) {
+clear_sound(std::string_view event) {
   LightReMutexHolder holder(_lock);
-  _sounds.erase(event);
+  Sounds::iterator si = _sounds.find(event);
+  if (si != _sounds.end()) {
+    _sounds.erase(si);
+  }
 }
 
 /**
@@ -1050,7 +1053,7 @@ clear_sound(const string &event) {
  * no associated sound.
  */
 AudioSound *PGItem::
-get_sound(const string &event) const {
+get_sound(std::string_view event) const {
   LightReMutexHolder holder(_lock);
   Sounds::const_iterator si = _sounds.find(event);
   if (si != _sounds.end()) {
@@ -1064,7 +1067,7 @@ get_sound(const string &event) const {
  * false otherwise.
  */
 bool PGItem::
-has_sound(const string &event) const {
+has_sound(std::string_view event) const {
   LightReMutexHolder holder(_lock);
   return (_sounds.count(event) != 0);
 }
@@ -1092,7 +1095,7 @@ get_text_node() {
  * Plays the sound associated with the indicated event, if there is one.
  */
 void PGItem::
-play_sound(const string &event) {
+play_sound(std::string_view event) {
 #ifdef HAVE_AUDIO
   LightReMutexHolder holder(_lock);
   Sounds::const_iterator si = _sounds.find(event);

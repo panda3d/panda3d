@@ -264,7 +264,7 @@ get_threading_model() const {
 
 GraphicsOutput *GraphicsEngine::
 make_output(GraphicsPipe *pipe,
-            const string &name, int sort,
+            std::string_view name, int sort,
             const FrameBufferProperties &fb_prop,
             const WindowProperties &win_prop,
             int flags,
@@ -356,7 +356,7 @@ make_output(GraphicsPipe *pipe,
       this_gsg = pipe->make_callback_gsg(this);
     }
     if (this_gsg != nullptr) {
-      CallbackGraphicsWindow *window = new CallbackGraphicsWindow(this, pipe, name, fb_prop, win_prop, flags, this_gsg);
+      CallbackGraphicsWindow *window = new CallbackGraphicsWindow(this, pipe, std::string(name), fb_prop, win_prop, flags, this_gsg);
       window->_sort = sort;
       do_add_window(window);
       do_add_gsg(window->get_gsg(), pipe);
@@ -396,7 +396,7 @@ make_output(GraphicsPipe *pipe,
       (x_size <= host->get_x_size())&&
       (y_size <= host->get_y_size())&&
       (host->get_fb_properties().subsumes(fb_prop))) {
-    ParasiteBuffer *buffer = new ParasiteBuffer(host, name, x_size, y_size, flags);
+    ParasiteBuffer *buffer = new ParasiteBuffer(host, std::string(name), x_size, y_size, flags);
     buffer->_sort = sort;
     do_add_window(buffer);
     do_add_gsg(host->get_gsg(), pipe);
@@ -408,7 +408,7 @@ make_output(GraphicsPipe *pipe,
   // less than ideal.  You might set this if you really don't trust your
   // graphics driver's support for offscreen buffers.
   if (force_parasite_buffer && can_use_parasite) {
-    ParasiteBuffer *buffer = new ParasiteBuffer(host, name, x_size, y_size, flags);
+    ParasiteBuffer *buffer = new ParasiteBuffer(host, std::string(name), x_size, y_size, flags);
     buffer->_sort = sort;
     do_add_window(buffer);
     do_add_gsg(host->get_gsg(), pipe);
@@ -469,7 +469,7 @@ make_output(GraphicsPipe *pipe,
   // window to the user's specs.  Try a parasite as a last hope.
 
   if (can_use_parasite) {
-    ParasiteBuffer *buffer = new ParasiteBuffer(host, name, x_size, y_size, flags);
+    ParasiteBuffer *buffer = new ParasiteBuffer(host, std::string(name), x_size, y_size, flags);
     buffer->_sort = sort;
     do_add_window(buffer);
     do_add_gsg(host->get_gsg(), pipe);
@@ -2548,7 +2548,7 @@ get_invert_polygon_state() {
  * You must already be holding the lock before calling this method.
  */
 GraphicsEngine::WindowRenderer *GraphicsEngine::
-get_window_renderer(const string &name, int pipeline_stage) {
+get_window_renderer(std::string_view name, int pipeline_stage) {
   nassertr(_lock.debug_is_locked(), nullptr);
 
   if (name.empty()) {
@@ -2566,7 +2566,7 @@ get_window_renderer(const string &name, int pipeline_stage) {
 
   bool started = thread->start(TP_normal, true);
   nassertr(started, thread.p());
-  _threads[name] = thread;
+  _threads[std::string(name)] = thread;
 
   nassertr(thread->get_pipeline_stage() < _pipeline->get_num_stages(), thread.p());
 
@@ -2577,8 +2577,8 @@ get_window_renderer(const string &name, int pipeline_stage) {
  *
  */
 GraphicsEngine::WindowRenderer::
-WindowRenderer(const string &name) :
-  _wl_lock(string("GraphicsEngine::WindowRenderer::_wl_lock ") + name)
+WindowRenderer(std::string_view name) :
+  _wl_lock(std::string("GraphicsEngine::WindowRenderer::_wl_lock ").append(name))
 {
 }
 
@@ -2846,11 +2846,11 @@ any_done_gsgs() const {
  *
  */
 GraphicsEngine::RenderThread::
-RenderThread(const string &name, GraphicsEngine *engine) :
-  Thread(name, "Main"),
+RenderThread(std::string_view name, GraphicsEngine *engine) :
+  Thread(std::string(name), "Main"),
   WindowRenderer(name),
   _engine(engine),
-  _cv_mutex(string("GraphicsEngine::RenderThread ") + name),
+  _cv_mutex(std::string("GraphicsEngine::RenderThread ").append(name)),
   _cv_start(_cv_mutex),
   _cv_done(_cv_mutex)
 {

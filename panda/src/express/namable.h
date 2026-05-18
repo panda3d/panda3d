@@ -25,9 +25,9 @@
  */
 class EXPCL_PANDA_EXPRESS Namable : public MemoryBase {
 PUBLISHED:
-  INLINE explicit Namable(const std::string &initial_name = "");
+  INLINE explicit Namable(std::string initial_name = "");
 
-  INLINE void set_name(const std::string &name);
+  INLINE void set_name(std::string name);
   INLINE void clear_name();
   INLINE bool has_name() const;
   INLINE const std::string &get_name() const;

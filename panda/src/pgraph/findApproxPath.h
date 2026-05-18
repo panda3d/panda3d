@@ -32,16 +32,16 @@ class FindApproxPath {
 public:
   INLINE FindApproxPath();
 
-  bool add_string(const std::string &str_path);
-  bool add_flags(const std::string &str_flags);
-  bool add_component(std::string str_component);
+  bool add_string(std::string_view str_path);
+  bool add_flags(std::string_view str_flags);
+  bool add_component(std::string_view str_component);
 
-  void add_match_name(const std::string &name, int flags);
-  void add_match_name_glob(const std::string &glob, int flags);
+  void add_match_name(std::string name, int flags);
+  void add_match_name_glob(std::string glob, int flags);
   void add_match_exact_type(TypeHandle type, int flags);
   void add_match_inexact_type(TypeHandle type, int flags);
-  void add_match_tag(const std::string &key, int flags);
-  void add_match_tag_value(const std::string &key, const std::string &value, int flags);
+  void add_match_tag(std::string key, int flags);
+  void add_match_tag_value(std::string key, std::string value, int flags);
 
   void add_match_one(int flags);
   void add_match_many(int flags);

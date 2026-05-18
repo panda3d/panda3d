@@ -15,7 +15,7 @@
  *
  */
 INLINE EggCompositePrimitive::
-EggCompositePrimitive(const std::string &name) : EggPrimitive(name) {
+EggCompositePrimitive(std::string name) : EggPrimitive(std::move(name)) {
 }
 
 /**

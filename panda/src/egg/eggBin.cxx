@@ -21,7 +21,7 @@ TypeHandle EggBin::_type_handle;
  *
  */
 EggBin::
-EggBin(const std::string &name) : EggGroup(name) {
+EggBin(std::string name) : EggGroup(std::move(name)) {
   _bin_number = 0;
 }
 

@@ -46,9 +46,9 @@ cancelled() const {
  * a coroutine task that exits with an exception.
  */
 INLINE void AsyncFuture::
-set_done_event(const std::string &done_event) {
+set_done_event(std::string done_event) {
   nassertv(!done());
-  _done_event = done_event;
+  _done_event = std::move(done_event);
 }
 
 /**

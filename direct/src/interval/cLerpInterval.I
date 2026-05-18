@@ -15,9 +15,9 @@
  *
  */
 INLINE CLerpInterval::
-CLerpInterval(const std::string &name, double duration,
+CLerpInterval(std::string name, double duration,
               CLerpInterval::BlendType blend_type) :
-  CInterval(name, duration, true),
+  CInterval(std::move(name), duration, true),
   _blend_type(blend_type)
 {
 }

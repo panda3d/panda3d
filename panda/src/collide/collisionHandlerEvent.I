@@ -64,8 +64,8 @@ clear_in_patterns() {
  * longer detected, the out_pattern event is thrown.
  */
 INLINE void CollisionHandlerEvent::
-add_in_pattern(const std::string &in_pattern) {
-  _in_patterns.push_back(in_pattern);
+add_in_pattern(std::string in_pattern) {
+  _in_patterns.push_back(std::move(in_pattern));
 }
 
 /**
@@ -75,9 +75,9 @@ add_in_pattern(const std::string &in_pattern) {
  * @deprecated Use add_in_pattern() instead.
  */
 INLINE void CollisionHandlerEvent::
-set_in_pattern(const std::string &in_pattern) {
+set_in_pattern(std::string in_pattern) {
   clear_in_patterns();
-  add_in_pattern(in_pattern);
+  add_in_pattern(std::move(in_pattern));
 }
 
 /**
@@ -119,8 +119,8 @@ clear_again_patterns() {
  * longer detected, the out_pattern event is thrown.
  */
 INLINE void CollisionHandlerEvent::
-add_again_pattern(const std::string &again_pattern) {
-  _again_patterns.push_back(again_pattern);
+add_again_pattern(std::string again_pattern) {
+  _again_patterns.push_back(std::move(again_pattern));
 }
 
 /**
@@ -130,9 +130,9 @@ add_again_pattern(const std::string &again_pattern) {
  * @deprecated Use add_again_pattern() instead.
  */
 INLINE void CollisionHandlerEvent::
-set_again_pattern(const std::string &again_pattern) {
+set_again_pattern(std::string again_pattern) {
   clear_again_patterns();
-  add_again_pattern(again_pattern);
+  add_again_pattern(std::move(again_pattern));
 }
 
 /**
@@ -172,8 +172,8 @@ clear_out_patterns() {
  * longer detected, the out_pattern event is thrown.
  */
 INLINE void CollisionHandlerEvent::
-add_out_pattern(const std::string &out_pattern) {
-  _out_patterns.push_back(out_pattern);
+add_out_pattern(std::string out_pattern) {
+  _out_patterns.push_back(std::move(out_pattern));
 }
 
 /**
@@ -183,9 +183,9 @@ add_out_pattern(const std::string &out_pattern) {
  * @deprecated Use add_out_pattern() instead.
  */
 INLINE void CollisionHandlerEvent::
-set_out_pattern(const std::string &out_pattern) {
+set_out_pattern(std::string out_pattern) {
   clear_out_patterns();
-  add_out_pattern(out_pattern);
+  add_out_pattern(std::move(out_pattern));
 }
 
 /**

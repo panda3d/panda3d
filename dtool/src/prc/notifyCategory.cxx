@@ -30,9 +30,9 @@ long NotifyCategory::_server_delta = 0;
  *
  */
 NotifyCategory::
-NotifyCategory(const std::string &fullname, const std::string &basename,
+NotifyCategory(std::string fullname, std::string_view basename,
                NotifyCategory *parent) :
-  _fullname(fullname),
+  _fullname(std::move(fullname)),
   _basename(basename),
   _parent(parent),
   _severity(get_config_name(), NS_unspecified,

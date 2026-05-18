@@ -50,9 +50,9 @@ PUBLISHED:
   BLOCKING bool mount(Multifile *multifile, const Filename &mount_point, int flags);
   BLOCKING bool mount(ZipArchive *archive, const Filename &mount_point, int flags);
   BLOCKING bool mount(const Filename &physical_filename, const Filename &mount_point,
-                      int flags, const std::string &password = "");
+                      int flags, std::string password = "");
   BLOCKING bool mount_loop(const Filename &virtual_filename, const Filename &mount_point,
-                      int flags, const std::string &password = "");
+                      int flags, std::string password = "");
   bool mount(VirtualFileMount *mount, const Filename &mount_point, int flags);
   BLOCKING int unmount(Multifile *multifile);
   BLOCKING int unmount(ZipArchive *archive);
@@ -81,7 +81,7 @@ PUBLISHED:
   BLOCKING bool copy_file(const Filename &orig_filename, const Filename &new_filename);
 
   BLOCKING bool resolve_filename(Filename &filename, const DSearchPath &searchpath,
-                                 const std::string &default_extension = std::string()) const;
+                                 std::string_view default_extension = std::string_view()) const;
   BLOCKING int find_all_files(const Filename &filename, const DSearchPath &searchpath,
                               DSearchPath::Results &results) const;
 
@@ -115,9 +115,9 @@ public:
   // We provide Python versions of these as efficient extension methods,
   // above.
   BLOCKING INLINE std::string read_file(const Filename &filename, bool auto_unwrap) const;
-  BLOCKING INLINE bool write_file(const Filename &filename, const std::string &data, bool auto_wrap);
+  BLOCKING INLINE bool write_file(const Filename &filename, std::string_view data, bool auto_wrap);
 
-  bool atomic_compare_and_exchange_contents(const Filename &filename, std::string &orig_contents, const std::string &old_contents, const std::string &new_contents);
+  bool atomic_compare_and_exchange_contents(const Filename &filename, std::string &orig_contents, std::string_view old_contents, std::string_view new_contents);
   bool atomic_read_contents(const Filename &filename, std::string &contents) const;
 
   INLINE bool read_file(const Filename &filename, std::string &result, bool auto_unwrap) const;
@@ -126,9 +126,9 @@ public:
 
   void scan_mount_points(vector_string &names, const Filename &path) const;
 
-  static void parse_options(const std::string &options,
+  static void parse_options(std::string_view options,
                             int &flags, std::string &password);
-  static void parse_option(const std::string &option,
+  static void parse_option(std::string_view option,
                           int &flags, std::string &password);
 
 public:

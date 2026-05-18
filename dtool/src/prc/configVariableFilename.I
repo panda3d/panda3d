@@ -15,7 +15,7 @@
  *
  */
 INLINE ConfigVariableFilename::
-ConfigVariableFilename(const std::string &name) :
+ConfigVariableFilename(std::string_view name) :
   ConfigVariable(name, VT_filename),
   _local_modified(initial_invalid_cache())
 {
@@ -26,12 +26,12 @@ ConfigVariableFilename(const std::string &name) :
  *
  */
 INLINE ConfigVariableFilename::
-ConfigVariableFilename(const std::string &name, const Filename &default_value,
-                       const std::string &description, int flags) :
+ConfigVariableFilename(std::string_view name, const Filename &default_value,
+                       std::string_view description, int flags) :
 #ifdef PRC_SAVE_DESCRIPTIONS
   ConfigVariable(name, VT_filename, description, flags),
 #else
-  ConfigVariable(name, VT_filename, std::string(), flags),
+  ConfigVariable(name, VT_filename, std::string_view(), flags),
 #endif
   _local_modified(initial_invalid_cache())
 {

@@ -42,7 +42,7 @@ class TransformState;
  */
 class EXPCL_PANDA_PGUI PGVirtualFrame : public PGItem {
 PUBLISHED:
-  explicit PGVirtualFrame(const std::string &name = "");
+  explicit PGVirtualFrame(std::string name = "");
   virtual ~PGVirtualFrame();
 
 protected:

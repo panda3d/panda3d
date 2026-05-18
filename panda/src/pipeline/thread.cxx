@@ -38,9 +38,9 @@ void (*Thread::_yield_func)() = &ThreadImpl::yield;
  * given the same sync_name, for the benefit of PStats.
  */
 Thread::
-Thread(const std::string &name, const std::string &sync_name) :
-  Namable(name),
-  _sync_name(sync_name),
+Thread(std::string name, std::string sync_name) :
+  Namable(std::move(name)),
+  _sync_name(std::move(sync_name)),
   _impl(this)
 {
   _started = false;

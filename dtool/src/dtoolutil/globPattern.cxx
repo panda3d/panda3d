@@ -352,8 +352,8 @@ r_matches_file(const string &pattern, const Filename &candidate) const {
  * false otherwise.
  */
 bool GlobPattern::
-matches_substr(string::const_iterator pi, string::const_iterator pend,
-               string::const_iterator ci, string::const_iterator cend) const {
+matches_substr(const char *pi, const char *pend,
+               const char *ci, const char *cend) const {
   // If we run out of pattern or candidate string, it's a match only if they
   // both ran out at the same time.
   if (pi == pend || ci == cend) {
@@ -438,8 +438,7 @@ matches_substr(string::const_iterator pi, string::const_iterator pend,
  * false otherwise.
  */
 bool GlobPattern::
-matches_set(string::const_iterator &pi, string::const_iterator pend,
-            char ch) const {
+matches_set(const char *&pi, const char *pend, char ch) const {
   bool matched = false;
 
   while (pi != pend && (*pi) != ']') {

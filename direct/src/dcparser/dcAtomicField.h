@@ -29,7 +29,7 @@
  */
 class EXPCL_DIRECT_DCPARSER DCAtomicField : public DCField {
 public:
-  DCAtomicField(const std::string &name, DCClass *dclass, bool bogus_field);
+  DCAtomicField(std::string name, DCClass *dclass, bool bogus_field);
   virtual ~DCAtomicField();
 
 PUBLISHED:

@@ -25,7 +25,7 @@
  */
 class EXPCL_PANDA_PHYSICS ActorNode : public PhysicalNode {
 PUBLISHED:
-  explicit ActorNode(const std::string &name = "");
+  explicit ActorNode(std::string name = "");
   ActorNode(const ActorNode &copy);
   virtual ~ActorNode();
 

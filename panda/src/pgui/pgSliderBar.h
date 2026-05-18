@@ -30,7 +30,7 @@
  */
 class EXPCL_PANDA_PGUI PGSliderBar : public PGItem, public PGButtonNotify {
 PUBLISHED:
-  explicit PGSliderBar(const std::string &name = "");
+  explicit PGSliderBar(std::string name = "");
   virtual ~PGSliderBar();
 
 protected:

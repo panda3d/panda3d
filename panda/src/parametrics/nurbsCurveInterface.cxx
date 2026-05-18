@@ -93,7 +93,7 @@ write(std::ostream &out, int indent_level) const {
  * Formats the Nurbs curve for output to an Egg file.
  */
 bool NurbsCurveInterface::
-format_egg(std::ostream &out, const std::string &name, const std::string &curve_type,
+format_egg(std::ostream &out, std::string_view name, std::string_view curve_type,
            int indent_level) const {
   indent(out, indent_level)
     << "<VertexPool> " << name << ".pool {\n";

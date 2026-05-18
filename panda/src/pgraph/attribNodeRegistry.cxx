@@ -148,9 +148,9 @@ find_node(const NodePath &attrib_node) const {
  * the registry, or -1 if there is no such node in the registry.
  */
 int AttribNodeRegistry::
-find_node(TypeHandle type, const std::string &name) const {
+find_node(TypeHandle type, std::string name) const {
   LightMutexHolder holder(_lock);
-  Entries::const_iterator ei = _entries.find(Entry(type, name));
+  Entries::const_iterator ei = _entries.find(Entry(type, std::move(name)));
   if (ei != _entries.end()) {
     return ei - _entries.begin();
   }

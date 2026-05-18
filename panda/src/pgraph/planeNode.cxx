@@ -59,8 +59,8 @@ fillin(DatagramIterator &scan, BamReader *) {
  *
  */
 PlaneNode::
-PlaneNode(const std::string &name, const LPlane &plane) :
-  PandaNode(name),
+PlaneNode(std::string name, const LPlane &plane) :
+  PandaNode(std::move(name)),
   _priority(0),
   _clip_effect(~0)
 {

@@ -414,7 +414,7 @@ set_scale_factor(size_t scale_factor) {
  * or empty string on failure.
  */
 string Multifile::
-add_subfile(const string &subfile_name, const Filename &filename,
+add_subfile(std::string_view subfile_name, const Filename &filename,
             int compression_level) {
   nassertr(is_write_valid(), string());
 
@@ -462,7 +462,7 @@ add_subfile(const string &subfile_name, const Filename &filename,
  * or empty string on failure.
  */
 string Multifile::
-add_subfile(const string &subfile_name, istream *subfile_data,
+add_subfile(std::string_view subfile_name, istream *subfile_data,
             int compression_level) {
   nassertr(is_write_valid(), string());
 
@@ -488,7 +488,7 @@ add_subfile(const string &subfile_name, istream *subfile_data,
  * called, the text flag will be set on the subfile.
  */
 string Multifile::
-update_subfile(const string &subfile_name, const Filename &filename,
+update_subfile(std::string_view subfile_name, const Filename &filename,
                int compression_level) {
   nassertr(is_write_valid(), string());
 
@@ -1364,7 +1364,7 @@ get_num_subfiles() const {
  * named subfile is not within the Multifile.
  */
 int Multifile::
-find_subfile(const string &subfile_name) const {
+find_subfile(std::string_view subfile_name) const {
   Subfile find_subfile;
   find_subfile._name = standardize_subfile_name(subfile_name);
   Subfiles::const_iterator fi;
@@ -1382,8 +1382,8 @@ find_subfile(const string &subfile_name) const {
  * least one file named "subfile_name/...".
  */
 bool Multifile::
-has_directory(const string &subfile_name) const {
-  string prefix = subfile_name;
+has_directory(std::string subfile_name) const {
+  string prefix = std::move(subfile_name);
   if (!prefix.empty()) {
     prefix += '/';
   }
@@ -1414,8 +1414,8 @@ has_directory(const string &subfile_name) const {
  * Returns true if successful, false otherwise.
  */
 bool Multifile::
-scan_directory(vector_string &contents, const string &subfile_name) const {
-  string prefix = subfile_name;
+scan_directory(vector_string &contents, std::string subfile_name) const {
+  string prefix = std::move(subfile_name);
   if (!prefix.empty()) {
     prefix += '/';
   }
@@ -1837,8 +1837,8 @@ ls(ostream &out) const {
  * because the header prefix violates the above rules).
  */
 void Multifile::
-set_header_prefix(const string &header_prefix) {
-  string new_header_prefix = header_prefix;
+set_header_prefix(std::string header_prefix) {
+  string new_header_prefix = std::move(header_prefix);
 
   if (!new_header_prefix.empty()) {
     // It must begin with a hash mark.
@@ -2104,8 +2104,8 @@ open_read_subfile(Subfile *subfile) {
  * Returns the standard form of the subfile name.
  */
 string Multifile::
-standardize_subfile_name(const string &subfile_name) const {
-  Filename name = subfile_name;
+standardize_subfile_name(std::string_view subfile_name) const {
+  Filename name(subfile_name);
   name.standardize();
   if (name.empty() || name == "/") {
     // Invalid empty name.

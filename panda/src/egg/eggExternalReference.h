@@ -24,7 +24,7 @@
  */
 class EXPCL_PANDA_EGG EggExternalReference : public EggFilenameNode {
 PUBLISHED:
-  explicit EggExternalReference(const std::string &node_name, const std::string &filename);
+  explicit EggExternalReference(std::string node_name, Filename filename);
   EggExternalReference(const EggExternalReference &copy);
   EggExternalReference &operator = (const EggExternalReference &copy);
 

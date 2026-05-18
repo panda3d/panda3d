@@ -26,9 +26,9 @@ TypeHandle CullBinStateSorted::_type_handle;
  * Factory constructor for passing to the CullBinManager.
  */
 CullBin *CullBinStateSorted::
-make_bin(const std::string &name, GraphicsStateGuardianBase *gsg,
+make_bin(std::string name, GraphicsStateGuardianBase *gsg,
          const PStatCollector &draw_region_pcollector) {
-  return new CullBinStateSorted(name, gsg, draw_region_pcollector);
+  return new CullBinStateSorted(std::move(name), gsg, draw_region_pcollector);
 }
 
 /**

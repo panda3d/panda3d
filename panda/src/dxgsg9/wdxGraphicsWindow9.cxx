@@ -35,13 +35,13 @@ TypeHandle wdxGraphicsWindow9::_type_handle;
  */
 wdxGraphicsWindow9::
 wdxGraphicsWindow9(GraphicsEngine *engine, GraphicsPipe *pipe,
-                   const std::string &name,
+                   std::string name,
                    const FrameBufferProperties &fb_prop,
                    const WindowProperties &win_prop,
                    int flags,
                    GraphicsStateGuardian *gsg,
                    GraphicsOutput *host):
-  WinGraphicsWindow(engine, pipe, name, fb_prop, win_prop, flags, gsg, host)
+  WinGraphicsWindow(engine, pipe, std::move(name), fb_prop, win_prop, flags, gsg, host)
 {
   // don't actually create the window in the constructor.  reason: multi-
   // threading requires panda C++ window object to exist in separate thread

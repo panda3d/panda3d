@@ -24,25 +24,25 @@
 BEGIN_PUBLISH
 
 EXPCL_PANDA_EXPRESS vector_uchar
-encrypt_string(const std::string &source, const std::string &password,
-               const std::string &algorithm = std::string(), int key_length = -1,
+encrypt_string(std::string_view source, std::string_view password,
+               std::string algorithm = std::string(), int key_length = -1,
                int iteration_count = -1);
 EXPCL_PANDA_EXPRESS std::string
-decrypt_string(const vector_uchar &source, const std::string &password);
+decrypt_string(const vector_uchar &source, std::string_view password);
 
 EXPCL_PANDA_EXPRESS bool
-encrypt_file(const Filename &source, const Filename &dest, const std::string &password,
-             const std::string &algorithm = std::string(), int key_length = -1,
+encrypt_file(const Filename &source, const Filename &dest, std::string_view password,
+             std::string algorithm = std::string(), int key_length = -1,
              int iteration_count = -1);
 EXPCL_PANDA_EXPRESS bool
-decrypt_file(const Filename &source, const Filename &dest, const std::string &password);
+decrypt_file(const Filename &source, const Filename &dest, std::string_view password);
 
 EXPCL_PANDA_EXPRESS bool
-encrypt_stream(std::istream &source, std::ostream &dest, const std::string &password,
-               const std::string &algorithm = std::string(), int key_length = -1,
+encrypt_stream(std::istream &source, std::ostream &dest, std::string_view password,
+               std::string algorithm = std::string(), int key_length = -1,
                int iteration_count = -1);
 EXPCL_PANDA_EXPRESS bool
-decrypt_stream(std::istream &source, std::ostream &dest, const std::string &password);
+decrypt_stream(std::istream &source, std::ostream &dest, std::string_view password);
 
 END_PUBLISH
 

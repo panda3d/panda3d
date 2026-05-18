@@ -49,7 +49,7 @@ class AsyncTaskManager;
  */
 class EXPCL_PANDA_EVENT AsyncTaskChain : public TypedReferenceCount, public Namable {
 public:
-  AsyncTaskChain(AsyncTaskManager *manager, const std::string &name,
+  AsyncTaskChain(AsyncTaskManager *manager, std::string name,
                  int num_threads=0, ThreadPriority thread_priority=TP_normal);
   ~AsyncTaskChain();
 
@@ -80,7 +80,7 @@ PUBLISHED:
   void add(AsyncTask *task);
 #ifndef CPPPARSER
   template<class Callable>
-  INLINE AsyncTask *add(Callable callable, const std::string &name,
+  INLINE AsyncTask *add(Callable callable, std::string name,
                         int sort = 0, int priority = 0);
 #endif
   bool has_task(AsyncTask *task) const;
@@ -130,7 +130,7 @@ protected:
 protected:
   class AsyncTaskChainThread : public Thread {
   public:
-    AsyncTaskChainThread(const std::string &name, AsyncTaskChain *chain);
+    AsyncTaskChainThread(std::string name, AsyncTaskChain *chain);
     virtual void thread_main();
 
     AsyncTaskChain *_chain;

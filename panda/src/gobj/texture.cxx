@@ -374,9 +374,9 @@ enum KTXCompressedFormat {
  * this is not what you want.
  */
 Texture::
-Texture(const string &name) :
-  Namable(name),
-  _lock(name),
+Texture(std::string name) :
+  Namable(std::move(name)),
+  _lock(get_name()),
   _cvar(_lock)
 {
   _reloading = false;
@@ -809,18 +809,21 @@ estimate_texture_memory() const {
  * These data objects are not recorded to a bam or txo file.
  */
 void Texture::
-set_aux_data(const string &key, TypedReferenceCount *aux_data) {
+set_aux_data(std::string key, TypedReferenceCount *aux_data) {
   MutexHolder holder(_lock);
-  _aux_data[key] = aux_data;
+  _aux_data[std::move(key)] = aux_data;
 }
 
 /**
  * Removes a record previously recorded via set_aux_data().
  */
 void Texture::
-clear_aux_data(const string &key) {
+clear_aux_data(std::string_view key) {
   MutexHolder holder(_lock);
-  _aux_data.erase(key);
+  AuxData::iterator di = _aux_data.find(key);
+  if (di != _aux_data.end()) {
+    _aux_data.erase(di);
+  }
 }
 
 /**
@@ -828,7 +831,7 @@ clear_aux_data(const string &key) {
  * there was no record associated with the indicated key.
  */
 TypedReferenceCount *Texture::
-get_aux_data(const string &key) const {
+get_aux_data(std::string_view key) const {
   MutexHolder holder(_lock);
   AuxData::const_iterator di;
   di = _aux_data.find(key);
@@ -847,7 +850,7 @@ get_aux_data(const string &key) const {
  * Pass a real filename if it is available, or empty string if it is not.
  */
 bool Texture::
-read_txo(istream &in, const string &filename) {
+read_txo(istream &in, std::string_view filename) {
   CDWriter cdata(_cycler, true);
   cdata->inc_properties_modified();
   cdata->inc_image_modified();
@@ -862,7 +865,7 @@ read_txo(istream &in, const string &filename) {
  * Pass a real filename if it is available, or empty string if it is not.
  */
 PT(Texture) Texture::
-make_from_txo(istream &in, const string &filename) {
+make_from_txo(istream &in, std::string_view filename) {
   DatagramInputFile din;
 
   if (!din.open(in, filename)) {
@@ -930,7 +933,7 @@ make_from_txo(istream &in, const string &filename) {
  * The filename is just for reference.
  */
 bool Texture::
-write_txo(ostream &out, const string &filename) const {
+write_txo(ostream &out, std::string_view filename) const {
   CDReader cdata(_cycler);
   return do_write_txo(cdata, out, filename);
 }
@@ -945,7 +948,7 @@ write_txo(ostream &out, const string &filename) const {
  * As with read_txo, the filename is just for reference.
  */
 bool Texture::
-read_dds(istream &in, const string &filename, bool header_only) {
+read_dds(istream &in, std::string_view filename, bool header_only) {
   CDWriter cdata(_cycler, true);
   cdata->inc_properties_modified();
   cdata->inc_image_modified();
@@ -962,7 +965,7 @@ read_dds(istream &in, const string &filename, bool header_only) {
  * As with read_dds, the filename is just for reference.
  */
 bool Texture::
-read_ktx(istream &in, const string &filename, bool header_only) {
+read_ktx(istream &in, std::string_view filename, bool header_only) {
   CDWriter cdata(_cycler, true);
   cdata->inc_properties_modified();
   cdata->inc_image_modified();
@@ -1094,7 +1097,7 @@ async_ensure_ram_image(bool allow_compression, int priority) {
  * support compressed image data or sub-pages; use set_ram_image() for that.
  */
 void Texture::
-set_ram_image_as(CPTA_uchar image, const string &supplied_format) {
+set_ram_image_as(CPTA_uchar image, std::string_view supplied_format) {
   CDWriter cdata(_cycler, true);
 
   string format = upcase(supplied_format);
@@ -2165,7 +2168,7 @@ consider_rescale(PNMImage &pnmimage) {
  * see rescale_texture().
  */
 void Texture::
-consider_rescale(PNMImage &pnmimage, const string &name, AutoTextureScale auto_texture_scale) {
+consider_rescale(PNMImage &pnmimage, std::string_view name, AutoTextureScale auto_texture_scale) {
   int new_x_size = pnmimage.get_x_size();
   int new_y_size = pnmimage.get_y_size();
   if (adjust_size(new_x_size, new_y_size, name, false, auto_texture_scale)) {
@@ -2214,7 +2217,7 @@ format_texture_type(TextureType tt) {
  * Returns the TextureType corresponding to the indicated string word.
  */
 Texture::TextureType Texture::
-string_texture_type(const string &str) {
+string_texture_type(std::string_view str) {
   if (cmp_nocase(str, "1d_texture") == 0) {
     return TT_1d_texture;
   } else if (cmp_nocase(str, "2d_texture") == 0) {
@@ -2269,7 +2272,7 @@ format_component_type(ComponentType ct) {
  * Returns the ComponentType corresponding to the indicated string word.
  */
 Texture::ComponentType Texture::
-string_component_type(const string &str) {
+string_component_type(std::string_view str) {
   if (cmp_nocase(str, "unsigned_byte") == 0) {
     return T_unsigned_byte;
   } else if (cmp_nocase(str, "unsigned_short") == 0) {
@@ -2413,7 +2416,7 @@ format_format(Format format) {
  * Returns the Format corresponding to the indicated string word.
  */
 Texture::Format Texture::
-string_format(const string &str) {
+string_format(std::string_view str) {
   if (cmp_nocase(str, "depth_stencil") == 0) {
     return F_depth_stencil;
   } else if (cmp_nocase(str, "depth_component") == 0) {
@@ -2573,7 +2576,7 @@ format_compression_mode(CompressionMode cm) {
  * representation.
  */
 Texture::CompressionMode Texture::
-string_compression_mode(const string &str) {
+string_compression_mode(std::string_view str) {
   if (cmp_nocase_uh(str, "default") == 0) {
     return CM_default;
   } else if (cmp_nocase_uh(str, "off") == 0) {
@@ -2636,7 +2639,7 @@ format_quality_level(QualityLevel ql) {
  * representation.
  */
 Texture::QualityLevel Texture::
-string_quality_level(const string &str) {
+string_quality_level(std::string_view str) {
   if (cmp_nocase(str, "default") == 0) {
     return QL_default;
   } else if (cmp_nocase(str, "fastest") == 0) {
@@ -2837,7 +2840,7 @@ is_integer(Format format) {
  * false if it is the same.
  */
 bool Texture::
-adjust_size(int &x_size, int &y_size, const string &name,
+adjust_size(int &x_size, int &y_size, std::string_view name,
             bool for_padding, AutoTextureScale auto_texture_scale) {
   bool exclude = false;
   int num_excludes = exclude_texture_scale.get_num_unique_values();
@@ -2965,7 +2968,7 @@ reconsider_dirty() {
  * power-2.
  */
 bool Texture::
-do_adjust_this_size(const CData *cdata, int &x_size, int &y_size, const string &name,
+do_adjust_this_size(const CData *cdata, int &x_size, int &y_size, std::string_view name,
                     bool for_padding) const {
   return adjust_size(x_size, y_size, name, for_padding, cdata->_auto_texture_scale);
 }
@@ -3498,7 +3501,7 @@ do_read_one(CData *cdata, const Filename &fullpath, const Filename &alpha_fullpa
  * Internal method to load a single page or mipmap level.
  */
 bool Texture::
-do_load_one(CData *cdata, const PNMImage &pnmimage, const string &name, int z, int n,
+do_load_one(CData *cdata, const PNMImage &pnmimage, std::string_view name, int z, int n,
             const LoaderOptions &options) {
   if (cdata->_ram_images.size() <= 1 && n == 0) {
     // A special case for mipmap level 0.  When we load mipmap level 0, unless
@@ -3572,7 +3575,7 @@ do_load_one(CData *cdata, const PNMImage &pnmimage, const string &name, int z, i
  * Internal method to load a single page or mipmap level.
  */
 bool Texture::
-do_load_one(CData *cdata, const PfmFile &pfm, const string &name, int z, int n,
+do_load_one(CData *cdata, const PfmFile &pfm, std::string_view name, int z, int n,
             const LoaderOptions &options) {
   if (cdata->_ram_images.size() <= 1 && n == 0) {
     // A special case for mipmap level 0.  When we load mipmap level 0, unless
@@ -3708,7 +3711,7 @@ do_read_txo_file(CData *cdata, const Filename &fullpath) {
  *
  */
 bool Texture::
-do_read_txo(CData *cdata, istream &in, const string &filename) {
+do_read_txo(CData *cdata, istream &in, std::string_view filename) {
   PT(Texture) other = make_from_txo(in, filename);
   if (other == nullptr) {
     return false;
@@ -3773,7 +3776,7 @@ do_read_dds_file(CData *cdata, const Filename &fullpath, bool header_only) {
  *
  */
 bool Texture::
-do_read_dds(CData *cdata, istream &in, const string &filename, bool header_only) {
+do_read_dds(CData *cdata, istream &in, std::string_view filename, bool header_only) {
   StreamReader dds(in);
 
   // DDS header (19 words)
@@ -4459,7 +4462,7 @@ do_read_ktx_file(CData *cdata, const Filename &fullpath, bool header_only) {
  *
  */
 bool Texture::
-do_read_ktx(CData *cdata, istream &in, const string &filename, bool header_only) {
+do_read_ktx(CData *cdata, istream &in, std::string_view filename, bool header_only) {
   StreamReader ktx(in);
 
   unsigned char magic[12];
@@ -5436,7 +5439,7 @@ do_write_txo_file(const CData *cdata, const Filename &fullpath) const {
  *
  */
 bool Texture::
-do_write_txo(const CData *cdata, ostream &out, const string &filename) const {
+do_write_txo(const CData *cdata, ostream &out, std::string_view filename) const {
   DatagramOutputFile dout;
 
   if (!dout.open(out, filename)) {
@@ -7527,7 +7530,7 @@ do_get_uncompressed_ram_image(CData *cdata) {
  * will return NULL.
  */
 CPTA_uchar Texture::
-get_ram_image_as(const string &requested_format) {
+get_ram_image_as(std::string_view requested_format) {
   CDWriter cdata(_cycler, false);
   string format = upcase(requested_format);
 
@@ -9309,7 +9312,7 @@ clear_prepared(PreparedGraphicsObjects *prepared_objects) {
  * num_channels.
  */
 void Texture::
-consider_downgrade(PNMImage &pnmimage, int num_channels, const string &name) {
+consider_downgrade(PNMImage &pnmimage, int num_channels, std::string_view name) {
   if (num_channels != 0 && num_channels != pnmimage.get_num_channels()) {
     gobj_cat.info()
       << (num_channels < pnmimage.get_num_channels() ? "Down" : "Up")

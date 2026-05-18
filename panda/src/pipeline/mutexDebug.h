@@ -29,7 +29,7 @@
  */
 class EXPCL_PANDA_PIPELINE MutexDebug : public Namable {
 protected:
-  MutexDebug(const std::string &name, bool allow_recursion, bool lightweight);
+  MutexDebug(std::string_view name, bool allow_recursion, bool lightweight);
   MutexDebug(const MutexDebug &copy) = delete;
   virtual ~MutexDebug();
 

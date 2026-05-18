@@ -1131,8 +1131,8 @@ get_active() const {
  *
  */
 void OpenALAudioSound::
-set_finished_event(const std::string& event) {
-  _finished_event = event;
+set_finished_event(std::string event) {
+  _finished_event = std::move(event);
 }
 
 /**

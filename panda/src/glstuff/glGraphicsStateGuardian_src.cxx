@@ -9938,7 +9938,7 @@ get_error_string(GLenum error_code) {
  * string is returned.
  */
 string CLP(GraphicsStateGuardian)::
-show_gl_string(const string &name, GLenum id) {
+show_gl_string(std::string_view name, GLenum id) {
   string result;
 
   const GLubyte *text = glGetString(id);
@@ -10141,14 +10141,13 @@ report_extensions() const {
     std::ostream &out = GLCAT.debug();
     out << "GL Extensions:\n";
 
-    pset<string>::const_iterator ei;
-    for (ei = _extensions.begin(); ei != _extensions.end(); ++ei) {
+    for (auto ei = _extensions.cbegin(); ei != _extensions.cend(); ++ei) {
       size_t len = (*ei).size();
       out << "  " << (*ei);
 
       // Display a second column.
       if (len <= 38) {
-        if (++ei != _extensions.end()) {
+        if (++ei != _extensions.cend()) {
           for (int i = len; i < 38; ++i) {
             out.put(' ');
           }

@@ -322,7 +322,7 @@ substr(size_t begin, size_t end) const {
  * two parameters.
  */
 INLINE void Filename::
-operator += (const std::string &other) {
+operator += (std::string_view other) {
   _filename += other;
   locate_basename();
   locate_extension();
@@ -333,7 +333,7 @@ operator += (const std::string &other) {
  * Returns a new Filename representing the concatenation of the two filenames.
  */
 INLINE Filename Filename::
-operator + (const std::string &other) const {
+operator + (std::string_view other) const {
   Filename a(*this);
   a += other;
   return a;
@@ -587,7 +587,7 @@ is_fully_qualified() const {
  *
  */
 INLINE bool Filename::
-operator == (const std::string &other) const {
+operator == (std::string_view other) const {
   return (*(std::string *)this) == other;
 }
 
@@ -595,7 +595,7 @@ operator == (const std::string &other) const {
  *
  */
 INLINE bool Filename::
-operator != (const std::string &other) const {
+operator != (std::string_view other) const {
   return (*(std::string *)this) != other;
 }
 
@@ -603,7 +603,7 @@ operator != (const std::string &other) const {
  *
  */
 INLINE bool Filename::
-operator < (const std::string &other) const {
+operator < (std::string_view other) const {
   return (*(std::string *)this) < other;
 }
 

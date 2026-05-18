@@ -27,13 +27,13 @@ using std::string;
  * always_quote is true, writes quotation marks regardless.
  */
 ostream &
-enquote_string(ostream &out, const string &str, int indent_level,
+enquote_string(ostream &out, std::string_view str, int indent_level,
                bool always_quote) {
   indent(out, indent_level);
 
   // First, see if we need to enquote it.
   bool legal = !always_quote;
-  string::const_iterator p;
+  std::string_view::const_iterator p;
   for (p = str.begin(); p != str.end() && legal; ++p) {
     legal = (isalnum(*p) || *p=='-' || *p=='_' || *p=='#' || *p=='.');
   }

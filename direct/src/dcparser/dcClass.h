@@ -44,7 +44,7 @@ class DCParameter;
  */
 class EXPCL_DIRECT_DCPARSER DCClass : public DCDeclaration {
 public:
-  DCClass(DCFile *dc_file, const std::string &name,
+  DCClass(DCFile *dc_file, std::string name,
           bool is_struct, bool bogus_class);
   ~DCClass();
 
@@ -66,7 +66,7 @@ PUBLISHED:
   int get_num_fields() const;
   DCField *get_field(int n) const;
 
-  DCField *get_field_by_name(const std::string &name) const;
+  DCField *get_field_by_name(std::string_view name) const;
   DCField *get_field_by_index(int index_number) const;
 
   int get_num_inherited_fields() const;
@@ -94,9 +94,9 @@ PUBLISHED:
   EXTENSION(void receive_update_all_required(PyObject *distobj, DatagramIterator &di) const);
   EXTENSION(void receive_update_other(PyObject *distobj, DatagramIterator &di) const);
 
-  EXTENSION(void direct_update(PyObject *distobj, const std::string &field_name,
+  EXTENSION(void direct_update(PyObject *distobj, std::string_view field_name,
                                const vector_uchar &value_blob));
-  EXTENSION(void direct_update(PyObject *distobj, const std::string &field_name,
+  EXTENSION(void direct_update(PyObject *distobj, std::string_view field_name,
                                const Datagram &datagram));
   EXTENSION(bool pack_required_field(Datagram &datagram, PyObject *distobj,
                                      const DCField *field) const);
@@ -105,13 +105,13 @@ PUBLISHED:
 
 
 
-  EXTENSION(Datagram client_format_update(const std::string &field_name,
+  EXTENSION(Datagram client_format_update(std::string_view field_name,
                                           DOID_TYPE do_id, PyObject *args) const);
-  EXTENSION(Datagram ai_format_update(const std::string &field_name,
+  EXTENSION(Datagram ai_format_update(std::string_view field_name,
                                       DOID_TYPE do_id,
                                       CHANNEL_TYPE to_id, CHANNEL_TYPE from_id,
                                       PyObject *args) const);
-  EXTENSION(Datagram ai_format_update_msg_type(const std::string &field_name,
+  EXTENSION(Datagram ai_format_update_msg_type(std::string_view field_name,
                                                DOID_TYPE do_id,
                                                CHANNEL_TYPE to_id,
                                                CHANNEL_TYPE from_id,
@@ -131,8 +131,8 @@ PUBLISHED:
 public:
   virtual void output(std::ostream &out, bool brief) const;
   virtual void write(std::ostream &out, bool brief, int indent_level) const;
-  void output_instance(std::ostream &out, bool brief, const std::string &prename,
-                       const std::string &name, const std::string &postname) const;
+  void output_instance(std::ostream &out, bool brief, std::string_view prename,
+                       std::string_view name, std::string_view postname) const;
   void generate_hash(HashGenerator &hashgen) const;
   void clear_inherited_fields();
   void rebuild_inherited_fields();
@@ -142,7 +142,7 @@ public:
   void set_number(int number);
 
 private:
-  void shadow_inherited_field(const std::string &name);
+  void shadow_inherited_field(std::string_view name);
 
 #ifdef WITHIN_PANDA
   mutable PStatCollector _class_update_pcollector;
@@ -166,7 +166,7 @@ private:
   typedef pvector<DCField *> Fields;
   Fields _fields, _inherited_fields;
 
-  typedef pmap<std::string, DCField *> FieldsByName;
+  typedef pmap<std::string, DCField *, std::less<>> FieldsByName;
   FieldsByName _fields_by_name;
 
   typedef pmap<int, DCField *> FieldsByIndex;

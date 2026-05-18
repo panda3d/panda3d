@@ -25,7 +25,7 @@
  */
 class EXPCL_PANDA_EGG EggBin : public EggGroup {
 PUBLISHED:
-  explicit EggBin(const std::string &name = "");
+  explicit EggBin(std::string name = "");
   EggBin(const EggGroup &copy);
   EggBin(const EggBin &copy);
 

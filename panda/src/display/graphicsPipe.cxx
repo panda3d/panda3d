@@ -262,7 +262,7 @@ close_gsg(GraphicsStateGuardian *gsg) {
  * Creates a new window on the pipe, if possible.
  */
 PT(GraphicsOutput) GraphicsPipe::
-make_output(const std::string &name,
+make_output(std::string_view name,
             const FrameBufferProperties &fb_prop,
             const WindowProperties &win_prop,
             int flags,

@@ -602,7 +602,7 @@ invalidate_all() {
  * Returns true on success, false on failure.
  */
 bool ParametricCurve::
-format_egg(std::ostream &, const std::string &, const std::string &, int) const {
+format_egg(std::ostream &, std::string_view, std::string_view, int) const {
   return false;
 }
 

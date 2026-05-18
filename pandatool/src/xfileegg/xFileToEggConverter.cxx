@@ -224,7 +224,7 @@ create_unique_material(const EggMaterial &copy) {
  * transform.
  */
 EggGroup *XFileToEggConverter::
-find_joint(const string &joint_name) {
+find_joint(std::string_view joint_name) {
   Joints::iterator ji;
   ji = _joints.find(joint_name);
   if (ji != _joints.end()) {
@@ -243,7 +243,7 @@ find_joint(const string &joint_name) {
     xfile_cat.warning()
       << "Joint name " << joint_name << " in animation data is undefined.\n";
   }
-  _joints[joint_name] = nullptr;
+  _joints[std::string(joint_name)] = nullptr;
 
   return nullptr;
 }
@@ -545,7 +545,7 @@ convert_animation(XFileDataNode *obj, XFileAnimationSet &animation_set) {
  * Converts the indicated object, a child of a Animation.
  */
 bool XFileToEggConverter::
-convert_animation_object(XFileDataNode *obj, const string &joint_name,
+convert_animation_object(XFileDataNode *obj, std::string_view joint_name,
                          XFileToEggConverter::FrameData &table) {
   if (obj->is_standard_object("AnimationOptions")) {
     // Quietly ignore AnimationOptions.
@@ -573,7 +573,7 @@ convert_animation_object(XFileDataNode *obj, const string &joint_name,
  * Converts the indicated AnimationKey template object.
  */
 bool XFileToEggConverter::
-convert_animation_key(XFileDataNode *obj, const string &joint_name,
+convert_animation_key(XFileDataNode *obj, std::string_view joint_name,
                       XFileToEggConverter::FrameData &table) {
   int key_type = (*obj)["keyType"].i();
 
@@ -609,7 +609,7 @@ convert_animation_key(XFileDataNode *obj, const string &joint_name,
  * Sets a single frame of the animation data.
  */
 bool XFileToEggConverter::
-set_animation_frame(const string &joint_name,
+set_animation_frame(std::string_view joint_name,
                     XFileToEggConverter::FrameData &table, int frame,
                     int key_type, const XFileDataObject &values) {
   if ((int)table._entries.size() <= frame) {

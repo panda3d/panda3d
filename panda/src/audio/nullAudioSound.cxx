@@ -110,7 +110,7 @@ bool NullAudioSound::get_active() const {
   return false;
 }
 
-void NullAudioSound::set_finished_event(const string& event) {
+void NullAudioSound::set_finished_event(string event) {
   // Intentionally blank.
 }
 

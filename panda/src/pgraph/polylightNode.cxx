@@ -29,8 +29,8 @@ TypeHandle PolylightNode::_type_handle;
  * Use PolylightNode() to construct a new PolylightNode object.
  */
 PolylightNode::
-PolylightNode(const std::string &name) :
-PandaNode(name)
+PolylightNode(std::string name) :
+PandaNode(std::move(name))
 {
   _enabled = true;
   set_pos(0,0,0);

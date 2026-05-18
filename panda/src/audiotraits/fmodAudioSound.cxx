@@ -905,7 +905,7 @@ finished() {
  *
  */
 void FmodAudioSound::
-set_finished_event(const string& event) {
+set_finished_event(string event) {
   audio_error("set_finished_event: not implemented under FMOD-EX");
 }
 

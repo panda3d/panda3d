@@ -195,20 +195,23 @@ get_top_category() {
  * indicate this is a top-level Category.
  */
 NotifyCategory *Notify::
-get_category(const string &basename, NotifyCategory *parent_category) {
+get_category(std::string_view basename, NotifyCategory *parent_category) {
   // The string should not contain colons.
   nassertr(basename.find(':') == string::npos, nullptr);
 
   string fullname;
   if (parent_category != nullptr) {
-    fullname = parent_category->get_fullname() + ":" + basename;
+    fullname = parent_category->get_fullname();
+    fullname += ':';
+    fullname += basename;
   } else {
     // The parent_category is NULL.  If basename is empty, that means we refer
     // to the very top-level category (with an empty fullname); otherwise,
     // it's a new category just below that top level.
     if (!basename.empty()) {
       parent_category = get_top_category();
-      fullname = ":" + basename;
+      fullname = ":";
+      fullname += basename;
     }
   }
 
@@ -221,7 +224,7 @@ get_category(const string &basename, NotifyCategory *parent_category) {
   if (inserted) {
     // If we just inserted a new record, then we have to create a new Category
     // pointer.  Otherwise, there was already one created from before.
-    category = new NotifyCategory(fullname, basename, parent_category);
+    category = new NotifyCategory(std::move(fullname), basename, parent_category);
   }
 
   return category;
@@ -234,7 +237,7 @@ get_category(const string &basename, NotifyCategory *parent_category) {
  * parent.  If the parent Category does not already exist, it will be created.
  */
 NotifyCategory *Notify::
-get_category(const string &basename, const string &parent_fullname) {
+get_category(std::string_view basename, std::string_view parent_fullname) {
   return get_category(basename, get_category(parent_fullname));
 }
 
@@ -246,7 +249,7 @@ get_category(const string &basename, const string &parent_fullname) {
  * handy.
  */
 NotifyCategory *Notify::
-get_category(const string &fullname) {
+get_category(std::string_view fullname) {
   Categories::const_iterator ci;
   ci = _categories.find(fullname);
   if (ci != _categories.end()) {
@@ -256,7 +259,7 @@ get_category(const string &fullname) {
   // No such Category; create one.  First identify the parent name, based on
   // the rightmost colon.
   NotifyCategory *parent_category = nullptr;
-  string basename = fullname;
+  std::string_view basename = fullname;
 
   size_t colon = fullname.rfind(':');
   if (colon != string::npos) {
@@ -311,7 +314,7 @@ null() {
  * implicit newline, to the Notify output stream.
  */
 void Notify::
-write_string(const string &str) {
+write_string(std::string_view str) {
   out() << str << "\n";
 }
 
@@ -596,10 +599,10 @@ write_backtrace(void **trace, int size) {
  * matches.
  */
 NotifySeverity Notify::
-string_severity(const string &str) {
+string_severity(std::string_view str) {
   // Convert the string to lowercase for a case-insensitive comparison.
   string lstring;
-  for (string::const_iterator si = str.begin();
+  for (std::string_view::const_iterator si = str.begin();
        si != str.end();
        ++si) {
     lstring += (char)tolower(*si);

@@ -59,7 +59,7 @@ PStatCollector TextNode::_text_generate_pcollector("*:Generate Text");
  *
  */
 TextNode::
-TextNode(const string &name) : PandaNode(name) {
+TextNode(std::string name) : PandaNode(std::move(name)) {
   set_cull_callback();
   set_renderable();
 
@@ -73,8 +73,8 @@ TextNode(const string &name) : PandaNode(name) {
  * without copying a complete TextNode.
  */
 TextNode::
-TextNode(const string &name, const TextProperties &copy) :
-  PandaNode(name), TextProperties(copy)
+TextNode(std::string name, const TextProperties &copy) :
+  PandaNode(std::move(name)), TextProperties(copy)
 {
 }
 
@@ -613,7 +613,7 @@ do_generate(CData *cdata) {
   if (newline != string::npos) {
     name = name.substr(0, newline);
   }
-  PT(PandaNode) root = new PandaNode(name);
+  PT(PandaNode) root = new PandaNode(std::move(name));
 
   if (cdata->_wtext.empty()) {
     return root;

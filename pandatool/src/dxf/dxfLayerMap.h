@@ -27,7 +27,7 @@ class DXFFile;
  */
 class DXFLayerMap : public pmap<std::string, DXFLayer *> {
 public:
-  DXFLayer *get_layer(const std::string &name, DXFFile *dxffile);
+  DXFLayer *get_layer(std::string name, DXFFile *dxffile);
 };
 
 #endif

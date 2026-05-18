@@ -17,8 +17,8 @@
  *
  */
 INLINE ButtonRegistry::RegistryNode::
-RegistryNode(ButtonHandle handle, ButtonHandle alias, const std::string &name) :
-  _handle(handle), _alias(alias), _name(name)
+RegistryNode(ButtonHandle handle, ButtonHandle alias, std::string name) :
+  _handle(handle), _alias(alias), _name(std::move(name))
 {
 }
 

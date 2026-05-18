@@ -33,7 +33,7 @@ protected:
   INLINE MovingPart(const MovingPart &copy);
 
 public:
-  INLINE MovingPart(PartGroup *parent, const std::string &name,
+  INLINE MovingPart(PartGroup *parent, std::string name,
                     const ValueType &default_value);
 
   virtual TypeHandle get_value_type() const;

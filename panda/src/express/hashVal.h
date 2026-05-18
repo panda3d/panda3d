@@ -66,7 +66,7 @@ PUBLISHED:
   bool hash_file(const Filename &filename);
   bool hash_stream(std::istream &stream);
   INLINE void hash_ramfile(const Ramfile &ramfile);
-  INLINE void hash_string(const std::string &data);
+  INLINE void hash_string(std::string_view data);
   INLINE void hash_bytes(const vector_uchar &data);
   void hash_buffer(const char *buffer, size_t length);
 

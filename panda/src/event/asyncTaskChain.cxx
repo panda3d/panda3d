@@ -37,9 +37,9 @@ PStatCollector AsyncTaskChain::_wait_pcollector("Wait");
  *
  */
 AsyncTaskChain::
-AsyncTaskChain(AsyncTaskManager *manager, const string &name, int num_threads,
+AsyncTaskChain(AsyncTaskManager *manager, std::string name, int num_threads,
                ThreadPriority thread_priority) :
-  Namable(name),
+  Namable(std::move(name)),
   _manager(manager),
   _cvar(manager->_lock),
   _tick_clock(false),
@@ -1425,8 +1425,8 @@ write_task_line(ostream &out, int indent_level, AsyncTask *task, double now) con
  *
  */
 AsyncTaskChain::AsyncTaskChainThread::
-AsyncTaskChainThread(const string &name, AsyncTaskChain *chain) :
-  Thread(name, chain->get_name()),
+AsyncTaskChainThread(std::string name, AsyncTaskChain *chain) :
+  Thread(std::move(name), chain->get_name()),
   _chain(chain),
   _servicing(nullptr)
 {

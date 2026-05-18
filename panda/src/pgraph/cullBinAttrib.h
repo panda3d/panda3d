@@ -30,7 +30,7 @@ private:
   INLINE CullBinAttrib();
 
 PUBLISHED:
-  static CPT(RenderAttrib) make(const std::string &bin_name, int draw_order);
+  static CPT(RenderAttrib) make(std::string bin_name, int draw_order);
   static CPT(RenderAttrib) make_default();
 
   INLINE const std::string &get_bin_name() const;

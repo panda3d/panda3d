@@ -31,14 +31,14 @@ RangeDescription() {
  * parsed correctly, false otherwise.
  */
 bool RangeDescription::
-parse_parameter(const string &param) {
+parse_parameter(std::string_view param) {
   // First, go through and separate the string by commas.  We have to do this
   // by hand instead of calling tokenize(), because we also have to scan for
   // square brackets, which may contain nested commas.
   size_t p = 0;
   while (p < param.length()) {
     size_t q = param.find_first_of("[,", p);
-    if (q == string::npos) {
+    if (q == std::string_view::npos) {
       return parse_word(trim(param.substr(p)));
     }
     if (!parse_word(trim(param.substr(p, q - p)))) {
@@ -50,7 +50,7 @@ parse_parameter(const string &param) {
       // bracket.  However, a right bracket immediately after the left bracket
       // doesn't count; we start the scan after that.
       p = param.find("]", q + 2);
-      if ( p == string::npos) {
+      if (p == std::string_view::npos) {
         nout << "Unclosed open bracket.\n";
         return false;
       }
@@ -96,14 +96,14 @@ output(std::ostream &out) const {
  * single number, or a pair of numbers separated by a hyphen.
  */
 bool RangeDescription::
-parse_word(const string &word) {
+parse_word(std::string_view word) {
   if (word.empty()) {
     return true;
   }
 
   // It's not empty, so see if it includes a hyphen.
   size_t hyphen = word.find('-');
-  if (hyphen == string::npos) {
+  if (hyphen == std::string_view::npos) {
     // Nope, just one number.
     int code;
     if (!parse_code(word, code)) {
@@ -131,7 +131,7 @@ parse_word(const string &word) {
  * in the indicated parameter.  Returns true if successful, false otherwise.
  */
 bool RangeDescription::
-parse_code(const string &word, int &code) {
+parse_code(std::string_view word, int &code) {
   string str = trim(word);
   const char *nptr = str.c_str();
   char *endptr;
@@ -148,9 +148,8 @@ parse_code(const string &word, int &code) {
  * Parses the text listed between square brackets on the command line.
  */
 bool RangeDescription::
-parse_bracket(const string &str) {
-  string::const_iterator si;
-  si = str.begin();
+parse_bracket(std::string_view str) {
+  auto si = str.begin();
   while (si != str.end()) {
     int ch = (*si);
     ++si;

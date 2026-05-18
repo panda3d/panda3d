@@ -39,8 +39,8 @@ PUBLISHED:
 public:
   virtual DCPackerInterface *get_nested_field(int n) const final;
 
-  virtual void output_instance(std::ostream &out, bool brief, const std::string &prename,
-                               const std::string &name, const std::string &postname) const;
+  virtual void output_instance(std::ostream &out, bool brief, std::string_view prename,
+                               std::string_view name, std::string_view postname) const;
   virtual void generate_hash(HashGenerator &hashgen) const;
 
 protected:

@@ -31,7 +31,7 @@ class AsyncTaskChain;
  */
 class EXPCL_PANDA_EVENT AsyncTask : public AsyncFuture, public Namable {
 public:
-  AsyncTask(const std::string &name = std::string());
+  AsyncTask(std::string name = "");
   ALLOC_DELETED_CHAIN(AsyncTask);
 
 PUBLISHED:
@@ -76,13 +76,13 @@ PUBLISHED:
   INLINE int get_start_frame() const;
   int get_elapsed_frames() const;
 
-  void set_name(const std::string &name);
+  void set_name(std::string name);
   INLINE void clear_name();
   std::string get_name_prefix() const;
 
   INLINE int get_task_id() const;
 
-  void set_task_chain(const std::string &chain_name);
+  void set_task_chain(std::string_view chain_name);
   INLINE const std::string &get_task_chain() const;
 
   void set_sort(int sort);
@@ -91,7 +91,7 @@ PUBLISHED:
   void set_priority(int priority);
   INLINE int get_priority() const;
 
-  INLINE void set_done_event(const std::string &done_event);
+  INLINE void set_done_event(std::string done_event);
 
   INLINE double get_dt() const;
   INLINE double get_max_dt() const;

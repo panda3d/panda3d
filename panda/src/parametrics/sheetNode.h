@@ -31,7 +31,7 @@
  */
 class EXPCL_PANDA_PARAMETRICS SheetNode : public PandaNode {
 PUBLISHED:
-  explicit SheetNode(const std::string &name);
+  explicit SheetNode(std::string name);
 
 protected:
   SheetNode(const SheetNode &copy);

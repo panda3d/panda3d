@@ -303,7 +303,7 @@ read(const Filename &filename, PNMFileType *type, bool report_unknown_type) {
  * Returns true if successful, false on error.
  */
 bool PNMImage::
-read(std::istream &data, const std::string &filename, PNMFileType *type,
+read(std::istream &data, std::string_view filename, PNMFileType *type,
      bool report_unknown_type) {
   PNMReader *reader = PNMImageHeader::make_reader
     (&data, false, filename, std::string(), type, report_unknown_type);
@@ -412,7 +412,7 @@ write(const Filename &filename, PNMFileType *type) const {
  * write.
  */
 bool PNMImage::
-write(std::ostream &data, const std::string &filename, PNMFileType *type) const {
+write(std::ostream &data, std::string_view filename, PNMFileType *type) const {
   if (!is_valid()) {
     return false;
   }

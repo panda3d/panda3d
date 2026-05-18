@@ -24,7 +24,7 @@ TypeHandle CharacterJointBundle::_type_handle;
  * Character node will automatically create one for itself.
  */
 CharacterJointBundle::
-CharacterJointBundle(const std::string &name) : PartBundle(name) {
+CharacterJointBundle(std::string name) : PartBundle(std::move(name)) {
 }
 
 /**

@@ -65,7 +65,7 @@ class GraphicsStateGuardianBase;
 class EXPCL_PANDA_PGRAPH PandaNode : public TypedWritableReferenceCount,
                                      public Namable {
 PUBLISHED:
-  explicit PandaNode(const std::string &name);
+  explicit PandaNode(std::string name);
   virtual ~PandaNode();
   // published so that characters can be combined.
   virtual PandaNode *combine_with(PandaNode *other);
@@ -219,7 +219,7 @@ PUBLISHED:
 
   INLINE bool has_tags() const;
   void copy_tags(PandaNode *other);
-  void list_tags(std::ostream &out, const std::string &separator = "\n") const;
+  void list_tags(std::ostream &out, std::string_view separator = "\n") const;
 
   int compare_tags(const PandaNode *other) const;
 

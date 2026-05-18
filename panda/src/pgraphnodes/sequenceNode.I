@@ -15,8 +15,8 @@
  *
  */
 INLINE SequenceNode::
-SequenceNode(const std::string &name) :
-  SelectiveChildNode(name)
+SequenceNode(std::string name) :
+  SelectiveChildNode(std::move(name))
 {
   set_cull_callback();
 }

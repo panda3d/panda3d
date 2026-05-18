@@ -69,7 +69,7 @@ write(std::ostream &out, int indent_level) const {
  * TableType value.
  */
 EggTable::TableType EggTable::
-string_table_type(const std::string &string) {
+string_table_type(std::string_view string) {
   if (cmp_nocase_uh(string, "table") == 0) {
     return TT_table;
   } else if (cmp_nocase_uh(string, "bundle") == 0) {

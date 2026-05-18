@@ -15,7 +15,6 @@
 #define STRINGDECODER_H
 
 #include "dtoolbase.h"
-#include <string_view>
 
 /**
  * The base class to a family of classes that decode various kinds of encoded

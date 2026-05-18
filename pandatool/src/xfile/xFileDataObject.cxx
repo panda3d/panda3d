@@ -82,9 +82,9 @@ add_double(double double_value) {
  * cases for a DataNodeTemplate.
  */
 XFileDataObject &XFileDataObject::
-add_string(const string &string_value) {
+add_string(std::string string_value) {
   XFileDataObject *object =
-    new XFileDataObjectString(get_data_def(), string_value);
+    new XFileDataObjectString(get_data_def(), std::move(string_value));
   add_element(object);
   return *object;
 }
@@ -205,7 +205,7 @@ set_double_value(double double_value) {
  * Sets the object's value as a string, if this is legal.
  */
 void XFileDataObject::
-set_string_value(const string &string_value) {
+set_string_value(std::string string_value) {
   xfile_cat.error()
     << get_type_name() << " does not support string values.\n";
 }
@@ -298,7 +298,7 @@ get_element(int n) {
  * name.
  */
 XFileDataObject *XFileDataObject::
-get_element(const string &name) {
+get_element(std::string_view name) {
   xfile_cat.warning()
     << "Looking for [\"" << name << "\"] within data object of type "
     << get_type_name() << ", does not support nested objects.\n";

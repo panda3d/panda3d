@@ -38,7 +38,7 @@ public:
 
 PUBLISHED:
   void add_output_file(const Filename &filename,
-                       const std::string &image_comment = "");
+                       std::string image_comment = "");
 
 private:
   // It's possible to call save_screenshot multiple times in the same frame, so

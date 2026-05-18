@@ -26,10 +26,10 @@ TypeHandle CConstrainPosInterval::_type_handle;
  * node's local position will be copied unaltered.
  */
 CConstrainPosInterval::
-CConstrainPosInterval(const std::string &name, double duration,
+CConstrainPosInterval(std::string name, double duration,
                       const NodePath &node, const NodePath &target,
                       bool wrt, const LVecBase3 posOffset) :
-  CConstraintInterval(name, duration),
+  CConstraintInterval(std::move(name), duration),
   _node(node),
   _target(target),
   _wrt(wrt),

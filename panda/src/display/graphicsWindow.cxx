@@ -31,7 +31,7 @@ TypeHandle GraphicsWindow::_type_handle;
  */
 GraphicsWindow::
 GraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
-               const string &name,
+               std::string name,
                const FrameBufferProperties &fb_prop,
                const WindowProperties &win_prop,
                int flags,
@@ -179,9 +179,9 @@ is_active() const {
  * parameter: the window itself.
  */
 void GraphicsWindow::
-set_window_event(const string &window_event) {
+set_window_event(std::string window_event) {
   LightReMutexHolder holder(_properties_lock);
-  _window_event = window_event;
+  _window_event = std::move(window_event);
 }
 
 /**
@@ -215,9 +215,9 @@ get_window_event() const {
  * app, or reboot the machine).
  */
 void GraphicsWindow::
-set_close_request_event(const string &close_request_event) {
+set_close_request_event(std::string close_request_event) {
   LightReMutexHolder holder(_properties_lock);
-  _close_request_event = close_request_event;
+  _close_request_event = std::move(close_request_event);
 }
 
 /**

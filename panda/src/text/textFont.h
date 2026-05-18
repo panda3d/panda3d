@@ -86,7 +86,7 @@ public:
   virtual bool get_glyph(int character, CPT(TextGlyph) &glyph)=0;
   TextGlyph *get_invalid_glyph();
 
-  static RenderMode string_render_mode(const std::string &string);
+  static RenderMode string_render_mode(std::string_view string);
 
 private:
   void make_invalid_glyph();

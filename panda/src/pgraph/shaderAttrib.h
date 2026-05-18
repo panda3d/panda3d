@@ -106,7 +106,7 @@ PUBLISHED:
   CPT(RenderAttrib) clear_flag(int flag) const;
 
   CPT(RenderAttrib) clear_shader_input(const InternalName *id) const;
-  CPT(RenderAttrib) clear_shader_input(const std::string &id) const;
+  CPT(RenderAttrib) clear_shader_input(std::string_view id) const;
 
   CPT(RenderAttrib) clear_all_shader_inputs() const;
 
@@ -115,7 +115,7 @@ PUBLISHED:
 
   const Shader *get_shader() const;
   const ShaderInput &get_shader_input(const InternalName *id) const;
-  const ShaderInput &get_shader_input(const std::string &id) const;
+  const ShaderInput &get_shader_input(std::string_view id) const;
 
   NodePath get_shader_input_nodepath(const InternalName *id) const;
   LVecBase4 get_shader_input_vector(InternalName *id) const;

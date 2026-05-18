@@ -31,11 +31,11 @@ public:
   ~DCKeywordList();
 
 PUBLISHED:
-  bool has_keyword(const std::string &name) const;
+  bool has_keyword(std::string_view name) const;
   bool has_keyword(const DCKeyword *keyword) const;
   int get_num_keywords() const;
   const DCKeyword *get_keyword(int n) const;
-  const DCKeyword *get_keyword_by_name(const std::string &name) const;
+  const DCKeyword *get_keyword_by_name(std::string_view name) const;
 
   bool compare_keywords(const DCKeywordList &other) const;
 
@@ -52,7 +52,7 @@ private:
   typedef pvector<const DCKeyword *> Keywords;
   Keywords _keywords;
 
-  typedef pmap<std::string, const DCKeyword *> KeywordsByName;
+  typedef pmap<std::string, const DCKeyword *, std::less<>> KeywordsByName;
   KeywordsByName _keywords_by_name;
 
   int _flags;

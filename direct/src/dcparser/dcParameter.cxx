@@ -185,8 +185,8 @@ write(ostream &out, bool brief, int indent_level) const {
  */
 void DCParameter::
 write_instance(ostream &out, bool brief, int indent_level,
-               const string &prename, const string &name,
-               const string &postname) const {
+               std::string_view prename, std::string_view name,
+               std::string_view postname) const {
   indent(out, indent_level);
   output_instance(out, brief, prename, name, postname);
   output_keywords(out);
@@ -202,8 +202,8 @@ write_instance(ostream &out, bool brief, int indent_level,
  * instead.
  */
 void DCParameter::
-output_typedef_name(ostream &out, bool, const string &prename,
-                    const string &name, const string &postname) const {
+output_typedef_name(ostream &out, bool, std::string_view prename,
+                    std::string_view name, std::string_view postname) const {
   out << get_typedef()->get_name();
   if (!prename.empty() || !name.empty() || !postname.empty()) {
     out << " " << prename << name << postname;
@@ -216,8 +216,8 @@ output_typedef_name(ostream &out, bool, const string &prename,
  */
 void DCParameter::
 write_typedef_name(ostream &out, bool brief, int indent_level,
-                   const string &prename, const string &name,
-                   const string &postname) const {
+                   std::string_view prename, std::string_view name,
+                   std::string_view postname) const {
   indent(out, indent_level)
     << get_typedef()->get_name();
   if (!prename.empty() || !name.empty() || !postname.empty()) {

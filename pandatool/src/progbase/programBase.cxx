@@ -82,7 +82,7 @@ static ConfigVariableBool use_terminal_width
  *
  */
 ProgramBase::
-ProgramBase(const string &name) : _name(name) {
+ProgramBase(string name) : _name(std::move(name)) {
   // Set up Notify to write output to our own formatted stream.
   Notify::ptr()->set_ostream_ptr(new WordWrapStream(this), true);
 
@@ -171,7 +171,7 @@ show_options() {
  * known _terminal_width.
  */
 void ProgramBase::
-show_text(const string &prefix, int indent_width, string text) {
+show_text(std::string_view prefix, int indent_width, string text) {
   get_terminal_width();
 
   // This is correct!  It goes go to cerr, not to nout.  Sending it to nout
@@ -577,8 +577,8 @@ post_command_line() {
  * This should be of the format: "perform operation foo on bar files"
  */
 void ProgramBase::
-set_program_brief(const string &brief) {
-  _brief = brief;
+set_program_brief(string brief) {
+  _brief = std::move(brief);
 }
 
 /**
@@ -587,8 +587,8 @@ set_program_brief(const string &brief) {
  * characters are interpreted as paragraph breaks and printed as blank lines.
  */
 void ProgramBase::
-set_program_description(const string &description) {
-  _description = description;
+set_program_description(string description) {
+  _description = std::move(description);
 }
 
 /**
@@ -611,8 +611,8 @@ clear_runlines() {
  * to define more than one.
  */
 void ProgramBase::
-add_runline(const string &runline) {
-  _runlines.push_back(runline);
+add_runline(string runline) {
+  _runlines.push_back(std::move(runline));
 }
 
 /**
@@ -647,22 +647,22 @@ clear_options() {
  * classes.
  */
 void ProgramBase::
-add_option(const string &option, const string &parm_name,
-           int index_group, const string &description,
+add_option(string option, string parm_name,
+           int index_group, string description,
            OptionDispatchFunction option_function,
            bool *bool_var, void *option_data) {
   Option opt;
   opt._option = option;
-  opt._parm_name = parm_name;
+  opt._parm_name = std::move(parm_name);
   opt._index_group = index_group;
   opt._sequence = ++_next_sequence;
-  opt._description = description;
+  opt._description = std::move(description);
   opt._option_function = option_function;
   opt._option_method = (OptionDispatchMethod)nullptr;
   opt._bool_var = bool_var;
   opt._option_data = option_data;
 
-  _options_by_name[option] = opt;
+  _options_by_name[std::move(option)] = std::move(opt);
   _sorted_options = false;
 
   if (bool_var != nullptr) {
@@ -683,22 +683,22 @@ add_option(const string &option, const string &parm_name,
  * the first argument.
  */
 void ProgramBase::
-add_option(const string &option, const string &parm_name,
-           int index_group, const string &description,
+add_option(string option, string parm_name,
+           int index_group, string description,
            OptionDispatchMethod option_method,
            bool *bool_var, void *option_data) {
   Option opt;
   opt._option = option;
-  opt._parm_name = parm_name;
+  opt._parm_name = std::move(parm_name);
   opt._index_group = index_group;
   opt._sequence = ++_next_sequence;
-  opt._description = description;
+  opt._description = std::move(description);
   opt._option_function = (OptionDispatchFunction)nullptr;
   opt._option_method = option_method;
   opt._bool_var = bool_var;
   opt._option_data = option_data;
 
-  _options_by_name[option] = opt;
+  _options_by_name[std::move(option)] = std::move(opt);
   _sorted_options = false;
 
   if (bool_var != nullptr) {
@@ -711,12 +711,12 @@ add_option(const string &option, const string &parm_name,
  * Returns true if the option was changed, false if it hadn't been defined.
  */
 bool ProgramBase::
-redescribe_option(const string &option, const string &description) {
+redescribe_option(const string &option, string description) {
   OptionsByName::iterator oi = _options_by_name.find(option);
   if (oi == _options_by_name.end()) {
     return false;
   }
-  (*oi).second._description = description;
+  (*oi).second._description = std::move(description);
   return true;
 }
 
@@ -1327,8 +1327,8 @@ handle_help_option(const string &, const string &, void *data) {
  */
 void ProgramBase::
 format_text(std::ostream &out, bool &last_newline,
-            const string &prefix, int indent_width,
-            const string &text, int line_width) {
+            std::string_view prefix, int indent_width,
+            std::string_view text, int line_width) {
   indent_width = min(indent_width, line_width - 20);
   int indent_amount = indent_width;
   bool initial_break = false;

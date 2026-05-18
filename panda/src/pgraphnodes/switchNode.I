@@ -32,8 +32,8 @@ CData(const SwitchNode::CData &copy) :
  *
  */
 INLINE SwitchNode::
-SwitchNode(const std::string &name) :
-  SelectiveChildNode(name)
+SwitchNode(std::string name) :
+  SelectiveChildNode(std::move(name))
 {
   set_cull_callback();
 }

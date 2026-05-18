@@ -55,7 +55,7 @@ public:
   INLINE void set_animation_convert(AnimationConvert animation_convert);
   INLINE AnimationConvert get_animation_convert() const;
 
-  INLINE void set_character_name(const std::string &character_name);
+  INLINE void set_character_name(std::string character_name);
   INLINE const std::string &get_character_name() const;
 
   INLINE void set_start_frame(double start_frame);

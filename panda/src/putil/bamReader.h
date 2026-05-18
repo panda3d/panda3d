@@ -124,8 +124,8 @@ PUBLISHED:
   bool init();
 
   class AuxData;
-  void set_aux_data(TypedWritable *obj, const std::string &name, AuxData *data);
-  AuxData *get_aux_data(TypedWritable *obj, const std::string &name) const;
+  void set_aux_data(TypedWritable *obj, std::string name, AuxData *data);
+  AuxData *get_aux_data(TypedWritable *obj, std::string_view name) const;
 
   INLINE const Filename &get_filename() const;
 
@@ -176,11 +176,11 @@ public:
   void read_cdata(DatagramIterator &scan, PipelineCyclerBase &cycler,
                   void *extra_data);
 
-  void set_int_tag(const std::string &tag, int value);
-  int get_int_tag(const std::string &tag) const;
+  void set_int_tag(std::string tag, int value);
+  int get_int_tag(std::string_view tag) const;
 
-  void set_aux_tag(const std::string &tag, BamReaderAuxData *value);
-  BamReaderAuxData *get_aux_tag(const std::string &tag) const;
+  void set_aux_tag(std::string tag, BamReaderAuxData *value);
+  BamReaderAuxData *get_aux_tag(std::string_view tag) const;
 
   void register_finalize(TypedWritable *whom);
 
@@ -292,8 +292,8 @@ private:
   // which read_pointer() was called, so that we may call the appropriate
   // complete_pointers() later.
   typedef phash_map<PipelineCyclerBase *, vector_int, pointer_hash> CyclerPointers;
-  typedef pmap<std::string, int> IntTags;
-  typedef pmap<std::string, PT(BamReaderAuxData) > AuxTags;
+  typedef pmap<std::string, int, std::less<>> IntTags;
+  typedef pmap<std::string, PT(BamReaderAuxData), std::less<>> AuxTags;
   class PointerReference {
   public:
     vector_int _objects;
@@ -338,7 +338,7 @@ private:
   static NewTypes _new_types;
 
   // This is used in support of set_aux_data() and get_aux_data().
-  typedef pmap<std::string, PT(AuxData)> AuxDataNames;
+  typedef pmap<std::string, PT(AuxData), std::less<>> AuxDataNames;
   typedef phash_map<TypedWritable *, AuxDataNames, pointer_hash> AuxDataTable;
   AuxDataTable _aux_data;
 

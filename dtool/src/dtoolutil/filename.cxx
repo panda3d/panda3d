@@ -123,8 +123,8 @@ static const char *hosts_prefix = "/hosts/";
 static size_t hosts_prefix_length = 7;
 
 static string
-front_to_back_slash(const string &str) {
-  string result = str;
+front_to_back_slash(std::string_view str) {
+  string result(str);
   string::iterator si;
   for (si = result.begin(); si != result.end(); ++si) {
     if ((*si) == '/') {
@@ -136,8 +136,8 @@ front_to_back_slash(const string &str) {
 }
 
 static string
-back_to_front_slash(const string &str) {
-  string result = str;
+back_to_front_slash(std::string_view str) {
+  string result(str);
   string::iterator si;
   for (si = result.begin(); si != result.end(); ++si) {
     if ((*si) == '\\') {
@@ -337,7 +337,7 @@ Filename(const Filename &dirname, const Filename &basename) {
  * and some forward slashes.
  */
 Filename Filename::
-from_os_specific(const string &os_specific, Filename::Type type) {
+from_os_specific(std::string_view os_specific, Filename::Type type) {
 #ifdef _WIN32
   string result = back_to_front_slash(os_specific);
   const string &panda_root = get_panda_root();
@@ -403,7 +403,7 @@ from_os_specific(const string &os_specific, Filename::Type type) {
  * converted from an os-specific wide-character string.
  */
 Filename Filename::
-from_os_specific_w(const wstring &os_specific, Filename::Type type) {
+from_os_specific_w(std::wstring_view os_specific, Filename::Type type) {
   TextEncoder encoder;
   encoder.set_encoding(get_filesystem_encoding());
   encoder.set_wtext(os_specific);
@@ -416,7 +416,7 @@ from_os_specific_w(const wstring &os_specific, Filename::Type type) {
  * automatically elevates the file to its true case if needed.
  */
 Filename Filename::
-expand_from(const string &os_specific, Filename::Type type) {
+expand_from(std::string_view os_specific, Filename::Type type) {
   Filename file = from_os_specific(ExecutionEnvironment::expand_string(os_specific),
                                    type);
   file.make_true_case();
@@ -433,7 +433,7 @@ expand_from(const string &os_specific, Filename::Type type) {
  * process could simultaneously create a file by the same name.
  */
 Filename Filename::
-temporary(const string &dirname, const string &prefix, const string &suffix,
+temporary(std::string_view dirname, const string &prefix, const string &suffix,
           Type type) {
   Filename fdirname = dirname;
 #if defined(_WIN32) || defined(ANDROID) || defined(__wasi__)
@@ -879,7 +879,7 @@ get_filename_index(int index) const {
  * to the end of the filename.
  */
 void Filename::
-set_hash_to_end(const string &s) {
+set_hash_to_end(std::string_view s) {
   _filename.replace(_hash_start, string::npos, s);
 
   locate_basename();
@@ -1614,7 +1614,7 @@ get_file_size() const {
  */
 bool Filename::
 resolve_filename(const DSearchPath &searchpath,
-                 const string &default_extension) {
+                 std::string_view default_extension) {
   Filename found;
 
   if (is_local()) {
@@ -2677,8 +2677,8 @@ get_hash() const {
  */
 bool Filename::
 atomic_compare_and_exchange_contents(string &orig_contents,
-                                     const string &old_contents,
-                                     const string &new_contents) const {
+                                     std::string_view old_contents,
+                                     std::string_view new_contents) const {
 #ifdef _WIN32
   wstring os_specific = to_os_specific_w();
   HANDLE hfile = CreateFileW(os_specific.c_str(), GENERIC_READ | GENERIC_WRITE,
@@ -3035,7 +3035,7 @@ locate_hash() {
  * common to both filenames.
  */
 size_t Filename::
-get_common_prefix(const string &other) const {
+get_common_prefix(std::string_view other) const {
   size_t len = 0;
 
   // First, get the length of the common initial substring.
@@ -3057,9 +3057,9 @@ get_common_prefix(const string &other) const {
  * counting a terminal slash.
  */
 int Filename::
-count_slashes(const string &str) {
+count_slashes(std::string_view str) {
   int count = 0;
-  string::const_iterator si;
+  std::string_view::const_iterator si;
   si = str.begin();
 
   while (si != str.end()) {

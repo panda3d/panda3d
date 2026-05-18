@@ -27,7 +27,7 @@
  */
 class EXPCL_PANDA_PGRAPHNODES SphereLight : public PointLight {
 PUBLISHED:
-  explicit SphereLight(const std::string &name);
+  explicit SphereLight(std::string name);
 
 protected:
   SphereLight(const SphereLight &copy);

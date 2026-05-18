@@ -919,8 +919,8 @@ stop_threads() {
  *
  */
 VertexDataPage::PageThread::
-PageThread(PageThreadManager *manager, const std::string &name) :
-  Thread(name, name),
+PageThread(PageThreadManager *manager, std::string_view name) :
+  Thread(std::string(name), std::string(name)),
   _manager(manager),
   _working_cvar(_tlock)
 {

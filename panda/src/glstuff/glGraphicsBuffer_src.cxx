@@ -35,13 +35,13 @@ TypeHandle CLP(GraphicsBuffer)::_type_handle;
  */
 CLP(GraphicsBuffer)::
 CLP(GraphicsBuffer)(GraphicsEngine *engine, GraphicsPipe *pipe,
-                    const std::string &name,
+                    std::string name,
                     const FrameBufferProperties &fb_prop,
                     const WindowProperties &win_prop,
                     int flags,
                     GraphicsStateGuardian *gsg,
                     GraphicsOutput *host) :
-  GraphicsBuffer(engine, pipe, name, without_back_buffers(fb_prop), win_prop, flags, gsg, host),
+  GraphicsBuffer(engine, pipe, std::move(name), without_back_buffers(fb_prop), win_prop, flags, gsg, host),
   _requested_multisamples(0),
   _requested_coverage_samples(0),
   _rb_context(nullptr),

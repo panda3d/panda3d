@@ -115,7 +115,7 @@ public:
   virtual const BoundingLine *as_bounding_line() const;
   virtual const BoundingPlane *as_bounding_plane() const;
 
-  static BoundsType string_bounds_type(const std::string &str);
+  static BoundsType string_bounds_type(std::string_view str);
 
 protected:
   enum Flags {

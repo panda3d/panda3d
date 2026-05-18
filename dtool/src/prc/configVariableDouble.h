@@ -23,14 +23,14 @@
  */
 class EXPCL_DTOOL_PRC ConfigVariableDouble : public ConfigVariable {
 PUBLISHED:
-  INLINE explicit ConfigVariableDouble(const std::string &name);
-  INLINE explicit ConfigVariableDouble(const std::string &name,
+  INLINE explicit ConfigVariableDouble(std::string_view name);
+  INLINE explicit ConfigVariableDouble(std::string_view name,
                                        double default_value,
-                                       const std::string &description = std::string(),
+                                       std::string_view description = std::string_view(),
                                        int flags = 0);
-  INLINE explicit ConfigVariableDouble(const std::string &name,
-                                       const std::string &default_value,
-                                       const std::string &description = std::string(),
+  INLINE explicit ConfigVariableDouble(std::string_view name,
+                                       std::string_view default_value,
+                                       std::string_view description = std::string_view(),
                                        int flags = 0);
 
   INLINE void operator = (double value);

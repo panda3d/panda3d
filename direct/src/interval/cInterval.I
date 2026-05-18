@@ -64,8 +64,8 @@ is_stopped() const {
  * own.
  */
 INLINE void CInterval::
-set_done_event(const std::string &event) {
-  _done_event = event;
+set_done_event(std::string event) {
+  _done_event = std::move(event);
 }
 
 /**

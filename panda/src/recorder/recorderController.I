@@ -115,8 +115,8 @@ get_frame_offset() const {
  * recorder will begin receiving data.
  */
 INLINE void RecorderController::
-add_recorder(const std::string &name, RecorderBase *recorder) {
-  _user_table->add_recorder(name, recorder);
+add_recorder(std::string name, RecorderBase *recorder) {
+  _user_table->add_recorder(std::move(name), recorder);
   _user_table_modified = true;
 
   // We can only add the state flag immediately if we are in recording mode.
@@ -137,7 +137,7 @@ add_recorder(const std::string &name, RecorderBase *recorder) {
  * via add_recorder(); see get_recorder().
  */
 INLINE bool RecorderController::
-has_recorder(const std::string &name) const {
+has_recorder(std::string_view name) const {
   return (_user_table->get_recorder(name) != nullptr);
 }
 
@@ -151,7 +151,7 @@ has_recorder(const std::string &name) const {
  * return false, but get_recorder() will return a non-NULL value.
  */
 INLINE RecorderBase *RecorderController::
-get_recorder(const std::string &name) const {
+get_recorder(std::string_view name) const {
   RecorderBase *recorder = _user_table->get_recorder(name);
   if (is_playing() && recorder == nullptr) {
     recorder = _active_table->get_recorder(name);
@@ -170,7 +170,7 @@ get_recorder(const std::string &name) const {
  * the data from the session file).
  */
 INLINE bool RecorderController::
-remove_recorder(const std::string &name) {
+remove_recorder(std::string_view name) {
   // If we are playing or recording, immediately remove the state flag from
   // the recorder.  (When we are playing, the state flag will get removed
   // automatically at the next call to play_frame(), but we might as well be

@@ -15,7 +15,7 @@
  *
  */
 INLINE ClientAnalogDevice::
-ClientAnalogDevice(ClientBase *client, const std::string &device_name):
-  ClientDevice(client, get_class_type(), device_name)
+ClientAnalogDevice(ClientBase *client, std::string device_name):
+  ClientDevice(client, get_class_type(), std::move(device_name))
 {
 }

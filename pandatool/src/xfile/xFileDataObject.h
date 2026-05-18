@@ -39,7 +39,7 @@ public:
 
   INLINE void operator = (int int_value);
   INLINE void operator = (double double_value);
-  INLINE void operator = (const std::string &string_value);
+  INLINE void operator = (std::string_view string_value);
   INLINE void operator = (const LVecBase2d &vec);
   INLINE void operator = (const LVecBase3d &vec);
   INLINE void operator = (const LVecBase4d &vec);
@@ -47,7 +47,7 @@ public:
 
   INLINE void set(int int_value);
   INLINE void set(double double_value);
-  INLINE void set(const std::string &string_value);
+  INLINE void set(std::string_view string_value);
   INLINE void set(const LVecBase2d &vec);
   INLINE void set(const LVecBase3d &vec);
   INLINE void set(const LVecBase4d &vec);
@@ -63,17 +63,17 @@ public:
 
   INLINE int size() const;
   INLINE const XFileDataObject &operator [] (int n) const;
-  INLINE const XFileDataObject &operator [] (const std::string &name) const;
+  INLINE const XFileDataObject &operator [] (std::string_view name) const;
 
   INLINE XFileDataObject &operator [] (int n);
-  INLINE XFileDataObject &operator [] (const std::string &name);
+  INLINE XFileDataObject &operator [] (std::string_view name);
 
   // The following methods can be used to add elements of a specific type to a
   // complex object, e.g.  an array or a template object.
 
   XFileDataObject &add_int(int int_value);
   XFileDataObject &add_double(double double_value);
-  XFileDataObject &add_string(const std::string &string_value);
+  XFileDataObject &add_string(std::string string_value);
 
   // The following methods can be used to add elements of a specific type,
   // based on one of the standard templates.
@@ -94,7 +94,7 @@ public:
 protected:
   virtual void set_int_value(int int_value);
   virtual void set_double_value(double double_value);
-  virtual void set_string_value(const std::string &string_value);
+  virtual void set_string_value(std::string string_value);
   void store_double_array(int num_elements, const double *values);
 
   virtual int get_int_value() const;
@@ -104,7 +104,7 @@ protected:
 
   virtual int get_num_elements() const;
   virtual XFileDataObject *get_element(int n);
-  virtual XFileDataObject *get_element(const std::string &name);
+  virtual XFileDataObject *get_element(std::string_view name);
 
   const XFileDataDef *_data_def;
 

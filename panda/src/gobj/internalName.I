@@ -22,7 +22,7 @@
  * handled transparently.
  */
 INLINE PT(InternalName) InternalName::
-make(const std::string &name) {
+make(std::string_view name) {
   return get_root()->append(name);
 }
 
@@ -136,7 +136,7 @@ get_tangent() {
  * coordinate set.
  */
 INLINE PT(InternalName) InternalName::
-get_tangent_name(const std::string &name) {
+get_tangent_name(std::string_view name) {
   return get_tangent()->append(name);
 }
 
@@ -161,7 +161,7 @@ get_binormal() {
  * named texture coordinate set.
  */
 INLINE PT(InternalName) InternalName::
-get_binormal_name(const std::string &name) {
+get_binormal_name(std::string_view name) {
   return get_binormal()->append(name);
 }
 
@@ -185,7 +185,7 @@ get_texcoord() {
  * set in a TextureStage.
  */
 INLINE PT(InternalName) InternalName::
-get_texcoord_name(const std::string &name) {
+get_texcoord_name(std::string_view name) {
   return get_texcoord()->append(name);
 }
 
@@ -298,7 +298,7 @@ get_transform_index() {
  * column it applies to.
  */
 INLINE PT(InternalName) InternalName::
-get_morph(InternalName *column, const std::string &slider) {
+get_morph(InternalName *column, std::string_view slider) {
   // This actually returns "column.morph.slider", although that's just an
   // implementation detail--as long as it returns a consistent, unique name
   // for each combination of column and slider, everything is good.
@@ -419,6 +419,15 @@ CPT_InternalName(const ConstPointerTo<InternalName> &copy) :
  */
 INLINE CPT_InternalName::
 CPT_InternalName(const std::string &name) :
+  ConstPointerTo<InternalName>(InternalName::make(name))
+{
+}
+
+/**
+ *
+ */
+INLINE CPT_InternalName::
+CPT_InternalName(std::string_view name) :
   ConstPointerTo<InternalName>(InternalName::make(name))
 {
 }

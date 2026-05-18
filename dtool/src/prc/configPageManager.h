@@ -49,7 +49,7 @@ PUBLISHED:
   INLINE size_t get_num_prc_executable_patterns() const;
   INLINE std::string get_prc_executable_pattern(size_t n) const;
 
-  ConfigPage *make_explicit_page(const std::string &name);
+  ConfigPage *make_explicit_page(std::string name);
   bool delete_explicit_page(ConfigPage *page);
 
   INLINE size_t get_num_implicit_pages() const;

@@ -55,11 +55,11 @@ ButtonEvent(int keycode, double time) :
  *
  */
 INLINE ButtonEvent::
-ButtonEvent(const std::wstring &candidate_string, size_t highlight_start,
+ButtonEvent(std::wstring candidate_string, size_t highlight_start,
             size_t highlight_end, size_t cursor_pos) :
   _button(ButtonHandle::none()),
   _keycode(0),
-  _candidate_string(candidate_string),
+  _candidate_string(std::move(candidate_string)),
   _highlight_start(highlight_start),
   _highlight_end(highlight_end),
   _cursor_pos(cursor_pos),

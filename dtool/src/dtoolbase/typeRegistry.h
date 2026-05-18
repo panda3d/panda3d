@@ -38,23 +38,23 @@ public:
   // User code shouldn't generally need to call TypeRegistry::register_type()
   // or record_derivation() directly; instead, use the register_type
   // convenience function, defined in register_type.h.
-  bool register_type(TypeHandle &type_handle, const std::string &name);
+  bool register_type(TypeHandle &type_handle, std::string_view name);
 
 #ifdef HAVE_PYTHON
   typedef PyObject *PythonWrapFunc(void *ptr, PyTypeObject *cast_from);
 #endif
 
 PUBLISHED:
-  TypeHandle register_dynamic_type(const std::string &name);
+  TypeHandle register_dynamic_type(std::string_view name);
 
   void record_derivation(TypeHandle child, TypeHandle parent);
-  void record_alternate_name(TypeHandle type, const std::string &name);
+  void record_alternate_name(TypeHandle type, std::string_view name);
 #ifdef HAVE_PYTHON
   void record_python_type(TypeHandle type, PyTypeObject *cls,
                           PythonWrapFunc *wrap_func);
 #endif
 
-  TypeHandle find_type(const std::string &name) const;
+  TypeHandle find_type(std::string_view name) const;
   TypeHandle find_type_by_id(int id) const;
 
   std::string get_name(TypeHandle type, TypedObject *object) const;
@@ -109,7 +109,7 @@ private:
   typedef std::vector<TypeRegistryNode *> HandleRegistry;
   HandleRegistry _handle_registry;
 
-  typedef std::map<std::string, TypeRegistryNode *> NameRegistry;
+  typedef std::map<std::string, TypeRegistryNode *, std::less<> > NameRegistry;
   NameRegistry _name_registry;
 
   typedef std::vector<TypeRegistryNode *> RootClasses;

@@ -169,19 +169,22 @@ init() {
  * will be replaced (and deleted).
  */
 void BamReader::
-set_aux_data(TypedWritable *obj, const string &name, BamReader::AuxData *data) {
+set_aux_data(TypedWritable *obj, std::string name, BamReader::AuxData *data) {
   if (data == nullptr) {
     AuxDataTable::iterator ti = _aux_data.find(obj);
     if (ti != _aux_data.end()) {
       AuxDataNames &names = (*ti).second;
-      names.erase(name);
+      AuxDataNames::iterator ni = names.find(name);
+      if (ni != names.end()) {
+        names.erase(ni);
+      }
       if (names.empty()) {
         _aux_data.erase(ti);
       }
     }
 
   } else {
-    _aux_data[obj][name] = data;
+    _aux_data[obj][std::move(name)] = data;
   }
 }
 
@@ -191,7 +194,7 @@ set_aux_data(TypedWritable *obj, const string &name, BamReader::AuxData *data) {
  * set.
  */
 BamReader::AuxData *BamReader::
-get_aux_data(TypedWritable *obj, const string &name) const {
+get_aux_data(TypedWritable *obj, std::string_view name) const {
   AuxDataTable::const_iterator ti = _aux_data.find(obj);
   if (ti != _aux_data.end()) {
     const AuxDataNames &names = (*ti).second;
@@ -777,12 +780,12 @@ read_cdata(DatagramIterator &scan, PipelineCyclerBase &cycler,
  * be unique between an object and its CData object(s).
  */
 void BamReader::
-set_int_tag(const string &tag, int value) {
+set_int_tag(std::string tag, int value) {
   nassertv(_now_creating != _created_objs.end());
   int requestor_id = (*_now_creating).first;
 
   PointerReference &pref = _object_pointers[requestor_id];
-  pref._int_tags[tag] = value;
+  pref._int_tags[std::move(tag)] = value;
 }
 
 /**
@@ -790,7 +793,7 @@ set_int_tag(const string &tag, int value) {
  * value has been set.
  */
 int BamReader::
-get_int_tag(const string &tag) const {
+get_int_tag(std::string_view tag) const {
   nassertr(_now_creating != _created_objs.end(), 0);
   int requestor_id = (*_now_creating).first;
 
@@ -818,12 +821,12 @@ get_int_tag(const string &tag) const {
  * be unique between an object and its CData object(s).
  */
 void BamReader::
-set_aux_tag(const string &tag, BamReaderAuxData *value) {
+set_aux_tag(std::string tag, BamReaderAuxData *value) {
   nassertv(_now_creating != _created_objs.end());
   int requestor_id = (*_now_creating).first;
 
   PointerReference &pref = _object_pointers[requestor_id];
-  pref._aux_tags[tag] = value;
+  pref._aux_tags[std::move(tag)] = value;
 }
 
 /**
@@ -831,7 +834,7 @@ set_aux_tag(const string &tag, BamReaderAuxData *value) {
  * value has been set.
  */
 BamReaderAuxData *BamReader::
-get_aux_tag(const string &tag) const {
+get_aux_tag(std::string_view tag) const {
   nassertr(_now_creating != _created_objs.end(), nullptr);
   int requestor_id = (*_now_creating).first;
 

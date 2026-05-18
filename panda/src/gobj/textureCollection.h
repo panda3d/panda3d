@@ -41,7 +41,7 @@ PUBLISHED:
   void clear();
   void reserve(size_t num);
 
-  Texture *find_texture(const std::string &name) const;
+  Texture *find_texture(std::string_view name) const;
 
   int get_num_textures() const;
   Texture *get_texture(int index) const;

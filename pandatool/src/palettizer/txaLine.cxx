@@ -56,9 +56,9 @@ TxaLine() {
  * its constinuent parts.  Returns true if successful, false on error.
  */
 bool TxaLine::
-parse(const string &line) {
+parse(std::string_view line) {
   size_t colon = line.find(':');
-  if (colon == string::npos) {
+  if (colon == std::string_view::npos) {
     nout << "Colon required.\n";
     return false;
   }

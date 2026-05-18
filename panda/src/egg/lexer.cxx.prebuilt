@@ -1158,11 +1158,11 @@ static EggLexerState *eggyyget_extra(yyscan_t scanner);
 ////////////////////////////////////////////////////////////////////
 
 void
-egg_init_lexer_state(EggLexerState &state, std::istream &in, const std::string &filename) {
+egg_init_lexer_state(EggLexerState &state, std::istream &in, std::string filename) {
   state._error_count = 0;
   state._warning_count = 0;
   state._input_p = &in;
-  state._egg_filename = filename;
+  state._egg_filename = std::move(filename);
   state._initial_token = START_EGG;
 }
 
@@ -1194,7 +1194,7 @@ egg_start_primitive_body(EggLexerState &state) {
 ////////////////////////////////////////////////////////////////////
 
 void
-eggyyerror(YYLTYPE *loc, yyscan_t scanner, const std::string &msg) {
+eggyyerror(YYLTYPE *loc, yyscan_t scanner, std::string_view msg) {
   EggLexerState *lexer_state = eggyyget_extra(scanner);
 
   if (egg_cat.is_error()) {
@@ -1243,7 +1243,7 @@ eggyyerror(YYLTYPE *loc, yyscan_t scanner, const std::string &msg) {
 }
 
 void
-eggyywarning(YYLTYPE *loc, yyscan_t scanner, const std::string &msg) {
+eggyywarning(YYLTYPE *loc, yyscan_t scanner, std::string_view msg) {
   EggLexerState *lexer_state = eggyyget_extra(scanner);
 
   if (egg_cat.is_warning()) {

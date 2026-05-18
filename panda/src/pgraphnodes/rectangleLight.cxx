@@ -50,8 +50,8 @@ fillin(DatagramIterator &scan, BamReader *manager) {
  *
  */
 RectangleLight::
-RectangleLight(const std::string &name) :
-  LightLensNode(name)
+RectangleLight(std::string name) :
+  LightLensNode(std::move(name))
 {
 }
 

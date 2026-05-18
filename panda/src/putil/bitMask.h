@@ -139,7 +139,7 @@ public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
-  static void init_type(const std::string &name);
+  static void init_type(std::string_view name);
 
 private:
   static TypeHandle _type_handle;

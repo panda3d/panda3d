@@ -29,7 +29,7 @@
 class EXPCL_PANDADX wdxGraphicsBuffer9 : public GraphicsBuffer {
 public:
   wdxGraphicsBuffer9(GraphicsEngine *engine, GraphicsPipe *pipe,
-                     const std::string &name,
+                     std::string name,
                      const FrameBufferProperties &fb_prop,
                      const WindowProperties &win_prop,
                      int flags,

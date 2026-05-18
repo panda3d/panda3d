@@ -21,14 +21,14 @@
  * with a leading dot.
  */
 EggConverter::
-EggConverter(const std::string &format_name,
-             const std::string &preferred_extension,
+EggConverter(std::string format_name,
+             std::string preferred_extension,
              bool allow_last_param,
              bool allow_stdout) :
   EggFilter(allow_last_param, allow_stdout),
-  _format_name(format_name)
+  _format_name(std::move(format_name))
 {
   // Indicate the extension name we expect the user to supply for output
   // files.
-  _preferred_extension = preferred_extension;
+  _preferred_extension = std::move(preferred_extension);
 }

@@ -28,21 +28,9 @@ Mutex()
  */
 INLINE Mutex::
 #ifdef DEBUG_THREADS
-Mutex(const char *name) : MutexDebug(std::string(name), false, false)
+Mutex(std::string_view name) : MutexDebug(name, false, false)
 #else
-Mutex(const char *)
-#endif  // DEBUG_THREADS
-{
-}
-
-/**
- *
- */
-INLINE Mutex::
-#ifdef DEBUG_THREADS
-Mutex(const std::string &name) : MutexDebug(name, false, false)
-#else
-Mutex(const std::string &)
+Mutex(std::string_view)
 #endif  // DEBUG_THREADS
 {
 }

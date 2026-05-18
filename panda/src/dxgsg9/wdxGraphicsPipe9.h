@@ -50,7 +50,7 @@ public:
    bool special_check_fullscreen_resolution(DXScreenData &scrn, UINT x_size,UINT y_size);
 
 protected:
-  virtual PT(GraphicsOutput) make_output(const std::string &name,
+  virtual PT(GraphicsOutput) make_output(std::string_view name,
                                          const FrameBufferProperties &fb_prop,
                                          const WindowProperties &win_prop,
                                          int flags,

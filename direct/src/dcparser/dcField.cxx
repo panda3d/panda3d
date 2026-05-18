@@ -48,12 +48,12 @@ DCField() :
  *
  */
 DCField::
-DCField(const std::string &name, DCClass *dclass) :
-  DCPackerInterface(name),
+DCField(std::string name, DCClass *dclass) :
+  DCPackerInterface(std::move(name)),
   _dclass(dclass)
 #ifdef WITHIN_PANDA
   ,
-  _field_update_pcollector(dclass->_class_update_pcollector, name)
+  _field_update_pcollector(dclass->_class_update_pcollector, get_name())
 #endif
 {
   _number = -1;
@@ -169,10 +169,10 @@ format_data(const vector_uchar &packed_data, bool show_field_names) {
  * the corresponding packed data.  Returns empty string if there is an error.
  */
 vector_uchar DCField::
-parse_string(const std::string &formatted_string) {
+parse_string(std::string formatted_string) {
   DCPacker packer;
   packer.begin_pack(this);
-  if (!packer.parse_and_pack(formatted_string)) {
+  if (!packer.parse_and_pack(std::move(formatted_string))) {
     // Parse error.
     return vector_uchar();
   }
@@ -241,8 +241,8 @@ pack_default_value(DCPackData &pack_data, bool &) const {
  * Sets the name of this field.
  */
 void DCField::
-set_name(const std::string &name) {
-  DCPackerInterface::set_name(name);
+set_name(std::string name) {
+  DCPackerInterface::set_name(std::move(name));
   if (_dclass != nullptr) {
     _dclass->_dc_file->mark_inherited_fields_stale();
   }

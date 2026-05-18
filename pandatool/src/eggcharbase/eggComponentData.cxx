@@ -49,8 +49,8 @@ EggComponentData::
  * matched_name().
  */
 void EggComponentData::
-add_name(const std::string &name, NameUniquifier &uniquifier) {
-  if (_names.insert(name).second) {
+add_name(std::string_view name, NameUniquifier &uniquifier) {
+  if (_names.emplace(name).second) {
     // This is a new name for this component.
     if (!has_name()) {
       set_name(uniquifier.add_name(name));
@@ -67,7 +67,7 @@ add_name(const std::string &name, NameUniquifier &uniquifier) {
  * with this particular joint, false otherwise.
  */
 bool EggComponentData::
-matches_name(const std::string &name) const {
+matches_name(std::string_view name) const {
   if (name == get_name()) {
     return true;
   }

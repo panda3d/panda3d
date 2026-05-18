@@ -181,7 +181,7 @@ reserve(size_t num) {
  * NULL if no texture has that name.
  */
 Texture *TextureCollection::
-find_texture(const std::string &name) const {
+find_texture(std::string_view name) const {
   int num_textures = get_num_textures();
   for (int i = 0; i < num_textures; i++) {
     Texture *texture = get_texture(i);

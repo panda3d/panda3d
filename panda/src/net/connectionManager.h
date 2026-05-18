@@ -78,8 +78,8 @@ PUBLISHED:
 
   public:
     Interface() { _flags = 0; }
-    void set_name(const std::string &name) { _name = name; }
-    void set_mac_address(const std::string &mac_address) { _mac_address = mac_address; }
+    void set_name(std::string name) { _name = std::move(name); }
+    void set_mac_address(std::string mac_address) { _mac_address = std::move(mac_address); }
     void set_ip(const NetAddress &ip) { _ip = ip; _flags |= F_has_ip; }
     void set_netmask(const NetAddress &ip) { _netmask = ip; _flags |= F_has_netmask; }
     void set_broadcast(const NetAddress &ip) { _broadcast = ip; _flags |= F_has_broadcast; }

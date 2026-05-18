@@ -226,16 +226,15 @@ optimize() {
  * Zeroes out the named components of the transform in the animation frames.
  */
 void EggMatrixTablePointer::
-zero_channels(const string &components) {
+zero_channels(std::string_view components) {
   if (_xform == nullptr) {
     return;
   }
 
   // This is particularly easy: we only have to remove children from the
   // _xform object whose name is listed in the components.
-  string::const_iterator si;
-  for (si = components.begin(); si != components.end(); ++si) {
-    string table_name(1, *si);
+  for (char ch : components) {
+    string table_name(1, ch);
     EggNode *child = _xform->find_child(table_name);
     if (child != nullptr) {
       _xform->remove_child(child);
@@ -248,16 +247,15 @@ zero_channels(const string &components) {
  * quantum.
  */
 void EggMatrixTablePointer::
-quantize_channels(const string &components, double quantum) {
+quantize_channels(std::string_view components, double quantum) {
   if (_xform == nullptr) {
     return;
   }
 
   // This is similar to the above: we quantize children of the _xform object
   // whose name is listed in the components.
-  string::const_iterator si;
-  for (si = components.begin(); si != components.end(); ++si) {
-    string table_name(1, *si);
+  for (char ch : components) {
+    string table_name(1, ch);
     EggNode *child = _xform->find_child(table_name);
     if (child != nullptr &&
         child->is_of_type(EggSAnimData::get_class_type())) {
@@ -272,8 +270,8 @@ quantize_channels(const string &components, double quantum) {
  * pointer to it.
  */
 EggJointPointer *EggMatrixTablePointer::
-make_new_joint(const string &name) {
-  EggTable *new_table = new EggTable(name);
+make_new_joint(std::string name) {
+  EggTable *new_table = new EggTable(std::move(name));
   _table->add_child(new_table);
   CoordinateSystem cs = CS_default;
   if (_xform != nullptr) {
@@ -290,6 +288,6 @@ make_new_joint(const string &name) {
  * Applies the indicated name change to the egg file.
  */
 void EggMatrixTablePointer::
-set_name(const string &name) {
-  _table->set_name(name);
+set_name(std::string name) {
+  _table->set_name(std::move(name));
 }

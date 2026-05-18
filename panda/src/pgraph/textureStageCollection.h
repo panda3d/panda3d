@@ -36,7 +36,7 @@ PUBLISHED:
   bool has_texture_stage(TextureStage *texture_stage) const;
   void clear();
 
-  TextureStage *find_texture_stage(const std::string &name) const;
+  TextureStage *find_texture_stage(std::string_view name) const;
 
   int get_num_texture_stages() const;
   TextureStage *get_texture_stage(int index) const;

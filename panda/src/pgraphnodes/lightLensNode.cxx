@@ -28,8 +28,8 @@ TypeHandle LightLensNode::_type_handle;
  *
  */
 LightLensNode::
-LightLensNode(const std::string &name, Lens *lens) :
-  Camera(name, lens),
+LightLensNode(std::string name, Lens *lens) :
+  Camera(std::move(name), lens),
   _has_specular_color(false),
   _used_by_auto_shader(false),
   _attrib_count(0)

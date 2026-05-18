@@ -17,7 +17,6 @@
 #include "dtoolbase.h"
 
 #include <string>
-#include <string_view>
 #include "vector_string.h"
 #include "pdtoa.h"
 

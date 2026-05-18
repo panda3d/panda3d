@@ -26,8 +26,8 @@ static const int LOW_PRIORITY_RANGE = 25;
  *
  */
 AdaptiveLru::
-AdaptiveLru(const std::string &name, size_t max_size) :
-  Namable(name)
+AdaptiveLru(std::string name, size_t max_size) :
+  Namable(std::move(name))
 {
   _total_size = 0;
   _max_size = max_size;

@@ -28,7 +28,7 @@ TypeHandle EggVertexPool::_type_handle;
  *
  */
 EggVertexPool::
-EggVertexPool(const string &name) : EggNode(name) {
+EggVertexPool(std::string name) : EggNode(std::move(name)) {
   _highest_index = -1;
 }
 

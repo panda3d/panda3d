@@ -22,8 +22,8 @@ TypeHandle EggMaterial::_type_handle;
  *
  */
 EggMaterial::
-EggMaterial(const std::string &mref_name)
-  : EggNode(mref_name)
+EggMaterial(std::string mref_name)
+  : EggNode(std::move(mref_name))
 {
   _flags = 0;
 }

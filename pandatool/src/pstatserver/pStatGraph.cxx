@@ -26,9 +26,9 @@ using std::string;
  *
  */
 PStatGraph::GuideBar::
-GuideBar(double height, const string &label, PStatGraph::GuideBarStyle style) :
+GuideBar(double height, std::string label, PStatGraph::GuideBarStyle style) :
   _height(height),
-  _label(label),
+  _label(std::move(label)),
   _style(style)
 {
 }
@@ -173,7 +173,7 @@ format_number(double value) {
  * including the units as indicated.
  */
 string PStatGraph::
-format_number(double value, int guide_bar_units, const string &unit_name) {
+format_number(double value, int guide_bar_units, std::string_view unit_name) {
   string label;
 
   if ((guide_bar_units & GBU_named) != 0) {

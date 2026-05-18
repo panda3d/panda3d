@@ -15,7 +15,7 @@
  *
  */
 INLINE ConfigVariableDouble::
-ConfigVariableDouble(const std::string &name) :
+ConfigVariableDouble(std::string_view name) :
   ConfigVariable(name, VT_double),
   _local_modified(initial_invalid_cache())
 {
@@ -26,12 +26,12 @@ ConfigVariableDouble(const std::string &name) :
  *
  */
 INLINE ConfigVariableDouble::
-ConfigVariableDouble(const std::string &name, double default_value,
-                     const std::string &description, int flags) :
+ConfigVariableDouble(std::string_view name, double default_value,
+                     std::string_view description, int flags) :
 #ifdef PRC_SAVE_DESCRIPTIONS
   ConfigVariable(name, ConfigVariableCore::VT_double, description, flags),
 #else
-  ConfigVariable(name, ConfigVariableCore::VT_double, std::string(), flags),
+  ConfigVariable(name, ConfigVariableCore::VT_double, std::string_view(), flags),
 #endif
   _local_modified(initial_invalid_cache())
 {
@@ -43,12 +43,12 @@ ConfigVariableDouble(const std::string &name, double default_value,
  *
  */
 INLINE ConfigVariableDouble::
-ConfigVariableDouble(const std::string &name, const std::string &default_value,
-                     const std::string &description, int flags) :
+ConfigVariableDouble(std::string_view name, std::string_view default_value,
+                     std::string_view description, int flags) :
 #ifdef PRC_SAVE_DESCRIPTIONS
   ConfigVariable(name, ConfigVariableCore::VT_double, description, flags),
 #else
-  ConfigVariable(name, ConfigVariableCore::VT_double, std::string(), flags),
+  ConfigVariable(name, ConfigVariableCore::VT_double, std::string_view(), flags),
 #endif
   _local_modified(initial_invalid_cache())
 {

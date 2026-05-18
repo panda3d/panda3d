@@ -30,23 +30,23 @@ class pvector;
  * Register() and record_derivation() yourself.
  */
 INLINE void
-register_type(TypeHandle &type_handle, const std::string &name);
+register_type(TypeHandle &type_handle, std::string_view name);
 
 INLINE void
-register_type(TypeHandle &type_handle, const std::string &name,
+register_type(TypeHandle &type_handle, std::string_view name,
               TypeHandle parent1);
 
 INLINE void
-register_type(TypeHandle &type_handle, const std::string &name,
+register_type(TypeHandle &type_handle, std::string_view name,
               TypeHandle parent1, TypeHandle parent2);
 
 INLINE void
-register_type(TypeHandle &type_handle, const std::string &name,
+register_type(TypeHandle &type_handle, std::string_view name,
               TypeHandle parent1, TypeHandle parent2,
               TypeHandle parent3);
 
 INLINE void
-register_type(TypeHandle &type_handle, const std::string &name,
+register_type(TypeHandle &type_handle, std::string_view name,
               TypeHandle parent1, TypeHandle parent2,
               TypeHandle parent3, TypeHandle parent4);
 
@@ -58,22 +58,22 @@ register_type(TypeHandle &type_handle, const std::string &name,
  * reference.
  */
 INLINE TypeHandle
-register_dynamic_type(const std::string &name);
+register_dynamic_type(std::string_view name);
 
 INLINE TypeHandle
-register_dynamic_type(const std::string &name, TypeHandle parent1);
+register_dynamic_type(std::string_view name, TypeHandle parent1);
 
 INLINE TypeHandle
-register_dynamic_type(const std::string &name,
+register_dynamic_type(std::string_view name,
                       TypeHandle parent1, TypeHandle parent2);
 
 INLINE TypeHandle
-register_dynamic_type(const std::string &name,
+register_dynamic_type(std::string_view name,
                       TypeHandle parent1, TypeHandle parent2,
                       TypeHandle parent3);
 
 INLINE TypeHandle
-register_dynamic_type(const std::string &name,
+register_dynamic_type(std::string_view name,
                       TypeHandle parent1, TypeHandle parent2,
                       TypeHandle parent3, TypeHandle parent4);
 

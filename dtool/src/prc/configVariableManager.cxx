@@ -46,7 +46,7 @@ ConfigVariableManager::
  * that one instead.
  */
 ConfigVariableCore *ConfigVariableManager::
-make_variable(const string &name) {
+make_variable(std::string_view name) {
   VariablesByName::iterator ni;
   ni = _variables_by_name.find(name);
   if (ni != _variables_by_name.end()) {
@@ -63,15 +63,15 @@ make_variable(const string &name) {
     const GlobPattern &pattern = (*ti).first;
     ConfigVariableCore *templ = (*ti).second;
     if (pattern.matches(name)) {
-      variable = new ConfigVariableCore(*templ, name);
+      variable = new ConfigVariableCore(*templ, std::string(name));
     }
   }
 
   if (variable == nullptr) {
-    variable = new ConfigVariableCore(name);
+    variable = new ConfigVariableCore(std::string(name));
   }
 
-  _variables_by_name[name] = variable;
+  _variables_by_name[variable->get_name()] = variable;
   _variables.push_back(variable);
 
   return variable;
@@ -97,19 +97,19 @@ make_variable(const string &name) {
  * glob pattern.
  */
 ConfigVariableCore *ConfigVariableManager::
-make_variable_template(const string &pattern,
+make_variable_template(std::string_view pattern,
                        ConfigFlags::ValueType value_type,
-                       const string &default_value,
-                       const string &description, int flags) {
+                       std::string_view default_value,
+                       std::string_view description, int flags) {
   ConfigVariableCore *core;
 
-  GlobPattern gp(pattern);
+  GlobPattern gp{std::string(pattern)};
   VariableTemplates::const_iterator ti = _variable_templates.find(gp);
   if (ti != _variable_templates.end()) {
     core = (*ti).second;
 
   } else {
-    core = new ConfigVariableCore(pattern);
+    core = new ConfigVariableCore(std::string(pattern));
     _variable_templates[gp] = core;
   }
 

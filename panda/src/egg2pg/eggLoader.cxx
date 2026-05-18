@@ -2640,7 +2640,7 @@ make_blend_table(EggVertexPool *vertex_pool, EggNode *primitive_home,
 void EggLoader::
 record_morph(GeomVertexArrayFormat *array_format,
              CharacterMaker *character_maker,
-             const string &morph_name, InternalName *column_name,
+             std::string_view morph_name, InternalName *column_name,
              int num_components) {
   PT(InternalName) delta_name =
     InternalName::get_morph(column_name, morph_name);
@@ -3757,7 +3757,7 @@ expand_object_types(EggGroup *egg_group, const pset<string> &expanded,
 bool EggLoader::
 do_expand_object_type(EggGroup *egg_group, const pset<string> &expanded,
                       const pvector<string> &expanded_history,
-                      const string &object_type) {
+                      std::string_view object_type) {
   // Try to find the egg syntax that the given objecttype is shorthand for.
   // First, look in the config file.
 

@@ -25,7 +25,7 @@ struct EggParserState;
 struct EggTokenType;
 struct EggLocType;
 
-void egg_init_lexer_state(EggLexerState &state, std::istream &in, const std::string &filename);
+void egg_init_lexer_state(EggLexerState &state, std::istream &in, std::string filename);
 void egg_cleanup_lexer_state(EggLexerState &state);
 
 void egg_start_group_body(EggLexerState &state);
@@ -36,8 +36,8 @@ void egg_start_primitive_body(EggLexerState &state);
 int eggyylex_init_extra(EggLexerState *state, yyscan_t *scanner);
 int eggyylex_destroy(yyscan_t scanner);
 
-void eggyyerror(EggLocType *loc, yyscan_t scanner, const std::string &msg);
-void eggyywarning(EggLocType *loc, yyscan_t scanner, const std::string &msg);
+void eggyyerror(EggLocType *loc, yyscan_t scanner, std::string_view msg);
+void eggyywarning(EggLocType *loc, yyscan_t scanner, std::string_view msg);
 
 int eggyylex(EggTokenType *yylval_param, EggLocType *yylloc_param, yyscan_t yyscanner);
 

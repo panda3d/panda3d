@@ -745,7 +745,7 @@ query_glx_extensions() {
  * Outputs the result of glxGetClientString() on the indicated tag.
  */
 void glxGraphicsStateGuardian::
-show_glx_client_string(const string &name, int id) {
+show_glx_client_string(std::string_view name, int id) {
   if (glgsg_cat.is_debug()) {
     const char *text = glXGetClientString(_display, id);
     if (text == nullptr) {
@@ -762,7 +762,7 @@ show_glx_client_string(const string &name, int id) {
  * Outputs the result of glxQueryServerString() on the indicated tag.
  */
 void glxGraphicsStateGuardian::
-show_glx_server_string(const string &name, int id) {
+show_glx_server_string(std::string_view name, int id) {
   if (glgsg_cat.is_debug()) {
     const char *text = glXQueryServerString(_display, _screen, id);
     if (text == nullptr) {

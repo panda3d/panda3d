@@ -47,7 +47,7 @@ PUBLISHED:
   std::string get_node_name(int n) const;
 
   int find_node(const NodePath &attrib_node) const;
-  int find_node(TypeHandle type, const std::string &name) const;
+  int find_node(TypeHandle type, std::string name) const;
   void remove_node(int n);
   void clear();
 
@@ -62,7 +62,7 @@ private:
   class Entry {
   public:
     INLINE Entry(const NodePath &node);
-    INLINE Entry(TypeHandle type, const std::string &name);
+    INLINE Entry(TypeHandle type, std::string name);
     INLINE bool operator < (const Entry &other) const;
 
     TypeHandle _type;

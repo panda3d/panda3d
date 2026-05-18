@@ -61,7 +61,7 @@ PUBLISHED:
   // new call to PR_Poll().
 
   explicit ConnectionReader(ConnectionManager *manager, int num_threads,
-                            const std::string &thread_name = std::string());
+                            std::string_view thread_name = std::string_view());
   virtual ~ConnectionReader();
 
   bool add_connection(Connection *connection);
@@ -135,7 +135,7 @@ private:
 
   class ReaderThread : public Thread {
   public:
-    ReaderThread(ConnectionReader *reader, const std::string &thread_name,
+    ReaderThread(ConnectionReader *reader, std::string_view thread_name,
                  int thread_index);
     virtual void thread_main();
 

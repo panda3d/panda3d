@@ -90,7 +90,7 @@ pipe_constructor() {
  * only called from GraphicsEngine::make_output.
  */
 PT(GraphicsOutput) wglGraphicsPipe::
-make_output(const std::string &name,
+make_output(std::string_view name,
             const FrameBufferProperties &fb_prop,
             const WindowProperties &win_prop,
             int flags,
@@ -137,7 +137,7 @@ make_output(const std::string &name,
         return nullptr;
       }
     }
-    return new wglGraphicsWindow(engine, this, name, fb_prop, win_prop,
+    return new wglGraphicsWindow(engine, this, std::string(name), fb_prop, win_prop,
                                  flags, gsg, host);
   }
 
@@ -170,7 +170,7 @@ make_output(const std::string &name,
         precertify = true;
       }
     }
-    return new GLGraphicsBuffer(engine, this, name, fb_prop, win_prop,
+    return new GLGraphicsBuffer(engine, this, std::string(name), fb_prop, win_prop,
                                 flags, gsg, host);
   }
 
@@ -217,7 +217,7 @@ make_output(const std::string &name,
         (wglgsg->get_fb_properties().is_single_buffered())) {
       precertify = true;
     }
-    return new wglGraphicsBuffer(engine, this, name, fb_prop, win_prop,
+    return new wglGraphicsBuffer(engine, this, std::string(name), fb_prop, win_prop,
                                  flags, gsg, host);
   }
 

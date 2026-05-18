@@ -637,7 +637,7 @@ generate_hash(ChecksumHashGenerator &hashgen) const {
  */
 template<class WType, int nbits>
 void BitMask<WType, nbits>::
-init_type(const std::string &name) {
+init_type(std::string_view name) {
   register_type(_type_handle, name);
 }
 

@@ -88,7 +88,7 @@ PUBLISHED:
 
   // Set (or clear) the event that will be thrown when the sound finishes
   // playing.  To clear the event, pass an empty string.
-  virtual void set_finished_event(const std::string& event) = 0;
+  virtual void set_finished_event(std::string event) = 0;
   virtual const std::string& get_finished_event() const = 0;
 
   // There is no set_name(), this is intentional.
@@ -146,8 +146,8 @@ PUBLISHED:
   enum SoundStatus { BAD, READY, PLAYING };
   virtual SoundStatus status() const = 0;
 
-  bool has_comment(const std::string &key) const;
-  std::string get_comment(const std::string &key) const;
+  bool has_comment(std::string_view key) const;
+  std::string get_comment(std::string_view key) const;
   MAKE_MAP_PROPERTY(comments, has_comment, get_comment);
 
   virtual const vector_string& get_raw_comment() const;

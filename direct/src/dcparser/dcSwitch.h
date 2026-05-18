@@ -29,7 +29,7 @@ class DCField;
  */
 class EXPCL_DIRECT_DCPARSER DCSwitch : public DCDeclaration {
 public:
-  DCSwitch(const std::string &name, DCField *key_parameter);
+  DCSwitch(std::string name, DCField *key_parameter);
   virtual ~DCSwitch();
 
 PUBLISHED:
@@ -47,7 +47,7 @@ PUBLISHED:
   vector_uchar get_value(int case_index) const;
   int get_num_fields(int case_index) const;
   DCField *get_field(int case_index, int n) const;
-  DCField *get_field_by_name(int case_index, const std::string &name) const;
+  DCField *get_field_by_name(int case_index, std::string_view name) const;
 
 public:
   bool is_field_valid() const;
@@ -61,11 +61,11 @@ public:
 
   virtual void output(std::ostream &out, bool brief) const;
   virtual void write(std::ostream &out, bool brief, int indent_level) const;
-  void output_instance(std::ostream &out, bool brief, const std::string &prename,
-                       const std::string &name, const std::string &postname) const;
+  void output_instance(std::ostream &out, bool brief, std::string_view prename,
+                       std::string_view name, std::string_view postname) const;
   void write_instance(std::ostream &out, bool brief, int indent_level,
-                      const std::string &prename, const std::string &name,
-                      const std::string &postname) const;
+                      std::string_view prename, std::string_view name,
+                      std::string_view postname) const;
   virtual void generate_hash(HashGenerator &hashgen) const;
   virtual bool pack_default_value(DCPackData &pack_data, bool &pack_error) const;
 
@@ -73,11 +73,11 @@ public:
 
 public:
   typedef pvector<DCField *> Fields;
-  typedef pmap<std::string, DCField *> FieldsByName;
+  typedef pmap<std::string, DCField *, std::less<>> FieldsByName;
 
   class SwitchFields : public DCPackerInterface {
   public:
-    SwitchFields(const std::string &name);
+    SwitchFields(std::string name);
     ~SwitchFields();
     virtual DCPackerInterface *get_nested_field(int n) const;
 

@@ -37,7 +37,7 @@ class AnimChannelBase;
  */
 class EXPCL_PANDA_CHAN AnimControl : public TypedReferenceCount, public AnimInterface, public Namable {
 public:
-  AnimControl(const std::string &name, PartBundle *part,
+  AnimControl(std::string name, PartBundle *part,
               double frame_rate, int num_frames);
   AnimControl(const AnimControl &copy) = delete;
 
@@ -52,7 +52,7 @@ PUBLISHED:
   INLINE bool is_pending() const;
   void wait_pending();
   INLINE bool has_anim() const;
-  void set_pending_done_event(const std::string &done_event);
+  void set_pending_done_event(std::string done_event);
   std::string get_pending_done_event() const;
 
   PartBundle *get_part() const;

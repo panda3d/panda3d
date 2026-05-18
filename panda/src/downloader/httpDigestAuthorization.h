@@ -38,8 +38,8 @@ public:
   virtual const std::string &get_mechanism() const;
   virtual bool is_valid();
 
-  virtual std::string generate(HTTPEnum::Method method, const std::string &request_path,
-                          const std::string &username, const std::string &body);
+  virtual std::string generate(HTTPEnum::Method method, std::string_view request_path,
+                          std::string_view username, std::string_view body);
 
 public:
   enum Algorithm {
@@ -55,19 +55,19 @@ public:
   };
 
 private:
-  static int match_qop_token(const std::string &token);
+  static int match_qop_token(std::string_view token);
 
-  std::string calc_request_digest(const std::string &username, const std::string &password,
+  std::string calc_request_digest(std::string_view username, std::string_view password,
                              HTTPEnum::Method method,
-                             const std::string &request_path, const std::string &body);
-  std::string calc_h(const std::string &data) const;
-  std::string calc_kd(const std::string &secret, const std::string &data) const;
-  std::string get_a1(const std::string &username, const std::string &password);
-  std::string get_a2(HTTPEnum::Method method, const std::string &request_path,
-                const std::string &body);
+                             std::string_view request_path, std::string_view body);
+  std::string calc_h(std::string_view data) const;
+  std::string calc_kd(std::string_view secret, std::string_view data) const;
+  std::string get_a1(std::string_view username, std::string_view password);
+  std::string get_a2(HTTPEnum::Method method, std::string_view request_path,
+                std::string_view body);
   std::string get_hex_nonce_count() const;
 
-  static std::string calc_md5(const std::string &source);
+  static std::string calc_md5(std::string_view source);
   INLINE static char hexdigit(int value);
 
   std::string _cnonce;

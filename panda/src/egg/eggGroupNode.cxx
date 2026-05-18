@@ -293,7 +293,7 @@ steal_children(EggGroupNode &other) {
  * recursively.
  */
 EggNode *EggGroupNode::
-find_child(const string &name) const {
+find_child(std::string_view name) const {
   Children::const_iterator ci;
   for (ci = _children.begin(); ci != _children.end(); ++ci) {
     EggNode *child = (*ci);

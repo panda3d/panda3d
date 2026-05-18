@@ -40,10 +40,7 @@ class EXPCL_PANDA_PIPELINE Mutex : public MutexDirect
 {
 PUBLISHED:
   INLINE Mutex();
-public:
-  INLINE Mutex(const char *name);
-PUBLISHED:
-  INLINE explicit Mutex(const std::string &name);
+  INLINE explicit Mutex(std::string_view name);
   Mutex(const Mutex &copy) = delete;
   ~Mutex() = default;
 

@@ -15,8 +15,8 @@
  *
  */
 INLINE SelectiveChildNode::
-SelectiveChildNode(const std::string &name) :
-  PandaNode(name)
+SelectiveChildNode(std::string name) :
+  PandaNode(std::move(name))
 {
 }
 

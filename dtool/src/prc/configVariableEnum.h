@@ -30,11 +30,11 @@
 template<class EnumType>
 class ConfigVariableEnum : public ConfigVariable {
 public:
-  INLINE ConfigVariableEnum(const std::string &name, EnumType default_value,
-                            const std::string &description = std::string(),
+  INLINE ConfigVariableEnum(std::string_view name, EnumType default_value,
+                            std::string_view description = std::string_view(),
                             int flags = 0);
-  INLINE ConfigVariableEnum(const std::string &name, const std::string &default_value,
-                            const std::string &description = std::string(),
+  INLINE ConfigVariableEnum(std::string_view name, const std::string &default_value,
+                            std::string_view description = std::string_view(),
                             int flags = 0);
   INLINE ~ConfigVariableEnum();
 
