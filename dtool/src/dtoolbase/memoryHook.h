@@ -42,11 +42,11 @@ public:
   MemoryHook(const MemoryHook &copy);
   virtual ~MemoryHook() = default;
 
-  virtual void *heap_alloc_single(size_t size);
+  [[nodiscard]] virtual void *heap_alloc_single(size_t size);
   virtual void heap_free_single(void *ptr);
 
-  virtual void *heap_alloc_array(size_t size);
-  virtual void *heap_realloc_array(void *ptr, size_t size);
+  [[nodiscard]] virtual void *heap_alloc_array(size_t size);
+  [[nodiscard]] virtual void *heap_realloc_array(void *ptr, size_t size);
   virtual void heap_free_array(void *ptr);
 
   INLINE void inc_heap(size_t size);
@@ -58,7 +58,7 @@ public:
     return MEMORY_HOOK_ALIGNMENT;
   }
 
-  virtual void *mmap_alloc(size_t size, bool allow_exec);
+  [[nodiscard]] virtual void *mmap_alloc(size_t size, bool allow_exec);
   virtual void mmap_free(void *ptr, size_t size);
   INLINE size_t get_page_size() const;
   INLINE size_t round_up_to_page_size(size_t size) const;

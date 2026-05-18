@@ -22,7 +22,7 @@ class Thread;
 /**
  * Similar to MutexHolder, but for a reentrant mutex.
  */
-class EXPCL_PANDA_PIPELINE ReMutexHolder {
+class EXPCL_PANDA_PIPELINE [[nodiscard]] ReMutexHolder {
 public:
   INLINE ReMutexHolder(const ReMutex &mutex);
   INLINE ReMutexHolder(const ReMutex &mutex, Thread *current_thread);

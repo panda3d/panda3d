@@ -38,7 +38,7 @@ public:
 
 public:
   void lock();
-  bool try_lock();
+  [[nodiscard]] bool try_lock();
   INLINE void unlock();
 
 private:

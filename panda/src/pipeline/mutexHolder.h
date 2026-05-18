@@ -22,7 +22,7 @@
  * destructor calls release() on a mutex.  It is a C++ convenience wrapper to
  * call release() automatically when a block exits (for instance, on return).
  */
-class EXPCL_PANDA_PIPELINE MutexHolder {
+class EXPCL_PANDA_PIPELINE [[nodiscard]] MutexHolder {
 public:
   INLINE MutexHolder(const Mutex &mutex);
   INLINE MutexHolder(const Mutex &mutex, Thread *current_thread);

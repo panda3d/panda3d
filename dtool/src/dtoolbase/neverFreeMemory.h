@@ -35,7 +35,7 @@ private:
   NeverFreeMemory();
 
 public:
-  INLINE static void *alloc(size_t size);
+  [[nodiscard]] INLINE static void *alloc(size_t size);
 
 PUBLISHED:
   INLINE static size_t get_total_alloc();

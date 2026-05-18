@@ -38,7 +38,7 @@ protected:
 
 public:
   INLINE void lock();
-  INLINE bool try_lock();
+  [[nodiscard]] INLINE bool try_lock();
   INLINE void unlock();
 
 PUBLISHED:

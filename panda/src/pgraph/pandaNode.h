@@ -104,7 +104,7 @@ public:
   virtual void add_for_draw(CullTraverser *trav, CullTraverserData &data);
 
 PUBLISHED:
-  virtual PandaNode *make_copy() const;
+  [[nodiscard]] virtual PandaNode *make_copy() const;
   PT(PandaNode) copy_subgraph(Thread *current_thread = Thread::get_current_thread()) const;
 
   EXTENSION(PT(PandaNode) __copy__() const);

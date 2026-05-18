@@ -22,7 +22,7 @@ class Thread;
 /**
  * Similar to MutexHolder, but for a light mutex.
  */
-class EXPCL_PANDA_PIPELINE LightMutexHolder {
+class EXPCL_PANDA_PIPELINE [[nodiscard]] LightMutexHolder {
 public:
   INLINE LightMutexHolder(const LightMutex &mutex);
   INLINE LightMutexHolder(LightMutex *&mutex);

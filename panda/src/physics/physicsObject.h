@@ -85,7 +85,7 @@ PUBLISHED:
 
   virtual LMatrix4 get_inertial_tensor() const;
   virtual LMatrix4 get_lcs() const;
-  virtual PhysicsObject *make_copy() const;
+  [[nodiscard]] virtual PhysicsObject *make_copy() const;
 
 #if !defined(NDEBUG) || !defined(CPPPARSER)
   void set_name(std::string name) {
