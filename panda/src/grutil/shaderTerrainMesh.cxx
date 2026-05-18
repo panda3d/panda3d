@@ -719,7 +719,7 @@ bool ShaderTerrainMesh::do_check_lod_matches(Chunk* chunk, TraversalData* data) 
   max_edge = csqrt(max_edge);
 
   PN_stdfloat tesselation_factor = (max_edge / _target_triangle_width) / (PN_stdfloat)_chunk_size;
-  PN_stdfloat clod_factor = max(0.0, min(1.0, 2.0 - tesselation_factor));
+  PN_stdfloat clod_factor = std::clamp(2.0 - tesselation_factor, 0.0, 1.0);
 
   // Store the clod factor
   chunk->last_clod = clod_factor;

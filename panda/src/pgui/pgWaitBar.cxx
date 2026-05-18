@@ -147,7 +147,7 @@ update() {
 
     // And scale the bar according to our value.
     PN_stdfloat frac = _value / _range;
-    frac = std::max(std::min(frac, (PN_stdfloat)1.0), (PN_stdfloat)0.0);
+    frac = std::clamp(frac, (PN_stdfloat)0.0, (PN_stdfloat)1.0);
     bar_frame[1] = bar_frame[0] + frac * (bar_frame[1] - bar_frame[0]);
 
     _bar = _bar_style.generate_into(root, bar_frame, 1);

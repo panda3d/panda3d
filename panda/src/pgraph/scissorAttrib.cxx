@@ -35,10 +35,10 @@ ScissorAttrib(const LVecBase4 &frame) :
   _off(false)
 {
   // Impose sensible bounds.
-  _frame[0] = max(min(_frame[0], (PN_stdfloat)1.0), (PN_stdfloat)0.0);
-  _frame[1] = max(min(_frame[1], (PN_stdfloat)1.0), _frame[0]);
-  _frame[2] = max(min(_frame[2], (PN_stdfloat)1.0), (PN_stdfloat)0.0);
-  _frame[3] = max(min(_frame[3], (PN_stdfloat)1.0), _frame[2]);
+  _frame[0] = std::clamp(_frame[0], (PN_stdfloat)0.0, (PN_stdfloat)1.0);
+  _frame[1] = std::clamp(_frame[1], _frame[0], (PN_stdfloat)1.0);
+  _frame[2] = std::clamp(_frame[2], (PN_stdfloat)0.0, (PN_stdfloat)1.0);
+  _frame[3] = std::clamp(_frame[3], _frame[2], (PN_stdfloat)1.0);
 }
 
 /**

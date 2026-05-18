@@ -294,7 +294,7 @@ insert_cv(PN_stdfloat t) {
     return n;
   }
 
-  t = std::min(std::max(t, (PN_stdfloat)0.0), get_max_t());
+  t = std::clamp(t, (PN_stdfloat)0.0, get_max_t());
 
   int n = find_cv(t);
   nassertr(n+1<get_num_cvs(), 0);

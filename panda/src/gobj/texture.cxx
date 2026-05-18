@@ -5938,7 +5938,7 @@ do_get_clear_data(const CData *cdata, unsigned char *into) const {
     nassertr(num_components == 1, 0);
     *((unsigned int *)into) =
       ((unsigned int)(clear_value[0] * 16777215) << 8) +
-       (unsigned int)max(min(clear_value[1], (PN_stdfloat)255), (PN_stdfloat)0);
+       (unsigned int)std::clamp(clear_value[1], (PN_stdfloat)0, (PN_stdfloat)255);
     break;
 
   case T_int:
@@ -5978,7 +5978,7 @@ do_get_clear_data(const CData *cdata, unsigned char *into) const {
       v.uf = clear_value[i];
       uint16_t sign = ((v.ui & 0x80000000u) >> 16u);
       uint32_t mantissa = (v.ui & 0x007fffffu);
-      uint16_t exponent = (uint16_t)std::min(std::max((int)((v.ui & 0x7f800000u) >> 23u) - 112, 0), 31);
+      uint16_t exponent = (uint16_t)std::clamp((int)((v.ui & 0x7f800000u) >> 23u) - 112, 0, 31);
       mantissa += (mantissa & 0x00001000u) << 1u;
       ((uint16_t *)into)[i] = (uint16_t)(sign | ((exponent << 10u) | (mantissa >> 13u)));
     }
