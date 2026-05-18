@@ -30,7 +30,7 @@ PUBLISHED:
 
   // Construct a near-identical copy of this object on the heap and 
   // return a pointer to the new copy. Currently only implemented for OpenAL.
-  virtual AudioSound *make_copy() const;
+  [[nodiscard]] virtual AudioSound *make_copy() const;
 
   // For best compatibility, set the loop_count, volume, and balance, prior to
   // calling play().  You may set them while they're playing, but it's

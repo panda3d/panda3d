@@ -43,7 +43,7 @@ public:
   INLINE_MATHUTIL BoundingVolume();
 
 PUBLISHED:
-  virtual BoundingVolume *make_copy() const=0;
+  [[nodiscard]] virtual BoundingVolume *make_copy() const=0;
 
   INLINE_MATHUTIL bool is_empty() const;
   INLINE_MATHUTIL bool is_infinite() const;

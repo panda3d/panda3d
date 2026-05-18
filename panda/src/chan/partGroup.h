@@ -63,7 +63,7 @@ PUBLISHED:
   virtual ~PartGroup();
   virtual bool is_character_joint() const;
 
-  virtual PartGroup *make_copy() const;
+  [[nodiscard]] virtual PartGroup *make_copy() const;
   PartGroup *copy_subgraph() const;
 
   int get_num_children() const;

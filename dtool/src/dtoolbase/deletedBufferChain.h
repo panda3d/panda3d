@@ -62,7 +62,7 @@ public:
   INLINE DeletedBufferChain(DeletedBufferChain &&from) noexcept;
   INLINE DeletedBufferChain(const DeletedBufferChain &copy);
 
-  void *allocate(size_t size, TypeHandle type_handle);
+  [[nodiscard]] void *allocate(size_t size, TypeHandle type_handle);
   void deallocate(void *ptr, TypeHandle type_handle);
 
   INLINE bool validate(void *ptr);

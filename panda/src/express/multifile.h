@@ -127,7 +127,7 @@ PUBLISHED:
   size_t get_subfile_internal_length(int index) const;
 
   BLOCKING INLINE vector_uchar read_subfile(int index);
-  BLOCKING std::istream *open_read_subfile(int index);
+  [[nodiscard]] BLOCKING std::istream *open_read_subfile(int index);
   BLOCKING static void close_read_subfile(std::istream *stream);
   BLOCKING bool extract_subfile(int index, const Filename &filename);
   BLOCKING bool extract_subfile_to(int index, std::ostream &out);

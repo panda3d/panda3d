@@ -60,7 +60,7 @@ PUBLISHED:
 protected:
   void write_descendants(std::ostream &out, int indent_level) const;
 
-  virtual AnimGroup *make_copy(AnimGroup *parent) const;
+  [[nodiscard]] virtual AnimGroup *make_copy(AnimGroup *parent) const;
   PT(AnimGroup) copy_subtree(AnimGroup *parent) const;
 
 protected:
