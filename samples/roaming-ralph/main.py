@@ -9,13 +9,19 @@
 # and having it walk around on uneven terrain, as well
 # as implementing a fully rotatable camera.
 
+from panda3d.core import loadPrcFileData
+loadPrcFileData("", "audio-library-name p3fmod_audio")
+loadPrcFileData("", "win-size 1280 800")
+loadPrcFileData("", "window-title Roaming Ralph - 3D Audio Demo")
+
 from direct.showbase.ShowBase import ShowBase
+from direct.showbase.Audio3DManager import Audio3DManager
 from panda3d.core import CollisionTraverser, CollisionNode
 from panda3d.core import CollisionHandlerQueue, CollisionRay
 from panda3d.core import CollisionHandlerPusher, CollisionSphere
 from panda3d.core import Filename, AmbientLight, DirectionalLight
 from panda3d.core import PandaNode, NodePath, Camera, TextNode
-from panda3d.core import CollideMask
+from panda3d.core import CollideMask, AudioSound, AudioManager, FilterProperties
 from direct.gui.OnscreenText import OnscreenText
 from direct.actor.Actor import Actor
 import random
@@ -178,6 +184,95 @@ class RoamingRalphDemo(ShowBase):
         # collisions occuring
         #self.cTrav.showCollisions(render)
 
+        # Wire collision events on the pusher so we can play a sound when
+        # Ralph bumps into an obstacle. addInPattern fires once on first contact.
+        self.ralphPusher.addInPattern("ralph-hit")
+        self.accept("ralph-hit", self.onRalphCollision)
+        self._hitCooldown = 0.0
+
+        # Each positional sound gets its own FMOD manager so DSP effects can be
+        # applied independently. configure_filters() targets a whole manager, not
+        # individual sounds, so separate managers are the only way to have
+        # different effects on different sounds.
+        #
+        # sfxManagerList[0] (existing) — forest ambient, no DSP
+        # _footstepMgr (new)           — footstep, sfxreverb
+        # _hitMgr      (new)           — hit sound, echo
+
+        self._footstepMgr = AudioManager.createAudioManager()
+        base.addSfxManager(self._footstepMgr)
+        self.footstepAudio3d = Audio3DManager(self._footstepMgr, base.camera)
+        self.footstepAudio3d.setDistanceFactor(1.0)
+        self.footstepAudio3d.setDropOffFactor(1.0)
+
+        self._hitMgr = AudioManager.createAudioManager()
+        base.addSfxManager(self._hitMgr)
+        self.hitAudio3d = Audio3DManager(self._hitMgr, base.camera)
+        self.hitAudio3d.setDistanceFactor(1.0)
+        self.hitAudio3d.setDropOffFactor(1.0)
+
+        # Footstep sound — attached to Ralph so it moves with him.
+        # Replace sounds/footstep.mp3 with a short, loopable footstep clip.
+        self.footstepSfx = self.footstepAudio3d.loadSfx("sounds/footstep.mp3")
+        self.footstepAudio3d.attachSoundToObject(self.footstepSfx, self.ralph)
+        self.footstepAudio3d.setSoundMinDistance(self.footstepSfx, 3.0)
+        self.footstepAudio3d.setSoundMaxDistance(self.footstepSfx, 40.0)
+        self.footstepSfx.setLoop(True)
+        self.footstepSfx.setPlayRate(1.5)
+        self.footstepSfx.setVolume(0.6)
+
+        # Outdoor reverb on footsteps: short decay, moderate wet level.
+        # room → WETLEVEL (dB), decaytime → ms (not seconds).
+        foot_step_fp = FilterProperties()
+        foot_step_fp.add_sfxreverb(
+            drylevel=0,             # DRYLEVEL: 0 dB
+            room=-6,                # WETLEVEL: -6 dB — moderate reverb
+            roomhf=8000,            # HIGHCUT: 8000 Hz — soften highs outdoors
+            decaytime=800,          # DECAYTIME: 800 ms — short outdoor decay
+            reflectionslevel=40,    # EARLYLATEMIX: 40% early
+            diffusion=80,
+            density=80,
+        )
+        self._footstepMgr.configure_filters(foot_step_fp)
+
+        # Collision/hit sound — emitted from the surface point Ralph collided with,
+        # not from Ralph himself. This is the key 3D positional audio demo.
+        # Replace sounds/hit.mp3 with a short thud or knock clip.
+        self.hitEmitter = render.attachNewNode("hitEmitter")
+        self.hitSfx = self.hitAudio3d.loadSfx("sounds/hit.mp3")
+        self.hitAudio3d.attachSoundToObject(self.hitSfx, self.hitEmitter)
+        self.hitAudio3d.setSoundMinDistance(self.hitSfx, 2.0)
+        self.hitAudio3d.setSoundMaxDistance(self.hitSfx, 30.0)
+        self.hitSfx.setVolume(2.0)
+
+        # Reverb on the hit sound — simulates the thud bouncing off nearby trees.
+        # sfxreverb sounds natural because it diffuses the sound energy rather
+        # than repeating it discretely like echo does.
+        # Panda3D's add_sfxreverb parameter names come from the old EAX API but
+        # map to FMOD Core DSP parameters with different semantics/ranges:
+        #   room            → WETLEVEL   (-80 to 20 dB)
+        #   roomhf          → HIGHCUT    (20 to 20000 Hz, not a dB value)
+        #   decaytime       → DECAYTIME  (100 to 20000 ms — milliseconds!)
+        #   reflectionslevel→ EARLYLATEMIX (0 to 100 %)
+        hit_fp = FilterProperties()
+        hit_fp.add_sfxreverb(
+            drylevel=0,             # DRYLEVEL: 0 dB — keep full dry signal
+            room=-10,               # WETLEVEL: -10 dB — moderate reverb wet level
+            roomhf=10000,           # HIGHCUT: 10000 Hz — slight HF softening
+            decaytime=1000,         # DECAYTIME: 1000 ms — 1-second reverb tail
+            decayhfratio=0.5,       # HFDECAYRATIO: default
+            reflectionslevel=50,    # EARLYLATEMIX: 50% early / 50% late
+            diffusion=100,          # DIFFUSION: 100% — smooth reverb
+            density=100,            # DENSITY: 100%
+        )
+        self._hitMgr.configure_filters(hit_fp)
+
+        # Ambient background sound — non-positional, loops for the whole session.
+        self.forestSfx = loader.loadSfx("sounds/forest.wav")
+        self.forestSfx.setLoop(True)
+        self.forestSfx.setVolume(0.2)
+        self.forestSfx.play()
+
         # Create some lighting
         ambientLight = AmbientLight("ambientLight")
         ambientLight.setColor((.3, .3, .3, 1))
@@ -191,6 +286,24 @@ class RoamingRalphDemo(ShowBase):
     # Records the state of the arrow keys
     def setKey(self, key, value):
         self.keyMap[key] = value
+
+    def onRalphCollision(self, entry):
+        """Play a hit sound at the collision surface point when Ralph bumps into
+        an obstacle. The sound emits from the contact point, not from Ralph,
+        demonstrating true 3D positional audio."""
+        # Skip ground-ray hits (terrain); we only care about wall/obstacle hits.
+        if entry.getIntoNode().getName() == "terrain":
+            return
+        # Debounce: avoid retriggering while Ralph holds forward into a wall.
+        now = base.clock.getRealTime()
+        if now - self._hitCooldown < 0.5:
+            return
+        self._hitCooldown = now
+
+        # Move the hit emitter to the world-space surface contact point.
+        surface_pt = entry.getSurfacePoint(render)
+        self.hitEmitter.setPos(surface_pt)
+        self.hitSfx.play()
 
     # Accepts arrow keys to move either the player or the menu cursor,
     # Also deals with grid checking and collision detection
@@ -241,6 +354,16 @@ class RoamingRalphDemo(ShowBase):
                 self.ralph.stop()
                 self.ralph.pose("walk", 5)
                 self.isMoving = False
+
+        # Manage footstep sound: play while any movement key is held, stop otherwise.
+        is_moving = (self.keyMap["forward"] or self.keyMap["backward"] or
+                     self.keyMap["left"] or self.keyMap["right"])
+        if is_moving:
+            if self.footstepSfx.status() != AudioSound.PLAYING:
+                self.footstepSfx.play()
+        else:
+            if self.footstepSfx.status() == AudioSound.PLAYING:
+                self.footstepSfx.stop()
 
         # If the camera is too far from ralph, move it closer.
         # If the camera is too close to ralph, move it farther.

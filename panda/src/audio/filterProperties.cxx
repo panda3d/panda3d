@@ -37,7 +37,9 @@ void FilterProperties::
 add_filter(FilterType t, PN_stdfloat a, PN_stdfloat b, PN_stdfloat c, PN_stdfloat d,
                        PN_stdfloat e, PN_stdfloat f, PN_stdfloat g, PN_stdfloat h,
                        PN_stdfloat i, PN_stdfloat j, PN_stdfloat k, PN_stdfloat l,
-                       PN_stdfloat m, PN_stdfloat n) {
+                       PN_stdfloat m, PN_stdfloat n, PN_stdfloat o, PN_stdfloat p,
+                       PN_stdfloat q, PN_stdfloat r, PN_stdfloat s, PN_stdfloat t_,
+                       PN_stdfloat u, PN_stdfloat v, PN_stdfloat w, PN_stdfloat x) {
   FilterConfig conf;
   conf._type = t;
   conf._a = a;
@@ -54,5 +56,15 @@ add_filter(FilterType t, PN_stdfloat a, PN_stdfloat b, PN_stdfloat c, PN_stdfloa
   conf._l = l;
   conf._m = m;
   conf._n = n;
+  conf._o = o;
+  conf._p = p;
+  conf._q = q;
+  conf._r = r;
+  conf._s = s;
+  conf._t = t_;
+  conf._u = u;
+  conf._v = v;
+  conf._w = w;
+  conf._x = x;
   _config.push_back(conf);
 }
