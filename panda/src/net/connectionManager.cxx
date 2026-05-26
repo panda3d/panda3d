@@ -479,7 +479,7 @@ scan_interfaces() {
   _interfaces_scanned = true;
 
 #ifdef _WIN32
-  int flags = GAA_FLAG_INCLUDE_PREFIX | GAA_FLAG_SKIP_UNICAST | GAA_FLAG_SKIP_ANYCAST | GAA_FLAG_SKIP_MULTICAST | GAA_FLAG_SKIP_DNS_SERVER;
+  int flags = GAA_FLAG_SKIP_ANYCAST | GAA_FLAG_SKIP_MULTICAST | GAA_FLAG_SKIP_DNS_SERVER;
   ULONG family = support_ipv6 ? AF_UNSPEC : AF_INET;
   ULONG buffer_size = 0;
   ULONG result = GetAdaptersAddresses(family, flags, nullptr, nullptr, &buffer_size);
@@ -495,46 +495,51 @@ scan_interfaces() {
         encoder.set_wtext(std::wstring(p->FriendlyName));
         string friendly_name = encoder.get_text();
 
-        Interface iface;
-        iface.set_name(friendly_name);
-
-        if (p->PhysicalAddressLength > 0) {
-          iface.set_mac_address(format_mac_address((const unsigned char *)p->PhysicalAddress, p->PhysicalAddressLength));
-        }
-
-        if (p->OperStatus == IfOperStatusUp) {
-          // Prefixes are a linked list, in the order Network IP, Adapter IP,
-          // Broadcast IP (plus more).
-          NetAddress addresses[3];
-          IP_ADAPTER_PREFIX *m = p->FirstPrefix;
-          int mc = 0;
-          while (m != nullptr && mc < 3) {
-            addresses[mc] = NetAddress(Socket_Address(*m->Address.lpSockaddr));
-            m = m->Next;
-            ++mc;
+        for (IP_ADAPTER_UNICAST_ADDRESS *ua = p->FirstUnicastAddress;
+             ua != nullptr; ua = ua->Next) {
+          const sockaddr *sa = ua->Address.lpSockaddr;
+          if (sa->sa_family != AF_INET &&
+              !(support_ipv6 && sa->sa_family == AF_INET6)) {
+            continue;
           }
 
-          if (mc > 1) {
-            iface.set_ip(addresses[1]);
+          Interface iface;
+          iface.set_name(friendly_name);
+          if (p->PhysicalAddressLength > 0) {
+            iface.set_mac_address(format_mac_address(
+              (const unsigned char *)p->PhysicalAddress, p->PhysicalAddressLength));
           }
 
-          if (mc > 2) {
-            iface.set_broadcast(addresses[2]);
+          NetAddress ip((Socket_Address(*sa)));
+          iface.set_ip(ip);
 
-            // Now, we can infer the netmask by the difference between the
-            // network address (the first address) and the broadcast address
-            // (the last address).
-            if (addresses[0].get_addr().get_family() == AF_INET &&
-                addresses[2].get_addr().get_family() == AF_INET) {
-              uint32_t netmask = addresses[0].get_ip() - addresses[2].get_ip() - 1;
-              Socket_Address sa;
-              sa.set_host(netmask, 0);
-              iface.set_netmask(NetAddress(sa));
+          if (p->OperStatus == IfOperStatusUp) {
+            iface.set_operational();
+          }
+
+          ULONG prefix_len = ua->OnLinkPrefixLength;
+
+          if (sa->sa_family == AF_INET) {
+            uint32_t mask  = htonl(prefix_len ? (~0u << (32 - prefix_len)) : 0);
+            uint32_t bcast = ip.get_ip() | ~mask;   // get_ip() is network order
+            Socket_Address mask_sa;  mask_sa.set_host(mask, 0);
+            Socket_Address bcast_sa; bcast_sa.set_host(bcast, 0);
+            iface.set_netmask(NetAddress(mask_sa));
+            iface.set_broadcast(NetAddress(bcast_sa));
+          } else {
+            // IPv6: build the prefix mask; no broadcast concept.
+            sockaddr_in6 mask6 = {};
+            mask6.sin6_family = AF_INET6;
+            for (ULONG i = 0; i < prefix_len && i < 128; ++i) {
+              mask6.sin6_addr.s6_addr[i / 8] |= (0x80 >> (i % 8));
             }
+            iface.set_ipv6();
+            iface.set_netmask(NetAddress(Socket_Address(*(const sockaddr *)&mask6)));
           }
+
+          _interfaces.push_back(iface);
         }
 
-        _interfaces.push_back(iface);
         p = p->Next;
       }
     }
@@ -561,6 +566,12 @@ scan_interfaces() {
         (support_ipv6 && p->ifa_addr->sa_family == AF_INET6)) {
       Interface iface;
       iface.set_name(p->ifa_name);
+      if (p->ifa_addr->sa_family == AF_INET6) {
+        iface.set_ipv6();
+      }
+      if (p->ifa_flags & IFF_RUNNING) {
+        iface.set_operational();
+      }
       if (p->ifa_addr != nullptr) {
         iface.set_ip(NetAddress(Socket_Address(*p->ifa_addr)));
       }
@@ -738,6 +749,12 @@ format_mac_address(const unsigned char *data, size_t data_size) {
 void ConnectionManager::Interface::
 output(std::ostream &out) const {
   out << get_name() << " [";
+  if (is_operational()) {
+    out << " operational";
+  }
+  if (is_ipv6()) {
+    out << " ipv6";
+  }
   if (has_ip()) {
     out << " " << get_ip().get_ip_string();
   }

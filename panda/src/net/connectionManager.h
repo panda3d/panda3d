@@ -85,6 +85,17 @@ PUBLISHED:
     void set_broadcast(const NetAddress &ip) { _broadcast = ip; _flags |= F_has_broadcast; }
     void set_p2p(const NetAddress &ip) { _p2p = ip; _flags |= F_has_p2p; }
 
+    void set_operational() { _flags |= F_is_operational; }
+    void set_ipv6() { _flags |= F_is_ipv6; }
+
+    // Corresponds to IFF_RUNNING on POSIX and IfOperStatusUp on Windows
+    bool is_operational() const { return (_flags & F_is_operational) != 0; }
+    bool is_ipv6() const { return (_flags & F_is_ipv6) != 0; }
+
+  PUBLISHED:
+    MAKE_PROPERTY(operational, is_operational);
+    MAKE_PROPERTY(ipv6, is_ipv6);
+
   private:
     std::string _name;
     std::string _mac_address;
@@ -100,6 +111,8 @@ PUBLISHED:
       F_has_netmask   = 0x002,
       F_has_broadcast = 0x004,
       F_has_p2p       = 0x008,
+      F_is_operational= 0x010,
+      F_is_ipv6       = 0x020,
     };
   };
 
