@@ -28,7 +28,7 @@ BitMask(WordType init_value) :
  * Returns a BitMask whose bits are all on.
  */
 template<class WType, int nbits>
-INLINE BitMask<WType, nbits> BitMask<WType, nbits>::
+constexpr BitMask<WType, nbits> BitMask<WType, nbits>::
 all_on() {
   BitMask result;
   result._word = (WordType)~0;
@@ -39,7 +39,7 @@ all_on() {
  * Returns a BitMask whose bits are all off.
  */
 template<class WType, int nbits>
-INLINE BitMask<WType, nbits> BitMask<WType, nbits>::
+constexpr BitMask<WType, nbits> BitMask<WType, nbits>::
 all_off() {
   BitMask result;
   result._word = 0;
@@ -50,7 +50,7 @@ all_off() {
  * Returns a BitMask whose lower on_bits bits are on.
  */
 template<class WType, int nbits>
-INLINE BitMask<WType, nbits> BitMask<WType, nbits>::
+constexpr BitMask<WType, nbits> BitMask<WType, nbits>::
 lower_on(int on_bits) {
   if (on_bits <= 0) {
     return all_off();
@@ -66,7 +66,7 @@ lower_on(int on_bits) {
  * Returns a BitMask with only the indicated bit on.
  */
 template<class WType, int nbits>
-INLINE BitMask<WType, nbits> BitMask<WType, nbits>::
+constexpr BitMask<WType, nbits> BitMask<WType, nbits>::
 bit(int index) {
   BitMask result;
   result.set_bit(index);
@@ -77,7 +77,7 @@ bit(int index) {
  * Returns a BitMask whose size bits, beginning at low_bit, are on.
  */
 template<class WType, int nbits>
-INLINE BitMask<WType, nbits> BitMask<WType, nbits>::
+constexpr BitMask<WType, nbits> BitMask<WType, nbits>::
 range(int low_bit, int size) {
   BitMask result;
   if (size <= 0) {
@@ -115,7 +115,7 @@ get_bit(int index) const {
  * Sets the nth bit on.  index must be in the range [0, num_bits).
  */
 template<class WType, int nbits>
-INLINE void BitMask<WType, nbits>::
+constexpr void BitMask<WType, nbits>::
 set_bit(int index) {
   nassertv(index >= 0 && index < num_bits);
   _word |= ((WordType)1 << index);

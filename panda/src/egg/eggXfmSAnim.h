@@ -87,7 +87,7 @@ private:
   std::string _order;
   CoordinateSystem _coordsys;
 
-  static const std::string _standard_order;
+  inline static const std::string _standard_order = "srpht";
 
 public:
 

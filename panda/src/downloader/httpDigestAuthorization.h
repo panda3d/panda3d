@@ -81,7 +81,7 @@ private:
   int _qop;
   Qop _chosen_qop;
 
-  static const std::string _mechanism;
+  inline static const std::string _mechanism = "digest";
 };
 
 std::ostream &operator << (std::ostream &out, HTTPDigestAuthorization::Algorithm algorithm);

@@ -41,7 +41,7 @@ public:
                                std::string_view username, std::string_view body);
 
 private:
-  static const std::string _mechanism;
+  inline static const std::string _mechanism = "basic";
 };
 
 #include "httpBasicAuthorization.I"

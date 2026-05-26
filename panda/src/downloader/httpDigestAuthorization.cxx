@@ -25,8 +25,6 @@ using std::ostream;
 using std::ostringstream;
 using std::string;
 
-const string HTTPDigestAuthorization::_mechanism = "digest";
-
 /**
  *
  */

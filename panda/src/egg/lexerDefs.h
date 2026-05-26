@@ -41,7 +41,7 @@ void eggyywarning(EggLocType *loc, yyscan_t scanner, std::string_view msg);
 
 int eggyylex(EggTokenType *yylval_param, EggLocType *yylloc_param, yyscan_t yyscanner);
 
-static const size_t egg_max_error_width = 1024;
+inline constexpr size_t egg_max_error_width = 1024;
 
 struct EggLexerState {
   // current_line holds as much of the current line as will fit.  Its

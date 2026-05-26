@@ -27,8 +27,6 @@ using std::string;
 
 TypeHandle EggXfmSAnim::_type_handle;
 
-const string EggXfmSAnim::_standard_order = "srpht";
-
 /**
  * Converts the older-style XfmAnim table to the newer-style XfmSAnim table.
  */

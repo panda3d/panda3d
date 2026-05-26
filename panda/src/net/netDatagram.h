@@ -30,7 +30,7 @@
 // can't be set arbitrarily large, although there's not much point in making
 // it larger than the system MTU, which also limits the maximum size of a UDP
 // packet.
-static const int maximum_udp_datagram = 1500;
+inline constexpr int maximum_udp_datagram = 1500;
 
 /**
  * A specific kind of Datagram, especially for sending across or receiving
