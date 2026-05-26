@@ -562,6 +562,10 @@ scan_interfaces() {
 
   struct ifaddrs *p = ifa;
   while (p != nullptr) {
+    if (p->ifa_addr == nullptr) {
+      p = p->ifa_next;
+      continue;
+    }
     if (p->ifa_addr->sa_family == AF_INET ||
         (support_ipv6 && p->ifa_addr->sa_family == AF_INET6)) {
       Interface iface;
