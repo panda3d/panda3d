@@ -78,6 +78,15 @@ static_assert((MEMORY_HOOK_ALIGNMENT & (MEMORY_HOOK_ALIGNMENT - 1)) == 0,
 // dlmalloc can do the alignment we ask for.
 #define MALLOC_ALIGNMENT MEMORY_HOOK_ALIGNMENT
 
+// Use mmap exclusively: dlmalloc's default MORECORE is sbrk, which moves the
+// same program break as the system (glibc) allocator.  The two allocators'
+// locks are independent, so concurrent sbrk() from a dlmalloc thread and a
+// glibc thread (e.g. libstdc++ operator new) corrupts the heap ("malloc():
+// corrupted top size").  mmap never touches the program break.
+#ifdef HAVE_THREADS
+#define HAVE_MORECORE 0
+#endif
+
 #include "dlmalloc_src.cxx"
 
 #define call_malloc dlmalloc
