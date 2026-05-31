@@ -374,6 +374,15 @@ jobs:
         run_pytest ../tests --cov=.
       # END B
 
+    - name: Test (scene-graph stress + EBR)
+      working-directory: build
+      shell: bash
+      env:
+        ASAN_OPTIONS: detect_leaks=0:detect_odr_violation=0:log_path=asan.log.stress
+      run: |
+        ctest --output-on-failure --no-tests=error -C "${{ matrix.config }}" -L scenegraph_stress
+        ctest --output-on-failure --no-tests=error -C "${{ matrix.config }}" -L ebr_cycler
+
     - name: Show ASan errors
       if: failure() && contains(matrix.asan, 'YES')
       working-directory: build
