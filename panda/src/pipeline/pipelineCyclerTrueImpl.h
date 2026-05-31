@@ -23,6 +23,7 @@
 #include "cycleData.h"
 #include "pointerTo.h"
 #include "nodePointerTo.h"
+#include "patomic.h"
 #include "thread.h"
 #include "reMutex.h"
 #include "reMutexHolder.h"
@@ -90,6 +91,11 @@ public:
   INLINE int get_read_count() const;
   INLINE int get_write_count() const;
 
+  // True if `current_thread` currently holds an outstanding copy-on-write on
+  // this cycler at its pipeline stage -- i.e. it has the data write-locked.
+  // Read-only.
+  INLINE bool is_write_pending_by(Thread *current_thread) const;
+
 public:
   // We redefine the ReMutex class, solely so we can define the output()
   // operator.  This is only useful for debugging, but does no harm in the
@@ -105,25 +111,41 @@ public:
   };
 
 private:
-  PT(CycleData) cycle();
-  INLINE PT(CycleData) cycle_2();
-  INLINE PT(CycleData) cycle_3();
+  void cycle();
+  INLINE void cycle_2();
+  INLINE void cycle_3();
   void set_num_stages(int num_stages);
+  bool stage_unshared(int pipeline_stage) const;
+  // The live CData for code holding _lock: the in-flight write copy (_pending)
+  // if a write is outstanding, else the published pointer.  A write is only
+  // outstanding under the lock to the thread that holds it, so this gives that
+  // thread read-your-writes.
+  INLINE CycleData *current_locked(int pipeline_stage) const;
 
 private:
   Pipeline *_pipeline;
 
-  // An array of PT(CycleData) objects representing the different copies of
-  // the cycled data, one for each stage.
+  // One CycleDataNode per pipeline stage.  `_cdata` is the published pointer
+  // (atomic, owns one node_ref); readers load it lock-free.  A writer copies
+  // into `_pending`, then exchanges it into `_cdata` on commit and retires the
+  // old pointer to EBR (nested writers on the same stage share `_pending`).
   class CycleDataNode {
   public:
-    CycleDataNode() = default;
-    INLINE CycleDataNode(const CycleDataNode &copy);
+    INLINE CycleDataNode();
+    INLINE CycleDataNode(const CycleDataNode &copy) = delete;
     INLINE ~CycleDataNode();
-    INLINE void operator = (const CycleDataNode &copy);
+    void operator = (const CycleDataNode &copy) = delete;
 
-    NPT(CycleData) _cdata;
+    INLINE void install(CycleData *cd);
+
+    patomic<CycleData *> _cdata;
+    CycleData *_pending = nullptr;
     int _writes_outstanding = 0;
+    // The thread with a copy-on-write in flight (it owns _pending).  Its own
+    // lock-free reads steer to _pending for read-your-writes; every other
+    // thread still loads the immutable published _cdata.  Null in in-place mode
+    // and whenever no COW is outstanding.
+    patomic<Thread *> _write_thread;
 
     // Take advantage of the extra padding space.
     // If used as part of _single_cdata, stores the dirty flag.

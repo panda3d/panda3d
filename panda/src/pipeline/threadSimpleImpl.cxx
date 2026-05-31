@@ -287,7 +287,17 @@ begin_thread() {
 
   // Here we are executing within the thread.  Run the thread_main function
   // defined for this thread.
+#ifdef THREADED_PIPELINE
+  // Take stage occupancy now that this context is actually running, not at
+  // Thread construction (see threadPosixImpl root_func for the rationale).
+  _parent_obj->acquire_stage_occupancy();
+#endif
+
   _parent_obj->thread_main();
+
+#ifdef THREADED_PIPELINE
+  _parent_obj->release_stage_occupancy();
+#endif
 
   // Now we have completed the thread.
   _status = TS_finished;

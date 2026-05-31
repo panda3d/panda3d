@@ -27,6 +27,7 @@ NotifyCategoryDecl(thread, EXPCL_PANDA_PIPELINE, EXPTP_PANDA_PIPELINE);
 extern EXPCL_PANDA_PIPELINE ConfigVariableBool support_threads;
 extern ConfigVariableBool name_deleted_mutexes;
 extern ConfigVariableInt thread_stack_size;
+extern EXPCL_PANDA_PIPELINE ConfigVariableBool pipeline_always_cow;
 
 extern EXPCL_PANDA_PIPELINE void init_libpipeline();
 

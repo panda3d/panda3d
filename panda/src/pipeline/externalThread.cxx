@@ -24,6 +24,12 @@ ExternalThread::
 ExternalThread() : Thread("External", "External") {
   init_type();  // in case static init comes in the wrong order
   _started = true;
+#ifdef THREADED_PIPELINE
+  // The shared singleton stands in for all unbound external threads; it takes
+  // its single stage occupancy when created (already "running", unlike a
+  // started thread that acquires in its root wrapper).
+  acquire_stage_occupancy();
+#endif
 }
 
 /**
@@ -35,6 +41,11 @@ ExternalThread(const std::string &name, const std::string &sync_name) :
   Thread(name, sync_name)
 {
   _started = true;
+#ifdef THREADED_PIPELINE
+  // Bound external threads are already running; acquire occupancy in the ctor,
+  // which runs on the external thread being bound.
+  acquire_stage_occupancy();
+#endif
 }
 
 /**

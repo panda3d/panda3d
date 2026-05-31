@@ -11,6 +11,8 @@
  * @date 2002-08-08
  */
 
+#include "epochManager.h"
+
 /**
  * Returns the sync name of the thread.  This name collects threads into "sync
  * groups", which are expected to run synchronously.  This is mainly used for
@@ -191,6 +193,9 @@ is_simple_threads() {
 INLINE void Thread::
 sleep(double seconds) {
   TAU_PROFILE("void Thread::sleep(double)", " ", TAU_USER);
+#ifdef THREADED_PIPELINE
+  EpochManager::consider_reclaim(get_current_thread()->epoch_participant());
+#endif
 #ifdef DO_PSTATS
   _sleep_func(seconds);
 #else
@@ -204,6 +209,9 @@ sleep(double seconds) {
 INLINE void Thread::
 force_yield() {
   TAU_PROFILE("void Thread::yield()", " ", TAU_USER);
+#ifdef THREADED_PIPELINE
+  EpochManager::consider_reclaim(get_current_thread()->epoch_participant());
+#endif
 #ifdef DO_PSTATS
   _yield_func();
 #else
@@ -219,6 +227,9 @@ force_yield() {
 INLINE void Thread::
 consider_yield() {
   TAU_PROFILE("void Thread::consider_yield()", " ", TAU_USER);
+#ifdef THREADED_PIPELINE
+  EpochManager::consider_reclaim(get_current_thread()->epoch_participant());
+#endif
   ThreadImpl::consider_yield();
 }
 
@@ -362,3 +373,32 @@ operator << (std::ostream &out, const Thread &thread) {
   thread.output(out);
   return out;
 }
+
+#ifdef THREADED_PIPELINE
+
+ALWAYS_INLINE EpochParticipant &Thread::
+epoch_participant() {
+  return _epoch_use_tls ? EpochManager::external_participant() : _epoch_participant;
+}
+
+ALWAYS_INLINE void Thread::
+epoch_enter() {
+  EpochManager::enter(epoch_participant());
+}
+
+ALWAYS_INLINE void Thread::
+epoch_leave() {
+  EpochManager::leave(epoch_participant());
+}
+
+ALWAYS_INLINE void Thread::
+epoch_enter(Thread *t) {
+  EpochManager::enter(t->epoch_participant());
+}
+
+ALWAYS_INLINE void Thread::
+epoch_leave(Thread *t) {
+  EpochManager::leave(t->epoch_participant());
+}
+
+#endif  // THREADED_PIPELINE

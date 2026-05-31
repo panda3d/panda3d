@@ -323,7 +323,19 @@ root_func(void *data) {
     JNIEnv *jni_env = self->attach_java_vm();
 #endif
 
+#ifdef THREADED_PIPELINE
+    // Now that we are actually running on this thread's own stack, take our
+    // stage-occupancy count for the in-place fast-path interlock.  Doing this
+    // here (rather than in the Thread ctor on the creating thread) avoids the
+    // drain self-deadlocking against an in-place write the creator still holds.
+    self->_parent_obj->acquire_stage_occupancy();
+#endif
+
     self->_parent_obj->thread_main();
+
+#ifdef THREADED_PIPELINE
+    self->_parent_obj->release_stage_occupancy();
+#endif
 
     if (thread_cat->is_debug()) {
       thread_cat.debug()

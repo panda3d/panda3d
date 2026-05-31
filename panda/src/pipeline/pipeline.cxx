@@ -13,6 +13,7 @@
 
 #include "pipeline.h"
 #include "pipelineCyclerTrueImpl.h"
+#include "epochManager.h"
 #include "configVariableInt.h"
 #include "config_pipeline.h"
 
@@ -91,7 +92,10 @@ cycle() {
       << "Beginning the pipeline cycle\n";
   }
 
-  pvector< PT(CycleData) > saved_cdatas;
+  // Bump the global EBR epoch so snapshots retired this cycle become
+  // reclaimable once every active thread has observed the new epoch.
+  EpochManager::try_advance_epoch();
+
   {
     ReMutexHolder cycle_holder(_cycle_lock);
     unsigned int prev_seq, next_seq;
@@ -122,7 +126,6 @@ cycle() {
       prev_dirty.make_head();
       prev_dirty.take_list(_dirty);
 
-      saved_cdatas.reserve(_num_dirty_cyclers);
       _num_dirty_cyclers = 0;
     }
 
@@ -154,7 +157,7 @@ cycle() {
           // We save the result of cycle(), so that we can defer the side-
           // effects that might occur when CycleDatas destruct, at least until
           // the end of this loop.
-          saved_cdatas.push_back(cycler->cycle_2());
+          cycler->cycle_2();
 
           // cycle_2() won't leave a cycler dirty.  Add it to the clean list.
           nassertd(!cycler->is_dirty()) break;
@@ -191,7 +194,7 @@ cycle() {
           MutexHolder holder(_lock);
           cycler->remove_from_list();
 
-          saved_cdatas.push_back(cycler->cycle_3());
+          cycler->cycle_3();
 
           if (cycler->is_dirty()) {
             // The cycler is still dirty.  Add it back to the dirty list.
@@ -235,7 +238,7 @@ cycle() {
           MutexHolder holder(_lock);
           cycler->remove_from_list();
 
-          saved_cdatas.push_back(cycler->cycle());
+          cycler->cycle();
 
           if (cycler->is_dirty()) {
             // The cycler is still dirty.  Add it back to the dirty list.
@@ -262,11 +265,10 @@ cycle() {
     _cycling = false;
   }
 
-  // And now it's safe to let the CycleData pointers in saved_cdatas destruct,
-  // which may cause cascading deletes, and which will in turn cause
-  // PipelineCyclers to remove themselves from (or add themselves to) the
-  // _dirty list.
-  saved_cdatas.clear();
+  // Drain a bounded chunk of the EBR retire queue (bounded so heavy churn
+  // can't make cycle() pay an unbounded reclamation cost; the rest waits for
+  // later cycles).
+  EpochManager::try_reclaim(256);
 
   if (pipeline_cat.is_debug()) {
     pipeline_cat.debug()

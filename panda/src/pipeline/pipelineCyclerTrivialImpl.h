@@ -81,6 +81,9 @@ public:
   INLINE int get_read_count() const;
   INLINE int get_write_count() const;
 
+  // No deferred-publish copy-on-write here, so nothing to guard against.
+  bool is_write_pending_by(Thread *) const { return false; }
+
   // In a trivial implementation, we only need to store the CycleData pointer.
   // Actually, we don't even need to do that, if we're lucky and the compiler
   // doesn't do anything funny with the struct layout.

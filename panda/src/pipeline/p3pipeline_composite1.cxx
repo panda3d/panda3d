@@ -15,6 +15,7 @@
 #include "cycleDataStageWriter.cxx"
 #include "cycleDataWriter.cxx"
 #include "cyclerHolder.cxx"
+#include "epochManager.cxx"
 #include "externalThread.cxx"
 #include "genericThread.cxx"
 #include "lightMutexDirect.cxx"
