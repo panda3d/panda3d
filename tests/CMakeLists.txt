@@ -1,3 +1,11 @@
+# Standalone C++ stress tests live in their own subdirectories and gate
+# themselves on their own options.  These are independent of the Python
+# test harness below.
+add_subdirectory(scenegraph_stress)
+add_subdirectory(cycler_bench)
+add_subdirectory(ebr_cycler)
+add_subdirectory(scenegraph_bench)
+
 if(NOT INTERROGATE_PYTHON_INTERFACE)
   return()
 endif()
