@@ -19,6 +19,7 @@ set(P3PIPELINE_HEADERS
   cycleDataStageWriter.h cycleDataStageWriter.I
   cycleDataWriter.h cycleDataWriter.I
   cyclerHolder.h cyclerHolder.I
+  epochManager.h
   externalThread.h
   genericThread.h genericThread.I
   lightMutex.I lightMutex.h
@@ -72,6 +73,7 @@ set(P3PIPELINE_SOURCES
   cycleDataStageWriter.cxx
   cycleDataWriter.cxx
   cyclerHolder.cxx
+  epochManager.cxx
   externalThread.cxx
   genericThread.cxx
   lightMutex.cxx

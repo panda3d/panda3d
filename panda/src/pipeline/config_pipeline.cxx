@@ -57,6 +57,15 @@ ConfigVariableInt thread_stack_size
           "created for each newly-created thread.  Not all thread "
           "implementations respect this value."));
 
+ConfigVariableBool pipeline_always_cow
+("pipeline-always-cow", false,
+ PRC_DESC("Set this true to disable the per-stage in-place fast path in the "
+          "threaded pipeline cycler, forcing every CycleData write to "
+          "copy-on-write.  This makes any two threads safe to mutate the same "
+          "cycler/stage at the cost of a per-write allocation, and is used to "
+          "exercise and benchmark the COW path.  Default false (the fast path "
+          "mutates in place when it is provably safe)."));
+
 /**
  * Initializes the library.  This must be called at least once before any of
  * the functions or classes in this library can be used.  Normally it will be

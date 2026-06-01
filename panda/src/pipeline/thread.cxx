@@ -15,6 +15,7 @@
 #include "mainThread.h"
 #include "externalThread.h"
 #include "config_pipeline.h"
+#include "epochManager.h"
 #include "mutexDebug.h"
 #include "conditionVarDebug.h"
 
@@ -67,6 +68,12 @@ Thread::
            _waiting_on_cvar == nullptr);
 #endif
 
+#ifdef THREADED_PIPELINE
+  // Fallback for threads that finished without their root wrapper releasing
+  // (e.g. main/external threads, or a started thread torn down early).
+  release_stage_occupancy();
+#endif
+
   if (_pstats_callback != nullptr) {
     _pstats_callback->delete_hook(this);
   }
@@ -108,6 +115,50 @@ bind_thread(const std::string &name, const std::string &sync_name) {
   return thread;
 }
 
+#ifdef THREADED_PIPELINE
+/**
+ * Explicit EBR reclamation point for long-running user code: drains fully
+ * (unlike the throttled hook in the yield family).  Call only with no
+ * CycleDataReader outstanding on this thread.
+ */
+void Thread::
+yield_quiescent() {
+  EpochManager::try_advance_epoch();
+  EpochManager::try_reclaim();
+  if (_yield_func != nullptr) {
+    _yield_func();
+  }
+}
+
+/**
+ * Raises this thread's stage-occupancy count for the in-place fast-path
+ * interlock.  Called when the thread begins running on its own stack (the impl
+ * root wrapper for started threads; the ctor for the already-running
+ * main/external threads), never from the Thread ctor on the creating thread.
+ * Idempotent.
+ */
+void Thread::
+acquire_stage_occupancy() {
+  if (!_stage_occupancy_held) {
+    _stage_occupancy_held = true;
+    EpochManager::register_thread(this, _pipeline_stage);
+  }
+}
+
+/**
+ * Lowers this thread's stage-occupancy count.  Called when the thread stops
+ * running (the impl root wrapper after thread_main returns) and again, as a
+ * no-op fallback, from the dtor.  Idempotent.
+ */
+void Thread::
+release_stage_occupancy() {
+  if (_stage_occupancy_held) {
+    _stage_occupancy_held = false;
+    EpochManager::unregister_thread(this, _pipeline_stage);
+  }
+}
+#endif
+
 /**
  * Specifies the Pipeline stage number associated with this thread.  The
  * default stage is 0 if no stage is specified otherwise.
@@ -121,7 +172,15 @@ bind_thread(const std::string &name, const std::string &sync_name) {
 void Thread::
 set_pipeline_stage(int pipeline_stage) {
 #ifdef THREADED_PIPELINE
+  int old_stage = _pipeline_stage;
   _pipeline_stage = pipeline_stage;
+  // Only move occupancy if we actually hold it.  A stage change before the
+  // thread starts running (occupancy not yet acquired) just records the new
+  // stage; acquire_stage_occupancy() will count the then-current stage when the
+  // thread begins running.
+  if (old_stage != pipeline_stage && _stage_occupancy_held) {
+    EpochManager::thread_stage_changed(old_stage, pipeline_stage);
+  }
 #else
   if (pipeline_stage != 0) {
     pipeline_cat.warning()
@@ -229,6 +288,9 @@ init_external_thread() {
   if (_external_thread == nullptr) {
     _external_thread = new ExternalThread;
     _external_thread->ref();
+#ifdef THREADED_PIPELINE
+    _external_thread->_epoch_use_tls = true;
+#endif
   }
 }
 

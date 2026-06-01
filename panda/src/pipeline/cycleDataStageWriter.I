@@ -28,6 +28,7 @@ CycleDataStageWriter(PipelineCycler<CycleDataType> &cycler, int stage,
   _current_thread(current_thread),
   _stage(stage)
 {
+  Thread::epoch_enter(_current_thread);
   _pointer = _cycler->write_stage(_stage, _current_thread);
   nassertv(_pointer != nullptr);
 }
@@ -43,6 +44,7 @@ CycleDataStageWriter(PipelineCycler<CycleDataType> &cycler, int stage,
   _current_thread(current_thread),
   _stage(stage)
 {
+  Thread::epoch_enter(_current_thread);
   _pointer = _cycler->write_stage_upstream(_stage, force_to_0, _current_thread);
   nassertv(_pointer != nullptr);
 }
@@ -59,6 +61,7 @@ CycleDataStageWriter(const CycleDataStageWriter<CycleDataType> &copy) :
   _stage(copy._stage)
 {
   nassertv(_pointer != nullptr);
+  Thread::epoch_enter(_current_thread);
   _cycler->increment_write(_pointer);
 }
 
@@ -75,6 +78,7 @@ CycleDataStageWriter(PipelineCycler<CycleDataType> &cycler, int stage,
   _current_thread(take_from.get_current_thread()),
   _stage(stage)
 {
+  Thread::epoch_enter(_current_thread);
   _pointer = _cycler->elevate_read_stage(_stage, take_from.take_pointer(),
                                          _current_thread);
 }
@@ -93,6 +97,7 @@ CycleDataStageWriter(PipelineCycler<CycleDataType> &cycler, int stage,
   _current_thread(take_from.get_current_thread()),
   _stage(stage)
 {
+  Thread::epoch_enter(_current_thread);
   _pointer = _cycler->elevate_read_stage_upstream(_stage, take_from.take_pointer(),
                                                   force_to_0, _current_thread);
 }
@@ -108,6 +113,7 @@ CycleDataStageWriter(CycleDataStageWriter<CycleDataType> &&from) noexcept :
   _pointer(from._pointer),
   _stage(from._stage)
 {
+  Thread::epoch_enter(_current_thread);
   from._pointer = nullptr;
 }
 
@@ -153,6 +159,7 @@ INLINE CycleDataStageWriter<CycleDataType>::
   if (_pointer != nullptr) {
     _cycler->release_write_stage(_stage, _pointer);
   }
+  Thread::epoch_leave(_current_thread);
 }
 
 /**

@@ -39,6 +39,20 @@ has_column(const InternalName *name) const {
 }
 
 /**
+ * Returns true if the indicated thread currently holds an outstanding write
+ * (an open GeomVertexArrayDataHandle, hence a copy-on-write in flight) on this
+ * array.  Defers to the cycler's own write-lock state -- the single source of
+ * truth -- rather than tracking it separately.  Used by
+ * GeomVertexData::make_array_writers()/modify_array() to avoid copy-on-writing
+ * an array that the same thread is already writing, which under the
+ * deferred-publish (EBR) pipeline would otherwise orphan the in-flight writer.
+ */
+INLINE bool GeomVertexArrayData::
+is_write_in_progress_by(Thread *thread) const {
+  return _cycler.is_write_pending_by(thread);
+}
+
+/**
  * Returns the number of rows stored in the array, based on the number of
  * bytes and the stride.  This should be the same for all arrays within a
  * given GeomVertexData object.

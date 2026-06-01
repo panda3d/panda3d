@@ -282,7 +282,17 @@ root_func(LPVOID data) {
       self->_mutex.unlock();
     }
 
+#ifdef THREADED_PIPELINE
+    // Running on this thread's own stack now: take stage occupancy here, not in
+    // the Thread ctor on the creating thread (see threadPosixImpl root_func).
+    self->_parent_obj->acquire_stage_occupancy();
+#endif
+
     self->_parent_obj->thread_main();
+
+#ifdef THREADED_PIPELINE
+    self->_parent_obj->release_stage_occupancy();
+#endif
 
     if (thread_cat->is_debug()) {
       thread_cat.debug()

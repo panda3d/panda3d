@@ -11,6 +11,8 @@
  * @date 2006-01-31
  */
 
+#include "epochManager.h"
+
 /**
  * Grabs an overall lock on the cycler.  Release it with a call to release().
  * This lock should be held while walking the list of stages.
@@ -41,6 +43,20 @@ release() {
 }
 
 /**
+ * Returns the live CData for code holding _lock: the in-flight write copy
+ * (_pending) when a write is outstanding, else the published pointer.  A write
+ * is outstanding only to the thread that holds it, so this gives that thread
+ * read-your-writes.
+ */
+INLINE CycleData *PipelineCyclerTrueImpl::
+current_locked(int pipeline_stage) const {
+  const CycleDataNode &node = _data[pipeline_stage];
+  CycleData *pending = node._pending;
+  return (pending != nullptr) ? pending
+                              : node._cdata.load(std::memory_order_relaxed);
+}
+
+/**
  * Returns a const CycleData pointer, filled with the data for the current
  * stage of the pipeline as seen by this thread.  No lock is made on the
  * contents; there is no guarantee that some other thread won't modify this
@@ -56,7 +72,18 @@ read_unlocked(Thread *current_thread) const {
 #ifdef _DEBUG
   nassertr(pipeline_stage >= 0 && pipeline_stage < get_num_stages(), nullptr);
 #endif
-  return _data[pipeline_stage]._cdata;
+  const CycleDataNode &node = _data[pipeline_stage];
+  // Read-your-writes: if this thread has a COW in flight on this stage, it must
+  // see its own _pending; other threads load the immutable published pointer.
+  // Caller must be inside a Thread::epoch critical section for the returned
+  // pointer to stay valid; see Thread::epoch_enter.
+  if (node._write_thread.load(std::memory_order_acquire) == current_thread) {
+    CycleData *pending = node._pending;
+    if (pending != nullptr) {
+      return pending;
+    }
+  }
+  return node._cdata.load(std::memory_order_acquire);
 }
 
 /**
@@ -75,7 +102,7 @@ read(Thread *current_thread) const {
   nassertr(pipeline_stage >= 0 && pipeline_stage < get_num_stages(), nullptr);
 #endif
   _lock.acquire(current_thread);
-  return _data[pipeline_stage]._cdata;
+  return current_locked(pipeline_stage);
 }
 
 /**
@@ -88,7 +115,7 @@ increment_read(const CycleData *pointer) const {
 #ifdef _DEBUG
   int pipeline_stage = Thread::get_current_pipeline_stage();
   nassertv(pipeline_stage >= 0 && pipeline_stage < get_num_stages());
-  nassertv(_data[pipeline_stage]._cdata == pointer);
+  nassertv(current_locked(pipeline_stage) == pointer);
 #endif
   _lock.elevate_lock();
 }
@@ -102,7 +129,7 @@ release_read(const CycleData *pointer) const {
 #ifdef _DEBUG
   int pipeline_stage = Thread::get_current_pipeline_stage();
   nassertv(pipeline_stage >= 0 && pipeline_stage < get_num_stages());
-  nassertv(_data[pipeline_stage]._cdata == pointer);
+  nassertv(current_locked(pipeline_stage) == pointer);
 #endif
   _lock.release();
 }
@@ -162,7 +189,7 @@ elevate_read(const CycleData *pointer, Thread *current_thread) {
 #ifdef _DEBUG
   int pipeline_stage = current_thread->get_pipeline_stage();
   nassertr(pipeline_stage >= 0 && pipeline_stage < get_num_stages(), nullptr);
-  nassertr(_data[pipeline_stage]._cdata == pointer, nullptr);
+  nassertr(current_locked(pipeline_stage) == pointer, nullptr);
 #endif
   CycleData *new_pointer = write(current_thread);
   _lock.release();
@@ -180,7 +207,7 @@ elevate_read_upstream(const CycleData *pointer, bool force_to_0, Thread *current
 #ifdef _DEBUG
   int pipeline_stage = current_thread->get_pipeline_stage();
   nassertr(pipeline_stage >= 0 && pipeline_stage < get_num_stages(), nullptr);
-  nassertr(_data[pipeline_stage]._cdata == pointer, nullptr);
+  nassertr(current_locked(pipeline_stage) == pointer, nullptr);
 #endif
   CycleData *new_pointer = write_upstream(force_to_0, current_thread);
   _lock.release();
@@ -197,7 +224,12 @@ increment_write(CycleData *pointer) const {
   int pipeline_stage = Thread::get_current_pipeline_stage();
 #ifdef _DEBUG
   nassertv(pipeline_stage >= 0 && pipeline_stage < get_num_stages());
-  nassertv(_data[pipeline_stage]._cdata == pointer);
+  // pointer is either _pending (COW mode) or the published _cdata (in-place).
+  nassertv((_data[pipeline_stage]._pending != nullptr &&
+            _data[pipeline_stage]._pending == pointer) ||
+           (_data[pipeline_stage]._pending == nullptr &&
+            _data[pipeline_stage]._cdata.load(std::memory_order_relaxed) == pointer));
+  nassertv(_data[pipeline_stage]._writes_outstanding > 0);
 #endif
   ++(_data[pipeline_stage]._writes_outstanding);
   _lock.elevate_lock();
@@ -266,7 +298,15 @@ read_stage_unlocked(int pipeline_stage) const {
 #elif defined(__has_builtin) && __has_builtin(__builtin_assume)
   __builtin_assume(pipeline_stage >= 0);
 #endif
-  return _data[pipeline_stage]._cdata;
+  const CycleDataNode &node = _data[pipeline_stage];
+  // Read-your-writes for a thread reading a stage it is itself writing.
+  if (node._write_thread.load(std::memory_order_acquire) == Thread::get_current_thread()) {
+    CycleData *pending = node._pending;
+    if (pending != nullptr) {
+      return pending;
+    }
+  }
+  return node._cdata.load(std::memory_order_acquire);
 }
 
 /**
@@ -286,7 +326,7 @@ read_stage(int pipeline_stage, Thread *current_thread) const {
   __builtin_assume(pipeline_stage >= 0);
 #endif
   _lock.acquire(current_thread);
-  return _data[pipeline_stage]._cdata;
+  return current_locked(pipeline_stage);
 }
 
 /**
@@ -297,7 +337,7 @@ release_read_stage(int pipeline_stage, const CycleData *pointer) const {
   TAU_PROFILE("void PipelineCyclerTrueImpl::release_read_stage(int, const CycleData *)", " ", TAU_USER);
 #ifdef _DEBUG
   nassertv(pipeline_stage >= 0 && pipeline_stage < get_num_stages());
-  nassertv(_data[pipeline_stage]._cdata == pointer);
+  nassertv(current_locked(pipeline_stage) == pointer);
 #endif
   _lock.release();
 }
@@ -313,7 +353,7 @@ elevate_read_stage(int pipeline_stage, const CycleData *pointer,
   TAU_PROFILE("CycleData *PipelineCyclerTrueImpl::elevate_read_stage(int, const CycleData *)", " ", TAU_USER);
 #ifdef _DEBUG
   nassertr(pipeline_stage >= 0 && pipeline_stage < get_num_stages(), nullptr);
-  nassertr(_data[pipeline_stage]._cdata == pointer, nullptr);
+  nassertr(current_locked(pipeline_stage) == pointer, nullptr);
 #elif defined(__has_builtin) && __has_builtin(__builtin_assume)
   __builtin_assume(pipeline_stage >= 0);
 #endif
@@ -333,7 +373,7 @@ elevate_read_stage_upstream(int pipeline_stage, const CycleData *pointer,
   TAU_PROFILE("CycleData *PipelineCyclerTrueImpl::elevate_read_stage(int, const CycleData *)", " ", TAU_USER);
 #ifdef _DEBUG
   nassertr(pipeline_stage >= 0 && pipeline_stage < get_num_stages(), nullptr);
-  nassertr(_data[pipeline_stage]._cdata == pointer, nullptr);
+  nassertr(current_locked(pipeline_stage) == pointer, nullptr);
 #elif defined(__has_builtin) && __has_builtin(__builtin_assume)
   __builtin_assume(pipeline_stage >= 0);
 #endif
@@ -351,12 +391,32 @@ release_write_stage(int pipeline_stage, CycleData *pointer) {
   TAU_PROFILE("void PipelineCyclerTrueImpl::release_write_stage(int, const CycleData *)", " ", TAU_USER);
 #ifdef _DEBUG
   nassertv(pipeline_stage >= 0 && pipeline_stage < get_num_stages());
-  nassertv(_data[pipeline_stage]._cdata == pointer);
   nassertv(_data[pipeline_stage]._writes_outstanding > 0);
+  // pointer is either _pending (COW mode) or the published _cdata (in-place mode).
+  nassertv((_data[pipeline_stage]._pending != nullptr &&
+            _data[pipeline_stage]._pending == pointer) ||
+           (_data[pipeline_stage]._pending == nullptr &&
+            _data[pipeline_stage]._cdata.load(std::memory_order_relaxed) == pointer));
 #elif defined(__has_builtin) && __has_builtin(__builtin_assume)
   __builtin_assume(pipeline_stage >= 0);
 #endif
-  --(_data[pipeline_stage]._writes_outstanding);
+  CycleDataNode &slot = _data[pipeline_stage];
+  if (--slot._writes_outstanding == 0) {
+    if (slot._pending != nullptr) {
+      // Outermost COW commit: publish the copy (already node_ref'd when it was
+      // created in write_stage) and retire the old pointer to EBR.  Clear the
+      // read-your-writes steer so this thread now sees the published pointer.
+      CycleData *new_data = slot._pending;
+      CycleData *old_data =
+        slot._cdata.exchange(new_data, std::memory_order_release);
+      slot._pending = nullptr;
+      slot._write_thread.store(nullptr, std::memory_order_release);
+      EpochManager::retire(old_data);
+    } else {
+      // Outermost in-place commit: release the slot claimed in write_stage.
+      EpochManager::end_inplace_write(pipeline_stage);
+    }
+  }
   _lock.release();
 }
 
@@ -366,7 +426,7 @@ release_write_stage(int pipeline_stage, CycleData *pointer) {
  */
 INLINE TypeHandle PipelineCyclerTrueImpl::
 get_parent_type() const {
-  return _data[0]._cdata->get_parent_type();
+  return _data[0]._cdata.load(std::memory_order_relaxed)->get_parent_type();
 }
 
 /**
@@ -382,7 +442,27 @@ cheat() const {
 #ifdef _DEBUG
   nassertr(pipeline_stage >= 0 && pipeline_stage < get_num_stages(), nullptr);
 #endif
-  return _data[pipeline_stage]._cdata;
+  return _data[pipeline_stage]._cdata.load(std::memory_order_relaxed);
+}
+
+/**
+ * Returns true if `current_thread` currently holds an outstanding
+ * copy-on-write on this cycler at its pipeline stage -- that is, it has the
+ * data write-locked through an open writer (`_write_thread` is set for the
+ * duration of a COW between write_stage and the matching release_write_stage).
+ *
+ * Read-only.  Used by GeomVertexData::make_array_writers()/modify_array() to
+ * avoid copy-on-writing an array that this same thread is already writing,
+ * which under deferred publish would orphan the in-flight writer.
+ */
+INLINE bool PipelineCyclerTrueImpl::
+is_write_pending_by(Thread *current_thread) const {
+  int pipeline_stage = current_thread->get_pipeline_stage();
+#ifdef _DEBUG
+  nassertr(pipeline_stage >= 0 && pipeline_stage < get_num_stages(), false);
+#endif
+  return _data[pipeline_stage]._write_thread.load(std::memory_order_acquire)
+      == current_thread;
 }
 
 /**
@@ -409,29 +489,30 @@ get_write_count() const {
  * two stages to the pipeline.  It does the same thing as cycle(), but is a
  * little bit faster because it knows there are exactly two stages.
  */
-INLINE PT(CycleData) PipelineCyclerTrueImpl::
+INLINE void PipelineCyclerTrueImpl::
 cycle_2() {
-  TAU_PROFILE("PT(CycleData) PipelineCyclerTrueImpl::cycle_2()", " ", TAU_USER);
+  TAU_PROFILE("void PipelineCyclerTrueImpl::cycle_2()", " ", TAU_USER);
 
-  // This trick moves an NPT into a PT without unnecessarily incrementing and
-  // subsequently decrementing the regular reference count.
-  PT(CycleData) last_val;
-  last_val.swap(_data[1]._cdata);
-  last_val->node_unref_only();
-
-  nassertr(_lock.debug_is_locked(), last_val);
-  nassertr(is_dirty(), last_val);
+  nassertv(_lock.debug_is_locked());
+  nassertv(is_dirty());
 
 #ifdef _DEBUG
-  nassertr(get_num_stages() == 2, last_val);
+  nassertv(get_num_stages() == 2);
 #endif
 
-  nassertr(_data[1]._writes_outstanding == 0, last_val);
-  _data[1]._cdata = _data[0]._cdata;
+  nassertv(_data[1]._writes_outstanding == 0);
+
+  // Rotate stage 0 -> 1: node_ref the incoming pointer (stage 1 now owns it),
+  // exchange, and retire the outgoing pointer to EBR.
+  CycleData *incoming = _data[0]._cdata.load(std::memory_order_relaxed);
+  if (incoming != nullptr) {
+    incoming->node_ref();
+  }
+  CycleData *outgoing = _data[1]._cdata.exchange(incoming, std::memory_order_release);
+  EpochManager::retire(outgoing);
 
   // No longer dirty.
   clear_dirty();
-  return last_val;
 }
 
 /**
@@ -439,34 +520,39 @@ cycle_2() {
  * three stages to the pipeline.  It does the same thing as cycle(), but is a
  * little bit faster because it knows there are exactly three stages.
  */
-INLINE PT(CycleData) PipelineCyclerTrueImpl::
+INLINE void PipelineCyclerTrueImpl::
 cycle_3() {
-  TAU_PROFILE("PT(CycleData) PipelineCyclerTrueImpl::cycle_3()", " ", TAU_USER);
+  TAU_PROFILE("void PipelineCyclerTrueImpl::cycle_3()", " ", TAU_USER);
 
-  // This trick moves an NPT into a PT without unnecessarily incrementing and
-  // subsequently decrementing the regular reference count.
-  PT(CycleData) last_val;
-  last_val.swap(_data[2]._cdata);
-  last_val->node_unref_only();
-
-  nassertr(_lock.debug_is_locked(), last_val);
-  nassertr(is_dirty(), last_val);
+  nassertv(_lock.debug_is_locked());
+  nassertv(is_dirty());
 
 #ifdef _DEBUG
-  nassertr(get_num_stages() == 3, last_val);
+  nassertv(get_num_stages() == 3);
 #endif
 
-  nassertr(_data[2]._writes_outstanding == 0, last_val);
-  nassertr(_data[1]._writes_outstanding == 0, last_val);
-  _data[2]._cdata = _data[1]._cdata;
-  _data[1]._cdata = _data[0]._cdata;
+  nassertv(_data[2]._writes_outstanding == 0);
+  nassertv(_data[1]._writes_outstanding == 0);
 
-  if (_data[2]._cdata == _data[1]._cdata) {
-    // No longer dirty.
-    clear_dirty();
+  // Rotate stage 1 -> stage 2, then stage 0 -> stage 1.
+  CycleData *into_2 = _data[1]._cdata.load(std::memory_order_relaxed);
+  if (into_2 != nullptr) into_2->node_ref();
+  CycleData *outgoing = _data[2]._cdata.exchange(into_2, std::memory_order_release);
+  EpochManager::retire(outgoing);
+
+  CycleData *into_1 = _data[0]._cdata.load(std::memory_order_relaxed);
+  if (into_1 != nullptr) into_1->node_ref();
+  CycleData *bumped_1 = _data[1]._cdata.exchange(into_1, std::memory_order_release);
+  // bumped_1 was stage 1's occupant; we node_ref'd it into stage 2 above, so
+  // drop the extra ref it held as stage 1's occupant.
+  if (bumped_1 != nullptr) {
+    node_unref_delete<CycleData>(bumped_1);
   }
 
-  return last_val;
+  if (_data[2]._cdata.load(std::memory_order_relaxed) ==
+      _data[1]._cdata.load(std::memory_order_relaxed)) {
+    clear_dirty();
+  }
 }
 
 /**
@@ -483,24 +569,34 @@ CyclerMutex(PipelineCyclerTrueImpl *cycler) {
  *
  */
 INLINE PipelineCyclerTrueImpl::CycleDataNode::
-CycleDataNode(const PipelineCyclerTrueImpl::CycleDataNode &copy) :
-  _cdata(copy._cdata),
-  _writes_outstanding(0)
+CycleDataNode() :
+  _cdata(nullptr),
+  _write_thread(nullptr)
 {
 }
 
 /**
- *
+ * Drops the cycler's node_ref on the published CData (if any).  Called
+ * during cycler teardown; no readers are expected at this point.
  */
 INLINE PipelineCyclerTrueImpl::CycleDataNode::
 ~CycleDataNode() {
   nassertv(_writes_outstanding == 0);
+  nassertv(_pending == nullptr);
+  CycleData *p = _cdata.load(std::memory_order_relaxed);
+  if (p != nullptr) {
+    node_unref_delete<CycleData>(p);
+  }
 }
 
 /**
- *
+ * Installs an initial CData pointer on this slot.  Bumps the cycler's
+ * node_ref on `cd`.  Called only during cycler construction.
  */
 INLINE void PipelineCyclerTrueImpl::CycleDataNode::
-operator = (const PipelineCyclerTrueImpl::CycleDataNode &copy) {
-  _cdata = copy._cdata;
+install(CycleData *cd) {
+  if (cd != nullptr) {
+    cd->node_ref();
+  }
+  _cdata.store(cd, std::memory_order_release);
 }

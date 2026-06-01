@@ -75,6 +75,9 @@ public:
   INLINE int get_read_count() const;
   INLINE int get_write_count() const;
 
+  // No deferred-publish copy-on-write here, so nothing to guard against.
+  bool is_write_pending_by(Thread *) const { return false; }
+
 private:
   PT(CycleData) _data;
   Pipeline *_pipeline;

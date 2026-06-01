@@ -2537,6 +2537,11 @@ modify_array(size_t i) {
   PT(GeomVertexArrayData) new_data;
   if (_got_array_writers) {
     new_data = _array_writers[i]->get_object();
+  } else if (_cdata->_arrays[i].get_unsafe_pointer()->is_write_in_progress_by(_current_thread)) {
+    // Already being written by this thread; reuse rather than copy-on-write so
+    // the caller's handle nests on the same in-flight generation (see
+    // make_array_writers()).
+    new_data = _cdata->_arrays[i].get_unsafe_pointer();
   } else {
     new_data = _cdata->_arrays[i].get_write_pointer();
   }
@@ -2659,7 +2664,18 @@ make_array_writers() {
   _array_writers.reserve(_cdata->_arrays.size());
   GeomVertexData::Arrays::iterator ai;
   for (ai = _cdata->_arrays.begin(); ai != _cdata->_arrays.end(); ++ai) {
-    _array_writers.push_back(new GeomVertexArrayDataHandle((*ai).get_write_pointer(), _current_thread));
+    GeomVertexArrayData *array;
+    if ((*ai).get_unsafe_pointer()->is_write_in_progress_by(_current_thread)) {
+      // This thread already holds an open write handle on this array (e.g. an
+      // earlier GeomVertexWriter on the same GeomVertexData).  Reuse it rather
+      // than copy-on-writing it: the new handle nests on the same in-flight
+      // generation, so all writers publish into the same array instead of
+      // orphaning each other under deferred publish.
+      array = (*ai).get_unsafe_pointer();
+    } else {
+      array = (*ai).get_write_pointer();
+    }
+    _array_writers.push_back(new GeomVertexArrayDataHandle(array, _current_thread));
   }
 
   _object->clear_cache_stage();

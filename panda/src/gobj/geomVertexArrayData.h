@@ -121,6 +121,8 @@ PUBLISHED:
 public:
   virtual void evict_lru();
 
+  INLINE bool is_write_in_progress_by(Thread *thread) const;
+
 private:
   INLINE void set_lru_size(size_t lru_size);
   INLINE void mark_used();

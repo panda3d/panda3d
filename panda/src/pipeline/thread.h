@@ -23,6 +23,7 @@
 #include "pnotify.h"
 #include "config_pipeline.h"
 #include "patomic.h"
+#include "epochManager.h"
 
 #ifdef ANDROID
 typedef struct _JNIEnv JNIEnv;
@@ -158,6 +159,44 @@ private:
 
   int _python_index;
 
+#ifdef THREADED_PIPELINE
+public:
+  // Enter/leave an EBR critical section.  A CycleDataReader's loaded CData
+  // pointer is valid only while its thread is inside one; the framework opens
+  // one per task/frame so many readers amortize to a single epoch transition.
+  // Depth-counted (every enter balanced by one leave; only the outermost pair
+  // touches the atomic slot): copy/move readers enter in their ctor and leave
+  // in their dtor, while assignment leaves depth unchanged.  Delegates to
+  // EpochManager via this thread's participant; the two overloads are equivalent.
+  ALWAYS_INLINE void epoch_enter();
+  ALWAYS_INLINE void epoch_leave();
+  ALWAYS_INLINE static void epoch_enter(Thread *t);
+  ALWAYS_INLINE static void epoch_leave(Thread *t);
+
+  // The EBR participant for this thread.  Bound threads (one Thread per OS
+  // thread) use a Thread-owned record -- a plain member access, avoiding the
+  // slow shared-library thread_local lookup on the hot read path.  The shared
+  // ExternalThread (handed to every unbound OS thread) must NOT, since the
+  // record would be raced across those threads; it sets _epoch_use_tls and
+  // falls back to EpochManager::external_participant().
+  ALWAYS_INLINE EpochParticipant &epoch_participant();
+
+  // Raise/lower this thread's stage occupancy for the in-place fast-path
+  // interlock.  Occupancy must reflect threads that can actually *read* a
+  // cycler, so it is acquired when the thread begins running on its own stack
+  // (the impl root wrapper, or the ctor for the already-running main/external
+  // threads) -- never in the Thread ctor on the creating thread, which would
+  // let a not-yet-running thread's drain self-deadlock against the creator's
+  // own live in-place write.
+  void acquire_stage_occupancy();
+  void release_stage_occupancy();
+
+PUBLISHED:
+  BLOCKING static void yield_quiescent();
+
+private:
+#endif  // THREADED_PIPELINE
+
 #ifdef DEBUG_THREADS
   MutexDebug *_blocked_on_mutex;
   ConditionVarDebug *_waiting_on_cvar;
@@ -166,6 +205,17 @@ private:
 private:
   static Thread *_main_thread;
   static Thread *_external_thread;
+
+#ifdef THREADED_PIPELINE
+  EpochParticipant _epoch_participant;
+  // Set only on the shared ExternalThread, which must use the function-local
+  // participant in EpochManager::external_participant().
+  bool _epoch_use_tls = false;
+  // True while this thread holds a stage-occupancy count (see
+  // acquire/release_stage_occupancy).  Keeps acquire/release idempotent so the
+  // dtor never double-decrements a never-started thread.
+  bool _stage_occupancy_held = false;
+#endif
 
   static void (*_sleep_func)(double);
   static void (*_yield_func)();

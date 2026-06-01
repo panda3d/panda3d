@@ -23,6 +23,11 @@ MainThread() : Thread("Main", "Main") {
   init_type();  // in case static init comes in the wrong order
   _impl.setup_main_thread();
   _started = true;
+#ifdef THREADED_PIPELINE
+  // The main thread is already running on this stack, so it occupies its stage
+  // immediately (unlike a started thread, which acquires in its root wrapper).
+  acquire_stage_occupancy();
+#endif
 }
 
 /**

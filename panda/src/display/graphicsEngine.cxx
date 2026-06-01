@@ -714,6 +714,10 @@ render_frame() {
   Thread *current_thread = Thread::get_current_thread();
   ReMutexHolder public_holder(_public_lock);
 
+#ifdef THREADED_PIPELINE
+  current_thread->epoch_enter();
+#endif
+
   // Since this gets called every frame, we should take advantage of the
   // opportunity to flush the cache if necessary.
   BamCache::consider_flush_global_index();
@@ -967,6 +971,10 @@ render_frame() {
   // to be App.
   //_app_pcollector.start();
   _render_frame_pcollector.stop();
+
+#ifdef THREADED_PIPELINE
+  current_thread->epoch_leave();
+#endif
 }
 
 
@@ -2874,8 +2882,14 @@ thread_main() {
       break;
 
     case TS_do_frame:
+#ifdef THREADED_PIPELINE
+      current_thread->epoch_enter();
+#endif
       do_pending(_engine, current_thread);
       do_frame(_engine, current_thread);
+#ifdef THREADED_PIPELINE
+      current_thread->epoch_leave();
+#endif
       break;
 
     case TS_do_flip:

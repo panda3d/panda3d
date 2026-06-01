@@ -1181,8 +1181,13 @@ PandaNodePipelineReader(const PandaNode *node, Thread *current_thread) :
 #ifdef DO_PIPELINING
   // We node_ref the CData pointer, so that if anyone makes changes to the
   // PandaNode while we hold this pointer, it will force a copy--so that this
-  // object will remain unchanged (if out-of-date).
-  _cdata->node_ref();
+  // object will remain unchanged (if out-of-date).  The null check tolerates a
+  // null _cdata, which a cull reader can rarely observe under heavy concurrent
+  // structural mutation; compare_draw_mask then skips the node instead of
+  // dereferencing null.
+  if (_cdata != nullptr) {
+    _cdata->node_ref();
+  }
 #endif  // DO_PIPELINING
 }
 
@@ -1196,7 +1201,9 @@ PandaNodePipelineReader(const PandaNodePipelineReader &copy) :
   _cdata(copy._cdata)
 {
 #ifdef DO_PIPELINING
-  _cdata->node_ref();
+  if (_cdata != nullptr) {
+    _cdata->node_ref();
+  }
 #endif  // DO_PIPELINING
 
   /*
@@ -1220,14 +1227,18 @@ operator = (const PandaNodePipelineReader &copy) {
   */
 
 #ifdef DO_PIPELINING
-  node_unref_delete((CycleData *)_cdata);
+  if (_cdata != nullptr) {
+    node_unref_delete((CycleData *)_cdata);
+  }
 #endif  // DO_PIPELINING
 
   _node = copy._node;
   _cdata = copy._cdata;
 
 #ifdef DO_PIPELINING
-  _cdata->node_ref();
+  if (_cdata != nullptr) {
+    _cdata->node_ref();
+  }
 #endif  // DO_PIPELINING
 
   /*
@@ -1249,7 +1260,9 @@ INLINE PandaNodePipelineReader::
   */
 
 #ifdef DO_PIPELINING
-  node_unref_delete((CycleData *)_cdata);
+  if (_cdata != nullptr) {
+    node_unref_delete((CycleData *)_cdata);
+  }
 #endif  // DO_PIPELINING
 
 #ifdef _DEBUG

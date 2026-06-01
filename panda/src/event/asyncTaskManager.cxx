@@ -20,6 +20,8 @@
 #include "pStatTimer.h"
 #include "clockObject.h"
 #include "config_event.h"
+#include "thread.h"
+#include "epochManager.h"
 #include <algorithm>
 
 using std::string;
@@ -483,25 +485,42 @@ get_sleeping_tasks() const {
  */
 void AsyncTaskManager::
 poll() {
-  MutexHolder holder(_lock);
+#ifdef THREADED_PIPELINE
+  Thread *current_thread = Thread::get_current_thread();
+  current_thread->epoch_enter();
+#endif
 
-  // We iterate through with an index, rather than with an iterator, because
-  // it's possible for a task to adjust the task_chain list during its
-  // execution.
-  for (unsigned int i = 0; i < _task_chains.size(); ++i) {
-    AsyncTaskChain *chain = _task_chains[i];
-    chain->do_poll();
+  {
+    MutexHolder holder(_lock);
 
-    if (chain->_state == AsyncTaskChain::S_interrupted) {
-      // If a task returned DS_interrupt, we need to interrupt the entire
-      // manager, since an exception state may have been set.
-      break;
+    // We iterate through with an index, rather than with an iterator, because
+    // it's possible for a task to adjust the task_chain list during its
+    // execution.
+    for (unsigned int i = 0; i < _task_chains.size(); ++i) {
+      AsyncTaskChain *chain = _task_chains[i];
+      chain->do_poll();
+
+      if (chain->_state == AsyncTaskChain::S_interrupted) {
+        // If a task returned DS_interrupt, we need to interrupt the entire
+        // manager, since an exception state may have been set.
+        break;
+      }
     }
+
+    // Just in case the clock was ticked explicitly by one of our polling
+    // chains.
+    _frame_cvar.notify_all();
   }
 
-  // Just in case the clock was ticked explicitly by one of our polling
-  // chains.
-  _frame_cvar.notify_all();
+#ifdef THREADED_PIPELINE
+  current_thread->epoch_leave();
+
+  // Also reclaim here for apps that poll tasks but never render.  Must run
+  // after epoch_leave (so our own slot doesn't pin the floor) and outside
+  // _lock (freeing a CycleData can take other locks).
+  EpochManager::try_advance_epoch();
+  EpochManager::try_reclaim(256);
+#endif
 }
 
 /**

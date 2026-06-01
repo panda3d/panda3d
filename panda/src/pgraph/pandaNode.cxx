@@ -114,7 +114,16 @@ PandaNode::
 #endif  // NDEBUG
   */
 
-  remove_all_children();
+  // Use do_remove_all_children, not the public remove_all_children: the latter
+  // also runs force_bounds_stale + children_changed + mark_bam_modified, which
+  // the destructor must not.  force_bounds_stale walks self->_up, whose
+  // UpConnections hold raw, un-refcounted back-pointers to parents (kept raw to
+  // avoid parent<->child cycles); under concurrent EBR a parent may be
+  // mid-teardown, so the walk could read freed memory in
+  // CDStageReader<PandaNode::CData>::ctor.  The notifications are also moot
+  // here: any parent that held us already dropped its Down entry (else our
+  // refcount could not be 0) and staled its bounds then.
+  do_remove_all_children(Thread::get_current_thread());
 }
 
 /**
@@ -782,6 +791,25 @@ remove_stashed(int child_index, Thread *current_thread) {
  */
 void PandaNode::
 remove_all_children(Thread *current_thread) {
+  do_remove_all_children(current_thread);
+
+  // Notify self's parents that our subtree (and thus our composed bound)
+  // has changed, and observers that our child list has changed.  Skipped
+  // by ~PandaNode -- see the destructor for why that path can't safely
+  // walk back up the parent chain.
+  force_bounds_stale();
+  children_changed();
+  mark_bam_modified();
+}
+
+/**
+ * Iterates every current and upstream pipeline stage and severs every
+ * down/up connection on it.  Shared body of remove_all_children (which
+ * additionally fires off the parent / observer notifications afterwards)
+ * and PandaNode::~PandaNode (which must NOT, see the comment there).
+ */
+void PandaNode::
+do_remove_all_children(Thread *current_thread) {
   // We have to do this for each upstream pipeline stage.
   OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
     CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
@@ -820,10 +848,6 @@ remove_all_children(Thread *current_thread) {
     stashed.clear();
   }
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
-
-  force_bounds_stale();
-  children_changed();
-  mark_bam_modified();
 }
 
 /**
@@ -2742,44 +2766,51 @@ detach_one_stage(NodePathComponent *child, int pipeline_stage,
   PT(PandaNode) child_node = child->get_node();
   PT(PandaNode) parent_node = child->get_next(pipeline_stage, current_thread)->get_node();
 
-  CDStageWriter cdata_parent(parent_node->_cycler, pipeline_stage, current_thread);
-  CDStageWriter cdata_child(child_node->_cycler, pipeline_stage, current_thread);
-  int parent_index = child_node->do_find_parent(parent_node, cdata_child);
-  if (parent_index >= 0) {
-    // Now look for the child and break the actual connection.
+  // Scope the writers so they're released before force_bounds_stale walks up
+  // the parent chain acquiring ancestor cyclers.  Holding parent.cycler +
+  // child.cycler across that upward walk inverts against a thread holding an
+  // ancestor's cycler and descending into us (as reparent_one_stage does),
+  // which can deadlock.
+  {
+    CDStageWriter cdata_parent(parent_node->_cycler, pipeline_stage, current_thread);
+    CDStageWriter cdata_child(child_node->_cycler, pipeline_stage, current_thread);
+    int parent_index = child_node->do_find_parent(parent_node, cdata_child);
+    if (parent_index >= 0) {
+      // Now look for the child and break the actual connection.
 
-    // First, look for and remove the parent node from the child's up list.
-    int num_erased = cdata_child->modify_up()->erase(UpConnection(parent_node));
-    nassertv(num_erased == 1);
+      // First, look for and remove the parent node from the child's up list.
+      int num_erased = cdata_child->modify_up()->erase(UpConnection(parent_node));
+      nassertv(num_erased == 1);
 
-    // Now, look for and remove the child node from the parent's down list.
-    // We also check in the stashed list, in case the child node has been
-    // stashed.
-    Down::iterator di;
-    bool found = false;
-    PT(Down) down = cdata_parent->modify_down();
-    for (di = down->begin(); di != down->end(); ++di) {
-      if ((*di).get_child() == child_node) {
-        down->erase(di);
-        found = true;
-        break;
-      }
-    }
-    if (!found) {
-      PT(Down) stashed = cdata_parent->modify_stashed();
-      for (di = stashed->begin(); di != stashed->end(); ++di) {
+      // Now, look for and remove the child node from the parent's down list.
+      // We also check in the stashed list, in case the child node has been
+      // stashed.
+      Down::iterator di;
+      bool found = false;
+      PT(Down) down = cdata_parent->modify_down();
+      for (di = down->begin(); di != down->end(); ++di) {
         if ((*di).get_child() == child_node) {
-          stashed->erase(di);
+          down->erase(di);
           found = true;
           break;
         }
       }
+      if (!found) {
+        PT(Down) stashed = cdata_parent->modify_stashed();
+        for (di = stashed->begin(); di != stashed->end(); ++di) {
+          if ((*di).get_child() == child_node) {
+            stashed->erase(di);
+            found = true;
+            break;
+          }
+        }
+      }
+      nassertv(found);
     }
-    nassertv(found);
-  }
 
-  // Finally, break the NodePathComponent connection.
-  sever_connection(parent_node, child_node, pipeline_stage, current_thread);
+    // Finally, break the NodePathComponent connection.
+    sever_connection(parent_node, child_node, pipeline_stage, current_thread);
+  }
 
   parent_node->force_bounds_stale(pipeline_stage, current_thread);
   parent_node->children_changed();
@@ -3238,7 +3269,16 @@ update_cached(bool update_bounds, int pipeline_stage, PandaNode::CDLockedStageRe
   }
   Thread *current_thread = cdata.get_current_thread();
 
+  // Under sustained concurrent mutation the optimistic snapshot-then-commit
+  // below can fail its staleness check every iteration and livelock.  We
+  // prioritise the cull thread never hitching over bound freshness: accept the
+  // consistent snapshot computed on the first contended commit (see below)
+  // rather than retrying the expensive recursive recompute.  Hence 1.
+  const int max_update_attempts = 1;
+  int attempt = 0;
+
   do {
+    ++attempt;
     // Grab the last_update counter.
     UpdateSeq last_update = cdata->_last_update;
     UpdateSeq next_update = cdata->_next_update;
@@ -3270,25 +3310,36 @@ update_cached(bool update_bounds, int pipeline_stage, PandaNode::CDLockedStageRe
       off_clip_planes = ClipPlaneAttrib::make();
     }
 
-    // Also get the list of the node's children.  When the cdataw destructs, it
-    // will also release the lock, since we've got all the data we need from the
-    // node.
-    PT(Down) down;
+    // READ-only snapshot of the children (get_down/CPT, not modify_down/PT, so
+    // no LS_locked_write).  Per-connection cache writes are deferred to the
+    // commit phase below, inside a briefly-scoped modify_down().
+    CPT(Down) down;
     {
       CDStageWriter cdataw(_cycler, pipeline_stage, cdata);
-      down = cdataw->modify_down();
+      down = cdataw->get_down();
     }
 
-    // Now that we've got all the data we need from the node, we can release
-    // the lock.
-    //_cycler.release_read_stage(pipeline_stage, cdata.take_pointer());
+    int num_children = (int)down->size();
 
-    int num_children = down->size();
+    // Per-connection values accumulated here, applied to the live _down at commit.
+    struct PendingConnection {
+      PandaNode *child;
+      CollideMask net_collide_mask;
+      CPT(GeometricBoundingVolume) external_bounds;
+      DrawMask net_draw_control_mask;
+      DrawMask net_draw_show_mask;
+    };
+    pvector<PendingConnection> pending_cache;
+    pending_cache.resize(num_children);
 
     // We need to keep references to the bounding volumes, since in a threaded
     // environment the pointers might go away while we're working (since we're
     // not holding a lock on our set of children right now).  But we also need
     // the regular pointers, to pass to BoundingVolume::around().
+    // Heap-backed, not alloca: the do/while above retries under concurrent
+    // mutation and alloca isn't freed until the function returns, so repeated
+    // allocas would overflow the stack; a pvector frees each iteration.
+    pvector<const BoundingVolume *> child_volumes_storage;
     const BoundingVolume **child_volumes = nullptr;
 #if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
     pvector<CPT(BoundingVolume) > child_volumes_ref;
@@ -3301,7 +3352,8 @@ update_cached(bool update_bounds, int pipeline_stage, PandaNode::CDLockedStageRe
     CPT(BoundingVolume) internal_bounds = nullptr;
 
     if (update_bounds) {
-      child_volumes = (const BoundingVolume **)alloca(sizeof(BoundingVolume *) * (num_children + 1));
+      child_volumes_storage.resize(num_children + 1);
+      child_volumes = child_volumes_storage.data();
       internal_bounds = get_internal_bounds(pipeline_stage, current_thread);
 
       if (!internal_bounds->is_empty()) {
@@ -3317,8 +3369,10 @@ update_cached(bool update_bounds, int pipeline_stage, PandaNode::CDLockedStageRe
     int child_vertices = 0;
 
     for (int i = 0; i < num_children; ++i) {
-      DownConnection &connection = (*down)[i];
+      const DownConnection &connection = (*down)[i];
       PandaNode *child = connection.get_child();
+      PendingConnection &pending = pending_cache[i];
+      pending.child = child;
 
       const ClipPlaneAttrib *orig_cp = DCAST(ClipPlaneAttrib, off_clip_planes);
 
@@ -3334,7 +3388,7 @@ update_cached(bool update_bounds, int pipeline_stage, PandaNode::CDLockedStageRe
 
         CollideMask child_collide_mask = child_cdataw->_net_collide_mask;
         net_collide_mask |= child_collide_mask;
-        connection._net_collide_mask = child_collide_mask;
+        pending.net_collide_mask = child_collide_mask;
 
         if (drawmask_cat.is_debug()) {
           drawmask_cat.debug(false)
@@ -3416,17 +3470,17 @@ update_cached(bool update_bounds, int pipeline_stage, PandaNode::CDLockedStageRe
           }
           child_vertices += child_cdataw->_nested_vertices;
 
-          connection._external_bounds = child_cdataw->_external_bounds->as_geometric_bounding_volume();
+          pending.external_bounds = child_cdataw->_external_bounds->as_geometric_bounding_volume();
         }
 
-        connection._net_draw_control_mask = child_control_mask;
-        connection._net_draw_show_mask = child_show_mask;
+        pending.net_draw_control_mask = child_control_mask;
+        pending.net_draw_show_mask = child_show_mask;
 
       } else {
         // Child is good.
         CollideMask child_collide_mask = child_cdata->_net_collide_mask;
         net_collide_mask |= child_collide_mask;
-        connection._net_collide_mask = child_collide_mask;
+        pending.net_collide_mask = child_collide_mask;
 
         // See comments in similar block above.
         if (drawmask_cat.is_debug()) {
@@ -3475,21 +3529,48 @@ update_cached(bool update_bounds, int pipeline_stage, PandaNode::CDLockedStageRe
           }
           child_vertices += child_cdata->_nested_vertices;
 
-          connection._external_bounds = child_cdata->_external_bounds->as_geometric_bounding_volume();
+          pending.external_bounds = child_cdata->_external_bounds->as_geometric_bounding_volume();
         }
 
-        connection._net_draw_control_mask = child_control_mask;
-        connection._net_draw_show_mask = child_show_mask;
+        pending.net_draw_control_mask = child_control_mask;
+        pending.net_draw_show_mask = child_show_mask;
       }
     }
 
     {
       // Now grab the write lock on this node.
       CDStageWriter cdataw(_cycler, pipeline_stage, current_thread);
-      if (last_update == cdataw->_last_update &&
-          next_update == cdataw->_next_update) {
-        // Great, no one has monkeyed with these while we were computing the
-        // cache.  Safe to store the computed values and return.
+      bool clean = (last_update == cdataw->_last_update &&
+                    next_update == cdataw->_next_update);
+      // Forward-progress fallback: after max_update_attempts, commit the
+      // snapshot we computed as long as it still advances the cached version;
+      // otherwise leave the node dirty for a later frame (one-frame-stale bound).
+      bool force = !clean && attempt >= max_update_attempts &&
+                   cdataw->_last_update < next_update;
+      if (clean || force) {
+        // Apply the deferred per-connection cache writes via a briefly-scoped
+        // writable Down.
+        {
+          PT(Down) writable_down = cdataw->modify_down();
+          int n = (int)writable_down->size();
+          int apply_count = (n < num_children) ? n : num_children;
+          for (int i = 0; i < apply_count; ++i) {
+            DownConnection &c = (*writable_down)[i];
+            const PendingConnection &p = pending_cache[i];
+            // On a forced commit the live list may differ from our snapshot,
+            // so only apply to connections still referencing the same child.
+            if (c.get_child() != p.child) {
+              continue;
+            }
+            c._net_collide_mask = p.net_collide_mask;
+            if (update_bounds) {
+              c._external_bounds = p.external_bounds;
+            }
+            c._net_draw_control_mask = p.net_draw_control_mask;
+            c._net_draw_show_mask = p.net_draw_show_mask;
+          }
+        }
+
         cdataw->_net_collide_mask = net_collide_mask;
 
         if (renderable) {
@@ -3551,7 +3632,9 @@ update_cached(bool update_bounds, int pipeline_stage, PandaNode::CDLockedStageRe
             << "} " << *this << "::update_cached();\n";
         }
 
-        nassertr(cdataw->_last_update == cdataw->_next_update, cdataw);
+        // A forced commit leaves the node dirty (it advanced past our version),
+        // so assert the fully-up-to-date post-condition only on the clean path.
+        nassertr(!clean || cdataw->_last_update == cdataw->_next_update, cdataw);
 
         // Even though implicit bounding volume is not (yet?) part of the bam
         // stream.

@@ -1,0 +1,11 @@
+add_executable(cycler_bench cycler_bench.cxx)
+target_link_libraries(cycler_bench p3framework)
+
+if(NOT BUILD_SHARED_LIBS)
+  if(HAVE_GL)
+    target_link_libraries(cycler_bench pandagl)
+  endif()
+  if(HAVE_TINYDISPLAY)
+    target_link_libraries(cycler_bench p3tinydisplay)
+  endif()
+endif()
