@@ -13,6 +13,7 @@
 
 #include "asyncTaskChain.h"
 #include "asyncTaskManager.h"
+#include "epochHolder.h"
 #include "event.h"
 #include "mutexHolder.h"
 #include "indent.h"
@@ -1475,13 +1476,10 @@ thread_main() {
 
       PStatTimer timer(_task_pcollector);
       _chain->_num_busy_threads++;
-#ifdef THREADED_PIPELINE
-      this->epoch_enter();
-#endif
-      _chain->service_one_task(this);
-#ifdef THREADED_PIPELINE
-      this->epoch_leave();
-#endif
+      {
+        EpochHolder epoch(this);
+        _chain->service_one_task(this);
+      }
       _chain->_num_busy_threads--;
       _chain->_cvar.notify_all();
 

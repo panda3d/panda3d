@@ -19,6 +19,7 @@ set(P3PIPELINE_HEADERS
   cycleDataStageWriter.h cycleDataStageWriter.I
   cycleDataWriter.h cycleDataWriter.I
   cyclerHolder.h cyclerHolder.I
+  epochHolder.h epochHolder.I
   epochManager.h
   externalThread.h
   genericThread.h genericThread.I

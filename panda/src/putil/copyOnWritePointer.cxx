@@ -15,50 +15,7 @@
 #include "config_putil.h"
 #include "config_pipeline.h"
 #include "thread.h"
-
-#ifdef COW_THREADED
-namespace {
-  /**
-   * RAII guard that holds an EBR critical section for the duration of a
-   * copy-on-write in get_write_pointer().
-   *
-   * make_cow_copy() reads the source object through a CycleDataReader whose
-   * destructor calls Thread::epoch_leave().  If that leave were the outermost
-   * one it would run EpochManager::try_reclaim() right then -- while we still
-   * hold the source's _lock_mutex -- and a reclaimed CycleData's destructor
-   * (which cache_unref()s its sub-objects) can re-acquire that very _lock_mutex
-   * on this same thread, a self-deadlock.
-   *
-   * Keeping an outer critical section open for the whole COW makes the inner
-   * leave non-outermost, so reclamation is deferred until this guard is
-   * destroyed at function exit -- after every _lock_mutex has been released.
-   * (Deferring reclamation is always safe under EBR.)  No-op when the pipeline
-   * is not threaded, where there is no EBR and thus no such reclamation.
-   */
-  class CowReclaimDeferral {
-  public:
-    ALWAYS_INLINE explicit CowReclaimDeferral(Thread *thread) {
-#ifdef THREADED_PIPELINE
-      _thread = thread;
-      _thread->epoch_enter();
-#else
-      (void)thread;
-#endif
-    }
-    ALWAYS_INLINE ~CowReclaimDeferral() {
-#ifdef THREADED_PIPELINE
-      _thread->epoch_leave();
-#endif
-    }
-    CowReclaimDeferral(const CowReclaimDeferral &) = delete;
-    CowReclaimDeferral &operator = (const CowReclaimDeferral &) = delete;
-#ifdef THREADED_PIPELINE
-  private:
-    Thread *_thread;
-#endif
-  };
-}
-#endif  // COW_THREADED
+#include "epochHolder.h"
 
 #ifdef COW_THREADED
 /**
@@ -124,7 +81,7 @@ get_write_pointer() {
   // release _lock_mutex below -- otherwise reclamation can re-enter this same
   // lock and self-deadlock.  Declared before the lock so it outlives every
   // MutexHolder in the branches below (reverse destruction order).
-  CowReclaimDeferral reclaim_deferral(current_thread);
+  EpochHolder reclaim_deferral(current_thread);
 
   old_object->_lock_mutex.lock();
   while (old_object->_lock_status == CopyOnWriteObject::LS_locked_write &&

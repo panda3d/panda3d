@@ -35,6 +35,7 @@
 #include "renderState.h"
 #include "transformState.h"
 #include "thread.h"
+#include "epochHolder.h"
 #include "pipeline.h"
 #include "throw_event.h"
 #include "bamCache.h"
@@ -714,9 +715,7 @@ render_frame() {
   Thread *current_thread = Thread::get_current_thread();
   ReMutexHolder public_holder(_public_lock);
 
-#ifdef THREADED_PIPELINE
-  current_thread->epoch_enter();
-#endif
+  EpochHolder epoch(current_thread);
 
   // Since this gets called every frame, we should take advantage of the
   // opportunity to flush the cache if necessary.
@@ -971,10 +970,6 @@ render_frame() {
   // to be App.
   //_app_pcollector.start();
   _render_frame_pcollector.stop();
-
-#ifdef THREADED_PIPELINE
-  current_thread->epoch_leave();
-#endif
 }
 
 
@@ -2882,14 +2877,11 @@ thread_main() {
       break;
 
     case TS_do_frame:
-#ifdef THREADED_PIPELINE
-      current_thread->epoch_enter();
-#endif
-      do_pending(_engine, current_thread);
-      do_frame(_engine, current_thread);
-#ifdef THREADED_PIPELINE
-      current_thread->epoch_leave();
-#endif
+      {
+        EpochHolder epoch(current_thread);
+        do_pending(_engine, current_thread);
+        do_frame(_engine, current_thread);
+      }
       break;
 
     case TS_do_flip:

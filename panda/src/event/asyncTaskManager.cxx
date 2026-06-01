@@ -22,6 +22,7 @@
 #include "config_event.h"
 #include "thread.h"
 #include "epochManager.h"
+#include "epochHolder.h"
 #include <algorithm>
 
 using std::string;
@@ -485,12 +486,10 @@ get_sleeping_tasks() const {
  */
 void AsyncTaskManager::
 poll() {
-#ifdef THREADED_PIPELINE
-  Thread *current_thread = Thread::get_current_thread();
-  current_thread->epoch_enter();
-#endif
-
   {
+#ifdef THREADED_PIPELINE
+    EpochHolder epoch;
+#endif
     MutexHolder holder(_lock);
 
     // We iterate through with an index, rather than with an iterator, because
@@ -513,8 +512,6 @@ poll() {
   }
 
 #ifdef THREADED_PIPELINE
-  current_thread->epoch_leave();
-
   // Also reclaim here for apps that poll tasks but never render.  Must run
   // after epoch_leave (so our own slot doesn't pin the floor) and outside
   // _lock (freeing a CycleData can take other locks).
