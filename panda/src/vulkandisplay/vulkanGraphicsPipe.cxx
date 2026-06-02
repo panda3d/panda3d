@@ -897,9 +897,8 @@ set_object_name(VkDevice device, VkObjectType type, void *object, const char *na
  * Returns true if the given instance extension is supported.
  */
 bool VulkanGraphicsPipe::
-has_instance_extension(const char *ext_name, uint32_t min_version) {
-  auto it = _instance_extensions.find(std::string(ext_name));
-  if (it != _instance_extensions.end()) {
+has_instance_extension(std::string_view ext_name, uint32_t min_version) {
+  if (auto it = _instance_extensions.find(ext_name); it != _instance_extensions.end()) {
     return (it->second >= min_version);
   } else {
     return false;
@@ -910,9 +909,8 @@ has_instance_extension(const char *ext_name, uint32_t min_version) {
  * Returns true if the given device extension is supported.
  */
 bool VulkanGraphicsPipe::
-has_device_extension(const char *ext_name, uint32_t min_version) {
-  auto it = _device_extensions.find(std::string(ext_name));
-  if (it != _device_extensions.end()) {
+has_device_extension(std::string_view ext_name, uint32_t min_version) {
+  if (auto it = _device_extensions.find(ext_name); it != _device_extensions.end()) {
     return (it->second >= min_version);
   } else {
     return false;

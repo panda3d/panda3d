@@ -5841,8 +5841,7 @@ get_attrib_descriptor_set(VkDescriptorSet &out,
                           VkDescriptorSetLayout layout,
                           const RenderAttrib *attrib) {
   // Look it up in the attribute map.
-  auto it = map.find(attrib);
-  if (it != map.end()) {
+  if (auto it = map.find(attrib); it != map.end()) {
     // Found something.  Check that it's not just a different state that has
     // been allocated in the memory of a previous state.
     VulkanShaderContext::DescriptorSet &set = it->second;
@@ -6172,8 +6171,7 @@ get_transform_buffer(const TypedWritableReferenceCount *obj, size_t num_transfor
   }
 
   // Look for an existing allocation.
-  auto it = _transform_tables.find(obj);
-  if (it != _transform_tables.end()) {
+  if (auto it = _transform_tables.find(obj); it != _transform_tables.end()) {
     TransformBufferAllocation &alloc = it->second;
     if (alloc._modified == modified) {
       // It hasn't been modified, reuse this.

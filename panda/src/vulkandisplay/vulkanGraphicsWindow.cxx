@@ -781,10 +781,9 @@ setup_render_pass() {
     // Do we intend to copy the framebuffer to a texture?
     _final_layout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
     CDReader cdata(_cycler);
-    RenderTextures::const_iterator ri;
-    for (ri = cdata->_textures.begin(); ri != cdata->_textures.end(); ++ri) {
-      if ((*ri)._plane == RTP_color) {
-        RenderTextureMode mode = (*ri)._rtm_mode;
+    for (const RenderTexture &rt : cdata->_textures) {
+      if (rt._plane == RTP_color) {
+        RenderTextureMode mode = rt._rtm_mode;
         if (mode == RTM_copy_texture || mode == RTM_copy_ram) {
           _final_layout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
           break;
@@ -1011,8 +1010,8 @@ create_swapchain() {
   num_images = std::max(surf_caps.minImageCount, num_images);
 
   _swapchain_size.set(
-    std::max(std::min((uint32_t)_size[0], surf_caps.maxImageExtent.width), surf_caps.minImageExtent.width),
-    std::max(std::min((uint32_t)_size[1], surf_caps.maxImageExtent.height), surf_caps.minImageExtent.height));
+    std::clamp((uint32_t)_size[0], surf_caps.minImageExtent.width, surf_caps.maxImageExtent.width),
+    std::clamp((uint32_t)_size[1], surf_caps.minImageExtent.height, surf_caps.maxImageExtent.height));
 
   // Get the supported presentation modes for this surface.
   uint32_t num_present_modes = 0;

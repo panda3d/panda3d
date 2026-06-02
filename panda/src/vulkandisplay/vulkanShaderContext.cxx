@@ -365,8 +365,8 @@ create_modules(VulkanGraphicsStateGuardian *gsg) {
           int index = spv_module->find_parameter(_shader->_parameters[chain._var_id]._name);
           if (index >= 0) {
             chain._var_id = spv_module->get_parameter(index).id;
-            auto it = hoist_pass._hoisted_vars.find(chain);
-            if (it != hoist_pass._hoisted_vars.end()) {
+            if (auto it = hoist_pass._hoisted_vars.find(chain);
+                it != hoist_pass._hoisted_vars.end()) {
               // Check if it hasn't been removed due to being unused.
               if (transformer.get_db().has_definition(it->second)) {
                 tattr_set_ids[i] = it->second;
@@ -381,8 +381,8 @@ create_modules(VulkanGraphicsStateGuardian *gsg) {
           int index = spv_module->find_parameter(_shader->_parameters[chain._var_id]._name);
           if (index >= 0) {
             chain._var_id = spv_module->get_parameter(index).id;
-            auto it = hoist_pass._hoisted_vars.find(chain);
-            if (it != hoist_pass._hoisted_vars.end()) {
+            if (auto it = hoist_pass._hoisted_vars.find(chain);
+                it != hoist_pass._hoisted_vars.end()) {
               // Check if it hasn't been removed due to being unused.
               if (transformer.get_db().has_definition(it->second)) {
                 lattr_set_ids[i] = it->second;
@@ -397,8 +397,8 @@ create_modules(VulkanGraphicsStateGuardian *gsg) {
           int index = spv_module->find_parameter(_shader->_parameters[chain._var_id]._name);
           if (index >= 0) {
             chain._var_id = spv_module->get_parameter(index).id;
-            auto it = hoist_pass._hoisted_vars.find(chain);
-            if (it != hoist_pass._hoisted_vars.end()) {
+            if (auto it = hoist_pass._hoisted_vars.find(chain);
+                it != hoist_pass._hoisted_vars.end()) {
               // Check if it hasn't been removed due to being unused.
               if (transformer.get_db().has_definition(it->second)) {
                 sattr_set_ids[i] = it->second;
@@ -428,9 +428,9 @@ create_modules(VulkanGraphicsStateGuardian *gsg) {
       if (!model_matrices.empty()) {
         for (size_t i = 0; i < spv_module->get_num_parameters(); ++i) {
           const ShaderModule::Variable &param = spv_module->get_parameter(i);
-          auto it = model_matrices.find(param.name);
-          if (it != model_matrices.end()) {
-            pass.mark_model_matrix(param.id, it->second.first, it->second.second);
+          if (auto it = model_matrices.find(param.name); it != model_matrices.end()) {
+            auto [inverse, transpose] = it->second;
+            pass.mark_model_matrix(param.id, inverse, transpose);
           }
         }
       }
@@ -447,8 +447,7 @@ create_modules(VulkanGraphicsStateGuardian *gsg) {
       if (!model_matrices.empty()) {
         // The ids of the uniforms may have changed, so remap those
         for (uint32_t &id : other_state_block_ids) {
-          auto it = pass._matrix_vars.find(id);
-          if (it != pass._matrix_vars.end()) {
+          if (auto it = pass._matrix_vars.find(id); it != pass._matrix_vars.end()) {
             id = it->second._id;
           }
         }
@@ -1239,8 +1238,7 @@ get_pipeline(VulkanGraphicsStateGuardian *gsg, const RenderState *state,
 
   // Fall back to the full map.
   VkPipeline pipeline;
-  PipelineMap::const_iterator it = _pipeline_map.find(key);
-  if (it == _pipeline_map.end()) {
+  if (auto it = _pipeline_map.find(key); it == _pipeline_map.end()) {
     pipeline = gsg->make_pipeline(this, key);
     _pipeline_map[key] = pipeline;
 
