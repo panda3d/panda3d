@@ -29,7 +29,7 @@ class VrpnAnalog;
  */
 class VrpnAnalogDevice : public ClientAnalogDevice {
 public:
-  VrpnAnalogDevice(VrpnClient *client, const std::string &device_name,
+  VrpnAnalogDevice(VrpnClient *client, std::string device_name,
                    VrpnAnalog *vrpn_analog);
   virtual ~VrpnAnalogDevice();
 

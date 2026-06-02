@@ -55,7 +55,7 @@ operator = (double double_value) {
  * value.
  */
 INLINE void XFileDataObject::
-operator = (const std::string &string_value) {
+operator = (std::string_view string_value) {
   set(string_value);
 }
 
@@ -125,8 +125,8 @@ set(double double_value) {
  * value.
  */
 INLINE void XFileDataObject::
-set(const std::string &string_value) {
-  set_string_value(string_value);
+set(std::string_view string_value) {
+  set_string_value(std::string(string_value));
 }
 
 /**
@@ -268,7 +268,7 @@ operator [] (int n) const {
  * doubt.
  */
 INLINE const XFileDataObject &XFileDataObject::
-operator [] (const std::string &name) const {
+operator [] (std::string_view name) const {
   const XFileDataObject *element = ((XFileDataObject *)this)->get_element(name);
   nassertr(element != nullptr, *this);
   return *element;
@@ -291,7 +291,7 @@ operator [] (int n) {
  * doubt.
  */
 INLINE XFileDataObject &XFileDataObject::
-operator [] (const std::string &name) {
+operator [] (std::string_view name) {
   XFileDataObject *element = get_element(name);
   nassertr(element != nullptr, *this);
   return *element;

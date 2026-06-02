@@ -211,8 +211,8 @@ class DirectEntry(DirectFrame):
         if self['focusInCommand']:
             self['focusInCommand'](*self['focusInExtraArgs'])
         if self['autoCapitalize']:
-            self.accept(self.guiItem.getTypeEvent(), self._handleTyping)
-            self.accept(self.guiItem.getEraseEvent(), self._handleErasing)
+            self._autoCapListener.accept(self.guiItem.getTypeEvent(), self._handleTyping)
+            self._autoCapListener.accept(self.guiItem.getEraseEvent(), self._handleErasing)
 
     def _handleTyping(self, guiEvent):
         self._autoCapitalize()

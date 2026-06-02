@@ -34,7 +34,7 @@ PUBLISHED:
   };
 
   static bool set_string_value(const std::string &key, const std::string &name,
-                               const std::string &value, RegLevel rl = rl_machine);
+                               std::string_view value, RegLevel rl = rl_machine);
   static bool set_int_value(const std::string &key, const std::string &name, int value, RegLevel rl = rl_machine);
 
   enum Type {
@@ -44,7 +44,7 @@ PUBLISHED:
   };
   static Type get_key_type(const std::string &key, const std::string &name, RegLevel rl = rl_machine);
   static std::string get_string_value(const std::string &key, const std::string &name,
-                                 const std::string &default_value, RegLevel rl = rl_machine);
+                                 std::string_view default_value, RegLevel rl = rl_machine);
   static int get_int_value(const std::string &key, const std::string &name,
                            int default_value, RegLevel rl = rl_machine);
 

@@ -84,7 +84,7 @@ has_magic_number() const {
  * returns NULL.
  */
 PNMReader *PNMFileTypeAndroid::
-make_reader(std::istream *file, bool owns_file, const std::string &magic_number) {
+make_reader(std::istream *file, bool owns_file, std::string_view magic_number) {
   return new Reader(this, file, owns_file, magic_number);
 }
 

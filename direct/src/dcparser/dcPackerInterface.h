@@ -66,13 +66,13 @@ END_PUBLISH
  */
 class EXPCL_DIRECT_DCPARSER DCPackerInterface {
 public:
-  DCPackerInterface(const std::string &name = std::string());
+  DCPackerInterface(std::string name = std::string());
   DCPackerInterface(const DCPackerInterface &copy);
   virtual ~DCPackerInterface();
 
 PUBLISHED:
   INLINE const std::string &get_name() const;
-  int find_seek_index(const std::string &name) const;
+  int find_seek_index(std::string_view name) const;
 
   virtual DCField *as_field();
   virtual const DCField *as_field() const;
@@ -85,7 +85,7 @@ PUBLISHED:
   bool check_match(const std::string &description, DCFile *dcfile = nullptr) const;
 
 public:
-  virtual void set_name(const std::string &name);
+  virtual void set_name(std::string name);
   INLINE bool has_fixed_byte_size() const;
   INLINE size_t get_fixed_byte_size() const;
   INLINE bool has_fixed_structure() const;
@@ -111,7 +111,7 @@ public:
                           bool &pack_error, bool &range_error) const;
   virtual void pack_uint64(DCPackData &pack_data, uint64_t value,
                            bool &pack_error, bool &range_error) const;
-  virtual void pack_string(DCPackData &pack_data, const std::string &value,
+  virtual void pack_string(DCPackData &pack_data, std::string_view value,
                            bool &pack_error, bool &range_error) const;
   virtual void pack_blob(DCPackData &pack_data, const vector_uchar &value,
                          bool &pack_error, bool &range_error) const;

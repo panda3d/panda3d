@@ -718,7 +718,8 @@ make_texture_layer(const NodePath &render,
   case TextureStage::M_occlusion:
   case TextureStage::M_occlusion_metallic_roughness:
     // Don't know what to do with these funny modes.  We should probably raise
-    // an exception or something.  Fall through for now.
+    // an exception or something.
+    [[fallthrough]];
 
   case TextureStage::M_modulate_glow:
   case TextureStage::M_modulate_gloss:

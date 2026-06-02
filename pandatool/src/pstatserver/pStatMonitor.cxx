@@ -58,10 +58,10 @@ PStatMonitor::
  * indicates the client's reported hostname and program name.
  */
 void PStatMonitor::
-hello_from(const string &hostname, const string &progname, int pid) {
+hello_from(std::string_view hostname, std::string_view progname, int pid) {
   _client_known = true;
-  _client_hostname = hostname;
-  _client_progname = progname;
+  _client_hostname.assign(hostname);
+  _client_progname.assign(progname);
   _client_pid = pid;
   got_hello();
 }
@@ -73,12 +73,12 @@ hello_from(const string &hostname, const string &progname, int pid) {
  * effect.
  */
 void PStatMonitor::
-bad_version(const string &hostname, const string &progname, int pid,
+bad_version(std::string_view hostname, std::string_view progname, int pid,
             int client_major, int client_minor,
             int server_major, int server_minor) {
   _client_known = true;
-  _client_hostname = hostname;
-  _client_progname = progname;
+  _client_hostname.assign(hostname);
+  _client_progname.assign(progname);
   _client_pid = 0;
   got_bad_version(client_major, client_minor,
                   server_major, server_minor);

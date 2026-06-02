@@ -16,12 +16,12 @@
  */
 template<class EnumType>
 INLINE ConfigVariableEnum<EnumType>::
-ConfigVariableEnum(const std::string &name, EnumType default_value,
-                   const std::string &description, int flags) :
+ConfigVariableEnum(std::string_view name, EnumType default_value,
+                   std::string_view description, int flags) :
 #ifdef PRC_SAVE_DESCRIPTIONS
   ConfigVariable(name, ConfigVariableCore::VT_enum, description, flags),
 #else
-  ConfigVariable(name, ConfigVariableCore::VT_enum, std::string(), flags),
+  ConfigVariable(name, ConfigVariableCore::VT_enum, std::string_view(), flags),
 #endif
   _got_default_value(true),
   _default_value(default_value),
@@ -36,12 +36,12 @@ ConfigVariableEnum(const std::string &name, EnumType default_value,
  */
 template<class EnumType>
 INLINE ConfigVariableEnum<EnumType>::
-ConfigVariableEnum(const std::string &name, const std::string &default_value,
-                   const std::string &description, int flags) :
+ConfigVariableEnum(std::string_view name, const std::string &default_value,
+                   std::string_view description, int flags) :
 #ifdef PRC_SAVE_DESCRIPTIONS
   ConfigVariable(name, ConfigVariableCore::VT_enum, description, flags),
 #else
-  ConfigVariable(name, ConfigVariableCore::VT_enum, std::string(), flags),
+  ConfigVariable(name, ConfigVariableCore::VT_enum, std::string_view(), flags),
 #endif
   _got_default_value(true),
   _default_value(parse_string(default_value)),
@@ -160,7 +160,8 @@ set_word(size_t n, EnumType value) {
 template<class EnumType>
 INLINE EnumType ConfigVariableEnum<EnumType>::
 parse_string(const std::string &value) const {
-  std::istringstream strm(value);
+  //NB. Change in C++20 when std::istringstream takes a string by std::move.
+  std::istringstream strm{std::string(value)};
   EnumType result;
   strm >> result;
   return result;

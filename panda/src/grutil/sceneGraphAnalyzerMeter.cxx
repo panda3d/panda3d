@@ -30,8 +30,8 @@ TypeHandle SceneGraphAnalyzerMeter::_type_handle;
  *
  */
 SceneGraphAnalyzerMeter::
-SceneGraphAnalyzerMeter(const std::string &name, PandaNode *node) :
-  TextNode(name),
+SceneGraphAnalyzerMeter(std::string name, PandaNode *node) :
+  TextNode(std::move(name)),
   _last_aspect_ratio(-1) {
 
   set_cull_callback();

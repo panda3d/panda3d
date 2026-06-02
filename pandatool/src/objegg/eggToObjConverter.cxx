@@ -371,7 +371,7 @@ record_unique(UniqueVertices &unique, double pos) {
  * obj output stream.
  */
 void EggToObjConverter::
-write_vertices(ostream &out, const string &prefix, int num_components,
+write_vertices(ostream &out, std::string_view prefix, int num_components,
                const UniqueVertices &unique) {
   // First, sort the list into numeric order.
   int num_vertices = (int)unique.size();

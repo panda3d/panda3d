@@ -29,7 +29,7 @@
  */
 class EXPCL_PANDA_EGG EggAnimData : public EggNode {
 PUBLISHED:
-  INLINE explicit EggAnimData(const std::string &name = "");
+  INLINE explicit EggAnimData(std::string name = "");
   INLINE EggAnimData(const EggAnimData &copy);
   INLINE EggAnimData &operator = (const EggAnimData &copy);
 

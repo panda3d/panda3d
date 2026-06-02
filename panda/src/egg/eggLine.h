@@ -24,7 +24,7 @@
  */
 class EXPCL_PANDA_EGG EggLine : public EggCompositePrimitive {
 PUBLISHED:
-  INLINE explicit EggLine(const std::string &name = "");
+  INLINE explicit EggLine(std::string name = "");
   INLINE EggLine(const EggLine &copy);
   INLINE EggLine &operator = (const EggLine &copy);
   virtual ~EggLine();

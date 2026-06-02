@@ -41,7 +41,7 @@ private:
     void write_char(char c);
 
     int _flags;
-    string _data;
+    std::string _data;
   };
 
   EmscriptenLogStream(int flags);

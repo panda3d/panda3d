@@ -28,16 +28,19 @@ TypedWritable::
 ~TypedWritable() {
   // Remove the object pointer from the BamWriters that reference it.
   BamWriterLink *link;
+  BamWriterLink *clean_link;
   do {
-    link = (BamWriterLink *)AtomicAdjust::get_ptr(_bam_writers);
+    link = _bam_writers.load(std::memory_order_acquire);
     if (link == nullptr) {
       // List is unlocked and empty - no writers to remove.
       return;
     }
-    link = (BamWriterLink *)(((uintptr_t)link) & ~(uintptr_t)0x1);
-  } while (link != AtomicAdjust::
-    compare_and_exchange_ptr(_bam_writers, (void *)link, nullptr));
+    clean_link = (BamWriterLink *)(((uintptr_t)link) & ~(uintptr_t)0x1);
+  } while (!_bam_writers.compare_exchange_weak(clean_link, nullptr,
+                                               std::memory_order_acquire,
+                                               std::memory_order_acquire));
 
+  link = clean_link;
   while (link != nullptr) {
     BamWriterLink *next_link = link->_next;
     link->_writer->object_destructs(this);
@@ -276,11 +279,12 @@ add_bam_writer(BamWriter *writer) {
 
   // This spins if the lower bit is 1, ie.  if the pointer is locked.
   do {
-    begin = (BamWriterLink *)AtomicAdjust::get_ptr(_bam_writers);
+    begin = _bam_writers.load(std::memory_order_acquire);
     begin = (BamWriterLink *)(((uintptr_t)begin) & ~(uintptr_t)0x1);
     new_link->_next = begin;
-  } while (begin != AtomicAdjust::
-    compare_and_exchange_ptr(_bam_writers, (void *)begin, (void *)new_link));
+  } while (!_bam_writers.compare_exchange_weak(begin, new_link,
+                                               std::memory_order_release,
+                                               std::memory_order_relaxed));
 }
 
 /**
@@ -296,15 +300,15 @@ remove_bam_writer(BamWriter *writer) {
   // Grab the head pointer and lock it in one atomic operation.  We lock it by
   // tagging the pointer.
   do {
-    begin = (BamWriterLink *)AtomicAdjust::get_ptr(_bam_writers);
+    begin = _bam_writers.load(std::memory_order_acquire);
     begin = (BamWriterLink *)(((uintptr_t)begin) & ~(uintptr_t)0x1);
     if (begin == nullptr) {
       // The list is empty, nothing to remove.
       return;
     }
-  } while (begin != AtomicAdjust::
-    compare_and_exchange_ptr(_bam_writers, (void *)begin,
-                       (void *)((uintptr_t)begin | (uintptr_t)0x1)));
+  } while (!_bam_writers.compare_exchange_weak(
+    begin, (BamWriterLink *)((uintptr_t)begin | (uintptr_t)0x1),
+    std::memory_order_acquire, std::memory_order_relaxed));
 
   // Find the writer in the list.
   BamWriterLink *prev_link = nullptr;
@@ -317,16 +321,16 @@ remove_bam_writer(BamWriter *writer) {
 
   if (link == nullptr) {
     // Not found.  Just unlock and leave.
-    _bam_writers = (void *)begin;
+    _bam_writers.store(begin, std::memory_order_release);
     return;
   }
 
   if (prev_link == nullptr) {
     // It's the first link.  Replace and unlock in one atomic op.
-    _bam_writers = (void *)link->_next;
+    _bam_writers.store(link->_next, std::memory_order_release);
   } else {
     prev_link->_next = link->_next;
-    _bam_writers = (void *)begin; // Unlock
+    _bam_writers.store(begin, std::memory_order_release); // Unlock
   }
 
   delete link;

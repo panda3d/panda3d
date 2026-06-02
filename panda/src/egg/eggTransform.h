@@ -84,7 +84,7 @@ PUBLISHED:
   INLINE const LMatrix4d &get_component_mat4(int n) const;
 
   void write(std::ostream &out, int indent_level,
-             const std::string &label) const;
+             std::string_view label) const;
 
 protected:
   void internal_clear_transform();

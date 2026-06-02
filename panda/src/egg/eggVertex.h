@@ -40,8 +40,8 @@ class EXPCL_PANDA_EGG EggVertex : public EggObject, public EggAttributes {
 public:
   typedef pset<EggGroup *> GroupRef;
   typedef pmultiset<EggPrimitive *> PrimitiveRef;
-  typedef pmap< std::string, PT(EggVertexUV) > UVMap;
-  typedef pmap< std::string, PT(EggVertexAux) > AuxMap;
+  typedef pmap< std::string, PT(EggVertexUV), std::less<> > UVMap;
+  typedef pmap< std::string, PT(EggVertexAux), std::less<> > AuxMap;
 
   typedef second_of_pair_iterator<UVMap::const_iterator> uv_iterator;
   typedef uv_iterator const_uv_iterator;
@@ -85,26 +85,26 @@ PUBLISHED:
   INLINE LTexCoordd get_uv() const;
   INLINE void set_uv(const LTexCoordd &texCoord);
   INLINE void clear_uv();
-  bool has_uv(const std::string &name) const;
-  bool has_uvw(const std::string &name) const;
-  LTexCoordd get_uv(const std::string &name) const;
-  const LTexCoord3d &get_uvw(const std::string &name) const;
-  void set_uv(const std::string &name, const LTexCoordd &texCoord);
-  void set_uvw(const std::string &name, const LTexCoord3d &texCoord);
-  const EggVertexUV *get_uv_obj(const std::string &name) const;
-  EggVertexUV *modify_uv_obj(const std::string &name);
+  bool has_uv(std::string_view name) const;
+  bool has_uvw(std::string_view name) const;
+  LTexCoordd get_uv(std::string_view name) const;
+  const LTexCoord3d &get_uvw(std::string_view name) const;
+  void set_uv(std::string_view name, const LTexCoordd &texCoord);
+  void set_uvw(std::string_view name, const LTexCoord3d &texCoord);
+  const EggVertexUV *get_uv_obj(std::string_view name) const;
+  EggVertexUV *modify_uv_obj(std::string_view name);
   void set_uv_obj(EggVertexUV *vertex_uv);
-  void clear_uv(const std::string &name);
+  void clear_uv(std::string_view name);
 
   INLINE bool has_aux() const;
   INLINE void clear_aux();
-  bool has_aux(const std::string &name) const;
-  const LVecBase4d &get_aux(const std::string &name) const;
-  void set_aux(const std::string &name, const LVecBase4d &aux);
-  const EggVertexAux *get_aux_obj(const std::string &name) const;
-  EggVertexAux *modify_aux_obj(const std::string &name);
+  bool has_aux(std::string_view name) const;
+  const LVecBase4d &get_aux(std::string_view name) const;
+  void set_aux(std::string name, const LVecBase4d &aux);
+  const EggVertexAux *get_aux_obj(std::string_view name) const;
+  EggVertexAux *modify_aux_obj(std::string_view name);
   void set_aux_obj(EggVertexAux *vertex_aux);
-  void clear_aux(const std::string &name);
+  void clear_aux(std::string_view name);
 
   static PT(EggVertex) make_average(const EggVertex *first,
                                     const EggVertex *second);

@@ -453,7 +453,7 @@ create_unique_texture(const EggTexture &copy, int eq) {
  * matches.
  */
 EggTexture *EggTextureCollection::
-find_tref(const std::string &tref_name) const {
+find_tref(std::string_view tref_name) const {
   // This requires a complete linear traversal, not terribly efficient.
   OrderedTextures::const_iterator oti;
   for (oti = _ordered_textures.begin();

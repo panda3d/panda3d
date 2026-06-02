@@ -15,7 +15,7 @@
  *
  */
 INLINE AnimBundle::
-AnimBundle(const std::string &name, PN_stdfloat fps, int num_frames) : AnimGroup(name) {
+AnimBundle(std::string name, PN_stdfloat fps, int num_frames) : AnimGroup(std::move(name)) {
   _fps = fps;
   _num_frames = num_frames;
   _root = this;

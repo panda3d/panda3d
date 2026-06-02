@@ -64,13 +64,13 @@ public:
  *
  */
 DCClass::
-DCClass(DCFile *dc_file, const string &name, bool is_struct, bool bogus_class) :
+DCClass(DCFile *dc_file, string name, bool is_struct, bool bogus_class) :
 #ifdef WITHIN_PANDA
   _class_update_pcollector(_update_pcollector, name),
   _class_generate_pcollector(_generate_pcollector, name),
 #endif
   _dc_file(dc_file),
-  _name(name),
+  _name(std::move(name)),
   _is_struct(is_struct),
   _bogus_class(bogus_class)
 {
@@ -181,7 +181,7 @@ get_field(int n) const {
  * class.  Returns NULL if there is no such field defined.
  */
 DCField *DCClass::
-get_field_by_name(const string &name) const {
+get_field_by_name(std::string_view name) const {
   FieldsByName::const_iterator ni;
   ni = _fields_by_name.find(name);
   if (ni != _fields_by_name.end()) {
@@ -402,8 +402,8 @@ write(std::ostream &out, bool brief, int indent_level) const {
  * stream.
  */
 void DCClass::
-output_instance(std::ostream &out, bool brief, const string &prename,
-                const string &name, const string &postname) const {
+output_instance(std::ostream &out, bool brief, std::string_view prename,
+                std::string_view name, std::string_view postname) const {
   if (_is_struct) {
     out << "struct";
   } else {
@@ -552,7 +552,7 @@ rebuild_inherited_fields() {
  * adding a new definition below.
  */
 void DCClass::
-shadow_inherited_field(const string &name) {
+shadow_inherited_field(std::string_view name) {
   Fields::iterator fi;
   for (fi = _inherited_fields.begin(); fi != _inherited_fields.end(); ++fi) {
     DCField *field = (*fi);

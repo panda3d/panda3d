@@ -61,10 +61,10 @@ public:
   bool has_comment() const;
   const std::string &get_comment() const;
   void clear_comment();
-  void set_comment(const std::string &comment);
+  void set_comment(std::string comment);
 
   void check_remaining_size(const DatagramIterator &di,
-                            const std::string &name = std::string()) const;
+                            std::string_view name = std::string_view()) const;
 
   virtual void apply_converted_filenames();
 

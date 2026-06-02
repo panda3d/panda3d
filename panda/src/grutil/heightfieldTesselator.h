@@ -57,7 +57,7 @@
 
 class EXPCL_PANDA_GRUTIL HeightfieldTesselator : public Namable {
 PUBLISHED:
-  INLINE explicit HeightfieldTesselator(const std::string &name);
+  INLINE explicit HeightfieldTesselator(std::string name);
   INLINE ~HeightfieldTesselator();
 
   INLINE PNMImage &heightfield();

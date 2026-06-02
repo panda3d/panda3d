@@ -168,7 +168,7 @@ PUBLISHED:
   };
 
   INLINE NodePath();
-  INLINE explicit NodePath(const std::string &top_node_name, Thread *current_thread = Thread::get_current_thread());
+  INLINE explicit NodePath(std::string top_node_name, Thread *current_thread = Thread::get_current_thread());
   INLINE explicit NodePath(PandaNode *node, Thread *current_thread = Thread::get_current_thread());
   INLINE static NodePath any_path(PandaNode *node, Thread *current_thread = Thread::get_current_thread());
   explicit NodePath(const NodePath &parent, PandaNode *child_node,
@@ -242,9 +242,9 @@ PUBLISHED:
   MAKE_PROPERTY2(parent, has_parent, get_parent);
   MAKE_PROPERTY(sort, get_sort);
 
-  NodePath find(const std::string &path) const;
+  NodePath find(std::string_view path) const;
   NodePath find_path_to(PandaNode *node) const;
-  NodePathCollection find_all_matches(const std::string &path) const;
+  NodePathCollection find_all_matches(std::string_view path) const;
   NodePathCollection find_all_paths_to(PandaNode *node) const;
 
   // Methods that actually move nodes around in the scene graph.  The optional
@@ -260,14 +260,14 @@ PUBLISHED:
                        Thread *current_thread = Thread::get_current_thread());
   NodePath instance_to(const NodePath &other, int sort = 0,
                        Thread *current_thread = Thread::get_current_thread()) const;
-  NodePath instance_under_node(const NodePath &other, const std::string &name,
+  NodePath instance_under_node(const NodePath &other, std::string name,
                                int sort = 0,
                                Thread *current_thread = Thread::get_current_thread()) const;
   NodePath copy_to(const NodePath &other, int sort = 0,
                    Thread *current_thread = Thread::get_current_thread()) const;
   NodePath attach_new_node(PandaNode *node, int sort = 0,
                            Thread *current_thread = Thread::get_current_thread()) const;
-  INLINE NodePath attach_new_node(const std::string &name, int sort = 0,
+  INLINE NodePath attach_new_node(std::string name, int sort = 0,
                                   Thread *current_thread = Thread::get_current_thread()) const;
   void remove_node(Thread *current_thread = Thread::get_current_thread());
   void detach_node(Thread *current_thread = Thread::get_current_thread());
@@ -598,7 +598,7 @@ PUBLISHED:
   void clear_occluder(const NodePath &occluder);
   bool has_occluder(const NodePath &occluder) const;
 
-  void set_bin(const std::string &bin_name, int draw_order, int priority = 0);
+  void set_bin(std::string bin_name, int draw_order, int priority = 0);
   void clear_bin();
   bool has_bin() const;
   std::string get_bin_name() const;
@@ -745,28 +745,28 @@ PUBLISHED:
   void project_texture(TextureStage *stage, Texture *tex, const NodePath &projector);
   INLINE void clear_project_texture(TextureStage *stage);
 
-  INLINE bool has_texcoord(const std::string &texcoord_name) const;
+  INLINE bool has_texcoord(std::string_view texcoord_name) const;
   bool has_vertex_column(const InternalName *name) const;
   InternalNameCollection find_all_vertex_columns() const;
-  InternalNameCollection find_all_vertex_columns(const std::string &name) const;
+  InternalNameCollection find_all_vertex_columns(std::string name) const;
   InternalNameCollection find_all_texcoords() const;
-  InternalNameCollection find_all_texcoords(const std::string &name) const;
+  InternalNameCollection find_all_texcoords(std::string name) const;
 
-  Texture *find_texture(const std::string &name) const;
+  Texture *find_texture(std::string name) const;
   Texture *find_texture(TextureStage *stage) const;
   TextureCollection find_all_textures() const;
-  TextureCollection find_all_textures(const std::string &name) const;
+  TextureCollection find_all_textures(std::string name) const;
   TextureCollection find_all_textures(TextureStage *stage) const;
 
-  TextureStage *find_texture_stage(const std::string &name) const;
+  TextureStage *find_texture_stage(std::string name) const;
   TextureStageCollection find_all_texture_stages() const;
-  TextureStageCollection find_all_texture_stages(const std::string &name) const;
+  TextureStageCollection find_all_texture_stages(std::string name) const;
 
   void unify_texture_stages(TextureStage *stage);
 
-  Material *find_material(const std::string &name) const;
+  Material *find_material(std::string name) const;
   MaterialCollection find_all_materials() const;
-  MaterialCollection find_all_materials(const std::string &name) const;
+  MaterialCollection find_all_materials(std::string name) const;
 
   void set_material(Material *tex, int priority = 0);
   void set_material_off(int priority = 0);
@@ -953,7 +953,7 @@ PUBLISHED:
 
   INLINE void list_tags() const;
 
-  INLINE void set_name(const std::string &name);
+  INLINE void set_name(std::string name);
   INLINE std::string get_name() const;
   MAKE_PROPERTY(name, get_name, set_name);
 
@@ -988,7 +988,7 @@ private:
                                                    int n, Thread *current_thread) const;
 
   void find_matches(NodePathCollection &result,
-                    const std::string &approx_path_str,
+                    std::string_view approx_path_str,
                     int max_matches) const;
   void find_matches(NodePathCollection &result,
                     FindApproxPath &approx_path,

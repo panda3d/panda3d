@@ -20,8 +20,8 @@ TypeHandle VirtualMouse::_type_handle;
  *
  */
 VirtualMouse::
-VirtualMouse(const std::string &name) :
-  DataNode(name)
+VirtualMouse(std::string name) :
+  DataNode(std::move(name))
 {
   _pixel_xy_output = define_output("pixel_xy", EventStoreVec2::get_class_type());
   _pixel_size_output = define_output("pixel_size", EventStoreVec2::get_class_type());

@@ -70,9 +70,9 @@ public:
  *
  */
 CollisionTraverser::
-CollisionTraverser(const std::string &name) :
-  Namable(name),
-  _this_pcollector(_collisions_pcollector, name)
+CollisionTraverser(std::string name) :
+  Namable(std::move(name)),
+  _this_pcollector(_collisions_pcollector, get_name())
 {
   _respect_prev_transform = respect_prev_transform;
   #ifdef DO_COLLISION_RECORDING

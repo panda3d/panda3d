@@ -36,7 +36,7 @@
 template<class Type>
 class DeletedChain {
 public:
-  INLINE Type *allocate(size_t size, TypeHandle type_handle);
+  [[nodiscard]] INLINE Type *allocate(size_t size, TypeHandle type_handle);
   INLINE void deallocate(Type *ptr, TypeHandle type_handle);
 
   INLINE bool validate(const Type *ptr);
@@ -65,7 +65,7 @@ private:
 template<class Type>
 class StaticDeletedChain {
 public:
-  INLINE static Type *allocate(size_t size, TypeHandle type_handle);
+  [[nodiscard]] INLINE static Type *allocate(size_t size, TypeHandle type_handle);
   INLINE static void deallocate(Type *ptr, TypeHandle type_handle);
 
   INLINE static bool validate(const Type *ptr);

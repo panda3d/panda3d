@@ -23,14 +23,14 @@
  */
 class XFileDataObjectString : public XFileDataObject {
 public:
-  XFileDataObjectString(const XFileDataDef *data_def, const std::string &value);
+  XFileDataObjectString(const XFileDataDef *data_def, std::string value);
 
   virtual void output_data(std::ostream &out) const;
   virtual void write_data(std::ostream &out, int indent_level,
                           const char *separator) const;
 
 protected:
-  virtual void set_string_value(const std::string &string_value);
+  virtual void set_string_value(std::string string_value);
   virtual std::string get_string_value() const;
 
 private:

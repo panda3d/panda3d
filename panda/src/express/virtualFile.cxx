@@ -335,8 +335,8 @@ get_system_info(SubfileInfo &info) {
  */
 bool VirtualFile::
 atomic_compare_and_exchange_contents(string &orig_contents,
-                                     const string &old_contents,
-                                     const string &new_contents) {
+                                     std::string_view old_contents,
+                                     std::string_view new_contents) {
   return false;
 }
 

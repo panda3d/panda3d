@@ -30,7 +30,7 @@ TypeHandle ProjectionScreen::_type_handle;
  *
  */
 ProjectionScreen::
-ProjectionScreen(const std::string &name) : PandaNode(name)
+ProjectionScreen(std::string name) : PandaNode(std::move(name))
 {
   set_cull_callback();
 
@@ -151,7 +151,7 @@ set_projector(const NodePath &projector) {
  * fraction, and make the screen smaller by the inverse fraction.
  */
 PT(GeomNode) ProjectionScreen::
-generate_screen(const NodePath &projector, const std::string &screen_name,
+generate_screen(const NodePath &projector, std::string screen_name,
                 int num_x_verts, int num_y_verts, PN_stdfloat distance,
                 PN_stdfloat fill_ratio) {
   nassertr(!projector.is_empty() &&
@@ -166,7 +166,7 @@ generate_screen(const NodePath &projector, const std::string &screen_name,
   rel_mat = projector.get_transform(this_np)->get_mat();
 
   // Create a GeomNode to hold this mesh.
-  PT(GeomNode) geom_node = new GeomNode(screen_name);
+  PT(GeomNode) geom_node = new GeomNode(std::move(screen_name));
 
   // Now compute all the vertices for the screen.  These are arranged in order
   // from left to right and bottom to top.
@@ -237,7 +237,7 @@ generate_screen(const NodePath &projector, const std::string &screen_name,
  * generated child returned by generate_screen().
  */
 void ProjectionScreen::
-regenerate_screen(const NodePath &projector, const std::string &screen_name,
+regenerate_screen(const NodePath &projector, std::string screen_name,
                   int num_x_verts, int num_y_verts, PN_stdfloat distance,
                   PN_stdfloat fill_ratio) {
   // First, remove all existing children.
@@ -245,7 +245,7 @@ regenerate_screen(const NodePath &projector, const std::string &screen_name,
 
   // And attach a new child.
   PT(GeomNode) geom_node =
-    generate_screen(projector, screen_name, num_x_verts, num_y_verts,
+    generate_screen(projector, std::move(screen_name), num_x_verts, num_y_verts,
                     distance, fill_ratio);
   add_child(geom_node);
 }

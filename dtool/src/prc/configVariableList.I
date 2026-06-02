@@ -22,12 +22,12 @@ INLINE ConfigVariableList::
  *
  */
 INLINE ConfigVariableList::
-ConfigVariableList(const std::string &name,
-                   const std::string &description, int flags) :
+ConfigVariableList(std::string_view name,
+                   std::string_view description, int flags) :
 #ifdef PRC_SAVE_DESCRIPTIONS
   ConfigVariableBase(name, VT_list, description, flags)
 #else
-  ConfigVariableBase(name, VT_list, std::string(), flags)
+  ConfigVariableBase(name, VT_list, std::string_view(), flags)
 #endif
 {
   // A list variable implicitly defines a default value of the empty string.

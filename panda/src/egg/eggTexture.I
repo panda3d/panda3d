@@ -376,8 +376,8 @@ get_quality_level() const {
  * Each different TextureStage in the world must be uniquely named.
  */
 INLINE void EggTexture::
-set_stage_name(const std::string &stage_name) {
-  _stage_name = stage_name;
+set_stage_name(std::string stage_name) {
+  _stage_name = std::move(stage_name);
   _flags |= F_has_stage_name;
 }
 
@@ -526,11 +526,11 @@ get_border_color() const {
  * texture coordinates will be used.
  */
 INLINE void EggTexture::
-set_uv_name(const std::string &uv_name) {
+set_uv_name(std::string uv_name) {
   if (uv_name == "default" || uv_name.empty()) {
     clear_uv_name();
   } else {
-    _uv_name = uv_name;
+    _uv_name = std::move(uv_name);
     _flags |= F_has_uv_name;
   }
 }

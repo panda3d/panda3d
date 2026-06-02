@@ -30,10 +30,10 @@ using std::string;
  * generated number.
  */
 NameUniquifier::
-NameUniquifier(const string &separator,
-               const string &empty) :
-  _separator(separator),
-  _empty(empty)
+NameUniquifier(std::string separator,
+               std::string empty) :
+  _separator(std::move(separator)),
+  _empty(std::move(empty))
 {
   _counter = 0;
 
@@ -65,12 +65,14 @@ NameUniquifier::
  * NameUniquifier's "separator" string, followed by a number.
  */
 string NameUniquifier::
-add_name_body(const string &name, const string &prefix) {
+add_name_body(std::string_view name, std::string_view prefix) {
   if (!name.empty()) {
-    if (_names.insert(name).second) {
+    std::string str(name);
+    auto result = _names.insert(std::move(str));
+    if (result.second) {
       // The name was successfully inserted into the set; therefore, it's
       // unique.  Return it.
-      return name;
+      return *result.first;
     }
   }
 
@@ -88,7 +90,10 @@ add_name_body(const string &name, const string &prefix) {
     if (prefix.empty()) {
       temp_name = _empty + num_str;
     } else {
-      temp_name = prefix + _separator + num_str;
+      temp_name.clear();
+      temp_name += prefix;
+      temp_name += _separator;
+      temp_name += num_str;
     }
   } while (!_names.insert(temp_name).second);
 

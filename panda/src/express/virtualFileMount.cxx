@@ -315,8 +315,8 @@ get_system_info(const Filename &file, SubfileInfo &info) {
  */
 bool VirtualFileMount::
 atomic_compare_and_exchange_contents(const Filename &file, string &orig_contents,
-                                     const string &old_contents,
-                                     const string &new_contents) {
+                                     std::string_view old_contents,
+                                     std::string_view new_contents) {
   return false;
 }
 

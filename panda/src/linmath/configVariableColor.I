@@ -15,7 +15,7 @@
  *
  */
 INLINE ConfigVariableColor::
-ConfigVariableColor(const std::string &name) :
+ConfigVariableColor(std::string_view name) :
   ConfigVariable(name, VT_color),
   _local_modified(initial_invalid_cache()),
   _cache(0, 0, 0, 1)
@@ -27,12 +27,12 @@ ConfigVariableColor(const std::string &name) :
  *
  */
 INLINE ConfigVariableColor::
-ConfigVariableColor(const std::string &name, const LColor &default_value,
-                    const std::string &description, int flags) :
+ConfigVariableColor(std::string_view name, const LColor &default_value,
+                    std::string_view description, int flags) :
 #ifdef PRC_SAVE_DESCRIPTIONS
   ConfigVariable(name, ConfigVariableCore::VT_color, description, flags),
 #else
-  ConfigVariable(name, ConfigVariableCore::VT_color, std::string(), flags),
+  ConfigVariable(name, ConfigVariableCore::VT_color, std::string_view(), flags),
 #endif
   _local_modified(initial_invalid_cache()),
   _cache(0, 0, 0, 1)
@@ -45,12 +45,12 @@ ConfigVariableColor(const std::string &name, const LColor &default_value,
  *
  */
 INLINE ConfigVariableColor::
-ConfigVariableColor(const std::string &name, const std::string &default_value,
-                    const std::string &description, int flags) :
+ConfigVariableColor(std::string_view name, std::string_view default_value,
+                    std::string_view description, int flags) :
 #ifdef PRC_SAVE_DESCRIPTIONS
   ConfigVariable(name, ConfigVariableCore::VT_color, description, flags),
 #else
-  ConfigVariable(name, ConfigVariableCore::VT_color, std::string(), flags),
+  ConfigVariable(name, ConfigVariableCore::VT_color, std::string_view(), flags),
 #endif
   _local_modified(initial_invalid_cache()),
   _cache(0, 0, 0, 1)

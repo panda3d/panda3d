@@ -23,7 +23,7 @@
  */
 class EXPCL_PANDA_PGRAPHNODES FadeLODNode : public LODNode {
 PUBLISHED:
-  explicit FadeLODNode(const std::string &name);
+  explicit FadeLODNode(std::string name);
 
 protected:
   FadeLODNode(const FadeLODNode &copy);
@@ -37,7 +37,7 @@ PUBLISHED:
   INLINE PN_stdfloat get_fade_time() const;
   MAKE_PROPERTY(fade_time, get_fade_time, set_fade_time);
 
-  void set_fade_bin(const std::string &name, int draw_order);
+  void set_fade_bin(std::string name, int draw_order);
   INLINE const std::string &get_fade_bin_name() const;
   INLINE int get_fade_bin_draw_order() const;
   MAKE_PROPERTY(fade_bin_name, get_fade_bin_name);

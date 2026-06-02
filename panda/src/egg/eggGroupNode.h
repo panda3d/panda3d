@@ -58,7 +58,7 @@ private:
   // Here begins the actual public interface to EggGroupNode.
 
 PUBLISHED:
-  explicit EggGroupNode(const std::string &name = "") : EggNode(name) { }
+  explicit EggGroupNode(std::string name = "") : EggNode(std::move(name)) { }
   EggGroupNode(const EggGroupNode &copy);
   EggGroupNode &operator = (const EggGroupNode &copy);
   virtual ~EggGroupNode();
@@ -115,7 +115,7 @@ PUBLISHED:
   PT(EggNode) remove_child(EggNode *node);
   void steal_children(EggGroupNode &other);
 
-  EggNode *find_child(const std::string &name) const;
+  EggNode *find_child(std::string_view name) const;
 
   bool has_absolute_pathnames() const;
   void resolve_filenames(const DSearchPath &searchpath);

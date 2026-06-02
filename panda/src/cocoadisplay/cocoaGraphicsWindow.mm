@@ -57,13 +57,13 @@ enum {
  */
 CocoaGraphicsWindow::
 CocoaGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
-                    const std::string &name,
+                    std::string name,
                     const FrameBufferProperties &fb_prop,
                     const WindowProperties &win_prop,
                     int flags,
                     GraphicsStateGuardian *gsg,
                     GraphicsOutput *host) :
-  GraphicsWindow(engine, pipe, name, fb_prop, win_prop, flags, gsg, host)
+  GraphicsWindow(engine, pipe, std::move(name), fb_prop, win_prop, flags, gsg, host)
 {
   _window = nil;
   _view = nil;
@@ -1846,8 +1846,8 @@ handle_mouse_moved_event(bool in_window, double x, double y, bool absolute) {
       && !in_window) {
     CGPoint point;
 
-    nx = std::max(0., std::min((double) get_x_size() - 1, nx));
-    ny = std::max(0., std::min((double) get_y_size() - 1, ny));
+    nx = std::clamp(nx, 0., (double) get_x_size() - 1);
+    ny = std::clamp(ny, 0., (double) get_y_size() - 1);
 
     // Convert back mouse position to screen space using point units
     if (_properties.get_fullscreen()) {

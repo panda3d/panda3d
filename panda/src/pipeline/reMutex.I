@@ -28,21 +28,9 @@ ReMutex()
  */
 INLINE ReMutex::
 #ifdef DEBUG_THREADS
-ReMutex(const char *name) : MutexDebug(std::string(name), true, false)
+ReMutex(std::string_view name) : MutexDebug(name, true, false)
 #else
-ReMutex(const char *)
-#endif  // DEBUG_THREADS
-{
-}
-
-/**
- *
- */
-INLINE ReMutex::
-#ifdef DEBUG_THREADS
-ReMutex(const std::string &name) : MutexDebug(name, true, false)
-#else
-ReMutex(const std::string &)
+ReMutex(std::string_view)
 #endif  // DEBUG_THREADS
 {
 }

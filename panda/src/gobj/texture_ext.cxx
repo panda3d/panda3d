@@ -92,7 +92,7 @@ set_ram_image(PyObject *image, Texture::CompressionMode compression,
  * support compressed image data or sub-pages; use set_ram_image() for that.
  */
 void Extension<Texture>::
-set_ram_image_as(PyObject *image, const std::string &provided_format) {
+set_ram_image_as(PyObject *image, std::string_view provided_format) {
   // Check if perhaps a PointerToArray object was passed in.
   if (DtoolInstance_Check(image)) {
     if (DtoolInstance_TYPE(image) == &Dtool_ConstPointerToArray_unsigned_char) {

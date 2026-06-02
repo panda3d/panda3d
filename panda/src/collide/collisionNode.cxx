@@ -37,8 +37,8 @@ TypeHandle CollisionNode::_type_handle;
  *
  */
 CollisionNode::
-CollisionNode(const std::string &name) :
-  PandaNode(name),
+CollisionNode(std::string name) :
+  PandaNode(std::move(name)),
   _from_collide_mask(get_default_collide_mask()),
   _collider_sort(0),
   _owner(nullptr),

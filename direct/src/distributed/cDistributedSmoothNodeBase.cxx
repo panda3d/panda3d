@@ -272,7 +272,7 @@ broadcast_pos_hpr_xy() {
  * indicated field name, up until the arguments.
  */
 void CDistributedSmoothNodeBase::
-begin_send_update(DCPacker &packer, const std::string &field_name) {
+begin_send_update(DCPacker &packer, std::string_view field_name) {
   DCField *field = _dclass->get_field_by_name(field_name);
   nassertv(field != nullptr);
 

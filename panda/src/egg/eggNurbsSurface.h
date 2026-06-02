@@ -32,7 +32,7 @@ PUBLISHED:
   typedef Loops Trim;
   typedef plist<Trim> Trims;
 
-  INLINE explicit EggNurbsSurface(const std::string &name = "");
+  INLINE explicit EggNurbsSurface(std::string name = "");
   INLINE EggNurbsSurface(const EggNurbsSurface &copy);
   INLINE EggNurbsSurface &operator = (const EggNurbsSurface &copy);
 

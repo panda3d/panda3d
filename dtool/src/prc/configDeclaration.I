@@ -58,8 +58,8 @@ get_string_value() const {
  * Changes the value assigned to this variable.
  */
 INLINE void ConfigDeclaration::
-set_string_value(const std::string &string_value) {
-  _string_value = string_value;
+set_string_value(std::string string_value) {
+  _string_value = std::move(string_value);
   _got_words = false;
   invalidate_cache();
 }

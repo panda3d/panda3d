@@ -38,7 +38,7 @@ public:
   static PT(OdeTriMeshData) get_data(dGeomID id);
   static void unlink_data(dGeomID id);
   static void remove_data(OdeTriMeshData *data);
-  static void print_data(const std::string &marker);
+  static void print_data(std::string_view marker);
 
 private:
   typedef pmap<dGeomID, PT(OdeTriMeshData)> TriMeshDataMap;

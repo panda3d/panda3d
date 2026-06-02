@@ -24,8 +24,8 @@ TypeHandle Camera::_type_handle;
  *
  */
 Camera::
-Camera(const string &name, Lens *lens) :
-  LensNode(name, lens),
+Camera(std::string name, Lens *lens) :
+  LensNode(std::move(name), lens),
   _active(true),
   _camera_mask(~PandaNode::get_overall_bit()),
   _lod_scale(1),
@@ -104,16 +104,19 @@ safe_to_transform() const {
  * particular set of effects.
  */
 void Camera::
-set_tag_state(const string &tag_state, const RenderState *state) {
-  _tag_states[tag_state] = state;
+set_tag_state(std::string tag_state, const RenderState *state) {
+  _tag_states[std::move(tag_state)] = state;
 }
 
 /**
  * Removes the association established by a previous call to set_tag_state().
  */
 void Camera::
-clear_tag_state(const string &tag_state) {
-  _tag_states.erase(tag_state);
+clear_tag_state(std::string_view tag_state) {
+  TagStates::iterator tsi = _tag_states.find(tag_state);
+  if (tsi != _tag_states.end()) {
+    _tag_states.erase(tsi);
+  }
 }
 
 /**
@@ -129,7 +132,7 @@ clear_tag_states() {
  * indicated tag state, false otherwise.
  */
 bool Camera::
-has_tag_state(const string &tag_state) const {
+has_tag_state(std::string_view tag_state) const {
   TagStates::const_iterator tsi;
   tsi = _tag_states.find(tag_state);
   return (tsi != _tag_states.end());
@@ -140,7 +143,7 @@ has_tag_state(const string &tag_state) const {
  * call to set_tag_state(), or the empty state if nothing has been associated.
  */
 CPT(RenderState) Camera::
-get_tag_state(const string &tag_state) const {
+get_tag_state(std::string_view tag_state) const {
   TagStates::const_iterator tsi;
   tsi = _tag_states.find(tag_state);
   if (tsi != _tag_states.end()) {

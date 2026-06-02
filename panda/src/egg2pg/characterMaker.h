@@ -51,10 +51,10 @@ public:
   PartGroup *egg_to_part(EggNode *egg_node) const;
   VertexTransform *egg_to_transform(EggNode *egg_node);
   int egg_to_index(EggNode *egg_node) const;
-  PandaNode *part_to_node(PartGroup *part, const std::string &name) const;
+  PandaNode *part_to_node(PartGroup *part, std::string_view name) const;
 
-  int create_slider(const std::string &name);
-  VertexSlider *egg_to_slider(const std::string &name);
+  int create_slider(std::string name);
+  VertexSlider *egg_to_slider(std::string_view name);
 
 private:
   CharacterJointBundle *make_bundle();
@@ -77,7 +77,7 @@ private:
   VertexTransforms _vertex_transforms;
   PT(VertexTransform) _identity_transform;
 
-  typedef pmap<std::string, PT(VertexSlider) > VertexSliders;
+  typedef pmap<std::string, PT(VertexSlider), std::less<>> VertexSliders;
   VertexSliders _vertex_sliders;
 
   EggLoader &_loader;

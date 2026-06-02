@@ -26,7 +26,7 @@ class DCParameter;
 class EXPCL_DIRECT_DCPARSER DCTypedef : public DCDeclaration {
 public:
   DCTypedef(DCParameter *parameter, bool implicit = false);
-  DCTypedef(const std::string &name);
+  DCTypedef(std::string name);
   virtual ~DCTypedef();
 
 PUBLISHED:

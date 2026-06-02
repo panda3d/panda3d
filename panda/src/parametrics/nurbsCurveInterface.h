@@ -67,8 +67,8 @@ protected:
   virtual int append_cv_impl(const LVecBase4 &v)=0;
 
   void write(std::ostream &out, int indent_level) const;
-  bool format_egg(std::ostream &out, const std::string &name,
-                  const std::string &curve_type, int indent_level) const;
+  bool format_egg(std::ostream &out, std::string_view name,
+                  std::string_view curve_type, int indent_level) const;
 
   bool convert_to_nurbs(ParametricCurve *nc) const;
 

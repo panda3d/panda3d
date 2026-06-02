@@ -158,20 +158,20 @@ as_bounding_plane() const {
  * Returns the BoundsType corresponding to the indicated string.
  */
 BoundingVolume::BoundsType BoundingVolume::
-string_bounds_type(const string &str) {
-  if (strcmp(str.c_str(), "default") == 0) {
+string_bounds_type(std::string_view str) {
+  if (str == "default") {
     return BT_default;
 
-  } else if (strcmp(str.c_str(), "best") == 0) {
+  } else if (str == "best") {
     return BT_best;
 
-  } else if (strcmp(str.c_str(), "fastest") == 0) {
+  } else if (str == "fastest") {
     return BT_fastest;
 
-  } else if (strcmp(str.c_str(), "sphere") == 0) {
+  } else if (str == "sphere") {
     return BT_sphere;
 
-  } else if (strcmp(str.c_str(), "box") == 0) {
+  } else if (str == "box") {
     return BT_box;
   }
 

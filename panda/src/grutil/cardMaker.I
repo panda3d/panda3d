@@ -15,7 +15,7 @@
  *
  */
 INLINE CardMaker::
-CardMaker(const std::string &name) : Namable(name) {
+CardMaker(std::string name) : Namable(std::move(name)) {
   reset();
 }
 

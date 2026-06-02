@@ -29,14 +29,14 @@ UpdateSeq() : _seq((unsigned int)SC_initial) {
  *
  */
 INLINE UpdateSeq::
-UpdateSeq(const UpdateSeq &copy) : _seq(AtomicAdjust::get(copy._seq)) {
+UpdateSeq(const UpdateSeq &copy) : _seq(copy._seq.load(std::memory_order_relaxed)) {
 }
 
 /**
  *
  */
-constexpr UpdateSeq::
-UpdateSeq(const UpdateSeq &&from) noexcept : _seq(from._seq) {
+INLINE UpdateSeq::
+UpdateSeq(const UpdateSeq &&from) noexcept : _seq(from._seq.load(std::memory_order_relaxed)) {
 }
 
 /**
@@ -44,7 +44,7 @@ UpdateSeq(const UpdateSeq &&from) noexcept : _seq(from._seq) {
  */
 INLINE UpdateSeq &UpdateSeq::
 operator = (const UpdateSeq &copy) {
-  AtomicAdjust::set(_seq, AtomicAdjust::get(copy._seq));
+  _seq.store(copy._seq.load(std::memory_order_relaxed), std::memory_order_relaxed);
   return *this;
 }
 
@@ -53,7 +53,7 @@ operator = (const UpdateSeq &copy) {
  */
 INLINE void UpdateSeq::
 clear() {
-  AtomicAdjust::set(_seq, (AtomicAdjust::Integer)SC_initial);
+  _seq.store((unsigned int)SC_initial, std::memory_order_relaxed);
 }
 
 /**
@@ -61,7 +61,7 @@ clear() {
  */
 INLINE bool UpdateSeq::
 is_initial() const {
-  return AtomicAdjust::get(_seq) == (AtomicAdjust::Integer)SC_initial;
+  return _seq.load(std::memory_order_relaxed) == (unsigned int)SC_initial;
 }
 
 /**
@@ -69,7 +69,7 @@ is_initial() const {
  */
 INLINE bool UpdateSeq::
 is_old() const {
-  return AtomicAdjust::get(_seq) == (AtomicAdjust::Integer)SC_old;
+  return _seq.load(std::memory_order_relaxed) == (unsigned int)SC_old;
 }
 
 /**
@@ -77,7 +77,7 @@ is_old() const {
  */
 INLINE bool UpdateSeq::
 is_fresh() const {
-  return AtomicAdjust::get(_seq) == (AtomicAdjust::Integer)SC_fresh;
+  return _seq.load(std::memory_order_relaxed) == (unsigned int)SC_fresh;
 }
 
 /**
@@ -87,7 +87,7 @@ is_fresh() const {
 INLINE bool UpdateSeq::
 is_special() const {
   // This relies on the assumption that (~0 + 1) == 0.
-  return (((unsigned int)AtomicAdjust::get(_seq) + 1u) <= 2u);
+  return ((_seq.load(std::memory_order_relaxed) + 1u) <= 2u);
 }
 
 /**
@@ -95,7 +95,7 @@ is_special() const {
  */
 INLINE bool UpdateSeq::
 operator == (const UpdateSeq &other) const {
-  return AtomicAdjust::get(_seq) == AtomicAdjust::get(other._seq);
+  return _seq.load(std::memory_order_relaxed) == other._seq.load(std::memory_order_relaxed);
 }
 
 /**
@@ -103,7 +103,7 @@ operator == (const UpdateSeq &other) const {
  */
 INLINE bool UpdateSeq::
 operator != (const UpdateSeq &other) const {
-  return AtomicAdjust::get(_seq) != AtomicAdjust::get(other._seq);
+  return _seq.load(std::memory_order_relaxed) != other._seq.load(std::memory_order_relaxed);
 }
 
 /**
@@ -111,7 +111,7 @@ operator != (const UpdateSeq &other) const {
  */
 INLINE bool UpdateSeq::
 operator < (const UpdateSeq &other) const {
-  return priv_lt(AtomicAdjust::get(_seq), AtomicAdjust::get(other._seq));
+  return priv_lt(_seq.load(std::memory_order_relaxed), other._seq.load(std::memory_order_relaxed));
 }
 
 /**
@@ -119,7 +119,7 @@ operator < (const UpdateSeq &other) const {
  */
 INLINE bool UpdateSeq::
 operator <= (const UpdateSeq &other) const {
-  return priv_le(AtomicAdjust::get(_seq), AtomicAdjust::get(other._seq));
+  return priv_le(_seq.load(std::memory_order_relaxed), other._seq.load(std::memory_order_relaxed));
 }
 
 /**
@@ -143,32 +143,22 @@ operator >= (const UpdateSeq &other) const {
  */
 INLINE UpdateSeq UpdateSeq::
 operator ++ () {
-  AtomicAdjust::Integer old_seq = AtomicAdjust::get(_seq);
-  AtomicAdjust::Integer new_seq = old_seq + 1;
-  if (priv_is_special(new_seq)) {
-    // Oops, wraparound.  We don't want to confuse the new value with our
-    // special cases.
-    new_seq = (AtomicAdjust::Integer)SC_old + 1;
-  }
-
-#ifdef HAVE_THREADS
-  AtomicAdjust::Integer result = AtomicAdjust::compare_and_exchange(_seq, old_seq, new_seq);
-  while (result != old_seq) {
-    // Some other thread beat us to it; try again.
-    old_seq = AtomicAdjust::get(_seq);
+  unsigned int old_seq = _seq.load(std::memory_order_relaxed);
+  unsigned int new_seq;
+  do {
     new_seq = old_seq + 1;
     if (priv_is_special(new_seq)) {
       // Oops, wraparound.  We don't want to confuse the new value with our
       // special cases.
-      new_seq = (AtomicAdjust::Integer)SC_old + 1;
+      new_seq = (unsigned int)SC_old + 1;
     }
-    result = AtomicAdjust::compare_and_exchange(_seq, old_seq, new_seq);
-  }
-#else
-  _seq = new_seq;
-#endif  // HAVE_THREADS
+  } while (!_seq.compare_exchange_weak(old_seq, new_seq,
+                                       std::memory_order_relaxed,
+                                       std::memory_order_relaxed));
 
-  return *this;
+  UpdateSeq temp;
+  temp._seq.store(new_seq, std::memory_order_relaxed);
+  return temp;
 }
 
 /**
@@ -176,33 +166,21 @@ operator ++ () {
  */
 INLINE UpdateSeq UpdateSeq::
 operator ++ (int) {
-  AtomicAdjust::Integer old_seq = AtomicAdjust::get(_seq);
-  AtomicAdjust::Integer new_seq = old_seq + 1;
-  if (priv_is_special(new_seq)) {
-    // Oops, wraparound.  We don't want to confuse the new value with our
-    // special cases.
-    new_seq = (AtomicAdjust::Integer)SC_old + 1;
-  }
-
-#ifdef HAVE_THREADS
-  AtomicAdjust::Integer result = AtomicAdjust::compare_and_exchange(_seq, old_seq, new_seq);
-  while (result != old_seq) {
-    // Some other thread beat us to it; try again.
-    old_seq = AtomicAdjust::get(_seq);
+  unsigned int old_seq = _seq.load(std::memory_order_relaxed);
+  unsigned int new_seq;
+  do {
     new_seq = old_seq + 1;
     if (priv_is_special(new_seq)) {
       // Oops, wraparound.  We don't want to confuse the new value with our
       // special cases.
-      new_seq = (AtomicAdjust::Integer)SC_old + 1;
+      new_seq = (unsigned int)SC_old + 1;
     }
-    result = AtomicAdjust::compare_and_exchange(_seq, old_seq, new_seq);
-  }
-#else
-  _seq = new_seq;
-#endif  // HAVE_THREADS
+  } while (!_seq.compare_exchange_weak(old_seq, new_seq,
+                                       std::memory_order_relaxed,
+                                       std::memory_order_relaxed));
 
   UpdateSeq temp;
-  temp._seq = old_seq;
+  temp._seq.store(old_seq, std::memory_order_relaxed);
   return temp;
 }
 
@@ -210,9 +188,9 @@ operator ++ (int) {
  * Returns the internal integer value associated with the UpdateSeq.  Useful
  * for debugging only.
  */
-INLINE AtomicAdjust::Integer UpdateSeq::
+INLINE unsigned int UpdateSeq::
 get_seq() const {
-  return _seq;
+  return _seq.load(std::memory_order_relaxed);
 }
 
 /**
@@ -220,17 +198,17 @@ get_seq() const {
  */
 INLINE void UpdateSeq::
 output(std::ostream &out) const {
-  AtomicAdjust::Integer seq = AtomicAdjust::get(_seq);
+  unsigned int seq = _seq.load(std::memory_order_relaxed);
   switch (seq) {
-  case (AtomicAdjust::Integer)SC_initial:
+  case (unsigned int)SC_initial:
     out << "initial";
     break;
 
-  case (AtomicAdjust::Integer)SC_old:
+  case (unsigned int)SC_old:
     out << "old";
     break;
 
-  case (AtomicAdjust::Integer)SC_fresh:
+  case (unsigned int)SC_fresh:
     out << "fresh";
     break;
 
@@ -243,23 +221,23 @@ output(std::ostream &out) const {
  * The private implementation of is_special().
  */
 INLINE bool UpdateSeq::
-priv_is_special(AtomicAdjust::Integer seq) {
+priv_is_special(unsigned int seq) {
   // This relies on the assumption that (~0 + 1) == 0.
-  return (((unsigned int)seq + 1) <= 2);
+  return ((seq + 1) <= 2);
 }
 
 /**
  * The private implementation of operator < ().
  */
 INLINE bool UpdateSeq::
-priv_lt(AtomicAdjust::Integer a, AtomicAdjust::Integer b) {
+priv_lt(unsigned int a, unsigned int b) {
   // The special cases of SC_initial or SC_old are less than all other non-
   // special numbers, and SC_initial is less than SC_old.  The special case of
   // SC_fresh is greater than all other non-special numbers.  For all other
   // cases, we use a circular comparision such that n < m iff (signed)(n - m)
   // < 0.
   return
-    (priv_is_special(a) || priv_is_special(b)) ? ((unsigned int)a < (unsigned int)b) :
+    (priv_is_special(a) || priv_is_special(b)) ? (a < b) :
     ((signed int)(a - b) < 0);
 }
 
@@ -267,7 +245,7 @@ priv_lt(AtomicAdjust::Integer a, AtomicAdjust::Integer b) {
  * The private implementation of operator <= ().
  */
 INLINE bool UpdateSeq::
-priv_le(AtomicAdjust::Integer a, AtomicAdjust::Integer b) {
+priv_le(unsigned int a, unsigned int b) {
   return (a == b) || priv_lt(a, b);
 }
 

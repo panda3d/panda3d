@@ -17,8 +17,8 @@
  * the appropriate type, and pass it up to this constructor.
  */
 INLINE AnimBundleNode::
-AnimBundleNode(const std::string &name, AnimBundle *bundle) :
-  PandaNode(name),
+AnimBundleNode(std::string name, AnimBundle *bundle) :
+  PandaNode(std::move(name)),
   _bundle(bundle)
 {
 }

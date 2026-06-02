@@ -1765,7 +1765,7 @@ get_sampler_texture_type(int &out, GLenum param_type) {
         << "GLSL shader uses shadow sampler, which is unsupported by the driver.\n";
       return false;
     }
-    // Fall through
+    [[fallthrough]];
   case GL_INT_SAMPLER_1D:
   case GL_UNSIGNED_INT_SAMPLER_1D:
   case GL_SAMPLER_1D:
@@ -1812,7 +1812,7 @@ get_sampler_texture_type(int &out, GLenum param_type) {
         << "GLSL shader uses shadow sampler, which is unsupported by the driver.\n";
       return false;
     }
-    // Fall through
+    [[fallthrough]];
   case GL_INT_SAMPLER_CUBE:
   case GL_UNSIGNED_INT_SAMPLER_CUBE:
   case GL_SAMPLER_CUBE:
@@ -1830,7 +1830,7 @@ get_sampler_texture_type(int &out, GLenum param_type) {
         << "GLSL shader uses shadow sampler, which is unsupported by the driver.\n";
       return false;
     }
-    // Fall through
+    [[fallthrough]];
   case GL_INT_SAMPLER_2D_ARRAY:
   case GL_UNSIGNED_INT_SAMPLER_2D_ARRAY:
   case GL_SAMPLER_2D_ARRAY:
@@ -1849,7 +1849,7 @@ get_sampler_texture_type(int &out, GLenum param_type) {
         << "GLSL shader uses shadow sampler, which is unsupported by the driver.\n";
       return false;
     }
-    // Fall through
+    [[fallthrough]];
   case GL_INT_SAMPLER_CUBE_MAP_ARRAY:
   case GL_UNSIGNED_INT_SAMPLER_CUBE_MAP_ARRAY:
   case GL_SAMPLER_CUBE_MAP_ARRAY:

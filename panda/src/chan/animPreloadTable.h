@@ -52,7 +52,7 @@ PUBLISHED:
   virtual ~AnimPreloadTable();
 
   int get_num_anims() const;
-  int find_anim(const std::string &basename) const;
+  int find_anim(std::string_view basename) const;
 
   INLINE std::string get_basename(int n) const;
   INLINE PN_stdfloat get_base_frame_rate(int n) const;
@@ -60,7 +60,7 @@ PUBLISHED:
 
   void clear_anims();
   void remove_anim(int n);
-  void add_anim(const std::string &basename, PN_stdfloat base_frame_rate, int num_frames);
+  void add_anim(std::string basename, PN_stdfloat base_frame_rate, int num_frames);
   void add_anims_from(const AnimPreloadTable *other);
 
   virtual void output(std::ostream &out) const;

@@ -28,7 +28,7 @@ class EXPCL_PANDA_DOWNLOADER HTTPDate {
 PUBLISHED:
   INLINE HTTPDate();
   INLINE HTTPDate(time_t time);
-  HTTPDate(const std::string &format);
+  HTTPDate(std::string_view format);
   INLINE HTTPDate(const HTTPDate &copy);
   INLINE void operator = (const HTTPDate &copy);
   INLINE static HTTPDate now();
@@ -55,7 +55,7 @@ PUBLISHED:
   void output(std::ostream &out) const;
 
 private:
-  static std::string get_token(const std::string &str, size_t &pos);
+  static std::string get_token(std::string_view str, size_t &pos);
 
   time_t _time;
 };

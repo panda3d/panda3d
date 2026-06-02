@@ -120,7 +120,7 @@ is_include_empty() const {
  * false otherwise.
  */
 bool PartSubset::
-matches_include(const std::string &joint_name) const {
+matches_include(std::string_view joint_name) const {
   Joints::const_iterator ji;
   for (ji = _include_joints.begin(); ji != _include_joints.end(); ++ji) {
     if ((*ji).matches(joint_name)) {
@@ -137,7 +137,7 @@ matches_include(const std::string &joint_name) const {
  * false otherwise.
  */
 bool PartSubset::
-matches_exclude(const std::string &joint_name) const {
+matches_exclude(std::string_view joint_name) const {
   Joints::const_iterator ji;
   for (ji = _exclude_joints.begin(); ji != _exclude_joints.end(); ++ji) {
     if ((*ji).matches(joint_name)) {

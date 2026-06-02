@@ -24,8 +24,8 @@
  *
  */
 VrpnButton::
-VrpnButton(const std::string &button_name, vrpn_Connection *connection) :
-  _button_name(button_name)
+VrpnButton(std::string button_name, vrpn_Connection *connection) :
+  _button_name(std::move(button_name))
 {
   _button = new vrpn_Button_Remote(_button_name.c_str(), connection);
 

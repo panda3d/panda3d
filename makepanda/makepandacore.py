@@ -89,6 +89,7 @@ MSVCVERSIONINFO = {
     (14,1): {"vsversion":(15,0), "vsname":"Visual Studio 2017"},
     (14,2): {"vsversion":(16,0), "vsname":"Visual Studio 2019"},
     (14,3): {"vsversion":(17,0), "vsname":"Visual Studio 2022"},
+    (14,5): {"vsversion":(18,0), "vsname":"Visual Studio 2026"},
 }
 
 ########################################################################
@@ -592,8 +593,8 @@ def GetInterrogateDir():
             return INTERROGATE_DIR
 
         dir = os.path.join(GetOutputDir(), "tmp", "interrogate")
-        if not os.path.isdir(os.path.join(dir, "panda3d_interrogate-0.10.0.dist-info")):
-            oscmd("\"%s\" -m pip install --force-reinstall --upgrade -t \"%s\" panda3d-interrogate==0.10.0" % (sys.executable, dir))
+        if not os.path.isdir(os.path.join(dir, "panda3d_interrogate-0.11.2.dist-info")):
+            oscmd("\"%s\" -m pip install --force-reinstall --upgrade -t \"%s\" panda3d-interrogate==0.11.2" % (sys.executable, dir))
 
         INTERROGATE_DIR = dir
 
@@ -2301,6 +2302,9 @@ def SdkLocatePython(prefer_thirdparty_python=False):
 def SdkLocateVisualStudio(version=(10,0)):
     if (GetHost() != "windows"): return
 
+    if version == (14, 4):
+        exit("There is no MSVC 14.4; Visual Studio 2026 uses MSVC 14.5.")
+
     try:
         msvcinfo = MSVCVERSIONINFO[version]
     except:
@@ -2498,7 +2502,7 @@ def SdkLocateMacOSX(archs = []):
     sdk_versions = []
     if 'arm64' not in archs:
         # Prefer pre-10.14 for now so that we can keep building FMOD.
-        sdk_versions += ["10.13", "10.12"]
+        sdk_versions += ["10.13"]
 
     sdk_versions += ["15.5", "15.4", "15.2", "15.1", "15.0", "14.5", "14.4", "14.2", "14.0", "13.3", "13.1", "13.0", "12.3", "11.3", "11.1", "11.0"]
 

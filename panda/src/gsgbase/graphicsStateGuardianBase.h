@@ -254,7 +254,7 @@ public:
     ++_generated_shader_seq;
   }
 
-  virtual void push_group_marker(const std::string &marker) {}
+  virtual void push_group_marker(std::string_view marker) {}
   virtual void pop_group_marker() {}
 
 PUBLISHED:

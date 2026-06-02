@@ -43,7 +43,7 @@ class MovieAudioCursor;
  */
 class EXPCL_PANDA_MOVIES MovieAudio : public TypedWritableReferenceCount, public Namable {
  PUBLISHED:
-  explicit MovieAudio(const std::string &name = "Blank Audio");
+  explicit MovieAudio(std::string name = "Blank Audio");
   virtual ~MovieAudio();
   virtual PT(MovieAudioCursor) open();
   static PT(MovieAudio) get(const Filename &name);

@@ -34,7 +34,7 @@
  */
 class EXPCL_PANDA_COLLIDE CollisionVisualizer : public PandaNode, public CollisionRecorder {
 public:
-  explicit CollisionVisualizer(const std::string &name);
+  explicit CollisionVisualizer(std::string name);
   CollisionVisualizer(const CollisionVisualizer &copy);
   virtual ~CollisionVisualizer();
 

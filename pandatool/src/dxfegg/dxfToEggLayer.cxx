@@ -26,10 +26,10 @@
  *
  */
 DXFToEggLayer::
-DXFToEggLayer(const std::string &name, EggGroupNode *parent) : DXFLayer(name) {
+DXFToEggLayer(std::string name, EggGroupNode *parent) : DXFLayer(name) {
   _group = new EggGroup(name);
   parent->add_child(_group);
-  _vpool = new EggVertexPool(name);
+  _vpool = new EggVertexPool(std::move(name));
   _group->add_child(_vpool);
 }
 

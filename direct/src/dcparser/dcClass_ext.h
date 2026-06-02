@@ -42,9 +42,9 @@ public:
   void receive_update_all_required(PyObject *distobj, DatagramIterator &di) const;
   void receive_update_other(PyObject *distobj, DatagramIterator &di) const;
 
-  void direct_update(PyObject *distobj, const std::string &field_name,
+  void direct_update(PyObject *distobj, std::string_view field_name,
                      const vector_uchar &value_blob);
-  void direct_update(PyObject *distobj, const std::string &field_name,
+  void direct_update(PyObject *distobj, std::string_view field_name,
                      const Datagram &datagram);
   bool pack_required_field(Datagram &datagram, PyObject *distobj,
                            const DCField *field) const;
@@ -53,11 +53,11 @@ public:
 
 
 
-  Datagram client_format_update(const std::string &field_name,
+  Datagram client_format_update(std::string_view field_name,
                                 DOID_TYPE do_id, PyObject *args) const;
-  Datagram ai_format_update(const std::string &field_name, DOID_TYPE do_id,
+  Datagram ai_format_update(std::string_view field_name, DOID_TYPE do_id,
                             CHANNEL_TYPE to_id, CHANNEL_TYPE from_id, PyObject *args) const;
-  Datagram ai_format_update_msg_type(const std::string &field_name, DOID_TYPE do_id,
+  Datagram ai_format_update_msg_type(std::string_view field_name, DOID_TYPE do_id,
                             CHANNEL_TYPE to_id, CHANNEL_TYPE from_id, int msg_type, PyObject *args) const;
   Datagram ai_format_generate(PyObject *distobj, DOID_TYPE do_id,
                               ZONEID_TYPE parent_id, ZONEID_TYPE zone_id,

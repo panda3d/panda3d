@@ -29,7 +29,7 @@
  */
 class EXPCL_PANDA_EGG EggTexture : public EggFilenameNode, public EggRenderMode, public EggTransform {
 PUBLISHED:
-  explicit EggTexture(const std::string &tref_name, const Filename &filename);
+  explicit EggTexture(std::string tref_name, const Filename &filename);
   EggTexture(const EggTexture &copy);
   EggTexture &operator = (const EggTexture &copy);
   virtual ~EggTexture();
@@ -227,7 +227,7 @@ PUBLISHED:
   INLINE void set_quality_level(QualityLevel quality_level);
   INLINE QualityLevel get_quality_level() const;
 
-  INLINE void set_stage_name(const std::string &stage_name);
+  INLINE void set_stage_name(std::string stage_name);
   INLINE void clear_stage_name();
   INLINE bool has_stage_name() const;
   INLINE const std::string &get_stage_name() const;
@@ -247,7 +247,7 @@ PUBLISHED:
   INLINE bool has_border_color() const;
   INLINE const LColor &get_border_color() const;
 
-  INLINE void set_uv_name(const std::string &uv_name);
+  INLINE void set_uv_name(std::string uv_name);
   INLINE void clear_uv_name();
   INLINE bool has_uv_name() const;
   INLINE const std::string &get_uv_name() const;
@@ -305,17 +305,17 @@ PUBLISHED:
   bool multitexture_over(EggTexture *other);
   INLINE int get_multitexture_sort() const;
 
-  static TextureType string_texture_type(const std::string &string);
-  static Format string_format(const std::string &string);
-  static CompressionMode string_compression_mode(const std::string &string);
-  static WrapMode string_wrap_mode(const std::string &string);
-  static FilterType string_filter_type(const std::string &string);
-  static EnvType string_env_type(const std::string &string);
-  static CombineMode string_combine_mode(const std::string &string);
-  static CombineSource string_combine_source(const std::string &string);
-  static CombineOperand string_combine_operand(const std::string &string);
-  static TexGen string_tex_gen(const std::string &string);
-  static QualityLevel string_quality_level(const std::string &string);
+  static TextureType string_texture_type(std::string_view string);
+  static Format string_format(std::string_view string);
+  static CompressionMode string_compression_mode(std::string_view string);
+  static WrapMode string_wrap_mode(std::string_view string);
+  static FilterType string_filter_type(std::string_view string);
+  static EnvType string_env_type(std::string_view string);
+  static CombineMode string_combine_mode(std::string_view string);
+  static CombineSource string_combine_source(std::string_view string);
+  static CombineOperand string_combine_operand(std::string_view string);
+  static TexGen string_tex_gen(std::string_view string);
+  static QualityLevel string_quality_level(std::string_view string);
 
 PUBLISHED:
   MAKE_PROPERTY(texture_type, get_texture_type, set_texture_type);

@@ -32,10 +32,10 @@
  */
 void ConditionVarSpinlockImpl::
 wait() {
-  AtomicAdjust::Integer current = _event;
+  unsigned int current = _event.load(std::memory_order_acquire);
   _mutex.unlock();
 
-  while (AtomicAdjust::get(_event) == current) {
+  while (_event.load(std::memory_order_acquire) == current) {
     PAUSE();
   }
 
@@ -50,10 +50,10 @@ wait(double timeout) {
   TrueClock *clock = TrueClock::get_global_ptr();
   double end_time = clock->get_short_time() + timeout;
 
-  AtomicAdjust::Integer current = _event;
+  unsigned int current = _event.load(std::memory_order_acquire);
   _mutex.unlock();
 
-  while (AtomicAdjust::get(_event) == current && clock->get_short_time() < end_time) {
+  while (_event.load(std::memory_order_acquire) == current && clock->get_short_time() < end_time) {
     PAUSE();
   }
 

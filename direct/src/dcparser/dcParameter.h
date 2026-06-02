@@ -62,16 +62,16 @@ public:
 
   virtual void output(std::ostream &out, bool brief) const;
   virtual void write(std::ostream &out, bool brief, int indent_level) const;
-  virtual void output_instance(std::ostream &out, bool brief, const std::string &prename,
-                               const std::string &name, const std::string &postname) const=0;
+  virtual void output_instance(std::ostream &out, bool brief, std::string_view prename,
+                               std::string_view name, std::string_view postname) const=0;
   virtual void write_instance(std::ostream &out, bool brief, int indent_level,
-                              const std::string &prename, const std::string &name,
-                              const std::string &postname) const;
-  void output_typedef_name(std::ostream &out, bool brief, const std::string &prename,
-                           const std::string &name, const std::string &postname) const;
+                              std::string_view prename, std::string_view name,
+                              std::string_view postname) const;
+  void output_typedef_name(std::ostream &out, bool brief, std::string_view prename,
+                           std::string_view name, std::string_view postname) const;
   void write_typedef_name(std::ostream &out, bool brief, int indent_level,
-                          const std::string &prename, const std::string &name,
-                          const std::string &postname) const;
+                          std::string_view prename, std::string_view name,
+                          std::string_view postname) const;
   virtual void generate_hash(HashGenerator &hashgen) const;
 
 private:

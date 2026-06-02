@@ -56,7 +56,7 @@ PUBLISHED:
   INLINE void ls() const;
   void ls(std::ostream &out, int indent_level = 0) const;
 
-  NodePathCollection find_all_matches(const std::string &path) const;
+  NodePathCollection find_all_matches(std::string_view path) const;
   void reparent_to(const NodePath &other);
   void wrt_reparent_to(const NodePath &other);
 

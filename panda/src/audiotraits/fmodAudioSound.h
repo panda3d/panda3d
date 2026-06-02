@@ -137,7 +137,7 @@ public:
   bool get_active() const;
 
   void finished();
-  void set_finished_event(const std::string& event);
+  void set_finished_event(std::string event);
   const std::string& get_finished_event() const;
 
  private:

@@ -42,6 +42,7 @@ class FactoryParams;
  */
 class EXPCL_PANDA_PGRAPH DepthBiasAttrib final : public RenderAttrib {
 private:
+  friend class StaticObject<DepthBiasAttrib>;
   INLINE DepthBiasAttrib(PN_stdfloat slope_factor, PN_stdfloat constant_factor,
                          PN_stdfloat clamp = 0);
 
@@ -99,8 +100,8 @@ public:
     RenderAttrib::init_type();
     register_type(_type_handle, "DepthBiasAttrib",
                   RenderAttrib::get_class_type());
-    _attrib_slot = register_slot(_type_handle, 100,
-                                 new DepthBiasAttrib(0, 0, 0));
+    static StaticObject<DepthBiasAttrib> default_attrib(0, 0, 0);
+    _attrib_slot = register_slot(_type_handle, 100, default_attrib);
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

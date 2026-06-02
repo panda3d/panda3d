@@ -1342,7 +1342,7 @@ rename_joints() {
  * indicated name.
  */
 void EggOptchar::
-change_dart_type(EggGroupNode *egg_group, const string &new_dart_type) {
+change_dart_type(EggGroupNode *egg_group, std::string_view new_dart_type) {
   EggGroupNode::iterator gi;
   for (gi = egg_group->begin(); gi != egg_group->end(); ++gi) {
     EggNode *child = (*gi);
@@ -1367,7 +1367,7 @@ change_dart_type(EggGroupNode *egg_group, const string &new_dart_type) {
  * indicated name.
  */
 void EggOptchar::
-rename_primitives(EggGroupNode *egg_group, const string &name) {
+rename_primitives(EggGroupNode *egg_group, std::string_view name) {
   EggGroupNode::iterator gi;
   for (gi = egg_group->begin(); gi != egg_group->end(); ++gi) {
     EggNode *child = (*gi);
@@ -1377,7 +1377,7 @@ rename_primitives(EggGroupNode *egg_group, const string &name) {
       rename_primitives(group, name);
 
     } else if (child->is_of_type(EggPrimitive::get_class_type())) {
-      child->set_name(name);
+      child->set_name(std::string(name));
     }
   }
 }

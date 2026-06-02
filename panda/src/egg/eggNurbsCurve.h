@@ -25,7 +25,7 @@
  */
 class EXPCL_PANDA_EGG EggNurbsCurve : public EggCurve {
 PUBLISHED:
-  INLINE explicit EggNurbsCurve(const std::string &name = "");
+  INLINE explicit EggNurbsCurve(std::string name = "");
   INLINE EggNurbsCurve(const EggNurbsCurve &copy);
   INLINE EggNurbsCurve &operator = (const EggNurbsCurve &copy);
 

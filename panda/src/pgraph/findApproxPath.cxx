@@ -26,8 +26,6 @@ using std::string;
  */
 bool FindApproxPath::Component::
 matches(PandaNode *node) const {
-  string node_name;
-
   switch (_type) {
   case CT_match_name:
     // Match the node's name exactly.
@@ -114,13 +112,13 @@ output(ostream &out) const {
  * true if successful, false if the string contained an error.
  */
 bool FindApproxPath::
-add_string(const string &str_path) {
+add_string(std::string_view str_path) {
   // First, chop the string up by slashes into its components.
-  vector_string components;
+  std::vector<std::string_view> components;
 
   size_t start = 0;
   size_t slash = str_path.find('/');
-  while (slash != string::npos) {
+  while (slash != std::string_view::npos) {
     components.push_back(str_path.substr(start, slash - start));
     start = slash + 1;
     slash = str_path.find('/', start);
@@ -133,21 +131,20 @@ add_string(const string &str_path) {
   // entire string; if this is less than start, there is no semicolon right of
   // start.
   if (semicolon < start) {
-    semicolon = string::npos;
+    semicolon = std::string_view::npos;
   }
 
   components.push_back(str_path.substr(start, semicolon - start));
 
-  if (semicolon != string::npos) {
+  if (semicolon != std::string_view::npos) {
     if (!add_flags(str_path.substr(semicolon + 1))) {
       return false;
     }
   }
 
   // Now decode each component and add it to the path.
-  vector_string::const_iterator ci;
-  for (ci = components.begin(); ci != components.end(); ++ci) {
-    if (!add_component(*ci)) {
+  for (std::string_view component : components) {
+    if (!add_component(component)) {
       return false;
     }
   }
@@ -161,8 +158,8 @@ add_string(const string &str_path) {
  * true if successful, false otherwise.
  */
 bool FindApproxPath::
-add_flags(const string &str_flags) {
-  string::const_iterator pi = str_flags.begin();
+add_flags(std::string_view str_flags) {
+  std::string_view::const_iterator pi = str_flags.begin();
   while (pi != str_flags.end()) {
     bool on;
     switch (*pi) {
@@ -217,7 +214,7 @@ add_flags(const string &str_flags) {
  * false if the string component was in some way invalid.
  */
 bool FindApproxPath::
-add_component(string str_component) {
+add_component(std::string_view str_component) {
   int flags = 0;
   if (str_component.size() >= 2 && str_component.substr(0, 2) == "@@") {
     flags |= CF_stashed;
@@ -236,7 +233,7 @@ add_component(string str_component) {
     add_match_many(flags);
 
   } else if (!str_component.empty() && str_component[0] == '-') {
-    string type_name = str_component.substr(1);
+    std::string_view type_name = str_component.substr(1);
     TypeHandle handle = TypeRegistry::ptr()->find_type(type_name);
 
     if (handle == TypeHandle::none()) {
@@ -249,7 +246,7 @@ add_component(string str_component) {
     }
 
   } else if (!str_component.empty() && str_component[0] == '+') {
-    string type_name = str_component.substr(1);
+    std::string_view type_name = str_component.substr(1);
     TypeHandle handle = TypeRegistry::ptr()->find_type(type_name);
 
     if (handle == TypeHandle::none()) {
@@ -263,19 +260,19 @@ add_component(string str_component) {
 
   } else if (!str_component.empty() && str_component[0] == '=') {
     size_t equals = str_component.find('=', 1);
-    if (equals != string::npos) {
+    if (equals != std::string_view::npos) {
       // =key=value
-      string tag_key = str_component.substr(1, equals - 1);
-      string tag_value = str_component.substr(equals + 1);
-      add_match_tag_value(tag_key, tag_value, flags);
+      std::string_view tag_key = str_component.substr(1, equals - 1);
+      std::string_view tag_value = str_component.substr(equals + 1);
+      add_match_tag_value(std::string(tag_key), std::string(tag_value), flags);
     } else {
       // =key
-      string tag_key = str_component.substr(1);
-      add_match_tag(tag_key, flags);
+      std::string_view tag_key = str_component.substr(1);
+      add_match_tag(std::string(tag_key), flags);
     }
 
   } else {
-    add_match_name_glob(str_component, flags);
+    add_match_name_glob(std::string(str_component), flags);
   }
 
   return true;
@@ -285,12 +282,12 @@ add_component(string str_component) {
  * Adds a component that must match the name of a node exactly.
  */
 void FindApproxPath::
-add_match_name(const string &name, int flags) {
+add_match_name(std::string name, int flags) {
   Component comp;
   comp._type = _case_insensitive ? CT_match_name_insensitive : CT_match_name;
-  comp._name = name;
+  comp._name = std::move(name);
   comp._flags = flags;
-  _path.push_back(comp);
+  _path.push_back(std::move(comp));
 }
 
 /**
@@ -298,19 +295,19 @@ add_match_name(const string &name, int flags) {
  * globbing rules, with wildcard characters accepted.
  */
 void FindApproxPath::
-add_match_name_glob(const string &name, int flags) {
+add_match_name_glob(std::string name, int flags) {
   Component comp;
   comp._type = CT_match_name_glob;
-  comp._name = name;
-  comp._glob.set_pattern(name);
+  comp._name = std::move(name);
+  comp._glob.set_pattern(comp._name);
   comp._glob.set_case_sensitive(!_case_insensitive);
   comp._flags = flags;
   if (!comp._glob.has_glob_characters()) {
     // The glob pattern contains no special characters; make it a literal
     // match for efficiency.
-    add_match_name(name, flags);
+    add_match_name(std::move(comp._name), flags);
   } else {
-    _path.push_back(comp);
+    _path.push_back(std::move(comp));
   }
 }
 
@@ -324,7 +321,7 @@ add_match_exact_type(TypeHandle type, int flags) {
   comp._type = CT_match_exact_type;
   comp._type_handle = type;
   comp._flags = flags;
-  _path.push_back(comp);
+  _path.push_back(std::move(comp));
 }
 
 /**
@@ -337,7 +334,7 @@ add_match_inexact_type(TypeHandle type, int flags) {
   comp._type = CT_match_inexact_type;
   comp._type_handle = type;
   comp._flags = flags;
-  _path.push_back(comp);
+  _path.push_back(std::move(comp));
 }
 
 /**
@@ -345,12 +342,12 @@ add_match_inexact_type(TypeHandle type, int flags) {
  * key, no matter what the value is.
  */
 void FindApproxPath::
-add_match_tag(const string &name, int flags) {
+add_match_tag(std::string name, int flags) {
   Component comp;
   comp._type = CT_match_tag;
-  comp._name = name;
+  comp._name = std::move(name);
   comp._flags = flags;
-  _path.push_back(comp);
+  _path.push_back(std::move(comp));
 }
 
 /**
@@ -359,13 +356,13 @@ add_match_tag(const string &name, int flags) {
  * to match only those nodes with the indicated value.
  */
 void FindApproxPath::
-add_match_tag_value(const string &name, const string &value, int flags) {
+add_match_tag_value(std::string name, std::string value, int flags) {
   Component comp;
   comp._type = CT_match_tag_value;
-  comp._name = name;
-  comp._glob.set_pattern(value);
+  comp._name = std::move(name);
+  comp._glob.set_pattern(std::move(value));
   comp._flags = flags;
-  _path.push_back(comp);
+  _path.push_back(std::move(comp));
 }
 
 /**
@@ -376,7 +373,7 @@ add_match_one(int flags) {
   Component comp;
   comp._type = CT_match_one;
   comp._flags = flags;
-  _path.push_back(comp);
+  _path.push_back(std::move(comp));
 }
 
 /**
@@ -387,7 +384,7 @@ add_match_many(int flags) {
   Component comp;
   comp._type = CT_match_many;
   comp._flags = flags;
-  _path.push_back(comp);
+  _path.push_back(std::move(comp));
 }
 
 /**
@@ -399,7 +396,7 @@ add_match_pointer(PandaNode *pointer, int flags) {
   comp._type = CT_match_pointer;
   comp._pointer = pointer;
   comp._flags = flags;
-  _path.push_back(comp);
+  _path.push_back(std::move(comp));
 }
 
 /**

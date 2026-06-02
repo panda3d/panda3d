@@ -310,7 +310,7 @@ public:
 
   static void APIENTRY debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, GLvoid *userParam);
 
-  INLINE virtual void push_group_marker(const std::string &marker) final;
+  INLINE virtual void push_group_marker(std::string_view marker) final;
   INLINE virtual void pop_group_marker() final;
 
   virtual void reset();
@@ -542,13 +542,13 @@ protected:
   static bool report_errors_loop(int line, const char *source_file,
                                  GLenum error_code, int &error_count);
   static std::string get_error_string(GLenum error_code);
-  std::string show_gl_string(const std::string &name, GLenum id);
+  std::string show_gl_string(std::string_view name, GLenum id);
   virtual void query_gl_version();
   void query_glsl_version();
   void save_extensions(const char *extensions);
   virtual void get_extra_extensions();
   void report_extensions() const;
-  INLINE virtual bool has_extension(const std::string &extension) const;
+  INLINE virtual bool has_extension(std::string_view extension) const;
   INLINE bool is_at_least_gl_version(int major_version, int minor_version) const;
   INLINE bool is_at_least_gles_version(int major_version, int minor_version) const;
   void *get_extension_func(const char *name);
@@ -841,7 +841,7 @@ protected:
   int _gl_version_major, _gl_version_minor;
   int _glsl_version = 0;
 
-  pset<std::string> _extensions;
+  pset<std::string, std::less<>> _extensions;
 
 #ifndef OPENGLES
   // True for non-compatibility GL 3.2+ contexts.

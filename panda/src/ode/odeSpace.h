@@ -97,7 +97,7 @@ PUBLISHED:
   int get_collide_id(dGeomID o1);
   int get_collide_id(OdeGeom& geom);
 
-  INLINE void set_collision_event(const std::string &event_name);
+  INLINE void set_collision_event(std::string event_name);
   INLINE std::string get_collision_event();
 
 public:

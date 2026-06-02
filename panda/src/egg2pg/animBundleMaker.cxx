@@ -214,10 +214,9 @@ build_hierarchy(EggTable *egg_table, AnimGroup *parent) {
  * structure.
  */
 AnimChannelScalarTable *AnimBundleMaker::
-create_s_channel(EggSAnimData *egg_anim, const std::string &name,
-                 AnimGroup *parent) {
+create_s_channel(EggSAnimData *egg_anim, std::string name, AnimGroup *parent) {
   AnimChannelScalarTable *table
-    = new AnimChannelScalarTable(parent, name);
+    = new AnimChannelScalarTable(parent, std::move(name));
 
   // First we have to copy the table data from PTA_double to PTA_stdfloat.
   PTA_stdfloat new_data = PTA_stdfloat::empty_array(egg_anim->get_num_rows(),
@@ -238,16 +237,15 @@ create_s_channel(EggSAnimData *egg_anim, const std::string &name,
  * structure, if possible.
  */
 AnimChannelMatrixXfmTable *AnimBundleMaker::
-create_xfm_channel(EggNode *egg_node, const std::string &name,
-                   AnimGroup *parent) {
+create_xfm_channel(EggNode *egg_node, std::string name, AnimGroup *parent) {
   if (egg_node->is_of_type(EggXfmAnimData::get_class_type())) {
     EggXfmAnimData *egg_anim = DCAST(EggXfmAnimData, egg_node);
     EggXfmSAnim new_anim(*egg_anim);
-    return create_xfm_channel(&new_anim, name, parent);
+    return create_xfm_channel(&new_anim, std::move(name), parent);
 
   } else if (egg_node->is_of_type(EggXfmSAnim::get_class_type())) {
     EggXfmSAnim *egg_anim = DCAST(EggXfmSAnim, egg_node);
-    return create_xfm_channel(egg_anim, name, parent);
+    return create_xfm_channel(egg_anim, std::move(name), parent);
   }
 
   egg2pg_cat.warning()
@@ -262,13 +260,12 @@ create_xfm_channel(EggNode *egg_node, const std::string &name,
  * structure.
  */
 AnimChannelMatrixXfmTable *AnimBundleMaker::
-create_xfm_channel(EggXfmSAnim *egg_anim, const std::string &name,
-                   AnimGroup *parent) {
+create_xfm_channel(EggXfmSAnim *egg_anim, std::string name, AnimGroup *parent) {
   // Ensure that the anim table is optimal and that it is standard order.
   egg_anim->optimize_to_standard_order();
 
   AnimChannelMatrixXfmTable *table
-    = new AnimChannelMatrixXfmTable(parent, name);
+    = new AnimChannelMatrixXfmTable(parent, std::move(name));
 
   // The EggXfmSAnim structure has a number of children which are EggSAnimData
   // tables.  Each of these represents a separate component of the transform
@@ -281,7 +278,7 @@ create_xfm_channel(EggXfmSAnim *egg_anim, const std::string &name,
 
       if (child->get_name().empty()) {
         egg2pg_cat.warning()
-          << "Unnamed subtable of <Xfm$Anim_S$> " << name
+          << "Unnamed subtable of <Xfm$Anim_S$> " << table->get_name()
           << "\n";
       } else {
         char table_id = child->get_name()[0];
@@ -290,12 +287,12 @@ create_xfm_channel(EggXfmSAnim *egg_anim, const std::string &name,
             !table->is_valid_id(table_id)) {
           egg2pg_cat.warning()
             << "Unexpected table name " << child->get_name()
-            << ", child of " << name << "\n";
+            << ", child of " << table->get_name() << "\n";
 
         } else if (table->has_table(table_id)) {
           egg2pg_cat.warning()
             << "Duplicate table definition for " << table_id
-            << " under " << name << "\n";
+            << " under " << table->get_name() << "\n";
 
         } else {
 

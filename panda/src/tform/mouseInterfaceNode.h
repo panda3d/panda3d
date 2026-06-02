@@ -30,7 +30,7 @@ class ButtonEventList;
  */
 class EXPCL_PANDA_TFORM MouseInterfaceNode : public DataNode {
 public:
-  explicit MouseInterfaceNode(const std::string &name);
+  explicit MouseInterfaceNode(std::string name);
   virtual ~MouseInterfaceNode();
 
 PUBLISHED:

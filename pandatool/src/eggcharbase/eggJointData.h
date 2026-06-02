@@ -36,7 +36,7 @@ public:
   INLINE EggJointData *get_parent() const;
   INLINE int get_num_children() const;
   INLINE EggJointData *get_child(int n) const;
-  INLINE EggJointData *find_joint(const std::string &name);
+  INLINE EggJointData *find_joint(std::string_view name);
 
   LMatrix4d get_frame(int model_index, int n) const;
   LMatrix4d get_net_frame(int model_index, int n, EggCharacterDb &db) const;
@@ -54,8 +54,8 @@ public:
   bool do_rebuild_all(EggCharacterDb &db);
   void optimize();
   void expose(EggGroup::DCSType dcs_type = EggGroup::DC_default);
-  void zero_channels(const std::string &components);
-  void quantize_channels(const std::string &components, double quantum);
+  void zero_channels(std::string_view components);
+  void quantize_channels(std::string_view components, double quantum);
   void apply_default_pose(int source_model, int frame);
 
   virtual void add_back_pointer(int model_index, EggObject *egg_object);
@@ -70,9 +70,9 @@ protected:
   void do_finish_reparent();
 
 private:
-  EggJointData *make_new_joint(const std::string &name);
-  EggJointData *find_joint_exact(const std::string &name);
-  EggJointData *find_joint_matches(const std::string &name);
+  EggJointData *make_new_joint(std::string name);
+  EggJointData *find_joint_exact(std::string_view name);
+  EggJointData *find_joint_matches(std::string_view name);
 
   bool is_new_ancestor(EggJointData *child) const;
   const LMatrix4d &get_new_net_frame(int model_index, int n, EggCharacterDb &db);

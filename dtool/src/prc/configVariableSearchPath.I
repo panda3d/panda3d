@@ -15,12 +15,12 @@
  *
  */
 INLINE ConfigVariableSearchPath::
-ConfigVariableSearchPath(const std::string &name,
-                         const std::string &description, int flags) :
+ConfigVariableSearchPath(std::string_view name,
+                         std::string_view description, int flags) :
 #ifdef PRC_SAVE_DESCRIPTIONS
   ConfigVariableBase(name, VT_search_path, description, flags),
 #else
-  ConfigVariableBase(name, VT_search_path, std::string(), flags),
+  ConfigVariableBase(name, VT_search_path, std::string_view(), flags),
 #endif
   _default_value(Filename(".")),
   _local_modified(initial_invalid_cache())
@@ -38,13 +38,13 @@ ConfigVariableSearchPath(const std::string &name,
  *
  */
 INLINE ConfigVariableSearchPath::
-ConfigVariableSearchPath(const std::string &name,
+ConfigVariableSearchPath(std::string_view name,
                          const DSearchPath &default_value,
-                         const std::string &description, int flags) :
+                         std::string_view description, int flags) :
 #ifdef PRC_SAVE_DESCRIPTIONS
   ConfigVariableBase(name, VT_search_path, description, flags),
 #else
-  ConfigVariableBase(name, VT_search_path, std::string(), flags),
+  ConfigVariableBase(name, VT_search_path, std::string_view(), flags),
 #endif
   _default_value(default_value),
   _local_modified(initial_invalid_cache())
@@ -62,13 +62,13 @@ ConfigVariableSearchPath(const std::string &name,
  *
  */
 INLINE ConfigVariableSearchPath::
-ConfigVariableSearchPath(const std::string &name,
-                         const std::string &default_value,
-                         const std::string &description, int flags) :
+ConfigVariableSearchPath(std::string_view name,
+                         std::string_view default_value,
+                         std::string_view description, int flags) :
 #ifdef PRC_SAVE_DESCRIPTIONS
   ConfigVariableBase(name, VT_search_path, description, flags),
 #else
-  ConfigVariableBase(name, VT_search_path, std::string(), flags),
+  ConfigVariableBase(name, VT_search_path, std::string_view(), flags),
 #endif
   _default_value(Filename(default_value)),
   _local_modified(initial_invalid_cache())
@@ -179,7 +179,7 @@ prepend_directory(const Filename &directory) {
  * search list.
  */
 INLINE void ConfigVariableSearchPath::
-append_path(const std::string &path, const std::string &separator) {
+append_path(std::string_view path, std::string_view separator) {
   _lock.lock();
   _postfix.append_path(path, separator);
   _local_modified = initial_invalid_cache();

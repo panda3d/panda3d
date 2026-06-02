@@ -19,11 +19,11 @@
  * Register() and record_derivation() yourself.
  */
 INLINE void
-register_type(TypeHandle &type_handle, const std::string &name) {
+register_type(TypeHandle &type_handle, std::string_view name) {
   TypeRegistry::ptr()->register_type(type_handle, name);
 }
 INLINE void
-register_type(TypeHandle &type_handle, const std::string &name,
+register_type(TypeHandle &type_handle, std::string_view name,
               TypeHandle parent1) {
   TypeRegistry *registry = TypeRegistry::ptr();
   if (registry->register_type(type_handle, name)) {
@@ -31,7 +31,7 @@ register_type(TypeHandle &type_handle, const std::string &name,
   }
 }
 INLINE void
-register_type(TypeHandle &type_handle, const std::string &name,
+register_type(TypeHandle &type_handle, std::string_view name,
               TypeHandle parent1, TypeHandle parent2) {
   TypeRegistry *registry = TypeRegistry::ptr();
   if (registry->register_type(type_handle, name)) {
@@ -40,7 +40,7 @@ register_type(TypeHandle &type_handle, const std::string &name,
   }
 }
 INLINE void
-register_type(TypeHandle &type_handle, const std::string &name,
+register_type(TypeHandle &type_handle, std::string_view name,
               TypeHandle parent1, TypeHandle parent2,
               TypeHandle parent3) {
   TypeRegistry *registry = TypeRegistry::ptr();
@@ -51,7 +51,7 @@ register_type(TypeHandle &type_handle, const std::string &name,
   }
 }
 INLINE void
-register_type(TypeHandle &type_handle, const std::string &name,
+register_type(TypeHandle &type_handle, std::string_view name,
               TypeHandle parent1, TypeHandle parent2,
               TypeHandle parent3, TypeHandle parent4) {
   TypeRegistry *registry = TypeRegistry::ptr();
@@ -70,18 +70,18 @@ register_type(TypeHandle &type_handle, const std::string &name,
  * reference.
  */
 INLINE TypeHandle
-register_dynamic_type(const std::string &name) {
+register_dynamic_type(std::string_view name) {
   return TypeRegistry::ptr()->register_dynamic_type(name);
 }
 INLINE TypeHandle
-register_dynamic_type(const std::string &name, TypeHandle parent1) {
+register_dynamic_type(std::string_view name, TypeHandle parent1) {
   TypeRegistry *registry = TypeRegistry::ptr();
   TypeHandle type_handle = registry->register_dynamic_type(name);
   registry->record_derivation(type_handle, parent1);
   return type_handle;
 }
 INLINE TypeHandle
-register_dynamic_type(const std::string &name,
+register_dynamic_type(std::string_view name,
                       TypeHandle parent1, TypeHandle parent2) {
   TypeRegistry *registry = TypeRegistry::ptr();
   TypeHandle type_handle = registry->register_dynamic_type(name);
@@ -90,7 +90,7 @@ register_dynamic_type(const std::string &name,
   return type_handle;
 }
 INLINE TypeHandle
-register_dynamic_type(const std::string &name,
+register_dynamic_type(std::string_view name,
                       TypeHandle parent1, TypeHandle parent2,
                       TypeHandle parent3) {
   TypeRegistry *registry = TypeRegistry::ptr();
@@ -101,7 +101,7 @@ register_dynamic_type(const std::string &name,
   return type_handle;
 }
 INLINE TypeHandle
-register_dynamic_type(const std::string &name,
+register_dynamic_type(std::string_view name,
                       TypeHandle parent1, TypeHandle parent2,
                       TypeHandle parent3, TypeHandle parent4) {
   TypeRegistry *registry = TypeRegistry::ptr();

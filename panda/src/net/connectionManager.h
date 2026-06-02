@@ -78,12 +78,23 @@ PUBLISHED:
 
   public:
     Interface() { _flags = 0; }
-    void set_name(const std::string &name) { _name = name; }
-    void set_mac_address(const std::string &mac_address) { _mac_address = mac_address; }
+    void set_name(std::string name) { _name = std::move(name); }
+    void set_mac_address(std::string mac_address) { _mac_address = std::move(mac_address); }
     void set_ip(const NetAddress &ip) { _ip = ip; _flags |= F_has_ip; }
     void set_netmask(const NetAddress &ip) { _netmask = ip; _flags |= F_has_netmask; }
     void set_broadcast(const NetAddress &ip) { _broadcast = ip; _flags |= F_has_broadcast; }
     void set_p2p(const NetAddress &ip) { _p2p = ip; _flags |= F_has_p2p; }
+
+    void set_operational() { _flags |= F_is_operational; }
+    void set_ipv6() { _flags |= F_is_ipv6; }
+
+    // Corresponds to IFF_RUNNING on POSIX and IfOperStatusUp on Windows
+    bool is_operational() const { return (_flags & F_is_operational) != 0; }
+    bool is_ipv6() const { return (_flags & F_is_ipv6) != 0; }
+
+  PUBLISHED:
+    MAKE_PROPERTY(operational, is_operational);
+    MAKE_PROPERTY(ipv6, is_ipv6);
 
   private:
     std::string _name;
@@ -100,6 +111,8 @@ PUBLISHED:
       F_has_netmask   = 0x002,
       F_has_broadcast = 0x004,
       F_has_p2p       = 0x008,
+      F_is_operational= 0x010,
+      F_is_ipv6       = 0x020,
     };
   };
 

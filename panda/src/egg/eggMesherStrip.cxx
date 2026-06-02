@@ -1113,7 +1113,8 @@ would_reverse_tail(EggMesherStrip::PrimType want_type) const {
 
     case PT_tri:
     case PT_tristrip:
-      // We don't convert tristrips to quadstrips; fall through.
+      // We don't convert tristrips to quadstrips.
+      [[fallthrough]];
 
     default:
       egg_cat.fatal() << "Invalid conversion!\n";
@@ -1183,7 +1184,8 @@ convert_to_type(EggMesherStrip::PrimType want_type) {
 
     case PT_tri:
     case PT_tristrip:
-      // We don't convert tristrips to quadstrips; fall through.
+      // We don't convert tristrips to quadstrips.
+      [[fallthrough]];
 
     default:
       egg_cat.fatal() << "Invalid conversion!\n";

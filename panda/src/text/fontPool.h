@@ -33,11 +33,11 @@ PUBLISHED:
   // parameters may not be entirely an actual filename: they may be a filename
   // followed by a face index.
 
-  INLINE static bool has_font(const std::string &filename);
-  INLINE static bool verify_font(const std::string &filename);
-  BLOCKING INLINE static TextFont *load_font(const std::string &filename);
-  INLINE static void add_font(const std::string &filename, TextFont *font);
-  INLINE static void release_font(const std::string &filename);
+  INLINE static bool has_font(std::string_view filename);
+  INLINE static bool verify_font(std::string_view filename);
+  BLOCKING INLINE static TextFont *load_font(std::string_view filename);
+  INLINE static void add_font(std::string_view filename, TextFont *font);
+  INLINE static void release_font(std::string_view filename);
   INLINE static void release_all_fonts();
 
   INLINE static int garbage_collect();
@@ -48,15 +48,15 @@ PUBLISHED:
 private:
   INLINE FontPool();
 
-  bool ns_has_font(const std::string &str);
-  TextFont *ns_load_font(const std::string &str);
-  void ns_add_font(const std::string &str, TextFont *font);
-  void ns_release_font(const std::string &str);
+  bool ns_has_font(std::string_view str);
+  TextFont *ns_load_font(std::string_view str);
+  void ns_add_font(std::string_view str, TextFont *font);
+  void ns_release_font(std::string_view str);
   void ns_release_all_fonts();
   int ns_garbage_collect();
   void ns_list_contents(std::ostream &out) const;
 
-  static void lookup_filename(const std::string &str, std::string &index_str,
+  static void lookup_filename(std::string_view str, std::string &index_str,
                               Filename &filename, int &face_index);
 
   static FontPool *get_ptr();

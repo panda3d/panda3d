@@ -226,7 +226,7 @@ ls(std::ostream &out, int indent_level) const {
  * listed first.
  */
 NodePathCollection NodePathCollection::
-find_all_matches(const std::string &path) const {
+find_all_matches(std::string_view path) const {
   NodePathCollection result;
 
   FindApproxPath approx_path;

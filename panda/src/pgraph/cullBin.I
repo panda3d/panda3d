@@ -28,14 +28,14 @@ CullBin(const CullBin &copy) :
  *
  */
 INLINE CullBin::
-CullBin(const std::string &name, CullBin::BinType bin_type,
+CullBin(std::string name, CullBin::BinType bin_type,
         GraphicsStateGuardianBase *gsg,
         const PStatCollector &draw_region_pcollector) :
-  _name(name),
+  _name(std::move(name)),
   _bin_type(bin_type),
   _gsg(gsg),
-  _cull_this_pcollector(_cull_bin_pcollector, name),
-  _draw_this_pcollector(draw_region_pcollector, name)
+  _cull_this_pcollector(_cull_bin_pcollector, _name),
+  _draw_this_pcollector(draw_region_pcollector, _name)
 {
 }
 

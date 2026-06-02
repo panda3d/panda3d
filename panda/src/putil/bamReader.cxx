@@ -99,6 +99,11 @@ init() {
   }
 
   DatagramIterator scan(header);
+  if (scan.get_remaining_size() < 4) {
+    bam_cat.error()
+      << "Bam header is too short.\n";
+    return false;
+  }
 
   _file_major = scan.get_uint16();
   _file_minor = scan.get_uint16();
@@ -126,17 +131,17 @@ init() {
     return false;
   }
 
+  if (scan.get_remaining_size() < 1 + (_file_minor >= 27)) {
+    bam_cat.error()
+      << "Bam header is too short.\n";
+    return false;
+  }
+
   _file_endian = (BamEndian)scan.get_uint8();
 
   _file_stdfloat_double = false;
   if (_file_minor >= 27) {
     _file_stdfloat_double = scan.get_bool();
-  }
-
-  if (scan.get_current_index() > header.get_length()) {
-    bam_cat.error()
-      << "Bam header is too short.\n";
-    return false;
   }
 
   return true;
@@ -164,19 +169,22 @@ init() {
  * will be replaced (and deleted).
  */
 void BamReader::
-set_aux_data(TypedWritable *obj, const string &name, BamReader::AuxData *data) {
+set_aux_data(TypedWritable *obj, std::string name, BamReader::AuxData *data) {
   if (data == nullptr) {
     AuxDataTable::iterator ti = _aux_data.find(obj);
     if (ti != _aux_data.end()) {
       AuxDataNames &names = (*ti).second;
-      names.erase(name);
+      AuxDataNames::iterator ni = names.find(name);
+      if (ni != names.end()) {
+        names.erase(ni);
+      }
       if (names.empty()) {
         _aux_data.erase(ti);
       }
     }
 
   } else {
-    _aux_data[obj][name] = data;
+    _aux_data[obj][std::move(name)] = data;
   }
 }
 
@@ -186,7 +194,7 @@ set_aux_data(TypedWritable *obj, const string &name, BamReader::AuxData *data) {
  * set.
  */
 BamReader::AuxData *BamReader::
-get_aux_data(TypedWritable *obj, const string &name) const {
+get_aux_data(TypedWritable *obj, std::string_view name) const {
   AuxDataTable::const_iterator ti = _aux_data.find(obj);
   if (ti != _aux_data.end()) {
     const AuxDataNames &names = (*ti).second;
@@ -248,9 +256,13 @@ read_object(TypedWritable *&ptr, ReferenceCount *&ref_ptr) {
   nassertr(_num_extra_objects == 0, false);
 
   int start_level = _nesting_level;
+  bool have_error = false;
 
   // First, read the base object.
   int object_id = p_read_object();
+  if (object_id == -1) {
+    have_error = true;
+  }
 
   // Now that object might have included some pointers to other objects, which
   // may still need to be read.  And those objects might in turn require
@@ -259,14 +271,36 @@ read_object(TypedWritable *&ptr, ReferenceCount *&ref_ptr) {
   // Prior to 6.21, we kept track of _num_extra_objects to know when we're
   // done.
   while (_num_extra_objects > 0) {
-    p_read_object();
+    int extra_object = p_read_object();
+    if (extra_object == 0) {
+      bam_cat.error()
+        << "Reached end of bam source despite pending extra objects.\n";
+      _num_extra_objects = 0;
+      return -1;
+    }
+    if (extra_object == -1) {
+      have_error = true;
+    }
     _num_extra_objects--;
   }
 
   // Beginning with 6.21, we use explicit nesting commands to know when we're
   // done.
   while (_nesting_level > start_level) {
-    p_read_object();
+    int nested_object = p_read_object();
+    if (nested_object == 0 && _nesting_level > start_level) {
+      bam_cat.warning()
+        << "Reached end of bam source while reading nested object.\n";
+      _nesting_level = start_level;
+      break;
+    }
+    if (nested_object == -1) {
+      have_error = true;
+    }
+  }
+
+  if (have_error) {
+    return false;
   }
 
   // Now look up the pointer of the object we read first.  It should be
@@ -545,6 +579,7 @@ read_handle(DatagramIterator &scan) {
   // number we have not yet encountered, we must then read the definition.
 
   // Here's the index number.
+  if (!expect_remaining_size(scan, 2)) return TypeHandle::invalid();
   int id = scan.get_uint16();
 
   if (id == 0) {
@@ -565,7 +600,10 @@ read_handle(DatagramIterator &scan) {
   // immediately followed by the type definition.  This consists of the string
   // name, followed by the list of parent TypeHandles for this type.
 
-  string name = scan.get_string();
+  if (!expect_remaining_size(scan, 2)) return TypeHandle::invalid();
+  size_t name_size = scan.get_uint16();
+  if (!expect_remaining_size(scan, name_size + 1)) return TypeHandle::invalid();
+  string name = scan.get_fixed_string(name_size);
   bool new_type = false;
 
   TypeRegistry *type_registry = TypeRegistry::ptr();
@@ -586,6 +624,9 @@ read_handle(DatagramIterator &scan) {
   int num_parent_classes = scan.get_uint8();
   for (int i = 0; i < num_parent_classes; i++) {
     TypeHandle parent_type = read_handle(scan);
+    if (parent_type == TypeHandle::invalid()) {
+      return TypeHandle::invalid();
+    }
     if (new_type) {
       type_registry->record_derivation(type, parent_type);
     } else {
@@ -600,7 +641,13 @@ read_handle(DatagramIterator &scan) {
   }
 
   bool inserted = _index_map.insert(IndexMap::value_type(id, type)).second;
-  nassertr(inserted, type);
+  if (!inserted) {
+    bam_cat.error()
+      << "Bam file contains type " << type << " with id "
+      << id << " which was already registered as "
+      << _index_map[id] << ".\n";
+    return TypeHandle::invalid();
+  }
 
   if (bam_cat.is_spam()) {
     bam_cat.spam()
@@ -633,6 +680,10 @@ read_handle(DatagramIterator &scan) {
 bool BamReader::
 read_pointer(DatagramIterator &scan) {
   Thread::consider_yield();
+
+  if (!expect_remaining_size(scan, _long_object_id ? 4 : 2)) {
+    return false;
+  }
 
   nassertr(_now_creating != _created_objs.end(), false);
   int requestor_id = (*_now_creating).first;
@@ -752,12 +803,12 @@ read_cdata(DatagramIterator &scan, PipelineCyclerBase &cycler,
  * be unique between an object and its CData object(s).
  */
 void BamReader::
-set_int_tag(const string &tag, int value) {
+set_int_tag(std::string tag, int value) {
   nassertv(_now_creating != _created_objs.end());
   int requestor_id = (*_now_creating).first;
 
   PointerReference &pref = _object_pointers[requestor_id];
-  pref._int_tags[tag] = value;
+  pref._int_tags[std::move(tag)] = value;
 }
 
 /**
@@ -765,7 +816,7 @@ set_int_tag(const string &tag, int value) {
  * value has been set.
  */
 int BamReader::
-get_int_tag(const string &tag) const {
+get_int_tag(std::string_view tag) const {
   nassertr(_now_creating != _created_objs.end(), 0);
   int requestor_id = (*_now_creating).first;
 
@@ -793,12 +844,12 @@ get_int_tag(const string &tag) const {
  * be unique between an object and its CData object(s).
  */
 void BamReader::
-set_aux_tag(const string &tag, BamReaderAuxData *value) {
+set_aux_tag(std::string tag, BamReaderAuxData *value) {
   nassertv(_now_creating != _created_objs.end());
   int requestor_id = (*_now_creating).first;
 
   PointerReference &pref = _object_pointers[requestor_id];
-  pref._aux_tags[tag] = value;
+  pref._aux_tags[std::move(tag)] = value;
 }
 
 /**
@@ -806,7 +857,7 @@ set_aux_tag(const string &tag, BamReaderAuxData *value) {
  * value has been set.
  */
 BamReaderAuxData *BamReader::
-get_aux_tag(const string &tag) const {
+get_aux_tag(std::string_view tag) const {
   nassertr(_now_creating != _created_objs.end(), nullptr);
   int requestor_id = (*_now_creating).first;
 
@@ -1071,7 +1122,7 @@ read_pta_id(DatagramIterator &scan) {
 
 /**
  * The private implementation of read_object(); this reads an object from the
- * file and returns its object ID.
+ * file and returns its object ID, or -1 on failure.
  */
 int BamReader::
 p_read_object() {
@@ -1128,7 +1179,7 @@ p_read_object() {
       if (!_source->save_datagram(info)) {
         bam_cat.error()
           << "Failed to read file data.\n";
-        return 0;
+        return -1;
       }
       _file_data_records.push_back(info);
     }
@@ -1142,7 +1193,7 @@ p_read_object() {
   default:
     bam_cat.error()
       << "Encountered invalid BamObjectCode 0x" << std::hex << (int)boc << std::dec << ".\n";
-    return 0;
+    return -1;
   }
 
   // An object definition in a Bam file consists of a TypeHandle definition,
@@ -1150,14 +1201,14 @@ p_read_object() {
   // particular instance (e.g.  pointer) of this object.
 
   TypeHandle type = read_handle(scan);
-
-  int object_id = read_object_id(scan);
-
-  if (scan.get_current_index() > dg.get_length()) {
-    bam_cat.error()
-      << "Found truncated datagram in bam stream\n";
-    return 0;
+  if (type == TypeHandle::invalid()) {
+    return -1;
   }
+
+  if (!expect_remaining_size(scan, _long_object_id ? 4 : 2)) {
+    return -1;
+  }
+  int object_id = read_object_id(scan);
 
   // There are two cases (not counting the special _remove_flag case, above).
   // Either this is a new object definition, or this is a reference to an
@@ -1196,19 +1247,26 @@ p_read_object() {
         bam_cat.error()
           << "Found object " << object_id << " in bam stream again while "
           << "trying to resolve its own pointers.\n";
-        return 0;
+        return -1;
       }
 
       // Update _now_creating during this call so if this function calls
       // read_pointer() or register_change_this() we'll match it up properly.
       // This might recursively call back into this p_read_object(), so be
       // sure to save and restore the original value of _now_creating.
-      CreatedObjs::iterator was_creating = _now_creating;
-      _now_creating = oi;
+      CreatedObjs::iterator was_creating = std::exchange(_now_creating, oi);
+      bool had_error = std::exchange(_has_error, false);
       created_obj._ptr->fillin(scan, this);
       _now_creating = was_creating;
+      std::swap(_has_error, had_error);
 
-      if (scan.get_remaining_size() > 0) {
+      if (had_error) {
+        bam_cat.error()
+          << "Encountered error reading object " << object_id << " with type "
+          << type << ".\n";
+        return -1;
+      }
+      else if (scan.get_remaining_size() > 0) {
         bam_cat.warning()
           << "Skipping " << scan.get_remaining_size() << " remaining bytes "
           << "in datagram containing type " << type << "\n";
@@ -1223,11 +1281,12 @@ p_read_object() {
       fparams.add_param(new BamReaderParam(scan, this));
 
       // As above, we update and preserve _now_creating during this call.
-      CreatedObjs::iterator was_creating = _now_creating;
-      _now_creating = oi;
+      CreatedObjs::iterator was_creating = std::exchange(_now_creating, oi);
+      bool had_error = std::exchange(_has_error, false);
       TypedWritable *object =
         _factory->make_instance_more_general(type, fparams);
       _now_creating = was_creating;
+      std::swap(_has_error, had_error);
 
       // And now we can store the new object pointer in the map.
       nassertr(created_obj._ptr == object || created_obj._ptr == nullptr, object_id);
@@ -1278,7 +1337,15 @@ p_read_object() {
       _created_objs_by_pointer[created_obj._ptr].push_back(object_id);
 
       // Just some sanity checks
-      if (object == nullptr) {
+      if (had_error) {
+        if (bam_cat.is_debug()) {
+          bam_cat.debug()
+            << "Encountered an error creating an object of type "
+            << type << std::endl;
+        }
+        return -1;
+
+      } else if (object == nullptr) {
         if (bam_cat.is_debug()) {
           bam_cat.debug()
             << "Unable to create an object of type " << type << std::endl;
@@ -1319,6 +1386,7 @@ p_read_object() {
       bam_cat.error()
         << "End of datagram reached while reading bam object "
         << type << ": " << (void *)created_obj._ptr << "\n";
+      return -1;
     }
   }
 
@@ -1572,5 +1640,19 @@ finalize() {
       // There's no NULL data; clear the whole table.
       _aux_data.clear();
     }
+  }
+}
+
+/**
+ * Called by expect_remaining_size when an error has occurred.
+ */
+void BamReader::
+error_remaining_size(DatagramIterator &scan, size_t num_bytes) {
+  if (!_has_error) {
+    _has_error = true;
+    size_t remaining_size = scan.get_remaining_size();
+    bam_cat.error()
+      << "Bam file is corrupt: expected at least " << num_bytes
+      << " bytes remaining in datagram, got " << remaining_size << "\n";
   }
 }

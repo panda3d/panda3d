@@ -64,7 +64,7 @@ PUBLISHED:
   INLINE bool project(const LPoint3 &point3d, LPoint3 &point2d) const;
   INLINE bool project(const LPoint3 &point3d, LPoint2 &point2d) const;
 
-  INLINE void set_change_event(const std::string &event);
+  INLINE void set_change_event(std::string event);
   INLINE const std::string &get_change_event() const;
   MAKE_PROPERTY(change_event, get_change_event, set_change_event);
 

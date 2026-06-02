@@ -48,8 +48,8 @@ public:
 
 protected:
   bool process(const Filename &filename);
-  bool process_line(const std::string &line);
-  bool process_ref_plane_res(const std::string &line);
+  bool process_line(std::string_view line);
+  bool process_ref_plane_res(std::string_view line);
 
   bool process_v(vector_string &words);
   bool process_vt(vector_string &words);
@@ -59,11 +59,11 @@ protected:
   bool process_f(vector_string &words);
   bool process_g(vector_string &words);
 
-  EggVertex *get_face_vertex(const std::string &face_reference);
+  EggVertex *get_face_vertex(std::string_view face_reference);
   void generate_egg_points();
 
   bool process_node(const Filename &filename);
-  bool process_line_node(const std::string &line);
+  bool process_line_node(std::string_view line);
 
   bool process_f_node(vector_string &words);
   bool process_g_node(vector_string &words);
@@ -101,7 +101,7 @@ protected:
   class VertexEntry {
   public:
     VertexEntry();
-    VertexEntry(const ObjToEggConverter *converter, const std::string &obj_vertex);
+    VertexEntry(const ObjToEggConverter *converter, std::string_view obj_vertex);
 
     INLINE bool operator < (const VertexEntry &other) const;
     INLINE bool operator == (const VertexEntry &other) const;
@@ -119,7 +119,7 @@ protected:
 
   class VertexData {
   public:
-    VertexData(PandaNode *parent, const std::string &name);
+    VertexData(PandaNode *parent, std::string name);
 
     int add_vertex(const ObjToEggConverter *converter, const VertexEntry &entry);
     void add_triangle(const ObjToEggConverter *converter, const VertexEntry &v0,

@@ -29,7 +29,7 @@
  */
 class EXPCL_PANDA_COLLIDE CollisionNode : public PandaNode {
 PUBLISHED:
-  explicit CollisionNode(const std::string &name);
+  explicit CollisionNode(std::string name);
 
 protected:
   CollisionNode(const CollisionNode &copy);

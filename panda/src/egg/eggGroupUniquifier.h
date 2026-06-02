@@ -30,7 +30,7 @@ PUBLISHED:
   virtual std::string get_category(EggNode *node);
   virtual std::string filter_name(EggNode *node);
   virtual std::string generate_name(EggNode *node,
-                               const std::string &category, int index);
+                               std::string_view category, int index);
 
 private:
   bool _filter_names;

@@ -104,13 +104,13 @@ PUBLISHED:
 
   BLOCKING bool read(const Filename &filename, PNMFileType *type = nullptr,
                      bool report_unknown_type = true);
-  BLOCKING bool read(std::istream &data, const std::string &filename = std::string(),
+  BLOCKING bool read(std::istream &data, std::string_view filename = std::string_view(),
                      PNMFileType *type = nullptr,
                      bool report_unknown_type = true);
   BLOCKING bool read(PNMReader *reader);
 
   BLOCKING bool write(const Filename &filename, PNMFileType *type = nullptr) const;
-  BLOCKING bool write(std::ostream &data, const std::string &filename = std::string(),
+  BLOCKING bool write(std::ostream &data, std::string_view filename = std::string_view(),
                       PNMFileType *type = nullptr) const;
   BLOCKING bool write(PNMWriter *writer) const;
 

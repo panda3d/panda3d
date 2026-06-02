@@ -169,7 +169,7 @@ PUBLISHED:
   bool is_basic() const;
   int get_aux_mask() const;
   int get_buffer_mask() const;
-  bool verify_hardware_software(const FrameBufferProperties &props, const std::string &renderer) const;
+  bool verify_hardware_software(const FrameBufferProperties &props, std::string_view renderer) const;
 
   bool setup_color_texture(Texture *tex) const;
   bool setup_depth_texture(Texture *tex) const;

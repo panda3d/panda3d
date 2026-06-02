@@ -31,7 +31,7 @@ class BufferContext;
  */
 class EXPCL_PANDA_GOBJ BufferResidencyTracker {
 public:
-  BufferResidencyTracker(const std::string &pgo_name, const std::string &type_name);
+  BufferResidencyTracker(std::string_view pgo_name, std::string_view type_name);
   ~BufferResidencyTracker();
 
   void begin_frame(Thread *current_thread);

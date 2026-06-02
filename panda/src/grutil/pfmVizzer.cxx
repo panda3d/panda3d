@@ -476,8 +476,8 @@ make_displacement(PNMImage &result, double max_u, double max_v, bool for_32bit) 
 
       // We use the blue channel to mark holes, so we can fill them in later.
       result.set_xel_val(xi, yi,
-                         min(max(u_val, 0), PNM_MAXMAXVAL),
-                         min(max(v_val, 0), PNM_MAXMAXVAL),
+                         std::clamp(u_val, 0, PNM_MAXMAXVAL),
+                         std::clamp(v_val, 0, PNM_MAXMAXVAL),
                          0);
     }
   }
@@ -647,8 +647,8 @@ r_fill_displacement(PNMImage &result, int xi, int yi,
     int u_val = midval + (int)cfloor(x_shift * u_scale + 0.5);
     int v_val = midval + (int)cfloor(y_shift * v_scale + 0.5);
     result.set_xel_val(xi, yi,
-                       min(max(u_val, 0), PNM_MAXMAXVAL),
-                       min(max(v_val, 0), PNM_MAXMAXVAL),
+                       std::clamp(u_val, 0, PNM_MAXMAXVAL),
+                       std::clamp(v_val, 0, PNM_MAXMAXVAL),
                        min(distance, PNM_MAXMAXVAL));
 
     r_fill_displacement(result, xi - 1, yi, nxi, nyi, u_scale, v_scale, distance + 1);

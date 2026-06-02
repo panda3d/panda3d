@@ -22,7 +22,7 @@ using std::string;
 // Extracts the first word of the string into param, and the remainder of the
 // line into value.
 void
-extract_param_value(const string &str, string &param, string &value) {
+extract_param_value(std::string_view str, string &param, string &value) {
   size_t i = 0;
 
   // First, skip all whitespace at the beginning.
@@ -39,7 +39,7 @@ extract_param_value(const string &str, string &param, string &value) {
 
   size_t end = i;
 
-  param = str.substr(start, end - start);
+  param.assign(str.substr(start, end - start));
 
   // Skip a little bit further to the start of the value.
   while (i < str.length() && isspace(str[i])) {
@@ -50,20 +50,20 @@ extract_param_value(const string &str, string &param, string &value) {
 
 
 bool
-parse_image_type_request(const string &word, PNMFileType *&color_type,
+parse_image_type_request(std::string_view word, PNMFileType *&color_type,
                          PNMFileType *&alpha_type) {
   PNMFileTypeRegistry *registry = PNMFileTypeRegistry::get_global_ptr();
   color_type = nullptr;
   alpha_type = nullptr;
 
-  string color_name = word;
+  string color_name(word);
   string alpha_name;
   size_t comma = word.find(',');
-  if (comma != string::npos) {
+  if (comma != std::string_view::npos) {
     // If we have a comma in the image_type, it's two types: a color type and
     // an alpha type.
-    color_name = word.substr(0, comma);
-    alpha_name = word.substr(comma + 1);
+    color_name.assign(word.substr(0, comma));
+    alpha_name.assign(word.substr(comma + 1));
   }
 
   if (!color_name.empty()) {

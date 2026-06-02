@@ -2153,7 +2153,7 @@ get_num_async_transfer_buffers() const {
  * power-2.
  */
 INLINE bool Texture::
-adjust_this_size(int &x_size, int &y_size, const std::string &name,
+adjust_this_size(int &x_size, int &y_size, std::string_view name,
                  bool for_padding) const {
   CDReader cdata(_cycler);
   return do_adjust_this_size(cdata, x_size, y_size, name, for_padding);

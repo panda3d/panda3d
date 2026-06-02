@@ -30,7 +30,7 @@ using std::string;
  * registry key must already exist prior to calling this function.
  */
 bool WindowsRegistry::
-set_string_value(const string &key, const string &name, const string &value,
+set_string_value(const string &key, const string &name, std::string_view value,
         WindowsRegistry::RegLevel rl)
 {
   TextEncoder encoder;
@@ -116,19 +116,19 @@ get_key_type(const string &key, const string &name,
  */
 string WindowsRegistry::
 get_string_value(const string &key, const string &name,
-                 const string &default_value,
+                 std::string_view default_value,
                  WindowsRegistry::RegLevel rl)
 {
   int data_type;
   string data;
   if (!do_get(key, name, data_type, data, rl)) {
-    return default_value;
+    return std::string(default_value);
   }
 
   if (data_type != REG_SZ) {
     express_cat.warning()
       << "Registry key " << key << " does not contain a string value.\n";
-    return default_value;
+    return std::string(default_value);
   }
 
   // Now we have to decode the MultiByte string to Unicode, and re-encode it

@@ -24,8 +24,8 @@
  *
  */
 VrpnTracker::
-VrpnTracker(const std::string &tracker_name, vrpn_Connection *connection) :
-  _tracker_name(tracker_name)
+VrpnTracker(std::string tracker_name, vrpn_Connection *connection) :
+  _tracker_name(std::move(tracker_name))
 {
   _tracker = new vrpn_Tracker_Remote(_tracker_name.c_str(), connection);
 

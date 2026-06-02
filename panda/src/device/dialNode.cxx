@@ -22,8 +22,8 @@ TypeHandle DialNode::_type_handle;
  *
  */
 DialNode::
-DialNode(ClientBase *client, const std::string &device_name) :
-  DataNode(device_name)
+DialNode(ClientBase *client, std::string_view device_name) :
+  DataNode(std::string(device_name))
 {
   nassertv(client != nullptr);
   PT(ClientDevice) device =

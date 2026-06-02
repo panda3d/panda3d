@@ -280,7 +280,7 @@ PUBLISHED:
 #endif // !NDEBUG || !CPPPARSER
 
 PUBLISHED:
-  virtual bool has_extension(const std::string &extension) const;
+  virtual bool has_extension(std::string_view extension) const;
 
   virtual std::string get_driver_vendor();
   virtual std::string get_driver_renderer();

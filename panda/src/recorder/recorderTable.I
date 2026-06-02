@@ -45,12 +45,12 @@ operator = (const RecorderTable &copy) {
  * Adds the named recorder to the set of recorders.
  */
 INLINE void RecorderTable::
-add_recorder(const std::string &name, RecorderBase *recorder) {
+add_recorder(std::string name, RecorderBase *recorder) {
   nassertv(recorder != nullptr);
   recorder->ref();
 
   std::pair<Recorders::iterator, bool> result =
-    _recorders.insert(Recorders::value_type(name, recorder));
+    _recorders.insert(Recorders::value_type(std::move(name), recorder));
 
   if (!result.second) {
     // Take out the previous one first.
@@ -64,7 +64,7 @@ add_recorder(const std::string &name, RecorderBase *recorder) {
  * recorder.
  */
 INLINE RecorderBase *RecorderTable::
-get_recorder(const std::string &name) const {
+get_recorder(std::string_view name) const {
   Recorders::const_iterator ri = _recorders.find(name);
   if (ri != _recorders.end()) {
     return (*ri).second;
@@ -77,7 +77,7 @@ get_recorder(const std::string &name) const {
  * false if there was no such recorder.
  */
 INLINE bool RecorderTable::
-remove_recorder(const std::string &name) {
+remove_recorder(std::string_view name) {
   Recorders::iterator ri = _recorders.find(name);
   if (ri != _recorders.end()) {
     unref_delete(ri->second);

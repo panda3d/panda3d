@@ -27,7 +27,7 @@ class EggXfmAnimData;
  */
 class EXPCL_PANDA_EGG EggXfmSAnim : public EggGroupNode {
 PUBLISHED:
-  INLINE explicit EggXfmSAnim(const std::string &name = "",
+  INLINE explicit EggXfmSAnim(std::string name = "",
                               CoordinateSystem cs = CS_default);
   EggXfmSAnim(const EggXfmAnimData &convert_from);
 
@@ -39,7 +39,7 @@ PUBLISHED:
   INLINE bool has_fps() const;
   INLINE double get_fps() const;
 
-  INLINE void set_order(const std::string &order);
+  INLINE void set_order(std::string order);
   INLINE void clear_order();
   INLINE bool has_order() const;
   INLINE const std::string &get_order() const;
@@ -57,7 +57,7 @@ PUBLISHED:
 
   INLINE void clear_data();
   bool add_data(const LMatrix4d &mat);
-  void add_component_data(const std::string &component_name, double value);
+  void add_component_data(std::string_view component_name, double value);
   void add_component_data(int component, double value);
 
   virtual bool is_anim_matrix() const;
@@ -68,7 +68,7 @@ PUBLISHED:
                                  const LVecBase3d &shear,
                                  const LVecBase3d &hpr,
                                  const LVecBase3d &trans,
-                                 const std::string &order,
+                                 std::string_view order,
                                  CoordinateSystem cs);
 
 protected:
@@ -87,7 +87,7 @@ private:
   std::string _order;
   CoordinateSystem _coordsys;
 
-  static const std::string _standard_order;
+  inline static const std::string _standard_order = "srpht";
 
 public:
 

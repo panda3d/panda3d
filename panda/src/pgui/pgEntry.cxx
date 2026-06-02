@@ -38,8 +38,8 @@ TypeHandle PGEntry::_type_handle;
  *
  */
 PGEntry::
-PGEntry(const string &name) :
-  PGItem(name),
+PGEntry(std::string name) :
+  PGItem(std::move(name)),
   _text(get_text_node()),
   _obscure_text(get_text_node()),
   _candidate_text(get_text_node())

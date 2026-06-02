@@ -40,7 +40,7 @@ PStatCollector(PStatClient *client, int index) :
  * register the collector with; otherwise, the global client is used.
  */
 INLINE PStatCollector::
-PStatCollector(const std::string &name, PStatClient *client) :
+PStatCollector(std::string_view name, PStatClient *client) :
   _level(0.0f)
 {
   if (client == nullptr) {
@@ -66,7 +66,7 @@ PStatCollector(const std::string &name, PStatClient *client) :
  * collector on the same client as its parent.
  */
 INLINE PStatCollector::
-PStatCollector(const PStatCollector &parent, const std::string &name) :
+PStatCollector(const PStatCollector &parent, std::string_view name) :
   _level(0.0f)
 {
   nassertv(parent._client != nullptr);
@@ -485,7 +485,7 @@ PStatCollector()
  * defined, meaning all these functions should compile to nothing.
  */
 INLINE PStatCollector::
-PStatCollector(const std::string &, PStatClient *client) {
+PStatCollector(std::string_view, PStatClient *client) {
   // We need this bogus comparison just to prevent the SGI compiler from
   // dumping core.  It's perfectly meaningless.
 #ifdef mips
@@ -500,7 +500,7 @@ PStatCollector(const std::string &, PStatClient *client) {
  * defined, meaning all these functions should compile to nothing.
  */
 INLINE PStatCollector::
-PStatCollector(const PStatCollector &parent, const std::string &) {
+PStatCollector(const PStatCollector &parent, std::string_view) {
   // We need this bogus comparison just to prevent the SGI compiler from
   // dumping core.  It's perfectly meaningless.
 #ifdef mips

@@ -229,7 +229,7 @@ PUBLISHED:
   };
 
 protected:
-  InputDevice(const std::string &name, DeviceClass dev_class);
+  InputDevice(std::string name, DeviceClass dev_class);
 
 public:
   InputDevice();

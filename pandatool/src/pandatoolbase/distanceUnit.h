@@ -38,7 +38,7 @@ std::string format_long_unit(DistanceUnit unit);
 
 std::ostream &operator << (std::ostream &out, DistanceUnit unit);
 std::istream &operator >> (std::istream &in, DistanceUnit &unit);
-DistanceUnit string_distance_unit(const std::string &str);
+DistanceUnit string_distance_unit(std::string_view str);
 
 double convert_units(DistanceUnit from, DistanceUnit to);
 

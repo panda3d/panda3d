@@ -457,7 +457,7 @@ get_data() const {
  */
 template<class Element>
 INLINE void PointerToArray<Element>::
-set_data(const std::string &data) {
+set_data(std::string_view data) {
   set_subdata(0, size(), data);
 }
 
@@ -489,7 +489,7 @@ get_subdata(size_type n, size_type count) const {
  */
 template<class Element>
 INLINE void PointerToArray<Element>::
-set_subdata(size_type n, size_type count, const std::string &data) {
+set_subdata(size_type n, size_type count, std::string_view data) {
   nassertv((data.length() % sizeof(Element)) == 0);
   nassertv(n <= size() && n + count <= size());
   if ((this->_void_ptr) == nullptr) {

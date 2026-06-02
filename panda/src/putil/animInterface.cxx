@@ -232,7 +232,7 @@ loop(bool restart, double from, double to) {
   _paused_f = 0.0;
 
   if (!restart) {
-    fframe = min(max(fframe, from), to);
+    fframe = std::clamp(fframe, from, to);
     if (_paused) {
       _paused_f = fframe - _start_frame;
     } else {
@@ -263,7 +263,7 @@ pingpong(bool restart, double from, double to) {
   _paused_f = 0.0;
 
   if (!restart) {
-    fframe = min(max(fframe, from), to);
+    fframe = std::clamp(fframe, from, to);
     if (_paused) {
       _paused_f = fframe - _start_frame;
     } else {
@@ -302,7 +302,7 @@ get_full_frame(int increment) const {
   if (_play_mode == PM_play) {
     // In play mode, we never let the return value exceed (_from_frame,
     // _to_frame).
-    frame = min(max(frame, _from_frame), _to_frame);
+    frame = std::clamp(frame, _from_frame, _to_frame);
   }
   return frame;
 }
@@ -326,7 +326,7 @@ get_full_fframe() const {
     return _start_frame;
 
   case PM_play:
-    return min(max(get_f(), 0.0), _play_frames) + _start_frame;
+    return std::clamp(get_f(), 0.0, _play_frames) + _start_frame;
 
   case PM_loop:
     nassertr(_play_frames >= 0.0, 0.0);

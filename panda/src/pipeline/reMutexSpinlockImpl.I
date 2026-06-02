@@ -18,6 +18,6 @@ INLINE void ReMutexSpinlockImpl::
 unlock() {
   assert(_counter > 0);
   if (!--_counter) {
-    AtomicAdjust::set_ptr(_locking_thread, nullptr);
+    _locking_thread.store(nullptr, std::memory_order_release);
   }
 }

@@ -15,9 +15,9 @@
  *
  */
 INLINE CullBinStateSorted::
-CullBinStateSorted(const std::string &name, GraphicsStateGuardianBase *gsg,
+CullBinStateSorted(std::string name, GraphicsStateGuardianBase *gsg,
                    const PStatCollector &draw_region_pcollector) :
-  CullBin(name, BT_state_sorted, gsg, draw_region_pcollector),
+  CullBin(std::move(name), BT_state_sorted, gsg, draw_region_pcollector),
   _objects(get_class_type())
 {
 }

@@ -39,15 +39,15 @@ public:
     EC_failure = 1
   };
 
-  ProgramBase(const std::string &name = std::string());
+  ProgramBase(std::string name = std::string());
   virtual ~ProgramBase();
 
   void show_description();
   void show_usage();
   void show_options();
 
-  INLINE void show_text(const std::string &text);
-  void show_text(const std::string &prefix, int indent_width, std::string text);
+  INLINE void show_text(std::string_view text);
+  void show_text(std::string_view prefix, int indent_width, std::string text);
 
   void write_man_page(std::ostream &out);
 
@@ -66,22 +66,22 @@ protected:
   virtual bool handle_args(Args &args);
   virtual bool post_command_line();
 
-  void set_program_brief(const std::string &brief);
-  void set_program_description(const std::string &description);
+  void set_program_brief(std::string brief);
+  void set_program_description(std::string description);
   void clear_runlines();
-  void add_runline(const std::string &runline);
+  void add_runline(std::string runline);
   void clear_options();
-  void add_option(const std::string &option, const std::string &parm_name,
-                  int index_group, const std::string &description,
+  void add_option(std::string option, std::string parm_name,
+                  int index_group, std::string description,
                   OptionDispatchFunction option_function,
                   bool *bool_var = nullptr,
                   void *option_data = nullptr);
-  void add_option(const std::string &option, const std::string &parm_name,
-                  int index_group, const std::string &description,
+  void add_option(std::string option, std::string parm_name,
+                  int index_group, std::string description,
                   OptionDispatchMethod option_method,
                   bool *bool_var = nullptr,
                   void *option_data = nullptr);
-  bool redescribe_option(const std::string &option, const std::string &description);
+  bool redescribe_option(const std::string &option, std::string description);
   bool remove_option(const std::string &option);
 
   void add_path_replace_options();
@@ -113,8 +113,8 @@ protected:
   static bool handle_help_option(const std::string &opt, const std::string &arg, void *);
 
   static void format_text(std::ostream &out, bool &last_newline,
-                          const std::string &prefix, int indent_width,
-                          const std::string &text, int line_width);
+                          std::string_view prefix, int indent_width,
+                          std::string_view text, int line_width);
 
   PT(PathReplace) _path_replace;
   bool _got_path_store;

@@ -293,7 +293,7 @@ steal_children(EggGroupNode &other) {
  * recursively.
  */
 EggNode *EggGroupNode::
-find_child(const string &name) const {
+find_child(std::string_view name) const {
   Children::const_iterator ci;
   for (ci = _children.begin(); ci != _children.end(); ++ci) {
     EggNode *child = (*ci);
@@ -1696,10 +1696,12 @@ do_compute_vertex_normals(const NVertexGroup &group) {
     const NVertexReference &ref = (*gi);
     EggVertex *vertex = ref._polygon->get_vertex(ref._vertex);
     EggVertexPool *pool = vertex->get_pool();
+    nassertd(pool != nullptr) continue;
 
     EggVertex new_vertex(*vertex);
     new_vertex.set_normal(normal);
     EggVertex *unique = pool->create_unique_vertex(new_vertex);
+    nassertd(unique != nullptr) continue;
     unique->copy_grefs_from(*vertex);
 
     ref._polygon->set_vertex(ref._vertex, unique);

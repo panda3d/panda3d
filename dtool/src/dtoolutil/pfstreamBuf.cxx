@@ -24,18 +24,6 @@ PipeStreamBuf::PipeStreamBuf(PipeStreamBuf::Direction dir) :
   _dir(dir)
 {
   init_pipe();
-
-#ifndef PHAVE_IOSTREAM
-  // These lines, which are essential on older implementations of the iostream
-  // library, are not understood by more recent versions.
-  allocate();
-  assert((dir == Input) || (dir == Output));
-  if (dir == Input) {
-    setg(base(), ebuf(), ebuf());
-  } else {
-    setp(base(), ebuf());
-  }
-#endif /* PHAVE_IOSTREAM */
 }
 
 PipeStreamBuf::
@@ -109,22 +97,14 @@ int PipeStreamBuf::underflow(void) {
   if (eof_pipe()) {
     return EOF;
   }
-#ifdef PHAVE_IOSTREAM
   size_t len = 4096;
-#else /* PHAVE_IOSTREAM */
-  size_t len = ebuf() - base();
-#endif /* PHAVE_IOSTREAM */
   char* buf = new char[len];
   size_t n = read_pipe(buf, len);
   int ret = buf[0];
   if (n == 0)
     ret = EOF;
   else {
-#ifdef PHAVE_IOSTREAM
     memcpy(eback()+(len-n), buf, n);
-#else /* PHAVE_IOSTREAM */
-    memcpy(base()+(len-n), buf, n);
-#endif /* PHAVE_IOSTREAM */
     gbump(-((int)n));
   }
   delete[] buf;

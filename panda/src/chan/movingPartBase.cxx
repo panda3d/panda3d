@@ -26,8 +26,8 @@ TypeHandle MovingPartBase::_type_handle;
  *
  */
 MovingPartBase::
-MovingPartBase(PartGroup *parent, const std::string &name) :
-  PartGroup(parent, name),
+MovingPartBase(PartGroup *parent, std::string name) :
+  PartGroup(parent, std::move(name)),
   _effective_control(nullptr)
 {
 }

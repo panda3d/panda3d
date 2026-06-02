@@ -25,7 +25,7 @@ TypeHandle XFileDataNodeTemplate::_type_handle;
  *
  */
 XFileDataNodeTemplate::
-XFileDataNodeTemplate(XFile *x_file, const string &name,
+XFileDataNodeTemplate(XFile *x_file, std::string_view name,
                       XFileTemplate *xtemplate) :
   XFileDataNode(x_file, name, xtemplate)
 {
@@ -79,9 +79,9 @@ add_parse_int(PTA_int int_list) {
  * will later be processed by finalize_parse_data().
  */
 void XFileDataNodeTemplate::
-add_parse_string(const string &str) {
+add_parse_string(std::string str) {
   XFileParseData pdata;
-  pdata._string = str;
+  pdata._string = std::move(str);
   pdata._parse_flags = XFileParseData::PF_string;
 
   _parse_data_list._list.push_back(pdata);
@@ -216,7 +216,7 @@ get_element(int n) {
  * name.
  */
 XFileDataObject *XFileDataNodeTemplate::
-get_element(const string &name) {
+get_element(std::string_view name) {
   int child_index = _template->find_child_index(name);
   if (child_index >= 0) {
     return get_element(child_index);

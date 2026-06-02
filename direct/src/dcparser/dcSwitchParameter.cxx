@@ -155,8 +155,8 @@ apply_switch(const char *value_data, size_t length) const {
  * identifier.
  */
 void DCSwitchParameter::
-output_instance(std::ostream &out, bool brief, const string &prename,
-                const string &name, const string &postname) const {
+output_instance(std::ostream &out, bool brief, std::string_view prename,
+                std::string_view name, std::string_view postname) const {
   if (get_typedef() != nullptr) {
     output_typedef_name(out, brief, prename, name, postname);
 
@@ -171,8 +171,8 @@ output_instance(std::ostream &out, bool brief, const string &prename,
  */
 void DCSwitchParameter::
 write_instance(std::ostream &out, bool brief, int indent_level,
-               const string &prename, const string &name,
-               const string &postname) const {
+               std::string_view prename, std::string_view name,
+               std::string_view postname) const {
   if (get_typedef() != nullptr) {
     write_typedef_name(out, brief, indent_level, prename, name, postname);
 

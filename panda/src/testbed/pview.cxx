@@ -251,8 +251,8 @@ report_version() {
 //
 class AdjustCameraClipPlanesTask : public AsyncTask {
 public:
-  AdjustCameraClipPlanesTask(const std::string &name, Camera *camera) :
-    AsyncTask(name), _camera(camera), _lens(camera->get_lens(0)), _sphere(nullptr)
+  AdjustCameraClipPlanesTask(std::string name, Camera *camera) :
+    AsyncTask(std::move(name)), _camera(camera), _lens(camera->get_lens(0)), _sphere(nullptr)
   {
     NodePath np = framework.get_models();
     PT(BoundingVolume) volume = np.get_bounds();

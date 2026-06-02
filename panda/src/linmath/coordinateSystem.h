@@ -36,7 +36,7 @@ enum CoordinateSystem {
 };
 
 EXPCL_PANDA_LINMATH CoordinateSystem get_default_coordinate_system();
-EXPCL_PANDA_LINMATH CoordinateSystem parse_coordinate_system_string(const std::string &str);
+EXPCL_PANDA_LINMATH CoordinateSystem parse_coordinate_system_string(std::string_view str);
 EXPCL_PANDA_LINMATH std::string format_coordinate_system(CoordinateSystem cs);
 EXPCL_PANDA_LINMATH bool is_right_handed(CoordinateSystem cs = CS_default);
 

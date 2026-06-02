@@ -41,7 +41,7 @@ TypeHandle CollisionVisualizer::_type_handle;
  *
  */
 CollisionVisualizer::
-CollisionVisualizer(const std::string &name) : PandaNode(name), _lock("CollisionVisualizer") {
+CollisionVisualizer(std::string name) : PandaNode(std::move(name)), _lock("CollisionVisualizer") {
   set_cull_callback();
   set_renderable();
 

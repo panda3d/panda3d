@@ -50,18 +50,18 @@ public:
   INLINE const std::string &get_realm() const;
   INLINE const vector_string &get_domain() const;
 
-  virtual std::string generate(HTTPEnum::Method method, const std::string &request_path,
-                          const std::string &username, const std::string &body)=0;
+  virtual std::string generate(HTTPEnum::Method method, std::string_view request_path,
+                               std::string_view username, std::string_view body)=0;
 
   static void parse_authentication_schemes(AuthenticationSchemes &schemes,
-                                           const std::string &field_value);
+                                           std::string_view field_value);
   static URLSpec get_canonical_url(const URLSpec &url);
-  static std::string base64_encode(const std::string &s);
-  static std::string base64_decode(const std::string &s);
+  static std::string base64_encode(std::string_view s);
+  static std::string base64_decode(std::string_view s);
 
 protected:
   static size_t scan_quoted_or_unquoted_string(std::string &result,
-                                               const std::string &source,
+                                               std::string_view source,
                                                size_t start);
 
 protected:

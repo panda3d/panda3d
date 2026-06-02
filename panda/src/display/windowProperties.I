@@ -182,8 +182,8 @@ clear_size() {
  * Specifies the title that should be assigned to the window.
  */
 INLINE void WindowProperties::
-set_title(const std::string &title) {
-  _title = title;
+set_title(std::string title) {
+  _title = std::move(title);
   _specified |= S_title;
 }
 

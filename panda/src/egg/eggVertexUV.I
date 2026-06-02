@@ -17,18 +17,18 @@
  * the texture coordinate name "default" is mapped to the empty string.
  */
 INLINE std::string EggVertexUV::
-filter_name(const std::string &name) {
+filter_name(std::string_view name) {
   if (name == "default") {
     return std::string();
   }
-  return name;
+  return std::string(name);
 }
 
 /**
  *
  */
 INLINE void EggVertexUV::
-set_name(const std::string &name) {
+set_name(std::string name) {
   Namable::set_name(filter_name(name));
 }
 

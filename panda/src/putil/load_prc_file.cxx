@@ -78,12 +78,12 @@ load_prc_file(const Filename &filename) {
  * loaded prc files is listed.
  */
 EXPCL_PANDA_PUTIL ConfigPage *
-load_prc_file_data(const std::string &name, const std::string &data) {
+load_prc_file_data(std::string name, const std::string &data) {
   std::istringstream strm(data);
 
   ConfigPageManager *cp_mgr = ConfigPageManager::get_global_ptr();
 
-  ConfigPage *page = cp_mgr->make_explicit_page(name);
+  ConfigPage *page = cp_mgr->make_explicit_page(std::move(name));
   bool read_ok = page->read_prc(strm);
 
   if (read_ok) {

@@ -383,7 +383,7 @@ create_unique_material(const EggMaterial &copy, int eq) {
  * matches.
  */
 EggMaterial *EggMaterialCollection::
-find_mref(const std::string &mref_name) const {
+find_mref(std::string_view mref_name) const {
   // This requires a complete linear traversal, not terribly efficient.
   OrderedMaterials::const_iterator oti;
   for (oti = _ordered_materials.begin();

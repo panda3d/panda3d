@@ -15,7 +15,7 @@
  *
  */
 INLINE EggAnimPreload::
-EggAnimPreload(const std::string &name) : EggNode(name) {
+EggAnimPreload(std::string name) : EggNode(std::move(name)) {
   _has_fps = false;
   _has_num_frames = false;
 }

@@ -27,7 +27,7 @@
  */
 class DXFLayer : public Namable {
 public:
-  DXFLayer(const std::string &name);
+  DXFLayer(std::string name);
   virtual ~DXFLayer();
 };
 

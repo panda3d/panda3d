@@ -24,7 +24,7 @@
  */
 class EXPCL_PANDA_EGG EggPatch : public EggPrimitive {
 PUBLISHED:
-  INLINE explicit EggPatch(const std::string &name = "");
+  INLINE explicit EggPatch(std::string name = "");
   INLINE EggPatch(const EggPatch &copy);
   INLINE EggPatch &operator = (const EggPatch &copy);
 

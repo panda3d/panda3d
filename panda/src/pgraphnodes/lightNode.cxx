@@ -23,8 +23,8 @@ TypeHandle LightNode::_type_handle;
  *
  */
 LightNode::
-LightNode(const std::string &name) :
-  PandaNode(name)
+LightNode(std::string name) :
+  PandaNode(std::move(name))
 {
 }
 

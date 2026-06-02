@@ -92,8 +92,8 @@ convert_file(const Filename &filename) {
  *
  */
 DXFLayer *DXFToEggConverter::
-new_layer(const std::string &name) {
-  return new DXFToEggLayer(name, get_egg_data());
+new_layer(std::string name) {
+  return new DXFToEggLayer(std::move(name), get_egg_data());
 }
 
 /**

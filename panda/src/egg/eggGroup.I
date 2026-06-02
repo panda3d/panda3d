@@ -127,8 +127,8 @@ get_cs_type() const {
  *
  */
 INLINE void EggGroup::
-set_collision_name(const std::string &collision_name) {
-  _collision_name = collision_name;
+set_collision_name(std::string collision_name) {
+  _collision_name = std::move(collision_name);
 }
 
 /**
@@ -259,8 +259,8 @@ get_switch_fps() const {
  *
  */
 INLINE void EggGroup::
-add_object_type(const std::string &object_type) {
-  _object_types.push_back(object_type);
+add_object_type(std::string object_type) {
+  _object_types.push_back(std::move(object_type));
 }
 
 /**
@@ -717,8 +717,8 @@ get_lod() const {
  * of any one key's value.
  */
 INLINE void EggGroup::
-set_tag(const std::string &key, const std::string &value) {
-  _tag_data[key] = value;
+set_tag(std::string key, std::string value) {
+  _tag_data[std::move(key)] = std::move(value);
 }
 
 /**
@@ -727,7 +727,7 @@ set_tag(const std::string &key, const std::string &value) {
  * the empty string.
  */
 INLINE std::string EggGroup::
-get_tag(const std::string &key) const {
+get_tag(std::string_view key) const {
   TagData::const_iterator ti;
   ti = _tag_data.find(key);
   if (ti != _tag_data.end()) {
@@ -742,7 +742,7 @@ get_tag(const std::string &key) const {
  * set.
  */
 INLINE bool EggGroup::
-has_tag(const std::string &key) const {
+has_tag(std::string_view key) const {
   TagData::const_iterator ti;
   ti = _tag_data.find(key);
   return (ti != _tag_data.end());
@@ -753,8 +753,11 @@ has_tag(const std::string &key) const {
  * call to clear_tag(), has_tag() will return false for the indicated key.
  */
 INLINE void EggGroup::
-clear_tag(const std::string &key) {
-  _tag_data.erase(key);
+clear_tag(std::string_view key) {
+  TagData::iterator ti = _tag_data.find(key);
+  if (ti != _tag_data.end()) {
+    _tag_data.erase(ti);
+  }
 }
 
 /**

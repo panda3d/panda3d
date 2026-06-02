@@ -24,7 +24,6 @@
 #include "mutexHolder.h"
 #include "lightMutexHolder.h"
 #include "pnotify.h"
-#include "atomicAdjust.h"
 #include "config_downloader.h"
 
 using std::min;
@@ -62,7 +61,7 @@ get_socket() const {
  *
  */
 ConnectionReader::ReaderThread::
-ReaderThread(ConnectionReader *reader, const std::string &thread_name,
+ReaderThread(ConnectionReader *reader, std::string_view thread_name,
              int thread_index) :
   Thread(make_thread_name(thread_name, thread_index),
          make_thread_name(thread_name, thread_index)),
@@ -87,7 +86,7 @@ thread_main() {
  */
 ConnectionReader::
 ConnectionReader(ConnectionManager *manager, int num_threads,
-                 const std::string &thread_name) :
+                 std::string_view thread_name) :
   _manager(manager)
 {
   if (!Thread::is_threading_supported()) {
@@ -111,9 +110,9 @@ ConnectionReader(ConnectionManager *manager, int num_threads,
   _next_index = 0;
   _num_results = 0;
 
-  _currently_polling_thread = -1;
+  _currently_polling_thread.store(-1, std::memory_order_relaxed);
 
-  std::string reader_thread_name = thread_name;
+  std::string reader_thread_name(thread_name);
   if (thread_name.empty()) {
     reader_thread_name = "ReaderThread";
   }
@@ -827,7 +826,7 @@ get_next_available_socket(bool allow_block, int current_thread_index) {
       // First, report to anyone else who cares that we're the thread about to
       // do the poll.  That way, if any new sockets come available while we're
       // polling, we can service them.
-      AtomicAdjust::set(_currently_polling_thread, current_thread_index);
+      _currently_polling_thread.store(current_thread_index, std::memory_order_relaxed);
 
       rebuild_select_list();
 
@@ -864,7 +863,7 @@ get_next_available_socket(bool allow_block, int current_thread_index) {
       }
     } while (!_shutdown && interrupted);
 
-    AtomicAdjust::set(_currently_polling_thread, current_thread_index);
+    _currently_polling_thread.store(current_thread_index, std::memory_order_relaxed);
 
     // Repeat the above until we (a) find a socket with actual noise on it, or
     // (b) return from PR_Poll() with no sockets available.

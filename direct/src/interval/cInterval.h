@@ -35,7 +35,7 @@ class CIntervalManager;
  */
 class EXPCL_DIRECT_INTERVAL CInterval : public TypedReferenceCount {
 public:
-  CInterval(const std::string &name, double duration, bool open_ended);
+  CInterval(std::string name, double duration, bool open_ended);
   virtual ~CInterval();
 
 PUBLISHED:
@@ -64,7 +64,7 @@ PUBLISHED:
   INLINE State get_state() const;
   INLINE bool is_stopped() const;
 
-  INLINE void set_done_event(const std::string &event);
+  INLINE void set_done_event(std::string event);
   INLINE const std::string &get_done_event() const;
 
   void set_t(double t);

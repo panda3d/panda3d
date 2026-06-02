@@ -42,6 +42,7 @@ PUBLISHED:
   };
 
 private:
+  friend class StaticObject<RescaleNormalAttrib>;
   INLINE RescaleNormalAttrib(Mode mode);
 
 PUBLISHED:

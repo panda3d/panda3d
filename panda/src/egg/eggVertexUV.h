@@ -28,14 +28,14 @@
  */
 class EXPCL_PANDA_EGG EggVertexUV : public EggNamedObject {
 PUBLISHED:
-  explicit EggVertexUV(const std::string &name, const LTexCoordd &uv);
-  explicit EggVertexUV(const std::string &name, const LTexCoord3d &uvw);
+  explicit EggVertexUV(std::string name, const LTexCoordd &uv);
+  explicit EggVertexUV(std::string name, const LTexCoord3d &uvw);
   EggVertexUV(const EggVertexUV &copy);
   EggVertexUV &operator = (const EggVertexUV &copy);
   virtual ~EggVertexUV();
 
-  INLINE static std::string filter_name(const std::string &name);
-  INLINE void set_name(const std::string &name);
+  INLINE static std::string filter_name(std::string_view name);
+  INLINE void set_name(std::string name);
 
   INLINE int get_num_dimensions() const;
   INLINE bool has_w() const;

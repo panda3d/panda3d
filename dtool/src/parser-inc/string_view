@@ -1,0 +1,22 @@
+#pragma once
+
+#include <compare>
+
+namespace std {
+  template<class charT> struct char_traits;
+  template<class CharT, class Traits = char_traits<CharT>>
+  class basic_string_view;
+
+  using string_view    = std::basic_string_view<char>;
+  using u8string_view  = std::basic_string_view<char8_t>;
+  using u16string_view = std::basic_string_view<char16_t>;
+  using u32string_view = std::basic_string_view<char32_t>;
+  using wstring_view   = std::basic_string_view<wchar_t>;
+
+  template<class T> struct hash;
+  template<> struct hash<string_view>;
+  template<> struct hash<u8string_view>;
+  template<> struct hash<u16string_view>;
+  template<> struct hash<u32string_view>;
+  template<> struct hash<wstring_view>;
+}

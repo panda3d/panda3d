@@ -303,7 +303,7 @@ read(const Filename &filename, PNMFileType *type, bool report_unknown_type) {
  * Returns true if successful, false on error.
  */
 bool PNMImage::
-read(std::istream &data, const std::string &filename, PNMFileType *type,
+read(std::istream &data, std::string_view filename, PNMFileType *type,
      bool report_unknown_type) {
   PNMReader *reader = PNMImageHeader::make_reader
     (&data, false, filename, std::string(), type, report_unknown_type);
@@ -412,7 +412,7 @@ write(const Filename &filename, PNMFileType *type) const {
  * write.
  */
 bool PNMImage::
-write(std::ostream &data, const std::string &filename, PNMFileType *type) const {
+write(std::ostream &data, std::string_view filename, PNMFileType *type) const {
   if (!is_valid()) {
     return false;
   }
@@ -598,9 +598,9 @@ set_color_space(ColorSpace color_space) {
         for (int y = 0; y < _y_size; ++y) {
           LRGBColorf scaled = get_xel(x, y) * 8192.f + 4096.5f;
           xel &col = row(y)[x];
-          col.r = min(max(0, (int)scaled[0]), 65535);
-          col.g = min(max(0, (int)scaled[1]), 65535);
-          col.b = min(max(0, (int)scaled[2]), 65535);
+          col.r = std::clamp((int)scaled[0], 0, 65535);
+          col.g = std::clamp((int)scaled[1], 0, 65535);
+          col.b = std::clamp((int)scaled[2], 0, 65535);
         }
       }
       _maxval = 65535;

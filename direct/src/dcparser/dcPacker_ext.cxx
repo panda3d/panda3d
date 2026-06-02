@@ -252,10 +252,9 @@ unpack_object() {
         }
       }
     }
-    // Fall through (if no constructor)
-
     // If we don't know what kind of class object it is, or it doesn't have a
     // constructor, fall through and make a tuple.
+    [[fallthrough]];
   default:
     {
       // First, build up a list from the nested objects.

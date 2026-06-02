@@ -2616,7 +2616,7 @@ ensure_generated_shader(const RenderState *state) {
  * string.  This currently is only implemented by the OpenGL back-end.
  */
 bool GraphicsStateGuardian::
-has_extension(const string &extension) const {
+has_extension(std::string_view extension) const {
   return false;
 }
 

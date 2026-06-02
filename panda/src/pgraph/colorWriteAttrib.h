@@ -40,6 +40,7 @@ PUBLISHED:
   };
 
 private:
+  friend class StaticObject<ColorWriteAttrib>;
   INLINE ColorWriteAttrib(unsigned int channels = C_all);
 
 PUBLISHED:
@@ -86,7 +87,8 @@ public:
     RenderAttrib::init_type();
     register_type(_type_handle, "ColorWriteAttrib",
                   RenderAttrib::get_class_type());
-    _attrib_slot = register_slot(_type_handle, 100, new ColorWriteAttrib);
+    static StaticObject<ColorWriteAttrib> default_attrib;
+    _attrib_slot = register_slot(_type_handle, 100, default_attrib);
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

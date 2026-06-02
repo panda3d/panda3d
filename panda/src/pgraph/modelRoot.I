@@ -15,9 +15,9 @@
  *
  */
 INLINE ModelRoot::
-ModelRoot(const std::string &name) :
+ModelRoot(std::string name) :
   ModelNode(name),
-  _fullpath(name),
+  _fullpath(std::move(name)),
   _timestamp(0),
   _reference(new ModelRoot::ModelReference),
   _loader_type(TypeHandle::none())

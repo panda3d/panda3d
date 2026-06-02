@@ -26,10 +26,10 @@ NodePath() :
  * PandaNode is created with the indicated name.
  */
 INLINE NodePath::
-NodePath(const std::string &top_node_name, Thread *current_thread) :
+NodePath(std::string top_node_name, Thread *current_thread) :
   _error_type(ET_ok)
 {
-  PandaNode *top_node = new PandaNode(top_node_name);
+  PandaNode *top_node = new PandaNode(std::move(top_node_name));
   int pipeline_stage = current_thread->get_pipeline_stage();
   _head = top_node->get_generic_component(false, pipeline_stage, current_thread);
   _backup_key = 0;
@@ -386,10 +386,10 @@ get_parent(Thread *current_thread) const {
  * returning a new NodePath that references it.
  */
 INLINE NodePath NodePath::
-attach_new_node(const std::string &name, int sort, Thread *current_thread) const {
+attach_new_node(std::string name, int sort, Thread *current_thread) const {
   nassertr(verify_complete(current_thread), NodePath::fail());
 
-  return attach_new_node(new PandaNode(name), sort, current_thread);
+  return attach_new_node(new PandaNode(std::move(name)), sort, current_thread);
 }
 
 /**
@@ -1741,7 +1741,7 @@ clear_project_texture(TextureStage *stage) {
  * string for the default texture coordinate set.
  */
 INLINE bool NodePath::
-has_texcoord(const std::string &texcoord_name) const {
+has_texcoord(std::string_view texcoord_name) const {
   return has_vertex_column(InternalName::get_texcoord_name(texcoord_name));
 }
 
@@ -2089,9 +2089,9 @@ list_tags() const {
  * Changes the name of the referenced node.
  */
 INLINE void NodePath::
-set_name(const std::string &name) {
+set_name(std::string name) {
   nassertv_always(!is_empty());
-  node()->set_name(name);
+  node()->set_name(std::move(name));
 }
 
 /**
