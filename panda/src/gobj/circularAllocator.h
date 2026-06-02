@@ -18,12 +18,22 @@
 #include "linkedListNode.h"
 #include "pmutex.h"
 #include "mutexHolder.h"
+#include "patomic.h"
 
 /**
  * An implementation of a very simple thread-safe circular allocator.
  * Contiguousness of allocations is enforced.  In order to free memory, you
- * need to call get_head() after an allocation, then call set_tail(offset)
- * later.
+ * need to call get_head() after making all the allocations that you want to
+ * reclaim, then call set_tail(offset) once you are done with them.  Freeing is
+ * therefore coarse and contiguous: you can't release an individual allocation,
+ * in the middle, and get_head() is only meaningful at a serialized point.
+ *
+ * Note that this is thread-safe only in the sense that alloc() may be called
+ * from several threads at once, and each caller gets its own non-overlapping
+ * region.  However, it only reserves the space; external synchronization is
+ * still needed to ensure subsequent writes are visible to other threads.
+ * Freeing must be done by a single thread, but is thread-safe against
+ * simultaneous calls to alloc().
  *
  * Note that it's not possible to fill the buffer up entirely unless the tail
  * happens to be positioned at 0.
@@ -32,9 +42,9 @@ class EXPCL_PANDA_GOBJ CircularAllocator {
 public:
   constexpr CircularAllocator() = default;
   INLINE explicit CircularAllocator(size_t capacity, size_t min_alignment=0);
-  CircularAllocator(CircularAllocator &&from) noexcept = default;
+  INLINE CircularAllocator(CircularAllocator &&from) noexcept;
 
-  CircularAllocator &operator = (CircularAllocator &&from) noexcept = default;
+  INLINE CircularAllocator &operator = (CircularAllocator &&from) noexcept;
 
   ptrdiff_t alloc(size_t size, size_t alignment=0);
 
@@ -48,8 +58,8 @@ public:
   INLINE void set_tail(size_t tail);
 
 protected:
-  AtomicAdjust::Integer _head = 0;
-  AtomicAdjust::Integer _tail = 0;
+  patomic<size_t> _head = 0;
+  patomic<size_t> _tail = 0;
   size_t _capacity = 0;
   size_t _min_alignment = 0;
 };

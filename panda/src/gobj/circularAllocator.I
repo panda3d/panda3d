@@ -24,12 +24,37 @@ CircularAllocator(size_t capacity, size_t min_alignment) :
 }
 
 /**
+ * The atomic members force us to spell out the move operations.  Moves only
+ * happen during setup, when the source is quiescent, so relaxed suffices.
+ */
+INLINE CircularAllocator::
+CircularAllocator(CircularAllocator &&from) noexcept :
+  _head(from._head.load(std::memory_order_relaxed)),
+  _tail(from._tail.load(std::memory_order_relaxed)),
+  _capacity(from._capacity),
+  _min_alignment(from._min_alignment)
+{
+}
+
+/**
+ * See the move constructor.
+ */
+INLINE CircularAllocator &CircularAllocator::
+operator = (CircularAllocator &&from) noexcept {
+  _head.store(from._head.load(std::memory_order_relaxed), std::memory_order_relaxed);
+  _tail.store(from._tail.load(std::memory_order_relaxed), std::memory_order_relaxed);
+  _capacity = from._capacity;
+  _min_alignment = from._min_alignment;
+  return *this;
+}
+
+/**
  * Frees all memory.
  */
 INLINE void CircularAllocator::
 reset() {
-  _head = 0;
-  _tail = 0;
+  _head.store(0, std::memory_order_relaxed);
+  _tail.store(0, std::memory_order_relaxed);
 }
 
 /**
@@ -37,8 +62,8 @@ reset() {
  */
 INLINE void CircularAllocator::
 reset(size_t capacity) {
-  _head = 0;
-  _tail = 0;
+  _head.store(0, std::memory_order_relaxed);
+  _tail.store(0, std::memory_order_relaxed);
   _capacity = capacity;
 }
 
@@ -63,7 +88,7 @@ get_size() const {
  */
 INLINE size_t CircularAllocator::
 get_head() const {
-  return (size_t)AtomicAdjust::get(_head);
+  return _head.load(std::memory_order_relaxed);
 }
 
 /**
@@ -71,14 +96,14 @@ get_head() const {
  */
 INLINE size_t CircularAllocator::
 get_tail() const {
-  return (size_t)AtomicAdjust::get(_tail);
+  return _tail.load(std::memory_order_acquire);
 }
 
 /**
- * Sets the tail of the buffer, or the "read pointer", freeng up the memory
+ * Sets the tail of the buffer, or the "read pointer", freeing up the memory
  * up to the given offset.
  */
 INLINE void CircularAllocator::
 set_tail(size_t tail) {
-  AtomicAdjust::set(_tail, tail);
+  _tail.store(tail, std::memory_order_release);
 }

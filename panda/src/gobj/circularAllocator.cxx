@@ -28,6 +28,7 @@ alloc(size_t size, size_t alignment) {
   size_t prev_head;
   size_t this_head;
   size_t next_head;
+  size_t expected;
   do {
     prev_head = get_head();
 
@@ -81,8 +82,11 @@ alloc(size_t size, size_t alignment) {
         return -1;
       }
     }
+    expected = prev_head;
   }
-  while ((size_t)AtomicAdjust::compare_and_exchange(_head, prev_head, next_head) != prev_head);
+  while (!_head.compare_exchange_weak(expected, next_head,
+                                      std::memory_order_relaxed,
+                                      std::memory_order_relaxed));
 
   return (ptrdiff_t)this_head;
 }
