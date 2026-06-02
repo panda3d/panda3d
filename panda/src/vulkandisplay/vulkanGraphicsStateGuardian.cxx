@@ -702,10 +702,10 @@ reset() {
   // Fill in the features supported by this physical device.
   _is_hardware = (pipe->_gpu_properties.deviceType != VK_PHYSICAL_DEVICE_TYPE_CPU);
 
-  _max_vertices_per_array = std::max((uint32_t)0x7fffffff, limits.maxDrawIndexedIndexValue);
+  _max_vertices_per_array = std::min((uint32_t)0x7fffffff, limits.maxDrawIndexedIndexValue);
   _max_vertices_per_primitive = INT_MAX;
 
-  _max_texture_stages = std::max((uint32_t)0x7fffffff, std::min(limits.maxPerStageDescriptorSampledImages, std::min(limits.maxDescriptorSetSampledImages, limits.maxPerStageDescriptorSampledImages)));
+  _max_texture_stages = std::min({(uint32_t)0x7fffffff, limits.maxPerStageDescriptorSampledImages, limits.maxDescriptorSetSampledImages});
   _max_texture_dimension = limits.maxImageDimension2D;
   _max_3d_texture_dimension = limits.maxImageDimension3D;
   _max_2d_texture_array_layers = limits.maxImageArrayLayers;
