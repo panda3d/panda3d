@@ -50,10 +50,8 @@ public:
   pvector<VulkanMemoryBlock> _pending_free;
   pvector<VkBuffer> _pending_destroy_buffers;
   pvector<VkBufferView> _pending_destroy_buffer_views;
-  pvector<VkFramebuffer> _pending_destroy_framebuffers;
   pvector<VkImage> _pending_destroy_images;
   pvector<VkImageView> _pending_destroy_image_views;
-  pvector<VkRenderPass> _pending_destroy_render_passes;
   pvector<VkSampler> _pending_destroy_samplers;
   pvector<VkSemaphore> _pending_destroy_semaphores;
   pvector<VkDescriptorSet> _pending_free_descriptor_sets;

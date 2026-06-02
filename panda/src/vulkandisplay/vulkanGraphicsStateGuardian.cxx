@@ -131,6 +131,19 @@ reset() {
   VulkanGraphicsPipe *pipe;
   DCAST_INTO_V(pipe, get_pipe());
 
+  // Dynamic rendering is required; we no longer support the legacy render pass
+  // code path.  Bail out with a clear error if the GPU/driver lacks it.
+  if (!pipe->_gpu_supports_dynamic_rendering) {
+    vulkandisplay_cat.error()
+      << "The Vulkan renderer requires support for dynamic rendering "
+         "(Vulkan 1.3 or the VK_KHR_dynamic_rendering extension), which is "
+         "not available on this device.  Please update your graphics drivers "
+         "or use a different graphics API.\n";
+    _is_valid = false;
+    _needs_reset = true;
+    return;
+  }
+
   _vkSetDebugUtilsObjectName = pipe->_vkSetDebugUtilsObjectName;
 
   const VkPhysicalDeviceLimits &limits = pipe->_gpu_properties.limits;
@@ -181,16 +194,11 @@ reset() {
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES,
     enabled_features.pNext,
   };
-  if (pipe->_gpu_supports_dynamic_rendering) {
-    dr_features.dynamicRendering = VK_TRUE;
-    enabled_features.pNext = &dr_features;
+  dr_features.dynamicRendering = VK_TRUE;
+  enabled_features.pNext = &dr_features;
 
-    if (pipe->_gpu_properties.apiVersion < VK_MAKE_VERSION(1, 3, 0)) {
-      extensions.push_back(VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME);
-    }
-    _supports_dynamic_rendering = true;
-  } else {
-    _supports_dynamic_rendering = false;
+  if (pipe->_gpu_properties.apiVersion < VK_MAKE_VERSION(1, 3, 0)) {
+    extensions.push_back(VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME);
   }
 
   VkPhysicalDeviceCustomBorderColorFeaturesEXT cbc_features = {
@@ -366,10 +374,8 @@ reset() {
   _vkCmdWriteTimestamp2 = (PFN_vkCmdWriteTimestamp2)vkGetDeviceProcAddr(_device, "vkCmdWriteTimestamp2");
   _vkUpdateDescriptorSets = (PFN_vkUpdateDescriptorSets)vkGetDeviceProcAddr(_device, "vkUpdateDescriptorSets");
 
-  if (_supports_dynamic_rendering) {
-    _vkCmdBeginRendering = (PFN_vkCmdBeginRendering)vkGetDeviceProcAddr(_device, "vkCmdBeginRendering");
-    _vkCmdEndRendering = (PFN_vkCmdEndRendering)vkGetDeviceProcAddr(_device, "vkCmdEndRendering");
-  }
+  _vkCmdBeginRendering = (PFN_vkCmdBeginRendering)vkGetDeviceProcAddr(_device, "vkCmdBeginRendering");
+  _vkCmdEndRendering = (PFN_vkCmdEndRendering)vkGetDeviceProcAddr(_device, "vkCmdEndRendering");
 
   if (_supports_extended_dynamic_state2) {
     if (pipe->_gpu_properties.apiVersion >= VK_MAKE_VERSION(1, 3, 0)) {
@@ -3595,11 +3601,6 @@ finish_frame(FrameData &frame_data) {
   }
   frame_data._pending_destroy_buffers.clear();
 
-  for (VkFramebuffer framebuffer : frame_data._pending_destroy_framebuffers) {
-    vkDestroyFramebuffer(_device, framebuffer, nullptr);
-  }
-  frame_data._pending_destroy_framebuffers.clear();
-
   for (VkImageView image_view : frame_data._pending_destroy_image_views) {
     vkDestroyImageView(_device, image_view, nullptr);
   }
@@ -3609,11 +3610,6 @@ finish_frame(FrameData &frame_data) {
     vkDestroyImage(_device, image, nullptr);
   }
   frame_data._pending_destroy_images.clear();
-
-  for (VkRenderPass render_pass : frame_data._pending_destroy_render_passes) {
-    vkDestroyRenderPass(_device, render_pass, nullptr);
-  }
-  frame_data._pending_destroy_render_passes.clear();
 
   for (VkSampler sampler : frame_data._pending_destroy_samplers) {
     vkDestroySampler(_device, sampler, nullptr);
@@ -4492,8 +4488,6 @@ bool VulkanGraphicsStateGuardian::
 framebuffer_copy_to_texture(Texture *tex, int view, int z,
                             const DisplayRegion *dr, const RenderBuffer &rb) {
 
-  // You're not allowed to call this while a render pass is active.
-  nassertr(_render_pass == VK_NULL_HANDLE, false);
   nassertr(!_closing_gsg, false);
 
   VulkanTextureContext *fbtc;
@@ -4617,8 +4611,6 @@ framebuffer_copy_to_ram(Texture *tex, int view, int z, const DisplayRegion *dr,
   // until the next end_frame().  This seems to be okay given existing usage,
   // and it prevents having to do the equivalent of glFinish() mid-render.
 
-  // You're not allowed to call this while a render pass is active.
-  nassertr(_render_pass == VK_NULL_HANDLE, false);
   nassertr(!_closing_gsg, false);
 
   // Are we reading the color attachment or the depth attachment?
@@ -5765,22 +5757,20 @@ make_pipeline(VulkanShaderContext *sc,
   pipeline_info.pColorBlendState = &blend_info;
   pipeline_info.pDynamicState = &dynamic_info;
   pipeline_info.layout = sc->_pipeline_layout;
-  pipeline_info.renderPass = _render_pass;
+  pipeline_info.renderPass = VK_NULL_HANDLE;
   pipeline_info.subpass = 0;
   pipeline_info.basePipelineHandle = VK_NULL_HANDLE;
   pipeline_info.basePipelineIndex = 0;
 
   VkPipelineRenderingCreateInfo render_info;
-  if (_render_pass == VK_NULL_HANDLE) {
-    pipeline_info.pNext = &render_info;
-    render_info.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
-    render_info.pNext = nullptr;
-    render_info.viewMask = 0;
-    render_info.colorAttachmentCount = fb_config._color_formats.size();
-    render_info.pColorAttachmentFormats = fb_config._color_formats.data();
-    render_info.depthAttachmentFormat = fb_config._depth_format;
-    render_info.stencilAttachmentFormat = fb_config._stencil_format;
-  }
+  pipeline_info.pNext = &render_info;
+  render_info.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
+  render_info.pNext = nullptr;
+  render_info.viewMask = 0;
+  render_info.colorAttachmentCount = fb_config._color_formats.size();
+  render_info.pColorAttachmentFormats = fb_config._color_formats.data();
+  render_info.depthAttachmentFormat = fb_config._depth_format;
+  render_info.stencilAttachmentFormat = fb_config._stencil_format;
 
   VkResult err;
   VkPipeline pipeline;

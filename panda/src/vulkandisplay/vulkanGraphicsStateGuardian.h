@@ -339,7 +339,6 @@ private:
   bool _has_unified_memory = false;
 
   // Stores current framebuffer info.
-  VkRenderPass _render_pass = VK_NULL_HANDLE;
   VulkanTextureContext *_fb_color_tc = nullptr;
   VulkanTextureContext *_fb_depth_tc = nullptr;
   uint32_t _fb_config = 0;
@@ -420,7 +419,6 @@ private:
   double _timer_query_factor = 0.0;
 
   // Feature checks.
-  bool _supports_dynamic_rendering = false;
   bool _supports_custom_border_colors = false;
   bool _supports_vertex_attrib_divisor = false;
   bool _supports_vertex_attrib_zero_divisor = false;

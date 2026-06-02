@@ -60,16 +60,12 @@ protected:
   virtual void close_window();
   virtual bool open_window();
 
-  bool setup_render_pass();
-
   void destroy_swapchain();
   bool create_swapchain();
 
 private:
   VkSurfaceKHR _surface = VK_NULL_HANDLE;
   VkSwapchainKHR _swapchain = VK_NULL_HANDLE;
-  VkRenderPass _render_pass = VK_NULL_HANDLE;
-  int _current_clear_mask = -1;
 
   // Synchronizes flip of previous frame with rendering.
   VkSemaphore _image_available = VK_NULL_HANDLE;
@@ -81,13 +77,11 @@ private:
 
   struct SwapBuffer {
     VulkanTextureContext *_tc;
-    VkFramebuffer _framebuffer;
     VkSemaphore _render_complete;
   };
   typedef pvector<SwapBuffer> SwapBuffers;
   SwapBuffers _swap_buffers;
   uint32_t _image_index = 0;
-  VkImageLayout _final_layout;
 
   VulkanTextureContext *_ms_color_tc = nullptr;
   VulkanTextureContext *_depth_stencil_tc = nullptr;

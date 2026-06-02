@@ -44,8 +44,6 @@ protected:
   virtual void close_buffer() override;
   virtual bool open_buffer() override;
 
-  bool setup_render_pass();
-
   void destroy_framebuffer();
   bool create_framebuffer(CDReader &cdata);
 
@@ -53,10 +51,7 @@ protected:
                          Texture *texture = nullptr);
 
 private:
-  VkRenderPass _render_pass;
-  VkFramebuffer _framebuffer;
   LVecBase2i _framebuffer_size;
-  int _current_clear_mask;
 
   VulkanGraphicsStateGuardian::FbConfig _fb_config;
   uint32_t _fb_config_id;
