@@ -780,6 +780,9 @@ def test_glsl_pta_vec4(env, type):
         (8, 9, 10, 11),
     ))
 
+    # By being one item too large, this test simultaneously exercises the
+    # workaround for a Mesa bug:
+    # https://gitlab.freedesktop.org/mesa/mesa/-/work_items/15593
     preamble = """
     uniform vec4 pta[4];
     """

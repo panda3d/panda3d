@@ -551,6 +551,7 @@ protected:
   INLINE virtual bool has_extension(std::string_view extension) const;
   INLINE bool is_at_least_gl_version(int major_version, int minor_version) const;
   INLINE bool is_at_least_gles_version(int major_version, int minor_version) const;
+  bool get_mesa_version(int &major_version, int &minor_version, int &patch_version) const;
   void *get_extension_func(const char *name);
   virtual void *do_get_extension_func(const char *name);
 

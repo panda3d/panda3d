@@ -3301,6 +3301,23 @@ compile_spirv_to_glsl(const ShaderModuleSpirV *module, size_t mi,
     }
   }
 
+  bool explicit_uniform_locations = true;
+  if ((!options.es && options.version < 430) ||
+      (options.es && options.version < 310)) {
+    // Older versions of OpenGL (ES) do not support explicit uniform
+    // locations, and we need to query the locations later.
+    explicit_uniform_locations = false;
+  }
+  else {
+    // Work around a Mesa bug causing link failure when using explicit locations
+    // See https://gitlab.freedesktop.org/mesa/mesa/-/work_items/15593
+    int major, minor, patch;
+    if (_glgsg->get_mesa_version(major, minor, patch) &&
+        (major >= 25 || (major == 25 && minor >= 3))) {
+      explicit_uniform_locations = false;
+    }
+  }
+
   // Assign names based on locations.  This is important to make sure that
   // uniforms shared between shader stages have the same name, or the
   // compiler may start to complain about overlapping locations.
@@ -3315,12 +3332,10 @@ compile_spirv_to_glsl(const ShaderModuleSpirV *module, size_t mi,
         int location = it->second;
         sprintf(buf, "p%u", location);
         compiler.set_name(id, buf);
-        compiler.set_decoration(id, spv::DecorationLocation, location);
 
-        // Older versions of OpenGL (ES) do not support explicit uniform
-        // locations, and we need to query the locations later.
-        if ((!options.es && options.version < 430) ||
-            (options.es && options.version < 310)) {
+        if (explicit_uniform_locations) {
+          compiler.set_decoration(id, spv::DecorationLocation, location);
+        } else {
           _remap_locations = true;
         }
       }

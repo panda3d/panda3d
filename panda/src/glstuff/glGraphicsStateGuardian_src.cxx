@@ -10775,6 +10775,24 @@ report_extensions() const {
 }
 
 /**
+ * Parses the GL_VERSION string for a Mesa version number, or returns false if
+ * this is not a Mesa driver.
+ */
+bool CLP(GraphicsStateGuardian)::
+get_mesa_version(int &major_version, int &minor_version, int &patch_version) const {
+  major_version = 0;
+  minor_version = 0;
+  patch_version = 0;
+
+  const char *p = strstr(_gl_version.c_str(), " Mesa ");
+  if (p == nullptr) {
+    return false;
+  }
+  p += 6;
+  return sscanf(p, "%d.%d.%d", &major_version, &minor_version, &patch_version) >= 1;
+}
+
+/**
  * Returns the pointer to the GL extension function with the indicated name,
  * or NULL if the function is not available.
  */
