@@ -15,7 +15,7 @@
  *
  */
 INLINE ConfigVariableBool::
-ConfigVariableBool(const std::string &name) :
+ConfigVariableBool(std::string_view name) :
   ConfigVariable(name, VT_bool),
   _local_modified(initial_invalid_cache())
 {
@@ -26,12 +26,12 @@ ConfigVariableBool(const std::string &name) :
  *
  */
 INLINE ConfigVariableBool::
-ConfigVariableBool(const std::string &name, bool default_value,
-                   const std::string &description, int flags) :
+ConfigVariableBool(std::string_view name, bool default_value,
+                   std::string_view description, int flags) :
 #ifdef PRC_SAVE_DESCRIPTIONS
   ConfigVariable(name, VT_bool, description, flags),
 #else
-  ConfigVariable(name, VT_bool, std::string(), flags),
+  ConfigVariable(name, VT_bool, std::string_view(), flags),
 #endif
   _local_modified(initial_invalid_cache())
 {
@@ -43,12 +43,12 @@ ConfigVariableBool(const std::string &name, bool default_value,
  *
  */
 INLINE ConfigVariableBool::
-ConfigVariableBool(const std::string &name, const std::string &default_value,
-                   const std::string &description, int flags) :
+ConfigVariableBool(std::string_view name, std::string_view default_value,
+                   std::string_view description, int flags) :
 #ifdef PRC_SAVE_DESCRIPTIONS
   ConfigVariable(name, VT_bool, description, flags),
 #else
-  ConfigVariable(name, VT_bool, std::string(), flags),
+  ConfigVariable(name, VT_bool, std::string_view(), flags),
 #endif
   _local_modified(initial_invalid_cache())
 {

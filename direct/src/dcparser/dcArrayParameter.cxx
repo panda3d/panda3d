@@ -203,20 +203,19 @@ validate_num_nested_fields(int num_nested_fields) const {
  * identifier.
  */
 void DCArrayParameter::
-output_instance(std::ostream &out, bool brief, const string &prename,
-                const string &name, const string &postname) const {
+output_instance(std::ostream &out, bool brief, std::string_view prename,
+                std::string_view name, std::string_view postname) const {
   if (get_typedef() != nullptr) {
     output_typedef_name(out, brief, prename, name, postname);
 
   } else {
     std::ostringstream strm;
 
-    strm << "[";
+    strm << postname << "[";
     _array_size_range.output(strm);
     strm << "]";
 
-    _element_type->output_instance(out, brief, prename, name,
-                                   postname + strm.str());
+    _element_type->output_instance(out, brief, prename, name, strm.str());
   }
 }
 
@@ -234,7 +233,7 @@ generate_hash(HashGenerator &hashgen) const {
  * Packs the indicated numeric or string value into the stream.
  */
 void DCArrayParameter::
-pack_string(DCPackData &pack_data, const string &value,
+pack_string(DCPackData &pack_data, std::string_view value,
             bool &pack_error, bool &range_error) const {
   // We can only pack a string if the array element type is char or int8.
   DCSimpleParameter *simple_type = _element_type->as_simple_parameter();

@@ -241,8 +241,8 @@ list_contents() {
  * if it is not.
  */
 INLINE Texture *TexturePool::
-find_texture(const std::string &name) {
-  return get_global_ptr()->ns_find_texture(name);
+find_texture(std::string name) {
+  return get_global_ptr()->ns_find_texture(std::move(name));
 }
 
 /**
@@ -250,8 +250,8 @@ find_texture(const std::string &name) {
  * name (which may contain wildcards).
  */
 INLINE TextureCollection TexturePool::
-find_all_textures(const std::string &name) {
-  return get_global_ptr()->ns_find_all_textures(name);
+find_all_textures(std::string name) {
+  return get_global_ptr()->ns_find_all_textures(std::move(name));
 }
 
 /**
@@ -295,7 +295,7 @@ get_fake_texture_image() {
  * register_texture_type().
  */
 PT(Texture) TexturePool::
-make_texture(const std::string &extension) {
+make_texture(std::string_view extension) {
   return get_global_ptr()->ns_make_texture(extension);
 }
 

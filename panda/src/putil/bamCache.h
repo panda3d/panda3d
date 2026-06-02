@@ -72,7 +72,7 @@ PUBLISHED:
   INLINE bool get_read_only() const;
 
   PT(BamCacheRecord) lookup(const Filename &source_filename,
-                            const std::string &cache_extension);
+                            std::string_view cache_extension);
   bool store(BamCacheRecord *record);
 
   void consider_flush_index();
@@ -125,7 +125,7 @@ private:
   static PT(BamCacheRecord) do_read_record(const Filename &cache_pathname,
                                            bool read_data);
 
-  static std::string hash_filename(const std::string &filename);
+  static std::string hash_filename(std::string_view filename);
   static void make_global();
 
   bool _active;

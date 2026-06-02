@@ -17,7 +17,6 @@
 #include "dtoolbase.h"
 #include "neverFreeMemory.h"
 #include "mutexImpl.h"
-#include "atomicAdjust.h"
 #include "numeric_types.h"
 #include "typeHandle.h"
 #include "patomic.h"
@@ -63,7 +62,7 @@ public:
   INLINE DeletedBufferChain(DeletedBufferChain &&from) noexcept;
   INLINE DeletedBufferChain(const DeletedBufferChain &copy);
 
-  void *allocate(size_t size, TypeHandle type_handle);
+  [[nodiscard]] void *allocate(size_t size, TypeHandle type_handle);
   void deallocate(void *ptr, TypeHandle type_handle);
 
   INLINE bool validate(void *ptr);
@@ -104,7 +103,7 @@ private:
 
 #else
   // Otherwise, we need space for the integer.
-  static const size_t flag_reserved_bytes = sizeof(AtomicAdjust::Integer);
+  static const size_t flag_reserved_bytes = sizeof(patomic<DeletedChainFlag>);
 #endif  // USE_DELETEDCHAINFLAG
 
   friend class MemoryHook;

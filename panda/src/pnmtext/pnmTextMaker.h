@@ -63,12 +63,12 @@ PUBLISHED:
   INLINE void set_distance_field_radius(int radius);
   INLINE int get_distance_field_radius() const;
 
-  INLINE int generate_into(const std::string &text,
+  INLINE int generate_into(std::string_view text,
                            PNMImage &dest_image, int x, int y);
-  int generate_into(const std::wstring &text,
+  int generate_into(std::wstring_view text,
                     PNMImage &dest_image, int x, int y);
-  INLINE int calc_width(const std::string &text);
-  int calc_width(const std::wstring &text);
+  INLINE int calc_width(std::string_view text);
+  int calc_width(std::wstring_view text);
 
   PNMTextGlyph *get_glyph(int character);
 

@@ -105,8 +105,8 @@ PStatClient::
  * will presumably be written in the title bar or something.
  */
 void PStatClient::
-set_client_name(const string &name) {
-  get_impl()->set_client_name(name);
+set_client_name(std::string name) {
+  get_impl()->set_client_name(std::move(name));
 }
 
 /**
@@ -388,7 +388,7 @@ thread_tick() {
  * indicated sync_name
  */
 void PStatClient::
-thread_tick(const string &sync_name) {
+thread_tick(std::string_view sync_name) {
   get_global_pstats()->client_thread_tick(sync_name);
 }
 
@@ -443,7 +443,7 @@ client_thread_tick() {
  * indicated sync name.
  */
 void PStatClient::
-client_thread_tick(const string &sync_name) {
+client_thread_tick(std::string_view sync_name) {
   ReMutexHolder holder(_lock);
 
   if (has_impl()) {
@@ -556,7 +556,7 @@ make_impl() const {
  * the client indicated by the parent index.
  */
 PStatCollector PStatClient::
-make_collector_with_relname(int parent_index, string relname) {
+make_collector_with_relname(int parent_index, std::string_view relname) {
   ReMutexHolder holder(_lock);
 
   if (relname.empty()) {
@@ -572,18 +572,16 @@ make_collector_with_relname(int parent_index, string relname) {
   // If the name contains a colon (after the initial colon), it means we are
   // making a nested collector.
   size_t colon = relname.find(':', start);
-  while (colon != string::npos) {
-    string parent_name = relname.substr(start, colon - start);
+  while (colon != std::string_view::npos) {
     PStatCollector parent_collector =
-      make_collector_with_name(parent_index, parent_name);
+      make_collector_with_name(parent_index, relname.substr(start, colon - start));
     parent_index = parent_collector._index;
     relname = relname.substr(colon + 1);
     start = 0;
     colon = relname.find(':');
   }
 
-  string name = relname.substr(start);
-  return make_collector_with_name(parent_index, name);
+  return make_collector_with_name(parent_index, relname.substr(start));
 }
 
 /**
@@ -593,7 +591,7 @@ make_collector_with_relname(int parent_index, string relname) {
  * The name should not contain colons.
  */
 PStatCollector PStatClient::
-make_collector_with_name(int parent_index, const string &name) {
+make_collector_with_name(int parent_index, std::string_view name) {
   ReMutexHolder holder(_lock);
 
   int num_collectors = get_num_collectors();
@@ -619,9 +617,10 @@ make_collector_with_name(int parent_index, const string &name) {
   }
 
   // Create a new collector for this name.
-  parent->_children.insert(ThingsByName::value_type(name, num_collectors));
+  std::string name_str(name);
+  parent->_children.insert(ThingsByName::value_type(name_str, num_collectors));
 
-  Collector *collector = new Collector(parent_index, name);
+  Collector *collector = new Collector(parent_index, std::move(name_str));
   // collector->_def = new PStatCollectorDef(num_collectors, name);
   // collector->_def->set_parent(*_collectors[parent_index]._def);
   // initialize_collector_def(this, collector->_def);
@@ -720,11 +719,11 @@ do_make_thread(Thread *thread) {
  * GSG only.
  */
 PStatThread PStatClient::
-make_gpu_thread(const string &name) {
+make_gpu_thread(std::string name) {
   ReMutexHolder holder(_lock);
   int new_index = get_num_threads();
 
-  InternalThread *pthread = new InternalThread(name, "GPU");
+  InternalThread *pthread = new InternalThread(std::move(name), "GPU");
   add_thread(pthread);
 
   return PStatThread(this, new_index);
@@ -1333,22 +1332,22 @@ InternalThread(Thread *thread) :
  *
  */
 PStatClient::InternalThread::
-InternalThread(const string &name, const string &sync_name) :
+InternalThread(std::string name, std::string sync_name) :
   _thread(nullptr),
-  _name(name),
-  _sync_name(sync_name),
+  _name(std::move(name)),
+  _sync_name(std::move(sync_name)),
   _is_active(false),
   _frame_number(0),
   _next_packet(0.0),
   _thread_active(true),
-  _thread_lock(string("PStatClient::InternalThread ") + name)
+  _thread_lock(string("PStatClient::InternalThread ") + _name)
 {
 }
 
 #else  // DO_PSTATS
 
 void PStatClient::
-set_client_name(const std::string &name) {
+set_client_name(std::string name) {
 }
 
 std::string PStatClient::
@@ -1401,7 +1400,7 @@ get_current_thread() const {
 }
 
 PStatCollector PStatClient::
-make_collector_with_relname(int parent_index, std::string relname) {
+make_collector_with_relname(int parent_index, std::string_view relname) {
   return PStatCollector();
 }
 
@@ -1419,7 +1418,7 @@ thread_tick() {
 }
 
 void PStatClient::
-thread_tick(const std::string &) {
+thread_tick(std::string_view) {
 }
 
 void PStatClient::
@@ -1431,7 +1430,7 @@ client_thread_tick() {
 }
 
 void PStatClient::
-client_thread_tick(const std::string &sync_name) {
+client_thread_tick(std::string_view sync_name) {
 }
 
 bool PStatClient::

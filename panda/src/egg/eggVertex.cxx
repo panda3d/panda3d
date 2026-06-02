@@ -112,7 +112,7 @@ EggVertex::
  * UV coordinate pair is 2-d, false otherwise.
  */
 bool EggVertex::
-has_uv(const string &name) const {
+has_uv(std::string_view name) const {
   UVMap::const_iterator ui = _uv_map.find(EggVertexUV::filter_name(name));
   if (ui != _uv_map.end()) {
     EggVertexUV *uv_obj = (*ui).second;
@@ -126,7 +126,7 @@ has_uv(const string &name) const {
  * named UV coordinate triple is 3-d, false otherwise.
  */
 bool EggVertex::
-has_uvw(const string &name) const {
+has_uvw(std::string_view name) const {
   UVMap::const_iterator ui = _uv_map.find(EggVertexUV::filter_name(name));
   if (ui != _uv_map.end()) {
     EggVertexUV *uv_obj = (*ui).second;
@@ -139,7 +139,7 @@ has_uvw(const string &name) const {
  * Returns true if the vertex has the named auxiliary data quadruple.
  */
 bool EggVertex::
-has_aux(const string &name) const {
+has_aux(std::string_view name) const {
   AuxMap::const_iterator xi = _aux_map.find(name);
   return (xi != _aux_map.end());
 }
@@ -149,7 +149,7 @@ has_aux(const string &name) const {
  * this if has_uv(name) returned false.
  */
 LTexCoordd EggVertex::
-get_uv(const string &name) const {
+get_uv(std::string_view name) const {
   UVMap::const_iterator ui = _uv_map.find(EggVertexUV::filter_name(name));
   nassertr(ui != _uv_map.end(), LTexCoordd::zero());
   return (*ui).second->get_uv();
@@ -160,7 +160,7 @@ get_uv(const string &name) const {
  * call this if has_uvw(name) returned false.
  */
 const LTexCoord3d &EggVertex::
-get_uvw(const string &name) const {
+get_uvw(std::string_view name) const {
   UVMap::const_iterator ui = _uv_map.find(EggVertexUV::filter_name(name));
   nassertr(ui != _uv_map.end(), LTexCoord3d::zero());
   return (*ui).second->get_uvw();
@@ -171,7 +171,7 @@ get_uvw(const string &name) const {
  * to call this if has_aux(name) returned false.
  */
 const LVecBase4d &EggVertex::
-get_aux(const string &name) const {
+get_aux(std::string_view name) const {
   AuxMap::const_iterator xi = _aux_map.find(name);
   nassertr(xi != _aux_map.end(), LVecBase4d::zero());
   return (*xi).second->get_aux();
@@ -183,7 +183,7 @@ get_aux(const string &name) const {
  * morphs.
  */
 void EggVertex::
-set_uv(const string &name, const LTexCoordd &uv) {
+set_uv(std::string_view name, const LTexCoordd &uv) {
   string fname = EggVertexUV::filter_name(name);
   PT(EggVertexUV) &uv_obj = _uv_map[fname];
 
@@ -203,7 +203,7 @@ set_uv(const string &name, const LTexCoordd &uv) {
  * preserves UV morphs.
  */
 void EggVertex::
-set_uvw(const string &name, const LTexCoord3d &uvw) {
+set_uvw(std::string_view name, const LTexCoord3d &uvw) {
   string fname = EggVertexUV::filter_name(name);
   PT(EggVertexUV) &uv_obj = _uv_map[fname];
 
@@ -222,11 +222,11 @@ set_uvw(const string &name, const LTexCoord3d &uvw) {
  * any auxiliary data with the same name already on the vertex.
  */
 void EggVertex::
-set_aux(const string &name, const LVecBase4d &aux) {
+set_aux(std::string name, const LVecBase4d &aux) {
   PT(EggVertexAux) &aux_obj = _aux_map[name];
 
   if (aux_obj.is_null()) {
-    aux_obj = new EggVertexAux(name, aux);
+    aux_obj = new EggVertexAux(std::move(name), aux);
   } else {
     aux_obj = new EggVertexAux(*aux_obj);
     aux_obj->set_aux(aux);
@@ -242,7 +242,7 @@ set_aux(const string &name, const LVecBase4d &aux) {
  * call modify_uv_object to return a modifiable pointer.
  */
 const EggVertexUV *EggVertex::
-get_uv_obj(const string &name) const {
+get_uv_obj(std::string_view name) const {
   UVMap::const_iterator ui = _uv_map.find(EggVertexUV::filter_name(name));
   if (ui != _uv_map.end()) {
     return (*ui).second;
@@ -257,7 +257,7 @@ get_uv_obj(const string &name) const {
  * to return a modifiable pointer.
  */
 const EggVertexAux *EggVertex::
-get_aux_obj(const string &name) const {
+get_aux_obj(std::string_view name) const {
   AuxMap::const_iterator xi = _aux_map.find(name);
   if (xi != _aux_map.end()) {
     return (*xi).second;
@@ -271,7 +271,7 @@ get_aux_obj(const string &name) const {
  * if there is no such named UV object.
  */
 EggVertexUV *EggVertex::
-modify_uv_obj(const string &name) {
+modify_uv_obj(std::string_view name) {
   UVMap::iterator ui = _uv_map.find(EggVertexUV::filter_name(name));
   if (ui != _uv_map.end()) {
     if ((*ui).second->get_ref_count() != 1) {
@@ -290,7 +290,7 @@ modify_uv_obj(const string &name) {
  * named UV object.
  */
 EggVertexAux *EggVertex::
-modify_aux_obj(const string &name) {
+modify_aux_obj(std::string_view name) {
   AuxMap::iterator xi = _aux_map.find(name);
   if (xi != _aux_map.end()) {
     if ((*xi).second->get_ref_count() != 1) {
@@ -327,7 +327,7 @@ set_aux_obj(EggVertexAux *aux) {
  * morphs.
  */
 void EggVertex::
-clear_uv(const string &name) {
+clear_uv(std::string_view name) {
   _uv_map.erase(EggVertexUV::filter_name(name));
 }
 
@@ -335,8 +335,11 @@ clear_uv(const string &name) {
  * Removes the named auxiliary data from the vertex.
  */
 void EggVertex::
-clear_aux(const string &name) {
-  _aux_map.erase(name);
+clear_aux(std::string_view name) {
+  AuxMap::iterator xi = _aux_map.find(name);
+  if (xi != _aux_map.end()) {
+    _aux_map.erase(xi);
+  }
 }
 
 /**

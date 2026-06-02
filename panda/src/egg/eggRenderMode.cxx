@@ -170,7 +170,7 @@ operator < (const EggRenderMode &other) const {
  * AlphaMode value.
  */
 EggRenderMode::AlphaMode EggRenderMode::
-string_alpha_mode(const string &string) {
+string_alpha_mode(std::string_view string) {
   if (cmp_nocase_uh(string, "off") == 0) {
     return AM_off;
   } else if (cmp_nocase_uh(string, "on") == 0) {
@@ -200,7 +200,7 @@ string_alpha_mode(const string &string) {
  * DepthWriteMode value.
  */
 EggRenderMode::DepthWriteMode EggRenderMode::
-string_depth_write_mode(const string &string) {
+string_depth_write_mode(std::string_view string) {
   if (cmp_nocase_uh(string, "off") == 0) {
     return DWM_off;
   } else if (cmp_nocase_uh(string, "on") == 0) {
@@ -216,7 +216,7 @@ string_depth_write_mode(const string &string) {
  * DepthTestMode value.
  */
 EggRenderMode::DepthTestMode EggRenderMode::
-string_depth_test_mode(const string &string) {
+string_depth_test_mode(std::string_view string) {
   if (cmp_nocase_uh(string, "off") == 0) {
     return DTM_off;
   } else if (cmp_nocase_uh(string, "on") == 0) {
@@ -232,7 +232,7 @@ string_depth_test_mode(const string &string) {
  * HiddenMode value.
  */
 EggRenderMode::VisibilityMode EggRenderMode::
-string_visibility_mode(const string &string) {
+string_visibility_mode(std::string_view string) {
   if (cmp_nocase_uh(string, "hidden") == 0) {
     return VM_hidden;
   } else if (cmp_nocase_uh(string, "normal") == 0) {

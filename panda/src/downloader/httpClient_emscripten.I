@@ -17,7 +17,7 @@
  * C++ code should probably use HTTPAuthorization directly.
  */
 INLINE std::string HTTPClient::
-base64_encode(const std::string &s) {
+base64_encode(std::string_view s) {
   return HTTPAuthorization::base64_encode(s);
 }
 
@@ -27,6 +27,6 @@ base64_encode(const std::string &s) {
  * C++ code should probably use HTTPAuthorization directly.
  */
 INLINE std::string HTTPClient::
-base64_decode(const std::string &s) {
+base64_decode(std::string_view s) {
   return HTTPAuthorization::base64_decode(s);
 }

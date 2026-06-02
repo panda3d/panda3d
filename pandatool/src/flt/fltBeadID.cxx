@@ -38,8 +38,8 @@ get_id() const {
  * is unique to this bead.
  */
 void FltBeadID::
-set_id(const std::string &id) {
-  _id = id;
+set_id(std::string id) {
+  _id = std::move(id);
 }
 
 /**

@@ -27,11 +27,11 @@ TypeHandle CConstrainPosHprInterval::_type_handle;
  * unaltered.
  */
 CConstrainPosHprInterval::
-CConstrainPosHprInterval(const std::string &name, double duration,
+CConstrainPosHprInterval(std::string name, double duration,
                          const NodePath &node, const NodePath &target,
                          bool wrt, const LVecBase3 posOffset,
                          const LVecBase3 hprOffset) :
-  CConstraintInterval(name, duration),
+  CConstraintInterval(std::move(name), duration),
   _node(node),
   _target(target),
   _wrt(wrt),

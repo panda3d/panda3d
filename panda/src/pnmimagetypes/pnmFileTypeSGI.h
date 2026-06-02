@@ -36,10 +36,10 @@ public:
   virtual std::string get_suggested_extension() const;
 
   virtual bool has_magic_number() const;
-  virtual bool matches_magic_number(const std::string &magic_number) const;
+  virtual bool matches_magic_number(std::string_view magic_number) const;
 
   virtual PNMReader *make_reader(std::istream *file, bool owns_file = true,
-                                 const std::string &magic_number = std::string());
+                                 std::string_view magic_number = std::string_view());
   virtual PNMWriter *make_writer(std::ostream *file, bool owns_file = true);
 
 public:

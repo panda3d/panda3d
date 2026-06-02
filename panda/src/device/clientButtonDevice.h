@@ -31,7 +31,7 @@
  */
 class EXPCL_PANDA_DEVICE ClientButtonDevice : public ClientDevice {
 protected:
-  ClientButtonDevice(ClientBase *client, const std::string &device_name);
+  ClientButtonDevice(ClientBase *client, std::string device_name);
 
 public:
   virtual void output(std::ostream &out) const;

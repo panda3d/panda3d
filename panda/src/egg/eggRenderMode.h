@@ -83,7 +83,7 @@ PUBLISHED:
   INLINE bool has_draw_order() const;
   INLINE void clear_draw_order();
 
-  INLINE void set_bin(const std::string &bin);
+  INLINE void set_bin(std::string bin);
   INLINE std::string get_bin() const;
   INLINE bool has_bin() const;
   INLINE void clear_bin();
@@ -93,10 +93,10 @@ PUBLISHED:
   INLINE bool operator != (const EggRenderMode &other) const;
   bool operator < (const EggRenderMode &other) const;
 
-  static AlphaMode string_alpha_mode(const std::string &string);
-  static DepthWriteMode string_depth_write_mode(const std::string &string);
-  static DepthTestMode string_depth_test_mode(const std::string &string);
-  static VisibilityMode string_visibility_mode(const std::string &string);
+  static AlphaMode string_alpha_mode(std::string_view string);
+  static DepthWriteMode string_depth_write_mode(std::string_view string);
+  static DepthTestMode string_depth_test_mode(std::string_view string);
+  static VisibilityMode string_visibility_mode(std::string_view string);
 
 private:
   AlphaMode _alpha_mode;

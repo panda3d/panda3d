@@ -24,7 +24,7 @@
 #include "pvector.h"
 #include "pset.h"
 #include "socket_fdset.h"
-#include "atomicAdjust.h"
+#include "patomic.h"
 
 class NetDatagram;
 class ConnectionManager;
@@ -61,7 +61,7 @@ PUBLISHED:
   // new call to PR_Poll().
 
   explicit ConnectionReader(ConnectionManager *manager, int num_threads,
-                            const std::string &thread_name = std::string());
+                            std::string_view thread_name = std::string_view());
   virtual ~ConnectionReader();
 
   bool add_connection(Connection *connection);
@@ -135,7 +135,7 @@ private:
 
   class ReaderThread : public Thread {
   public:
-    ReaderThread(ConnectionReader *reader, const std::string &thread_name,
+    ReaderThread(ConnectionReader *reader, std::string_view thread_name,
                  int thread_index);
     virtual void thread_main();
 
@@ -160,7 +160,7 @@ private:
   // This is atomically updated with the index (in _threads) of the thread
   // that is currently waiting on the PR_Poll() call.  It contains -1 if no
   // thread is so waiting.
-  AtomicAdjust::Integer _currently_polling_thread;
+  patomic<int> _currently_polling_thread;
 
   friend class ConnectionManager;
   friend class ReaderThread;

@@ -37,7 +37,7 @@ PUBLISHED:
 
 PUBLISHED:
   BLOCKING INLINE void acquire();
-  BLOCKING INLINE bool try_acquire();
+  [[nodiscard]] BLOCKING INLINE bool try_acquire();
   INLINE int release();
 
   INLINE int get_count() const;

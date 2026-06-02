@@ -266,15 +266,9 @@ VirtualFileMountAndroidAsset::AssetStreamBuf::
 AssetStreamBuf(AAsset *asset) :
   _asset(asset) {
 
-#ifdef PHAVE_IOSTREAM
   char *buf = new char[4096];
   char *ebuf = buf + 4096;
   setg(buf, ebuf, ebuf);
-
-#else
-  allocate();
-  setg(base(), ebuf(), ebuf());
-#endif
 }
 
 /**

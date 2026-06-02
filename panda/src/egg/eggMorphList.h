@@ -57,7 +57,7 @@ public:
   INLINE void clear();
 
   void write(std::ostream &out, int indent_level,
-             const std::string &tag, int num_dimensions) const;
+             std::string_view tag, int num_dimensions) const;
 
 private:
   Morphs _morphs;

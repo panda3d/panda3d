@@ -451,9 +451,9 @@ copy_this_file(Filename &filename) {
  *
  */
 PathReplace::Entry::
-Entry(const std::string &orig_prefix, const std::string &replacement_prefix) :
-  _orig_prefix(orig_prefix),
-  _replacement_prefix(replacement_prefix)
+Entry(std::string orig_prefix, std::string replacement_prefix) :
+  _orig_prefix(std::move(orig_prefix)),
+  _replacement_prefix(std::move(replacement_prefix))
 {
   // Eliminate trailing slashes; they're implicit.
   if (_orig_prefix.length() > 1 &&

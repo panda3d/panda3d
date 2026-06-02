@@ -24,8 +24,8 @@ TypeHandle EggExternalReference::_type_handle;
  *
  */
 EggExternalReference::
-EggExternalReference(const std::string &node_name, const std::string &filename)
-  : EggFilenameNode(node_name, filename) {
+EggExternalReference(std::string node_name, Filename filename)
+  : EggFilenameNode(std::move(node_name), std::move(filename)) {
 }
 
 /**

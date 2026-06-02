@@ -124,6 +124,30 @@ def test_glsl_flat_decoration():
     assert check_flat_decoration(shader.get_module(core.Shader.Stage.FRAGMENT))
 
 
+def test_glsl_entry_point():
+    reg = core.ShaderCompilerRegistry.get_global_ptr()
+    glsl = reg.get_compiler_for_language(core.Shader.SL_GLSL)
+
+    code = b"""#version 330
+
+    out vec4 color;
+
+    void custom_main() {
+      color = vec4(1, 0, 0, 1);
+    }
+    """
+
+    # Must fail, no main() defined
+    module = glsl.compile_now(core.Shader.Stage.FRAGMENT, core.StringStream(code), "test.glsl")
+    assert module is None
+
+    # Must succeed after we specify proper entry point name
+    options = core.CompilerOptions()
+    options.entry_point = "custom_main"
+    module = glsl.compile_now(core.Shader.Stage.FRAGMENT, core.StringStream(code), "test.glsl", options)
+    assert module is not None
+
+
 def test_glsl_sampler(env):
     tex1 = core.Texture("tex1-ubyte-rgba8")
     tex1.setup_1d_texture(1, core.Texture.T_unsigned_byte, core.Texture.F_rgba8)
@@ -756,6 +780,9 @@ def test_glsl_pta_vec4(env, type):
         (8, 9, 10, 11),
     ))
 
+    # By being one item too large, this test simultaneously exercises the
+    # workaround for a Mesa bug:
+    # https://gitlab.freedesktop.org/mesa/mesa/-/work_items/15593
     preamble = """
     uniform vec4 pta[4];
     """
@@ -1435,6 +1462,78 @@ def test_glsl_state_texture(env):
     assert(all(lessThan(abs(texture(p3d_TextureNormal[2], coord) - vec4(127 / 255.0, 127 / 255.0, 1.0, 0.0)), vec4(0.004))));
     assert(texture(p3d_TextureHeight[0], coord).r == 4.0 / 255.0);
     assert(all(lessThan(abs(texture(p3d_TextureHeight[1], coord) - vec4(127 / 255.0, 127 / 255.0, 1.0, 0.0)), vec4(0.004))));
+    """
+
+    env.run_glsl(code, preamble, state=np.get_state())
+
+
+def test_glsl_state_texture_matrix(env):
+    np = core.NodePath("test")
+
+    mat1 = core.LMatrix4(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)
+    ts1 = core.TextureStage("ts1")
+    ts1.sort = 10
+    np.set_texture(ts1, core.Texture("1"))
+    np.set_tex_transform(ts1, core.TransformState.make_mat(mat1))
+
+    mat2 = core.LMatrix4(-1, -2, -3, -4, -5, -6, -7, -8, -9, -10, -11, -12, -13, -14, -15, -16)
+    ts2 = core.TextureStage("ts2")
+    ts2.sort = 20
+    np.set_texture(ts2, core.Texture("2"))
+    np.set_tex_transform(ts2, core.TransformState.make_mat(mat2))
+
+    preamble = """
+    uniform mat4 p3d_TextureMatrix;
+    """
+    code = """
+    assert(p3d_TextureMatrix[0] == vec4(1, 2, 3, 4));
+    assert(p3d_TextureMatrix[1] == vec4(5, 6, 7, 8));
+    assert(p3d_TextureMatrix[2] == vec4(9, 10, 11, 12));
+    assert(p3d_TextureMatrix[3] == vec4(13, 14, 15, 16));
+    """
+
+    env.run_glsl(code, preamble, state=np.get_state())
+
+    preamble = """
+    uniform mat4 p3d_TextureMatrix[3];
+    """
+    code = """
+    assert(p3d_TextureMatrix[0][0] == vec4(1, 2, 3, 4));
+    assert(p3d_TextureMatrix[0][1] == vec4(5, 6, 7, 8));
+    assert(p3d_TextureMatrix[0][2] == vec4(9, 10, 11, 12));
+    assert(p3d_TextureMatrix[0][3] == vec4(13, 14, 15, 16));
+
+    assert(p3d_TextureMatrix[1][0] == -vec4(1, 2, 3, 4));
+    assert(p3d_TextureMatrix[1][1] == -vec4(5, 6, 7, 8));
+    assert(p3d_TextureMatrix[1][2] == -vec4(9, 10, 11, 12));
+    assert(p3d_TextureMatrix[1][3] == -vec4(13, 14, 15, 16));
+
+    assert(p3d_TextureMatrix[2][0] == vec4(1, 0, 0, 0));
+    assert(p3d_TextureMatrix[2][1] == vec4(0, 1, 0, 0));
+    assert(p3d_TextureMatrix[2][2] == vec4(0, 0, 1, 0));
+    assert(p3d_TextureMatrix[2][3] == vec4(0, 0, 0, 1));
+    """
+
+    env.run_glsl(code, preamble, state=np.get_state())
+
+    preamble = """
+    uniform mat4 p3d_TextureMatrixTranspose[3];
+    """
+    code = """
+    assert(p3d_TextureMatrixTranspose[0][0] == vec4(1, 5, 9, 13));
+    assert(p3d_TextureMatrixTranspose[0][1] == vec4(2, 6, 10, 14));
+    assert(p3d_TextureMatrixTranspose[0][2] == vec4(3, 7, 11, 15));
+    assert(p3d_TextureMatrixTranspose[0][3] == vec4(4, 8, 12, 16));
+
+    assert(p3d_TextureMatrixTranspose[1][0] == -vec4(1, 5, 9, 13));
+    assert(p3d_TextureMatrixTranspose[1][1] == -vec4(2, 6, 10, 14));
+    assert(p3d_TextureMatrixTranspose[1][2] == -vec4(3, 7, 11, 15));
+    assert(p3d_TextureMatrixTranspose[1][3] == -vec4(4, 8, 12, 16));
+
+    assert(p3d_TextureMatrixTranspose[2][0] == vec4(1, 0, 0, 0));
+    assert(p3d_TextureMatrixTranspose[2][1] == vec4(0, 1, 0, 0));
+    assert(p3d_TextureMatrixTranspose[2][2] == vec4(0, 0, 1, 0));
+    assert(p3d_TextureMatrixTranspose[2][3] == vec4(0, 0, 0, 1));
     """
 
     env.run_glsl(code, preamble, state=np.get_state())

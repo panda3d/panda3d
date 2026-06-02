@@ -45,7 +45,7 @@ CLP(TextureContext)(CLP(GraphicsStateGuardian) *glgsg,
  */
 INLINE GLuint CLP(TextureContext)::
 get_view_index(int view) const {
-  return _indices[std::min(std::max(view, 0), _num_views - 1)];
+  return _indices[std::clamp(view, 0, _num_views - 1)];
 }
 
 /**
@@ -54,7 +54,7 @@ get_view_index(int view) const {
 INLINE GLuint CLP(TextureContext)::
 get_view_buffer(int view) const {
   if (_buffers != nullptr) {
-    return _buffers[std::min(std::max(view, 0), _num_views - 1)];
+    return _buffers[std::clamp(view, 0, _num_views - 1)];
   } else {
     return 0;
   }

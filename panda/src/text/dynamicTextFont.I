@@ -31,7 +31,7 @@ INLINE bool DynamicTextFont::
 set_point_size(PN_stdfloat point_size) {
   // If this assertion fails, you didn't call clear() first.  RTFM.
   nassertr(get_num_pages() == 0, false);
-
+  ++_modified;
   return FreetypeFont::set_point_size(point_size);
 }
 
@@ -58,7 +58,7 @@ INLINE bool DynamicTextFont::
 set_pixels_per_unit(PN_stdfloat pixels_per_unit) {
   // If this assertion fails, you didn't call clear() first.  RTFM.
   nassertr(get_num_pages() == 0, false);
-
+  ++_modified;
   return FreetypeFont::set_pixels_per_unit(pixels_per_unit);
 }
 
@@ -85,7 +85,7 @@ INLINE bool DynamicTextFont::
 set_scale_factor(PN_stdfloat scale_factor) {
   // If this assertion fails, you didn't call clear() first.  RTFM.
   nassertr(get_num_pages() == 0, false);
-
+  ++_modified;
   return FreetypeFont::set_scale_factor(scale_factor);
 }
 
@@ -111,7 +111,7 @@ INLINE void DynamicTextFont::
 set_native_antialias(bool native_antialias) {
   // If this assertion fails, you didn't call clear() first.  RTFM.
   nassertv(get_num_pages() == 0);
-
+  ++_modified;
   FreetypeFont::set_native_antialias(native_antialias);
 }
 
@@ -162,6 +162,7 @@ get_space_advance() const {
 INLINE void DynamicTextFont::
 set_texture_margin(int texture_margin) {
   _texture_margin = texture_margin;
+  ++_modified;
 }
 
 /**
@@ -184,6 +185,7 @@ get_texture_margin() const {
 INLINE void DynamicTextFont::
 set_poly_margin(PN_stdfloat poly_margin) {
   _poly_margin = poly_margin;
+  ++_modified;
 }
 
 /**
@@ -202,6 +204,7 @@ get_poly_margin() const {
 INLINE void DynamicTextFont::
 set_page_size(const LVecBase2i &page_size) {
   _page_size = page_size;
+  ++_modified;
 }
 
 /**
@@ -211,6 +214,7 @@ set_page_size(const LVecBase2i &page_size) {
 INLINE void DynamicTextFont::
 set_page_size(int x_size, int y_size) {
   _page_size.set(x_size, y_size);
+  ++_modified;
 }
 
 /**
@@ -306,6 +310,7 @@ get_anisotropic_degree() const {
 INLINE void DynamicTextFont::
 set_render_mode(DynamicTextFont::RenderMode render_mode) {
   _render_mode = render_mode;
+  ++_modified;
 }
 
 /**
@@ -334,6 +339,7 @@ set_fg(const LColor &fg) {
 
   _fg = fg;
   determine_tex_format();
+  ++_modified;
 }
 
 /**
@@ -366,6 +372,7 @@ set_bg(const LColor &bg) {
 
   _bg = bg;
   determine_tex_format();
+  ++_modified;
 }
 
 /**
@@ -402,6 +409,7 @@ set_outline(const LColor &outline_color, PN_stdfloat outline_width,
   _outline_width = outline_width;
   _outline_feather = outline_feather;
   determine_tex_format();
+  ++_modified;
 }
 
 /**

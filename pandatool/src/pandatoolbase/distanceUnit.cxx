@@ -128,7 +128,7 @@ operator >> (istream &in, DistanceUnit &unit) {
  * DistanceUnit types.  Returns DU_invalid if the string is unknown.
  */
 DistanceUnit
-string_distance_unit(const string &str) {
+string_distance_unit(std::string_view str) {
   if (cmp_nocase(str, "mm") == 0 || cmp_nocase(str, "millimeters") == 0) {
     return DU_millimeters;
 

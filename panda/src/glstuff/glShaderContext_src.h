@@ -25,6 +25,7 @@
 #include "ordered_vector.h"
 
 class CLP(GraphicsStateGuardian);
+class ShaderModuleSpirV;
 
 /**
  * xyz
@@ -122,6 +123,9 @@ private:
     GLuint _handle;
   };
   small_vector<Module, 1> _invariant_modules;
+
+  // Cached shader code when alpha testing is being injected.
+  std::string _fragment_shader_code;
 
   bool _is_legacy = false;
 
@@ -241,6 +245,15 @@ private:
   GLuint create_shader(const ShaderModule *module, size_t mi,
                        const Shader::ModuleSpecConstants &spec_consts,
                        int variant);
+  std::vector<uint32_t>
+    compile_spirv_to_spirv(const ShaderModuleSpirV *module, size_t mi,
+                           pmap<uint32_t, int> &id_to_location,
+                           const pvector<uint32_t> &binding_ids,
+                           int variant);
+  std::string compile_spirv_to_glsl(const ShaderModuleSpirV *module, size_t mi,
+                                    pmap<uint32_t, int> &id_to_location,
+                                    const pvector<uint32_t> &binding_ids,
+                                    int variant);
   GLuint compile_and_link(int variant);
   void release_resources(CLP(GraphicsStateGuardian) *glgsg);
 

@@ -20,10 +20,10 @@ TypeHandle VrpnTrackerDevice::_type_handle;
  *
  */
 VrpnTrackerDevice::
-VrpnTrackerDevice(VrpnClient *client, const std::string &device_name,
+VrpnTrackerDevice(VrpnClient *client, std::string device_name,
                   int sensor, VrpnTrackerDevice::DataType data_type,
                   VrpnTracker *vrpn_tracker) :
-  ClientTrackerDevice(client, device_name),
+  ClientTrackerDevice(client, std::move(device_name)),
   _sensor(sensor),
   _data_type(data_type),
   _vrpn_tracker(vrpn_tracker)

@@ -22,8 +22,8 @@ TypeHandle GenericThread::_type_handle;
  *
  */
 GenericThread::
-GenericThread(const std::string &name, const std::string &sync_name) :
-  Thread(name, sync_name)
+GenericThread(std::string name, std::string sync_name) :
+  Thread(std::move(name), std::move(sync_name))
 {
 }
 
@@ -31,8 +31,8 @@ GenericThread(const std::string &name, const std::string &sync_name) :
  *
  */
 GenericThread::
-GenericThread(const std::string &name, const std::string &sync_name, GenericThread::ThreadFunc *function, void *user_data) :
-  Thread(name, sync_name),
+GenericThread(std::string name, std::string sync_name, GenericThread::ThreadFunc *function, void *user_data) :
+  Thread(std::move(name), std::move(sync_name)),
   _function(std::bind(function, user_data))
 {
 }
@@ -41,8 +41,8 @@ GenericThread(const std::string &name, const std::string &sync_name, GenericThre
  *
  */
 GenericThread::
-GenericThread(const std::string &name, const std::string &sync_name, std::function<void()> function) :
-  Thread(name, sync_name),
+GenericThread(std::string name, std::string sync_name, std::function<void()> function) :
+  Thread(std::move(name), std::move(sync_name)),
   _function(std::move(function))
 {
 }

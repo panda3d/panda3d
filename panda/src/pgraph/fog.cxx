@@ -47,8 +47,8 @@ operator << (std::ostream &out, Fog::Mode mode) {
  *
  */
 Fog::
-Fog(const std::string &name) :
-  PandaNode(name)
+Fog(std::string name) :
+  PandaNode(std::move(name))
 {
   _mode = M_linear;
   _color.set(1.0f, 1.0f, 1.0f, 1.0f);

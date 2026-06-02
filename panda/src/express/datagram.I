@@ -216,7 +216,7 @@ add_be_float64(PN_float64 value) {
  * followed by n bytes.
  */
 INLINE void Datagram::
-add_string(const std::string &str) {
+add_string(std::string_view str) {
   // The max sendable length for a string is 2^16.
   nassertv(str.length() <= (uint16_t)0xffff);
 
@@ -232,7 +232,7 @@ add_string(const std::string &str) {
  * to allow very long strings.
  */
 INLINE void Datagram::
-add_string32(const std::string &str) {
+add_string32(std::string_view str) {
   // Strings always are preceded by their length
   add_uint32((uint32_t)str.length());
 
@@ -244,7 +244,7 @@ add_string32(const std::string &str) {
  * Adds a variable-length string to the datagram, as a NULL-terminated string.
  */
 INLINE void Datagram::
-add_z_string(const std::string &str) {
+add_z_string(std::string_view str) {
   // We must not have any nested null characters in the string.
   size_t null_pos = str.find('\0');
   // Add the string (sans the null character).
@@ -260,7 +260,7 @@ add_z_string(const std::string &str) {
  * greater than the requested size, this will silently truncate the string.
  */
 INLINE void Datagram::
-add_fixed_string(const std::string &str, size_t size) {
+add_fixed_string(std::string_view str, size_t size) {
   if (str.length() < size) {
     append_data(str.data(), str.length());
     pad_bytes(size - str.length());
@@ -466,12 +466,12 @@ generic_write_datagram(Datagram &dest, double value) {
 }
 
 INLINE void
-generic_write_datagram(Datagram &dest, const std::string &value) {
+generic_write_datagram(Datagram &dest, std::string_view value) {
   dest.add_string(value);
 }
 
 INLINE void
-generic_write_datagram(Datagram &dest, const std::wstring &value) {
+generic_write_datagram(Datagram &dest, std::wstring_view value) {
   dest.add_wstring(value);
 }
 

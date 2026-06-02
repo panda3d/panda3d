@@ -51,8 +51,8 @@ PT(Texture) OccluderNode::_viz_tex;
  * vertices with set_vertices().
  */
 OccluderNode::
-OccluderNode(const std::string &name) :
-  PandaNode(name)
+OccluderNode(std::string name) :
+  PandaNode(std::move(name))
 {
   set_cull_callback();
   set_renderable();

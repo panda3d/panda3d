@@ -30,8 +30,8 @@ TypeHandle ButtonThrower::_type_handle;
  *
  */
 ButtonThrower::
-ButtonThrower(const string &name) :
-  DataNode(name)
+ButtonThrower(std::string name) :
+  DataNode(std::move(name))
 {
   _button_events_input = define_input("button_events", ButtonEventList::get_class_type());
   _button_events_output = define_output("button_events", ButtonEventList::get_class_type());
@@ -230,9 +230,9 @@ write(std::ostream &out, int indent_level) const {
  * requested parameters.
  */
 void ButtonThrower::
-do_specific_event(const string &event_name, double time) {
+do_specific_event(std::string_view event_name, double time) {
   if (_specific_flag) {
-    PT(Event) event = new Event(_prefix + event_name);
+    PT(Event) event = new Event(_prefix + std::string(event_name));
 
     if (_time_flag) {
       event->add_parameter(time);
@@ -251,7 +251,7 @@ do_specific_event(const string &event_name, double time) {
  * Generates an appropriate general event, if one is configured.
  */
 void ButtonThrower::
-do_general_event(const ButtonEvent &button_event, const string &button_name) {
+do_general_event(const ButtonEvent &button_event, std::string_view button_name) {
   string event_name;
   switch (button_event._type) {
   case ButtonEvent::T_down:
@@ -308,7 +308,7 @@ do_general_event(const ButtonEvent &button_event, const string &button_name) {
   case ButtonEvent::T_repeat:
   case ButtonEvent::T_raw_down:
   case ButtonEvent::T_raw_up:
-    event->add_parameter(button_name);
+    event->add_parameter(std::string(button_name));
     break;
 
   case ButtonEvent::T_keystroke:

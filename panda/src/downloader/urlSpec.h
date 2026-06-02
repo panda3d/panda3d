@@ -28,9 +28,10 @@ class Filename;
 class EXPCL_PANDA_DOWNLOADER URLSpec {
 PUBLISHED:
   URLSpec();
-  INLINE URLSpec(const std::string &url, bool server_name_expected = false);
+  INLINE URLSpec(std::string_view url, bool server_name_expected = false);
   explicit URLSpec(const URLSpec &url, const Filename &path);
   INLINE void operator = (const std::string &url);
+  INLINE void operator = (std::string_view url);
 
   INLINE bool operator == (const URLSpec &other) const;
   INLINE bool operator != (const URLSpec &other) const;
@@ -54,7 +55,7 @@ PUBLISHED:
   uint16_t get_port() const;
   std::string get_server_and_port() const;
   bool is_default_port() const;
-  static int get_default_port_for_scheme(const std::string &scheme);
+  static int get_default_port_for_scheme(std::string_view scheme);
   std::string get_path() const;
   INLINE std::string get_query() const;
   std::string get_path_and_query() const;
@@ -62,17 +63,17 @@ PUBLISHED:
 
   INLINE const std::string &get_url() const;
 
-  void set_scheme(const std::string &scheme);
-  void set_authority(const std::string &authority);
-  void set_username(const std::string &username);
-  void set_server(const std::string &server);
-  void set_port(const std::string &port);
+  void set_scheme(std::string_view scheme);
+  void set_authority(std::string_view authority);
+  void set_username(std::string_view username);
+  void set_server(std::string_view server);
+  void set_port(std::string_view port);
   void set_port(uint16_t port);
-  void set_server_and_port(const std::string &server_and_port);
-  void set_path(const std::string &path);
-  void set_query(const std::string &query);
+  void set_server_and_port(std::string_view server_and_port);
+  void set_path(std::string_view path);
+  void set_query(std::string_view query);
 
-  void set_url(const std::string &url, bool server_name_expected = false);
+  void set_url(std::string_view url, bool server_name_expected = false);
 
   INLINE operator const std::string & () const;
   INLINE const char *c_str() const;
@@ -85,10 +86,10 @@ PUBLISHED:
   bool input(std::istream &in);
   void output(std::ostream &out) const;
 
-  static std::string quote(const std::string &source, const std::string &safe = "/");
-  static std::string quote_plus(const std::string &source, const std::string &safe = "/");
-  static std::string unquote(const std::string &source);
-  static std::string unquote_plus(const std::string &source);
+  static std::string quote(std::string_view source, std::string_view safe = "/");
+  static std::string quote_plus(std::string_view source, std::string_view safe = "/");
+  static std::string unquote(std::string_view source);
+  static std::string unquote_plus(std::string_view source);
 
   MAKE_PROPERTY(scheme, get_scheme, set_scheme);
   MAKE_PROPERTY(authority, get_authority, set_authority);

@@ -75,7 +75,6 @@ RenderState() :
   _saved_entry = -1;
   _last_mi = -1;
   _cache_stats.add_num_states(1);
-  _read_overrides = nullptr;
   _generated_shader = nullptr;
 
 #ifdef DO_MEMORY_USAGE
@@ -100,7 +99,6 @@ RenderState(const RenderState &copy) :
   _saved_entry = -1;
   _last_mi = -1;
   _cache_stats.add_num_states(1);
-  _read_overrides = nullptr;
   _generated_shader = nullptr;
 
 #ifdef DO_MEMORY_USAGE
@@ -1914,9 +1912,12 @@ int RenderState::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = TypedWritable::complete_pointers(p_list, manager);
 
+  BamAuxData *aux = (BamAuxData *)manager->get_aux_data(this, "overrides");
+  nassertr(aux != nullptr, pi);
+
   RenderAttribRegistry *reg = RenderAttribRegistry::quick_get_global_ptr();
-  for (size_t i = 0; i < (*_read_overrides).size(); ++i) {
-    int override = (*_read_overrides)[i];
+  for (size_t i = 0; i < aux->_overrides.size(); ++i) {
+    int override = aux->_overrides[i];
 
     RenderAttrib *attrib = DCAST(RenderAttrib, p_list[pi++]);
     if (attrib != nullptr) {
@@ -1927,9 +1928,6 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
       }
     }
   }
-
-  delete _read_overrides;
-  _read_overrides = nullptr;
 
   return pi;
 }
@@ -1987,15 +1985,19 @@ finalize(BamReader *) {
  */
 TypedWritable *RenderState::
 make_from_bam(const FactoryParams &params) {
-  RenderState *state = new RenderState;
   DatagramIterator scan;
   BamReader *manager;
 
   parse_params(params, scan, manager);
-  state->fillin(scan, manager);
-  manager->register_change_this(change_this, state);
 
-  return state;
+  if (scan.peek_uint16() != 0) {
+    RenderState *state = new RenderState;
+    state->fillin(scan, manager);
+    manager->register_change_this(change_this, state);
+    return state;
+  } else {
+    return (TypedWritable *)_empty_state;
+  }
 }
 
 /**
@@ -2007,12 +2009,15 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   TypedWritable::fillin(scan, manager);
 
   int num_attribs = scan.get_uint16();
-  _read_overrides = new vector_int;
-  (*_read_overrides).reserve(num_attribs);
+
+  BamAuxData *aux_data = new BamAuxData;
+  aux_data->_overrides.reserve(num_attribs);
 
   for (int i = 0; i < num_attribs; ++i) {
     manager->read_pointer(scan);
     int override = scan.get_int32();
-    (*_read_overrides).push_back(override);
+    aux_data->_overrides.push_back(override);
   }
+
+  manager->set_aux_data(this, "overrides", aux_data);
 }

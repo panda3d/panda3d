@@ -2,30 +2,16 @@ configure_file(pandaVersion.h.in pandaVersion.h)
 configure_file(checkPandaVersion.h.in checkPandaVersion.h)
 configure_file(checkPandaVersion.cxx.in checkPandaVersion.cxx)
 
-if(CMAKE_CXX_STANDARD GREATER 16)
-  # This serves as a reminder to update checkPandaVersion.h.in when we upgrade
-  # to C++17, which supports inline variables - a cleaner way of depending on
-  # the Panda version symbol from a header than what we're currently doing.
-  message(FATAL_ERROR "Developer notice: Update checkPandaVersion.h.in for C++17!")
-endif()
-
 set(P3DTOOLBASE_HEADERS
   ${CMAKE_CURRENT_BINARY_DIR}/checkPandaVersion.h
   ${CMAKE_CURRENT_BINARY_DIR}/pandaVersion.h
   addHash.I addHash.h
-  atomicAdjust.h
-  atomicAdjustDummyImpl.h atomicAdjustDummyImpl.I
-  atomicAdjustGccImpl.h atomicAdjustGccImpl.I
-  atomicAdjustI386Impl.h atomicAdjustI386Impl.I
-  atomicAdjustPosixImpl.h atomicAdjustPosixImpl.I
-  atomicAdjustWin32Impl.h atomicAdjustWin32Impl.I
   cmath.I cmath.h
   deletedBufferChain.h deletedBufferChain.I
   deletedChain.h deletedChain.I
   dtoolbase.h dtoolbase_cc.h dtoolsymbols.h
   dtool_platform.h
   extension.h
-  fakestringstream.h
   indent.I indent.h
   memoryBase.h
   memoryHook.h memoryHook.I
@@ -41,6 +27,7 @@ set(P3DTOOLBASE_HEADERS
   pstrtod.h
   register_type.I register_type.h
   selectThreadImpl.h
+  staticObject.h
   stl_compares.I stl_compares.h
   typeHandle.I typeHandle.h
   typeRegistry.I typeRegistry.h
@@ -57,10 +44,6 @@ set(P3DTOOLBASE_HEADERS
 set(P3DTOOLBASE_SOURCES
   ${CMAKE_CURRENT_BINARY_DIR}/checkPandaVersion.cxx
   addHash.cxx
-  atomicAdjustDummyImpl.cxx
-  atomicAdjustI386Impl.cxx
-  atomicAdjustPosixImpl.cxx
-  atomicAdjustWin32Impl.cxx
   deletedBufferChain.cxx
   dtoolbase.cxx
   indent.cxx

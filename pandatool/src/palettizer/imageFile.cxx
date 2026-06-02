@@ -48,7 +48,7 @@ ImageFile() {
  * otherwise.
  */
 bool ImageFile::
-make_shadow_image(const string &basename) {
+make_shadow_image(std::string_view basename) {
   bool any_changed = false;
 
   if (_properties._color_type != pal->_shadow_color_type ||
@@ -147,7 +147,7 @@ update_properties(const TextureProperties &properties) {
  * otherwise.
  */
 bool ImageFile::
-set_filename(PaletteGroup *group, const string &basename) {
+set_filename(PaletteGroup *group, std::string_view basename) {
   // Synthesize the directory name based on the map_dirname set to the
   // palettizer, and the group's dirname.
   string dirname;
@@ -185,7 +185,7 @@ set_filename(PaletteGroup *group, const string &basename) {
  * otherwise.
  */
 bool ImageFile::
-set_filename(const string &dirname, const string &basename) {
+set_filename(std::string_view dirname, std::string_view basename) {
   Filename orig_filename = _filename;
   Filename orig_alpha_filename = _alpha_filename;
 

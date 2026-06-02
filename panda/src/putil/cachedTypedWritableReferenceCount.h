@@ -54,7 +54,7 @@ protected:
   bool do_test_ref_count_integrity() const;
 
 private:
-  mutable AtomicAdjust::Integer _cache_ref_count;
+  mutable patomic<int> _cache_ref_count;
 
 public:
   static TypeHandle get_class_type() {

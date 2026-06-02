@@ -55,7 +55,7 @@ protected:
   PartBundle(const PartBundle &copy);
 
 PUBLISHED:
-  explicit PartBundle(const std::string &name = "");
+  explicit PartBundle(std::string name = "");
   virtual PartGroup *make_copy() const;
 
   INLINE CPT(AnimPreloadTable) get_anim_preload() const;
@@ -136,11 +136,11 @@ PUBLISHED:
                                  bool allow_async);
   void wait_pending();
 
-  bool freeze_joint(const std::string &joint_name, const TransformState *transform);
-  bool freeze_joint(const std::string &joint_name, const LVecBase3 &pos, const LVecBase3 &hpr, const LVecBase3 &scale);
-  bool freeze_joint(const std::string &joint_name, PN_stdfloat value);
-  bool control_joint(const std::string &joint_name, PandaNode *node);
-  bool release_joint(const std::string &joint_name);
+  bool freeze_joint(std::string_view joint_name, const TransformState *transform);
+  bool freeze_joint(std::string_view joint_name, const LVecBase3 &pos, const LVecBase3 &hpr, const LVecBase3 &scale);
+  bool freeze_joint(std::string_view joint_name, PN_stdfloat value);
+  bool control_joint(std::string_view joint_name, PandaNode *node);
+  bool release_joint(std::string_view joint_name);
 
   bool update();
   bool force_update();

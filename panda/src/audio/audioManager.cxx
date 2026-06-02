@@ -14,7 +14,6 @@
 
 #include "config_audio.h"
 #include "audioManager.h"
-#include "atomicAdjust.h"
 #include "nullAudioManager.h"
 #include "windowsRegistry.h"
 #include "virtualFileSystem.h"
@@ -123,8 +122,9 @@ PT(AudioManager) AudioManager::create_AudioManager() {
  */
 AudioManager::
 ~AudioManager() {
-  if (_null_sound != nullptr) {
-    unref_delete((AudioSound *)_null_sound);
+  AudioSound *null_sound = _null_sound.load(std::memory_order_acquire);
+  if (null_sound != nullptr) {
+    unref_delete(null_sound);
   }
 }
 
@@ -132,8 +132,7 @@ AudioManager::
  *
  */
 AudioManager::
-AudioManager() {
-  _null_sound = nullptr;
+AudioManager() : _null_sound(nullptr) {
 }
 
 /**
@@ -153,19 +152,21 @@ shutdown() {
  */
 PT(AudioSound) AudioManager::
 get_null_sound() {
-  if (_null_sound == nullptr) {
-    AudioSound *new_sound = new NullAudioSound;
-    new_sound->ref();
-    void *result = AtomicAdjust::compare_and_exchange_ptr(_null_sound, nullptr, (void *)new_sound);
-    if (result != nullptr) {
+  AudioSound *sound = _null_sound.load(std::memory_order_acquire);
+
+  if (sound == nullptr) {
+    sound = new NullAudioSound;
+    sound->ref();
+    AudioSound *old_sound = nullptr;
+    if (!_null_sound.compare_exchange_strong(old_sound, sound, std::memory_order_release, std::memory_order_acquire)) {
       // Someone else must have assigned the AudioSound first.  OK.
-      nassertr(_null_sound != new_sound, nullptr);
-      unref_delete(new_sound);
+      unref_delete(sound);
+      sound = old_sound;
     }
-    nassertr(_null_sound != nullptr, nullptr);
+    nassertr(sound != nullptr, nullptr);
   }
 
-  return (AudioSound *)_null_sound;
+  return sound;
 }
 
 /**

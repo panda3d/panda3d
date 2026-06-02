@@ -313,7 +313,7 @@ get_sort(Thread *current_thread) const {
  * The referenced node itself is not considered in the search.
  */
 NodePath NodePath::
-find(const string &path) const {
+find(std::string_view path) const {
   nassertr_always(!is_empty(), fail());
 
   NodePathCollection col;
@@ -355,7 +355,7 @@ find_path_to(PandaNode *node) const {
  * The referenced node itself is not considered in the search.
  */
 NodePathCollection NodePath::
-find_all_matches(const string &path) const {
+find_all_matches(std::string_view path) const {
   NodePathCollection col;
   nassertr_always(!is_empty(), col);
   nassertr(verify_complete(), col);
@@ -519,9 +519,9 @@ instance_to(const NodePath &other, int sort, Thread *current_thread) const {
  * the programmer to set a unique state and/or transform on this instance.
  */
 NodePath NodePath::
-instance_under_node(const NodePath &other, const string &name, int sort,
+instance_under_node(const NodePath &other, std::string name, int sort,
                     Thread *current_thread) const {
-  NodePath new_node = other.attach_new_node(name, sort, current_thread);
+  NodePath new_node = other.attach_new_node(std::move(name), sort, current_thread);
   NodePath instance = instance_to(new_node, 0, current_thread);
   if (instance.is_empty()) {
     new_node.remove_node(current_thread);
@@ -2865,9 +2865,9 @@ has_scissor() const {
  * e.g.  "fixed".  Other kinds of bins ignore it.
  */
 void NodePath::
-set_bin(const string &bin_name, int draw_order, int priority) {
+set_bin(std::string bin_name, int draw_order, int priority) {
   nassertv_always(!is_empty());
-  node()->set_attrib(CullBinAttrib::make(bin_name, draw_order), priority);
+  node()->set_attrib(CullBinAttrib::make(std::move(bin_name), draw_order), priority);
 }
 
 /**
@@ -3898,17 +3898,15 @@ find_all_vertex_columns() const {
  * wildcard characters).
  */
 InternalNameCollection NodePath::
-find_all_vertex_columns(const string &name) const {
+find_all_vertex_columns(std::string name) const {
   nassertr_always(!is_empty(), InternalNameCollection());
   InternalNames vertex_columns;
   r_find_all_vertex_columns(node(), vertex_columns);
 
-  GlobPattern glob(name);
+  GlobPattern glob(std::move(name));
 
   InternalNameCollection tc;
-  InternalNames::iterator ti;
-  for (ti = vertex_columns.begin(); ti != vertex_columns.end(); ++ti) {
-    const InternalName *name = (*ti);
+  for (const InternalName *name : vertex_columns) {
     if (glob.matches(name->get_name())) {
       tc.add_name(name);
     }
@@ -3929,10 +3927,9 @@ find_all_texcoords() const {
   CPT(InternalName) texcoord_name = InternalName::get_texcoord();
 
   InternalNameCollection tc;
-  InternalNames::iterator ti;
-  for (ti = vertex_columns.begin(); ti != vertex_columns.end(); ++ti) {
-    if ((*ti)->get_top() == texcoord_name) {
-      tc.add_name(*ti);
+  for (const InternalName *name : vertex_columns) {
+    if (name->get_top() == texcoord_name) {
+      tc.add_name(name);
     }
   }
   return tc;
@@ -3944,18 +3941,16 @@ find_all_texcoords() const {
  * wildcard characters).
  */
 InternalNameCollection NodePath::
-find_all_texcoords(const string &name) const {
+find_all_texcoords(std::string name) const {
   nassertr_always(!is_empty(), InternalNameCollection());
   InternalNames vertex_columns;
   r_find_all_vertex_columns(node(), vertex_columns);
 
-  GlobPattern glob(name);
+  GlobPattern glob(std::move(name));
   CPT_InternalName texcoord_name = InternalName::get_texcoord();
 
   InternalNameCollection tc;
-  InternalNames::iterator ti;
-  for (ti = vertex_columns.begin(); ti != vertex_columns.end(); ++ti) {
-    const InternalName *name = (*ti);
+  for (const InternalName *name : vertex_columns) {
     if (name->get_top() == texcoord_name) {
       // This is a texture coordinate name.  Figure out the basename of the
       // texture coordinates.
@@ -3977,9 +3972,9 @@ find_all_texcoords(const string &name) const {
  * texture if it is found, or NULL if it is not.
  */
 Texture *NodePath::
-find_texture(const string &name) const {
+find_texture(std::string name) const {
   nassertr_always(!is_empty(), nullptr);
-  GlobPattern glob(name);
+  GlobPattern glob(std::move(name));
   return r_find_texture(node(), get_net_state(), glob);
 }
 
@@ -4016,12 +4011,12 @@ find_all_textures() const {
  * that match the indicated name (which may contain wildcard characters).
  */
 TextureCollection NodePath::
-find_all_textures(const string &name) const {
+find_all_textures(std::string name) const {
   nassertr_always(!is_empty(), TextureCollection());
   Textures textures;
   r_find_all_textures(node(), get_net_state(), textures);
 
-  GlobPattern glob(name);
+  GlobPattern glob(std::move(name));
 
   TextureCollection tc;
   Textures::iterator ti;
@@ -4059,9 +4054,9 @@ find_all_textures(TextureStage *stage) const {
  * Returns the TextureStage if it is found, or NULL if it is not.
  */
 TextureStage *NodePath::
-find_texture_stage(const string &name) const {
+find_texture_stage(std::string name) const {
   nassertr_always(!is_empty(), nullptr);
-  GlobPattern glob(name);
+  GlobPattern glob(std::move(name));
   return r_find_texture_stage(node(), get_net_state(), glob);
 }
 
@@ -4102,12 +4097,12 @@ unify_texture_stages(TextureStage *stage) {
  * characters).
  */
 TextureStageCollection NodePath::
-find_all_texture_stages(const string &name) const {
+find_all_texture_stages(std::string name) const {
   nassertr_always(!is_empty(), TextureStageCollection());
   TextureStages texture_stages;
   r_find_all_texture_stages(node(), get_net_state(), texture_stages);
 
-  GlobPattern glob(name);
+  GlobPattern glob(std::move(name));
 
   TextureStageCollection tc;
   TextureStages::iterator ti;
@@ -4126,9 +4121,9 @@ find_all_texture_stages(const string &name) const {
  * material if it is found, or NULL if it is not.
  */
 Material *NodePath::
-find_material(const string &name) const {
+find_material(std::string name) const {
   nassertr_always(!is_empty(), nullptr);
-  GlobPattern glob(name);
+  GlobPattern glob(std::move(name));
   return r_find_material(node(), get_net_state(), glob);
 }
 
@@ -4154,12 +4149,12 @@ find_all_materials() const {
  * that match the indicated name (which may contain wildcard characters).
  */
 MaterialCollection NodePath::
-find_all_materials(const string &name) const {
+find_all_materials(std::string name) const {
   nassertr_always(!is_empty(), MaterialCollection());
   Materials materials;
   r_find_all_materials(node(), get_net_state(), materials);
 
-  GlobPattern glob(name);
+  GlobPattern glob(std::move(name));
 
   MaterialCollection tc;
   Materials::iterator ti;
@@ -6137,8 +6132,7 @@ r_get_partial_prev_transform(NodePathComponent *comp, int n, Thread *current_thr
  * matches to return, or -1 not to limit the number returned.
  */
 void NodePath::
-find_matches(NodePathCollection &result, const string &path,
-             int max_matches) const {
+find_matches(NodePathCollection &result, std::string_view path, int max_matches) const {
   if (is_empty()) {
     pgraph_cat.warning()
       << "Attempt to extend an empty NodePath by '" << path

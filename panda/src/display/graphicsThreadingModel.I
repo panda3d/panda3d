@@ -50,8 +50,8 @@ get_cull_name() const {
  * this only has an effect on newly-opened windows.
  */
 INLINE void GraphicsThreadingModel::
-set_cull_name(const std::string &cull_name) {
-  _cull_name = cull_name;
+set_cull_name(std::string cull_name) {
+  _cull_name = std::move(cull_name);
   update_stages();
 }
 
@@ -80,8 +80,8 @@ get_draw_name() const {
  * this only has an effect on newly-opened windows.
  */
 INLINE void GraphicsThreadingModel::
-set_draw_name(const std::string &draw_name) {
-  _draw_name = draw_name;
+set_draw_name(std::string draw_name) {
+  _draw_name = std::move(draw_name);
   update_stages();
 }
 

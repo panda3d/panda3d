@@ -44,8 +44,8 @@ clear() {
  * orig_prefix, that prefix will be replaced with replacement_prefix.
  */
 INLINE void PathReplace::
-add_pattern(const std::string &orig_prefix, const std::string &replacement_prefix) {
-  _entries.push_back(Entry(orig_prefix, replacement_prefix));
+add_pattern(std::string orig_prefix, std::string replacement_prefix) {
+  _entries.push_back(Entry(std::move(orig_prefix), std::move(replacement_prefix)));
 }
 
 /**
@@ -98,8 +98,8 @@ convert_path(const Filename &orig_filename, const DSearchPath &additional_path) 
  *
  */
 INLINE PathReplace::Component::
-Component(const std::string &component) :
-  _orig_prefix(component),
+Component(std::string_view component) :
+  _orig_prefix(std::string(component)),
   _double_star(component == "**")
 {
 }

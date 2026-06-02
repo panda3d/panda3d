@@ -722,14 +722,13 @@ r_add_extra_glyphs(EggGroupNode *egg_group) {
  * otherwise.
  */
 bool EggMakeFont::
-is_numeric(const string &str) {
+is_numeric(std::string_view str) {
   if (str.empty()) {
     return false;
   }
 
-  string::const_iterator si;
-  for (si = str.begin(); si != str.end(); ++si) {
-    if (!isdigit(*si)) {
+  for (char ch : str) {
+    if (!isdigit((unsigned char)ch)) {
       return false;
     }
   }

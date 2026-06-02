@@ -27,7 +27,7 @@ class DCParameter;
  */
 class EXPCL_DIRECT_DCPARSER DCMolecularField : public DCField {
 public:
-  DCMolecularField(const std::string &name, DCClass *dclass);
+  DCMolecularField(std::string name, DCClass *dclass);
 
 PUBLISHED:
   virtual DCMolecularField *as_molecular_field();

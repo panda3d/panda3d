@@ -23,7 +23,7 @@
  */
 class EXPCL_PANDA_EGG EggCurve : public EggPrimitive {
 PUBLISHED:
-  INLINE explicit EggCurve(const std::string &name = "");
+  INLINE explicit EggCurve(std::string name = "");
   INLINE EggCurve(const EggCurve &copy);
   INLINE EggCurve &operator = (const EggCurve &copy);
 
@@ -40,7 +40,7 @@ PUBLISHED:
   INLINE void set_curve_type(CurveType type);
   INLINE CurveType get_curve_type() const;
 
-  static CurveType string_curve_type(const std::string &string);
+  static CurveType string_curve_type(std::string_view string);
 
 private:
   int _subdiv;

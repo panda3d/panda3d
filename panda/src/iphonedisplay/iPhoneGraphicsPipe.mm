@@ -101,7 +101,7 @@ rotate_windows() {
  * Creates a new window on the pipe, if possible.
  */
 PT(GraphicsOutput) IPhoneGraphicsPipe::
-make_output(const string &name,
+make_output(std::string_view name,
             const FrameBufferProperties &fb_prop,
             const WindowProperties &win_prop,
             int flags,
@@ -130,7 +130,7 @@ make_output(const string &name,
         ((flags&BF_can_bind_every)!=0)) {
       return NULL;
     }
-    return new IPhoneGraphicsWindow(engine, this, name, fb_prop, win_prop,
+    return new IPhoneGraphicsWindow(engine, this, std::string(name), fb_prop, win_prop,
                                     flags, gsg, host);
   }
 

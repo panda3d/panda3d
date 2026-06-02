@@ -40,9 +40,9 @@ CharacterSlider(const CharacterSlider &copy) :
  *
  */
 CharacterSlider::
-CharacterSlider(PartGroup *parent, const std::string &name,
+CharacterSlider(PartGroup *parent, std::string name,
                 PN_stdfloat default_value)
-  : MovingPartScalar(parent, name, default_value) {
+  : MovingPartScalar(parent, std::move(name), default_value) {
 }
 
 /**

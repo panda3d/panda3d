@@ -211,8 +211,8 @@ append_command_comment(EggData *data) {
  * EggWriter, and it's not necessary to call it explicitly.
  */
 void EggBase::
-append_command_comment(EggData *data, const string &comment) {
-  data->insert(data->begin(), new EggComment("", comment));
+append_command_comment(EggData *data, std::string comment) {
+  data->insert(data->begin(), new EggComment("", std::move(comment)));
 }
 
 /**

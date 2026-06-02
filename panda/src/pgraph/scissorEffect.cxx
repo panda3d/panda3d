@@ -262,10 +262,10 @@ cull_callback(CullTraverser *trav, CullTraverserData &data,
   }
 
   // Impose bounding volumes.
-  frame[0] = max(min(frame[0], (PN_stdfloat)1.0), (PN_stdfloat)0.0);
-  frame[1] = max(min(frame[1], (PN_stdfloat)1.0), frame[0]);
-  frame[2] = max(min(frame[2], (PN_stdfloat)1.0), (PN_stdfloat)0.0);
-  frame[3] = max(min(frame[3], (PN_stdfloat)1.0), frame[2]);
+  frame[0] = std::clamp(frame[0], (PN_stdfloat)0.0, (PN_stdfloat)1.0);
+  frame[1] = std::clamp(frame[1], frame[0], (PN_stdfloat)1.0);
+  frame[2] = std::clamp(frame[2], (PN_stdfloat)0.0, (PN_stdfloat)1.0);
+  frame[3] = std::clamp(frame[3], frame[2], (PN_stdfloat)1.0);
 
   if (_clip) {
     CPT(RenderAttrib) scissor_attrib = ScissorAttrib::make(frame);

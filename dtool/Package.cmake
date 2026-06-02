@@ -97,6 +97,7 @@ if(THIRDPARTY_DIRECTORY)
     HarfBuzz
     JPEG
     LibSquish
+    MIMALLOC
     ODE
     Ogg
     OpenAL
@@ -109,6 +110,7 @@ if(THIRDPARTY_DIRECTORY)
     SWResample
     SWScale
     Tiff
+    TIFF
     VorbisFile
     VRPN
     ZLIB
@@ -395,11 +397,8 @@ if(HAVE_PYTHON)
     if(_arch_tag STREQUAL "arm64" AND _target VERSION_LESS "11.0")
       set(_target "11.0")
 
-    elseif(PYTHON_VERSION_STRING VERSION_GREATER_EQUAL "3.13" AND _target VERSION_LESS "10.13")
+    elseif(_target VERSION_LESS "10.13")
       set(_target "10.13")
-
-    elseif(PYTHON_VERSION_STRING VERSION_GREATER_EQUAL "3.8" AND _target VERSION_LESS "10.9")
-      set(_target "10.9")
 
     endif()
 

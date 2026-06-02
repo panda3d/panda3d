@@ -105,7 +105,7 @@ protected:
   INLINE ParamValue();
 
 PUBLISHED:
-  INLINE ParamValue(const Type &value);
+  INLINE ParamValue(Type value);
   INLINE virtual ~ParamValue();
 
   INLINE virtual TypeHandle get_value_type() const;
@@ -131,7 +131,7 @@ public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
-  static void init_type(const std::string &type_name = "UndefinedParamValue") {
+  static void init_type(std::string_view type_name = "UndefinedParamValue") {
     ParamValueBase::init_type();
     _type_handle = register_dynamic_type
       (type_name, ParamValueBase::get_class_type());

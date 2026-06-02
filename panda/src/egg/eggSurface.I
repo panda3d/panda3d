@@ -15,7 +15,7 @@
  *
  */
 INLINE EggSurface::
-EggSurface(const std::string &name) : EggPrimitive(name) {
+EggSurface(std::string name) : EggPrimitive(std::move(name)) {
   _u_subdiv = 0;
   _v_subdiv = 0;
 }

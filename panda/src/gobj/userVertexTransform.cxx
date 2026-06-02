@@ -21,8 +21,8 @@ TypeHandle UserVertexTransform::_type_handle;
  *
  */
 UserVertexTransform::
-UserVertexTransform(const std::string &name) :
-  _name(name)
+UserVertexTransform(std::string name) :
+  _name(std::move(name))
 {
 }
 

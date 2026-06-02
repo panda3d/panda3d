@@ -48,7 +48,7 @@ public:
   CollisionSolid(const CollisionSolid &copy);
   virtual ~CollisionSolid();
 
-  virtual CollisionSolid *make_copy()=0;
+  [[nodiscard]] virtual CollisionSolid *make_copy()=0;
 protected:
   virtual PT(CopyOnWriteObject) make_cow_copy();
 

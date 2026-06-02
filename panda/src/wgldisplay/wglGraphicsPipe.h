@@ -32,7 +32,7 @@ public:
   static PT(GraphicsPipe) pipe_constructor();
 
 protected:
-  virtual PT(GraphicsOutput) make_output(const std::string &name,
+  virtual PT(GraphicsOutput) make_output(std::string_view name,
                                          const FrameBufferProperties &fb_prop,
                                          const WindowProperties &win_prop,
                                          int flags,
@@ -42,6 +42,7 @@ protected:
                                          int retry,
                                          bool &precertify);
   virtual PT(GraphicsStateGuardian) make_callback_gsg(GraphicsEngine *engine);
+  virtual void release_current_context();
 
 private:
 

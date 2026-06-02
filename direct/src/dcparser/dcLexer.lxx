@@ -53,9 +53,9 @@ static int initial_token;
 ////////////////////////////////////////////////////////////////////
 
 void
-dc_init_lexer(std::istream &in, const std::string &filename) {
+dc_init_lexer(std::istream &in, std::string filename) {
   input_p = &in;
-  dc_filename = filename;
+  dc_filename = std::move(filename);
   line_number = 0;
   col_number = 0;
   error_count = 0;
@@ -98,7 +98,7 @@ dcyywrap(void) {
 }
 
 void
-dcyyerror(const std::string &msg) {
+dcyyerror(std::string_view msg) {
   using std::cerr;
 
   cerr << "\nError";
@@ -115,7 +115,7 @@ dcyyerror(const std::string &msg) {
 }
 
 void
-dcyywarning(const std::string &msg) {
+dcyywarning(std::string_view msg) {
   using std::cerr;
 
   cerr << "\nWarning";

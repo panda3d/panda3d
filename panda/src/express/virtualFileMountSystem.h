@@ -52,7 +52,7 @@ public:
   virtual bool scan_directory(vector_string &contents,
                               const Filename &dir) const;
 
-  virtual bool atomic_compare_and_exchange_contents(const Filename &file, std::string &orig_contents, const std::string &old_contents, const std::string &new_contents);
+  virtual bool atomic_compare_and_exchange_contents(const Filename &file, std::string &orig_contents, std::string_view old_contents, std::string_view new_contents);
   virtual bool atomic_read_contents(const Filename &file, std::string &contents) const;
 
   virtual void output(std::ostream &out) const;

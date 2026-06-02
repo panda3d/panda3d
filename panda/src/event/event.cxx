@@ -20,8 +20,8 @@ TypeHandle Event::_type_handle;
  *
  */
 Event::
-Event(const std::string &event_name, EventReceiver *receiver) :
-  _name(event_name)
+Event(std::string event_name, EventReceiver *receiver) :
+  _name(std::move(event_name))
 {
   _receiver = receiver;
 }

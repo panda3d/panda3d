@@ -27,13 +27,13 @@ class GraphicsWindow;
  */
 class EXPCL_PANDA_DISPLAY GraphicsWindowInputDevice : public InputDevice {
 private:
-  GraphicsWindowInputDevice(GraphicsWindow *host, const std::string &name,
+  GraphicsWindowInputDevice(GraphicsWindow *host, std::string name,
                             bool pointer, bool keyboard);
 
 public:
-  static PT(GraphicsWindowInputDevice) pointer_only(GraphicsWindow *host, const std::string &name);
-  static PT(GraphicsWindowInputDevice) keyboard_only(GraphicsWindow *host, const std::string &name);
-  static PT(GraphicsWindowInputDevice) pointer_and_keyboard(GraphicsWindow *host, const std::string &name);
+  static PT(GraphicsWindowInputDevice) pointer_only(GraphicsWindow *host, std::string name);
+  static PT(GraphicsWindowInputDevice) keyboard_only(GraphicsWindow *host, std::string name);
+  static PT(GraphicsWindowInputDevice) pointer_and_keyboard(GraphicsWindow *host, std::string name);
 
   GraphicsWindowInputDevice() = default;
 
@@ -45,7 +45,7 @@ PUBLISHED:
   void button_up(ButtonHandle button, double time = ClockObject::get_global_clock()->get_frame_time());
 
   void keystroke(int keycode, double time = ClockObject::get_global_clock()->get_frame_time());
-  void candidate(const std::wstring &candidate_string, size_t highlight_start,
+  void candidate(std::wstring candidate_string, size_t highlight_start,
                  size_t highlight_end, size_t cursor_pos);
 
   void focus_lost(double time = ClockObject::get_global_clock()->get_frame_time());

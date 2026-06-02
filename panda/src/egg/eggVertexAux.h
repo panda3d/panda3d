@@ -29,12 +29,12 @@
  */
 class EXPCL_PANDA_EGG EggVertexAux : public EggNamedObject {
 PUBLISHED:
-  explicit EggVertexAux(const std::string &name, const LVecBase4d &aux);
+  explicit EggVertexAux(std::string name, const LVecBase4d &aux);
   EggVertexAux(const EggVertexAux &copy);
   EggVertexAux &operator = (const EggVertexAux &copy);
   virtual ~EggVertexAux();
 
-  INLINE void set_name(const std::string &name);
+  INLINE void set_name(std::string name);
 
   INLINE const LVecBase4d &get_aux() const;
   INLINE void set_aux(const LVecBase4d &aux);

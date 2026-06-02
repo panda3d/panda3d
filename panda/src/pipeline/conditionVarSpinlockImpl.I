@@ -16,7 +16,6 @@
  */
 INLINE ConditionVarSpinlockImpl::
 ConditionVarSpinlockImpl(MutexSpinlockImpl &mutex) : _mutex(mutex) {
-  _event = 0;
 }
 
 /**
@@ -32,7 +31,7 @@ INLINE ConditionVarSpinlockImpl::
 INLINE void ConditionVarSpinlockImpl::
 notify() {
   // This will wake up all waiters on the lock.  But that's allowed.
-  AtomicAdjust::inc(_event);
+  _event.fetch_add(1, std::memory_order_release);
 }
 
 /**
@@ -40,5 +39,5 @@ notify() {
  */
 INLINE void ConditionVarSpinlockImpl::
 notify_all() {
-  AtomicAdjust::inc(_event);
+  _event.fetch_add(1, std::memory_order_release);
 }

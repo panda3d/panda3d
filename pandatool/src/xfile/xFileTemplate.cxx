@@ -20,7 +20,7 @@ TypeHandle XFileTemplate::_type_handle;
  *
  */
 XFileTemplate::
-XFileTemplate(XFile *x_file, const std::string &name, const WindowsGuid &guid) :
+XFileTemplate(XFile *x_file, std::string_view name, const WindowsGuid &guid) :
   XFileNode(x_file, name),
   _guid(guid),
   _is_standard(false),

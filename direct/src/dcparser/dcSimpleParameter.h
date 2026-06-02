@@ -60,7 +60,7 @@ public:
                           bool &pack_error, bool &range_error) const;
   virtual void pack_uint64(DCPackData &pack_data, uint64_t value,
                            bool &pack_error, bool &range_error) const;
-  virtual void pack_string(DCPackData &pack_data, const std::string &value,
+  virtual void pack_string(DCPackData &pack_data, std::string_view value,
                            bool &pack_error, bool &range_error) const;
   virtual void pack_blob(DCPackData &pack_data, const vector_uchar &value,
                          bool &pack_error, bool &range_error) const;
@@ -85,8 +85,8 @@ public:
   virtual bool unpack_skip(const char *data, size_t length, size_t &p,
                            bool &pack_error) const;
 
-  virtual void output_instance(std::ostream &out, bool brief, const std::string &prename,
-                               const std::string &name, const std::string &postname) const;
+  virtual void output_instance(std::ostream &out, bool brief, std::string_view prename,
+                               std::string_view name, std::string_view postname) const;
   virtual void generate_hash(HashGenerator &hashgen) const;
 
 protected:

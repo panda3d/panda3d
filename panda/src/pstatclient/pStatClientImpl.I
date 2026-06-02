@@ -16,8 +16,8 @@
  * will presumably be written in the title bar or something.
  */
 INLINE void PStatClientImpl::
-set_client_name(const std::string &name) {
-  _client_name = name;
+set_client_name(std::string name) {
+  _client_name = std::move(name);
 }
 
 /**

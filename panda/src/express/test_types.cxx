@@ -24,7 +24,7 @@ using std::string;
 
 class ThatThingie : public TypedObject, public ReferenceCount {
 public:
-  ThatThingie(const string &name) : _name(name) {
+  ThatThingie(std::string name) : _name(std::move(name)) {
     nout << "Constructing ThatThingie " << _name << "\n";
   }
   virtual ~ThatThingie() {
@@ -56,7 +56,7 @@ private:
 
 class ThisThingie : public ThatThingie {
 public:
-  ThisThingie(const string &name) : ThatThingie(name) {
+  ThisThingie(std::string name) : ThatThingie(std::move(name)) {
     nout << "Constructing ThisThingie " << _name << "\n";
   }
   virtual ~ThisThingie() {
@@ -87,7 +87,7 @@ private:
 
 class TheOtherThingie {
 public:
-  TheOtherThingie(const string &name) : _name(name) {
+  TheOtherThingie(std::string name) : _name(std::move(name)) {
     nout << "Constructing TheOtherThingie " << _name << "\n";
   }
   virtual ~TheOtherThingie() {
@@ -116,7 +116,7 @@ private:
 
 class WhatAThingie : public ThatThingie, public TheOtherThingie {
 public:
-  WhatAThingie(const string &name) : ThatThingie(name), TheOtherThingie(name) {
+  WhatAThingie(const std::string &name) : ThatThingie(name), TheOtherThingie(name) {
     nout << "Constructing WhatAThingie " << ThatThingie::_name << "\n";
   }
   virtual ~WhatAThingie() {

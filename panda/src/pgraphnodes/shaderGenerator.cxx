@@ -781,7 +781,7 @@ analyze_renderstate(ShaderKey &key, const RenderState *rs) {
     }
 
     // Does this stage need a texcolor_# input?
-    if (stage->uses_color()) {
+    if (stage->uses_color() || stage->involves_color_scale()) {
       info._flags |= ShaderKey::TF_uses_color;
     }
 
@@ -1917,6 +1917,7 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
   for (size_t i = 0; i < key._textures.size(); ++i) {
     const ShaderKey::TextureInfo &tex = key._textures[i];
     TextureStage::CombineMode combine_rgb, combine_alpha;
+    int rgb_scale = 1, alpha_scale = 1;
 
     switch (tex._mode) {
     case TextureStage::M_modulate:
@@ -1959,34 +1960,43 @@ synthesize_shader(const RenderState *rs, const GeomVertexAnimationSpec &anim) {
     case TextureStage::M_combine:
       combine_rgb = (TextureStage::CombineMode)((tex._flags & ShaderKey::TF_COMBINE_RGB_MODE_MASK) >> ShaderKey::TF_COMBINE_RGB_MODE_SHIFT);
       combine_alpha = (TextureStage::CombineMode)((tex._flags & ShaderKey::TF_COMBINE_ALPHA_MODE_MASK) >> ShaderKey::TF_COMBINE_ALPHA_MODE_SHIFT);
-      if (combine_rgb == TextureStage::CM_dot3_rgba) {
-        text << "\t result = ";
-        text << combine_mode_as_string(tex, combine_rgb, false, i);
-        text << ";\n";
-      } else {
-        text << "\t result.rgb = ";
-        text << combine_mode_as_string(tex, combine_rgb, false, i);
-        text << ";\n\t result.a = ";
-        text << combine_mode_as_string(tex, combine_alpha, true, i);
-        text << ";\n";
-      }
       if (tex._flags & ShaderKey::TF_rgb_scale_2) {
-        text << "\t result.rgb *= 2;\n";
+        rgb_scale *= 2;
       }
       if (tex._flags & ShaderKey::TF_rgb_scale_4) {
-        text << "\t result.rgb *= 4;\n";
+        rgb_scale *= 4;
       }
       if (tex._flags & ShaderKey::TF_alpha_scale_2) {
-        text << "\t result.a *= 2;\n";
+        alpha_scale *= 2;
       }
       if (tex._flags & ShaderKey::TF_alpha_scale_4) {
-        text << "\t result.a *= 4;\n";
+        alpha_scale *= 4;
+      }
+      if (combine_rgb == TextureStage::CM_dot3_rgba) {
+        text << "\t result = saturate(";
+        text << combine_mode_as_string(tex, combine_rgb, false, i);
+        if (rgb_scale != 1 || alpha_scale != 1) {
+          text << " * float4(" << rgb_scale << ", " << rgb_scale << ", " << rgb_scale << ", " << alpha_scale << ")";
+        }
+        text << ");\n";
+      } else {
+        text << "\t result.rgb = saturate(";
+        text << combine_mode_as_string(tex, combine_rgb, false, i);
+        if (rgb_scale != 1) {
+          text << " * " << rgb_scale;
+        }
+        text << ");\n\t result.a = saturate(";
+        text << combine_mode_as_string(tex, combine_alpha, true, i);
+        if (alpha_scale != 1) {
+          text << " * " << alpha_scale;
+        }
+        text << ");\n";
       }
       break;
     case TextureStage::M_blend_color_scale:
       text << "\t result.rgb = lerp(result.rgb, texcolor_" << i << ".rgb * attr_colorscale.rgb, tex" << i << ".rgb);\n";
       if (key._flags & ShaderKey::F_calc_primary_alpha) {
-        text << "\t result.a *= texcolor_" << i << ".a * attr_colorscale.a;\n";
+        text << "\t result.a *= tex" << i << ".a;\n";
       }
       break;
     default:
@@ -2156,16 +2166,21 @@ combine_mode_as_string(const ShaderKey::TextureInfo &info, TextureStage::Combine
   std::ostringstream text;
   switch (c_mode) {
   case TextureStage::CM_modulate:
+    text << "(";
     text << combine_source_as_string(info, 0, alpha, texindex);
     text << " * ";
     text << combine_source_as_string(info, 1, alpha, texindex);
+    text << ")";
     break;
   case TextureStage::CM_add:
+    text << "(";
     text << combine_source_as_string(info, 0, alpha, texindex);
     text << " + ";
     text << combine_source_as_string(info, 1, alpha, texindex);
+    text << ")";
     break;
   case TextureStage::CM_add_signed:
+    text << "(";
     text << combine_source_as_string(info, 0, alpha, texindex);
     text << " + ";
     text << combine_source_as_string(info, 1, alpha, texindex);
@@ -2174,6 +2189,7 @@ combine_mode_as_string(const ShaderKey::TextureInfo &info, TextureStage::Combine
     } else {
       text << " - float3(0.5, 0.5, 0.5)";
     }
+    text << ")";
     break;
   case TextureStage::CM_interpolate:
     text << "lerp(";
@@ -2185,9 +2201,11 @@ combine_mode_as_string(const ShaderKey::TextureInfo &info, TextureStage::Combine
     text << ")";
     break;
   case TextureStage::CM_subtract:
+    text << "(";
     text << combine_source_as_string(info, 0, alpha, texindex);
     text << " - ";
     text << combine_source_as_string(info, 1, alpha, texindex);
+    text << ")";
     break;
   case TextureStage::CM_dot3_rgb:
   case TextureStage::CM_dot3_rgba:
@@ -2239,7 +2257,7 @@ combine_source_as_string(const ShaderKey::TextureInfo &info, short num, bool alp
       csource << "result";
       break;
     case TextureStage::CS_constant_color_scale:
-      csource << "attr_colorscale";
+      csource << "(attr_colorscale * texcolor_" << texindex << ")";
       break;
     case TextureStage::CS_last_saved_result:
       csource << "last_saved_result";

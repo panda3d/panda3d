@@ -1395,7 +1395,10 @@ init_states() {
   // The identity and invalid states are asked for so often, we make them a
   // special case and store a pointer forever.
   {
-    TransformState *state = new TransformState;
+    alignas(TransformState) static char storage[sizeof(TransformState)];
+    alignas(LMatrix4) static char inv_mat_storage[sizeof(LMatrix4)];
+    TransformState *state = new (storage) TransformState;
+    state->local_object();
     state->_pos.set(0.0f, 0.0f, 0.0f);
     state->_scale.set(1.0f, 1.0f, 1.0f);
     state->_shear.set(0.0f, 0.0f, 0.0f);
@@ -1406,8 +1409,8 @@ init_states() {
                     0.0f, 1.0f, 0.0f, 0.0f,
                     0.0f, 0.0f, 1.0f, 0.0f,
                     0.0f, 0.0f, 0.0f, 1.0f);
-    state->_inv_mat = new LMatrix4(state->_mat);
-    state->_hash = H_identity;
+    state->_inv_mat = new (inv_mat_storage) LMatrix4(LMatrix4::ident_mat());
+    state->_hash.store(H_identity, std::memory_order_relaxed);
     state->_flags = F_is_identity | F_singular_known | F_components_known
                   | F_has_components | F_mat_known | F_quat_known | F_hpr_known
                   | F_uniform_scale | F_identity_scale | F_is_2d
@@ -1417,8 +1420,10 @@ init_states() {
     _identity_state = state;
   }
   {
-    TransformState *state = new TransformState;
-    state->_hash = H_invalid;
+    alignas(TransformState) static char storage[sizeof(TransformState)];
+    TransformState *state = new (storage) TransformState;
+    state->local_object();
+    state->_hash.store(H_invalid, std::memory_order_relaxed);
     state->_flags = F_is_singular | F_singular_known | F_components_known
                   | F_mat_known | F_is_invalid;
     state->cache_ref();
@@ -2008,7 +2013,7 @@ calc_hash() const {
   // cached values (only given components are considered), and (2) the hash
   // itself is set atomically.
   PStatTimer timer(_transform_hash_pcollector);
-  AtomicAdjust::Integer hash = 0;
+  size_t hash = 0;
 
   static const int significant_flags =
     (F_is_invalid | F_is_identity | F_components_given | F_hpr_given | F_is_2d);
@@ -2057,7 +2062,7 @@ calc_hash() const {
 
   // We don't care if some other thread set this in the meantime, since every
   // thread should have computed the same hash.
-  AtomicAdjust::set(_hash, hash);
+  _hash.store(hash, std::memory_order_relaxed);
 }
 
 /**
@@ -2362,9 +2367,18 @@ make_from_bam(const FactoryParams &params) {
 void TransformState::
 fillin(DatagramIterator &scan, BamReader *manager) {
   TypedWritable::fillin(scan, manager);
+
+  if (!manager->expect_remaining_size(scan, 4)) {
+    _flags = F_is_invalid;
+    return;
+  }
+
   _flags = scan.get_uint32();
 
-  if ((_flags & F_components_given) != 0) {
+  size_t float_size = manager->get_file_stdfloat_double() ? 8 : 4;
+
+  if ((_flags & F_components_given) != 0 &&
+      manager->expect_remaining_size(scan, float_size * 12)) {
     // Componentwise transform.
     _pos.read_datagram(scan);
     if ((_flags & F_quat_given) != 0) {
@@ -2376,10 +2390,19 @@ fillin(DatagramIterator &scan, BamReader *manager) {
     _shear.read_datagram(scan);
 
     check_uniform_scale();
+  } else {
+    _flags &= ~(F_quat_given | F_quat_known | F_hpr_given | F_hpr_known | F_components_given | F_components_known);
   }
 
-  if ((_flags & F_mat_known) != 0) {
+  if ((_flags & F_mat_known) != 0 &&
+      manager->expect_remaining_size(scan, float_size * 16)) {
     // General matrix.
     _mat.read_datagram(scan);
+  } else {
+    _flags &= ~(F_mat_known);
+  }
+
+  if ((_flags & (F_is_identity | F_mat_known | F_components_known)) == 0) {
+    _flags |= F_is_invalid;
   }
 }

@@ -156,7 +156,7 @@ def usage(problem):
     print("  --everything      (enable every third-party lib)")
     print("  --directx-sdk=X   (specify version of DirectX SDK to use: jun2010, aug2009)")
     print("  --windows-sdk=X   (specify Windows SDK version, eg. 7.1, 8.1, 10 or 11.  Default is 8.1)")
-    print("  --msvc-version=X  (specify Visual C++ version, eg. 14.1, 14.2, 14.3.  Default is 14.1)")
+    print("  --msvc-version=X  (specify Visual C++ version, eg. 14.1, 14.2, 14.3, 14.5.  Default is 14.1)")
     print("  --use-icl         (experimental setting to use an intel compiler instead of MSVC on Windows)")
     print("")
     print("The simplest way to compile panda is to just type:")
@@ -322,7 +322,7 @@ def parseopts(args):
 
     if GetTarget() == 'windows':
         if not MSVC_VERSION:
-            print("No MSVC version specified. Defaulting to 14.1 (Visual Studio 2017).")
+            print("No MSVC version specified. Defaulting to 14.3 (Visual Studio 2022).")
             MSVC_VERSION = (14, 3)
         else:
             try:
@@ -371,7 +371,7 @@ if GetHost() == "darwin":
     if tuple(OSX_ARCHS) == ('arm64',):
         os.environ["MACOSX_DEPLOYMENT_TARGET"] = "11.0"
     else:
-        os.environ["MACOSX_DEPLOYMENT_TARGET"] = "10.9"
+        os.environ["MACOSX_DEPLOYMENT_TARGET"] = "10.13"
 
 ########################################################################
 ##
@@ -434,10 +434,8 @@ elif target == 'darwin':
 
     if arch_tag == 'arm64':
         PLATFORM = 'macosx-11.0-' + arch_tag
-    elif sys.version_info >= (3, 13):
-        PLATFORM = 'macosx-10.13-' + arch_tag
     else:
-        PLATFORM = 'macosx-10.9-' + arch_tag
+        PLATFORM = 'macosx-10.13-' + arch_tag
 
 elif target == 'linux' and (os.path.isfile("/lib/libc-2.5.so") or os.path.isfile("/lib64/libc-2.5.so")) and os.path.isdir("/opt/python"):
     # This is manylinux1.  A bit of a sloppy check, though.
@@ -859,7 +857,7 @@ if (COMPILER=="GCC"):
              not os.path.isfile(SDK.get("MACOSX", "") + '/usr/lib/libstdc++.6.0.9.dylib'):
             # Also, we can't target FMOD Ex on 10.14 and above
             if not PkgSkip("FMODEX"):
-                Warn("thirdparty package fmodex requires one of MacOSX 10.9-10.13 SDK, excluding from build")
+                Warn("thirdparty package fmodex requires macOS 10.13 SDK, excluding from build")
             PkgDisable("FMODEX")
 
     #if not PkgSkip("PYTHON"):
@@ -1264,7 +1262,7 @@ def CompileCxx(obj,src,opts):
             # Set the minimum version to Windows Vista.
             cmd += "/DWINVER=0x600 "
 
-            cmd += "/Fo" + obj + " /nologo /c"
+            cmd += "/Fo" + obj + " /nologo /c /std:c++17"
             if GetTargetArch() == 'x86':
                 # x86 (32 bit) MSVC 2015+ defaults to /arch:SSE2
                 if not PkgSkip("SSE2") or 'SSE2' in opts:   # x86 with SSE2
@@ -1390,7 +1388,7 @@ def CompileCxx(obj,src,opts):
 
     if (COMPILER=="GCC"):
         if (src.endswith(".c")): cmd = GetCC() +' -fPIC -c -o ' + obj
-        else:                    cmd = GetCXX()+' -std=gnu++14 -ftemplate-depth-70 -fPIC -c -o ' + obj
+        else:                    cmd = GetCXX()+' -std=gnu++17 -ftemplate-depth-70 -fPIC -c -o ' + obj
         for (opt, dir) in INCDIRECTORIES:
             if (opt=="ALWAYS") or (opt in opts): cmd += ' -I' + BracketNameWithQuotes(dir)
         for (opt, dir) in FRAMEWORKDIRECTORIES:
@@ -1413,7 +1411,7 @@ def CompileCxx(obj,src,opts):
             if tuple(OSX_ARCHS) == ('arm64',):
                 cmd += " -mmacosx-version-min=11.0"
             else:
-                cmd += " -mmacosx-version-min=10.9"
+                cmd += " -mmacosx-version-min=10.13"
 
             # Use libc++ to enable C++11 features.
             cmd += " -stdlib=libc++"
@@ -1952,10 +1950,8 @@ def CompileLink(dll, obj, opts):
 
             if tuple(OSX_ARCHS) == ('arm64',):
                 cmd += " -mmacosx-version-min=11.0"
-            elif sys.version_info >= (3, 13) and 'PYTHON' in opts:
-                cmd += " -mmacosx-version-min=10.13"
             else:
-                cmd += " -mmacosx-version-min=10.9"
+                cmd += " -mmacosx-version-min=10.13"
 
             # Use libc++ to enable C++11 features.
             cmd += " -stdlib=libc++"
@@ -2464,7 +2460,6 @@ DTOOL_CONFIG=[
     ("PHAVE_GETOPT_H",                 'UNDEF',                  '1'),
     ("PHAVE_LINUX_INPUT_H",            'UNDEF',                  '1'),
     ("IOCTL_TERMINAL_WIDTH",           'UNDEF',                  '1'),
-    ("HAVE_IOS_TYPEDEFS",              '1',                      '1'),
     ("HAVE_IOS_BINARY",                '1',                      '1'),
     ("STATIC_INIT_GETENV",             '1',                      'UNDEF'),
     ("HAVE_PROC_SELF_EXE",             'UNDEF',                  '1'),
@@ -2479,16 +2474,12 @@ DTOOL_CONFIG=[
     ("GLOBAL_ARGV",                    '__argv',                 'UNDEF'),
     ("GLOBAL_ARGC",                    '__argc',                 'UNDEF'),
     ("PHAVE_IO_H",                     '1',                      'UNDEF'),
-    ("PHAVE_IOSTREAM",                 '1',                      '1'),
     ("PHAVE_STRING_H",                 'UNDEF',                  '1'),
     ("PHAVE_LIMITS_H",                 'UNDEF',                  '1'),
-    ("PHAVE_STDLIB_H",                 'UNDEF',                  '1'),
     ("PHAVE_MALLOC_H",                 '1',                      '1'),
     ("PHAVE_SYS_MALLOC_H",             'UNDEF',                  'UNDEF'),
     ("PHAVE_ALLOCA_H",                 'UNDEF',                  '1'),
     ("PHAVE_LOCALE_H",                 'UNDEF',                  '1'),
-    ("PHAVE_SSTREAM",                  '1',                      '1'),
-    ("PHAVE_NEW",                      '1',                      '1'),
     ("PHAVE_SYS_TYPES_H",              '1',                      '1'),
     ("PHAVE_SYS_TIME_H",               'UNDEF',                  '1'),
     ("PHAVE_UNISTD_H",                 'UNDEF',                  '1'),
@@ -2496,7 +2487,6 @@ DTOOL_CONFIG=[
     ("PHAVE_GLOB_H",                   'UNDEF',                  '1'),
     ("PHAVE_DIRENT_H",                 'UNDEF',                  '1'),
     ("PHAVE_UCONTEXT_H",               'UNDEF',                  '1'),
-    ("PHAVE_STDINT_H",                 '1',                      '1'),
     ("PHAVE_EXECINFO_H",               'UNDEF',                  '1'),
     ("HAVE_RTTI",                      '1',                      '1'),
     ("HAVE_X11",                       'UNDEF',                  '1'),

@@ -30,7 +30,7 @@
  */
 class EXPCL_PANDA_PGRAPH ModelNode : public PandaNode {
 PUBLISHED:
-  explicit INLINE ModelNode(const std::string &name);
+  explicit INLINE ModelNode(std::string name);
 
 protected:
   INLINE ModelNode(const ModelNode &copy);

@@ -17,7 +17,7 @@
  *
  */
 INLINE EggAnimData::
-EggAnimData(const std::string &name) : EggNode(name) {
+EggAnimData(std::string name) : EggNode(std::move(name)) {
   _has_fps = false;
 }
 

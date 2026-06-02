@@ -108,7 +108,7 @@ add_c_interval(CInterval *interval, bool external) {
  * interval, or -1 if there is not.
  */
 int CIntervalManager::
-find_c_interval(const std::string &name) const {
+find_c_interval(std::string_view name) const {
   MutexHolder holder(_lock);
 
   NameIndex::const_iterator ni = _name_index.find(name);

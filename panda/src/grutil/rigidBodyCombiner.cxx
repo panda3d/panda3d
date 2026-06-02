@@ -30,10 +30,10 @@ TypeHandle RigidBodyCombiner::_type_handle;
  *
  */
 RigidBodyCombiner::
-RigidBodyCombiner(const std::string &name) : PandaNode(name) {
+RigidBodyCombiner(std::string name) : PandaNode(name) {
   set_cull_callback();
 
-  _internal_root = new PandaNode(name);
+  _internal_root = new PandaNode(std::move(name));
 
   // We don't want to perform any additional culling once we get within the
   // RigidBodyCombiner.  The internal Geom's bounding volume is not updated

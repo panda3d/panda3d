@@ -67,15 +67,6 @@ if(UNIX)
   set(IOCTL_TERMINAL_WIDTH 1)
 endif()
 
-# Do the system headers define key ios typedefs like ios::openmode
-# and ios::fmtflags?
-check_cxx_source_compiles("
-#include <ios>
-std::ios::openmode foo;
-std::ios::fmtflags bar;
-int main(int argc, char *argv[]) { return 0; }
-" HAVE_IOS_TYPEDEFS)
-
 # Define if the C++ iostream library defines ios::binary.
 check_cxx_source_compiles("
 #include <ios>
@@ -114,16 +105,12 @@ endif()
 
 # Do we have all these header files?
 check_include_file_cxx(io.h PHAVE_IO_H)
-check_include_file_cxx(iostream PHAVE_IOSTREAM)
 check_include_file_cxx(malloc.h PHAVE_MALLOC_H)
 check_include_file_cxx(sys/malloc.h PHAVE_SYS_MALLOC_H)
 check_include_file_cxx(alloca.h PHAVE_ALLOCA_H)
 check_include_file_cxx(locale.h PHAVE_LOCALE_H)
 check_include_file_cxx(string.h PHAVE_STRING_H)
-check_include_file_cxx(stdlib.h PHAVE_STDLIB_H)
 check_include_file_cxx(limits.h PHAVE_LIMITS_H)
-check_include_file_cxx(sstream PHAVE_SSTREAM)
-check_include_file_cxx(new PHAVE_NEW)
 check_include_file_cxx(sys/types.h PHAVE_SYS_TYPES_H)
 check_include_file_cxx(sys/time.h PHAVE_SYS_TIME_H)
 check_include_file_cxx(unistd.h PHAVE_UNISTD_H)
@@ -132,7 +119,6 @@ check_include_file_cxx(glob.h PHAVE_GLOB_H)
 check_include_file_cxx(dirent.h PHAVE_DIRENT_H)
 check_include_file_cxx(ucontext.h PHAVE_UCONTEXT_H) #TODO doesn't work on OSX, use sys/ucontext.h
 check_include_file_cxx(linux/input.h PHAVE_LINUX_INPUT_H)
-check_include_file_cxx(stdint.h PHAVE_STDINT_H)
 check_include_file_cxx(execinfo.h PHAVE_EXECINFO_H)
 
 # Do we have Posix threads?

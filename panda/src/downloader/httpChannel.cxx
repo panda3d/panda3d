@@ -2434,7 +2434,7 @@ run_download_to_stream() {
  */
 void HTTPChannel::
 begin_request(HTTPEnum::Method method, const DocumentSpec &url,
-              const string &body, bool nonblocking,
+              std::string body, bool nonblocking,
               size_t first_byte, size_t last_byte) {
 
   downloader_cat.info()
@@ -2501,7 +2501,7 @@ begin_request(HTTPEnum::Method method, const DocumentSpec &url,
   _request = url;
   _document_spec = DocumentSpec();
   _method = method;
-  _body = body;
+  _body = std::move(body);
 
   // An https-style request means we'll need to establish an SSL connection.
   _want_ssl = _request.get_url().is_ssl();

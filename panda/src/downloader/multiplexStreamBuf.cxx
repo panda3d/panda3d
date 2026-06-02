@@ -80,11 +80,6 @@ write_string(const string &str) {
  */
 MultiplexStreamBuf::
 MultiplexStreamBuf() {
-#ifndef PHAVE_IOSTREAM
-  // Older iostream implementations required this.
-  allocate();
-  setp(base(), ebuf());
-#endif
 }
 
 /**

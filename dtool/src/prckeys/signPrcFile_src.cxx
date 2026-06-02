@@ -64,7 +64,7 @@ output_ssl_errors() {
  * Reads a single line of the prc file.
  */
 void
-read_prc_line(const string &line, string &data) {
+read_prc_line(std::string_view line, string &data) {
   // Strip out lines with this prefix.  These are from a previous signature.
   if (line.substr(0, 3) == "##!") {
     return;

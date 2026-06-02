@@ -36,8 +36,8 @@ PUBLISHED:
   void output(std::ostream &out) const;
 
   bool is_include_empty() const;
-  bool matches_include(const std::string &joint_name) const;
-  bool matches_exclude(const std::string &joint_name) const;
+  bool matches_include(std::string_view joint_name) const;
+  bool matches_exclude(std::string_view joint_name) const;
 
 private:
   typedef pvector<GlobPattern> Joints;

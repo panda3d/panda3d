@@ -34,7 +34,7 @@ EventHandler(EventQueue *ev_queue) : _queue(*ev_queue) {
  * fired.
  */
 AsyncFuture *EventHandler::
-get_future(const string &event_name) {
+get_future(std::string_view event_name) {
   Futures::iterator fi;
   fi = _futures.find(event_name);
 
@@ -44,7 +44,7 @@ get_future(const string &event_name) {
     return fi->second;
   } else {
     AsyncFuture *fut = new AsyncFuture;
-    _futures[event_name] = fut;
+    _futures[std::string(event_name)] = fut;
     return fut;
   }
 }
@@ -177,7 +177,7 @@ write(std::ostream &out) const {
  * added, false if it was already defined on the indicated event name.
  */
 bool EventHandler::
-add_hook(const string &event_name, EventFunction *function) {
+add_hook(std::string_view event_name, EventFunction *function) {
   if (event_cat.is_debug()) {
     event_cat.debug()
       << "adding hook for event '" << event_name
@@ -185,7 +185,7 @@ add_hook(const string &event_name, EventFunction *function) {
   }
   assert(!event_name.empty());
   assert(function);
-  return _hooks[event_name].insert(function).second;
+  return _hooks[std::string(event_name)].insert(function).second;
 }
 
 
@@ -196,11 +196,11 @@ add_hook(const string &event_name, EventFunction *function) {
  * version records an untyped pointer to user callback data.
  */
 bool EventHandler::
-add_hook(const string &event_name, EventCallbackFunction *function,
+add_hook(std::string_view event_name, EventCallbackFunction *function,
          void *data) {
   assert(!event_name.empty());
   assert(function);
-  return _cbhooks[event_name].insert(CallbackFunction(function, data)).second;
+  return _cbhooks[std::string(event_name)].insert(CallbackFunction(function, data)).second;
 }
 
 /**
@@ -210,10 +210,10 @@ add_hook(const string &event_name, EventCallbackFunction *function,
  * version stores an arbitrary C++ lambda.
  */
 void EventHandler::
-add_hook(const string &event_name, EventLambda function) {
+add_hook(std::string_view event_name, EventLambda function) {
   assert(!event_name.empty());
   assert(function);
-  _lambdahooks[event_name].push_back(function);
+  _lambdahooks[std::string(event_name)].push_back(function);
 }
 
 /**
@@ -221,7 +221,7 @@ add_hook(const string &event_name, EventLambda function) {
  * otherwise.
  */
 bool EventHandler::
-has_hook(const string &event_name) const {
+has_hook(std::string_view event_name) const {
   assert(!event_name.empty());
   Hooks::const_iterator hi;
   hi = _hooks.find(event_name);
@@ -256,7 +256,7 @@ has_hook(const string &event_name) const {
  * function pointer, false otherwise.
  */
 bool EventHandler::
-has_hook(const string &event_name, EventFunction *function) const {
+has_hook(std::string_view event_name, EventFunction *function) const {
   assert(!event_name.empty());
   Hooks::const_iterator hi;
   hi = _hooks.find(event_name);
@@ -276,7 +276,7 @@ has_hook(const string &event_name, EventFunction *function) const {
  * function pointer and callback data, false otherwise.
  */
 bool EventHandler::
-has_hook(const string &event_name, EventCallbackFunction *function, void *data) const {
+has_hook(std::string_view event_name, EventCallbackFunction *function, void *data) const {
   assert(!event_name.empty());
   CallbackHooks::const_iterator chi;
   chi = _cbhooks.find(event_name);
@@ -296,10 +296,10 @@ has_hook(const string &event_name, EventCallbackFunction *function, void *data) 
  * the hook was removed, false if it wasn't there in the first place.
  */
 bool EventHandler::
-remove_hook(const string &event_name, EventFunction *function) {
+remove_hook(std::string_view event_name, EventFunction *function) {
   assert(!event_name.empty());
   assert(function);
-  return _hooks[event_name].erase(function) != 0;
+  return _hooks[std::string(event_name)].erase(function) != 0;
 }
 
 
@@ -309,11 +309,11 @@ remove_hook(const string &event_name, EventFunction *function) {
  * version takes an untyped pointer to user callback data.
  */
 bool EventHandler::
-remove_hook(const string &event_name, EventCallbackFunction *function,
+remove_hook(std::string_view event_name, EventCallbackFunction *function,
             void *data) {
   assert(!event_name.empty());
   assert(function);
-  return _cbhooks[event_name].erase(CallbackFunction(function, data)) != 0;
+  return _cbhooks[std::string(event_name)].erase(CallbackFunction(function, data)) != 0;
 }
 
 /**
@@ -321,7 +321,7 @@ remove_hook(const string &event_name, EventCallbackFunction *function,
  * functions were removed, false if there were no functions added to the hook.
  */
 bool EventHandler::
-remove_hooks(const string &event_name) {
+remove_hooks(std::string_view event_name) {
   assert(!event_name.empty());
   bool any_removed = false;
 

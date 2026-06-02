@@ -30,16 +30,16 @@
  */
 class EXPCL_DTOOL_PRC ConfigVariable : public ConfigVariableBase {
 protected:
-  INLINE ConfigVariable(const std::string &name, ValueType type);
-  INLINE ConfigVariable(const std::string &name, ValueType type,
-                        const std::string &description, int flags);
+  INLINE ConfigVariable(std::string_view name, ValueType type);
+  INLINE ConfigVariable(std::string_view name, ValueType type,
+                        std::string_view description, int flags);
 
 PUBLISHED:
-  INLINE explicit ConfigVariable(const std::string &name);
+  INLINE explicit ConfigVariable(std::string_view name);
   INLINE ~ConfigVariable();
 
   INLINE const std::string &get_string_value() const;
-  INLINE void set_string_value(const std::string &value);
+  INLINE void set_string_value(std::string value);
   INLINE void clear_value();
 
   INLINE size_t get_num_words() const;
@@ -61,7 +61,7 @@ protected:
   INLINE int64_t get_int64_word(size_t n) const;
   INLINE double get_double_word(size_t n) const;
 
-  INLINE void set_string_word(size_t n, const std::string &value);
+  INLINE void set_string_word(size_t n, std::string_view value);
   INLINE void set_bool_word(size_t n, bool value);
   INLINE void set_int_word(size_t n, int value);
   INLINE void set_int64_word(size_t n, int64_t value);

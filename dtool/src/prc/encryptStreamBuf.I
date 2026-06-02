@@ -21,8 +21,8 @@
  * code, but open_write() will fail.
  */
 INLINE void EncryptStreamBuf::
-set_algorithm(const std::string &algorithm) {
-  _algorithm = algorithm;
+set_algorithm(std::string algorithm) {
+  _algorithm = std::move(algorithm);
 }
 
 /**

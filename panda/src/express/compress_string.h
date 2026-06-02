@@ -23,7 +23,7 @@
 BEGIN_PUBLISH
 
 EXPCL_PANDA_EXPRESS std::string
-compress_string(const std::string &source, int compression_level);
+compress_string(std::string_view source, int compression_level);
 
 EXPCL_PANDA_EXPRESS std::string
 decompress_string(const std::string &source);

@@ -23,8 +23,8 @@ QtessInputEntry(const QtessInputEntry &copy) {
  *
  */
 INLINE void QtessInputEntry::
-add_node_name(const std::string &name) {
-  _node_names.push_back(GlobPattern(name));
+add_node_name(std::string name) {
+  _node_names.push_back(GlobPattern(std::move(name)));
 }
 
 /**

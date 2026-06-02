@@ -15,7 +15,7 @@
  *
  */
 INLINE EggSAnimData::
-EggSAnimData(const std::string &name) : EggAnimData(name) {
+EggSAnimData(std::string name) : EggAnimData(std::move(name)) {
 }
 
 

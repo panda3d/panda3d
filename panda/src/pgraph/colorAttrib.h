@@ -31,6 +31,7 @@ PUBLISHED:
   };
 
 private:
+  friend class StaticObject<ColorAttrib>;
   INLINE ColorAttrib(Type type, const LColor &color);
 
 PUBLISHED:
@@ -87,8 +88,8 @@ public:
     RenderAttrib::init_type();
     register_type(_type_handle, "ColorAttrib",
                   RenderAttrib::get_class_type());
-    _attrib_slot = register_slot(_type_handle, 100,
-      new ColorAttrib(T_vertex, LColor::zero()));
+    static StaticObject<ColorAttrib> default_attrib(T_vertex, LColor::zero());
+    _attrib_slot = register_slot(_type_handle, 100, default_attrib);
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

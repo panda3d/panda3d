@@ -856,9 +856,9 @@ clear_shadow() {
  * "fixed".
  */
 INLINE void TextNode::
-set_bin(const std::string &bin) {
+set_bin(std::string bin) {
   CDWriter cdata(_cycler, true);
-  TextProperties::set_bin(bin);
+  TextProperties::set_bin(std::move(bin));
   invalidate_no_measure(cdata);
 }
 
@@ -983,7 +983,7 @@ get_wordwrapped_text() const {
  * should not include the newline character.
  */
 INLINE PN_stdfloat TextNode::
-calc_width(const std::string &line) const {
+calc_width(std::string_view line) const {
   return calc_width(decode_text(line));
 }
 

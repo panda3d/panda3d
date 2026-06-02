@@ -15,8 +15,8 @@
  *
  */
 INLINE Namable::
-Namable(const std::string &initial_name) :
-  _name(initial_name)
+Namable(std::string initial_name) :
+  _name(std::move(initial_name))
 {
 }
 
@@ -24,8 +24,8 @@ Namable(const std::string &initial_name) :
  *
  */
 INLINE void Namable::
-set_name(const std::string &name) {
-  _name = name;
+set_name(std::string name) {
+  _name = std::move(name);
 }
 
 /**

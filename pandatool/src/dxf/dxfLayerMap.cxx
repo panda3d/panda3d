@@ -22,7 +22,7 @@
  * this function to create a specialized time, if desired.
  */
 DXFLayer *DXFLayerMap::
-get_layer(const std::string &name, DXFFile *dxffile) {
+get_layer(std::string name, DXFFile *dxffile) {
   iterator lmi;
   lmi = find(name);
   if (lmi != end()) {
@@ -32,7 +32,7 @@ get_layer(const std::string &name, DXFFile *dxffile) {
 
   // Need a new layer.
   DXFLayer *layer = dxffile->new_layer(name);
-  (*this)[name] = layer;
+  (*this)[std::move(name)] = layer;
 
   return layer;
 }

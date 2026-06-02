@@ -810,6 +810,10 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   TypedWritableReferenceCount::fillin(scan, manager);
   nassertv(!_is_registered);
 
+  if (!manager->expect_remaining_size(scan, 5)) {
+    return;
+  }
+
   _stride = scan.get_uint16();
   _total_bytes = scan.get_uint16();
   _pad_to = scan.get_uint8();

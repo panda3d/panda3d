@@ -31,7 +31,7 @@ class AsyncTaskChain;
  */
 class EXPCL_PANDA_EVENT AsyncTask : public AsyncFuture, public Namable {
 public:
-  AsyncTask(const std::string &name = std::string());
+  AsyncTask(std::string name = "");
   ALLOC_DELETED_CHAIN(AsyncTask);
 
 PUBLISHED:
@@ -76,13 +76,13 @@ PUBLISHED:
   INLINE int get_start_frame() const;
   int get_elapsed_frames() const;
 
-  void set_name(const std::string &name);
+  void set_name(std::string name);
   INLINE void clear_name();
   std::string get_name_prefix() const;
 
-  INLINE AtomicAdjust::Integer get_task_id() const;
+  INLINE int get_task_id() const;
 
-  void set_task_chain(const std::string &chain_name);
+  void set_task_chain(std::string_view chain_name);
   INLINE const std::string &get_task_chain() const;
 
   void set_sort(int sort);
@@ -91,7 +91,7 @@ PUBLISHED:
   void set_priority(int priority);
   INLINE int get_priority() const;
 
-  INLINE void set_done_event(const std::string &done_event);
+  INLINE void set_done_event(std::string done_event);
 
   INLINE double get_dt() const;
   INLINE double get_max_dt() const;
@@ -133,7 +133,7 @@ protected:
   virtual void upon_death(AsyncTaskManager *manager, bool clean_exit);
 
 protected:
-  AtomicAdjust::Integer _task_id;
+  int _task_id;
   std::string _chain_name;
   double _delay;
   bool _has_delay;
@@ -154,7 +154,7 @@ protected:
   double _total_dt;
   int _num_frames;
 
-  static AtomicAdjust::Integer _next_task_id;
+  static patomic<int> _next_task_id;
 
   static PStatCollector _tasks_pcollector;
   PStatCollector _task_pcollector;

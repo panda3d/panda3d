@@ -297,7 +297,7 @@ init_random_seed() {
  * of explicit calls to add_proxy() for each scheme/proxy pair.
  */
 void HTTPClient::
-set_proxy_spec(const string &proxy_spec) {
+set_proxy_spec(std::string_view proxy_spec) {
   clear_proxy();
 
   string trim_proxy_spec = trim(proxy_spec);
@@ -375,7 +375,7 @@ get_proxy_spec() const {
  * contain wildcard characters ("*").
  */
 void HTTPClient::
-set_direct_host_spec(const string &direct_host_spec) {
+set_direct_host_spec(std::string_view direct_host_spec) {
   clear_direct_host();
 
   // Tokenize the string based on the semicolons.
@@ -434,15 +434,14 @@ clear_proxy() {
  * to indicate a direct connection.
  */
 void HTTPClient::
-add_proxy(const string &scheme, const URLSpec &proxy) {
+add_proxy(std::string_view scheme, const URLSpec &proxy) {
   URLSpec proxy_url(proxy);
 
   // The scheme is always converted to lowercase.
   string lc_scheme;
   lc_scheme.reserve(scheme.length());
-  string::const_iterator si;
-  for (si = scheme.begin(); si != scheme.end(); ++si) {
-    lc_scheme += tolower(*si);
+  for (char c : scheme) {
+    lc_scheme += tolower(c);
   }
 
   // Remove the trailing colon, if there is one.
@@ -487,17 +486,15 @@ clear_direct_host() {
  * IP address, and it may include the * as a wildcard character.
  */
 void HTTPClient::
-add_direct_host(const string &hostname) {
+add_direct_host(std::string_view hostname) {
   // The hostname is always converted to lowercase.
   string lc_hostname;
   lc_hostname.reserve(hostname.length());
-  for (string::const_iterator si = hostname.begin();
-       si != hostname.end();
-       ++si) {
-    lc_hostname += tolower(*si);
+  for (char c : hostname) {
+    lc_hostname += tolower(c);
   }
 
-  _direct_hosts.push_back(GlobPattern(lc_hostname));
+  _direct_hosts.push_back(GlobPattern(std::move(lc_hostname)));
 }
 
 /**
@@ -628,12 +625,14 @@ get_proxies_for_url(const URLSpec &url) const {
  * the particular server/realm pair.
  */
 void HTTPClient::
-set_username(const string &server, const string &realm, const string &username) {
-  string key = server + ":" + realm;
+set_username(std::string_view server, std::string_view realm, std::string username) {
+  string key;
+  key.reserve(server.size() + 1 + realm.size());
+  key.append(server).append(1, ':').append(realm);
   if (username.empty()) {
     _usernames.erase(key);
   } else {
-    _usernames[key] = username;
+    _usernames[std::move(key)] = std::move(username);
   }
 }
 
@@ -642,8 +641,10 @@ set_username(const string &server, const string &realm, const string &username) 
  * empty string if nothing has been set.  See set_username().
  */
 string HTTPClient::
-get_username(const string &server, const string &realm) const {
-  string key = server + ":" + realm;
+get_username(std::string_view server, std::string_view realm) const {
+  string key;
+  key.reserve(server.size() + 1 + realm.size());
+  key.append(server).append(1, ':').append(realm);
   Usernames::const_iterator ui;
   ui = _usernames.find(key);
   if (ui != _usernames.end()) {
@@ -916,7 +917,7 @@ add_preapproved_server_certificate_filename(const URLSpec &url, const Filename &
  * weaker add_preapproved_server_certificate_name().
  */
 bool HTTPClient::
-add_preapproved_server_certificate_pem(const URLSpec &url, const string &pem) {
+add_preapproved_server_certificate_pem(const URLSpec &url, std::string_view pem) {
   // Create an in-memory BIO to read the "file" from the memory buffer, and
   // call the low-level routine to read the cert from the BIO.
   BIO *mbio = BIO_new_mem_buf((void *)pem.data(), pem.length());
@@ -962,7 +963,7 @@ add_preapproved_server_certificate_pem(const URLSpec &url, const string &pem) {
  * type0=value0/type1=value1/type2=...
  */
 bool HTTPClient::
-add_preapproved_server_certificate_name(const URLSpec &url, const string &name) {
+add_preapproved_server_certificate_name(const URLSpec &url, std::string_view name) {
   X509_NAME *cert_name = parse_x509_name(name);
   if (cert_name == nullptr) {
     downloader_cat.warning()
@@ -1028,7 +1029,7 @@ get_http_version_string() const {
  * HV_other if the version is unknown.
  */
 HTTPEnum::HTTPVersion HTTPClient::
-parse_http_version_string(const string &version) {
+parse_http_version_string(std::string_view version) {
   if (version == "HTTP/1.0") {
     return HTTPEnum::HV_10;
   } else if (version == "HTTP/1.1") {
@@ -1081,9 +1082,9 @@ make_channel(bool persistent_connection) {
  * document was retrieved.
  */
 PT(HTTPChannel) HTTPClient::
-post_form(const URLSpec &url, const string &body) {
+post_form(const URLSpec &url, std::string body) {
   PT(HTTPChannel) doc = new HTTPChannel(this);
-  doc->post_form(url, body);
+  doc->post_form(url, std::move(body));
   return doc;
 }
 
@@ -1226,7 +1227,7 @@ check_preapproved_server_certificate(const URLSpec &url, X509 *cert,
  * list.  Returns true if any were added, false otherwise.
  */
 bool HTTPClient::
-get_proxies_for_scheme(const string &scheme, pvector<URLSpec> &proxies) const {
+get_proxies_for_scheme(std::string_view scheme, pvector<URLSpec> &proxies) const {
   ProxiesByScheme::const_iterator si = _proxies_by_scheme.find(scheme);
   if (si == _proxies_by_scheme.end()) {
     return false;
@@ -1250,15 +1251,15 @@ get_proxies_for_scheme(const string &scheme, pvector<URLSpec> &proxies) const {
  * may be empty, or just server:username:password or username:password.
  */
 void HTTPClient::
-add_http_username(const string &http_username) {
+add_http_username(std::string_view http_username) {
   size_t c1 = http_username.find(':');
-  if (c1 != string::npos) {
+  if (c1 != std::string_view::npos) {
     size_t c2 = http_username.find(':', c1 + 1);
-    if (c2 != string::npos) {
+    if (c2 != std::string_view::npos) {
       size_t c3 = http_username.find(':', c2 + 1);
-      if (c3 != string::npos) {
+      if (c3 != std::string_view::npos) {
         size_t c4 = http_username.find(':', c3 + 1);
-        if (c4 != string::npos) {
+        if (c4 != std::string_view::npos) {
           // Oops, we have five?  Problem.
           downloader_cat.error()
             << "Invalid http-username " << http_username << "\n";
@@ -1267,18 +1268,18 @@ add_http_username(const string &http_username) {
           // Ok, we have four.
           set_username(http_username.substr(0, c1),
                        http_username.substr(c1 + 1, c2 - (c1 + 1)),
-                       http_username.substr(c2 + 1));
+                       std::string(http_username.substr(c2 + 1)));
         }
 
       } else {
         // We have only three.
-        set_username(string(),
+        set_username(std::string_view(),
                      http_username.substr(0, c1),
-                     http_username.substr(c1 + 1));
+                     std::string(http_username.substr(c1 + 1)));
       }
     } else {
       // We have only two.
-      set_username(string(), string(), http_username);
+      set_username(std::string_view(), std::string_view(), std::string(http_username));
     }
   } else {
     // We have only one?  Problem.
@@ -1291,7 +1292,7 @@ add_http_username(const string &http_username) {
  * Chooses a suitable username:password string for the given URL and realm.
  */
 string HTTPClient::
-select_username(const URLSpec &url, bool is_proxy, const string &realm) const {
+select_username(const URLSpec &url, bool is_proxy, std::string_view realm) const {
   string username;
 
   // Look in several places in order to find the matching username.
@@ -1338,7 +1339,7 @@ select_username(const URLSpec &url, bool is_proxy, const string &realm) const {
  * Returns NULL if no authorization matches.
  */
 HTTPAuthorization *HTTPClient::
-select_auth(const URLSpec &url, bool is_proxy, const string &last_realm) {
+select_auth(const URLSpec &url, bool is_proxy, std::string_view last_realm) {
   Domains &domains = is_proxy ? _proxy_domains : _www_domains;
   string canon = HTTPAuthorization::get_canonical_url(url).get_url();
 
@@ -1390,7 +1391,7 @@ select_auth(const URLSpec &url, bool is_proxy, const string &last_realm) {
  * may be a subset of the server, or it may include multiple servers).
  */
 PT(HTTPAuthorization) HTTPClient::
-generate_auth(const URLSpec &url, bool is_proxy, const string &challenge) {
+generate_auth(const URLSpec &url, bool is_proxy, std::string_view challenge) {
   HTTPAuthorization::AuthenticationSchemes schemes;
   HTTPAuthorization::parse_authentication_schemes(schemes, challenge);
 
@@ -1454,13 +1455,13 @@ unload_client_certificate() {
  * newly allocated X509_NAME object.  Returns NULL if the string is invalid.
  */
 X509_NAME *HTTPClient::
-parse_x509_name(const string &source) {
+parse_x509_name(std::string_view source) {
   X509_NAME *result = nullptr;
 
   result = X509_NAME_new();
   bool added_any = false;
 
-  string::const_iterator si;
+  std::string_view::const_iterator si;
   si = source.begin();
   while (si != source.end()) {
     if ((*si) == '/') {
@@ -1566,7 +1567,7 @@ x509_name_subset(X509_NAME *name_a, X509_NAME *name_b) {
  * Puts the first word of c into a, and the remainder into b.
  */
 void HTTPClient::
-split_whitespace(string &a, string &b, const string &c) {
+split_whitespace(string &a, string &b, std::string_view c) {
   size_t p = 0;
 
   // Skip initial whitespace

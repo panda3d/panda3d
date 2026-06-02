@@ -66,7 +66,7 @@ PUBLISHED:
   virtual void write(std::ostream &out, int indent=0) const;
 
 public:
-  virtual BaseParticleRenderer *make_copy() = 0;
+  [[nodiscard]] virtual BaseParticleRenderer *make_copy() = 0;
 
 protected:
   ParticleRendererAlphaMode _alpha_mode;

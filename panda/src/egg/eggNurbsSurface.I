@@ -15,7 +15,7 @@
  *
  */
 INLINE EggNurbsSurface::
-EggNurbsSurface(const std::string &name) : EggSurface(name) {
+EggNurbsSurface(std::string name) : EggSurface(std::move(name)) {
   _u_order = 0;
   _v_order = 0;
 }

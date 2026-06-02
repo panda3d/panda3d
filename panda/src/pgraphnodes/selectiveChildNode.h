@@ -26,7 +26,7 @@
  */
 class EXPCL_PANDA_PGRAPHNODES SelectiveChildNode : public PandaNode {
 PUBLISHED:
-  INLINE explicit SelectiveChildNode(const std::string &name);
+  INLINE explicit SelectiveChildNode(std::string name);
 
 protected:
   INLINE SelectiveChildNode(const SelectiveChildNode &copy);

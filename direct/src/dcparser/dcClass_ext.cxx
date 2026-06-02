@@ -229,7 +229,7 @@ receive_update_other(PyObject *distobj, DatagramIterator &di) const {
  * Processes an update for a named field from a packed value blob.
  */
 void Extension<DCClass>::
-direct_update(PyObject *distobj, const std::string &field_name,
+direct_update(PyObject *distobj, std::string_view field_name,
               const vector_uchar &value_blob) {
   DCField *field = _this->get_field_by_name(field_name);
   nassertv_always(field != nullptr);
@@ -245,7 +245,7 @@ direct_update(PyObject *distobj, const std::string &field_name,
  * Processes an update for a named field from a packed datagram.
  */
 void Extension<DCClass>::
-direct_update(PyObject *distobj, const std::string &field_name,
+direct_update(PyObject *distobj, std::string_view field_name,
               const Datagram &datagram) {
   DCField *field = _this->get_field_by_name(field_name);
   nassertv_always(field != nullptr);
@@ -432,7 +432,7 @@ pack_required_field(DCPacker &packer, PyObject *distobj,
  * the indicated distributed object from the client.
  */
 Datagram Extension<DCClass>::
-client_format_update(const std::string &field_name, DOID_TYPE do_id,
+client_format_update(std::string_view field_name, DOID_TYPE do_id,
                      PyObject *args) const {
   DCField *field = _this->get_field_by_name(field_name);
   if (field == nullptr) {
@@ -451,7 +451,7 @@ client_format_update(const std::string &field_name, DOID_TYPE do_id,
  * the indicated distributed object from the AI.
  */
 Datagram Extension<DCClass>::
-ai_format_update(const std::string &field_name, DOID_TYPE do_id,
+ai_format_update(std::string_view field_name, DOID_TYPE do_id,
                  CHANNEL_TYPE to_id, CHANNEL_TYPE from_id, PyObject *args) const {
   DCField *field = _this->get_field_by_name(field_name);
   if (field == nullptr) {
@@ -471,7 +471,7 @@ ai_format_update(const std::string &field_name, DOID_TYPE do_id,
  * AI.
  */
 Datagram Extension<DCClass>::
-ai_format_update_msg_type(const std::string &field_name, DOID_TYPE do_id,
+ai_format_update_msg_type(std::string_view field_name, DOID_TYPE do_id,
                           CHANNEL_TYPE to_id, CHANNEL_TYPE from_id,
                           int msg_type, PyObject *args) const {
   DCField *field = _this->get_field_by_name(field_name);

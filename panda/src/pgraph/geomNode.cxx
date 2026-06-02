@@ -52,8 +52,8 @@ TypeHandle GeomNode::_type_handle;
  *
  */
 GeomNode::
-GeomNode(const std::string &name) :
-  PandaNode(name)
+GeomNode(std::string name) :
+  PandaNode(std::move(name))
 {
   _preserved = preserve_geom_nodes;
 
@@ -1168,7 +1168,17 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
  */
 void GeomNode::CData::
 fillin(DatagramIterator &scan, BamReader *manager) {
+  if (!manager->expect_remaining_size(scan, 2)) {
+    return;
+  }
+
   int num_geoms = scan.get_uint16();
+  if (!manager->expect_remaining_size(scan, num_geoms * 4)) {
+    // This catches an implausibly large number of geoms before we try to
+    // allocate a very large GeomList
+    return;
+  }
+
   // Read the list of geoms and states.  Push back a NULL for each one.
   PT(GeomList) geoms = new GeomList;
   geoms->reserve(num_geoms);

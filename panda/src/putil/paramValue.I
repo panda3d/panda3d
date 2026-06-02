@@ -70,8 +70,8 @@ ParamValue() {}
  */
 template<class Type>
 INLINE ParamValue<Type>::
-ParamValue(const Type &value) :
-  _value(value)
+ParamValue(Type value) :
+  _value(std::move(value))
 {
 }
 

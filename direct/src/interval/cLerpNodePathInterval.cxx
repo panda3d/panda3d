@@ -47,11 +47,11 @@ TypeHandle CLerpNodePathInterval::_type_handle;
  * otherwise, it is reset.
  */
 CLerpNodePathInterval::
-CLerpNodePathInterval(const std::string &name, double duration,
+CLerpNodePathInterval(std::string name, double duration,
                       CLerpInterval::BlendType blend_type,
                       bool bake_in_start, bool fluid,
                       const NodePath &node, const NodePath &other) :
-  CLerpInterval(name, duration, blend_type),
+  CLerpInterval(std::move(name), duration, blend_type),
   _node(node),
   _other(other),
   _flags(0),

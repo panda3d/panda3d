@@ -69,7 +69,7 @@ expose(EggGroup::DCSType) {
  * Zeroes out the named components of the transform in the animation frames.
  */
 void EggJointPointer::
-zero_channels(const std::string &) {
+zero_channels(std::string_view) {
 }
 
 /**
@@ -77,7 +77,7 @@ zero_channels(const std::string &) {
  * quantum.
  */
 void EggJointPointer::
-quantize_channels(const std::string &, double) {
+quantize_channels(std::string_view, double) {
 }
 
 /**

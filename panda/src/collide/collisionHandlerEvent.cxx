@@ -214,7 +214,7 @@ throw_event_for(const vector_string &patterns, CollisionEntry *entry) {
  * Throws an event matching the indicated pattern.
  */
 void CollisionHandlerEvent::
-throw_event_pattern(const string &pattern, CollisionEntry *entry) {
+throw_event_pattern(std::string_view pattern, CollisionEntry *entry) {
   if (pattern.empty()) {
     return;
   }
@@ -226,7 +226,7 @@ throw_event_pattern(const string &pattern, CollisionEntry *entry) {
       if (p + 1 < pattern.size() && pattern[p + 1] == '(') {
         // Extract out the key--the name up until the closing paren.
         size_t close = pattern.find(')', p + 2);
-        if (close != string::npos) {
+        if (close != std::string_view::npos) {
           key = pattern.substr(p + 2, close - (p + 2));
           p = close;
         }
@@ -234,7 +234,7 @@ throw_event_pattern(const string &pattern, CollisionEntry *entry) {
 
       // Get out the command--the two characters following the percent sign
       // (or the key).
-      string cmd = pattern.substr(p + 1, 2);
+      std::string_view cmd = pattern.substr(p + 1, 2);
       p += 2;
       if (cmd == "fn") {
         event += entry->get_from_node()->get_name();

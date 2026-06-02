@@ -32,20 +32,20 @@ class FactoryParams;
  */
 class EXPCL_PANDA_CHAN AnimGroup : public TypedWritableReferenceCount, public Namable {
 protected:
-  AnimGroup(const std::string &name = "");
+  AnimGroup(std::string name = "");
   AnimGroup(AnimGroup *parent, const AnimGroup &copy);
 
 PUBLISHED:
   // This is the normal AnimGroup constructor.
-  explicit AnimGroup(AnimGroup *parent, const std::string &name);
+  explicit AnimGroup(AnimGroup *parent, std::string name);
   virtual ~AnimGroup();
 
   int get_num_children() const;
   AnimGroup *get_child(int n) const;
   MAKE_SEQ(get_children, get_num_children, get_child);
 
-  AnimGroup *get_child_named(const std::string &name) const;
-  AnimGroup *find_child(const std::string &name) const;
+  AnimGroup *get_child_named(std::string_view name) const;
+  AnimGroup *find_child(std::string_view name) const;
   void sort_descendants();
 
   MAKE_SEQ_PROPERTY(children, get_num_children, get_child);
@@ -60,7 +60,7 @@ PUBLISHED:
 protected:
   void write_descendants(std::ostream &out, int indent_level) const;
 
-  virtual AnimGroup *make_copy(AnimGroup *parent) const;
+  [[nodiscard]] virtual AnimGroup *make_copy(AnimGroup *parent) const;
   PT(AnimGroup) copy_subtree(AnimGroup *parent) const;
 
 protected:

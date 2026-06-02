@@ -265,7 +265,7 @@ if(BUILD_INTERROGATE)
     panda3d-interrogate
 
     GIT_REPOSITORY https://github.com/panda3d/interrogate.git
-    GIT_TAG 20d2a4533011034eed3321742d4da0f7097d23d8
+    GIT_TAG 47ff6da7705062b1bc7f9847fc8ca0c92b82e6eb
 
     PREFIX ${_interrogate_dir}
     CMAKE_ARGS
@@ -358,7 +358,7 @@ mark_as_advanced(SIMULATE_NETWORK_DELAY DO_MEMORY_USAGE DO_DCAST)
 # The following options have to do with the memory allocation system.
 #
 
-find_package(MIMALLOC 1.0 QUIET)
+find_package(MIMALLOC QUIET)
 
 package_option(MIMALLOC
   "The mimalloc allocator.  See also USE_MEMORY_MIMALLOC, which

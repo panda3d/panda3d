@@ -37,11 +37,11 @@ public:
   virtual ~HTTPBasicAuthorization();
 
   virtual const std::string &get_mechanism() const;
-  virtual std::string generate(HTTPEnum::Method method, const std::string &request_path,
-                          const std::string &username, const std::string &body);
+  virtual std::string generate(HTTPEnum::Method method, std::string_view request_path,
+                               std::string_view username, std::string_view body);
 
 private:
-  static const std::string _mechanism;
+  inline static const std::string _mechanism = "basic";
 };
 
 #include "httpBasicAuthorization.I"

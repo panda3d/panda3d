@@ -161,7 +161,7 @@ private:
   bool handle_update_field();
   bool handle_update_field_owner();
 
-  void describe_message(std::ostream &out, const std::string &prefix,
+  void describe_message(std::ostream &out, std::string_view prefix,
                         const Datagram &dg) const;
 
 private:

@@ -26,9 +26,9 @@ LightMutex &SimpleLru::_global_lock = *new LightMutex;
  *
  */
 SimpleLru::
-SimpleLru(const std::string &name, size_t max_size) :
+SimpleLru(std::string name, size_t max_size) :
   LinkedListNode(true),
-  Namable(name)
+  Namable(std::move(name))
 {
   _total_size = 0;
   _max_size = max_size;

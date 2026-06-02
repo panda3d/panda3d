@@ -45,7 +45,7 @@ PUBLISHED:
   INLINE static void shadow_environment_variable(const std::string &var, const std::string &value);
   INLINE static void clear_shadow(const std::string &var);
 
-  static std::string expand_string(const std::string &str);
+  static std::string expand_string(std::string_view str);
 
   INLINE static size_t get_num_args();
   INLINE static std::string get_arg(size_t n);
@@ -53,8 +53,8 @@ PUBLISHED:
   INLINE static std::string get_binary_name();
   INLINE static std::string get_dtool_name();
 
-  INLINE static void set_binary_name(const std::string &name);
-  INLINE static void set_dtool_name(const std::string &name);
+  INLINE static void set_binary_name(std::string name);
+  INLINE static void set_dtool_name(std::string name);
 
   static Filename get_cwd();
 

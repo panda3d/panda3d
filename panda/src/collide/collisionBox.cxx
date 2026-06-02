@@ -541,7 +541,7 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
   }
 
   // Our interior point is the closest point to t2 that is inside the segment.
-  new_entry->set_interior_point(from_origin + std::min(std::max(t2, 0.0), 1.0) * from_direction);
+  new_entry->set_interior_point(from_origin + std::clamp(t2, 0.0, 1.0) * from_direction);
 
   LPoint3 point = from_origin + t1 * from_direction;
   new_entry->set_surface_point(point);
@@ -597,7 +597,7 @@ test_intersection_from_capsule(const CollisionEntry &entry) const {
     return nullptr;
   }
 
-  t1 = std::min(1.0, std::max(0.0, (t1 + t2) * 0.5));
+  t1 = std::clamp((t1 + t2) * 0.5, 0.0, 1.0);
   LPoint3 point = from_a + from_direction * t1;
 
   // We now have a point of intersection between the line segment and the
@@ -885,9 +885,9 @@ test_intersection_from_box(const CollisionEntry &entry) const {
   // This isn't always the correct surface point.  However, it seems to be
   // enough to let the pusher do the right thing.
   LPoint3 surface(
-    min(max(diff[0], -into_extents[0]), into_extents[0]),
-    min(max(diff[1], -into_extents[1]), into_extents[1]),
-    min(max(diff[2], -into_extents[2]), into_extents[2]));
+    std::clamp(diff[0], -into_extents[0], into_extents[0]),
+    std::clamp(diff[1], -into_extents[1], into_extents[1]),
+    std::clamp(diff[2], -into_extents[2], into_extents[2]));
 
   // Create the normal along the axis of least penetration.
   LVector3 normal(0);

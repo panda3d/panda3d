@@ -33,6 +33,24 @@ Filename(const std::wstring &filename) {
  *
  */
 INLINE Filename::
+Filename(std::string_view filename) {
+  _flags = 0;
+  (*this) = filename;
+}
+
+/**
+ *
+ */
+INLINE Filename::
+Filename(std::wstring_view filename) {
+  _flags = 0;
+  (*this) = filename;
+}
+
+/**
+ *
+ */
+INLINE Filename::
 Filename(const char *filename) {
   _flags = 0;
   (*this) = filename;
@@ -96,60 +114,36 @@ Filename() :
  *
  */
 INLINE Filename Filename::
-text_filename(const Filename &filename) {
-  Filename result(filename);
-  result.set_text();
-  return result;
+text_filename(Filename filename) {
+  filename.set_text();
+  return filename;
 }
 
 /**
  *
  */
 INLINE Filename Filename::
-text_filename(const std::string &filename) {
-  Filename result(filename);
-  result.set_text();
-  return result;
+binary_filename(Filename filename) {
+  filename.set_binary();
+  return filename;
 }
 
 /**
  *
  */
 INLINE Filename Filename::
-binary_filename(const Filename &filename) {
-  Filename result(filename);
-  result.set_binary();
-  return result;
+dso_filename(Filename filename) {
+  filename.set_type(T_dso);
+  return filename;
 }
 
 /**
  *
  */
 INLINE Filename Filename::
-binary_filename(const std::string &filename) {
-  Filename result(filename);
-  result.set_binary();
-  return result;
-}
-
-/**
- *
- */
-INLINE Filename Filename::
-dso_filename(const std::string &filename) {
-  Filename result(filename);
-  result.set_type(T_dso);
-  return result;
-}
-
-/**
- *
- */
-INLINE Filename Filename::
-executable_filename(const std::string &filename) {
-  Filename result(filename);
-  result.set_type(T_executable);
-  return result;
+executable_filename(Filename filename) {
+  filename.set_type(T_executable);
+  return filename;
 }
 
 /**
@@ -157,7 +151,7 @@ executable_filename(const std::string &filename) {
  * set_pattern().
  */
 INLINE Filename Filename::
-pattern_filename(const std::string &filename) {
+pattern_filename(std::string_view filename) {
   Filename result(filename);
   result.set_pattern(true);
   return result;
@@ -167,7 +161,32 @@ pattern_filename(const std::string &filename) {
  *
  */
 INLINE Filename &Filename::
+operator = (const char *filename) {
+  assert(filename != nullptr);
+  return operator = (std::string_view(filename));
+}
+
+/**
+ *
+ */
+INLINE Filename &Filename::
 operator = (const std::string &filename) {
+  return operator = (std::string_view(filename));
+}
+
+/**
+ *
+ */
+INLINE Filename &Filename::
+operator = (const std::wstring &filename) {
+  return operator = (std::wstring_view(filename));
+}
+
+/**
+ *
+ */
+INLINE Filename &Filename::
+operator = (std::string_view filename) {
   _filename = filename;
 
   locate_basename();
@@ -180,20 +199,11 @@ operator = (const std::string &filename) {
  *
  */
 INLINE Filename &Filename::
-operator = (const std::wstring &filename) {
+operator = (std::wstring_view filename) {
   TextEncoder encoder;
   encoder.set_encoding(get_filesystem_encoding());
   encoder.set_wtext(filename);
   return operator = (encoder.get_text());
-}
-
-/**
- *
- */
-INLINE Filename &Filename::
-operator = (const char *filename) {
-  assert(filename != nullptr);
-  return (*this) = std::string(filename);
 }
 
 /**
@@ -252,6 +262,14 @@ operator const std::string & () const {
 /**
  *
  */
+INLINE Filename::
+operator std::string_view () const {
+  return _filename;
+}
+
+/**
+ *
+ */
 INLINE const char *Filename::
 c_str() const {
   return _filename.c_str();
@@ -304,7 +322,7 @@ substr(size_t begin, size_t end) const {
  * two parameters.
  */
 INLINE void Filename::
-operator += (const std::string &other) {
+operator += (std::string_view other) {
   _filename += other;
   locate_basename();
   locate_extension();
@@ -315,7 +333,7 @@ operator += (const std::string &other) {
  * Returns a new Filename representing the concatenation of the two filenames.
  */
 INLINE Filename Filename::
-operator + (const std::string &other) const {
+operator + (std::string_view other) const {
   Filename a(*this);
   a += other;
   return a;
@@ -569,7 +587,7 @@ is_fully_qualified() const {
  *
  */
 INLINE bool Filename::
-operator == (const std::string &other) const {
+operator == (std::string_view other) const {
   return (*(std::string *)this) == other;
 }
 
@@ -577,7 +595,7 @@ operator == (const std::string &other) const {
  *
  */
 INLINE bool Filename::
-operator != (const std::string &other) const {
+operator != (std::string_view other) const {
   return (*(std::string *)this) != other;
 }
 
@@ -585,7 +603,7 @@ operator != (const std::string &other) const {
  *
  */
 INLINE bool Filename::
-operator < (const std::string &other) const {
+operator < (std::string_view other) const {
   return (*(std::string *)this) < other;
 }
 

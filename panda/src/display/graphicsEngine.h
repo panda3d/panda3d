@@ -80,7 +80,7 @@ PUBLISHED:
   MAKE_PROPERTY(default_loader, get_default_loader, set_default_loader);
 
   GraphicsOutput *make_output(GraphicsPipe *pipe,
-                              const std::string &name, int sort,
+                              std::string_view name, int sort,
                               const FrameBufferProperties &fb_prop,
                               const WindowProperties &win_prop,
                               int flags, GraphicsStateGuardian *gsg = nullptr,
@@ -88,13 +88,13 @@ PUBLISHED:
 
   // Syntactic shorthand versions of make_output
   INLINE GraphicsOutput *make_buffer(GraphicsOutput *host,
-                                     const std::string &name, int sort,
+                                     std::string_view name, int sort,
                                      int x_size, int y_size);
   INLINE GraphicsOutput *make_buffer(GraphicsStateGuardian *gsg,
-                                     const std::string &name, int sort,
+                                     std::string_view name, int sort,
                                      int x_size, int y_size);
   INLINE GraphicsOutput *make_parasite(GraphicsOutput *host,
-                                       const std::string &name, int sort,
+                                       std::string_view name, int sort,
                                        int x_size, int y_size);
 
   bool add_window(GraphicsOutput *window, int sort);
@@ -188,6 +188,7 @@ private:
   void do_add_window(GraphicsOutput *window);
   void do_add_gsg(GraphicsStateGuardian *gsg, GraphicsPipe *pipe);
   void do_remove_window(GraphicsOutput *window, Thread *current_thread);
+  void do_reassign_windows(Thread *current_thread);
   void do_resort_windows();
   void terminate_threads(Thread *current_thread);
   void auto_adjust_capabilities(GraphicsStateGuardian *gsg);
@@ -279,7 +280,7 @@ private:
 
   class WindowRenderer {
   public:
-    WindowRenderer(const std::string &name);
+    WindowRenderer(std::string_view name);
 
     void add_gsg(GraphicsStateGuardian *gsg);
     void add_window(Windows &wlist, GraphicsOutput *window);
@@ -310,7 +311,7 @@ private:
 
   class RenderThread : public Thread, public WindowRenderer {
   public:
-    RenderThread(const std::string &name, GraphicsEngine *engine);
+    RenderThread(std::string_view name, GraphicsEngine *engine);
     virtual void thread_main();
 
     typedef void Callback(RenderThread *thread);
@@ -320,12 +321,7 @@ private:
 
 #ifndef CPPPARSER
     template<class Callable>
-    INLINE auto run_on_thread(Callable &&callable) ->
-      typename std::enable_if<!std::is_void<decltype(callable(this))>::value, decltype(callable(this))>::type;
-
-    template<class Callable>
-    INLINE auto run_on_thread(Callable &&callable) ->
-      typename std::enable_if<std::is_void<decltype(callable(this))>::value, decltype(callable(this))>::type;
+    INLINE auto run_on_thread(Callable &&callable) -> decltype(callable((Thread *)nullptr));
 #endif
 
     GraphicsEngine *_engine;
@@ -340,7 +336,7 @@ private:
     void *_return_data;
   };
 
-  WindowRenderer *get_window_renderer(const std::string &name, int pipeline_stage);
+  WindowRenderer *get_window_renderer(std::string_view name, int pipeline_stage);
 
   Pipeline *_pipeline;
   ClockObject *const _clock;
@@ -354,9 +350,10 @@ private:
   NewWindows _new_windows;
 
   WindowRenderer _app;
-  typedef pmap<std::string, PT(RenderThread) > Threads;
+  typedef pmap<std::string, PT(RenderThread), std::less<> > Threads;
   Threads _threads;
   GraphicsThreadingModel _threading_model;
+  bool _threading_model_changed;
   bool _auto_flip;
   bool _portal_enabled; //toggle to portal culling on/off
   PT(Loader) _default_loader;

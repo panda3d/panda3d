@@ -34,11 +34,11 @@
  */
 class EXPCL_PANDA_CULL CullBinStateSorted : public CullBin {
 public:
-  INLINE CullBinStateSorted(const std::string &name,
+  INLINE CullBinStateSorted(std::string name,
                             GraphicsStateGuardianBase *gsg,
                             const PStatCollector &draw_region_pcollector);
 
-  static CullBin *make_bin(const std::string &name,
+  static CullBin *make_bin(std::string name,
                            GraphicsStateGuardianBase *gsg,
                            const PStatCollector &draw_region_pcollector);
 

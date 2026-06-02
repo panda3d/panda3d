@@ -21,10 +21,10 @@ TypeHandle ParasiteBuffer::_type_handle;
  * created instead via the GraphicsEngine::make_parasite() function.
  */
 ParasiteBuffer::
-ParasiteBuffer(GraphicsOutput *host, const std::string &name,
+ParasiteBuffer(GraphicsOutput *host, std::string name,
                int x_size, int y_size, int flags) :
   GraphicsOutput(host->get_engine(), host->get_pipe(),
-                 name, host->get_fb_properties(),
+                 std::move(name), host->get_fb_properties(),
                  WindowProperties::size(x_size, y_size), flags,
                  host->get_gsg(), host, false)
 {

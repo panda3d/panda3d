@@ -263,7 +263,7 @@ end_repack() {
  * packer is in an invalid mode).
  */
 bool DCPacker::
-seek(const string &field_name) {
+seek(std::string_view field_name) {
   if (_catalog == nullptr) {
     _catalog = _root->get_catalog();
     _live_catalog = _catalog->get_live_catalog(_unpack_data, _unpack_length);
@@ -624,8 +624,8 @@ unpack_skip() {
  * parse error.
  */
 bool DCPacker::
-parse_and_pack(const string &formatted_object) {
-  istringstream strm(formatted_object);
+parse_and_pack(string formatted_object) {
+  istringstream strm(std::move(formatted_object));
   return parse_and_pack(strm);
 }
 
@@ -761,9 +761,9 @@ unpack_and_format(ostream &out, bool show_field_names) {
  * Outputs the indicated string within quotation marks.
  */
 void DCPacker::
-enquote_string(ostream &out, char quote_mark, const string &str) {
+enquote_string(ostream &out, char quote_mark, std::string_view str) {
   out << quote_mark;
-  for (string::const_iterator pi = str.begin();
+  for (auto pi = str.begin();
        pi != str.end();
        ++pi) {
     if ((*pi) == quote_mark || (*pi) == '\\') {

@@ -40,7 +40,7 @@ public:
   virtual std::string get_suggested_extension() const;
 
   virtual PNMReader *make_reader(std::istream *file, bool owns_file = true,
-                                 const std::string &magic_number = std::string());
+                                 std::string_view magic_number = std::string_view());
   virtual PNMWriter *make_writer(std::ostream *file, bool owns_file = true);
 
 public:
@@ -52,7 +52,7 @@ public:
     virtual int read_data(xel *array, xelval *alpha);
 
   private:
-    void readtga ( std::istream* ifp, struct ImageHeader* tgaP, const std::string &magic_number );
+    void readtga ( std::istream* ifp, struct ImageHeader* tgaP, std::string_view magic_number );
     void get_map_entry ( std::istream* ifp, pixel* Value, int Size,
                          gray* Alpha);
     void get_pixel ( std::istream* ifp, pixel* dest, int Size, gray* alpha_p);

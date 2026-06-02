@@ -28,8 +28,8 @@ TypeHandle FadeLODNode::_type_handle;
  *
  */
 FadeLODNode::
-FadeLODNode(const std::string &name) :
-  LODNode(name)
+FadeLODNode(std::string name) :
+  LODNode(std::move(name))
 {
   set_cull_callback();
 
@@ -232,8 +232,8 @@ output(std::ostream &out) const {
  * of the geometry during a transition.
  */
 void FadeLODNode::
-set_fade_bin(const std::string &name, int draw_order) {
-  _fade_bin_name = name;
+set_fade_bin(std::string name, int draw_order) {
+  _fade_bin_name = std::move(name);
   _fade_bin_draw_order = draw_order;
   _fade_1_new_state.clear();
   _fade_2_old_state.clear();

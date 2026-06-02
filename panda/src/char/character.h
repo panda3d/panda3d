@@ -40,7 +40,7 @@ protected:
   Character(const Character &copy, bool copy_bundles);
 
 PUBLISHED:
-  explicit Character(const std::string &name);
+  explicit Character(std::string_view name);
   virtual ~Character();
 
 public:
@@ -67,8 +67,8 @@ PUBLISHED:
                          PN_stdfloat delay_factor);
   void clear_lod_animation();
 
-  CharacterJoint *find_joint(const std::string &name) const;
-  CharacterSlider *find_slider(const std::string &name) const;
+  CharacterJoint *find_joint(std::string_view name) const;
+  CharacterSlider *find_slider(std::string_view name) const;
 
   void write_parts(std::ostream &out) const;
   void write_part_values(std::ostream &out) const;

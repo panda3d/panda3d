@@ -111,7 +111,7 @@ has_magic_number() const {
  * otherwise.
  */
 bool PNMFileTypePNG::
-matches_magic_number(const string &magic_number) const {
+matches_magic_number(std::string_view magic_number) const {
   return png_sig_cmp((png_bytep)magic_number.data(), 0, magic_number.length()) == 0;
 }
 
@@ -121,7 +121,7 @@ matches_magic_number(const string &magic_number) const {
  * returns NULL.
  */
 PNMReader *PNMFileTypePNG::
-make_reader(istream *file, bool owns_file, const string &magic_number) {
+make_reader(istream *file, bool owns_file, std::string_view magic_number) {
   return new Reader(this, file, owns_file, magic_number);
 }
 
@@ -161,7 +161,7 @@ make_from_bam(const FactoryParams &params) {
  *
  */
 PNMFileTypePNG::Reader::
-Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
+Reader(PNMFileType *type, istream *file, bool owns_file, std::string_view magic_number) :
   PNMReader(type, file, owns_file)
 {
   _png = nullptr;

@@ -381,12 +381,12 @@ private:
   LMatrix4 _mat;
   LMatrix4 *_inv_mat = nullptr;
 
-  enum HashValue : AtomicAdjust::Integer {
+  enum HashValue : size_t {
     H_unknown = 0,
     H_identity = 1,
     H_invalid = 2,
   };
-  mutable AtomicAdjust::Integer _hash = H_unknown;
+  mutable patomic<size_t> _hash { H_unknown };
 
   unsigned int _flags;
 

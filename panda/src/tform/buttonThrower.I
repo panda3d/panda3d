@@ -24,8 +24,8 @@
  * See also set_keystroke_event().
  */
 INLINE void ButtonThrower::
-set_button_down_event(const std::string &button_down_event) {
-  _button_down_event = button_down_event;
+set_button_down_event(std::string button_down_event) {
+  _button_down_event = std::move(button_down_event);
 }
 
 /**
@@ -42,8 +42,8 @@ get_button_down_event() const {
  * button is released.  See set_button_down_event().
  */
 INLINE void ButtonThrower::
-set_button_up_event(const std::string &button_up_event) {
-  _button_up_event = button_up_event;
+set_button_up_event(std::string button_up_event) {
+  _button_up_event = std::move(button_up_event);
 }
 
 /**
@@ -68,8 +68,8 @@ get_button_up_event() const {
  * See also set_keystroke_event().
  */
 INLINE void ButtonThrower::
-set_button_repeat_event(const std::string &button_repeat_event) {
-  _button_repeat_event = button_repeat_event;
+set_button_repeat_event(std::string button_repeat_event) {
+  _button_repeat_event = std::move(button_repeat_event);
 }
 
 /**
@@ -100,8 +100,8 @@ get_button_repeat_event() const {
  * See also set_button_down_event().
  */
 INLINE void ButtonThrower::
-set_keystroke_event(const std::string &keystroke_event) {
-  _keystroke_event = keystroke_event;
+set_keystroke_event(std::string keystroke_event) {
+  _keystroke_event = std::move(keystroke_event);
 }
 
 /**
@@ -129,8 +129,8 @@ get_keystroke_event() const {
  * which to end the highlight, and the current cursor position.
  */
 INLINE void ButtonThrower::
-set_candidate_event(const std::string &candidate_event) {
-  _candidate_event = candidate_event;
+set_candidate_event(std::string candidate_event) {
+  _candidate_event = std::move(candidate_event);
 }
 
 /**
@@ -147,8 +147,8 @@ get_candidate_event() const {
  * within the window.
  */
 INLINE void ButtonThrower::
-set_move_event(const std::string &move_event) {
-  _move_event = move_event;
+set_move_event(std::string move_event) {
+  _move_event = std::move(move_event);
 }
 
 /**
@@ -166,8 +166,8 @@ get_move_event() const {
  * selected keyboard layout.
  */
 INLINE void ButtonThrower::
-set_raw_button_down_event(const std::string &raw_button_down_event) {
-  _raw_button_down_event = raw_button_down_event;
+set_raw_button_down_event(std::string raw_button_down_event) {
+  _raw_button_down_event = std::move(raw_button_down_event);
 }
 
 /**
@@ -184,8 +184,8 @@ get_raw_button_down_event() const {
  * button is released.  See set_raw_button_down_event().
  */
 INLINE void ButtonThrower::
-set_raw_button_up_event(const std::string &raw_button_up_event) {
-  _raw_button_up_event = raw_button_up_event;
+set_raw_button_up_event(std::string raw_button_up_event) {
+  _raw_button_up_event = std::move(raw_button_up_event);
 }
 
 /**
@@ -203,8 +203,8 @@ get_raw_button_up_event() const {
  * generic event names like set_button_down_event) thrown by this object.
  */
 INLINE void ButtonThrower::
-set_prefix(const std::string &prefix) {
-  _prefix = prefix;
+set_prefix(std::string prefix) {
+  _prefix = std::move(prefix);
 }
 
 /**

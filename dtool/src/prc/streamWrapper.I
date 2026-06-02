@@ -64,7 +64,7 @@ release() {
  */
 INLINE void StreamWrapperBase::
 ref() const {
-  AtomicAdjust::inc(_ref_count);
+  _ref_count.fetch_add(1, std::memory_order_relaxed);
 }
 
 /**
@@ -73,7 +73,7 @@ ref() const {
  */
 INLINE bool StreamWrapperBase::
 unref() const {
-  return AtomicAdjust::dec(_ref_count);
+  return _ref_count.fetch_sub(1, std::memory_order_release) != 1;
 }
 
 /**

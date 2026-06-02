@@ -36,11 +36,11 @@ is_started() const {
  */
 template<class Callable>
 INLINE AsyncTask *AsyncTaskChain::
-add(Callable callable, const std::string &name, int sort, int priority) {
+add(Callable callable, std::string name, int sort, int priority) {
   class InlineTask final : public AsyncTask {
   public:
-    InlineTask(Callable callable, const std::string &name, int sort, int priority) :
-      AsyncTask(name),
+    InlineTask(Callable callable, std::string name, int sort, int priority) :
+      AsyncTask(std::move(name)),
       _callable(std::move(callable)) {
       _sort = sort;
       _priority = priority;
@@ -55,7 +55,7 @@ add(Callable callable, const std::string &name, int sort, int priority) {
 
     Callable _callable;
   };
-  AsyncTask *task = new InlineTask(std::move(callable), name, sort, priority);
+  AsyncTask *task = new InlineTask(std::move(callable), std::move(name), sort, priority);
   add(task);
   return task;
 }

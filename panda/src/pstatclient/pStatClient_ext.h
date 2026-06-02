@@ -31,7 +31,7 @@ typedef struct _frame PyFrameObject;
 template<>
 class Extension<PStatClient> : public ExtensionBase<PStatClient> {
 public:
-  INLINE static bool connect(const std::string &hostname = std::string(), int port = -1);
+  INLINE static bool connect(std::string hostname = std::string(), int port = -1);
   INLINE static void disconnect();
 
   bool client_connect(std::string hostname, int port);

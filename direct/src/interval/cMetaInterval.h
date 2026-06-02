@@ -31,7 +31,7 @@
  */
 class EXPCL_DIRECT_INTERVAL CMetaInterval : public CInterval {
 PUBLISHED:
-  explicit CMetaInterval(const std::string &name);
+  explicit CMetaInterval(std::string name);
   virtual ~CMetaInterval();
 
   enum RelativeStart {
@@ -44,20 +44,20 @@ PUBLISHED:
   INLINE double get_precision() const;
 
   void clear_intervals();
-  int push_level(const std::string &name,
+  int push_level(std::string name,
                  double rel_time, RelativeStart rel_to);
   int add_c_interval(CInterval *c_interval,
                      double rel_time = 0.0f,
                      RelativeStart rel_to = RS_previous_end);
-  int add_ext_index(int ext_index, const std::string &name,
+  int add_ext_index(int ext_index, std::string name,
                     double duration, bool open_ended,
                     double rel_time, RelativeStart rel_to);
   int pop_level(double duration = -1.0);
 
-  bool set_interval_start_time(const std::string &name, double rel_time,
+  bool set_interval_start_time(std::string_view name, double rel_time,
                                RelativeStart rel_to = RS_level_begin);
-  double get_interval_start_time(const std::string &name) const;
-  double get_interval_end_time(const std::string &name) const;
+  double get_interval_start_time(std::string_view name) const;
+  double get_interval_end_time(std::string_view name) const;
 
   enum DefType {
     DT_c_interval,

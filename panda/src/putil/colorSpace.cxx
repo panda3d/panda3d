@@ -27,7 +27,7 @@ using std::ostringstream;
 using std::string;
 
 ColorSpace
-parse_color_space_string(const string &str) {
+parse_color_space_string(std::string_view str) {
   if (cmp_nocase_uh(str, "linear") == 0 ||
              cmp_nocase_uh(str, "linear-rgb") == 0 ||
              cmp_nocase_uh(str, "lrgb") == 0) {

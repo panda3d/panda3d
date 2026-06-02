@@ -102,7 +102,7 @@ uniquify(EggNode *node) {
  * the name has not been used.
  */
 EggNode *EggNameUniquifier::
-get_node(const string &category, const string &name) const {
+get_node(std::string_view category, std::string_view name) const {
   Categories::const_iterator ci;
   ci = _categories.find(category);
   if (ci == _categories.end()) {
@@ -124,7 +124,7 @@ get_node(const string &category, const string &name) const {
  * false otherwise.
  */
 bool EggNameUniquifier::
-has_name(const string &category, const string &name) const {
+has_name(std::string_view category, std::string_view name) const {
   Categories::const_iterator ci;
   ci = _categories.find(category);
   if (ci == _categories.end()) {
@@ -147,8 +147,8 @@ has_name(const string &category, const string &name) const {
  * added, or false if it was already in use for the category.
  */
 bool EggNameUniquifier::
-add_name(const string &category, const string &name, EggNode *node) {
-  UsedNames &names = _categories[category];
+add_name(std::string_view category, std::string_view name, EggNode *node) {
+  UsedNames &names = _categories[std::string(category)];
   bool inserted = names.insert(UsedNames::value_type(name, node)).second;
   return inserted;
 }
@@ -172,7 +172,7 @@ filter_name(EggNode *node) {
  * uniquely-generated number that may be useful for synthesizing the name.
  */
 string EggNameUniquifier::
-generate_name(EggNode *node, const string &category, int index) {
+generate_name(EggNode *node, std::string_view category, int index) {
   string name = filter_name(node);
 
   std::ostringstream str;

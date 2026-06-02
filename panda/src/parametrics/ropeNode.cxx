@@ -67,8 +67,8 @@ fillin(DatagramIterator &scan, BamReader *reader) {
  *
  */
 RopeNode::
-RopeNode(const std::string &name) :
-  PandaNode(name)
+RopeNode(std::string name) :
+  PandaNode(std::move(name))
 {
   set_cull_callback();
   set_renderable();

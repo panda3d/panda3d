@@ -65,19 +65,19 @@ PUBLISHED:
 
   void uniquify(EggNode *node);
 
-  EggNode *get_node(const std::string &category, const std::string &name) const;
-  bool has_name(const std::string &category, const std::string &name) const;
-  bool add_name(const std::string &category, const std::string &name,
+  EggNode *get_node(std::string_view category, std::string_view name) const;
+  bool has_name(std::string_view category, std::string_view name) const;
+  bool add_name(std::string_view category, std::string_view name,
                 EggNode *node = nullptr);
 
   virtual std::string get_category(EggNode *node)=0;
   virtual std::string filter_name(EggNode *node);
   virtual std::string generate_name(EggNode *node,
-                               const std::string &category, int index);
+                               std::string_view category, int index);
 
 private:
-  typedef pmap<std::string, EggNode *> UsedNames;
-  typedef pmap<std::string, UsedNames> Categories;
+  typedef pmap<std::string, EggNode *, std::less<>> UsedNames;
+  typedef pmap<std::string, UsedNames, std::less<>> Categories;
 
   Categories _categories;
   int _index;

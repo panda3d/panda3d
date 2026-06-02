@@ -24,8 +24,8 @@ TypeHandle PhysicalNode::_type_handle;
  * default constructor
  */
 PhysicalNode::
-PhysicalNode(const std::string &name) :
-  PandaNode(name)
+PhysicalNode(std::string name) :
+  PandaNode(std::move(name))
 {
 }
 

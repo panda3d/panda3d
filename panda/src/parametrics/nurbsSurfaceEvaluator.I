@@ -155,10 +155,10 @@ set_vertex_space(int ui, int vi, const NodePath &space) {
  * node relative to the rel_to NodePath when the surface is evaluated.
  */
 INLINE void NurbsSurfaceEvaluator::
-set_vertex_space(int ui, int vi, const std::string &space) {
+set_vertex_space(int ui, int vi, std::string space) {
   nassertv(ui >= 0 && ui < _num_u_vertices &&
            vi >= 0 && vi < _num_v_vertices);
-  vert(ui, vi).set_space(space);
+  vert(ui, vi).set_space(std::move(space));
 }
 
 /**

@@ -34,6 +34,6 @@ enum AnimationConvert {
 std::string format_animation_convert(AnimationConvert unit);
 
 std::ostream &operator << (std::ostream &out, AnimationConvert unit);
-AnimationConvert string_animation_convert(const std::string &str);
+AnimationConvert string_animation_convert(std::string_view str);
 
 #endif

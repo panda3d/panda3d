@@ -36,7 +36,7 @@ class VrpnButtonDevice;
  */
 class VrpnButton {
 public:
-  VrpnButton(const std::string &button_name, vrpn_Connection *connection);
+  VrpnButton(std::string button_name, vrpn_Connection *connection);
   ~VrpnButton();
 
   INLINE const std::string &get_button_name() const;

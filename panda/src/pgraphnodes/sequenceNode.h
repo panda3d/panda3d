@@ -26,7 +26,7 @@
  */
 class EXPCL_PANDA_PGRAPHNODES SequenceNode : public SelectiveChildNode, public AnimInterface {
 PUBLISHED:
-  INLINE explicit SequenceNode(const std::string &name);
+  INLINE explicit SequenceNode(std::string name);
 
 protected:
   SequenceNode(const SequenceNode &copy);

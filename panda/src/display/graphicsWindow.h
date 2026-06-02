@@ -41,7 +41,7 @@ class EXPCL_PANDA_DISPLAY GraphicsWindow : public GraphicsOutput {
 protected:
   GraphicsWindow(GraphicsEngine *engine,
                  GraphicsPipe *pipe,
-                 const std::string &name,
+                 std::string name,
                  const FrameBufferProperties &fb_prop,
                  const WindowProperties &win_prop,
                  int flags,
@@ -67,11 +67,11 @@ PUBLISHED:
   MAKE_PROPERTY(rejected_properties, get_rejected_properties);
   MAKE_PROPERTY(closed, is_closed);
 
-  void set_window_event(const std::string &window_event);
+  void set_window_event(std::string window_event);
   std::string get_window_event() const;
   MAKE_PROPERTY(window_event, get_window_event, set_window_event);
 
-  void set_close_request_event(const std::string &close_request_event);
+  void set_close_request_event(std::string close_request_event);
   std::string get_close_request_event() const;
   MAKE_PROPERTY(close_request_event, get_close_request_event, set_close_request_event);
 

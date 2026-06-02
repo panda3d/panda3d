@@ -56,23 +56,11 @@ PandaFileStreamBuf() {
   _fd = -1;
 #endif  // _WIN32
 
-#ifdef PHAVE_IOSTREAM
   _buffer = (char *)PANDA_MALLOC_ARRAY(file_buffer_size * 2);
   char *ebuf = _buffer + file_buffer_size * 2;
   char *mbuf = _buffer + file_buffer_size;
   setg(_buffer, mbuf, mbuf);
   setp(mbuf, ebuf);
-
-#else
-  allocate();
-  // Chop the buffer in half.  The bottom half goes to the get buffer; the top
-  // half goes to the put buffer.
-  char *b = base();
-  char *t = ebuf();
-  char *m = b + (t - b) / 2;
-  setg(b, m, m);
-  setp(b, m);
-#endif
 
   _gpos = 0;
   _ppos = 0;
@@ -84,9 +72,7 @@ PandaFileStreamBuf() {
 PandaFileStreamBuf::
 ~PandaFileStreamBuf() {
   close();
-#ifdef PHAVE_IOSTREAM
   PANDA_FREE_ARRAY(_buffer);
-#endif
 }
 
 /**

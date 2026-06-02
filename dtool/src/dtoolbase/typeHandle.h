@@ -128,6 +128,7 @@ PUBLISHED:
   INLINE int get_index() const;
   INLINE void output(std::ostream &out) const;
   constexpr static TypeHandle none() { return TypeHandle(0); }
+  constexpr static TypeHandle invalid() { return TypeHandle(-1); }
   INLINE operator bool () const;
 
   MAKE_PROPERTY(index, get_index);

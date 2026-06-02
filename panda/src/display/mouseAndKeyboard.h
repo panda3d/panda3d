@@ -40,7 +40,7 @@
  */
 class EXPCL_PANDA_DISPLAY MouseAndKeyboard : public DataNode {
 PUBLISHED:
-  explicit MouseAndKeyboard(GraphicsWindow *window, int device, const std::string &name);
+  explicit MouseAndKeyboard(GraphicsWindow *window, int device, std::string name);
   void set_source(GraphicsWindow *window, int device);
 
 protected:

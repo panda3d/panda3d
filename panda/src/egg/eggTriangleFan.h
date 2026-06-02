@@ -24,7 +24,7 @@
  */
 class EXPCL_PANDA_EGG EggTriangleFan : public EggCompositePrimitive {
 PUBLISHED:
-  INLINE explicit EggTriangleFan(const std::string &name = "");
+  INLINE explicit EggTriangleFan(std::string name = "");
   INLINE EggTriangleFan(const EggTriangleFan &copy);
   INLINE EggTriangleFan &operator = (const EggTriangleFan &copy);
   virtual ~EggTriangleFan();

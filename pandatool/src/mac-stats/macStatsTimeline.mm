@@ -196,7 +196,7 @@ draw_guide_bar(int x, GuideBarStyle style) {
  */
 void MacStatsTimeline::
 draw_bar(int row, int from_x, int to_x, int collector_index,
-         const std::string &collector_name) {
+         std::string_view collector_name) {
   int top = row_to_pixel(row);
   int bottom = row_to_pixel(row + 1);
   int scale = 4;
@@ -242,7 +242,7 @@ draw_bar(int row, int from_x, int to_x, int collector_index,
       };
       CFDictionaryRef attribs = CFDictionaryCreate(kCFAllocatorDefault, (const void **)keys, (const void **)values, 2, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
 
-      CFStringRef str = CFStringCreateWithCString(kCFAllocatorDefault, collector_name.c_str(), kCFStringEncodingUTF8);
+      CFStringRef str = CFStringCreateWithBytes(kCFAllocatorDefault, (const UInt8 *)collector_name.data(), collector_name.size(), kCFStringEncodingUTF8, false);
       CFAttributedStringRef astr = CFAttributedStringCreate(kCFAllocatorDefault, str, attribs);
 
       CTLineRef line = CTLineCreateWithAttributedString(astr);
@@ -262,7 +262,7 @@ draw_bar(int row, int from_x, int to_x, int collector_index,
         size_t c = collector_name.rfind(':');
         if (text_right - text_left < scale * 6) {
           // It's a really tiny space.  Draw a single letter.
-          UniChar ch = *(collector_name.data() + (c != std::string::npos ? c + 1 : 0));
+          UniChar ch = *(collector_name.data() + (c != std::string_view::npos ? c + 1 : 0));
 
           CFStringRef str = CFStringCreateWithCharacters(kCFAllocatorDefault, &ch, 1);
           CFAttributedStringRef astr = CFAttributedStringCreate(kCFAllocatorDefault, str, attribs);
@@ -278,9 +278,9 @@ draw_bar(int row, int from_x, int to_x, int collector_index,
         }
         else {
           // Maybe just use everything after the last colon.
-          if (c != std::string::npos) {
-            const char *short_name = collector_name.data() + c + 1;
-            CFStringRef str = CFStringCreateWithCString(kCFAllocatorDefault, short_name, kCFStringEncodingUTF8);
+          if (c != std::string_view::npos) {
+            std::string_view short_name = collector_name.substr(c + 1);
+            CFStringRef str = CFStringCreateWithBytes(kCFAllocatorDefault, (const UInt8 *)short_name.data(), short_name.size(), kCFStringEncodingUTF8, false);
             CFAttributedStringRef astr = CFAttributedStringCreate(kCFAllocatorDefault, str, attribs);
 
             CTLineRef new_line = CTLineCreateWithAttributedString((CFAttributedStringRef)astr);

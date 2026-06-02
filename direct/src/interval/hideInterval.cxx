@@ -20,8 +20,8 @@ TypeHandle HideInterval::_type_handle;
  *
  */
 HideInterval::
-HideInterval(const NodePath &node, const std::string &name) :
-  CInterval(name, 0.0, true),
+HideInterval(const NodePath &node, std::string name) :
+  CInterval(std::move(name), 0.0, true),
   _node(node)
 {
   nassertv(!node.is_empty());

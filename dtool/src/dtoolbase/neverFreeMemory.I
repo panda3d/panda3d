@@ -59,10 +59,12 @@ get_total_unused() {
  */
 INLINE NeverFreeMemory *NeverFreeMemory::
 get_global_ptr() {
-  if (_global_ptr == nullptr) {
+  NeverFreeMemory *ptr = _global_ptr.load(std::memory_order_consume);
+  if (ptr == nullptr) {
     make_global_ptr();
+    ptr = _global_ptr.load(std::memory_order_consume);
   }
-  return _global_ptr;
+  return ptr;
 }
 
 /**

@@ -9904,7 +9904,7 @@ do_issue_material() {
 
   call_glMaterialfv(face, GL_SPECULAR, material->get_specular());
   call_glMaterialfv(face, GL_EMISSION, material->get_emission());
-  glMaterialf(face, GL_SHININESS, max(min(material->get_shininess(), (PN_stdfloat)128), (PN_stdfloat)0));
+  glMaterialf(face, GL_SHININESS, std::clamp(material->get_shininess(), (PN_stdfloat)0, (PN_stdfloat)128));
 
   if ((material->has_ambient() && material->has_diffuse()) || material->has_base_color()) {
     // The material has both an ambient and diffuse specified.  This means we
@@ -10325,7 +10325,7 @@ bind_light(Spotlight *light_obj, const NodePath &light, int light_id) {
   call_glLightfv(id, GL_POSITION, fpos);
   call_glLightfv(id, GL_SPOT_DIRECTION, dir);
 
-  glLightf(id, GL_SPOT_EXPONENT, max(min(light_obj->get_exponent(), (PN_stdfloat)128), (PN_stdfloat)0));
+  glLightf(id, GL_SPOT_EXPONENT, std::clamp(light_obj->get_exponent(), (PN_stdfloat)0, (PN_stdfloat)128));
   glLightf(id, GL_SPOT_CUTOFF, lens->get_hfov() * 0.5f);
 
   const LVecBase3 &att = light_obj->get_attenuation();
@@ -10531,7 +10531,7 @@ get_error_string(GLenum error_code) {
  * string is returned.
  */
 string CLP(GraphicsStateGuardian)::
-show_gl_string(const string &name, GLenum id) {
+show_gl_string(std::string_view name, GLenum id) {
   string result;
 
   const GLubyte *text = glGetString(id);
@@ -10753,14 +10753,13 @@ report_extensions() const {
     std::ostream &out = GLCAT.debug();
     out << "GL Extensions:\n";
 
-    pset<string>::const_iterator ei;
-    for (ei = _extensions.begin(); ei != _extensions.end(); ++ei) {
+    for (auto ei = _extensions.cbegin(); ei != _extensions.cend(); ++ei) {
       size_t len = (*ei).size();
       out << "  " << (*ei);
 
       // Display a second column.
       if (len <= 38) {
-        if (++ei != _extensions.end()) {
+        if (++ei != _extensions.cend()) {
           for (int i = len; i < 38; ++i) {
             out.put(' ');
           }
@@ -10773,6 +10772,24 @@ report_extensions() const {
       out.put('\n');
     }
   }
+}
+
+/**
+ * Parses the GL_VERSION string for a Mesa version number, or returns false if
+ * this is not a Mesa driver.
+ */
+bool CLP(GraphicsStateGuardian)::
+get_mesa_version(int &major_version, int &minor_version, int &patch_version) const {
+  major_version = 0;
+  minor_version = 0;
+  patch_version = 0;
+
+  const char *p = strstr(_gl_version.c_str(), " Mesa ");
+  if (p == nullptr) {
+    return false;
+  }
+  p += 6;
+  return sscanf(p, "%d.%d.%d", &major_version, &minor_version, &patch_version) >= 1;
 }
 
 /**
@@ -11545,7 +11562,8 @@ get_external_image_format(Texture *tex) const {
 #ifdef OPENGLES
       return GL_ETC1_RGB8_OES;
 #endif
-      // Fall through - ETC2 is backward compatible
+      // ETC2 is backward compatible.
+      [[fallthrough]];
     case Texture::CM_etc2:
       if (format == Texture::F_rgbm) {
         return GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2;
@@ -12060,7 +12078,8 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
 #ifdef OPENGLES
       return GL_ETC1_RGB8_OES;
 #endif
-      // Fall through - ETC2 is backward compatible
+      // ETC2 is backward compatible.
+      [[fallthrough]];
     case Texture::CM_etc2:
       if (format == Texture::F_rgbm) {
         return GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2;
@@ -12124,7 +12143,7 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
         return force_sized ? GL_DEPTH24_STENCIL8 : GL_DEPTH_STENCIL;
       }
     }
-    // Fall through.
+    [[fallthrough]];
 
   case Texture::F_depth_component:
 #ifndef OPENGLES
@@ -12620,7 +12639,7 @@ GLint CLP(GraphicsStateGuardian)::
 get_texture_combine_type(TextureStage::CombineMode cm) {
 #ifdef SUPPORT_FIXED_FUNCTION
   switch (cm) {
-  case TextureStage::CM_undefined: // fall through
+  case TextureStage::CM_undefined: [[fallthrough]];
   case TextureStage::CM_replace: return GL_REPLACE;
   case TextureStage::CM_modulate: return GL_MODULATE;
   case TextureStage::CM_add: return GL_ADD;
@@ -12646,7 +12665,7 @@ get_texture_src_type(TextureStage::CombineSource cs,
                      int this_stage) const {
 #ifdef SUPPORT_FIXED_FUNCTION
   switch (cs) {
-  case TextureStage::CS_undefined: // fall through
+  case TextureStage::CS_undefined: [[fallthrough]];
   case TextureStage::CS_texture: return GL_TEXTURE;
   case TextureStage::CS_constant: return GL_CONSTANT;
   case TextureStage::CS_primary_color: return GL_PRIMARY_COLOR;
@@ -12692,7 +12711,7 @@ get_texture_src_type(TextureStage::CombineSource cs,
 GLint CLP(GraphicsStateGuardian)::
 get_texture_operand_type(TextureStage::CombineOperand co) {
   switch (co) {
-  case TextureStage::CO_undefined: // fall through
+  case TextureStage::CO_undefined: [[fallthrough]];
   case TextureStage::CO_src_alpha: return GL_SRC_ALPHA;
   case TextureStage::CO_one_minus_src_alpha: return GL_ONE_MINUS_SRC_ALPHA;
   case TextureStage::CO_src_color: return GL_SRC_COLOR;
@@ -13729,6 +13748,10 @@ update_standard_texture_bindings() {
   }
 #endif // NDEBUG
 
+  if (!has_fixed_function_pipeline()) {
+    return;
+  }
+
   int num_stages = _target_texture->get_num_on_ff_stages();
 
 #ifndef NDEBUG
@@ -13869,7 +13892,7 @@ update_standard_texture_bindings() {
                                             last_stage, last_saved_result, i));
           glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND2_RGB,
                        get_texture_operand_type(stage->get_combine_rgb_operand2()));
-          // fall through
+          [[fallthrough]];
 
         case 2:
           glTexEnvi(GL_TEXTURE_ENV, GL_SRC1_RGB,
@@ -13877,7 +13900,7 @@ update_standard_texture_bindings() {
                                             last_stage, last_saved_result, i));
           glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB,
                        get_texture_operand_type(stage->get_combine_rgb_operand1()));
-          // fall through
+          [[fallthrough]];
 
         case 1:
           glTexEnvi(GL_TEXTURE_ENV, GL_SRC0_RGB,
@@ -13885,7 +13908,7 @@ update_standard_texture_bindings() {
                                             last_stage, last_saved_result, i));
           glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB,
                        get_texture_operand_type(stage->get_combine_rgb_operand0()));
-          // fall through
+          [[fallthrough]];
 
         default:
           break;
@@ -13900,7 +13923,7 @@ update_standard_texture_bindings() {
                                             last_stage, last_saved_result, i));
           glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND2_ALPHA,
                        get_texture_operand_type(stage->get_combine_alpha_operand2()));
-          // fall through
+          [[fallthrough]];
 
         case 2:
           glTexEnvi(GL_TEXTURE_ENV, GL_SRC1_ALPHA,
@@ -13908,7 +13931,7 @@ update_standard_texture_bindings() {
                                             last_stage, last_saved_result, i));
           glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA,
                        get_texture_operand_type(stage->get_combine_alpha_operand1()));
-          // fall through
+          [[fallthrough]];
 
         case 1:
           glTexEnvi(GL_TEXTURE_ENV, GL_SRC0_ALPHA,
@@ -13916,7 +13939,7 @@ update_standard_texture_bindings() {
                                             last_stage, last_saved_result, i));
           glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA,
                        get_texture_operand_type(stage->get_combine_alpha_operand0()));
-          // fall through
+          [[fallthrough]];
 
         default:
           break;

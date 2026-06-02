@@ -36,7 +36,7 @@ class ClockObject;
  */
 class EXPCL_PANDA_GRUTIL FrameRateMeter : public TextNode {
 PUBLISHED:
-  explicit FrameRateMeter(const std::string &name);
+  explicit FrameRateMeter(std::string name);
   virtual ~FrameRateMeter();
 
   void setup_window(GraphicsOutput *window);
@@ -48,7 +48,7 @@ PUBLISHED:
   INLINE void set_update_interval(double update_interval);
   INLINE double get_update_interval() const;
 
-  INLINE void set_text_pattern(const std::string &text_pattern);
+  INLINE void set_text_pattern(std::string text_pattern);
   INLINE const std::string &get_text_pattern() const;
 
   INLINE void set_clock_object(ClockObject *clock_object);

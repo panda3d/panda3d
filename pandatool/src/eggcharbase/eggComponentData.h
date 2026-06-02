@@ -37,8 +37,8 @@ public:
                    EggCharacterData *char_data);
   virtual ~EggComponentData();
 
-  void add_name(const std::string &name, NameUniquifier &uniquifier);
-  bool matches_name(const std::string &name) const;
+  void add_name(std::string_view name, NameUniquifier &uniquifier);
+  bool matches_name(std::string_view name) const;
 
   int get_num_frames(int model_index) const;
   void extend_to(int model_index, int num_frames) const;
@@ -59,7 +59,7 @@ protected:
   typedef pvector<EggBackPointer *> BackPointers;
   BackPointers _back_pointers;
 
-  typedef pset<std::string> Names;
+  typedef pset<std::string, std::less<>> Names;
   Names _names;
 
   EggCharacterCollection *_collection;

@@ -23,8 +23,8 @@ using std::string;
  *
  */
 DCPackerInterface::
-DCPackerInterface(const string &name) :
-  _name(name)
+DCPackerInterface(string name) :
+  _name(std::move(name))
 {
   _has_fixed_byte_size = false;
   _fixed_byte_size = 0;
@@ -74,7 +74,7 @@ DCPackerInterface::
  * seek for the field by name.
  */
 int DCPackerInterface::
-find_seek_index(const string &name) const {
+find_seek_index(std::string_view name) const {
   return get_catalog()->find_entry_by_name(name);
 }
 
@@ -162,8 +162,8 @@ check_match(const string &description, DCFile *dcfile) const {
  * Sets the name of this field.
  */
 void DCPackerInterface::
-set_name(const string &name) {
-  _name = name;
+set_name(string name) {
+  _name = std::move(name);
 }
 
 /**
@@ -242,7 +242,7 @@ pack_uint64(DCPackData &, uint64_t, bool &pack_error, bool &) const {
  * Packs the indicated numeric or string value into the stream.
  */
 void DCPackerInterface::
-pack_string(DCPackData &, const string &, bool &pack_error, bool &) const {
+pack_string(DCPackData &, std::string_view, bool &pack_error, bool &) const {
   pack_error = true;
 }
 

@@ -22,8 +22,8 @@ TypeHandle EggVertexAux::_type_handle;
  *
  */
 EggVertexAux::
-EggVertexAux(const std::string &name, const LVecBase4d &aux) :
-  EggNamedObject(name),
+EggVertexAux(std::string name, const LVecBase4d &aux) :
+  EggNamedObject(std::move(name)),
   _aux(aux)
 {
 }

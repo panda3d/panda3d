@@ -144,7 +144,7 @@ get_type(int n) const {
  * or NULL if no type can be determined.
  */
 PNMFileType *PNMFileTypeRegistry::
-get_type_from_extension(const string &filename) const {
+get_type_from_extension(std::string_view filename) const {
   if (_requires_sort) {
     ((PNMFileTypeRegistry *)this)->sort_preferences();
   }
@@ -207,7 +207,7 @@ get_type_from_extension(const string &filename) const {
  * determined.
  */
 PNMFileType *PNMFileTypeRegistry::
-get_type_from_magic_number(const string &magic_number) const {
+get_type_from_magic_number(std::string_view magic_number) const {
   if (_requires_sort) {
     ((PNMFileTypeRegistry *)this)->sort_preferences();
   }

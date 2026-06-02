@@ -47,6 +47,8 @@ PUBLISHED:
 
   virtual PT(TextFont) make_copy() const;
 
+  bool read(const Filename &font_filename, int face_index = 0);
+
   INLINE const std::string &get_name() const;
 
   INLINE bool set_point_size(PN_stdfloat point_size);

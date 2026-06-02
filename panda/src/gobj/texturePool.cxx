@@ -56,7 +56,7 @@ write(ostream &out) {
  * insensitive.
  */
 void TexturePool::
-register_texture_type(MakeTextureFunc *func, const string &extensions) {
+register_texture_type(MakeTextureFunc *func, std::string_view extensions) {
   MutexHolder holder(_lock);
 
   vector_string words;
@@ -161,7 +161,7 @@ get_filter(size_t i) const {
  * extension is not one of the extensions for a texture file.
  */
 TexturePool::MakeTextureFunc *TexturePool::
-get_texture_type(const string &extension) const {
+get_texture_type(std::string_view extension) const {
   MutexHolder holder(_lock);
 
   string c = downcase(extension);
@@ -1164,9 +1164,9 @@ ns_list_contents(ostream &out) const {
  * The nonstatic implementation of find_texture().
  */
 Texture *TexturePool::
-ns_find_texture(const string &name) const {
+ns_find_texture(std::string name) const {
   MutexHolder holder(_lock);
-  GlobPattern glob(name);
+  GlobPattern glob(std::move(name));
 
   Textures::const_iterator ti;
   for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
@@ -1183,10 +1183,10 @@ ns_find_texture(const string &name) const {
  * The nonstatic implementation of find_all_textures().
  */
 TextureCollection TexturePool::
-ns_find_all_textures(const string &name) const {
+ns_find_all_textures(std::string name) const {
   MutexHolder holder(_lock);
   TextureCollection result;
-  GlobPattern glob(name);
+  GlobPattern glob(std::move(name));
 
   Textures::const_iterator ti;
   for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
@@ -1205,7 +1205,7 @@ ns_find_all_textures(const string &name) const {
  * register_texture_type().
  */
 PT(Texture) TexturePool::
-ns_make_texture(const string &extension) const {
+ns_make_texture(std::string_view extension) const {
   MakeTextureFunc *func = get_texture_type(extension);
   if (func != nullptr) {
     return func();

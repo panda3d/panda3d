@@ -26,6 +26,128 @@
 #include <spirv-tools/libspirv.h>
 
 /**
+ * Skips whitespace (including newlines if allow_newline is true) and comments.
+ * Returns the number of newlines skipped.
+ */
+static int
+skip_ws_comments(char *&p, char *end, bool allow_newline) {
+  int num_lines = 0;
+  while (p < end) {
+    if (isspace(*p)) {
+      if (*p == '\n') {
+        if (!allow_newline) {
+          break;
+        }
+        ++num_lines;
+      }
+      ++p;
+      continue;
+    }
+    // Escaped newlines
+    if (*p == '\\') {
+      if (p + 1 < end && *(p + 1) == '\n') {
+        p += 2;
+        ++num_lines;
+        continue;
+      }
+      if (p + 2 < end && *(p + 1) == '\r' && *(p + 2) == '\n') {
+        p += 3;
+        ++num_lines;
+        continue;
+      }
+    }
+    if (*p == '/' && (p + 1 < end)) {
+      // Possible comment.
+      if (*(p + 1) == '/') {
+        // Skip till end of line.
+        p += 2;
+        while (p < end && *p != '\n') {
+          if (*p == '\\') {
+            // Handle escaped newlines, which continue comment on next line
+            if (p + 1 < end && *(p + 1) == '\n') {
+              p += 2;
+              ++num_lines;
+              continue;
+            }
+            if (p + 2 < end && *(p + 1) == '\r' && *(p + 2) == '\n') {
+              p += 3;
+              ++num_lines;
+              continue;
+            }
+          }
+          ++p;
+        }
+        continue;
+      }
+      if (*(p + 1) == '*') {
+        // Skip till closing */.
+        p += 2;
+        while (p + 1 < end && (*p != '*' || *(p + 1) != '/')) {
+          if (*p == '\n') {
+            ++num_lines;
+          }
+          ++p;
+        }
+        if (p + 1 >= end) {
+          p = end;
+          break;
+        }
+        p += 2;
+        continue;
+      }
+    }
+    // Found the next token (or a newline if allow_newline is true).
+    break;
+  }
+  return num_lines;
+}
+
+/**
+ * Scans the given character stream for #pragma once.  It may be preceded by
+ * whitespace or comments.  If found, comment out the line and return true.
+ */
+static bool
+scan_pragma_once(char *p, size_t size) {
+  char *end = p + size;
+
+  // Skip UTF-8 BOM if present
+  if (size >= 3 && (unsigned char)p[0] == 0xEF && (unsigned char)p[1] == 0xBB && (unsigned char)p[2] == 0xBF) {
+    p += 3;
+  }
+
+  skip_ws_comments(p, end, true);
+  char *pragma_start = p;
+  if (p >= end || *p != '#') {
+    return false;
+  }
+  ++p;
+  int nlines = skip_ws_comments(p, end, false);
+  if (p + 6 > end || strncmp(p, "pragma", 6) != 0) {
+    return false;
+  }
+  p += 6;
+  if (p >= end || *p == 'o') { // reject "#pragmaonce"
+    return false;
+  }
+  nlines += skip_ws_comments(p, end, false);
+  if (p + 4 > end || strncmp(p, "once", 4) != 0) {
+    return false;
+  }
+  p += 4;
+  if (p < end && !isspace(*p) && *p != '/') {
+    // Followed by something that's definitely not a newline or comment.
+    return false;
+  }
+
+  // Got pragma once.  Make sure the directive is replaced with whitespace, to
+  // prevent glslang complaining about it.  But preserve the number of newlines
+  // so that the line numbering is still correct.
+  memset(pragma_start, ' ', p - pragma_start);
+  memset(pragma_start, '\n', nlines);
+  return true;
+}
+
+/**
  * Interface for processing includes via the VirtualFileSystem.
  */
 class Includer : public glslang::TShader::Includer {
@@ -51,18 +173,7 @@ public:
       return new IncludeResult("", error_msg.data(), error_msg.size(), nullptr);
     }
 
-    vector_uchar *data = new vector_uchar;
-    if (!vf->read_file(*data, true)) {
-      static const std::string error_msg("failed to read file");
-      return new IncludeResult("", error_msg.data(), error_msg.size(), nullptr);
-    }
-
-    if (_record != nullptr) {
-      _record->add_dependent_file(vf);
-    }
-    _source_files.push_back(vf);
-
-    return new IncludeResult(vf->get_filename(), (const char *)data->data(), data->size(), data);
+    return do_include(std::move(vf));
   }
 
   virtual IncludeResult *includeLocal(const char *header_name, const char *includer_name, size_t depth) override {
@@ -82,18 +193,7 @@ public:
       return nullptr;
     }
 
-    vector_uchar *data = new vector_uchar;
-    if (!vf->read_file(*data, true)) {
-      static const std::string error_msg("failed to read file");
-      return new IncludeResult("", error_msg.data(), error_msg.size(), nullptr);
-    }
-
-    if (_record != nullptr) {
-      _record->add_dependent_file(vf);
-    }
-    _source_files.push_back(vf);
-
-    return new IncludeResult(vf->get_filename(), (const char *)data->data(), data->size(), data);
+    return do_include(std::move(vf));
   }
 
   virtual void releaseInclude(IncludeResult *result) override {
@@ -103,10 +203,48 @@ public:
     }
   }
 
+private:
+  IncludeResult *do_include(PT(VirtualFile) &&vf) {
+    Filename fullpath = vf->get_filename();
+    if (_pragma_once_files.count(fullpath)) {
+      if (shader_cat.is_spam()) {
+        shader_cat.spam()
+          << "Skipping included file " << *vf
+          << " which was previously included with #pragma once\n";
+      }
+      return new IncludeResult(fullpath, "", 0, nullptr);
+    }
+
+    vector_uchar *data = new vector_uchar;
+    if (!vf->read_file(*data, true)) {
+      static const std::string error_msg("failed to read file");
+      return new IncludeResult("", error_msg.data(), error_msg.size(), nullptr);
+    }
+
+    // Check and handle a #pragma once directive.  If there is one, it must
+    // come before the first preprocessor directive or token.
+    if (scan_pragma_once((char *)data->data(), data->size())) {
+      if (shader_cat.is_spam()) {
+        shader_cat.spam()
+          << "Included file " << *vf << " contains #pragma once\n";
+      }
+      _pragma_once_files.insert(fullpath);
+    }
+
+    if (_record != nullptr) {
+      _record->add_dependent_file(vf);
+    }
+    _source_files.push_back(std::move(vf));
+
+    return new IncludeResult(fullpath, (const char *)data->data(), data->size(), data);
+  }
+
+public:
   pvector<PT(VirtualFile)> _source_files;
 
 private:
   BamCacheRecord *_record = nullptr;
+  pset<Filename> _pragma_once_files;
 };
 
 /**
@@ -237,12 +375,6 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
     return preprocessor.compile_now(stage, stream, fullpath, options, output_log, record);
   }
 
-  static bool is_initialized = false;
-  if (!is_initialized) {
-    ShInitialize();
-    is_initialized = true;
-  }
-
   EShMessages messages = (EShMessages)(EShMsgDefault | EShMsgSpvRules);
   EShLanguage language;
   switch (stage) {
@@ -269,6 +401,10 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
       << "glslang compiler does not support " << stage << " shaders.\n";
     return nullptr;
   }
+
+  // This is called once, at process level.
+  static bool is_initialized = glslang::InitializeProcess();
+  nassertr(is_initialized, nullptr);
 
   glslang::TShader shader(language);
 
@@ -301,7 +437,9 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
           << "Cg does not support " << stage << " shaders.\n";
         return nullptr;
       }
-      shader.setSourceEntryPoint(source_entry_point);
+      if (!options.has_entry_point()) {
+        shader.setSourceEntryPoint(source_entry_point);
+      }
 
       // Generate a special preamble to define some functions that Cg defines but
       // HLSL doesn't.  This is sourced from cg_preamble.hlsl.
@@ -317,6 +455,7 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
       shader.setEnvInput(glslang::EShSource::EShSourceGlsl, (EShLanguage)stage, glslang::EShClient::EShClientOpenGL, 450);
 
       preamble_stream << "#extension GL_GOOGLE_cpp_style_line_directive : require\n";
+      preamble_stream << "#extension GL_GOOGLE_include_directive : require\n";
     }
     options.write_defines(preamble_stream);
     preamble = std::move(preamble_stream).str();
@@ -325,6 +464,10 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
 
   shader.setEnvClient(glslang::EShClient::EShClientOpenGL, glslang::EShTargetOpenGL_450);
   shader.setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_0);
+
+  if (options.has_entry_point()) {
+    shader.setSourceEntryPoint(options.get_entry_point().c_str());
+  }
 
   // This will squelch the warnings about missing bindings and locations, since
   // we can assign those ourselves.
@@ -512,17 +655,16 @@ preprocess_glsl(vector_uchar &code, int &glsl_version, const Filename &source_fi
     else if (*p == '#') {
       // Skip whitespace after # to find start of preprocessor directive.
       char *line_start = p;
-      do { ++p; } while (isspace(*p) && *p != '\n');
+      ++p;
+      lineno += skip_ws_comments(p, end, false);
 
       // Read directive keyword
       char *directive = p;
-      do { ++p; } while (!isspace(*p));
+      do { ++p; } while (!isspace(*p) && *p != '/');
       size_t directive_size = p - directive;
 
       // Skip whitespace until we reach EOL or beginning of argument
-      while (isspace(*p) && *p != '\n') {
-        ++p;
-      }
+      lineno += skip_ws_comments(p, end, false);
 
       if (directive_size == 7 && strncmp(directive, "version", directive_size) == 0) {
         glsl_version = strtol(p, &p, 10);
@@ -560,12 +702,11 @@ preprocess_glsl(vector_uchar &code, int &glsl_version, const Filename &source_fi
             warned = true;
             shader_cat.warning(false)
               << "WARNING: " << source_filename << ":" << lineno
-              << ": #pragma include is deprecated, use the "
-                 "GL_GOOGLE_include_directive extension instead.\n";
+              << ": #pragma include is deprecated, use #include instead.\n";
           }
 
           p += 7;
-          while (isspace(*p) && *p != '\n') { ++p; }
+          lineno += skip_ws_comments(p, end, false);
 
           char quote = *p;
           if (quote != '"' && quote != '<') {
@@ -602,7 +743,8 @@ preprocess_glsl(vector_uchar &code, int &glsl_version, const Filename &source_fi
           }
 
           // Expect EOL.
-          do { ++p; } while (isspace(*p) && *p != '\n');
+          ++p;
+          lineno += skip_ws_comments(p, end, false);
           if (*p != '\n') {
             shader_cat.error(false)
               << "ERROR: " << source_filename << ":" << lineno
@@ -671,10 +813,8 @@ preprocess_glsl(vector_uchar &code, int &glsl_version, const Filename &source_fi
         else if (strncmp(p, "once", 4) == 0 && isspace(p[4])) {
           // Expect EOL.
           p += 4;
-          while (isspace(*p) && *p != '\n') {
-            ++p;
-          }
-          if (*p != '\n') {
+          lineno += skip_ws_comments(p, end, false);
+          if (p < end && *p != '\n') {
             shader_cat.error(false)
               << "ERROR: " << source_filename << ":" << lineno
               << ": unexpected '" << *p << "' before EOL\n";

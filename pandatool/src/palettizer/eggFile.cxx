@@ -57,7 +57,7 @@ bool EggFile::
 from_command_line(EggData *data,
                   const Filename &source_filename,
                   const Filename &dest_filename,
-                  const std::string &egg_comment) {
+                  std::string egg_comment) {
   _data = data;
   _had_data = true;
   remove_backstage(_data);
@@ -74,7 +74,7 @@ from_command_line(EggData *data,
   // We also save the command line that loaded this egg file, so we can
   // continue to write it as a comment to the beginning of the egg file,
   // should we need to rewrite it later.
-  _egg_comment = egg_comment;
+  _egg_comment = std::move(egg_comment);
 
   // We save the default PaletteGroup at this point, because the egg file
   // inherits the default group that was in effect when it was specified on

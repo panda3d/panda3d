@@ -177,11 +177,13 @@ munge_format_impl(const GeomVertexFormat *orig,
     // And we don't need the transform_blend table any more.
     new_format->remove_column(InternalName::get_transform_blend());
 
-    if (animation.get_num_transforms() > 1) {
+    if (animation.get_num_transforms() > 1 || animation.get_indexed_transforms()) {
       PT(GeomVertexArrayFormat) new_array_format = new GeomVertexArrayFormat;
-      new_array_format->add_column
-        (InternalName::get_transform_weight(), animation.get_num_transforms(),
-         NT_stdfloat, C_other);
+      if (animation.get_num_transforms() > 1) {
+        new_array_format->add_column
+          (InternalName::get_transform_weight(), animation.get_num_transforms(),
+           NT_stdfloat, C_other);
+      }
 
       if (animation.get_indexed_transforms()) {
         // Also, if we'll be indexing into the transform table, reserve space

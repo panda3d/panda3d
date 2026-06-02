@@ -283,8 +283,8 @@ get_header(const DocumentSpec &url) {
  * Posts form data to a particular URL and retrieves the response.
  */
 INLINE bool HTTPChannel::
-post_form(const DocumentSpec &url, const std::string &body) {
-  if (!begin_request(HTTPEnum::M_post, url, body, false, 0, 0)) {
+post_form(const DocumentSpec &url, std::string body) {
+  if (!begin_request(HTTPEnum::M_post, url, std::move(body), false, 0, 0)) {
     return false;
   }
   while (run()) {
@@ -297,8 +297,8 @@ post_form(const DocumentSpec &url, const std::string &body) {
  * the server allows this.
  */
 INLINE bool HTTPChannel::
-put_document(const DocumentSpec &url, const std::string &body) {
-  if (!begin_request(HTTPEnum::M_put, url, body, false, 0, 0)) {
+put_document(const DocumentSpec &url, std::string body) {
+  if (!begin_request(HTTPEnum::M_put, url, std::move(body), false, 0, 0)) {
     return false;
   }
   while (run()) {
@@ -379,8 +379,8 @@ begin_get_header(const DocumentSpec &url) {
  * interim, or your form data may not get posted.
  */
 INLINE void HTTPChannel::
-begin_post_form(const DocumentSpec &url, const std::string &body) {
-  begin_request(HTTPEnum::M_post, url, body, true, 0, 0);
+begin_post_form(const DocumentSpec &url, std::string body) {
+  begin_request(HTTPEnum::M_post, url, std::move(body), true, 0, 0);
 }
 
 /**

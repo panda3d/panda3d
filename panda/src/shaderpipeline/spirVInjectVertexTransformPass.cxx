@@ -122,9 +122,29 @@ transform_annotation_op(Instruction op) {
   if (op.opcode == spv::OpDecorate) {
     uint32_t var_id = op.args[0];
 
-    auto it = _vertex_input_ids.find(var_id);
-    if (it != _vertex_input_ids.end()) {
-      op.args[0] = it->second;
+    {
+      auto it = _vertex_input_ids.find(var_id);
+      if (it != _vertex_input_ids.end()) {
+        nassertr(it->second != 0u, false);
+        if (shader_cat.is_spam()) {
+          shader_cat.spam()
+            << "Moving decoration from vertex input" << op.args[0] << " to " << it->second << "\n";
+        }
+        op.args[0] = it->second;
+      }
+    }
+    {
+      auto it = _matrix_vars.find(var_id);
+      if (it != _matrix_vars.end()) {
+        if (it->second._id == 0u) {
+          it->second._id = allocate_id();
+        }
+        if (shader_cat.is_spam()) {
+          shader_cat.spam()
+            << "Moving decoration from matrix var " << op.args[0] << " to " << it->second._id << "\n";
+        }
+        op.args[0] = it->second._id;
+      }
     }
   }
   return SpirVTransformPass::transform_annotation_op(op);
@@ -230,11 +250,13 @@ transform_function_op(Instruction op) {
         }
       }
 
-      if (!has_transform_index) {
-        entry_point_vars.push_back(_transform_index_var_id);
-      }
-      if (!has_transform_weight) {
-        entry_point_vars.push_back(_transform_weight_var_id);
+      if (_anim_locations != 0u) {
+        if (!has_transform_index) {
+          entry_point_vars.push_back(_transform_index_var_id);
+        }
+        if (!has_transform_weight) {
+          entry_point_vars.push_back(_transform_weight_var_id);
+        }
       }
       if (!_matrix_vars.empty()) {
         if (_instance_mat_var_id != 0) {
@@ -408,12 +430,14 @@ inject_animation(const pvector<uint32_t> &vars) {
     const ShaderType *uvec4_type = ShaderType::register_type(ShaderType::Vector(ShaderType::ST_uint, 4));
     _transform_index_var_id = define_variable(uvec4_type, spv::StorageClassInput);
     decorate(_transform_index_var_id, spv::DecorationLocation, _transform_index_location);
+    set_name(_transform_index_var_id, "transform_index");
   }
 
   const ShaderType *vec4_type = ShaderType::register_type(ShaderType::Vector(ShaderType::ST_float, 4));
   if (_transform_weight_var_id == 0u) {
     _transform_weight_var_id = define_variable(vec4_type, spv::StorageClassInput);
     decorate(_transform_weight_var_id, spv::DecorationLocation, _transform_weight_location);
+    set_name(_transform_weight_var_id, "transform_weight");
   }
 
   uint32_t transform_index = op_load(_transform_index_var_id);

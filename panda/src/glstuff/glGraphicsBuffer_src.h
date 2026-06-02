@@ -52,7 +52,7 @@
 class EXPCL_GL CLP(GraphicsBuffer) : public GraphicsBuffer {
 public:
   CLP(GraphicsBuffer)(GraphicsEngine *engine, GraphicsPipe *pipe,
-                      const std::string &name,
+                      std::string name,
                       const FrameBufferProperties &fb_prop,
                       const WindowProperties &win_prop,
                       int flags,

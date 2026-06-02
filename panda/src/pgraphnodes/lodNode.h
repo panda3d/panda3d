@@ -28,9 +28,9 @@
  */
 class EXPCL_PANDA_PGRAPHNODES LODNode : public PandaNode {
 PUBLISHED:
-  INLINE explicit LODNode(const std::string &name);
+  INLINE explicit LODNode(std::string name);
 
-  static PT(LODNode) make_default_lod(const std::string &name);
+  static PT(LODNode) make_default_lod(std::string name);
 
 protected:
   INLINE LODNode(const LODNode &copy);

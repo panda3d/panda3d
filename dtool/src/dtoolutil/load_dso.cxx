@@ -25,7 +25,7 @@ static Filename resolve_dso(const DSearchPath &path, const Filename &filename) {
       // This is a special case, meaning to search in the same directory in
       // which libp3dtool.dll, or the exe, was started from.
       Filename dtoolpath = ExecutionEnvironment::get_dtool_name();
-      DSearchPath spath(dtoolpath.get_dirname());
+      DSearchPath spath(Filename(dtoolpath.get_dirname()));
       return spath.find_file(filename);
 #endif
     } else {

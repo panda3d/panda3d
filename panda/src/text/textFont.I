@@ -41,6 +41,7 @@ get_line_height() const {
 INLINE void TextFont::
 set_line_height(PN_stdfloat line_height) {
   _line_height = line_height;
+  ++_modified;
 }
 
 /**
@@ -57,6 +58,7 @@ get_space_advance() const {
 INLINE void TextFont::
 set_space_advance(PN_stdfloat space_advance) {
   _space_advance = space_advance;
+  ++_modified;
 }
 
 /**
@@ -66,6 +68,15 @@ set_space_advance(PN_stdfloat space_advance) {
 INLINE PN_stdfloat TextFont::
 get_total_poly_margin() const {
   return _total_poly_margin;
+}
+
+/**
+ * Returns a number that is incremented whenever the font's properties are
+ * modified.
+ */
+INLINE UpdateSeq TextFont::
+get_modified() const {
+  return _modified;
 }
 
 /**

@@ -1039,7 +1039,7 @@ pipe_constructor() {
  * only called from GraphicsEngine::make_output.
  */
 PT(GraphicsOutput) VulkanGraphicsPipe::
-make_output(const std::string &name,
+make_output(std::string_view name,
             const FrameBufferProperties &fb_prop,
             const WindowProperties &win_prop,
             int flags,
@@ -1072,7 +1072,7 @@ make_output(const std::string &name,
         (flags & BF_can_bind_layered) != 0) {
       return nullptr;
     }
-    return new VulkanGraphicsWindow(engine, this, name, fb_prop, win_prop,
+    return new VulkanGraphicsWindow(engine, this, std::string(name), fb_prop, win_prop,
                                     flags, gsg, host);
   }
 
@@ -1084,7 +1084,7 @@ make_output(const std::string &name,
         (flags & BF_rtt_cumulative) != 0) {
       return nullptr;
     }
-    return new VulkanGraphicsBuffer(engine, this, name, fb_prop, win_prop,
+    return new VulkanGraphicsBuffer(engine, this, std::string(name), fb_prop, win_prop,
                                     flags, gsg, host);
   }
 

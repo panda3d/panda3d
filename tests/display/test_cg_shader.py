@@ -90,6 +90,46 @@ def test_cg_int(env):
     env.run_cg(code, preamble, inputs)
 
 
+def test_cg_state_texmat(env):
+    np = core.NodePath("test")
+
+    mat1 = core.LMatrix4(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)
+    ts1 = core.TextureStage("ts1")
+    ts1.sort = 10
+    np.set_texture(ts1, core.Texture("1"))
+    np.set_tex_transform(ts1, core.TransformState.make_mat(mat1))
+
+    mat2 = core.LMatrix4(-1, -2, -3, -4, -5, -6, -7, -8, -9, -10, -11, -12, -13, -14, -15, -16)
+    ts2 = core.TextureStage("ts2")
+    ts2.sort = 20
+    np.set_texture(ts2, core.Texture("2"))
+    np.set_tex_transform(ts2, core.TransformState.make_mat(mat2))
+
+    preamble = """
+    uniform float4x4 texmat_0;
+    uniform float4x4 texmat_1;
+    uniform float4x4 texmat_2;
+    """
+    code = """
+    assert(texmat_0[0] == float4(1, 2, 3, 4));
+    assert(texmat_0[1] == float4(5, 6, 7, 8));
+    assert(texmat_0[2] == float4(9, 10, 11, 12));
+    assert(texmat_0[3] == float4(13, 14, 15, 16));
+
+    assert(texmat_1[0] == -float4(1, 2, 3, 4));
+    assert(texmat_1[1] == -float4(5, 6, 7, 8));
+    assert(texmat_1[2] == -float4(9, 10, 11, 12));
+    assert(texmat_1[3] == -float4(13, 14, 15, 16));
+
+    assert(texmat_2[0] == float4(1, 0, 0, 0));
+    assert(texmat_2[1] == float4(0, 1, 0, 0));
+    assert(texmat_2[2] == float4(0, 0, 1, 0));
+    assert(texmat_2[3] == float4(0, 0, 0, 1));
+    """
+
+    env.run_cg(code, preamble, state=np.get_state())
+
+
 def test_cg_state_material(env):
     mat = core.Material("mat")
     mat.ambient = (1, 2, 3, 4)

@@ -33,7 +33,7 @@ public:
   ALLOC_DELETED_CHAIN(ModelSaveRequest);
 
 PUBLISHED:
-  explicit ModelSaveRequest(const std::string &name,
+  explicit ModelSaveRequest(std::string name,
                             const Filename &filename,
                             const LoaderOptions &options,
                             PandaNode *node, Loader *loader);

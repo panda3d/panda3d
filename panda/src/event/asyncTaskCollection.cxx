@@ -174,7 +174,7 @@ clear() {
  * if no task has that name.
  */
 AsyncTask *AsyncTaskCollection::
-find_task(const std::string &name) const {
+find_task(std::string_view name) const {
   size_t num_tasks = get_num_tasks();
   for (size_t i = 0; i < num_tasks; ++i) {
     AsyncTask *task = get_task(i);

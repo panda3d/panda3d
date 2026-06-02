@@ -33,10 +33,15 @@
 void ReMutexSpinlockImpl::
 lock() {
   Thread *current_thread = Thread::get_current_thread();
-  Thread *locking_thread = (Thread *)AtomicAdjust::compare_and_exchange_ptr(_locking_thread, nullptr, current_thread);
-  while (locking_thread != nullptr && locking_thread != current_thread) {
+  Thread *expected = nullptr;
+  while (!_locking_thread.compare_exchange_weak(expected, current_thread,
+                                                std::memory_order_acquire,
+                                                std::memory_order_relaxed)) {
+    if (expected == current_thread) {
+      break;
+    }
     PAUSE();
-    locking_thread = (Thread *)AtomicAdjust::compare_and_exchange_ptr(_locking_thread, nullptr, current_thread);
+    expected = nullptr;
   }
   ++_counter;
 }
@@ -47,8 +52,11 @@ lock() {
 bool ReMutexSpinlockImpl::
 try_lock() {
   Thread *current_thread = Thread::get_current_thread();
-  Thread *locking_thread = (Thread *)AtomicAdjust::compare_and_exchange_ptr(_locking_thread, nullptr, current_thread);
-  if (locking_thread == nullptr || locking_thread == current_thread) {
+  Thread *expected = nullptr;
+  if (_locking_thread.compare_exchange_strong(expected, current_thread,
+                                              std::memory_order_acquire,
+                                              std::memory_order_relaxed) ||
+      expected == current_thread) {
     ++_counter;
     return true;
   } else {

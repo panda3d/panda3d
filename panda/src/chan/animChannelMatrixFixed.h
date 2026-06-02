@@ -28,7 +28,7 @@ protected:
   AnimChannelMatrixFixed(AnimGroup *parent, const AnimChannelMatrixFixed &copy);
 
 public:
-  AnimChannelMatrixFixed(const std::string &name, const LVecBase3 &pos, const LVecBase3 &hpr, const LVecBase3 &scale);
+  AnimChannelMatrixFixed(std::string name, const LVecBase3 &pos, const LVecBase3 &hpr, const LVecBase3 &scale);
 
   virtual bool has_changed(int last_frame, double last_frac,
                            int this_frame, double this_frac);

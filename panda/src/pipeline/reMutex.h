@@ -34,10 +34,7 @@ class EXPCL_PANDA_PIPELINE ReMutex : public ReMutexDirect
 {
 PUBLISHED:
   INLINE ReMutex();
-public:
-  INLINE explicit ReMutex(const char *name);
-PUBLISHED:
-  INLINE explicit ReMutex(const std::string &name);
+  INLINE explicit ReMutex(std::string_view name);
   ReMutex(const ReMutex &copy) = delete;
   ~ReMutex() = default;
 

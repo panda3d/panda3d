@@ -55,8 +55,8 @@ fillin(DatagramIterator &scan, BamReader *) {
  *
  */
 DirectionalLight::
-DirectionalLight(const std::string &name) :
-  LightLensNode(name, new OrthographicLens()) {
+DirectionalLight(std::string name) :
+  LightLensNode(std::move(name), new OrthographicLens()) {
   _lenses[0]._lens->set_interocular_distance(0);
 }
 

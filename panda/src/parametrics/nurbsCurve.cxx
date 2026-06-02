@@ -459,7 +459,7 @@ append_cv_impl(const LVecBase4 &v) {
  * Returns true on success, false on failure.
  */
 bool NurbsCurve::
-format_egg(std::ostream &out, const std::string &name, const std::string &curve_type,
+format_egg(std::ostream &out, std::string_view name, std::string_view curve_type,
            int indent_level) const {
   return NurbsCurveInterface::format_egg(out, name, curve_type, indent_level);
 }

@@ -17,8 +17,8 @@
  * the appropriate type, and pass it up to this constructor.
  */
 INLINE PartBundleNode::
-PartBundleNode(const std::string &name, PartBundle *bundle) :
-  PandaNode(name)
+PartBundleNode(std::string name, PartBundle *bundle) :
+  PandaNode(std::move(name))
 {
   add_bundle(bundle);
 }

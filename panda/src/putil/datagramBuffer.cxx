@@ -20,7 +20,7 @@
  * written.
  */
 bool DatagramBuffer::
-write_header(const std::string &header) {
+write_header(std::string_view header) {
   nassertr(!_wrote_first_datagram, false);
 
   _data.insert(_data.end(), header.begin(), header.end());

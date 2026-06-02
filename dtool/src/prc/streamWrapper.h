@@ -16,7 +16,7 @@
 
 #include "dtoolbase.h"
 #include "mutexImpl.h"
-#include "atomicAdjust.h"
+#include "patomic.h"
 
 /**
  * The base class for both IStreamWrapper and OStreamWrapper, this provides
@@ -41,7 +41,7 @@ private:
 
   // This isn't really designed as a reference counted class, but it is useful
   // to treat it as one when dealing with substreams created by Multifile.
-  mutable AtomicAdjust::Integer _ref_count = 1;
+  mutable patomic<int> _ref_count { 1 };
 
 #ifdef SIMPLE_THREADS
   // In the SIMPLE_THREADS case, we need to use a bool flag, because MutexImpl

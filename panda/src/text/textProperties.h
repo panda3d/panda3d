@@ -136,7 +136,7 @@ PUBLISHED:
   INLINE bool has_shadow() const;
   INLINE LVector2 get_shadow() const;
 
-  INLINE void set_bin(const std::string &bin);
+  INLINE void set_bin(std::string bin);
   INLINE void clear_bin();
   INLINE bool has_bin() const;
   INLINE const std::string &get_bin() const;

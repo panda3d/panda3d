@@ -26,7 +26,7 @@ public:
   FltBeadID(FltHeader *header);
 
   const std::string &get_id() const;
-  void set_id(const std::string &id);
+  void set_id(std::string id);
 
   virtual void output(std::ostream &out) const;
 

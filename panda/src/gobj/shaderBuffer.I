@@ -16,8 +16,8 @@
  * parameters cannot be modified, but this may change in the future.
  */
 INLINE ShaderBuffer::
-ShaderBuffer(const std::string &name, uint64_t size, UsageHint usage_hint) :
-  Namable(name),
+ShaderBuffer(std::string name, uint64_t size, UsageHint usage_hint) :
+  Namable(std::move(name)),
   _data_size_bytes(size),
   _usage_hint(usage_hint) {
 }
@@ -27,8 +27,8 @@ ShaderBuffer(const std::string &name, uint64_t size, UsageHint usage_hint) :
  * parameters cannot be modified, but this may change in the future.
  */
 INLINE ShaderBuffer::
-ShaderBuffer(const std::string &name, vector_uchar initial_data, UsageHint usage_hint) :
-  Namable(name),
+ShaderBuffer(std::string name, vector_uchar initial_data, UsageHint usage_hint) :
+  Namable(std::move(name)),
   _data_size_bytes(initial_data.size()),
   _usage_hint(usage_hint),
   _initial_data(std::move(initial_data)) {

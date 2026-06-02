@@ -15,7 +15,7 @@
  *
  */
 INLINE EggPolygon::
-EggPolygon(const std::string &name) : EggPrimitive(name) {
+EggPolygon(std::string name) : EggPrimitive(std::move(name)) {
 }
 
 /**

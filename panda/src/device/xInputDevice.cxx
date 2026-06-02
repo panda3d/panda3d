@@ -148,7 +148,7 @@ XInputDevice::
  */
 bool XInputDevice::
 check_arrival(const RID_DEVICE_INFO &info, DEVINST inst,
-              const std::string &name, const std::string &manufacturer) {
+              std::string name, std::string manufacturer) {
   LightMutexHolder holder(_lock);
   if (_is_connected) {
     return false;
@@ -177,12 +177,12 @@ check_arrival(const RID_DEVICE_INFO &info, DEVINST inst,
 
   // Yes, take the name and manufacturer.
   if (!name.empty()) {
-    _name = name;
+    _name = std::move(name);
   } else {
     _name = "XInput Device #";
     _name += format_string(_index + 1);
   }
-  _manufacturer = manufacturer;
+  _manufacturer = std::move(manufacturer);
 
   if (inst && caps.ProductID == 0 && caps.RevisionID != 0) {
     // XInput does not report a product ID for the Xbox 360 wireless adapter.
