@@ -401,4 +401,19 @@ epoch_leave(Thread *t) {
   EpochManager::leave(t->epoch_participant());
 }
 
+ALWAYS_INLINE void Thread::
+assert_in_epoch(Thread *t) {
+#ifndef NDEBUG
+  // A destructor run by EBR reclamation may open a writer (e.g. ~PandaNode);
+  // that write is on an object no reader can still observe and is safe unframed.
+  if (EpochManager::is_reclaiming()) {
+    return;
+  }
+  if (t->epoch_participant().depth == 0) {
+    nassert_raise("CycleData writer opened outside any epoch critical section "
+                  "(wrap the work in a frame/task or an EpochHolder)");
+  }
+#endif
+}
+
 #endif  // THREADED_PIPELINE

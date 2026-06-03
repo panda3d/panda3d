@@ -19,6 +19,8 @@
 #include "geomVertexFormat.h"
 #include "geomVertexWriter.h"
 #include "geomTriangles.h"
+#include "nodePath.h"
+#include "epochHolder.h"
 
 #include <atomic>
 #include <chrono>
@@ -75,6 +77,7 @@ void worker(const std::vector<NodePath> &all_targets, int my_target_idx,
   const NodePath &my_parent = all_targets[my_target_idx];
 
   for (int i = 0; i < iterations && !g_stop.load(std::memory_order_relaxed); ++i) {
+    EpochHolder epoch(self);
     char op;
     if (mine.empty())            op = 'a';                       // forced attach
     else if (mine.size() >= 32)  op = 'R';                       // forced remove cap
@@ -128,9 +131,13 @@ void worker(const std::vector<NodePath> &all_targets, int my_target_idx,
       }
     }
   }
-  for (auto &n : mine) {
-    n.remove_node();
-    g_total_removed.fetch_add(1, std::memory_order_relaxed);
+  {
+    EpochHolder epoch(self.p());
+    for (auto &n : mine) {
+      n.remove_node();
+      g_total_removed.fetch_add(1, std::memory_order_relaxed);
+    }
+    mine.clear();
   }
   g_workers_done.fetch_add(1, std::memory_order_relaxed);
 }

@@ -23,6 +23,7 @@
 #include "nodeReferenceCount.h"
 #include "thread.h"
 #include "epochManager.h"
+#include "epochHolder.h"
 #include "pandaNode.h"
 
 #include <atomic>
@@ -57,8 +58,11 @@ static int run_unbound_churn(int seconds) {
     PT(Thread) th = Thread::bind_thread("writer", "writer");
     uint64_t v = 1;
     while (!stop.load(std::memory_order_relaxed)) {
-      { CycleDataStageWriter<TestCData> cdw(cycler, 0, th.p());
-        cdw->_a = v; cdw->_b = v * v; }
+      {
+        EpochHolder epoch(th.p());
+        CycleDataStageWriter<TestCData> cdw(cycler, 0, th.p());
+        cdw->_a = v; cdw->_b = v * v;
+      }
       ++v;
       write_iters.fetch_add(1, std::memory_order_relaxed);
     }
@@ -121,6 +125,7 @@ static int run_read_your_writes() {
   // 1. Lock-free reader on the writing thread must see the in-flight write.
   {
     PipelineCycler<TestCData> cycler;
+    EpochHolder epoch(th);
     {
       CycleDataWriter<TestCData> cdw(cycler, th);
       cdw->_a = 42; cdw->_b = 42 * 42;
@@ -143,6 +148,7 @@ static int run_read_your_writes() {
   //    capture the in-flight data, not the stale published pointer.
   {
     PipelineCycler<TestCData> cycler;
+    EpochHolder epoch(th);
     CycleDataWriter<TestCData> cdw(cycler, th);
     cdw->_a = 99; cdw->_b = 99 * 99;
     PipelineCycler<TestCData> dup(cycler);
@@ -158,6 +164,7 @@ static int run_read_your_writes() {
   //    copy and ref()/unref_delete()s it must not free the writer's live copy.
   {
     PipelineCycler<TestCData> cycler;
+    EpochHolder epoch(th);
     CycleDataWriter<TestCData> cdw(cycler, th);
     cdw->_a = 7;
     TestCData *pending = cdw;
@@ -249,6 +256,7 @@ int main(int argc, char **argv) {
     uint64_t v = 1;
     while (!stop.load(std::memory_order_relaxed)) {
       {
+        EpochHolder epoch(th.p());
         CycleDataStageWriter<TestCData> cdw(cycler, 0, th.p());
         cdw->_a = v;
         cdw->_b = v * v;

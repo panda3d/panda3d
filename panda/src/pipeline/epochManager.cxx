@@ -54,6 +54,13 @@ external_participant() {
   return tl;
 }
 
+static thread_local bool tl_in_reclaim = false;
+
+bool EpochManager::
+is_reclaiming() {
+  return tl_in_reclaim;
+}
+
 EpochParticipant::
 ~EpochParticipant() {
   if (registered) {
@@ -198,10 +205,13 @@ try_reclaim(size_t budget) {
   if (!to_free.empty()) {
     _retired_count.fetch_sub(to_free.size(), std::memory_order_relaxed);
   }
+  bool prev_in_reclaim = tl_in_reclaim;
+  tl_in_reclaim = true;
   for (CycleData *cd : to_free) {
     // Undoes the node_ref() the cycler did on publish/install; deletes at zero.
     node_unref_delete<CycleData>(cd);
   }
+  tl_in_reclaim = prev_in_reclaim;
   return to_free.size();
 }
 

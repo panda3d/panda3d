@@ -173,6 +173,8 @@ public:
   ALWAYS_INLINE static void epoch_enter(Thread *t);
   ALWAYS_INLINE static void epoch_leave(Thread *t);
 
+  ALWAYS_INLINE static void assert_in_epoch(Thread *t);
+
   // The EBR participant for this thread.  Bound threads (one Thread per OS
   // thread) use a Thread-owned record -- a plain member access, avoiding the
   // slow shared-library thread_local lookup on the hot read path.  The shared

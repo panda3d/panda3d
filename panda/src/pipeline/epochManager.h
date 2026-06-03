@@ -103,6 +103,8 @@ public:
   static uint64_t get_global_epoch();
   static size_t get_retired_count();
 
+  static bool is_reclaiming();
+
   // Per-stage in-place fast path: a write at stage S may mutate the published
   // CData in place (skipping make_copy) when S has a single occupying thread
   // (here) and the cycler's stage-S CData is unshared with other stages

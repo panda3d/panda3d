@@ -28,6 +28,7 @@ CycleDataStageWriter(PipelineCycler<CycleDataType> &cycler, int stage,
   _current_thread(current_thread),
   _stage(stage)
 {
+  Thread::assert_in_epoch(_current_thread);
   Thread::epoch_enter(_current_thread);
   _pointer = _cycler->write_stage(_stage, _current_thread);
   nassertv(_pointer != nullptr);
@@ -44,6 +45,7 @@ CycleDataStageWriter(PipelineCycler<CycleDataType> &cycler, int stage,
   _current_thread(current_thread),
   _stage(stage)
 {
+  Thread::assert_in_epoch(_current_thread);
   Thread::epoch_enter(_current_thread);
   _pointer = _cycler->write_stage_upstream(_stage, force_to_0, _current_thread);
   nassertv(_pointer != nullptr);
