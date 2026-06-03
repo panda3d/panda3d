@@ -114,15 +114,6 @@ PandaNode::
 #endif  // NDEBUG
   */
 
-  // Use do_remove_all_children, not the public remove_all_children: the latter
-  // also runs force_bounds_stale + children_changed + mark_bam_modified, which
-  // the destructor must not.  force_bounds_stale walks self->_up, whose
-  // UpConnections hold raw, un-refcounted back-pointers to parents (kept raw to
-  // avoid parent<->child cycles); under concurrent EBR a parent may be
-  // mid-teardown, so the walk could read freed memory in
-  // CDStageReader<PandaNode::CData>::ctor.  The notifications are also moot
-  // here: any parent that held us already dropped its Down entry (else our
-  // refcount could not be 0) and staled its bounds then.
   do_remove_all_children(Thread::get_current_thread());
 }
 

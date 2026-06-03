@@ -15,27 +15,28 @@
 
 #include "cycleData.h"
 #include "thread.h"
+#include "pmutex.h"
+#include "mutexHolder.h"
 
 #include <algorithm>
-#include <mutex>
 
 // 0 is reserved for "quiescent".  Start the counter at 1 so a thread that
 // has never been in a CS (slot == 0) is treated as not blocking advance.
 patomic<uint64_t> EpochManager::_global_epoch{1};
 
-std::mutex EpochManager::_retired_lock;
-pvector<EpochManager::Retired> EpochManager::_retired;
 patomic<int> EpochManager::_active_cs_count{0};
 patomic<size_t> EpochManager::_retired_count{0};
 
-// Never-destroyed participant registry (see epochManager.h).  Heap-allocated
-// once and intentionally leaked, so a thread_local participant's destructor
-// can unregister safely at any point -- including during static teardown at
-// program exit, when an ordinary file-scope std::mutex might already be gone.
 namespace {
+  struct Retired {
+    uint64_t epoch;
+    CycleData *cd;
+  };
   struct EbrRegistry {
-    std::mutex lock;
+    Mutex registry_lock;
     EpochParticipant *head = nullptr;
+    Mutex retired_lock;
+    pvector<Retired> retired;
   };
   EbrRegistry *get_registry() {
     static EbrRegistry *r = new EbrRegistry();
@@ -71,7 +72,7 @@ EpochParticipant::
 void EpochManager::
 register_participant(EpochParticipant *p) {
   EbrRegistry *r = get_registry();
-  std::lock_guard<std::mutex> hold(r->lock);
+  MutexHolder hold(r->registry_lock);
   p->next = r->head;
   r->head = p;
   p->registered = true;
@@ -80,7 +81,7 @@ register_participant(EpochParticipant *p) {
 void EpochManager::
 unregister_participant(EpochParticipant *p) {
   EbrRegistry *r = get_registry();
-  std::lock_guard<std::mutex> hold(r->lock);
+  MutexHolder hold(r->registry_lock);
   EpochParticipant **pp = &r->head;
   while (*pp != nullptr && *pp != p) {
     pp = &(*pp)->next;
@@ -126,8 +127,9 @@ retire(CycleData *cd) {
   }
   uint64_t e = _global_epoch.load(std::memory_order_acquire);
   {
-    std::lock_guard<std::mutex> hold(_retired_lock);
-    _retired.push_back({e, cd});
+    EbrRegistry *r = get_registry();
+    MutexHolder hold(r->retired_lock);
+    r->retired.push_back({e, cd});
   }
   _retired_count.fetch_add(1, std::memory_order_relaxed);
 }
@@ -157,7 +159,7 @@ try_advance_epoch() {
   uint64_t min_observed;
   {
     EbrRegistry *r = get_registry();
-    std::lock_guard<std::mutex> hold(r->lock);
+    MutexHolder hold(r->registry_lock);
     min_observed = observed_min_epoch_locked(r->head);
   }
   // If everyone in a CS has observed `cur`, mint a new epoch; entries stamped
@@ -175,7 +177,7 @@ try_reclaim(size_t budget) {
   uint64_t min_observed;
   {
     EbrRegistry *r = get_registry();
-    std::lock_guard<std::mutex> hold(r->lock);
+    MutexHolder hold(r->registry_lock);
     min_observed = observed_min_epoch_locked(r->head);
   }
   // All quiescent -> the floor is the current epoch (free anything older).
@@ -187,9 +189,10 @@ try_reclaim(size_t budget) {
   // other locks).
   pvector<CycleData *> to_free;
   {
-    std::lock_guard<std::mutex> hold(_retired_lock);
-    auto write = _retired.begin();
-    for (auto read = _retired.begin(); read != _retired.end(); ++read) {
+    EbrRegistry *r = get_registry();
+    MutexHolder hold(r->retired_lock);
+    auto write = r->retired.begin();
+    for (auto read = r->retired.begin(); read != r->retired.end(); ++read) {
       if (read->epoch < min_observed && to_free.size() < budget) {
         to_free.push_back(read->cd);
       } else {
@@ -199,7 +202,7 @@ try_reclaim(size_t budget) {
         ++write;
       }
     }
-    _retired.erase(write, _retired.end());
+    r->retired.erase(write, r->retired.end());
   }
 
   if (!to_free.empty()) {
@@ -251,8 +254,9 @@ get_global_epoch() {
 
 size_t EpochManager::
 get_retired_count() {
-  std::lock_guard<std::mutex> hold(_retired_lock);
-  return _retired.size();
+  EbrRegistry *r = get_registry();
+  MutexHolder hold(r->retired_lock);
+  return r->retired.size();
 }
 
 #endif  // THREADED_PIPELINE

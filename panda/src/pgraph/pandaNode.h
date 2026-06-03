@@ -405,11 +405,6 @@ private:
   class CData;
 
   INLINE int do_find_parent(PandaNode *node, const CData *cdata) const;
-  // Shared body of remove_all_children: severs every child connection but
-  // does NOT call force_bounds_stale / children_changed / mark_bam_modified.
-  // Used directly by ~PandaNode where the trailing notifications would walk
-  // self->_up via raw back-pointers into potentially-dead parents (see the
-  // comment on the destructor for the race details).
   void do_remove_all_children(Thread *current_thread);
   bool stage_remove_child(PandaNode *child_node, int pipeline_stage,
                           Thread *current_thread);
@@ -585,8 +580,6 @@ private:
     // This section contains the lightweight parts of the node that are likely
     // to change fairly often: transform and state.
 
-    // CPT, not NCPT: nothing reads these states' node_ref_count (cache GC uses
-    // cache_ref_count), so NCPT's extra atomic per copy/destroy was dead weight.
     CPT(RenderState) _state;
     CPT(TransformState) _transform;
     CPT(TransformState) _prev_transform;

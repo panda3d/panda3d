@@ -487,9 +487,7 @@ get_sleeping_tasks() const {
 void AsyncTaskManager::
 poll() {
   {
-#ifdef THREADED_PIPELINE
     EpochHolder epoch;
-#endif
     MutexHolder holder(_lock);
 
     // We iterate through with an index, rather than with an iterator, because
@@ -511,13 +509,11 @@ poll() {
     _frame_cvar.notify_all();
   }
 
-#ifdef THREADED_PIPELINE
   // Also reclaim here for apps that poll tasks but never render.  Must run
   // after epoch_leave (so our own slot doesn't pin the floor) and outside
   // _lock (freeing a CycleData can take other locks).
   EpochManager::try_advance_epoch();
   EpochManager::try_reclaim(256);
-#endif
 }
 
 /**

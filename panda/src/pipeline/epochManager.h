@@ -30,9 +30,6 @@
 #include "pvector.h"
 
 #include <cstdint>
-#ifndef CPPPARSER
-#include <mutex>
-#endif
 
 class Thread;
 class CycleData;
@@ -53,8 +50,8 @@ struct EpochParticipant {
 };
 #else  // CPPPARSER
 // Interrogate names this type at the call sites in thread.h/.I but generates no
-// bindings for it, and its parser trips on the real definition's std::mutex /
-// patomic members; keep it opaque.
+// bindings for it, and its parser trips on the real definition's patomic
+// members; keep it opaque.
 struct EpochParticipant {};
 #endif  // CPPPARSER
 
@@ -116,9 +113,7 @@ public:
   ALWAYS_INLINE static void end_inplace_write(int stage);
   ALWAYS_INLINE static bool inplace_allowed_hint(int stage);
 
-  // Pipelines rarely exceed 3 stages; a writer at a stage >= this bound never
-  // takes the in-place path (conservative).
-  static constexpr int MAX_STAGES = 16;
+  static constexpr int MAX_STAGES = 4;
 
 #ifndef CPPPARSER
 private:
@@ -128,11 +123,6 @@ private:
   static void stage_occupancy_inc(int stage);
   static void stage_occupancy_dec(int stage);
 
-  struct Retired {
-    uint64_t epoch;
-    CycleData *cd;
-  };
-
   static patomic<uint64_t> _global_epoch;  // 0 reserved for "quiescent"
 
   // Number of participants currently inside a critical section.  When this
@@ -140,22 +130,14 @@ private:
   // drains the retire queue so unframed / non-render contexts (unit tests,
   // synchronous loaders) reclaim promptly instead of never.
   static patomic<int> _active_cs_count;
-  // Cheap hint of _retired.size() so the quiescent-drain in leave() can skip
-  // the lock when there is nothing to reclaim (e.g. a pure read loop).
+  // Cheap hint of the retired-list size so the quiescent-drain in leave() can
+  // skip the lock when there is nothing to reclaim (e.g. a pure read loop).
   static patomic<size_t> _retired_count;
 
   // Live occupant count per stage; the fast path gates on count <= 1.
   static patomic<int> _threads_at_stage[MAX_STAGES];
   static patomic<int> _inplace_writers_at_stage[MAX_STAGES];
 
-  // std::mutex, not LightMutex, to avoid the include cycle lightMutex.h ->
-  // mutexDebug.h -> thread.h -> thread.I -> epochManager.h.
-  static std::mutex _retired_lock;
-  static pvector<Retired> _retired;
-
-  // Participant registry head/lock live behind a never-destroyed singleton
-  // (see .cxx) so a thread_local participant dtor can unregister safely even
-  // during static teardown.
 #endif  // CPPPARSER
 };
 
