@@ -423,7 +423,7 @@ ALWAYS_INLINE void
 patomic_wait(const volatile uint32_t *value, uint32_t old) {
 #ifdef __linux__
   while (__atomic_load_n(value, __ATOMIC_SEQ_CST) == old) {
-    syscall(SYS_futex, old, FUTEX_WAIT_PRIVATE, old, 0, 0, 0);
+    syscall(SYS_futex, value, FUTEX_WAIT_PRIVATE, old, 0, 0, 0);
   }
 //#elif _WIN32_WINNT >= _WIN32_WINNT_WIN8
 //  while (*value == old) {
@@ -434,7 +434,9 @@ patomic_wait(const volatile uint32_t *value, uint32_t old) {
     _patomic_wait_func((volatile void *)value, &old, sizeof(uint32_t), INFINITE);
   }
 #elif defined(__APPLE__)
-  __ulock_wait(UL_COMPARE_AND_WAIT, (void *)value, old, 0);
+  while (__atomic_load_n(value, __ATOMIC_SEQ_CST) == old) {
+    __ulock_wait(UL_COMPARE_AND_WAIT, (void *)value, old, 0);
+  }
 #elif defined(HAVE_POSIX_THREADS)
   _patomic_wait(value, old);
 #else
