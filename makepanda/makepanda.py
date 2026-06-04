@@ -1092,6 +1092,9 @@ if (COMPILER=="GCC"):
         LibName("JNIGRAPHICS", '-ljnigraphics')
         LibName("OPENSLES", '-lOpenSLES')
 
+    if GetTarget() == 'freebsd':
+        LibName("EXECINFO", "-lexecinfo")
+
 DefSymbol("WITHINPANDA", "WITHIN_PANDA", "1")
 if GetLinkAllStatic() or GetTarget() == 'emscripten':
     DefSymbol("ALWAYS", "LINK_ALL_STATIC")
@@ -3513,7 +3516,7 @@ TargetAdd('libp3dtoolconfig.dll', input='p3dtoolconfig_dtoolconfig.obj')
 TargetAdd('libp3dtoolconfig.dll', input='p3prc_composite1.obj')
 TargetAdd('libp3dtoolconfig.dll', input='p3prc_composite2.obj')
 TargetAdd('libp3dtoolconfig.dll', input='libp3dtool.dll')
-TargetAdd('libp3dtoolconfig.dll', opts=['ADVAPI', 'OPENSSL', 'WINGDI', 'WINUSER'])
+TargetAdd('libp3dtoolconfig.dll', opts=['ADVAPI', 'OPENSSL', 'WINGDI', 'WINUSER', 'EXECINFO'])
 
 #
 # DIRECTORY: dtool/src/prckeys/
