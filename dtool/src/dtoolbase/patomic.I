@@ -437,6 +437,10 @@ patomic_wait(const volatile uint32_t *value, uint32_t old) {
   while (__atomic_load_n(value, __ATOMIC_SEQ_CST) == old) {
     __ulock_wait(UL_COMPARE_AND_WAIT, (void *)value, old, 0);
   }
+#elif defined(__FreeBSD__)
+  while (__atomic_load_n(value, __ATOMIC_SEQ_CST) == old) {
+    _umtx_op((void *)value, UMTX_OP_WAIT_UINT_PRIVATE, old, nullptr, nullptr);
+  }
 #elif defined(HAVE_POSIX_THREADS)
   _patomic_wait(value, old);
 #else
@@ -457,6 +461,8 @@ patomic_notify_one(volatile uint32_t *value) {
   _patomic_wake_one_func((void *)value);
 #elif defined(__APPLE__)
   __ulock_wake(UL_COMPARE_AND_WAIT, (void *)value, 0);
+#elif defined(__FreeBSD__)
+  _umtx_op((void *)value, UMTX_OP_WAKE_PRIVATE, 1, nullptr, nullptr);
 #elif defined(HAVE_POSIX_THREADS)
   _patomic_notify_all(value);
 #endif
@@ -475,6 +481,8 @@ patomic_notify_all(volatile uint32_t *value) {
   _patomic_wake_all_func((void *)value);
 #elif defined(__APPLE__)
   __ulock_wake(UL_COMPARE_AND_WAIT | ULF_WAKE_ALL, (void *)value, 0);
+#elif defined(__FreeBSD__)
+  _umtx_op((void *)value, UMTX_OP_WAKE_PRIVATE, INT_MAX, nullptr, nullptr);
 #elif defined(HAVE_POSIX_THREADS)
   _patomic_notify_all(value);
 #endif
