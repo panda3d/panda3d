@@ -3260,16 +3260,10 @@ update_cached(bool update_bounds, int pipeline_stage, PandaNode::CDLockedStageRe
   }
   Thread *current_thread = cdata.get_current_thread();
 
-  // Under sustained concurrent mutation the optimistic snapshot-then-commit
-  // below can fail its staleness check every iteration and livelock.  We
-  // prioritise the cull thread never hitching over bound freshness: accept the
-  // consistent snapshot computed on the first contended commit (see below)
-  // rather than retrying the expensive recursive recompute.  Hence 1.
-  const int max_update_attempts = 1;
-  int attempt = 0;
-
-  do {
-    ++attempt;
+  // Recompute the cache in a single pass and commit it.  If another
+  // thread has already advanced the cache at least this far, we accept its
+  // result instead.
+  {
     // Grab the last_update counter.
     UpdateSeq last_update = cdata->_last_update;
     UpdateSeq next_update = cdata->_next_update;
@@ -3533,11 +3527,10 @@ update_cached(bool update_bounds, int pipeline_stage, PandaNode::CDLockedStageRe
       CDStageWriter cdataw(_cycler, pipeline_stage, current_thread);
       bool clean = (last_update == cdataw->_last_update &&
                     next_update == cdataw->_next_update);
-      // Forward-progress fallback: after max_update_attempts, commit the
-      // snapshot we computed as long as it still advances the cached version;
-      // otherwise leave the node dirty for a later frame (one-frame-stale bound).
-      bool force = !clean && attempt >= max_update_attempts &&
-                   cdataw->_last_update < next_update;
+      // Commit our snapshot as long as it still advances the cached version;
+      // otherwise another thread has already taken it at least this far, so we
+      // accept theirs (leaving any newer dirty state for a later frame).
+      bool force = !clean && cdataw->_last_update < next_update;
       if (clean || force) {
         // Apply the deferred per-connection cache writes via a briefly-scoped
         // writable Down.
@@ -3633,25 +3626,9 @@ update_cached(bool update_bounds, int pipeline_stage, PandaNode::CDLockedStageRe
         return cdataw;
       }
 
-      if (cdataw->_last_update == cdataw->_next_update &&
-          (!update_bounds || cdataw->_last_bounds_update == cdataw->_next_update)) {
-        // Someone else has computed the cache for us.  OK.
-        return cdataw;
-      }
+      return cdataw;
     }
-
-    // We need to go around again.  Release the write lock, and grab the read
-    // lock back.
-    cdata = CDLockedStageReader(_cycler, pipeline_stage, current_thread);
-
-    if (cdata->_last_update == cdata->_next_update &&
-        (!update_bounds || cdata->_last_bounds_update == cdata->_next_update)) {
-      // Someone else has computed the cache for us while we were diddling
-      // with the locks.  OK.
-      return CDStageWriter(_cycler, pipeline_stage, cdata);
-    }
-
-  } while (true);
+  }
 }
 
 /**
