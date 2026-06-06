@@ -65,13 +65,20 @@ public:
    * A single color or depth/stencil attachment.  Whether it is a color or a
    * depth/stencil attachment is determined by the texture context's aspect
    * mask.
+   *
+   * If the render target is multisampled and a resolve target is given, the
+   * multisampled samples are resolved into the (single-sampled) resolve target
+   * at the end of the rendering pass.
    */
   struct Attachment {
     VulkanTextureContext *_tc = nullptr;
+    VulkanTextureContext *_resolve_tc = nullptr;
 
     // Keeps a render-to-texture target alive.  If null, the texture context is
-    // owned by this framebuffer and destroyed along with it.
+    // owned by this framebuffer and destroyed along with it.  The same applies
+    // to _resolve_texture and _resolve_tc.
     PT(Texture) _texture;
+    PT(Texture) _resolve_texture;
 
     VkAttachmentStoreOp _store_op = VK_ATTACHMENT_STORE_OP_STORE;
   };
@@ -79,10 +86,14 @@ public:
   void clear_attachments();
   void add_attachment(VulkanTextureContext *tc,
                       VkAttachmentStoreOp store_op = VK_ATTACHMENT_STORE_OP_STORE,
-                      Texture *texture = nullptr);
+                      Texture *texture = nullptr,
+                      VulkanTextureContext *resolve_tc = nullptr,
+                      Texture *resolve_texture = nullptr);
   void set_attachment(size_t index, VulkanTextureContext *tc,
                       VkAttachmentStoreOp store_op = VK_ATTACHMENT_STORE_OP_STORE,
-                      Texture *texture = nullptr);
+                      Texture *texture = nullptr,
+                      VulkanTextureContext *resolve_tc = nullptr,
+                      Texture *resolve_texture = nullptr);
   void destroy(VulkanGraphicsStateGuardian *vkgsg);
 
   bool begin_rendering(VulkanGraphicsStateGuardian *vkgsg, DrawableRegion *region);

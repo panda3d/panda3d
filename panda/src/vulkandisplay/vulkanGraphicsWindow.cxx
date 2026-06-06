@@ -142,40 +142,39 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   nassertr(_image_index < _swap_buffers.size(), false);
   SwapBuffer &buffer = _swap_buffers[_image_index];
 
-  VulkanTextureContext *color_tc;
   nassertr(buffer._tc->_read_seq < vkgsg->_render_cmd._seq, false);
   buffer._tc->set_active(true);
-
-  // If we have multisamples, we render to a different image, which we then
-  // resolve into the swap chain image.
-  if (_ms_color_tc != nullptr) {
-    color_tc = _ms_color_tc;
-  } else {
-    color_tc = buffer._tc;
-  }
 
   /*if (mode == FM_render) {
     clear_cube_map_selection();
   }*/
 
-  // Reset this to reflect getting this texture fresh from the present engine.
-  color_tc->_write_stage_mask = VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT;
-  color_tc->_write_access_mask = 0;
-  color_tc->_read_stage_mask = 0;
+  // Reset this to reflect getting the swapchain image fresh from the present
+  // engine.  (The multisample color image, if any, is a stable resource owned
+  // by the window and keeps its synchronization state across frames.)
+  buffer._tc->_write_stage_mask = VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT;
+  buffer._tc->_write_access_mask = 0;
+  buffer._tc->_read_stage_mask = 0;
 
   //NB. We can't let add_barrier pool these barriers because they would be
   // issued before the wait on the semaphore is complete.  Therefore we
   // twiddle the _write_seq as well to force it to issue it in the middle of
   // the command stream.
   if (vkgsg->_render_cmd._wait_semaphore) {
-    color_tc->_read_seq = vkgsg->_render_cmd._seq;
-    color_tc->_write_seq = vkgsg->_render_cmd._seq;
+    buffer._tc->_read_seq = vkgsg->_render_cmd._seq;
+    buffer._tc->_write_seq = vkgsg->_render_cmd._seq;
   }
 
-  // Point the color attachment at the swapchain image acquired for this frame
-  // (in the multisample case this is the stable resolve source instead) and
-  // begin the render pass.
-  _framebuffer.set_attachment(0, color_tc);
+  // If we have multisamples, we render to a separate multisample image and
+  // resolve into the swapchain image acquired for this frame; otherwise we
+  // render directly into the swapchain image.  Either way, only the per-frame
+  // swapchain image changes, so we repoint attachment 0 here.
+  if (_ms_color_tc != nullptr) {
+    _framebuffer.set_attachment(0, _ms_color_tc, VK_ATTACHMENT_STORE_OP_DONT_CARE,
+                                nullptr, buffer._tc);
+  } else {
+    _framebuffer.set_attachment(0, buffer._tc);
+  }
   return _framebuffer.begin_rendering(vkgsg, this);
 }
 

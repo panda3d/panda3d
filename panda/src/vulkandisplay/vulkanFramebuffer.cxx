@@ -46,8 +46,9 @@ clear_attachments() {
  */
 void VulkanFramebuffer::
 add_attachment(VulkanTextureContext *tc, VkAttachmentStoreOp store_op,
-               Texture *texture) {
-  _attachments.push_back({tc, texture, store_op});
+               Texture *texture, VulkanTextureContext *resolve_tc,
+               Texture *resolve_texture) {
+  _attachments.push_back({tc, resolve_tc, texture, resolve_texture, store_op});
 }
 
 /**
@@ -59,9 +60,10 @@ add_attachment(VulkanTextureContext *tc, VkAttachmentStoreOp store_op,
  */
 void VulkanFramebuffer::
 set_attachment(size_t index, VulkanTextureContext *tc,
-               VkAttachmentStoreOp store_op, Texture *texture) {
+               VkAttachmentStoreOp store_op, Texture *texture,
+               VulkanTextureContext *resolve_tc, Texture *resolve_texture) {
   nassertv(index < _attachments.size());
-  _attachments[index] = {tc, texture, store_op};
+  _attachments[index] = {tc, resolve_tc, texture, resolve_texture, store_op};
 }
 
 /**
@@ -81,6 +83,17 @@ destroy(VulkanGraphicsStateGuardian *vkgsg) {
     }
     if (attach._texture.is_null()) {
       delete attach._tc;
+    }
+
+    if (attach._resolve_tc != nullptr) {
+      if (vkgsg->_last_frame_data != nullptr) {
+        attach._resolve_tc->release(*vkgsg->_last_frame_data);
+      } else {
+        attach._resolve_tc->destroy_now(device);
+      }
+      if (attach._resolve_texture.is_null()) {
+        delete attach._resolve_tc;
+      }
     }
   }
   _attachments.clear();
@@ -130,6 +143,18 @@ begin_rendering(VulkanGraphicsStateGuardian *vkgsg, DrawableRegion *region) {
       VkImageView view = tc->get_image_view(0);
       VkImageLayout layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
+      // A multisampled depth/stencil attachment is resolved by taking sample
+      // zero, the only resolve mode that is universally supported.
+      VulkanTextureContext *resolve_tc = attach._resolve_tc;
+      VkImageView resolve_view = VK_NULL_HANDLE;
+      VkResolveModeFlagBits resolve_mode = VK_RESOLVE_MODE_NONE;
+      if (resolve_tc != nullptr) {
+        nassertr(resolve_tc->_read_seq <= cmd._seq, false);
+        resolve_tc->set_active(true);
+        resolve_view = resolve_tc->get_image_view(0);
+        resolve_mode = VK_RESOLVE_MODE_SAMPLE_ZERO_BIT;
+      }
+
       if (tc->_aspect_mask & VK_IMAGE_ASPECT_DEPTH_BIT) {
         if (region->get_clear_active(DrawableRegion::RTP_depth)) {
           depth_attachment.clearValue.depthStencil.depth = region->get_clear_depth();
@@ -140,6 +165,9 @@ begin_rendering(VulkanGraphicsStateGuardian *vkgsg, DrawableRegion *region) {
         depth_attachment.storeOp = attach._store_op;
         depth_attachment.imageView = view;
         depth_attachment.imageLayout = layout;
+        depth_attachment.resolveMode = resolve_mode;
+        depth_attachment.resolveImageView = resolve_view;
+        depth_attachment.resolveImageLayout = layout;
         render_info.pDepthAttachment = &depth_attachment;
       }
 
@@ -153,6 +181,9 @@ begin_rendering(VulkanGraphicsStateGuardian *vkgsg, DrawableRegion *region) {
         stencil_attachment.storeOp = attach._store_op;
         stencil_attachment.imageView = view;
         stencil_attachment.imageLayout = layout;
+        stencil_attachment.resolveMode = resolve_mode;
+        stencil_attachment.resolveImageView = resolve_view;
+        stencil_attachment.resolveImageLayout = layout;
         render_info.pStencilAttachment = &stencil_attachment;
       }
 
@@ -162,7 +193,14 @@ begin_rendering(VulkanGraphicsStateGuardian *vkgsg, DrawableRegion *region) {
         VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT |
         VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT);
 
-      vkgsg->_fb_depth_tc = tc;
+      if (resolve_tc != nullptr) {
+        cmd.add_barrier(resolve_tc, layout,
+          VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT |
+          VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT,
+          VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT);
+      }
+
+      vkgsg->_fb_depth_tc = (resolve_tc != nullptr) ? resolve_tc : tc;
     }
     else {
       VkRenderingAttachmentInfo &color_attachment =
@@ -188,7 +226,24 @@ begin_rendering(VulkanGraphicsStateGuardian *vkgsg, DrawableRegion *region) {
         VK_ACCESS_2_COLOR_ATTACHMENT_READ_BIT |
         VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT);
 
-      vkgsg->_fb_color_tc = tc;
+      VulkanTextureContext *resolve_tc = attach._resolve_tc;
+      if (resolve_tc != nullptr) {
+        // The multisampled samples are averaged into the resolve target at the
+        // end of the rendering pass.
+        nassertr(resolve_tc->_read_seq <= cmd._seq, false);
+        resolve_tc->set_active(true);
+
+        color_attachment.resolveMode = VK_RESOLVE_MODE_AVERAGE_BIT;
+        color_attachment.resolveImageView = resolve_tc->get_image_view(0);
+        color_attachment.resolveImageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+        cmd.add_barrier(resolve_tc, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+          VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
+          VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT);
+      }
+
+      // Subsequent copy-to-texture reads the resolved (single-sampled) result.
+      vkgsg->_fb_color_tc = (resolve_tc != nullptr) ? resolve_tc : tc;
     }
   }
 
@@ -209,16 +264,27 @@ end_rendering(VulkanGraphicsStateGuardian *vkgsg) {
   vkgsg->_vkCmdEndRendering(cmd);
 
   for (Attachment &attach : _attachments) {
-    VulkanTextureContext *tc = attach._tc;
+    VkPipelineStageFlags2 write_stage_mask;
+    VkAccessFlags2 write_access_mask;
     if (is_depth_stencil(attach)) {
-      tc->_write_stage_mask = VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT
-                            | VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT;
-      tc->_write_access_mask = VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+      write_stage_mask = VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT
+                       | VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT;
+      write_access_mask = VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
     } else {
-      tc->_write_stage_mask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT;
-      tc->_write_access_mask = VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT;
+      write_stage_mask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT;
+      write_access_mask = VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT;
     }
-    tc->_read_stage_mask = 0;
-    tc->_write_seq = cmd._seq;
+
+    // The resolve target, if any, is written by the resolve operation that
+    // concludes the rendering pass, using the same attachment-output stage.
+    VulkanTextureContext *tcs[2] = {attach._tc, attach._resolve_tc};
+    for (VulkanTextureContext *tc : tcs) {
+      if (tc != nullptr) {
+        tc->_write_stage_mask = write_stage_mask;
+        tc->_write_access_mask = write_access_mask;
+        tc->_read_stage_mask = 0;
+        tc->_write_seq = cmd._seq;
+      }
+    }
   }
 }

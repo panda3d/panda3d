@@ -300,6 +300,28 @@ create_attachment(RenderTexturePlane plane, VkFormat format, Texture *texture) {
   extent.height = _size[1];
   extent.depth = 1;
 
+  bool is_depth_stencil = (plane == RTP_depth || plane == RTP_stencil ||
+                           plane == RTP_depth_stencil);
+  VkImageAspectFlags aspect_mask;
+  VkImageUsageFlags usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+  std::string debug_name;
+  if (is_depth_stencil) {
+    usage |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+    // Note: a combined depth-stencil attachment uses only the depth aspect
+    // for now; the stencil aspect bit is not added.
+    aspect_mask = (plane == RTP_stencil) ? VK_IMAGE_ASPECT_STENCIL_BIT
+                                         : VK_IMAGE_ASPECT_DEPTH_BIT;
+    debug_name = get_name() + ":depth-stencil";
+  } else {
+    usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+    aspect_mask = VK_IMAGE_ASPECT_COLOR_BIT;
+    debug_name = get_name() + ":color";
+  }
+
+  // Obtain the single-sampled image.  This is the render-to-texture target if
+  // one was given, otherwise an offscreen image that we can copy from.  When
+  // multisampling, this serves as the resolve target; otherwise we render into
+  // it directly.
   VulkanTextureContext *tc;
   if (texture != nullptr) {
     Texture::Format tex_format;
@@ -325,22 +347,6 @@ create_attachment(RenderTexturePlane plane, VkFormat format, Texture *texture) {
     }
   }
   else {
-    VkImageUsageFlags usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
-    VkImageAspectFlags aspect_mask;
-    std::string debug_name;
-    if (plane == RTP_depth || plane == RTP_stencil || plane == RTP_depth_stencil) {
-      usage |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-      // Note: a combined depth-stencil attachment uses only the depth aspect
-      // for now; the stencil aspect bit is not added.
-      aspect_mask = (plane == RTP_stencil) ? VK_IMAGE_ASPECT_STENCIL_BIT
-                                           : VK_IMAGE_ASPECT_DEPTH_BIT;
-      debug_name = get_name() + ":depth-stencil";
-    } else {
-      usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-      aspect_mask = VK_IMAGE_ASPECT_COLOR_BIT;
-      debug_name = get_name() + ":color";
-    }
-
     tc = vkgsg->create_attachment(format, extent, aspect_mask,
                                   VK_SAMPLE_COUNT_1_BIT, usage, debug_name);
     if (tc == nullptr) {
@@ -348,6 +354,26 @@ create_attachment(RenderTexturePlane plane, VkFormat format, Texture *texture) {
     }
   }
 
-  _framebuffer.add_attachment(tc, VK_ATTACHMENT_STORE_OP_STORE, texture);
+  // If multisampling, render into a separate multisample image and resolve the
+  // result into the single-sampled image above at the end of the rendering
+  // pass, so that it can be sampled or copied as usual.
+  VkSampleCountFlagBits samples = _framebuffer._config._sample_count;
+  if (samples != VK_SAMPLE_COUNT_1_BIT) {
+    VkImageUsageFlags ms_usage = is_depth_stencil
+      ? VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT
+      : VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+    VulkanTextureContext *ms_tc =
+      vkgsg->create_attachment(format, extent, aspect_mask, samples, ms_usage,
+                               debug_name + ":ms");
+    if (ms_tc == nullptr) {
+      return false;
+    }
+    // The owned multisample image is the render target; the single-sampled
+    // image (the bound texture or our owned image) is the resolve target.
+    _framebuffer.add_attachment(ms_tc, VK_ATTACHMENT_STORE_OP_DONT_CARE,
+                                nullptr, tc, texture);
+  } else {
+    _framebuffer.add_attachment(tc, VK_ATTACHMENT_STORE_OP_STORE, texture);
+  }
   return true;
 }
