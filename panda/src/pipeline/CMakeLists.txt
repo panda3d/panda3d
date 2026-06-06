@@ -20,7 +20,7 @@ set(P3PIPELINE_HEADERS
   cycleDataWriter.h cycleDataWriter.I
   cyclerHolder.h cyclerHolder.I
   epochHolder.h epochHolder.I
-  epochManager.h
+  epochManager.h epochManager.I
   externalThread.h
   genericThread.h genericThread.I
   lightMutex.I lightMutex.h
