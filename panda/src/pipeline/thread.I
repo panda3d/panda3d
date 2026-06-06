@@ -378,7 +378,7 @@ operator << (std::ostream &out, const Thread &thread) {
 
 ALWAYS_INLINE EpochParticipant &Thread::
 epoch_participant() {
-  return _epoch_use_tls ? EpochManager::external_participant() : _epoch_participant;
+  return _epoch_participant;
 }
 
 ALWAYS_INLINE void Thread::

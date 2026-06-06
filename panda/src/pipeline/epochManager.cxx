@@ -44,17 +44,6 @@ namespace {
   }
 }
 
-// The shared ExternalThread's per-OS-thread participant.  Function-local
-// (not an exported global) because MSVC forbids a dll interface on a
-// thread_local; bound threads carry their own participant on the Thread.
-// Default-constructed lazily; its destructor runs at thread exit and
-// unregisters it.
-EpochParticipant &EpochManager::
-external_participant() {
-  static thread_local EpochParticipant tl;
-  return tl;
-}
-
 static thread_local bool tl_in_reclaim = false;
 
 bool EpochManager::

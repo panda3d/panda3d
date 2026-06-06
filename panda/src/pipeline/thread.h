@@ -175,12 +175,6 @@ public:
 
   ALWAYS_INLINE static void assert_in_epoch(Thread *t);
 
-  // The EBR participant for this thread.  Bound threads (one Thread per OS
-  // thread) use a Thread-owned record -- a plain member access, avoiding the
-  // slow shared-library thread_local lookup on the hot read path.  The shared
-  // ExternalThread (handed to every unbound OS thread) must NOT, since the
-  // record would be raced across those threads; it sets _epoch_use_tls and
-  // falls back to EpochManager::external_participant().
   ALWAYS_INLINE EpochParticipant &epoch_participant();
 
   // Raise/lower this thread's stage occupancy for the in-place fast-path
@@ -210,9 +204,6 @@ private:
 
 #ifdef THREADED_PIPELINE
   EpochParticipant _epoch_participant;
-  // Set only on the shared ExternalThread, which must use the function-local
-  // participant in EpochManager::external_participant().
-  bool _epoch_use_tls = false;
   // True while this thread holds a stage-occupancy count (see
   // acquire/release_stage_occupancy).  Keeps acquire/release idempotent so the
   // dtor never double-decrements a never-started thread.

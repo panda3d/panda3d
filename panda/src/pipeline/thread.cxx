@@ -288,9 +288,6 @@ init_external_thread() {
   if (_external_thread == nullptr) {
     _external_thread = new ExternalThread;
     _external_thread->ref();
-#ifdef THREADED_PIPELINE
-    _external_thread->_epoch_use_tls = true;
-#endif
   }
 }
 

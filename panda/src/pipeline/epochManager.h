@@ -76,11 +76,6 @@ public:
 
   static void go_online(EpochParticipant &p);
 
-  // The shared ExternalThread's participant: a function-local thread_local
-  // reached through this exported accessor, because MSVC forbids a dll
-  // interface on a thread_local variable.  Bound threads use a Thread member.
-  static EpochParticipant &external_participant();
-
   // Stamp `cd` with the current epoch and queue it for reclamation; takes
   // ownership.  Callable from any thread.
   static void retire(CycleData *cd);
