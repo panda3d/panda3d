@@ -357,9 +357,18 @@ close_window() {
     VulkanGraphicsStateGuardian *vkgsg;
     DCAST_INTO_V(vkgsg, _gsg);
 
+    nassertv(vkgsg->_device != VK_NULL_HANDLE);
+
+    // Submit any pending work first, while the swapchain is still alive.  This
+    // matters when the window is abandoned right after opening (e.g. because the
+    // requested FrameBufferProperties couldn't be satisfied): the certification
+    // frame leaves an unsubmitted command buffer that waits on the swapchain's
+    // image-acquired semaphore, and submitting that after the swapchain has been
+    // destroyed is invalid.
+    vkgsg->flush();
+
     // Wait until the queue is done with any commands that might use the swap
     // chain, then destroy it.
-    nassertv(vkgsg->_device != VK_NULL_HANDLE);
     vkQueueWaitIdle(vkgsg->_queue);
     destroy_swapchain();
 
