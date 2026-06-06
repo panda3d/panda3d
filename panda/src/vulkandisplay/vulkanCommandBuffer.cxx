@@ -154,7 +154,7 @@ add_barrier(VulkanTextureContext *tc, VkImageLayout layout,
     if (tc->_read_seq == _seq && tc->_hoisted_barrier_exists) {
       // Already exists, this barrier, just modify it.
       if (tc->_image != VK_NULL_HANDLE) {
-        nassertv(tc->_image_barrier_index <= _image_barriers.size());
+        nassertv(tc->_image_barrier_index < _image_barriers.size());
         VkImageMemoryBarrier2 &existing_barrier = _image_barriers[tc->_image_barrier_index];
         existing_barrier.srcStageMask |= img_barrier.srcStageMask;
         existing_barrier.srcAccessMask |= img_barrier.srcAccessMask;
@@ -162,12 +162,12 @@ add_barrier(VulkanTextureContext *tc, VkImageLayout layout,
         existing_barrier.dstAccessMask |= img_barrier.dstAccessMask;
       }
       if (tc->_buffer != VK_NULL_HANDLE) {
-        nassertv(tc->_buffer_barrier_index <= _buffer_barriers.size());
+        nassertv(tc->_buffer_barrier_index < _buffer_barriers.size());
         VkBufferMemoryBarrier2 &existing_barrier = _buffer_barriers[tc->_buffer_barrier_index];
-        existing_barrier.srcStageMask |= img_barrier.srcStageMask;
-        existing_barrier.srcAccessMask |= img_barrier.srcAccessMask;
-        existing_barrier.dstStageMask |= img_barrier.dstStageMask;
-        existing_barrier.dstAccessMask |= img_barrier.dstAccessMask;
+        existing_barrier.srcStageMask |= buf_barrier.srcStageMask;
+        existing_barrier.srcAccessMask |= buf_barrier.srcAccessMask;
+        existing_barrier.dstStageMask |= buf_barrier.dstStageMask;
+        existing_barrier.dstAccessMask |= buf_barrier.dstAccessMask;
       }
     } else {
       if (tc->_image != VK_NULL_HANDLE) {
@@ -317,7 +317,7 @@ add_barrier(VulkanBufferContext *bc, VkPipelineStageFlags2 dst_stage_mask,
     // First access in this CB, or a read in a CB without a write.
     if (bc->_read_seq == _seq && bc->_hoisted_barrier_exists) {
       // Already exists, this barrier, just modify it.
-      nassertv(bc->_buffer_barrier_index <= _buffer_barriers.size());
+      nassertv(bc->_buffer_barrier_index < _buffer_barriers.size());
       VkBufferMemoryBarrier2 &existing_barrier = _buffer_barriers[bc->_buffer_barrier_index];
       existing_barrier.srcStageMask |= buf_barrier.srcStageMask;
       existing_barrier.srcAccessMask |= buf_barrier.srcAccessMask;
