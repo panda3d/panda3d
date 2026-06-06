@@ -46,6 +46,7 @@ struct EpochParticipant {
   EpochParticipant *next = nullptr;
   uint32_t reclaim_ticks = 0;
   bool registered = false;
+  bool online = false;
   ~EpochParticipant();
 };
 #else  // CPPPARSER
@@ -72,6 +73,8 @@ public:
 
   static void register_participant(EpochParticipant *p);
   static void unregister_participant(EpochParticipant *p);
+
+  static void go_online(EpochParticipant &p);
 
   // The shared ExternalThread's participant: a function-local thread_local
   // reached through this exported accessor, because MSVC forbids a dll
@@ -134,6 +137,13 @@ private:
   // skip the lock when there is nothing to reclaim (e.g. a pure read loop).
   static patomic<size_t> _retired_count;
 
+  // Retired-entry count at which an online thread drains on its way back to
+  // depth 0. This bounds an "online" thread's unreclaimed backlog while keeping
+  // reclamation off the per-op path: an active frame retires well past this and
+  // so drains about once per frame, while a tight unframed write loop drains
+  // about once per this many writes instead of on every write.
+  static constexpr size_t checkpoint_threshold = 256;
+
   // Live occupant count per stage; the fast path gates on count <= 1.
   static patomic<int> _threads_at_stage[MAX_STAGES];
   static patomic<int> _inplace_writers_at_stage[MAX_STAGES];
@@ -171,13 +181,23 @@ ALWAYS_INLINE void EpochManager::
 leave(EpochParticipant &p) {
   if (--p.depth == 0) {
     p.slot.store(0, std::memory_order_release);
-    // If this was the last thread in a critical section, the pipeline is now
-    // quiescent: drain retired CData promptly (only when there is some, so a
-    // pure read loop pays nothing).  While any other thread is mid-frame this
-    // is skipped, so the render path is untouched -- there poll()/cycle() drive
-    // reclamation at frame boundaries instead.
-    if (_active_cs_count.fetch_sub(1, std::memory_order_acq_rel) == 1 &&
-        _retired_count.load(std::memory_order_relaxed) > 0) {
+    int prev = _active_cs_count.fetch_sub(1, std::memory_order_acq_rel);
+    if (p.online) {
+      // An "online" thread reclaims in throttled batches rather than once
+      // per outermost section.  Otherwise a lone main thread doing unframed
+      // writes would advance and reclaim the epoch on every single write.
+      // When its work is instead nested in a frame/task epoch, the nested
+      // sections never reach here, so this fires once, at the frame's own leave.
+      if (_retired_count.load(std::memory_order_relaxed) >= checkpoint_threshold) {
+        try_advance_epoch();
+        try_reclaim(256);
+      }
+    } else if (prev == 1 &&
+               _retired_count.load(std::memory_order_relaxed) > 0) {
+      // Last thread out of a critical section: the pipeline is fully quiescent,
+      // so drain retired CData. While any other thread is mid-frame this is
+      // skipped, so the render path is untouched -- there poll()/cycle() drive
+      // reclamation at frame boundaries instead.
       try_advance_epoch();
       try_reclaim(256);
     }

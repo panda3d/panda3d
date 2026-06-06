@@ -409,8 +409,9 @@ assert_in_epoch(Thread *t) {
   if (EpochManager::is_reclaiming()) {
     return;
   }
-  if (t->epoch_participant().depth == 0) {
-    nassert_raise("CycleData writer opened outside any epoch critical section "
+  EpochParticipant &p = t->epoch_participant();
+  if (!p.online && p.depth == 0) {
+    nassert_raise("CycleData writer opened on a thread with no epoch coverage "
                   "(wrap the work in a frame/task or an EpochHolder)");
   }
 #endif

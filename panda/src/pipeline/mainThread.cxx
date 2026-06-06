@@ -27,6 +27,8 @@ MainThread() : Thread("Main", "Main") {
   // The main thread is already running on this stack, so it occupies its stage
   // immediately (unlike a started thread, which acquires in its root wrapper).
   acquire_stage_occupancy();
+  // Mark the main thread "online" (see go_online)
+  EpochManager::go_online(epoch_participant());
 #endif
 }
 

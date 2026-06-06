@@ -93,6 +93,19 @@ unregister_participant(EpochParticipant *p) {
   p->registered = false;
 }
 
+/**
+ * Indicate a thread allowed to open writers with no enclosing epoch (the main
+ * thread). It still publishes its slot per critical section, so an idle one
+ * never pins the reclaim floor; what differs is that reclamation on its
+ * behalf is throttled (see leave()) rather than run on every outermost leave,
+ * which is what minimizes the performance impact.
+ * @param p
+ */
+void EpochManager::
+go_online(EpochParticipant &p) {
+  p.online = true;
+}
+
 patomic<int> EpochManager::_threads_at_stage[EpochManager::MAX_STAGES];
 patomic<int> EpochManager::_inplace_writers_at_stage[EpochManager::MAX_STAGES];
 
