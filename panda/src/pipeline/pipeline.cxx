@@ -265,10 +265,9 @@ cycle() {
     _cycling = false;
   }
 
-  // Drain a bounded chunk of the EBR retire queue (bounded so heavy churn
-  // can't make cycle() pay an unbounded reclamation cost; the rest waits for
-  // later cycles).
-  EpochManager::try_reclaim(256);
+  // Fully drain the reclaimable EBR backlog once per cycle so the retire queue
+  // stays bounded.
+  EpochManager::try_reclaim();
 
   if (pipeline_cat.is_debug()) {
     pipeline_cat.debug()

@@ -509,11 +509,11 @@ poll() {
     _frame_cvar.notify_all();
   }
 
-  // Also reclaim here for apps that poll tasks but never render.  Must run
-  // after epoch_leave (so our own slot doesn't pin the floor) and outside
+  // Do a full reclaim here for apps that poll tasks but never render. Must run
+  // outside the epoch (so our own slot doesn't pin the floor) and
   // _lock (freeing a CycleData can take other locks).
   EpochManager::try_advance_epoch();
-  EpochManager::try_reclaim(256);
+  EpochManager::try_reclaim();
 }
 
 /**
