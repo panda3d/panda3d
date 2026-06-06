@@ -2951,7 +2951,7 @@ make_binding_cg(const InternalName *name, const ShaderType *type) {
       pieces[0] = "row3";
     }
   }
-  else if (pieces[0].size() == 3 && // mat_modelproj et al
+  else if (pieces.size() >= 2 && pieces[0].size() == 3 && // mat_modelproj et al
            (pieces[0] == "mat" || pieces[0] == "inv" ||
             pieces[0] == "tps" || pieces[0] == "itp")) {
     std::string trans = pieces[0];
