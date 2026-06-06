@@ -2003,11 +2003,10 @@ fetch_data(const State &state, void *into, bool packed) const {
     return;
 
   default:
-#ifndef NDEBUG
     shader_cat.error()
       << "Invalid ShaderPtrData type " << (int)ptr_data._type
       << " for shader input '" << *_input << "'\n";
-#endif
+    break;
   }
 }
 
@@ -2097,11 +2096,10 @@ fetch_data(const State &state, void *into, bool packed) const {
     return;
 
   default:
-#ifndef NDEBUG
     shader_cat.error()
       << "Invalid ShaderPtrData type " << (int)ptr_data._type
       << " for shader input '" << *_input << "'\n";
-#endif
+    break;
   }
 }
 
@@ -2210,11 +2208,10 @@ fetch_data(const State &state, void *into, bool packed) const {
     return;
 
   default:
-#ifndef NDEBUG
     shader_cat.error()
       << "Invalid ShaderPtrData type " << (int)ptr_data._type
       << " for shader input '" << *_input << "'\n";
-#endif
+    break;
   }
 }
 
