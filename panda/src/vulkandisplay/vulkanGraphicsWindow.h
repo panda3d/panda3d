@@ -15,6 +15,7 @@
 #define VULKANGRAPHICSWINDOW_H
 
 #include "config_vulkandisplay.h"
+#include "vulkanFramebuffer.h"
 #include "vulkanGraphicsStateGuardian.h"
 
 #ifdef _WIN32
@@ -72,8 +73,7 @@ private:
 
   LVecBase2i _swapchain_size;
   VkSurfaceFormatKHR _surface_format;
-  VulkanGraphicsStateGuardian::FbConfig _fb_config;
-  uint32_t _fb_config_id;
+  VulkanFramebuffer _framebuffer;
 
   struct SwapBuffer {
     VulkanTextureContext *_tc;

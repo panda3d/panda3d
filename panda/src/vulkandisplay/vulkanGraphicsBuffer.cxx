@@ -104,7 +104,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   {
     CDReader cdata(_cycler);
     if (cdata->_textures_seq != _last_textures_seq ||
-        _framebuffer_size != _size) {
+        _framebuffer._size != _size) {
       // The buffer was resized or the attachments were changed.
       destroy_framebuffer();
       if (!create_framebuffer(cdata)) {
@@ -126,91 +126,8 @@ begin_frame(FrameMode mode, Thread *current_thread) {
     clear_cube_map_selection();
   }*/
 
-  // Now that we have a command buffer, start our render pass.  First
-  // transition the swapchain images into the valid state for rendering into.
-  VkCommandBuffer cmd = vkgsg->_render_cmd;
-  nassertr(cmd != VK_NULL_HANDLE, false);
-
-  VkRenderingAttachmentInfo *color_attachments = (VkRenderingAttachmentInfo *)
-    alloca(_attachments.size() * sizeof(VkRenderingAttachmentInfo));
-  VkRenderingAttachmentInfo depth_attachment;
-  //VkRenderingAttachmentInfo stencil_attachment;
-
-  VkRenderingInfo render_info = {VK_STRUCTURE_TYPE_RENDERING_INFO};
-  render_info.layerCount = 1;
-  render_info.renderArea.extent.width = _framebuffer_size[0];
-  render_info.renderArea.extent.height = _framebuffer_size[1];
-  render_info.colorAttachmentCount = 0;
-  render_info.pColorAttachments = color_attachments;
-
-  for (size_t i = 0; i < _attachments.size(); ++i) {
-    Attachment &attach = _attachments[i];
-    nassertr(attach._tc->_read_seq < vkgsg->_render_cmd._seq, false);
-    attach._tc->set_active(true);
-
-    VkImageLayout layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-    VkAccessFlags2 write_access_mask = VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT;
-    VkAccessFlags2 read_access_mask = VK_ACCESS_2_COLOR_ATTACHMENT_READ_BIT;
-    VkPipelineStageFlags2 stage_mask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT;
-
-    if (attach._plane == RTP_stencil || attach._plane == RTP_depth ||
-        attach._plane == RTP_depth_stencil) {
-      depth_attachment = {VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
-      render_info.pDepthAttachment = &depth_attachment;
-      vkgsg->_fb_depth_tc = attach._tc;
-
-      layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-      stage_mask = VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT
-                 | VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT;
-      write_access_mask = VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-      read_access_mask = VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
-
-      if (get_clear_depth_active()) {
-        depth_attachment.clearValue.depthStencil.depth = get_clear_depth();
-        depth_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-      } else {
-        depth_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-      }
-      depth_attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-      depth_attachment.imageView = attach._tc->get_image_view(0);
-      depth_attachment.imageLayout = layout;
-    }
-    else if (attach._plane == RTP_color) {
-      VkRenderingAttachmentInfo &color_attachment =
-        color_attachments[render_info.colorAttachmentCount++];
-      color_attachment = {VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
-      vkgsg->_fb_color_tc = attach._tc;
-
-      if (get_clear_active(attach._plane)) {
-        LColor clear_color = get_clear_value(attach._plane);
-        color_attachment.clearValue.color.float32[0] = clear_color[0];
-        color_attachment.clearValue.color.float32[1] = clear_color[1];
-        color_attachment.clearValue.color.float32[2] = clear_color[2];
-        color_attachment.clearValue.color.float32[3] = clear_color[3];
-        color_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-      } else {
-        color_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-      }
-      color_attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-      color_attachment.imageView = attach._tc->get_image_view(0);
-      color_attachment.imageLayout = layout;
-    }
-
-    vkgsg->_render_cmd.add_barrier(attach._tc, layout, stage_mask,
-                                   read_access_mask | write_access_mask);
-
-    /*if (attach._tc->_layout != layout ||
-        (attach._tc->_write_stage_mask & ~stage_mask) != 0 ||
-        (attach._tc->_read_stage_mask & ~stage_mask) != 0) {
-      frame_data.add_initial_barrier(attach._tc,
-        layout, stage_mask, read_access_mask | write_access_mask);
-    }*/
-  }
-
-  vkgsg->_render_cmd.flush_barriers();
-  vkgsg->_vkCmdBeginRendering(cmd, &render_info);
-  vkgsg->_fb_config = _fb_config_id;
-  return true;
+  // Now that we have a command buffer, start our render pass.
+  return _framebuffer.begin_rendering(vkgsg, this);
 }
 
 /**
@@ -225,24 +142,8 @@ end_frame(FrameMode mode, Thread *current_thread) {
   if (mode == FM_render) {
     VulkanGraphicsStateGuardian *vkgsg;
     DCAST_INTO_V(vkgsg, _gsg);
-    VkCommandBuffer cmd = vkgsg->_render_cmd;
-    nassertv(cmd != VK_NULL_HANDLE);
 
-    vkgsg->_vkCmdEndRendering(cmd);
-
-    for (Attachment &attach : _attachments) {
-      if (attach._plane == RTP_stencil || attach._plane == RTP_depth ||
-          attach._plane == RTP_depth_stencil) {
-        attach._tc->_write_stage_mask = VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT
-                                      | VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT;
-        attach._tc->_write_access_mask = VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-      } else {
-        attach._tc->_write_stage_mask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT;
-        attach._tc->_write_access_mask = VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT;
-      }
-      attach._tc->_read_stage_mask = 0;
-      attach._tc->_write_seq = vkgsg->_render_cmd._seq;
-    }
+    _framebuffer.end_rendering(vkgsg);
 
     // Now we can do copy-to-texture, now that the render pass has ended.
     copy_to_textures();
@@ -305,7 +206,7 @@ open_buffer() {
     return false;
   }
 
-  _fb_config_id = vkgsg->choose_fb_config(_fb_config, _fb_properties);
+  _framebuffer._config_id = vkgsg->choose_fb_config(_framebuffer._config, _fb_properties);
 
   if (_fb_properties.get_stencil_bits() > 0) {
     _depth_stencil_plane = RTP_depth_stencil;
@@ -330,32 +231,10 @@ void VulkanGraphicsBuffer::
 destroy_framebuffer() {
   VulkanGraphicsStateGuardian *vkgsg;
   DCAST_INTO_V(vkgsg, _gsg);
-  VkDevice device = vkgsg->_device;
 
   vkgsg->flush();
 
-  // Make sure that the GSG's command buffer releases its resources.
-  //if (vkgsg->_cmd != VK_NULL_HANDLE) {
-  //  vkResetCommandBuffer(vkgsg->_cmd, 0);
-  //}
-
-  /*if (!_present_cmds.empty()) {
-    vkFreeCommandBuffers(device, vkgsg->_cmd_pool, _present_cmds.size(), &_present_cmds[0]);
-    _present_cmds.clear();
-  }*/
-
-  // Destroy the resources held for each attachment.
-  for (Attachment &attach : _attachments) {
-    if (vkgsg->_last_frame_data != nullptr) {
-      attach._tc->release(*vkgsg->_last_frame_data);
-    } else {
-      attach._tc->destroy_now(device);
-    }
-    if (attach._texture.is_null()) {
-      delete attach._tc;
-    }
-  }
-  _attachments.clear();
+  _framebuffer.destroy(vkgsg);
 
   _is_valid = false;
 }
@@ -383,18 +262,18 @@ create_framebuffer(CDReader &cdata) {
     }
   }
 
-  if (!_fb_config._color_formats.empty()) {
-    if (!create_attachment(RTP_color, _fb_config._color_formats[0], color_texture)) {
+  if (!_framebuffer._config._color_formats.empty()) {
+    if (!create_attachment(RTP_color, _framebuffer._config._color_formats[0], color_texture)) {
       return false;
     }
   }
-  if (_fb_config._depth_format != VK_FORMAT_UNDEFINED) {
-    if (!create_attachment(_depth_stencil_plane, _fb_config._depth_format, depth_texture)) {
+  if (_framebuffer._config._depth_format != VK_FORMAT_UNDEFINED) {
+    if (!create_attachment(_depth_stencil_plane, _framebuffer._config._depth_format, depth_texture)) {
       return false;
     }
   }
 
-  _framebuffer_size = _size;
+  _framebuffer._size = _size;
   _is_valid = true;
   _last_textures_seq = cdata->_textures_seq;
   return true;
@@ -415,7 +294,6 @@ create_attachment(RenderTexturePlane plane, VkFormat format, Texture *texture) {
 
   VulkanGraphicsStateGuardian *vkgsg;
   DCAST_INTO_R(vkgsg, _gsg, false);
-  VkDevice device = vkgsg->_device;
 
   VkExtent3D extent;
   extent.width = _size[0];
@@ -448,80 +326,28 @@ create_attachment(RenderTexturePlane plane, VkFormat format, Texture *texture) {
   }
   else {
     VkImageUsageFlags usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
-    if (plane == RTP_depth || plane == RTP_stencil || plane == RTP_depth_stencil) {
-      usage |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-    } else {
-      usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-    }
-
-    tc = new VulkanTextureContext(vkgsg->get_prepared_objects());
-    if (!vkgsg->create_image(tc, VK_IMAGE_TYPE_2D, format, extent, 1, 1,
-                             VK_SAMPLE_COUNT_1_BIT, usage)) {
-      delete tc;
-      return false;
-    }
-
-#ifndef NDEBUG
+    VkImageAspectFlags aspect_mask;
     std::string debug_name;
     if (plane == RTP_depth || plane == RTP_stencil || plane == RTP_depth_stencil) {
+      usage |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+      // Note: a combined depth-stencil attachment uses only the depth aspect
+      // for now; the stencil aspect bit is not added.
+      aspect_mask = (plane == RTP_stencil) ? VK_IMAGE_ASPECT_STENCIL_BIT
+                                           : VK_IMAGE_ASPECT_DEPTH_BIT;
       debug_name = get_name() + ":depth-stencil";
     } else {
+      usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+      aspect_mask = VK_IMAGE_ASPECT_COLOR_BIT;
       debug_name = get_name() + ":color";
     }
-    vkgsg->set_object_name(tc->_image, debug_name);
-#endif
 
-    VkImageViewCreateInfo view_info;
-    view_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-    view_info.pNext = nullptr;
-    view_info.flags = 0;
-    view_info.image = tc->_image;
-    view_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
-    view_info.format = tc->_format;
-    view_info.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-    view_info.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-    view_info.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-    view_info.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-    view_info.subresourceRange.baseMipLevel = 0;
-    view_info.subresourceRange.levelCount = 1;
-    view_info.subresourceRange.baseArrayLayer = 0;
-    view_info.subresourceRange.layerCount = 1;
-
-    switch (plane) {
-    default:
-      view_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-      break;
-
-    case RTP_depth:
-      view_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-      break;
-
-    case RTP_stencil:
-      view_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_STENCIL_BIT;
-      break;
-
-    case RTP_depth_stencil:
-      view_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-      //                                      | VK_IMAGE_ASPECT_STENCIL_BIT;
-      break;
-    }
-    tc->_aspect_mask = view_info.subresourceRange.aspectMask;
-
-    VkImageView image_view;
-    VkResult err;
-    err = vkCreateImageView(device, &view_info, nullptr, &image_view);
-    if (err) {
-      vulkan_error(err, "Failed to create image view for attachment");
-      delete tc;
+    tc = vkgsg->create_attachment(format, extent, aspect_mask,
+                                  VK_SAMPLE_COUNT_1_BIT, usage, debug_name);
+    if (tc == nullptr) {
       return false;
     }
-#ifndef NDEBUG
-    vkgsg->set_object_name(image_view, debug_name);
-#endif
-
-    tc->_image_views.push_back(image_view);
   }
 
-  _attachments.push_back({texture, tc, plane});
+  _framebuffer.add_attachment(tc, VK_ATTACHMENT_STORE_OP_STORE, texture);
   return true;
 }

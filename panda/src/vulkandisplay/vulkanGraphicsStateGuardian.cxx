@@ -5023,6 +5023,73 @@ create_image(VulkanTextureContext *tc, VkImageType type, VkFormat format,
 }
 
 /**
+ * Creates a 2D image view covering the first mip level and array layer of the
+ * given texture context's image, using its format and aspect mask, and appends
+ * it to the context's list of image views.  Returns true on success.
+ */
+bool VulkanGraphicsStateGuardian::
+create_image_view(VulkanTextureContext *tc, const std::string &debug_name) {
+  VkImageViewCreateInfo view_info;
+  view_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+  view_info.pNext = nullptr;
+  view_info.flags = 0;
+  view_info.image = tc->_image;
+  view_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
+  view_info.format = tc->_format;
+  view_info.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+  view_info.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+  view_info.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+  view_info.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+  view_info.subresourceRange.aspectMask = tc->_aspect_mask;
+  view_info.subresourceRange.baseMipLevel = 0;
+  view_info.subresourceRange.levelCount = 1;
+  view_info.subresourceRange.baseArrayLayer = 0;
+  view_info.subresourceRange.layerCount = 1;
+
+  VkImageView image_view;
+  VkResult err = vkCreateImageView(_device, &view_info, nullptr, &image_view);
+  if (err) {
+    vulkan_error(err, "Failed to create image view");
+    return false;
+  }
+
+  if (!debug_name.empty()) {
+    set_object_name(image_view, debug_name);
+  }
+
+  tc->_image_views.push_back(image_view);
+  return true;
+}
+
+/**
+ * Creates a new owned 2D image to be used as a render target attachment,
+ * together with an image view covering it.  Returns the newly created texture
+ * context, which the caller owns, or null on failure.
+ */
+VulkanTextureContext *VulkanGraphicsStateGuardian::
+create_attachment(VkFormat format, const VkExtent3D &extent,
+                  VkImageAspectFlags aspect_mask, VkSampleCountFlagBits samples,
+                  VkImageUsageFlags usage, const std::string &debug_name) {
+  VulkanTextureContext *tc = new VulkanTextureContext(get_prepared_objects());
+  tc->_aspect_mask = aspect_mask;
+
+  if (!create_image(tc, VK_IMAGE_TYPE_2D, format, extent, 1, 1, samples, usage)) {
+    delete tc;
+    return nullptr;
+  }
+
+  set_object_name(tc->_image, debug_name);
+
+  if (!create_image_view(tc, debug_name)) {
+    tc->destroy_now(_device);
+    delete tc;
+    return nullptr;
+  }
+
+  return tc;
+}
+
+/**
  * Creates a new binary semaphore on this device.
  */
 VkSemaphore VulkanGraphicsStateGuardian::

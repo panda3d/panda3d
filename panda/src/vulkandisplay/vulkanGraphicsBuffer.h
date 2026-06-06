@@ -16,6 +16,7 @@
 
 #include "config_vulkandisplay.h"
 #include "graphicsBuffer.h"
+#include "vulkanFramebuffer.h"
 #include "vulkanGraphicsStateGuardian.h"
 
 class VulkanTextureContext;
@@ -51,21 +52,10 @@ protected:
                          Texture *texture = nullptr);
 
 private:
-  LVecBase2i _framebuffer_size;
-
-  VulkanGraphicsStateGuardian::FbConfig _fb_config;
-  uint32_t _fb_config_id;
+  VulkanFramebuffer _framebuffer;
   RenderTexturePlane _depth_stencil_plane;
 
   UpdateSeq _last_textures_seq;
-
-  struct Attachment {
-    PT(Texture) _texture;
-    VulkanTextureContext *_tc;
-    RenderTexturePlane _plane;
-  };
-  typedef pvector<Attachment> Attachments;
-  Attachments _attachments;
 
 public:
   static TypeHandle get_class_type() {

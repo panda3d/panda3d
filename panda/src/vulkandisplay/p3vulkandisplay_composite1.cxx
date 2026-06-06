@@ -2,6 +2,7 @@
 #include "vulkanBufferContext.cxx"
 #include "vulkanCommandBuffer.cxx"
 #include "vulkanFrameData.cxx"
+#include "vulkanFramebuffer.cxx"
 #include "vulkanGeomMunger.cxx"
 #include "vulkanGraphicsBuffer.cxx"
 #include "vulkanGraphicsPipe.cxx"

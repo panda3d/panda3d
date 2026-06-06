@@ -16,6 +16,7 @@
 
 #include "config_vulkandisplay.h"
 #include "vulkanCommandBuffer.h"
+#include "vulkanFramebuffer.h"
 #include "vulkanFrameData.h"
 #include "vulkanMemoryPage.h"
 #include "vulkanShaderContext.h"
@@ -194,12 +195,20 @@ public:
                     const VkExtent3D &extent, uint32_t levels, uint32_t layers,
                     VkSampleCountFlagBits samples, VkImageUsageFlags usage,
                     VkImageCreateFlags flags = 0);
+  bool create_image_view(VulkanTextureContext *tc,
+                         const std::string &debug_name = std::string());
+  VulkanTextureContext *create_attachment(VkFormat format,
+                                          const VkExtent3D &extent,
+                                          VkImageAspectFlags aspect_mask,
+                                          VkSampleCountFlagBits samples,
+                                          VkImageUsageFlags usage,
+                                          const std::string &debug_name = std::string());
 
   VkSemaphore create_semaphore();
   bool wait_semaphore(VkSemaphore semaphore, uint64_t value,
                       uint64_t timeout = UINT64_MAX);
 
-  struct FbConfig;
+  typedef VulkanFramebuffer::Config FbConfig;
   uint32_t choose_fb_config(FbConfig &out, FrameBufferProperties &props,
                             VkFormat preferred_format = VK_FORMAT_UNDEFINED);
 
@@ -262,28 +271,6 @@ public:
   VkDevice _device = VK_NULL_HANDLE;
   uint32_t _graphics_queue_family_index;
   PT(Texture) _white_texture;
-
-  struct FbConfig {
-    small_vector<VkFormat, 1> _color_formats;
-    VkFormat _depth_format = VK_FORMAT_UNDEFINED;
-    VkFormat _stencil_format = VK_FORMAT_UNDEFINED;
-    VkSampleCountFlagBits _sample_count = VK_SAMPLE_COUNT_1_BIT;
-
-    bool operator == (const FbConfig &other) const {
-      if (_color_formats.size() != other._color_formats.size() ||
-          _depth_format != other._depth_format ||
-          _stencil_format != other._stencil_format ||
-          _sample_count != other._sample_count) {
-        return false;
-      }
-      for (size_t i = 0; i < _color_formats.size(); ++i) {
-        if (_color_formats[i] != other._color_formats[i]) {
-          return false;
-        }
-      }
-      return true;
-    }
-  };
 
 private:
   VkQueue _queue = VK_NULL_HANDLE;
@@ -448,6 +435,7 @@ private:
   static PStatCollector _pipeline_cache_main_hits_pcollector;
   static PStatCollector _pipeline_cache_misses_pcollector;
 
+  friend class VulkanFramebuffer;
   friend class VulkanGraphicsBuffer;
   friend class VulkanGraphicsWindow;
   friend class VulkanShaderContext;
