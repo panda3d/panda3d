@@ -173,7 +173,7 @@ public:
   ALWAYS_INLINE static void epoch_enter(Thread *t);
   ALWAYS_INLINE static void epoch_leave(Thread *t);
 
-  ALWAYS_INLINE static void assert_in_epoch(Thread *t);
+  ALWAYS_INLINE static void assert_in_epoch(Thread *t, unsigned int own_depth = 0);
 
   ALWAYS_INLINE EpochParticipant &epoch_participant();
 

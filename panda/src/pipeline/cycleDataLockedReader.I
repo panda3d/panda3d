@@ -25,9 +25,9 @@ INLINE CycleDataLockedReader<CycleDataType>::
 CycleDataLockedReader(const PipelineCycler<CycleDataType> &cycler,
                       Thread *current_thread) :
   _cycler(&cycler),
-  _current_thread(current_thread)
+  _current_thread(current_thread),
+  _epoch(current_thread)
 {
-  Thread::epoch_enter(_current_thread);
   _pointer = _cycler->read(_current_thread);
   nassertv(_pointer != nullptr);
 }
@@ -40,10 +40,10 @@ INLINE CycleDataLockedReader<CycleDataType>::
 CycleDataLockedReader(const CycleDataLockedReader<CycleDataType> &copy) :
   _cycler(copy._cycler),
   _current_thread(copy._current_thread),
-  _pointer(copy._pointer)
+  _pointer(copy._pointer),
+  _epoch(copy._current_thread)
 {
   nassertv(_pointer != nullptr);
-  Thread::epoch_enter(_current_thread);
   _cycler->increment_read(_pointer);
 }
 
@@ -55,9 +55,9 @@ INLINE CycleDataLockedReader<CycleDataType>::
 CycleDataLockedReader(CycleDataLockedReader<CycleDataType> &&from) noexcept :
   _cycler(from._cycler),
   _current_thread(from._current_thread),
-  _pointer(from._pointer)
+  _pointer(from._pointer),
+  _epoch(from._current_thread)
 {
-  Thread::epoch_enter(_current_thread);
   from._pointer = nullptr;
 }
 
@@ -101,7 +101,6 @@ INLINE CycleDataLockedReader<CycleDataType>::
   if (_pointer != nullptr) {
     _cycler->release_read(_pointer);
   }
-  Thread::epoch_leave(_current_thread);
 }
 
 /**

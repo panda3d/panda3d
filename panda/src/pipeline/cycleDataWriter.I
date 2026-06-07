@@ -24,10 +24,10 @@ template<class CycleDataType>
 INLINE CycleDataWriter<CycleDataType>::
 CycleDataWriter(PipelineCycler<CycleDataType> &cycler, Thread *current_thread) :
   _cycler(&cycler),
-  _current_thread(current_thread)
+  _current_thread(current_thread),
+  _epoch(current_thread)
 {
-  Thread::assert_in_epoch(_current_thread);
-  Thread::epoch_enter(_current_thread);
+  Thread::assert_in_epoch(_current_thread, 1);
   _pointer = _cycler->write(_current_thread);
   nassertv(_pointer != nullptr);
 }
@@ -44,10 +44,10 @@ INLINE CycleDataWriter<CycleDataType>::
 CycleDataWriter(PipelineCycler<CycleDataType> &cycler, bool force_to_0,
                 Thread *current_thread) :
   _cycler(&cycler),
-  _current_thread(current_thread)
+  _current_thread(current_thread),
+  _epoch(current_thread)
 {
-  Thread::assert_in_epoch(_current_thread);
-  Thread::epoch_enter(_current_thread);
+  Thread::assert_in_epoch(_current_thread, 1);
   _pointer = _cycler->write_upstream(force_to_0, _current_thread);
   nassertv(_pointer != nullptr);
 }
@@ -65,9 +65,9 @@ INLINE CycleDataWriter<CycleDataType>::
 CycleDataWriter(PipelineCycler<CycleDataType> &cycler, CycleDataType *locked_cdata,
                 Thread *current_thread) :
   _cycler(&cycler),
-  _current_thread(current_thread)
+  _current_thread(current_thread),
+  _epoch(current_thread)
 {
-  Thread::epoch_enter(_current_thread);
   _pointer = locked_cdata;
   nassertv(_pointer != nullptr);
 }
@@ -80,10 +80,10 @@ INLINE CycleDataWriter<CycleDataType>::
 CycleDataWriter(const CycleDataWriter<CycleDataType> &copy) :
   _cycler(copy._cycler),
   _current_thread(copy._current_thread),
-  _pointer(copy._pointer)
+  _pointer(copy._pointer),
+  _epoch(copy._current_thread)
 {
   nassertv(_pointer != nullptr);
-  Thread::epoch_enter(_current_thread);
   _cycler->increment_write(_pointer);
 }
 
@@ -113,9 +113,9 @@ INLINE CycleDataWriter<CycleDataType>::
 CycleDataWriter(PipelineCycler<CycleDataType> &cycler,
                 CycleDataLockedReader<CycleDataType> &take_from) :
   _cycler(&cycler),
-  _current_thread(take_from.get_current_thread())
+  _current_thread(take_from.get_current_thread()),
+  _epoch(_current_thread)
 {
-  Thread::epoch_enter(_current_thread);
   _pointer = _cycler->elevate_read(take_from.take_pointer(), _current_thread);
 }
 
@@ -131,9 +131,9 @@ CycleDataWriter(PipelineCycler<CycleDataType> &cycler,
                 CycleDataLockedReader<CycleDataType> &take_from,
                 bool force_to_0) :
   _cycler(&cycler),
-  _current_thread(take_from.get_current_thread())
+  _current_thread(take_from.get_current_thread()),
+  _epoch(_current_thread)
 {
-  Thread::epoch_enter(_current_thread);
   _pointer = _cycler->elevate_read_upstream(take_from.take_pointer(),
                                             force_to_0, _current_thread);
 }
@@ -146,9 +146,9 @@ INLINE CycleDataWriter<CycleDataType>::
 CycleDataWriter(CycleDataWriter<CycleDataType> &&from) noexcept :
   _cycler(from._cycler),
   _current_thread(from._current_thread),
-  _pointer(from._pointer)
+  _pointer(from._pointer),
+  _epoch(from._current_thread)
 {
-  Thread::epoch_enter(_current_thread);
   from._pointer = nullptr;
 }
 
@@ -176,7 +176,6 @@ INLINE CycleDataWriter<CycleDataType>::
   if (_pointer != nullptr) {
     _cycler->release_write(_pointer);
   }
-  Thread::epoch_leave(_current_thread);
 }
 
 /**

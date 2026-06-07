@@ -20,6 +20,7 @@
 #include "pipelineCycler.h"
 #include "cycleDataLockedReader.h"
 #include "thread.h"
+#include "epochHolder.h"
 
 /**
  * This template class calls PipelineCycler::write() in the constructor and
@@ -67,6 +68,9 @@ private:
   PipelineCycler<CycleDataType> *_cycler;
   Thread *_current_thread;
   CycleDataType *_pointer;
+  // Holds this thread in an EBR critical section for the writer's lifetime;
+  // enters on construction (including copies and moves), leaves on destruction.
+  EpochHolder _epoch;
 #else  // !DO_PIPELINING
   // This is all we need for the trivial, do-nothing implementation.
   CycleDataType *_pointer;

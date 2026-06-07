@@ -26,9 +26,9 @@ CycleDataStageReader(const PipelineCycler<CycleDataType> &cycler,
                      int stage, Thread *current_thread) :
   _cycler(&cycler),
   _current_thread(current_thread),
-  _stage(stage)
+  _stage(stage),
+  _epoch(current_thread)
 {
-  Thread::epoch_enter(_current_thread);
   _pointer = _cycler->read_stage_unlocked(_stage);
 }
 
@@ -41,9 +41,9 @@ CycleDataStageReader(const CycleDataStageReader<CycleDataType> &copy) :
   _cycler(copy._cycler),
   _current_thread(copy._current_thread),
   _pointer(copy._pointer),
-  _stage(copy._stage)
+  _stage(copy._stage),
+  _epoch(copy._current_thread)
 {
-  Thread::epoch_enter(_current_thread);
 }
 
 /**
@@ -65,7 +65,6 @@ operator = (const CycleDataStageReader<CycleDataType> &copy) {
 template<class CycleDataType>
 INLINE CycleDataStageReader<CycleDataType>::
 ~CycleDataStageReader() {
-  Thread::epoch_leave(_current_thread);
 }
 
 /**

@@ -19,6 +19,7 @@
 #include "cycleData.h"
 #include "pipelineCycler.h"
 #include "cycleDataLockedStageReader.h"
+#include "epochHolder.h"
 
 /**
  * This class is similar to CycleDataWriter, except it allows writing to a
@@ -66,6 +67,9 @@ private:
   Thread *_current_thread;
   CycleDataType *_pointer;
   int _stage;
+  // Holds this thread in an EBR critical section for the writer's lifetime;
+  // enters on construction (including copies and moves), leaves on destruction.
+  EpochHolder _epoch;
 #else  // !DO_PIPELINING
   // This is all we need for the trivial, do-nothing implementation.
   CycleDataType *_pointer;

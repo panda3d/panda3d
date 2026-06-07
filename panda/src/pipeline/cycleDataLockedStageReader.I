@@ -26,9 +26,9 @@ CycleDataLockedStageReader(const PipelineCycler<CycleDataType> &cycler,
                            int stage, Thread *current_thread) :
   _cycler(&cycler),
   _current_thread(current_thread),
-  _stage(stage)
+  _stage(stage),
+  _epoch(current_thread)
 {
-  Thread::epoch_enter(_current_thread);
   _pointer = _cycler->read_stage(_stage, _current_thread);
   nassertv(_pointer != nullptr);
 }
@@ -42,10 +42,10 @@ CycleDataLockedStageReader(const CycleDataLockedStageReader<CycleDataType> &copy
   _cycler(copy._cycler),
   _current_thread(copy._current_thread),
   _pointer(copy._pointer),
-  _stage(copy._stage)
+  _stage(copy._stage),
+  _epoch(copy._current_thread)
 {
   nassertv(_pointer != nullptr);
-  Thread::epoch_enter(_current_thread);
   _cycler->increment_read(_pointer);
 }
 
@@ -58,11 +58,11 @@ CycleDataLockedStageReader(CycleDataLockedStageReader<CycleDataType> &&from) noe
   _cycler(from._cycler),
   _current_thread(from._current_thread),
   _pointer(from._pointer),
-  _stage(from._stage)
+  _stage(from._stage),
+  _epoch(from._current_thread)
 {
   // The read lock transferred (no increment_read), so from's dtor skips
   // release_read_stage via its nulled _pointer.
-  Thread::epoch_enter(_current_thread);
   from._pointer = nullptr;
 }
 
@@ -108,7 +108,6 @@ INLINE CycleDataLockedStageReader<CycleDataType>::
   if (_pointer != nullptr) {
     _cycler->release_read_stage(_stage, _pointer);
   }
-  Thread::epoch_leave(_current_thread);
 }
 
 /**

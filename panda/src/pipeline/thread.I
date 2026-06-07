@@ -402,7 +402,7 @@ epoch_leave(Thread *t) {
 }
 
 ALWAYS_INLINE void Thread::
-assert_in_epoch(Thread *t) {
+assert_in_epoch(Thread *t, unsigned int own_depth) {
 #ifndef NDEBUG
   // A destructor run by EBR reclamation may open a writer (e.g. ~PandaNode);
   // that write is on an object no reader can still observe and is safe unframed.
@@ -410,7 +410,7 @@ assert_in_epoch(Thread *t) {
     return;
   }
   EpochParticipant &p = t->epoch_participant();
-  if (!p.online && p.depth == 0) {
+  if (!p.online && p.depth <= own_depth) {
     nassert_raise("CycleData writer opened on a thread with no epoch coverage "
                   "(wrap the work in a frame/task or an EpochHolder)");
   }

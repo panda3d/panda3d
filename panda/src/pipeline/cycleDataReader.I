@@ -25,9 +25,9 @@ INLINE CycleDataReader<CycleDataType>::
 CycleDataReader(const PipelineCycler<CycleDataType> &cycler,
                 Thread *current_thread) :
   _cycler(&cycler),
-  _current_thread(current_thread)
+  _current_thread(current_thread),
+  _epoch(current_thread)
 {
-  Thread::epoch_enter(_current_thread);
   _pointer = _cycler->read_unlocked(_current_thread);
 }
 
@@ -39,9 +39,9 @@ INLINE CycleDataReader<CycleDataType>::
 CycleDataReader(const CycleDataReader<CycleDataType> &copy) :
   _cycler(copy._cycler),
   _current_thread(copy._current_thread),
-  _pointer(copy._pointer)
+  _pointer(copy._pointer),
+  _epoch(copy._current_thread)
 {
-  Thread::epoch_enter(_current_thread);
 }
 
 /**
@@ -62,7 +62,6 @@ operator = (const CycleDataReader<CycleDataType> &copy) {
 template<class CycleDataType>
 INLINE CycleDataReader<CycleDataType>::
 ~CycleDataReader() {
-  Thread::epoch_leave(_current_thread);
 }
 
 /**

@@ -18,6 +18,7 @@
 
 #include "cycleData.h"
 #include "pipelineCycler.h"
+#include "epochHolder.h"
 
 /**
  * This class is similar to CycleDataLockedReader, except it allows reading
@@ -52,6 +53,9 @@ private:
   Thread *_current_thread;
   const CycleDataType *_pointer;
   int _stage;
+  // Holds this thread in an EBR critical section for the reader's lifetime, so
+  // the lock-free _pointer above stays valid.
+  EpochHolder _epoch;
 #else  // !DO_PIPELINING
   // This is all we need for the trivial, do-nothing implementation.
   const CycleDataType *_pointer;
