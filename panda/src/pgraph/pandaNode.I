@@ -1181,13 +1181,8 @@ PandaNodePipelineReader(const PandaNode *node, Thread *current_thread) :
 #ifdef DO_PIPELINING
   // We node_ref the CData pointer, so that if anyone makes changes to the
   // PandaNode while we hold this pointer, it will force a copy--so that this
-  // object will remain unchanged (if out-of-date).  The null check tolerates a
-  // null _cdata, which a cull reader can rarely observe under heavy concurrent
-  // structural mutation; compare_draw_mask then skips the node instead of
-  // dereferencing null.
-  if (_cdata != nullptr) {
-    _cdata->node_ref();
-  }
+  // object will remain unchanged (if out-of-date).
+  _cdata->node_ref();
 #endif  // DO_PIPELINING
 }
 
