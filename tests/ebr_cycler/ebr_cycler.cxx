@@ -15,6 +15,7 @@
 
 #include "pandaFramework.h"
 #include "load_prc_file.h"
+#include "pnotify.h"
 #include "cycleData.h"
 #include "pipelineCycler.h"
 #include "cycleDataReader.h"
@@ -31,6 +32,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <functional>
 #include <thread>
 #include <vector>
 
@@ -223,6 +225,68 @@ static int run_gc_lifetime() {
   return leaked;
 }
 
+static std::atomic<int> g_assert_fires{0};
+// Counts guardrail trips without ever aborting: once any handler is installed,
+// Notify::assert_failure returns through it and skips the default print +
+// assert-abort path entirely; false means "ignore and continue".
+static bool guardrail_assert_handler(const char *, int, const char *) {
+  g_assert_fires.fetch_add(1, std::memory_order_relaxed);
+  return false;
+}
+
+static int run_guardrail() {
+#ifdef NDEBUG
+  std::fprintf(stderr, "[guardrail] asserts disabled (NDEBUG); SKIP\n");
+  return 77;  // ctest SKIP_RETURN_CODE
+#else
+  Notify::ptr()->set_assert_handler(&guardrail_assert_handler);
+  PipelineCycler<TestCData> cycler;
+  int failures = 0;
+
+  auto check = [&](const char *label, bool expect_fire,
+                   const std::function<void()> &body) {
+    g_assert_fires.store(0, std::memory_order_relaxed);
+    body();
+    int fires = g_assert_fires.load(std::memory_order_relaxed);
+    bool ok = expect_fire ? (fires >= 1) : (fires == 0);
+    std::fprintf(stderr, "[guardrail] %-24s fires=%d (expect %s) -> %s\n",
+                 label, fires, expect_fire ? ">=1" : "0", ok ? "ok" : "BAD");
+    if (!ok) ++failures;
+  };
+
+  // Offline, no surrounding epoch: the writer's own EpochHolder reaches depth 1,
+  // which counts as its own coverage -> must fire.
+  check("unframed offline write", true, [&] {
+    std::thread([&] {
+      PT(Thread) th = Thread::bind_thread("gr_unframed", "gr_unframed");
+      CycleDataWriter<TestCData> cdw(cycler, th.p());
+      cdw->_a = 1;
+    }).join();
+  });
+
+  // Offline but wrapped in an EpochHolder: depth 2 at the writer -> silent.
+  check("framed offline write", false, [&] {
+    std::thread([&] {
+      PT(Thread) th = Thread::bind_thread("gr_framed", "gr_framed");
+      EpochHolder frame(th.p());
+      CycleDataWriter<TestCData> cdw(cycler, th.p());
+      cdw->_a = 2;
+    }).join();
+  });
+
+  // The online main thread is exempt regardless of framing.
+  check("online main write", false, [&] {
+    CycleDataWriter<TestCData> cdw(cycler, Thread::get_current_thread());
+    cdw->_a = 3;
+  });
+
+  Notify::ptr()->clear_assert_handler();
+  std::fprintf(stderr, "[guardrail] failures=%d\n%s\n", failures,
+               failures == 0 ? "PASS" : "FAIL");
+  return failures == 0 ? 0 : 1;
+#endif
+}
+
 int main(int argc, char **argv) {
   load_prc_file_data("test_ebr_cycler",
       "notify-level fatal\n"
@@ -241,6 +305,9 @@ int main(int argc, char **argv) {
     }
     else if (std::strcmp(argv[i], "--gc-lifetime") == 0) {
       std::_Exit(run_gc_lifetime());
+    }
+    else if (std::strcmp(argv[i], "--guardrail") == 0) {
+      std::_Exit(run_guardrail());
     }
     else seconds = std::atoi(argv[i]);
   }

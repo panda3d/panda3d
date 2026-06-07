@@ -25,3 +25,12 @@ set_tests_properties(ebr_cycler_read_your_writes ebr_cycler_gc_lifetime PROPERTI
   LABELS "ebr_cycler"
   TIMEOUT 30
   ENVIRONMENT "LD_LIBRARY_PATH=${CMAKE_BINARY_DIR}/lib")
+
+add_test(NAME ebr_cycler_guardrail
+  COMMAND ebr_cycler --guardrail
+  WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}")
+set_tests_properties(ebr_cycler_guardrail PROPERTIES
+  LABELS "ebr_cycler"
+  TIMEOUT 30
+  SKIP_RETURN_CODE 77
+  ENVIRONMENT "LD_LIBRARY_PATH=${CMAKE_BINARY_DIR}/lib")
