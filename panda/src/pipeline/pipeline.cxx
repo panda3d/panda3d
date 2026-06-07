@@ -14,6 +14,7 @@
 #include "pipeline.h"
 #include "pipelineCyclerTrueImpl.h"
 #include "epochManager.h"
+#include "epochHolder.h"
 #include "configVariableInt.h"
 #include "config_pipeline.h"
 
@@ -128,6 +129,8 @@ cycle() {
 
       _num_dirty_cyclers = 0;
     }
+
+    EpochHolder epoch;
 
     // This is duplicated for different number of stages, as an optimization.
     switch (_num_stages) {
