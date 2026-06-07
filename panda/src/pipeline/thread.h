@@ -137,6 +137,10 @@ public:
   INLINE void set_pstats_callback(PStatsCallback *pstats_callback);
   INLINE PStatsCallback *get_pstats_callback() const;
 
+  // If a thread knows fo sure that it doesn't touch the scenegraph,
+  // this should be overridden to return false.
+  virtual bool reads_pipeline() const { return true; }
+
 #ifdef ANDROID
   INLINE JNIEnv *get_jni_env() const;
 #endif

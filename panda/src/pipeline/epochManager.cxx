@@ -261,4 +261,12 @@ get_retired_count() {
   return r->retired.size();
 }
 
+int EpochManager::
+get_threads_at_stage(int stage) {
+  if (stage < 0 || stage >= MAX_STAGES) {
+    return -1;
+  }
+  return _threads_at_stage[stage].load(std::memory_order_relaxed);
+}
+
 #endif  // THREADED_PIPELINE

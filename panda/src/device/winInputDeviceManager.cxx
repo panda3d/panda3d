@@ -30,6 +30,11 @@ public:
 private:
   virtual void thread_main();
 
+  // This thread only pumps Windows raw-input messages; it never reads a
+  // scene-graph cycler, so it must not take stage occupancy (which would
+  // permanently disable the main thread's in-place fast path).
+  virtual bool reads_pipeline() const override { return false; }
+
   WinInputDeviceManager *_manager;
 };
 #endif

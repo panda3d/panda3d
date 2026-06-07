@@ -139,7 +139,9 @@ yield_quiescent() {
  */
 void Thread::
 acquire_stage_occupancy() {
-  if (!_stage_occupancy_held) {
+  // A thread that never reads a cycler must not count as a stage occupant;
+  // otherwise it would permanently disable the in-place fast path for cyclers it never touches.
+  if (reads_pipeline() && !_stage_occupancy_held) {
     _stage_occupancy_held = true;
     EpochManager::register_thread(this, _pipeline_stage);
   }

@@ -98,6 +98,8 @@ public:
   static uint64_t get_global_epoch();
   static size_t get_retired_count();
 
+  static int get_threads_at_stage(int stage);
+
   static bool is_reclaiming();
 
   // Per-stage in-place fast path: a write at stage S may mutate the published
@@ -165,6 +167,7 @@ public:
   ALWAYS_INLINE static void thread_stage_changed(int, int) {}
   ALWAYS_INLINE static uint64_t get_global_epoch() { return 0; }
   ALWAYS_INLINE static size_t get_retired_count() { return 0; }
+  ALWAYS_INLINE static int get_threads_at_stage(int) { return 0; }
   ALWAYS_INLINE static bool try_begin_inplace_write(int) { return false; }
   ALWAYS_INLINE static void end_inplace_write(int) {}
   ALWAYS_INLINE static bool inplace_allowed_hint(int) { return false; }
