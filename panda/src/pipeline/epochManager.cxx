@@ -24,7 +24,6 @@
 // has never been in a CS (slot == 0) is treated as not blocking advance.
 patomic<uint64_t> EpochManager::_global_epoch{1};
 
-patomic<int> EpochManager::_active_cs_count{0};
 patomic<size_t> EpochManager::_retired_count{0};
 
 namespace {

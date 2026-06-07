@@ -27,30 +27,21 @@ enter(EpochParticipant &p) {
                  std::memory_order_release);
     // StoreLoad fence: the slot store must be globally visible before this
     // thread loads any published pointer, or a reclaimer could see us quiescent
-    // and free a pointer we are about to dereference.  Supplied by the seq_cst
-    // RMW; pairs with the fence in observed_min_epoch_locked().
-    _active_cs_count.fetch_add(1, std::memory_order_seq_cst);
+    // and free a pointer we are about to dereference.
+    patomic_thread_fence(std::memory_order_seq_cst);
   }
 }
 
 /**
- * Leaves the critical section entered by enter().  On the outermost leave an
- * online thread drains in throttled batches (so a lone main thread does not
- * advance and reclaim on every write), while the last thread out of any
- * critical section drains immediately so unframed contexts reclaim promptly.
+ * Leaves the critical section entered by enter().  On the outermost leave,
+ * drains a batch if the retire backlog has grown past the throttle, bounding
+ * in-frame growth. We have separate unbounded drains run at frame/tick boundaries.
  */
 ALWAYS_INLINE void EpochManager::
 leave(EpochParticipant &p) {
   if (--p.depth == 0) {
     p.slot.store(0, std::memory_order_release);
-    int prev = _active_cs_count.fetch_sub(1, std::memory_order_acq_rel);
-    if (p.online) {
-      if (_retired_count.load(std::memory_order_relaxed) >= checkpoint_threshold) {
-        try_advance_epoch();
-        try_reclaim(256);
-      }
-    } else if (prev == 1 &&
-               _retired_count.load(std::memory_order_relaxed) > 0) {
+    if (_retired_count.load(std::memory_order_relaxed) >= checkpoint_threshold) {
       try_advance_epoch();
       try_reclaim(256);
     }

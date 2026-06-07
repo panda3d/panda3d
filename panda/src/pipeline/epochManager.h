@@ -93,10 +93,7 @@ private:
 
   static patomic<uint64_t> _global_epoch;  // 0 reserved for "quiescent"
 
-  // Participants currently inside a critical section.
-  static patomic<int> _active_cs_count;
-  // Approximate retired-list size, so leave() can skip the lock when nothing
-  // is pending.
+  // Approximate retired-list size; gates the throttled drain in leave().
   static patomic<size_t> _retired_count;
 
   // Retired-entry count at which an online thread drains on its way back to
