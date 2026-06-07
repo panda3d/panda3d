@@ -246,10 +246,10 @@ stage_unshared(int pipeline_stage) const {
  */
 CycleData *PipelineCyclerTrueImpl::
 write_stage_upstream(int pipeline_stage, bool force_to_0, Thread *current_thread) {
-  // Under always-COW EBR, the old trick of pointer-assigning the in-flight
-  // write into each upstream stage would expose those stages' readers to a
-  // half-mutated CycleData.  A plain write_stage() suffices; Pipeline::cycle()
-  // propagates downstream next frame, so force_to_0 becomes a one-cycle delay.
+  // Pointer-assigning the write into each upstream stage would expose those
+  // stages' readers to a half-mutated CycleData, so just write_stage();
+  // Pipeline::cycle() propagates downstream next frame (force_to_0 becomes a
+  // one-cycle delay).
   (void)force_to_0;
   return write_stage(pipeline_stage, current_thread);
 }

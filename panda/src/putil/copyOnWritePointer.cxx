@@ -68,10 +68,9 @@ get_write_pointer() {
 
   Thread *current_thread = Thread::get_current_thread();
 
-  // Defer any EBR reclamation triggered inside make_cow_copy() until after we
-  // release _lock_mutex below -- otherwise reclamation can re-enter this same
-  // lock and self-deadlock.  Declared before the lock so it outlives every
-  // MutexHolder in the branches below (reverse destruction order).
+  // Defer EBR reclamation (which make_cow_copy() can trigger) until after
+  // _lock_mutex is released, or it could re-enter this lock and self-deadlock.
+  // Declared before the lock so it outlives every MutexHolder below.
   EpochHolder reclaim_deferral(current_thread);
 
   _cow_object->_lock_mutex.lock();

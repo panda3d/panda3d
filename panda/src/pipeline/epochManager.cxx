@@ -20,7 +20,7 @@
 
 #include <algorithm>
 
-// 0 is reserved for "quiescent".  Start the counter at 1 so a thread that
+// 0 is reserved for "quiescent". Start the counter at 1 so a thread that
 // has never been in a CS (slot == 0) is treated as not blocking advance.
 patomic<uint64_t> EpochManager::_global_epoch{1};
 
@@ -46,6 +46,9 @@ namespace {
 
 static thread_local bool tl_in_reclaim = false;
 
+/**
+ * True while this thread is inside try_reclaim() freeing CycleData.
+ */
 bool EpochManager::
 is_reclaiming() {
   return tl_in_reclaim;
@@ -58,6 +61,9 @@ EpochParticipant::
   }
 }
 
+/**
+ * Adds a participant to the registry scanned by the reclaimer.
+ */
 void EpochManager::
 register_participant(EpochParticipant *p) {
   EbrRegistry *r = get_registry();
@@ -67,6 +73,9 @@ register_participant(EpochParticipant *p) {
   p->registered = true;
 }
 
+/**
+ * Removes a participant from the registry.
+ */
 void EpochManager::
 unregister_participant(EpochParticipant *p) {
   EbrRegistry *r = get_registry();
@@ -88,7 +97,6 @@ unregister_participant(EpochParticipant *p) {
  * never pins the reclaim floor; what differs is that reclamation on its
  * behalf is throttled (see leave()) rather than run on every outermost leave,
  * which is what minimizes the performance impact.
- * @param p
  */
 void EpochManager::
 go_online(EpochParticipant &p) {
@@ -98,9 +106,11 @@ go_online(EpochParticipant &p) {
 patomic<int> EpochManager::_threads_at_stage[EpochManager::MAX_STAGES];
 patomic<int> EpochManager::_inplace_writers_at_stage[EpochManager::MAX_STAGES];
 
-// On raising a stage to 2+ occupants, drain in-flight in-place writers that
-// slipped in before our increment became visible, so an arriving thread can't
-// read a stage while an in-place write there is live.
+/**
+ * Raises the occupant count for a stage.  On raising it to 2+, spin-drains any
+ * in-flight in-place writer there first, so an arriving thread never reads a
+ * stage mid in-place-write.
+ */
 void EpochManager::
 stage_occupancy_inc(int stage) {
   if (stage < 0 || stage >= MAX_STAGES) {
@@ -114,6 +124,9 @@ stage_occupancy_inc(int stage) {
   }
 }
 
+/**
+ * Lowers the occupant count for a stage.
+ */
 void EpochManager::
 stage_occupancy_dec(int stage) {
   if (stage < 0 || stage >= MAX_STAGES) {
@@ -122,6 +135,10 @@ stage_occupancy_dec(int stage) {
   _threads_at_stage[stage].fetch_sub(1, std::memory_order_release);
 }
 
+/**
+ * Stamps `cd` with the current epoch and queues it for reclamation, taking
+ * ownership.  Callable from any thread.
+ */
 void EpochManager::
 retire(CycleData *cd) {
   if (cd == nullptr) {
@@ -139,11 +156,9 @@ retire(CycleData *cd) {
 // Min slot among in-CS participants (slot != 0), or UINT64_MAX if all
 // quiescent.  Caller holds the registry lock.
 static uint64_t observed_min_epoch_locked(EpochParticipant *head) {
-  // StoreLoad barrier pairing with the reader's enter() fence: order the
-  // reclaimer's prior global-epoch read and retire stamping ahead of these slot
-  // loads, so a reader that has already published its slot is never observed
-  // here as quiescent while it holds a pointer we are about to free.  Cold path
-  // (per advance/reclaim, ~once per frame), so the full fence costs nothing.
+  // StoreLoad fence: order the reclaimer's prior epoch read ahead of these slot
+  // loads, so a participant that has published its slot is never seen quiescent
+  // while it holds a pointer we may free.  Pairs with the fence in enter().
   patomic_thread_fence(std::memory_order_seq_cst);
   uint64_t min_e = ~uint64_t(0);
   for (EpochParticipant *p = head; p != nullptr; p = p->next) {
@@ -155,6 +170,10 @@ static uint64_t observed_min_epoch_locked(EpochParticipant *head) {
   return min_e;
 }
 
+/**
+ * Mints a new global epoch if every in-critical-section participant has observed
+ * the current one, making this round's retired entries reclaimable next round.
+ */
 void EpochManager::
 try_advance_epoch() {
   uint64_t cur = _global_epoch.load(std::memory_order_relaxed);
@@ -164,13 +183,15 @@ try_advance_epoch() {
     MutexHolder hold(r->registry_lock);
     min_observed = observed_min_epoch_locked(r->head);
   }
-  // If everyone in a CS has observed `cur`, mint a new epoch; entries stamped
-  // `cur - 1` or older then become reclaimable.
   if (min_observed >= cur) {
     _global_epoch.fetch_add(1, std::memory_order_acq_rel);
   }
 }
 
+/**
+ * Frees retired entries older than the minimum observed epoch, up to `budget`
+ * of them.  Returns the number freed.
+ */
 size_t EpochManager::
 try_reclaim(size_t budget) {
   if (budget == 0) {
@@ -182,13 +203,12 @@ try_reclaim(size_t budget) {
     MutexHolder hold(r->registry_lock);
     min_observed = observed_min_epoch_locked(r->head);
   }
-  // All quiescent -> the floor is the current epoch (free anything older).
+  // All quiescent: free anything older than the current epoch.
   if (min_observed == ~uint64_t(0)) {
     min_observed = _global_epoch.load(std::memory_order_acquire);
   }
 
-  // Collect into a local vector; free outside _retired_lock (free can take
-  // other locks).
+  // Collect under the lock, free outside it (free may take other locks).
   pvector<CycleData *> to_free;
   {
     EbrRegistry *r = get_registry();
@@ -220,27 +240,35 @@ try_reclaim(size_t budget) {
   return to_free.size();
 }
 
+/**
+ * Takes stage occupancy for a thread (for the in-place fast path).  Separate
+ * from epoch participation, which is keyed to the OS thread.
+ */
 void EpochManager::
 register_thread(Thread *t, int stage) {
   if (t == nullptr) {
     return;
   }
-  // Stage occupancy only (for the in-place fast path); epoch participation is
-  // separate and keyed to the OS thread.
   stage_occupancy_inc(stage);
 }
 
+/**
+ * Moves a thread's stage occupancy, raising the new stage (with its drain)
+ * before lowering the old so the thread never reads the new stage mid
+ * in-place-write.
+ */
 void EpochManager::
 thread_stage_changed(int old_stage, int new_stage) {
   if (old_stage == new_stage) {
     return;
   }
-  // Raise the new stage (with its drain) before lowering the old, so the
-  // moving thread can't read the new stage while an in-place write is live.
   stage_occupancy_inc(new_stage);
   stage_occupancy_dec(old_stage);
 }
 
+/**
+ * Releases the stage occupancy taken by register_thread().
+ */
 void EpochManager::
 unregister_thread(Thread *t, int stage) {
   if (t == nullptr) {
@@ -249,11 +277,17 @@ unregister_thread(Thread *t, int stage) {
   stage_occupancy_dec(stage);
 }
 
+/**
+ * Returns the current global epoch.
+ */
 uint64_t EpochManager::
 get_global_epoch() {
   return _global_epoch.load(std::memory_order_acquire);
 }
 
+/**
+ * Returns the number of entries awaiting reclamation.
+ */
 size_t EpochManager::
 get_retired_count() {
   EbrRegistry *r = get_registry();
@@ -261,6 +295,9 @@ get_retired_count() {
   return r->retired.size();
 }
 
+/**
+ * Returns the live occupant count at a stage, or -1 if out of range.
+ */
 int EpochManager::
 get_threads_at_stage(int stage) {
   if (stage < 0 || stage >= MAX_STAGES) {

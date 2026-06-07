@@ -165,13 +165,6 @@ private:
 
 #ifdef THREADED_PIPELINE
 public:
-  // Enter/leave an EBR critical section.  A CycleDataReader's loaded CData
-  // pointer is valid only while its thread is inside one; the framework opens
-  // one per task/frame so many readers amortize to a single epoch transition.
-  // Depth-counted (every enter balanced by one leave; only the outermost pair
-  // touches the atomic slot): copy/move readers enter in their ctor and leave
-  // in their dtor, while assignment leaves depth unchanged.  Delegates to
-  // EpochManager via this thread's participant; the two overloads are equivalent.
   ALWAYS_INLINE void epoch_enter();
   ALWAYS_INLINE void epoch_leave();
   ALWAYS_INLINE static void epoch_enter(Thread *t);

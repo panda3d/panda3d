@@ -37,9 +37,8 @@ class CycleData;
 #ifdef THREADED_PIPELINE
 
 #ifndef CPPPARSER
-// Per-OS-thread epoch state (see Thread::epoch_participant for where it lives).
-// slot == 0 means quiescent; otherwise it holds the epoch observed on the
-// outermost enter.
+// Per-OS-thread epoch state (lives on Thread; see Thread::epoch_participant).
+// slot == 0 means quiescent, else the epoch observed at the outermost enter.
 struct EpochParticipant {
   uint32_t depth = 0;
   patomic<uint64_t> slot{0};
@@ -50,25 +49,13 @@ struct EpochParticipant {
   ~EpochParticipant();
 };
 #else  // CPPPARSER
-// Interrogate names this type at the call sites in thread.h/.I but generates no
-// bindings for it, and its parser trips on the real definition's patomic
-// members; keep it opaque.
 struct EpochParticipant {};
 #endif  // CPPPARSER
 
 class EXPCL_PANDA_PIPELINE EpochManager {
 public:
-  // Enter/leave a critical section.  The participant is passed in (rather than
-  // looked up) to keep the hot path off the slow shared-library thread_local
-  // access for bound threads; see Thread::epoch_participant.  Depth-counted --
-  // only the outermost transition touches the atomic slot.
   ALWAYS_INLINE static void enter(EpochParticipant &p);
   ALWAYS_INLINE static void leave(EpochParticipant &p);
-
-  // Opportunistic reclamation hook for Thread's yield/sleep family: lets
-  // threads that never render or poll still make reclamation progress.  No-op
-  // unless quiescent, and throttled.  Must use the same participant as
-  // enter/leave on this thread, or the in-CS check would be wrong.
   ALWAYS_INLINE static void consider_reclaim(EpochParticipant &p);
 
   static void register_participant(EpochParticipant *p);
@@ -76,39 +63,20 @@ public:
 
   static void go_online(EpochParticipant &p);
 
-  // Stamp `cd` with the current epoch and queue it for reclamation; takes
-  // ownership.  Callable from any thread.
   static void retire(CycleData *cd);
-
-  // Bump the global epoch if every in-CS thread has observed the current one.
   static void try_advance_epoch();
-
-  // Free retired entries older than the minimum observed epoch.  `budget`
-  // caps per-call work.
   static size_t try_reclaim(size_t budget = ~size_t(0));
 
-  // Stage-occupancy maintenance for the in-place fast path.  Driven by
-  // Thread::acquire/release_stage_occupancy (when a thread begins/stops running
-  // on its own stack) and set_pipeline_stage.  Independent of the epoch
-  // participant registry, which is keyed to the OS thread.
   static void register_thread(Thread *t, int stage);
   static void unregister_thread(Thread *t, int stage);
   static void thread_stage_changed(int old_stage, int new_stage);
 
   static uint64_t get_global_epoch();
   static size_t get_retired_count();
-
   static int get_threads_at_stage(int stage);
 
   static bool is_reclaiming();
 
-  // Per-stage in-place fast path: a write at stage S may mutate the published
-  // CData in place (skipping make_copy) when S has a single occupying thread
-  // (here) and the cycler's stage-S CData is unshared with other stages
-  // (checked by the cycler).  Interlock against a thread arriving at S
-  // mid-write: try_begin_inplace_write claims a slot and re-checks the count;
-  // stage_occupancy_inc, on raising a stage to 2+, spin-drains in-flight
-  // in-place writers first.  The count is a live gate, not sticky.
   ALWAYS_INLINE static bool try_begin_inplace_write(int stage);
   ALWAYS_INLINE static void end_inplace_write(int stage);
   ALWAYS_INLINE static bool inplace_allowed_hint(int stage);
@@ -125,23 +93,17 @@ private:
 
   static patomic<uint64_t> _global_epoch;  // 0 reserved for "quiescent"
 
-  // Number of participants currently inside a critical section.  When this
-  // falls to 0 the pipeline is fully quiescent, which is the moment leave()
-  // drains the retire queue so unframed / non-render contexts (unit tests,
-  // synchronous loaders) reclaim promptly instead of never.
+  // Participants currently inside a critical section.
   static patomic<int> _active_cs_count;
-  // Cheap hint of the retired-list size so the quiescent-drain in leave() can
-  // skip the lock when there is nothing to reclaim (e.g. a pure read loop).
+  // Approximate retired-list size, so leave() can skip the lock when nothing
+  // is pending.
   static patomic<size_t> _retired_count;
 
   // Retired-entry count at which an online thread drains on its way back to
-  // depth 0. This bounds an "online" thread's unreclaimed backlog while keeping
-  // reclamation off the per-op path: an active frame retires well past this and
-  // so drains about once per frame, while a tight unframed write loop drains
-  // about once per this many writes instead of on every write.
+  // depth 0.
   static constexpr size_t checkpoint_threshold = 256;
 
-  // Live occupant count per stage; the fast path gates on count <= 1.
+  // Live occupant count per stage; the in-place fast path gates on count <= 1.
   static patomic<int> _threads_at_stage[MAX_STAGES];
   static patomic<int> _inplace_writers_at_stage[MAX_STAGES];
 
