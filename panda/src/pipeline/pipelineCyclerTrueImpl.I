@@ -501,6 +501,7 @@ cycle_2() {
 #endif
 
   nassertv(_data[1]._writes_outstanding == 0);
+  Thread::assert_in_epoch(Thread::get_current_thread());
 
   // Rotate stage 0 -> 1: node_ref the incoming pointer (stage 1 now owns it),
   // exchange, and retire the outgoing pointer to EBR.
@@ -533,6 +534,7 @@ cycle_3() {
 
   nassertv(_data[2]._writes_outstanding == 0);
   nassertv(_data[1]._writes_outstanding == 0);
+  Thread::assert_in_epoch(Thread::get_current_thread());
 
   // Rotate stage 1 -> stage 2, then stage 0 -> stage 1.
   CycleData *into_2 = _data[1]._cdata.load(std::memory_order_relaxed);

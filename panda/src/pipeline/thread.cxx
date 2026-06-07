@@ -123,6 +123,7 @@ bind_thread(const std::string &name, const std::string &sync_name) {
  */
 void Thread::
 yield_quiescent() {
+  nassertv(get_current_thread()->epoch_participant().depth == 0);
   EpochManager::try_advance_epoch();
   EpochManager::try_reclaim();
   if (_yield_func != nullptr) {

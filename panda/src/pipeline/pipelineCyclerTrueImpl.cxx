@@ -273,6 +273,7 @@ cycle() {
   int num_stages = get_num_stages();
   nassertv(_lock.debug_is_locked());
   nassertv(is_dirty());
+  Thread::assert_in_epoch(Thread::get_current_thread());
 
   // Rotate stage i-1 -> i (high to low).  Each step node_refs the destination
   // slot, exchanges, and yields the displaced pointer.  Every displaced
