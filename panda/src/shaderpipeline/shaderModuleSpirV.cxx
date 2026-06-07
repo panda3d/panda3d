@@ -908,7 +908,7 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
 void ShaderModuleSpirV::
 fillin(DatagramIterator &scan, BamReader *manager) {
   _source_filename = scan.get_string();
-  _used_caps = (int)scan.get_uint64();
+  _used_caps = scan.get_uint64();
 
   uint32_t num_inputs = scan.get_uint32();
   _inputs.resize(num_inputs);
