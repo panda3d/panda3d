@@ -38,6 +38,22 @@ unwrap_pointer_type(uint32_t id) const {
 }
 
 /**
+ * Looks up the given string, checking that it has been defined already in
+ * this pass.
+ */
+INLINE std::string SpirVTransformPass::
+resolve_string(uint32_t id) const {
+  const Definition &def = _db.get_definition(id);
+  if (!def.is_string()) {
+    error_expected(id, "a string");
+    return std::string();
+  }
+  std::string string = def._name;
+  nassertr(is_defined(id), string);
+  return string;
+}
+
+/**
  * Looks up the given constant, checking that it has been defined already in
  * this pass.
  */

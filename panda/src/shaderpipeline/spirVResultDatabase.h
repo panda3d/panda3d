@@ -20,6 +20,7 @@ private:
     DT_function,
     DT_temporary,
     DT_spec_constant,
+    DT_string,
   };
 
 public:
@@ -113,6 +114,7 @@ public:
     INLINE bool is_spec_constant() const;
     INLINE bool is_function() const;
     INLINE bool is_ext_inst() const;
+    INLINE bool is_string() const;
 
     INLINE bool is_used() const;
     INLINE bool is_dref_sampled() const;

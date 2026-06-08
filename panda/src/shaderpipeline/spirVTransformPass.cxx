@@ -67,6 +67,9 @@ process_preamble(std::vector<uint32_t> &stream) {
       }
     }
     else if (transform_debug_op(op)) {
+      if (op.opcode == spv::OpString) {
+        mark_defined(op.args[0]);
+      }
       _new_preamble.insert(_new_preamble.end(), it._words, it.next()._words);
     }
     ++it;
@@ -1171,6 +1174,141 @@ add_entry_point(spv::ExecutionModel model, uint32_t id, const std::string &name,
 }
 
 /**
+ * Makes sure that the given variable exists as a builtin and added to all
+ * already emitted entry points.
+ */
+uint32_t SpirVTransformPass::
+ensure_builtin_input(spv::ExecutionModel model, spv::BuiltIn builtin) {
+  uint32_t var_id = 0;
+  for (uint32_t id = 0; id < get_id_bound(); ++id) {
+    const Definition &def = _db.get_definition(id);
+
+    if (def.is_variable() && def._storage_class == spv::StorageClassInput && def._builtin == builtin) {
+      var_id = id;
+      break;
+    }
+  }
+
+  if (var_id == 0) {
+    const ShaderType *type;
+    switch (builtin) {
+    case spv::BuiltInVertexId:
+    case spv::BuiltInInstanceId:
+    case spv::BuiltInPrimitiveId:
+    case spv::BuiltInInvocationId:
+    case spv::BuiltInLayer:
+    case spv::BuiltInViewportIndex:
+    case spv::BuiltInPatchVertices:
+    case spv::BuiltInSampleId:
+    case spv::BuiltInVertexIndex:
+    case spv::BuiltInInstanceIndex:
+      type = ShaderType::INT;
+      break;
+
+    case spv::BuiltInTessLevelOuter:
+    case spv::BuiltInTessLevelInner:
+      type = ShaderType::FLOAT;
+      break;
+
+    case spv::BuiltInTessCoord:
+      {
+        type = ShaderType::register_type(ShaderType::Vector(ShaderType::ST_float, 3));
+        break;
+      }
+
+    case spv::BuiltInFragCoord:
+      {
+        type = ShaderType::register_type(ShaderType::Vector(ShaderType::ST_float, 4));
+        break;
+      }
+
+    case spv::BuiltInPointCoord:
+    case spv::BuiltInSamplePosition:
+      {
+        type = ShaderType::register_type(ShaderType::Vector(ShaderType::ST_float, 2));
+        break;
+      }
+
+    case spv::BuiltInFrontFacing:
+    case spv::BuiltInHelperInvocation:
+      type = ShaderType::BOOL;
+      break;
+
+    case spv::BuiltInNumWorkgroups:
+    case spv::BuiltInWorkgroupSize:
+    case spv::BuiltInWorkgroupId:
+    case spv::BuiltInLocalInvocationId:
+    case spv::BuiltInGlobalInvocationId:
+      {
+        type = ShaderType::register_type(ShaderType::Vector(ShaderType::ST_uint, 3));
+        break;
+      }
+
+    case spv::BuiltInLocalInvocationIndex:
+      type = ShaderType::UINT;
+      break;
+
+    default:
+      // Unhandled / invalid input
+      nassertr(false, 0);
+      return 0;
+    }
+
+    var_id = define_variable(type, spv::StorageClassInput);
+    decorate(var_id, spv::DecorationBuiltIn, builtin);
+  }
+
+  size_t i = 5;
+  while (i < _new_preamble.size()) {
+    spv::Op opcode = (spv::Op)(_new_preamble[i] & spv::OpCodeMask);
+    uint32_t wcount = _new_preamble[i] >> spv::WordCountShift;
+    nassertd(wcount > 0) break;
+
+    if (opcode != spv::OpCapability &&
+        opcode != spv::OpExtension &&
+        opcode != spv::OpExtInstImport &&
+        opcode != spv::OpMemoryModel &&
+        opcode != spv::OpEntryPoint) {
+      break;
+    }
+
+    if (opcode == spv::OpEntryPoint && _new_preamble[i + 1] == model) {
+      // Skip the string literal by skipping words until we have a zero byte.
+      uint32_t j = i + 3;
+      while (j < i + wcount
+          && (_new_preamble[j] & 0x000000ff) != 0
+          && (_new_preamble[j] & 0x0000ff00) != 0
+          && (_new_preamble[j] & 0x00ff0000) != 0
+          && (_new_preamble[j] & 0xff000000) != 0) {
+        ++j;
+      }
+      if (j < i + wcount) {
+        ++j;
+      }
+
+      // Check whether the variable already exists in the interface.
+      while (j < i + wcount) {
+        if (var_id == _new_preamble[j]) {
+          break;
+        }
+        ++j;
+      }
+
+      if (j == i + wcount) {
+        // Add a word at the end for our variable.
+        ++wcount;
+        _new_preamble[i] = opcode | (wcount << spv::WordCountShift);
+        _new_preamble.insert(_new_preamble.begin() + j, var_id);
+      }
+    }
+
+    i += wcount;
+  }
+
+  return var_id;
+}
+
+/**
  * Inserts an OpLoad from the given pointer id.
  */
 uint32_t SpirVTransformPass::
@@ -1218,6 +1356,10 @@ op_select(uint32_t cond, uint32_t obj1, uint32_t obj2) {
 
   uint32_t id = allocate_id();
   _new_functions.insert(_new_functions.end(), {(6 << spv::WordCountShift) | spv::OpSelect, obj1_def._type_id, id, cond, obj1, obj2});
+
+  Definition &def = _db.modify_definition(id);
+  def._type_id = obj1_def._type_id;
+  def._type = obj1_def._type;
 
   mark_used(obj1);
   mark_used(obj2);
@@ -1396,6 +1538,7 @@ op_compare(spv::Op opcode, uint32_t obj1, uint32_t obj2) {
 uint32_t SpirVTransformPass::
 op_convert(ShaderType::ScalarType new_scalar_type, uint32_t value) {
   const Definition &value_def = _db.get_definition(value);
+  nassertr(value_def._type != nullptr, 0u);
 
   const ShaderType *new_type = nullptr;
   uint32_t new_type_id = 0;
@@ -1419,15 +1562,41 @@ op_convert(ShaderType::ScalarType new_scalar_type, uint32_t value) {
     nassertr_always(false, 0);
   }
 
-  uint32_t id = allocate_id();
-  new_type_id = define_type(new_type);
-
-  // Determine which conversion instruction to use.
   bool old_float = old_scalar_type == ShaderType::ST_float
                 || old_scalar_type == ShaderType::ST_double;
   bool new_float = new_scalar_type == ShaderType::ST_float
                 || new_scalar_type == ShaderType::ST_double;
 
+  uint32_t id = allocate_id();
+
+  if (old_scalar_type == ShaderType::ST_bool && new_scalar_type != ShaderType::ST_bool) {
+    uint32_t true_value, false_value;
+    if (new_float) {
+      true_value = define_float_constant(1.0f);
+      false_value = define_float_constant(0.0f);
+    } else {
+      const ShaderType *scalar_type = ShaderType::register_type(ShaderType::Scalar(new_scalar_type));
+      true_value = define_constant(scalar_type, 1u);
+      false_value = define_constant(scalar_type, 0u);
+    }
+    if (const ShaderType::Vector *vector = new_type->as_vector()) {
+      true_value = op_composite_construct(new_type, pvector<uint32_t>(vector->get_num_components(), true_value));
+      false_value = op_composite_construct(new_type, pvector<uint32_t>(vector->get_num_components(), false_value));
+    }
+    push_id(id);
+    return op_select(value, true_value, false_value);
+  }
+
+  if (new_scalar_type == ShaderType::ST_bool && old_scalar_type != ShaderType::ST_bool) {
+    // Conversion to bool is the same as != 0
+    uint32_t null_value = define_null_constant(value_def._type);
+    push_id(id);
+    return op_compare(old_float ? spv::OpFUnordNotEqual : spv::OpINotEqual, value, null_value);
+  }
+
+  new_type_id = define_type(new_type);
+
+  // Determine which conversion instruction to use.
   spv::Op opcode;
   if (old_float && new_float) {
     opcode = spv::OpFConvert;
@@ -1440,6 +1609,9 @@ op_convert(ShaderType::ScalarType new_scalar_type, uint32_t value) {
     bool old_signed = old_scalar_type == ShaderType::ST_int;
     opcode = old_signed ? spv::OpConvertSToF : spv::OpConvertUToF;
   }
+  else if (old_scalar_type == new_scalar_type) {
+    opcode = spv::OpCopyObject;
+  }
   else {
     // Assuming it's the same bit width, for now.
     opcode = spv::OpBitcast;
@@ -1447,6 +1619,33 @@ op_convert(ShaderType::ScalarType new_scalar_type, uint32_t value) {
 
   _new_functions.insert(_new_functions.end(),
     {(4u << spv::WordCountShift) | opcode, new_type_id, id, value});
+
+  Definition &def = _db.modify_definition(id);
+  def._type_id = new_type_id;
+  def._type = new_type;
+  def._origin_id = value_def._origin_id;
+
+  //if (value_def._flags & SpirVResultDatabase::DF_constant_expression) {
+  //  def._flags |= SpirVResultDatabase::DF_constant_expression;
+  //}
+
+  mark_defined(id);
+  return id;
+}
+
+/**
+ * Insert an OpBitcast.
+ */
+uint32_t SpirVTransformPass::
+op_bitcast(const ShaderType *new_type, uint32_t value) {
+  const Definition &value_def = _db.get_definition(value);
+  nassertr(value_def._type != nullptr, 0u);
+
+  uint32_t id = allocate_id();
+  uint32_t new_type_id = define_type(new_type);
+
+  _new_functions.insert(_new_functions.end(),
+    {(4u << spv::WordCountShift) | spv::OpBitcast, new_type_id, id, value});
 
   Definition &def = _db.modify_definition(id);
   def._type_id = new_type_id;
@@ -1506,14 +1705,27 @@ op_add(uint32_t left, uint32_t right) {
   nassertr(right != 0u, 0u);
   const Definition &left_def = _db.get_definition(left);
   const Definition &right_def = _db.get_definition(right);
-  nassertr(left_def._type == right_def._type, 0);
+  //nassertr(left_def._type == right_def._type, 0);
 
-  ShaderType::ScalarType scalar_type;
+  ShaderType::ScalarType left_scalar_type;
+  ShaderType::ScalarType right_scalar_type;
   if (const ShaderType::Scalar *scalar = left_def._type->as_scalar()) {
-    scalar_type = scalar->get_scalar_type();
+    left_scalar_type = scalar->get_scalar_type();
+
+#ifndef NDEBUG
+    const ShaderType::Scalar *right_scalar = right_def._type->as_scalar();
+    nassertr(right_scalar != nullptr, 0);
+    right_scalar_type = right_scalar->get_scalar_type();
+#endif
   }
   else if (const ShaderType::Vector *vector = left_def._type->as_vector()) {
-    scalar_type = vector->get_scalar_type();
+    left_scalar_type = vector->get_scalar_type();
+
+#ifndef NDEBUG
+    const ShaderType::Vector *right_vector = right_def._type->as_vector();
+    nassertr(right_vector != nullptr, 0);
+    right_scalar_type = right_vector->get_scalar_type();
+#endif
   }
   else {
     nassertr(false, 0);
@@ -1521,10 +1733,12 @@ op_add(uint32_t left, uint32_t right) {
   }
 
   spv::Op opcode;
-  if (scalar_type == ShaderType::ST_float || scalar_type == ShaderType::ST_double) {
+  if (left_scalar_type == ShaderType::ST_float || left_scalar_type == ShaderType::ST_double) {
     opcode = spv::OpFAdd;
+    nassertr(right_scalar_type == left_scalar_type, 0);
   } else {
     opcode = spv::OpIAdd;
+    nassertr(right_scalar_type != ShaderType::ST_float && right_scalar_type != ShaderType::ST_double, 0);
   }
 
   uint32_t id = allocate_id();
@@ -1889,6 +2103,14 @@ op_label() {
   _new_functions.insert(_new_functions.end(), {(2u << spv::WordCountShift) | spv::OpLabel, id});
   mark_defined(id);
   return id;
+}
+
+/**
+ * Inserts an OpBranch.
+ */
+void SpirVTransformPass::
+op_branch(uint32_t target) {
+  _new_functions.insert(_new_functions.end(), {(2u << spv::WordCountShift) | spv::OpBranch, target});
 }
 
 /**

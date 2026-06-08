@@ -505,6 +505,15 @@ ConfigVariableDouble display_zoom
           "change this based on a user preference change or to test how the UI "
           "will look on monitors with different pixel densities."));
 
+ConfigVariableInt shader_debug_buffer_size
+("shader-debug-buffer-size", 4096,
+ PRC_DESC("Specifies the size in bytes of the buffer used to hold the output "
+          "of shader debug print statements and assertions for a single draw.  "
+          "If a shader produces more debug output than fits in this buffer, the "
+          "excess is dropped and a truncation message is printed; increase this "
+          "value to capture more output.  This is only used in development "
+          "builds."));
+
 /**
  * Initializes the library.  This must be called at least once before any of
  * the functions or classes in this library can be used.  Normally it will be

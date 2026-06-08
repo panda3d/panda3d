@@ -33,6 +33,29 @@ set_suppress_log(bool enabled) {
 }
 
 /**
+ *
+ */
+INLINE bool CompilerOptions::
+get_debug() const {
+  return (_flags & F_debug) != 0;
+}
+
+/**
+ * If enabled, the shader will be compiled with debugging support.  This
+ * preserves source information and enables features such as debug printf and
+ * shader assertions.  Disabled by default; see also the shader-debug config
+ * variable to enable this globally.
+ */
+INLINE void CompilerOptions::
+set_debug(bool enabled) {
+  if (enabled) {
+    _flags |= F_debug;
+  } else {
+    _flags &= ~F_debug;
+  }
+}
+
+/**
  * Returns the current optimization setting.
  */
 INLINE CompilerOptions::Optimize CompilerOptions::

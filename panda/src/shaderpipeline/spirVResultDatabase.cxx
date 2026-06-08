@@ -217,11 +217,25 @@ parse_instruction(spv::Op opcode, const uint32_t *args, uint32_t nargs, uint32_t
     break;
 
   case spv::OpName:
-    _defs[args[0]]._name.assign((const char *)&args[1]);
+    {
+      Definition &def = modify_definition(args[0]);
+      def._name.assign((const char *)&args[1]);
+    }
     break;
 
   case spv::OpMemberName:
-    _defs[args[0]].modify_member(args[1])._name.assign((const char *)&args[2]);
+    {
+      Definition &def = modify_definition(args[0]);
+      def.modify_member(args[1])._name.assign((const char *)&args[2]);
+    }
+    break;
+
+  case spv::OpString:
+    {
+      Definition &def = modify_definition(args[0]);
+      def._dtype = DT_string;
+      def._name.assign((const char *)&args[1]);
+    }
     break;
 
   case spv::OpTypeVoid:
@@ -367,21 +381,23 @@ parse_instruction(spv::Op opcode, const uint32_t *args, uint32_t nargs, uint32_t
           break;
         }
       }
-      if (_defs[args[0]]._flags & DF_non_writable) {
+
+      Definition &def = modify_definition(args[0]);
+      if (def._flags & DF_non_writable) {
         access = (access & ShaderType::Access::READ_ONLY);
       }
-      if (_defs[args[0]]._flags & DF_non_readable) {
+      if (def._flags & DF_non_readable) {
         access = (access & ShaderType::Access::WRITE_ONLY);
       }
-
-      record_type(args[0], ShaderType::register_type(
-        ShaderType::Image(texture_type, sampled_type->get_scalar_type(), access)));
 
       // We don't record the "depth" flag on the image type (because no shader
       // language actually does that), so we have to store it somewhere else.
       if (args[3] == 1) {
-        _defs[args[0]]._flags |= DF_depth_image;
+        def._flags |= DF_depth_image;
       }
+
+      record_type(args[0], ShaderType::register_type(
+        ShaderType::Image(texture_type, sampled_type->get_scalar_type(), access)));
     }
     break;
 
@@ -403,24 +419,30 @@ parse_instruction(spv::Op opcode, const uint32_t *args, uint32_t nargs, uint32_t
     break;
 
   case spv::OpTypeArray:
-    if (_defs[args[1]]._type != nullptr) {
-      record_type(args[0], ShaderType::register_type(
-        ShaderType::Array(_defs[args[1]]._type, _defs[args[2]]._constant, _defs[args[0]]._array_stride)));
+    {
+      if (_defs[args[1]]._type != nullptr) {
+        uint32_t array_stride = get_definition(args[0])._array_stride;
+        record_type(args[0], ShaderType::register_type(
+          ShaderType::Array(_defs[args[1]]._type, _defs[args[2]]._constant, array_stride)));
+      }
+      modify_definition(args[0])._type_id = args[1];
     }
-    _defs[args[0]]._type_id = args[1];
     break;
 
   case spv::OpTypeRuntimeArray:
-    if (_defs[args[1]]._type != nullptr) {
-      record_type(args[0], ShaderType::register_type(
-        ShaderType::Array(_defs[args[1]]._type, 0, _defs[args[0]]._array_stride)));
+    {
+      if (_defs[args[1]]._type != nullptr) {
+        uint32_t array_stride = get_definition(args[0])._array_stride;
+        record_type(args[0], ShaderType::register_type(
+          ShaderType::Array(_defs[args[1]]._type, 0, array_stride)));
+      }
+      modify_definition(args[0])._type_id = args[1];
     }
-    _defs[args[0]]._type_id = args[1];
     break;
 
   case spv::OpTypeStruct:
     {
-      Definition &struct_def = _defs[args[0]];
+      Definition &struct_def = modify_definition(args[0]);
       int access_flags = DF_non_writable | DF_non_readable;
       ShaderType::Struct type;
       for (size_t i = 0; i < nargs - 1; ++i) {
@@ -458,6 +480,20 @@ parse_instruction(spv::Op opcode, const uint32_t *args, uint32_t nargs, uint32_t
     }
     break;
 
+  case spv::OpConstantTrue:
+    {
+      static const uint32_t true_val = 1u;
+      record_constant(args[1], args[0], &true_val, 1);
+    }
+    break;
+
+  case spv::OpConstantFalse:
+    {
+      static const uint32_t false_val = 0u;
+      record_constant(args[1], args[0], &false_val, 1);
+    }
+    break;
+
   case spv::OpConstant:
     if (current_function_id != 0) {
       shader_cat.error()
@@ -478,7 +514,7 @@ parse_instruction(spv::Op opcode, const uint32_t *args, uint32_t nargs, uint32_t
 
   case spv::OpConstantComposite:
   case spv::OpSpecConstantComposite:
-    modify_definition(args[1])._flags |= DF_constant_expression;
+    record_constant(args[1], args[0], nullptr, 0);
     break;
 
   case spv::OpSpecConstantTrue:
@@ -638,94 +674,103 @@ parse_instruction(spv::Op opcode, const uint32_t *args, uint32_t nargs, uint32_t
   case spv::OpArrayLength:
   case spv::OpConvertPtrToU:
     mark_used(args[2]);
-    _defs[args[1]]._type_id = args[0];
+    {
+      Definition &def = modify_definition(args[1]);
+      def._type_id = args[0];
+    }
     break;
 
   case spv::OpDecorate:
-    switch ((spv::Decoration)args[1]) {
-    case spv::DecorationBufferBlock:
-      _defs[args[0]]._flags |= DF_buffer_block;
-      break;
+    {
+      Definition &def = modify_definition(args[0]);
+      switch ((spv::Decoration)args[1]) {
+      case spv::DecorationBufferBlock:
+        def._flags |= DF_buffer_block;
+        break;
 
-    case spv::DecorationBlock:
-      _defs[args[0]]._flags |= DF_block;
-      break;
+      case spv::DecorationBlock:
+        def._flags |= DF_block;
+        break;
 
-    case spv::DecorationBuiltIn:
-      _defs[args[0]]._builtin = (spv::BuiltIn)args[2];
-      break;
+      case spv::DecorationBuiltIn:
+        def._builtin = (spv::BuiltIn)args[2];
+        break;
 
-    case spv::DecorationNonWritable:
-      _defs[args[0]]._flags |= DF_non_writable;
-      break;
+      case spv::DecorationNonWritable:
+        def._flags |= DF_non_writable;
+        break;
 
-    case spv::DecorationNonReadable:
-      _defs[args[0]]._flags |= DF_non_readable;
-      break;
+      case spv::DecorationNonReadable:
+        def._flags |= DF_non_readable;
+        break;
 
-    case spv::DecorationLocation:
-      _defs[args[0]]._location = args[2];
-      break;
+      case spv::DecorationLocation:
+        def._location = args[2];
+        break;
 
-    case spv::DecorationArrayStride:
-      _defs[args[0]]._array_stride = args[2];
-      break;
+      case spv::DecorationArrayStride:
+        def._array_stride = args[2];
+        break;
 
-    case spv::DecorationFlat:
-      _defs[args[0]]._flags |= DF_flat;
-      break;
+      case spv::DecorationFlat:
+        def._flags |= DF_flat;
+        break;
 
-    case spv::DecorationSpecId:
-      _defs[args[0]]._spec_id = args[2];
-      break;
+      case spv::DecorationSpecId:
+        def._spec_id = args[2];
+        break;
 
-    default:
-      break;
+      default:
+        break;
+      }
     }
     break;
 
   case spv::OpMemberDecorate:
-    switch ((spv::Decoration)args[2]) {
-    case spv::DecorationBuiltIn:
-      _defs[args[0]].modify_member(args[1])._builtin = (spv::BuiltIn)args[3];
-      break;
+    {
+      Definition &def = modify_definition(args[0]);
+      switch ((spv::Decoration)args[2]) {
+      case spv::DecorationBuiltIn:
+        def.modify_member(args[1])._builtin = (spv::BuiltIn)args[3];
+        break;
 
-    case spv::DecorationNonWritable:
-      _defs[args[0]].modify_member(args[1])._flags |= DF_non_writable;
-      break;
+      case spv::DecorationNonWritable:
+        def.modify_member(args[1])._flags |= DF_non_writable;
+        break;
 
-    case spv::DecorationNonReadable:
-      _defs[args[0]].modify_member(args[1])._flags |= DF_non_readable;
-      break;
+      case spv::DecorationNonReadable:
+        def.modify_member(args[1])._flags |= DF_non_readable;
+        break;
 
-    case spv::DecorationLocation:
-      _defs[args[0]].modify_member(args[1])._location = args[3];
-      break;
+      case spv::DecorationLocation:
+        def.modify_member(args[1])._location = args[3];
+        break;
 
-    case spv::DecorationBinding:
-      shader_cat.error()
-        << "Invalid " << "binding" << " decoration on struct member\n";
-      break;
+      case spv::DecorationBinding:
+        shader_cat.error()
+          << "Invalid " << "binding" << " decoration on struct member\n";
+        break;
 
-    case spv::DecorationDescriptorSet:
-      shader_cat.error()
-        << "Invalid " << "set" << " decoration on struct member\n";
-      break;
+      case spv::DecorationDescriptorSet:
+        shader_cat.error()
+          << "Invalid " << "set" << " decoration on struct member\n";
+        break;
 
-    case spv::DecorationOffset:
-      _defs[args[0]].modify_member(args[1])._offset = args[3];
-      break;
+      case spv::DecorationOffset:
+        def.modify_member(args[1])._offset = args[3];
+        break;
 
-    case spv::DecorationMatrixStride:
-      _defs[args[0]].modify_member(args[1])._matrix_stride = args[3];
-      break;
+      case spv::DecorationMatrixStride:
+        def.modify_member(args[1])._matrix_stride = args[3];
+        break;
 
-    case spv::DecorationFlat:
-      _defs[args[0]].modify_member(args[1])._flags |= DF_flat;
-      break;
+      case spv::DecorationFlat:
+        def.modify_member(args[1])._flags |= DF_flat;
+        break;
 
-    default:
-      break;
+      default:
+        break;
+      }
     }
     break;
 
@@ -735,7 +780,10 @@ parse_instruction(spv::Op opcode, const uint32_t *args, uint32_t nargs, uint32_t
     for (size_t i = 2; i < nargs; ++i) {
       mark_used(args[i]);
     }
-    _defs[args[1]]._type_id = args[0];
+    {
+      Definition &def = modify_definition(args[1]);
+      def._type_id = args[0];
+    }
     break;
 
   case spv::OpCopyObject:
@@ -746,8 +794,11 @@ parse_instruction(spv::Op opcode, const uint32_t *args, uint32_t nargs, uint32_t
   case spv::OpCompositeExtract:
     // Composite types are used for some arithmetic ops, so inherit the const
     // expression flag.
-    _defs[args[1]]._flags |= _defs[args[2]]._flags & (DF_constant_expression | DF_sampled_image);
-    _defs[args[1]]._type_id = args[0];
+    {
+      Definition &def = modify_definition(args[1]);
+      def._flags |= _defs[args[2]]._flags & (DF_constant_expression | DF_sampled_image);
+      def._type_id = args[0];
+    }
     break;
 
   case spv::OpImageSampleImplicitLod:
@@ -766,9 +817,9 @@ parse_instruction(spv::Op opcode, const uint32_t *args, uint32_t nargs, uint32_t
     {
       uint32_t var_id = _defs[args[2]]._origin_id;
       if (var_id != 0) {
-        _defs[var_id]._flags |= DF_non_dref_sampled;
+        modify_definition(var_id)._flags |= DF_non_dref_sampled;
       }
-      _defs[args[1]]._type_id = args[0];
+      modify_definition(args[1])._type_id = args[0];
     }
     break;
 
@@ -786,9 +837,9 @@ parse_instruction(spv::Op opcode, const uint32_t *args, uint32_t nargs, uint32_t
     {
       uint32_t var_id = _defs[args[2]]._origin_id;
       if (var_id != 0) {
-        _defs[var_id]._flags |= DF_dref_sampled;
+        modify_definition(var_id)._flags |= DF_dref_sampled;
       }
-      _defs[args[1]]._type_id = args[0];
+      modify_definition(args[1])._type_id = args[0];
     }
     break;
 
@@ -879,11 +930,14 @@ parse_instruction(spv::Op opcode, const uint32_t *args, uint32_t nargs, uint32_t
   case spv::OpBitwiseOr:
   case spv::OpBitwiseXor:
   case spv::OpBitwiseAnd:
-    if ((_defs[args[2]]._flags & DF_constant_expression) != 0 &&
-        (_defs[args[3]]._flags & DF_constant_expression) != 0) {
-      _defs[args[1]]._flags |= DF_constant_expression;
+    {
+      Definition &def = modify_definition(args[1]);
+      if ((_defs[args[2]]._flags & DF_constant_expression) != 0 &&
+          (_defs[args[3]]._flags & DF_constant_expression) != 0) {
+        def._flags |= DF_constant_expression;
+      }
+      def._type_id = args[0];
     }
-    _defs[args[1]]._type_id = args[0];
     break;
 
   case spv::OpSelect:
@@ -892,12 +946,15 @@ parse_instruction(spv::Op opcode, const uint32_t *args, uint32_t nargs, uint32_t
     mark_used(args[3]);
     mark_used(args[4]);
 
-    if ((_defs[args[2]]._flags & DF_constant_expression) != 0 &&
-        (_defs[args[3]]._flags & DF_constant_expression) != 0 &&
-        (_defs[args[4]]._flags & DF_constant_expression) != 0) {
-      _defs[args[1]]._flags |= DF_constant_expression;
+    {
+      Definition &def = modify_definition(args[1]);
+      if ((_defs[args[2]]._flags & DF_constant_expression) != 0 &&
+          (_defs[args[3]]._flags & DF_constant_expression) != 0 &&
+          (_defs[args[4]]._flags & DF_constant_expression) != 0) {
+        def._flags |= DF_constant_expression;
+      }
+      def._type_id = args[0];
     }
-    _defs[args[1]]._type_id = args[0];
     break;
 
   case spv::OpReturnValue:
@@ -912,7 +969,10 @@ parse_instruction(spv::Op opcode, const uint32_t *args, uint32_t nargs, uint32_t
     // on the safe side.
     mark_used(args[2]);
     mark_used(args[3]);
-    _defs[args[1]]._type_id = args[0];
+    {
+      Definition &def = modify_definition(args[1]);
+      def._type_id = args[0];
+    }
     break;
 
   default:
@@ -921,7 +981,8 @@ parse_instruction(spv::Op opcode, const uint32_t *args, uint32_t nargs, uint32_t
       HasResultAndType(opcode, &has_result, &has_type);
       if (has_result && has_type) {
         // Record the result type of this operation.
-        _defs[args[1]]._type_id = args[0];
+        Definition &def = modify_definition(args[1]);
+        def._type_id = args[0];
       }
     }
     break;

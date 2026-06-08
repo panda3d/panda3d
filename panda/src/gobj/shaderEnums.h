@@ -135,6 +135,9 @@ PUBLISHED:
     C_cull_distance = 1ull << 40,
     C_derivative_control = 1ull << 41,
     C_texture_query_samples = 1ull << 42,
+
+    // Debugging features (not linked to any particular version)
+    C_debug_output = 1ull << 43,
   };
 
   enum Dependency {

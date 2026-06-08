@@ -52,6 +52,7 @@ protected:
   INLINE uint32_t get_type_id(uint32_t id) const;
   INLINE uint32_t unwrap_pointer_type(uint32_t id) const;
 
+  INLINE std::string resolve_string(uint32_t id) const;
   INLINE uint32_t resolve_constant(uint32_t id) const;
   INLINE const ShaderType *resolve_type(uint32_t id) const;
   INLINE const ShaderType *resolve_pointer_type(uint32_t id) const;
@@ -131,6 +132,8 @@ protected:
 
   void add_entry_point(spv::ExecutionModel model, uint32_t id, const std::string &name, pvector<uint32_t> &vars);
 
+  uint32_t ensure_builtin_input(spv::ExecutionModel model, spv::BuiltIn builtin);
+
   // Functions for putting specific instructions in the functions block.
   uint32_t op_load(uint32_t var_id, spv::MemoryAccessMask access = spv::MemoryAccessMaskNone);
   void op_store(uint32_t var_id, uint32_t value);
@@ -142,6 +145,7 @@ protected:
   uint32_t op_composite_insert(uint32_t obj_id, uint32_t composite_id, std::initializer_list<uint32_t>);
   uint32_t op_compare(spv::Op opcode, uint32_t obj1, uint32_t obj2);
   uint32_t op_convert(ShaderType::ScalarType to_scalar_type, uint32_t value);
+  uint32_t op_bitcast(const ShaderType *type, uint32_t value);
   uint32_t op_transpose(uint32_t obj);
   uint32_t op_add(uint32_t left, uint32_t right);
   uint32_t op_sub(uint32_t left, uint32_t right);
@@ -154,6 +158,7 @@ protected:
 
   uint32_t op_function(const ShaderType *return_type);
   uint32_t op_label();
+  void op_branch(uint32_t target);
   void op_return();
   void op_kill();
   void op_function_end();

@@ -103,6 +103,14 @@ private:
   bool uses_custom_vertex_arrays(void) {
     return true;
   }
+  bool uses_debug_buffer() const {
+#ifdef NDEBUG
+    return false;
+#else
+    return _debug_buffer_binding >= 0
+        && (_storage_block_bindings & (1 << _debug_buffer_binding)) != 0;
+#endif
+  }
 
 private:
   bool _validated = false;
@@ -207,7 +215,7 @@ private:
   };
   typedef pvector<StorageBlock> StorageBlocks;
   StorageBlocks _storage_blocks;
-  uint32_t _storage_block_bindings = 0;
+  uint64_t _storage_block_bindings = 0;
   bool _force_rebind_ssbos = false;
 
   CLP(GraphicsStateGuardian) *_glgsg;
@@ -235,6 +243,10 @@ private:
   pmap<const InternalName *, std::pair<bool, bool> > _model_matrices;
 
   bool _uses_standard_vertex_arrays;
+
+#ifndef NDEBUG
+  GLint _debug_buffer_binding = -1;
+#endif
 
 #ifdef DO_PSTATS
   PStatCollector _compute_dispatch_pcollector;

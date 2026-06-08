@@ -898,3 +898,67 @@ INLINE const std::string &Shader::
 get_debug_name() const {
   return _debug_name;
 }
+
+/**
+ *
+ */
+INLINE void Shader::DebugInfo::
+operator = (const DebugInfo &info) {
+  _strings = info._strings;
+  _asserts = info._asserts;
+  _assert_count = info._assert_count;
+}
+
+/**
+ * Returns true if there is no debug information present.
+ */
+INLINE bool Shader::DebugInfo::
+empty() const {
+  LightMutexHolder holder(_lock);
+  return _strings.get_num_entries() == 0 && _asserts.empty();
+}
+
+/**
+ * Returns the absolute minimum required size for the buffer.
+ */
+INLINE size_t Shader::DebugInfo::
+get_min_buffer_size() const {
+  LightMutexHolder holder(_lock);
+  return sizeof(uint32_t) * (1 + (size_t)_assert_count * 4);
+}
+
+/**
+ * Returns the number of strings printed by the shader.
+ */
+INLINE size_t Shader::DebugInfo::
+get_num_strings() const {
+  LightMutexHolder holder(_lock);
+  return _strings.get_num_entries();
+}
+
+/**
+ * Returns the string with the given index printed by the shader.
+ */
+INLINE const std::string &Shader::DebugInfo::
+get_string(size_t i) const {
+  LightMutexHolder holder(_lock);
+  return _strings.get_key(i);
+}
+
+/**
+ * Ensures that the given string is defined in the string table, and returns
+ * its index.
+ */
+INLINE size_t Shader::DebugInfo::
+intern_string(const std::string &str) {
+  LightMutexHolder holder(_lock);
+  return _strings.store(str, nullptr);
+}
+
+/**
+ * Returns the maximum number of assertions used across all shaders.
+ */
+INLINE size_t Shader::DebugInfo::
+get_max_num_asserts() const {
+  return _assert_count;
+}

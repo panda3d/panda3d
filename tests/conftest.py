@@ -5,6 +5,24 @@ from panda3d import core
 from direct.showbase.ShowBase import ShowBase
 
 
+@pytest.fixture(scope="session")
+def vfs():
+    return core.VirtualFileSystem.get_global_ptr()
+
+
+@pytest.fixture
+def ramdir():
+    """Fixture yielding a fresh ramdisk directory."""
+
+    vfs = core.VirtualFileSystem.get_global_ptr()
+    mount = core.VirtualFileMountRamdisk()
+    dir = core.Filename.temporary("/virtual", "ram.")
+    assert vfs.mount(mount, dir, 0)
+
+    yield dir
+    vfs.unmount(mount)
+
+
 @pytest.fixture
 def base():
     base = ShowBase(windowType='none')

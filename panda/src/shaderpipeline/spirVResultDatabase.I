@@ -100,6 +100,14 @@ is_ext_inst() const {
 }
 
 /**
+ * Returns true if this is the result of an OpString instruction.
+ */
+INLINE bool SpirVResultDatabase::Definition::
+is_string() const {
+  return _dtype == DT_string;
+}
+
+/**
  * For a variable or function parameter, returns true if its value has been
  * loaded or passed into a function call.  For a type or type pointer, returns
  * true if it is the type of at least one variable that is marked "used".  For

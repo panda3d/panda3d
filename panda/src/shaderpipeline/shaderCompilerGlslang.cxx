@@ -25,6 +25,18 @@
 
 #include <spirv-tools/libspirv.h>
 
+static const std::string debug_header = "\n\
+#ifndef _PANDA3D_DEBUG_H\n\
+#define _PANDA3D_DEBUG_H\n\
+\
+#extension GL_EXT_debug_printf : enable\n\
+\
+#define _p3d_assert(x) if(!(x)) { debugPrintfEXT(\"%!\", #x); }\n\
+#define assert(x) _p3d_assert(x)\n\
+\
+#endif\n\
+";
+
 /**
  * Skips whitespace (including newlines if allow_newline is true) and comments.
  * Returns the number of newlines skipped.
@@ -162,6 +174,10 @@ public:
       shader_cat.spam()
         << "Resolving #include <" << header_name << "> from "
         << includer_name << "\n";
+    }
+
+    if (strcmp(header_name, "panda3d/debug") == 0) {
+      return new IncludeResult(header_name, debug_header.data(), debug_header.size(), nullptr);
     }
 
     Filename fn = header_name;
@@ -457,6 +473,8 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
 
       preamble_stream << "#extension GL_GOOGLE_cpp_style_line_directive : require\n";
       preamble_stream << "#extension GL_GOOGLE_include_directive : require\n";
+
+      preamble_stream << "#line 1 \"" << fullpath.get_basename() << "\"\n";
     }
     options.write_defines(preamble_stream);
     preamble = std::move(preamble_stream).str();
@@ -512,6 +530,9 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
     spvOptions.optimizeSize = false;
     spvOptions.disassemble = false;
     spvOptions.validate = false;
+    //if (options.get_debug()) {
+    //  spvOptions.emitNonSemanticShaderDebugInfo = true;
+    //}
     glslang::GlslangToSpv(*ir, stream, &logger, &spvOptions);
 
     std::string messages = logger.getAllMessages();

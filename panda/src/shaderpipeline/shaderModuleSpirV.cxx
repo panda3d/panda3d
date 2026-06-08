@@ -35,7 +35,7 @@ TypeHandle ShaderModuleSpirV::_type_handle;
  * - All the definitions are parsed out (requires debug info present)
  * - Makes sure that all the inputs have location indices assigned.
  * - Builds up the lists of inputs, outputs and parameters.
- * - Strips debugging information from the module.
+ * - Strips debugging information from the module, unless debug mode is enabled.
  */
 ShaderModuleSpirV::
 ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, const CompilerOptions &options) :
@@ -249,11 +249,6 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, const CompilerOption
             break;
           }
         }
-        else if (def._type->is_aggregate_type()) {
-          // Store all the uniform struct types while we have them, as a
-          // convenience for the GL back-end, which may need them.
-          db.collect_nested_structs(_uniform_struct_types, def._type_id);
-        }
 
         if (def.is_dynamically_indexed() &&
             (sampled_image_type != nullptr || def._type->contains_opaque_type())) {
@@ -385,222 +380,13 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, const CompilerOption
   }
 #endif
 
-  // We no longer need the debugging information, so it can be safely stripped
-  // from the module.
-  strip();
-
-#ifndef NDEBUG
-  _instructions.validate();
-#endif
+  // Strip debug information unless the user opted into debug mode.
+  if (!options.get_debug()) {
+    strip_debug();
+  }
 
   // Check for more caps, now that we've optimized the module.
-  for (InstructionIterator it = _instructions.begin_annotations(); it != _instructions.end_annotations(); ++it) {
-    Instruction op = *it;
-    if (op.opcode == spv::OpDecorate) {
-      if (db.get_definition(op.args[0]).is_builtin()) {
-        continue;
-      }
-      switch ((spv::Decoration)op.args[1]) {
-      case spv::DecorationNoPerspective:
-        _used_caps |= C_noperspective_interpolation;
-        break;
-      case spv::DecorationFlat:
-        _used_caps |= C_unified_model;
-        break;
-      case spv::DecorationSample:
-        _used_caps |= C_multisample_interpolation;
-        break;
-      case spv::DecorationInvariant:
-        //_used_caps |= C_invariant;
-        break;
-      case spv::DecorationComponent:
-        _used_caps |= C_enhanced_layouts;
-        break;
-      default:
-        break;
-      }
-    }
-  }
-
-  for (InstructionIterator it = _instructions.begin_functions(); it != _instructions.end(); ++it) {
-    Instruction op = *it;
-    switch (op.opcode) {
-    case spv::OpExtInst:
-      {
-        const Definition &def = db.get_definition(op.args[2]);
-        nassertv(def.is_ext_inst());
-        if (def._name == "GLSL.std.450" && op.args[3] == GLSLstd450RoundEven) {
-          // We mark the use of the GLSL roundEven() function, which requires
-          // GLSL 1.30 or HLSL SM 4.0.
-          _used_caps |= C_unified_model;
-        }
-      }
-      break;
-
-    case spv::OpImageTexelPointer:
-      // These can only be used for atomic ops.
-      _used_caps |= C_image_load_store | C_image_atomic;
-      break;
-
-    case spv::OpImageRead:
-    case spv::OpImageWrite:
-    case spv::OpImageSparseRead:
-      _used_caps |= C_image_load_store;
-      break;
-
-    case spv::OpImageSampleExplicitLod:
-    case spv::OpImageSampleProjExplicitLod:
-      if (stage != Stage::VERTEX) {
-        _used_caps |= C_texture_lod;
-      }
-      // fall through
-    case spv::OpImageSampleImplicitLod:
-    case spv::OpImageSampleProjImplicitLod:
-      if (stage == Stage::VERTEX) {
-        _used_caps |= C_vertex_texture;
-      }
-      if (op.nargs >= 5 && (op.args[4] & spv::ImageOperandsGradMask) != 0) {
-        _used_caps |= C_texture_lod;
-      }
-      break;
-
-    case spv::OpImageSampleDrefExplicitLod:
-    case spv::OpImageSampleProjDrefExplicitLod:
-      if (stage != Stage::VERTEX) {
-        _used_caps |= C_texture_lod;
-      }
-      // fall through
-    case spv::OpImageSampleDrefImplicitLod:
-    case spv::OpImageSampleProjDrefImplicitLod:
-      _used_caps |= C_shadow_samplers;
-
-      {
-        const Definition &sampler_def = db.get_definition(op.args[2]);
-        if (sampler_def._type != nullptr) {
-          const ShaderType::SampledImage *sampler = sampler_def._type->as_sampled_image();
-          if (sampler != nullptr &&
-              sampler->get_texture_type() == Texture::TT_cube_map) {
-            _emulatable_caps |= C_sampler_cube_shadow;
-          }
-        }
-      }
-      if (stage == Stage::VERTEX) {
-        _used_caps |= C_vertex_texture;
-      }
-      if (op.nargs >= 5 && (op.args[4] & spv::ImageOperandsGradMask) != 0) {
-        _used_caps |= C_texture_lod;
-      }
-      break;
-
-    case spv::OpImageFetch:
-      _used_caps |= C_unified_model;
-      break;
-
-    case spv::OpImageQuerySizeLod:
-    case spv::OpImageQuerySize:
-    case spv::OpImageQueryLevels:
-      {
-        const Definition &image_def = db.get_definition(op.args[2]);
-
-        uint64_t cap;
-        if (op.opcode == spv::OpImageQueryLevels) {
-          cap = C_texture_query_levels;
-        } else if (image_def._flags & SpirVResultDatabase::DF_sampled_image) {
-          cap = C_texture_query_size;
-        } else {
-          cap = C_image_query_size;
-        }
-
-        // Note, we can emulate simple size queries as long as there's no
-        // dynamic indexing going on and it's of lod level 0.
-        if (image_def._origin_id != 0) {
-          const Definition &var_def = db.get_definition(image_def._origin_id);
-          if (!var_def.is_dynamically_indexed()) {
-            if (op.opcode != spv::OpImageQuerySizeLod ||
-                db.get_definition(op.args[3]).is_constant(0)) {
-              _emulatable_caps |= cap;
-              break;
-            }
-          }
-        }
-        _used_caps |= cap;
-      }
-      break;
-
-    case spv::OpImageGather:
-    case spv::OpImageSparseGather:
-      {
-        const Definition &component = db.get_definition(op.args[4]);
-        if (component.is_constant() && component._constant == 0) {
-          _used_caps |= C_texture_gather_red;
-        } else {
-          _used_caps |= C_texture_gather_any;
-        }
-      }
-      break;
-
-    case spv::OpImageDrefGather:
-    case spv::OpImageSparseDrefGather:
-      _used_caps |= C_texture_gather_any;
-      break;
-
-    case spv::OpImageQueryLod:
-      _used_caps |= C_texture_query_lod;
-      break;
-
-    case spv::OpImageQuerySamples:
-      _used_caps |= C_texture_query_samples;
-      break;
-
-    case spv::OpBitcast:
-      _used_caps |= C_bit_encoding;
-      break;
-
-    case spv::OpConvertFToU:
-    case spv::OpConvertUToF:
-    case spv::OpUConvert:
-    case spv::OpUDiv:
-    case spv::OpUMod:
-    case spv::OpUMulExtended:
-    case spv::OpUGreaterThan:
-    case spv::OpUGreaterThanEqual:
-    case spv::OpULessThan:
-    case spv::OpULessThanEqual:
-    case spv::OpShiftRightLogical:
-      _used_caps |= C_unified_model;
-      if (op.opcode != spv::OpUMulExtended) {
-        break;
-      }
-      // fall through
-
-    case spv::OpIAddCarry:
-    case spv::OpISubBorrow:
-    case spv::OpSMulExtended:
-      _used_caps |= C_extended_arithmetic;
-      break;
-
-    case spv::OpDPdxFine:
-    case spv::OpDPdyFine:
-    case spv::OpFwidthFine:
-    case spv::OpDPdxCoarse:
-    case spv::OpDPdyCoarse:
-    case spv::OpFwidthCoarse:
-      _used_caps |= C_derivative_control;
-      // fall through
-
-    case spv::OpDPdx:
-    case spv::OpDPdy:
-    case spv::OpFwidth:
-      _used_caps |= C_standard_derivatives;
-      break;
-
-    default:
-      break;
-    }
-  }
-
-  // Any caps we strictly require will also not be emulated.
-  _emulatable_caps &= ~_used_caps;
+  post_analyze(db);
 }
 
 ShaderModuleSpirV::
@@ -748,6 +534,247 @@ disassemble(std::ostream &out) const {
 }
 
 /**
+ * Post load analysis that runs when both reading from bam and when compiling
+ * from source code.
+ */
+void ShaderModuleSpirV::
+post_analyze(const SpirVResultDatabase &db) {
+#ifndef NDEBUG
+  _instructions.validate();
+#endif
+
+  _uniform_struct_types.clear();
+
+  for (Variable &var : _parameters) {
+    const Definition &def = db.get_definition(var.id);
+    if (def._storage_class == spv::StorageClassUniformConstant &&
+        def._type != nullptr && def._type->is_aggregate_type()) {
+      // Store all the uniform struct types while we have them, as a
+      // convenience for the GL back-end, which may need them.
+      db.collect_nested_structs(_uniform_struct_types, def._type_id);
+    }
+  }
+
+  for (InstructionIterator it = _instructions.begin_annotations(); it != _instructions.end_annotations(); ++it) {
+    Instruction op = *it;
+    if (op.opcode == spv::OpDecorate) {
+      if (db.get_definition(op.args[0]).is_builtin()) {
+        continue;
+      }
+      switch ((spv::Decoration)op.args[1]) {
+      case spv::DecorationNoPerspective:
+        _used_caps |= C_noperspective_interpolation;
+        break;
+      case spv::DecorationFlat:
+        _used_caps |= C_unified_model;
+        break;
+      case spv::DecorationSample:
+        _used_caps |= C_multisample_interpolation;
+        break;
+      case spv::DecorationInvariant:
+        //_used_caps |= C_invariant;
+        break;
+      case spv::DecorationComponent:
+        _used_caps |= C_enhanced_layouts;
+        break;
+      default:
+        break;
+      }
+    }
+  }
+
+  for (InstructionIterator it = _instructions.begin_functions(); it != _instructions.end(); ++it) {
+    Instruction op = *it;
+    switch (op.opcode) {
+    case spv::OpExtInst:
+      {
+        const Definition &def = db.get_definition(op.args[2]);
+        nassertv(def.is_ext_inst());
+        if (def._name == "GLSL.std.450" && op.args[3] == GLSLstd450RoundEven) {
+          // We mark the use of the GLSL roundEven() function, which requires
+          // GLSL 1.30 or HLSL SM 4.0.
+          _used_caps |= C_unified_model;
+        }
+        if (def._name == "NonSemantic.DebugPrintf" && op.args[3] == 1) {
+          _emulatable_caps |= C_debug_output;
+          if (op.nargs >= 5) {
+            // This is actually a special way to mark an assertion failure.
+            const Definition &str_def = db.get_definition(op.args[4]);
+            if (str_def.is_string() && str_def._name == "%!") {
+              ++_assert_count;
+            }
+          }
+        }
+      }
+      break;
+
+    case spv::OpImageTexelPointer:
+      // These can only be used for atomic ops.
+      _used_caps |= C_image_load_store | C_image_atomic;
+      break;
+
+    case spv::OpImageRead:
+    case spv::OpImageWrite:
+    case spv::OpImageSparseRead:
+      _used_caps |= C_image_load_store;
+      break;
+
+    case spv::OpImageSampleExplicitLod:
+    case spv::OpImageSampleProjExplicitLod:
+      if (_stage != Stage::VERTEX) {
+        _used_caps |= C_texture_lod;
+      }
+      // fall through
+    case spv::OpImageSampleImplicitLod:
+    case spv::OpImageSampleProjImplicitLod:
+      if (_stage == Stage::VERTEX) {
+        _used_caps |= C_vertex_texture;
+      }
+      if (op.nargs >= 5 && (op.args[4] & spv::ImageOperandsGradMask) != 0) {
+        _used_caps |= C_texture_lod;
+      }
+      break;
+
+    case spv::OpImageSampleDrefExplicitLod:
+    case spv::OpImageSampleProjDrefExplicitLod:
+      if (_stage != Stage::VERTEX) {
+        _used_caps |= C_texture_lod;
+      }
+      // fall through
+    case spv::OpImageSampleDrefImplicitLod:
+    case spv::OpImageSampleProjDrefImplicitLod:
+      _used_caps |= C_shadow_samplers;
+
+      {
+        const Definition &sampler_def = db.get_definition(op.args[2]);
+        if (sampler_def._type != nullptr) {
+          const ShaderType::SampledImage *sampler = sampler_def._type->as_sampled_image();
+          if (sampler != nullptr &&
+              sampler->get_texture_type() == Texture::TT_cube_map) {
+            _emulatable_caps |= C_sampler_cube_shadow;
+          }
+        }
+      }
+      if (_stage == Stage::VERTEX) {
+        _used_caps |= C_vertex_texture;
+      }
+      if (op.nargs >= 5 && (op.args[4] & spv::ImageOperandsGradMask) != 0) {
+        _used_caps |= C_texture_lod;
+      }
+      break;
+
+    case spv::OpImageFetch:
+      _used_caps |= C_unified_model;
+      break;
+
+    case spv::OpImageQuerySizeLod:
+    case spv::OpImageQuerySize:
+    case spv::OpImageQueryLevels:
+      {
+        const Definition &image_def = db.get_definition(op.args[2]);
+
+        uint64_t cap;
+        if (op.opcode == spv::OpImageQueryLevels) {
+          cap = C_texture_query_levels;
+        } else if (image_def._flags & SpirVResultDatabase::DF_sampled_image) {
+          cap = C_texture_query_size;
+        } else {
+          cap = C_image_query_size;
+        }
+
+        // Note, we can emulate simple size queries as long as there's no
+        // dynamic indexing going on and it's of lod level 0.
+        if (image_def._origin_id != 0) {
+          const Definition &var_def = db.get_definition(image_def._origin_id);
+          if (!var_def.is_dynamically_indexed()) {
+            if (op.opcode != spv::OpImageQuerySizeLod ||
+                db.get_definition(op.args[3]).is_constant(0)) {
+              _emulatable_caps |= cap;
+              break;
+            }
+          }
+        }
+        _used_caps |= cap;
+      }
+      break;
+
+    case spv::OpImageGather:
+    case spv::OpImageSparseGather:
+      {
+        const Definition &component = db.get_definition(op.args[4]);
+        if (component.is_constant() && component._constant == 0) {
+          _used_caps |= C_texture_gather_red;
+        } else {
+          _used_caps |= C_texture_gather_any;
+        }
+      }
+      break;
+
+    case spv::OpImageDrefGather:
+    case spv::OpImageSparseDrefGather:
+      _used_caps |= C_texture_gather_any;
+      break;
+
+    case spv::OpImageQueryLod:
+      _used_caps |= C_texture_query_lod;
+      break;
+
+    case spv::OpImageQuerySamples:
+      _used_caps |= C_texture_query_samples;
+      break;
+
+    case spv::OpBitcast:
+      _used_caps |= C_bit_encoding;
+      break;
+
+    case spv::OpConvertFToU:
+    case spv::OpConvertUToF:
+    case spv::OpUConvert:
+    case spv::OpUDiv:
+    case spv::OpUMod:
+    case spv::OpUMulExtended:
+    case spv::OpUGreaterThan:
+    case spv::OpUGreaterThanEqual:
+    case spv::OpULessThan:
+    case spv::OpULessThanEqual:
+    case spv::OpShiftRightLogical:
+      _used_caps |= C_unified_model;
+      if (op.opcode != spv::OpUMulExtended) {
+        break;
+      }
+      // fall through
+
+    case spv::OpIAddCarry:
+    case spv::OpISubBorrow:
+    case spv::OpSMulExtended:
+      _used_caps |= C_extended_arithmetic;
+      break;
+
+    case spv::OpDPdxFine:
+    case spv::OpDPdyFine:
+    case spv::OpFwidthFine:
+    case spv::OpDPdxCoarse:
+    case spv::OpDPdyCoarse:
+    case spv::OpFwidthCoarse:
+      _used_caps |= C_derivative_control;
+      // fall through
+
+    case spv::OpDPdx:
+    case spv::OpDPdy:
+    case spv::OpFwidth:
+      _used_caps |= C_standard_derivatives;
+      break;
+
+    default:
+      break;
+    }
+  }
+
+  // Any caps we strictly require will also not be emulated.
+  _emulatable_caps &= ~_used_caps;
+}
+
+/**
  * Changes the locations for all inputs of the given storage class based on the
  * indicated map.  Note that this only works for inputs that already have an
  * assigned location; assign_locations() may have to be called first to ensure
@@ -783,13 +810,26 @@ remap_locations(spv::StorageClass storage_class, const pmap<int, int> &locations
  * Strips debugging information from the SPIR-V binary.
  */
 void ShaderModuleSpirV::
-strip() {
+strip_debug() {
   // Create a new instruction stream, in which we copy the header for now.
   InstructionStream copy(get_data(), 5);
 
+  pset<uint32_t> nonsemantic_ext_inst_imports;
+
   // Copy all non-debug instructions to the new vector.
   for (Instruction op : _instructions) {
-    if (op.opcode != spv::OpNop && !op.is_debug()) {
+    if (op.opcode == spv::OpExtension && strcmp((const char*)&op.args[0], "SPV_KHR_non_semantic_info") == 0) {
+      // Skip this extension since we remove all NonSemantic stuff
+    }
+    else if (op.opcode == spv::OpExtInstImport && strncmp((const char*)&op.args[1], "NonSemantic.", 12) == 0) {
+      // Skip NonSemantic imports
+      nonsemantic_ext_inst_imports.insert(op.args[0]);
+    }
+    else if (op.opcode == spv::OpExtInst && nonsemantic_ext_inst_imports.count(op.args[2])) {
+      // Skip use of NonSemantic instructions.  They are just for debug
+      // purposes and may refer to OpString ids (which are removed here).
+    }
+    else if (op.opcode != spv::OpNop && !op.is_debug()) {
       copy.insert(copy.end(), op);
     }
   }
@@ -869,8 +909,26 @@ make_from_bam(const FactoryParams &params) {
   Stage stage = (Stage)scan.get_uint8();
   ShaderModuleSpirV *module = new ShaderModuleSpirV(stage);
   module->fillin(scan, manager);
+  manager->register_finalize(module);
 
   return module;
+}
+
+/**
+ * Called by the BamReader to perform any final actions needed for setting up
+ * the object after all objects have been read and all pointers have been
+ * completed.
+ */
+void ShaderModuleSpirV::
+finalize(BamReader *) {
+  SpirVResultDatabase db;
+  db.modify_definition(_instructions.get_id_bound() - 1);
+
+  uint32_t current_function_id = 0;
+  for (Instruction op : _instructions) {
+    db.parse_instruction(op.opcode, op.args, op.nargs, current_function_id);
+  }
+  post_analyze(db);
 }
 
 /**
@@ -951,5 +1009,4 @@ fillin(DatagramIterator &scan, BamReader *manager) {
     words[i] = scan.get_uint32();
   }
   _instructions = std::move(words);
-  nassertv(_instructions.validate_header());
 }

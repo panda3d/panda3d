@@ -13,15 +13,28 @@
 
 #include "compilerOptions.h"
 #include "config_putil.h"
+#include "configVariableBool.h"
 #include "indent.h"
 
 using std::string;
+
+static ConfigVariableBool shader_debug
+("shader-debug", false,
+ PRC_DESC("If this is enabled, shaders will be compiled with debugging "
+          "support.  This preserves source information (line numbers and "
+          "variable names) in the compiled shader module, and enables "
+          "features such as debugPrintfEXT and shader assertions.  "
+          "Enabling this may increase memory usage and reduce performance. "
+          "Individual shaders can also opt in or out via CompilerOptions.debug."));
 
 /**
  *
  */
 CompilerOptions::
 CompilerOptions() : _include_path(get_model_path()) {
+  if (shader_debug) {
+    _flags |= F_debug;
+  }
 }
 
 /**

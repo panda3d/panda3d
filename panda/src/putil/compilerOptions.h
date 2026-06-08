@@ -36,6 +36,9 @@ public:
   INLINE bool get_suppress_log() const;
   INLINE void set_suppress_log(bool enabled);
 
+  INLINE bool get_debug() const;
+  INLINE void set_debug(bool enabled);
+
   INLINE Optimize get_optimize() const;
   INLINE void set_optimize(Optimize opt);
 
@@ -55,6 +58,7 @@ PUBLISHED:
   INLINE void undef(const std::string &key);
 
   MAKE_PROPERTY(suppress_log, get_suppress_log, set_suppress_log);
+  MAKE_PROPERTY(debug, get_debug, set_debug);
   MAKE_PROPERTY(optimize, get_optimize, set_optimize);
   MAKE_PROPERTY(entry_point, get_entry_point, set_entry_point);
   MAKE_PROPERTY(include_path, get_include_path, set_include_path);
@@ -66,6 +70,7 @@ PUBLISHED:
 private:
   enum Flags {
     F_suppress_log       = 0x0001,
+    F_debug              = 0x0002,
   };
 
   int _flags = 0;

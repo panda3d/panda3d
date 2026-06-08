@@ -35,6 +35,8 @@
 #include "spirVInjectAlphaTestPass.h"
 #include "spirVInjectVertexTransformPass.h"
 #include "spirVEmulateTextureQueriesPass.h"
+#include "spirVDebugOutputPass.h"
+#include "shaderInputBinding_impls.h"
 
 #define SPIRV_CROSS_EXCEPTIONS_TO_ASSERTIONS
 #include <spirv_cross/spirv_glsl.hpp>
@@ -202,6 +204,10 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
       }
 #endif
     }
+
+#ifndef NDEBUG
+    _debug_buffer_binding = next_ssbo_binding;
+#endif
   }
 
   if (!_is_legacy && (s->_module_mask & (1u << (uint32_t)Shader::Stage::VERTEX)) != 0) {
@@ -3065,8 +3071,28 @@ compile_spirv_to_spirv(const ShaderModuleSpirV *module, size_t mi,
     }
   }
   if (!binding_ids.empty()) {
+    // OpenGL has no concept of descriptor sets, so the set index is always 0.
     transformer.bind_descriptor_set(0, binding_ids);
   }
+
+  // Transform printf calls to SSBO writes.
+#ifndef NDEBUG
+  if ((module->_emulatable_caps & Shader::C_debug_output) != 0 &&
+      _glgsg->_supports_shader_buffers) {
+    transformer.run(SpirVDebugOutputPass(module->get_stage(), _shader->_debug,
+                                         _debug_buffer_binding, 0));
+
+    if (!_shader->_debug.empty() && !uses_debug_buffer()) {
+      StorageBlock block;
+      block._binding = new ShaderDebugBufferBinding(_shader->_debug.get_min_buffer_size());
+      block._resource_id = 0;
+      block._binding_index = _debug_buffer_binding;
+      block._writable = true;
+      _storage_blocks.push_back(std::move(block));
+      _storage_block_bindings |= (1 << (uint64_t)_debug_buffer_binding);
+    }
+  }
+#endif
 
   if (stage == Shader::Stage::VERTEX && (variant & (VB_animation | VB_instancing)) != 0) {
     // Implement hardware animation and/or instancing.
@@ -3165,13 +3191,54 @@ compile_spirv_to_glsl(const ShaderModuleSpirV *module, size_t mi,
 
   // Do we need to emulate certain caps, like texture queries?
   pmap<SpirVTransformPass::AccessChain, uint32_t> size_var_ids;
+  uint64_t used_caps = module->get_used_capabilities();
   uint64_t supported_caps = _glgsg->get_supported_shader_capabilities();
   uint64_t emulate_caps = module->_emulatable_caps & ~supported_caps;
+
+  bool strip_debug_printf = false;
+  if (emulate_caps & Shader::C_debug_output) {
+#ifdef NDEBUG
+    strip_debug_printf = true;
+#else
+    if (_glgsg->_supports_shader_buffers && _glgsg->_glsl_version >= 150) {
+      used_caps |= Shader::C_storage_buffer;
+    } else {
+      emulate_caps &= ~Shader::C_debug_output;
+      strip_debug_printf = true;
+      static bool displayed_warning = false;
+      if (!displayed_warning) {
+        displayed_warning = true;
+        GLCAT.warning()
+          << "Shader uses debug features, but SSBOs are not supported; prints "
+              "and assertions will not be displayed.\n";
+      }
+    }
+#endif
+  }
+
   if (emulate_caps != 0u ||
       (model == spv::ExecutionModelVertex && (variant & (VB_instancing | VB_animation)) != 0)) {
     _emulated_caps |= emulate_caps;
 
     SpirVTransformer transformer(module->_instructions);
+
+    // Transform printf calls to SSBO writes.
+#ifndef NDEBUG
+    if (emulate_caps & Shader::C_debug_output) {
+      transformer.run(SpirVDebugOutputPass(module->get_stage(), _shader->_debug,
+                                           _debug_buffer_binding, 0));
+
+      if (!_shader->_debug.empty() && !uses_debug_buffer()) {
+        StorageBlock block;
+        block._binding = new ShaderDebugBufferBinding(_shader->_debug.get_min_buffer_size());
+        block._resource_id = 0;
+        block._binding_index = _debug_buffer_binding;
+        block._writable = true;
+        _storage_blocks.push_back(std::move(block));
+        _storage_block_bindings |= (1 << _debug_buffer_binding);
+      }
+    }
+#endif
 
     if (emulate_caps != 0u) {
       SpirVEmulateTextureQueriesPass pass(emulate_caps);
@@ -3214,10 +3281,29 @@ compile_spirv_to_glsl(const ShaderModuleSpirV *module, size_t mi,
         << "SPIR-V " << module->get_stage() << " shader binary "
         << module->get_source_filename() << " variant " << variant
         << " did not pass validation after transforms\n";
-      return 0;
+      return std::string();
     }
   } else {
     stream = module->_instructions;
+  }
+
+  // We have to strip this if not supported, else SPIRV-Cross chokes on it.
+  if (strip_debug_printf) {
+    uint32_t debug_printf_import = 0;
+    for (auto it = stream.begin(); it != stream.end();) {
+      ShaderModuleSpirV::Instruction op = *it;
+
+      if (op.opcode == spv::OpExtInstImport && strcmp((const char*)&op.args[1], "NonSemantic.DebugPrintf") == 0) {
+        debug_printf_import = op.args[0];
+        it = stream.erase(it);
+      }
+      else if (op.opcode == spv::OpExtInst && debug_printf_import == op.args[2]) {
+        it = stream.erase(it);
+      }
+      else {
+        ++it;
+      }
+    }
   }
 
   spirv_cross::CompilerGLSL::Options options;
@@ -3266,7 +3352,6 @@ compile_spirv_to_glsl(const ShaderModuleSpirV *module, size_t mi,
   }
 
   // At this time, SPIRV-Cross doesn't always add these automatically.
-  uint64_t used_caps = module->get_used_capabilities();
 #ifndef OPENGLES
   if (!options.es) {
     if (options.version < 140 && (used_caps & Shader::C_instance_id) != 0) {
