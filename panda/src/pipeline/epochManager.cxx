@@ -17,6 +17,7 @@
 #include "thread.h"
 #include "pmutex.h"
 #include "mutexHolder.h"
+#include "pdeque.h"
 
 #include <algorithm>
 
@@ -35,7 +36,7 @@ namespace {
     Mutex registry_lock;
     EpochParticipant *head = nullptr;
     Mutex retired_lock;
-    pvector<Retired> retired;
+    pdeque<Retired> retired;
   };
   EbrRegistry *get_registry() {
     static EbrRegistry *r = new EbrRegistry();
@@ -143,10 +144,12 @@ retire(CycleData *cd) {
   if (cd == nullptr) {
     return;
   }
-  uint64_t e = _global_epoch.load(std::memory_order_acquire);
   {
     EbrRegistry *r = get_registry();
     MutexHolder hold(r->retired_lock);
+    // Stamp under the lock: the global epoch is monotonic, so reads serialized
+    // here are non-decreasing and retired stays sorted for the front-drain.
+    uint64_t e = _global_epoch.load(std::memory_order_acquire);
     r->retired.push_back({e, cd});
   }
   _retired_count.fetch_add(1, std::memory_order_relaxed);
@@ -212,18 +215,11 @@ try_reclaim(size_t budget) {
   {
     EbrRegistry *r = get_registry();
     MutexHolder hold(r->retired_lock);
-    auto write = r->retired.begin();
-    for (auto read = r->retired.begin(); read != r->retired.end(); ++read) {
-      if (read->epoch < min_observed && to_free.size() < budget) {
-        to_free.push_back(read->cd);
-      } else {
-        if (write != read) {
-          *write = *read;
-        }
-        ++write;
-      }
+    while (!r->retired.empty() && to_free.size() < budget &&
+           r->retired.front().epoch < min_observed) {
+      to_free.push_back(r->retired.front().cd);
+      r->retired.pop_front();
     }
-    r->retired.erase(write, r->retired.end());
   }
 
   if (!to_free.empty()) {
