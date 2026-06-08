@@ -20,6 +20,13 @@ using std::string;
 /**
  *
  */
+CompilerOptions::
+CompilerOptions() : _include_path(get_model_path()) {
+}
+
+/**
+ *
+ */
 void CompilerOptions::
 output(std::ostream &out) const {
   out << "CompilerOptions(";

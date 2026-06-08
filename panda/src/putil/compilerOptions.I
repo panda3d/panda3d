@@ -70,8 +70,32 @@ get_entry_point() const {
  * language-specific default is used.
  */
 INLINE void CompilerOptions::
-set_entry_point(const std::string &entry_point) {
-  _entry_point = entry_point;
+set_entry_point(std::string entry_point) {
+  _entry_point = std::move(entry_point);
+}
+
+/**
+ * Returns the path that includes are searched along.
+ */
+INLINE const DSearchPath &CompilerOptions::
+get_include_path() const {
+  return _include_path;
+}
+
+/**
+ * Returns the path that includes are searched along.
+ */
+INLINE DSearchPath &CompilerOptions::
+get_include_path() {
+  return _include_path;
+}
+
+/**
+ * Sets the search path that includes are searched along.
+ */
+INLINE void CompilerOptions::
+set_include_path(DSearchPath path) {
+  _include_path = std::move(path);
 }
 
 /**

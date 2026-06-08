@@ -40,6 +40,7 @@ private:
   static bool preprocess_glsl(vector_uchar &code, int &glsl_version,
                               const Filename &source_filename,
                               pset<Filename> &once_files,
+                              const CompilerOptions &options,
                               BamCacheRecord *record = nullptr);
   static bool postprocess_glsl(ShaderModuleSpirV::InstructionStream &stream,
                                int version);

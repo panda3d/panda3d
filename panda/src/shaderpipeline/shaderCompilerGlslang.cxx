@@ -154,7 +154,8 @@ class Includer : public glslang::TShader::Includer {
 public:
   using glslang::TShader::Includer::IncludeResult;
 
-  Includer(BamCacheRecord *record) : _record(record) {}
+  Includer(DSearchPath include_path, BamCacheRecord *record) :
+    _include_path(std::move(include_path)), _record(record) {}
 
   virtual IncludeResult *includeSystem(const char *header_name, const char *includer_name, size_t depth) override {
     if (shader_cat.is_spam()) {
@@ -164,10 +165,9 @@ public:
     }
 
     Filename fn = header_name;
-    DSearchPath path(get_model_path());
 
     VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-    PT(VirtualFile) vf = vfs->find_file(fn, path);
+    PT(VirtualFile) vf = vfs->find_file(fn, _include_path);
     if (vf == nullptr) {
       static const std::string error_msg("failed to find file");
       return new IncludeResult("", error_msg.data(), error_msg.size(), nullptr);
@@ -243,6 +243,7 @@ public:
   pvector<PT(VirtualFile)> _source_files;
 
 private:
+  DSearchPath _include_path;
   BamCacheRecord *_record = nullptr;
   pset<Filename> _pragma_once_files;
 };
@@ -329,7 +330,7 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
   }
   else {
     pset<Filename> once_files;
-    if (!preprocess_glsl(code, glsl_version, fullpath, once_files, record)) {
+    if (!preprocess_glsl(code, glsl_version, fullpath, once_files, options, record)) {
       return nullptr;
     }
   }
@@ -474,7 +475,7 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
   shader.setAutoMapBindings(true);
   shader.setAutoMapLocations(true);
 
-  Includer includer(record);
+  Includer includer(options.get_include_path(), record);
   if (!shader.parse(GetDefaultResources(), 110, false, messages, includer)) {
     if (output_log != nullptr) {
       *output_log << shader.getInfoLog();
@@ -614,7 +615,8 @@ check_cg_header(const vector_uchar &code) {
  */
 bool ShaderCompilerGlslang::
 preprocess_glsl(vector_uchar &code, int &glsl_version, const Filename &source_filename,
-                pset<Filename> &once_files, BamCacheRecord *record) {
+                pset<Filename> &once_files, const CompilerOptions &options,
+                BamCacheRecord *record) {
   // Make sure it ends with a newline.  This makes parsing easier.
   if (!code.empty() && code.back() != (unsigned char)'\n') {
     code.push_back((unsigned char)'\n');
@@ -732,7 +734,7 @@ preprocess_glsl(vector_uchar &code, int &glsl_version, const Filename &source_fi
           }
 
           Filename fn = std::string(fn_start, p);
-          DSearchPath path(get_model_path());
+          DSearchPath path(options.get_include_path());
           if (quote == '"') {
             // A regular include, with double quotes.  Probably a local file.
             if (!source_filename.empty()) {
@@ -777,7 +779,7 @@ preprocess_glsl(vector_uchar &code, int &glsl_version, const Filename &source_fi
           }
 
           int nested_glsl_version = 0;
-          if (!preprocess_glsl(inc_code, nested_glsl_version, full_fn, once_files, record)) {
+          if (!preprocess_glsl(inc_code, nested_glsl_version, full_fn, once_files, options, record)) {
             return false;
           }
           if (nested_glsl_version != 0) {
