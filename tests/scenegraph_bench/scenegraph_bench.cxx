@@ -41,6 +41,7 @@ namespace {
 struct Options {
   double duration = 5.0;
   std::string threading_model;          // "" / "Cull" / "cull/draw"
+  std::string display;                  // "" (tinydisplay aux) / pandagl / ...
   int objects = 20000;                  // initial animated scene size
   int groups = 8;
   std::string workload = "animate";     // "animate" | "generate"
@@ -167,6 +168,7 @@ int parse(int argc, char **argv, Options &o) {
     auto next = [&](int &dst) { if (i + 1 < argc) dst = atoi(argv[++i]); };
     if (!strcmp(argv[i], "--duration") && i + 1 < argc) o.duration = atof(argv[++i]);
     else if (!strcmp(argv[i], "--threading-model") && i + 1 < argc) o.threading_model = argv[++i];
+    else if (!strcmp(argv[i], "--display") && i + 1 < argc) o.display = argv[++i];
     else if (!strcmp(argv[i], "--objects")) next(o.objects);
     else if (!strcmp(argv[i], "--groups")) next(o.groups);
     else if (!strcmp(argv[i], "--workload") && i + 1 < argc) o.workload = argv[++i];
@@ -192,7 +194,11 @@ int main(int argc, char **argv) {
   if (parse(argc, argv, o) != 0) return 1;
 
   std::string prc =
-      "window-type offscreen\n"
+      "window-type offscreen\n";
+  if (!o.display.empty()) {
+    prc += "load-display " + o.display + "\n";
+  }
+  prc +=
       "aux-display p3tinydisplay\n"
       "win-size 16 16\n"
       "notify-level-pgraph fatal\n"
