@@ -26,6 +26,7 @@
 #include "epochManager.h"
 #include "epochHolder.h"
 #include "pandaNode.h"
+#include "trueClock.h"
 
 #include <atomic>
 #include <chrono>
@@ -92,9 +93,9 @@ static int run_unbound_churn(int seconds) {
     }
   };
 
-  auto t0 = std::chrono::steady_clock::now();
-  while (std::chrono::duration_cast<std::chrono::seconds>(
-           std::chrono::steady_clock::now() - t0).count() < seconds) {
+  TrueClock *clock = TrueClock::get_global_ptr();
+  double t0 = clock->get_long_time();
+  while (clock->get_long_time() - t0 < seconds) {
     std::vector<std::thread> wave;
     for (int k = 0; k < 8; ++k) wave.emplace_back(reader_burst);
     threads_spawned.fetch_add(8, std::memory_order_relaxed);

@@ -22,10 +22,10 @@
 #include "geomVertexData.h"
 #include "geomVertexFormat.h"
 #include "geomVertexWriter.h"
+#include "trueClock.h"
 
 #include <algorithm>
 #include <atomic>
-#include <chrono>
 #include <cstdio>
 #include <cstring>
 #include <deque>
@@ -33,8 +33,6 @@
 #include <string>
 #include <thread>
 #include <vector>
-
-using Clock = std::chrono::steady_clock;
 
 namespace {
 
@@ -299,8 +297,9 @@ int main(int argc, char **argv) {
     framework.do_frame(current_thread);
   }
 
-  auto t_start = Clock::now();
-  while (std::chrono::duration<double>(Clock::now() - t_start).count() < o.duration) {
+  TrueClock *clock = TrueClock::get_global_ptr();
+  double t_start = clock->get_long_time();
+  while (clock->get_long_time() - t_start < o.duration) {
     if (o.workers == 0) {
       if (o.workload == "animate") {
         for (int i = 0; i < o.anim_per_frame && !all_objs.empty(); ++i) {
@@ -318,11 +317,11 @@ int main(int argc, char **argv) {
         g_gen_nodes.fetch_add(o.gen_batch, std::memory_order_relaxed);
       }
     }
-    auto f0 = Clock::now();
+    double f0 = clock->get_long_time();
     framework.do_frame(current_thread);
-    frame_ms.push_back(std::chrono::duration<double, std::milli>(Clock::now() - f0).count());
+    frame_ms.push_back((clock->get_long_time() - f0) * 1000.0);
   }
-  double elapsed = std::chrono::duration<double>(Clock::now() - t_start).count();
+  double elapsed = clock->get_long_time() - t_start;
 
   g_stop.store(true);
   for (auto &t : threads) t.join();

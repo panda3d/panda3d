@@ -34,8 +34,8 @@
 #include "threadPriority.h"
 #include "pmutex.h"
 #include "mutexHolder.h"
+#include "trueClock.h"
 #include <atomic>
-#include <chrono>
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
@@ -46,9 +46,8 @@
 
 namespace {
 
-using SteadyClock = std::chrono::steady_clock;
-using std::chrono::duration_cast;
-using std::chrono::nanoseconds;
+// Elapsed time in seconds from Panda's high-resolution monotonic clock.
+inline double now_s() { return TrueClock::get_global_ptr()->get_long_time(); }
 
 struct Row {
   std::string workload;
@@ -111,10 +110,10 @@ template <class Op>
 double bench(uint64_t iters, Op &&op) {
   uint64_t warm = std::min<uint64_t>(iters / 20, 5000);
   for (uint64_t i = 0; i < warm; ++i) op();
-  auto t0 = SteadyClock::now();
+  auto t0 = now_s();
   for (uint64_t i = 0; i < iters; ++i) op();
-  auto t1 = SteadyClock::now();
-  return double(duration_cast<nanoseconds>(t1 - t0).count()) / double(iters);
+  auto t1 = now_s();
+  return (t1 - t0) * 1e9 / double(iters);
 }
 
 // Build a (depth, branching) tree under `root`; collect every node into
@@ -146,7 +145,7 @@ void run_size(int depth, int branching, uint64_t scale) {
   // -------- read-side: high-level walk --------
   {
     uint64_t reps = std::max<uint64_t>(1, 200000 * scale / n);
-    auto t0 = SteadyClock::now();
+    auto t0 = now_s();
     for (uint64_t r = 0; r < reps; ++r) {
       for (const NodePath &np : nodes) {
         const TransformState *t = np.node()->get_transform();
@@ -155,11 +154,11 @@ void run_size(int depth, int branching, uint64_t scale) {
         g_sink = (uintptr_t)t ^ (uintptr_t)s;
       }
     }
-    auto t1 = SteadyClock::now();
+    auto t1 = now_s();
     uint64_t ops = reps * n * 2;
     g_results.push_back({
         "read_walk_get_transform+state", depth, branching, ops,
-        double(duration_cast<nanoseconds>(t1 - t0).count()) / double(ops)});
+        (t1 - t0) * 1e9 / double(ops)});
   }
 
   // -------- write-side: set_pos hot loop --------
@@ -197,7 +196,7 @@ void run_size(int depth, int branching, uint64_t scale) {
   {
     uint64_t reps = std::max<uint64_t>(1, 50000 * scale / n);
     int counter = 0;
-    auto t0 = SteadyClock::now();
+    auto t0 = now_s();
     for (uint64_t r = 0; r < reps; ++r) {
       // animate every node
       for (NodePath &np : nodes) {
@@ -210,11 +209,11 @@ void run_size(int depth, int branching, uint64_t scale) {
         g_sink = (uintptr_t)t;
       }
     }
-    auto t1 = SteadyClock::now();
+    auto t1 = now_s();
     uint64_t ops = reps * n * 2;  // one write + one read per node
     g_results.push_back({
         "animate_then_walk", depth, branching, ops,
-        double(duration_cast<nanoseconds>(t1 - t0).count()) / double(ops)});
+        (t1 - t0) * 1e9 / double(ops)});
   }
 
   // -------- structural: reparent storm --------
@@ -282,7 +281,7 @@ void run_setup_storm(uint64_t scale, const char *tag) {
   parents.push_back(root);
   size_t head = 0;
   int kids = 0;
-  auto t0 = SteadyClock::now();
+  auto t0 = now_s();
   for (uint64_t i = 0; i < count; ++i) {
     NodePath n = parents[head].attach_new_node("n");
     n.set_transform(xform);
@@ -291,19 +290,19 @@ void run_setup_storm(uint64_t scale, const char *tag) {
     parents.push_back(n);
     if (++kids >= 8) { ++head; kids = 0; }
   }
-  auto t1 = SteadyClock::now();
+  auto t1 = now_s();
   g_results.push_back({std::string("setup_build_") + tag, 0, 0, count,
-      double(duration_cast<nanoseconds>(t1 - t0).count()) / double(count)});
+      (t1 - t0) * 1e9 / double(count)});
 
   // Teardown is itself a main-thread structural-write storm; measure it too.
   // Remove deepest-first so each removed node is a leaf.
-  auto t2 = SteadyClock::now();
+  auto t2 = now_s();
   for (auto it = built.rbegin(); it != built.rend(); ++it) {
     it->remove_node();
   }
-  auto t3 = SteadyClock::now();
+  auto t3 = now_s();
   g_results.push_back({std::string("setup_teardown_") + tag, 0, 0, count,
-      double(duration_cast<nanoseconds>(t3 - t2).count()) / double(count)});
+      (t3 - t2) * 1e9 / double(count)});
   root.remove_node();
 }
 
@@ -367,22 +366,22 @@ void run_model_load(uint64_t scale) {
   std::vector<NodePath> built;
   built.reserve(models);
 
-  auto t0 = SteadyClock::now();
+  auto t0 = now_s();
   for (uint64_t i = 0; i < models; ++i) {
     NodePath m = make_model(parents[head], geom, mat, (int)i);
     built.push_back(m);
     parents.push_back(m);
     if (++kids >= 16) { ++head; kids = 0; }
   }
-  auto t1 = SteadyClock::now();
+  auto t1 = now_s();
   g_results.push_back({"model_load (per model)", 0, 0, models,
-      double(duration_cast<nanoseconds>(t1 - t0).count()) / double(models)});
+      (t1 - t0) * 1e9 / double(models)});
 
-  auto t2 = SteadyClock::now();
+  auto t2 = now_s();
   for (auto it = built.rbegin(); it != built.rend(); ++it) it->remove_node();
-  auto t3 = SteadyClock::now();
+  auto t3 = now_s();
   g_results.push_back({"model_unload (per model)", 0, 0, models,
-      double(duration_cast<nanoseconds>(t3 - t2).count()) / double(models)});
+      (t3 - t2) * 1e9 / double(models)});
 }
 
 // Procedural scatter: many GeomNodes bucketed into spatial chunks, each given a
@@ -404,7 +403,7 @@ void run_procedural_gen(uint64_t scale) {
   std::vector<NodePath> built;
   built.reserve(objs);
 
-  auto t0 = SteadyClock::now();
+  auto t0 = now_s();
   for (uint64_t i = 0; i < objs; ++i) {
     PT(GeomNode) gn = new GeomNode("obj");
     gn->add_geom(geom);
@@ -415,15 +414,15 @@ void run_procedural_gen(uint64_t scale) {
     o.set_color((i & 1) ? 1.0f : 0.2f, 0.6f, 0.4f, 1.0f);
     built.push_back(o);
   }
-  auto t1 = SteadyClock::now();
+  auto t1 = now_s();
   g_results.push_back({"procedural_gen (per obj)", 0, 0, objs,
-      double(duration_cast<nanoseconds>(t1 - t0).count()) / double(objs)});
+      (t1 - t0) * 1e9 / double(objs)});
 
-  auto t2 = SteadyClock::now();
+  auto t2 = now_s();
   for (auto it = built.rbegin(); it != built.rend(); ++it) it->remove_node();
-  auto t3 = SteadyClock::now();
+  auto t3 = now_s();
   g_results.push_back({"procedural_clear (per obj)", 0, 0, objs,
-      double(duration_cast<nanoseconds>(t3 - t2).count()) / double(objs)});
+      (t3 - t2) * 1e9 / double(objs)});
 }
 
 // Lighting setup: create a mix of lights, then assign three to every object
@@ -437,7 +436,7 @@ void run_lighting_setup(uint64_t scale) {
 
   std::vector<NodePath> lights;
   lights.reserve(NLIGHTS);
-  auto tc0 = SteadyClock::now();
+  auto tc0 = now_s();
   for (int k = 0; k < NLIGHTS; ++k) {
     PT(PandaNode) ln;
     switch (k % 4) {
@@ -450,9 +449,9 @@ void run_lighting_setup(uint64_t scale) {
     lp.set_pos((float)k, (float)k, 10.0f);
     lights.push_back(lp);
   }
-  auto tc1 = SteadyClock::now();
+  auto tc1 = now_s();
   g_results.push_back({"light_create (per light)", 0, 0, (uint64_t)NLIGHTS,
-      double(duration_cast<nanoseconds>(tc1 - tc0).count()) / double(NLIGHTS)});
+      (tc1 - tc0) * 1e9 / double(NLIGHTS)});
 
   // Target objects, bucketed so their own construction isn't quadratic.
   const int BUCKETS = 128;
@@ -465,16 +464,16 @@ void run_lighting_setup(uint64_t scale) {
     objs.push_back(buckets[i % BUCKETS].attach_new_node("o"));
   }
 
-  auto t0 = SteadyClock::now();
+  auto t0 = now_s();
   for (uint64_t i = 0; i < targets; ++i) {
     objs[i].set_light(lights[i % NLIGHTS]);
     objs[i].set_light(lights[(i + 1) % NLIGHTS]);
     objs[i].set_light(lights[(i + 2) % NLIGHTS]);
   }
-  auto t1 = SteadyClock::now();
+  auto t1 = now_s();
   const uint64_t apps = targets * 3;
   g_results.push_back({"light_apply (per set_light)", 0, 0, apps,
-      double(duration_cast<nanoseconds>(t1 - t0).count()) / double(apps)});
+      (t1 - t0) * 1e9 / double(apps)});
 }
 
 // Platform-primitive microbenchmarks — these isolate the cost of the

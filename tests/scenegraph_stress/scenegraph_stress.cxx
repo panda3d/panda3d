@@ -21,6 +21,7 @@
 #include "geomTriangles.h"
 #include "nodePath.h"
 #include "epochHolder.h"
+#include "trueClock.h"
 
 #include <atomic>
 #include <chrono>
@@ -346,15 +347,16 @@ int main(int argc, char **argv) {
             << " threading-model=\"" << opts.threading_model << "\"\n";
 
   std::thread watchdog([&]() {
-    auto start = std::chrono::steady_clock::now();
+    TrueClock *clock = TrueClock::get_global_ptr();
+    double start = clock->get_long_time();
     int last_attached = -1;
     int last_removed = -1;
-    auto last_progress = start;
+    double last_progress = start;
     int last_print_sec = -1;
     while (!g_stop.load()) {
       std::this_thread::sleep_for(std::chrono::milliseconds(200));
-      auto now = std::chrono::steady_clock::now();
-      int elapsed = (int)std::chrono::duration_cast<std::chrono::seconds>(now - start).count();
+      double now = clock->get_long_time();
+      int elapsed = (int)(now - start);
       int a = g_total_attached.load();
       int rm = g_total_removed.load();
       if (a != last_attached || rm != last_removed) {
@@ -367,7 +369,7 @@ int main(int argc, char **argv) {
         std::cerr << "[stress] " << elapsed << "s  attached=" << a
                   << " removed=" << rm << "\n";
       }
-      int idle = (int)std::chrono::duration_cast<std::chrono::seconds>(now - last_progress).count();
+      int idle = (int)(now - last_progress);
       if (idle >= opts.timeout_sec) {
         std::cerr << "[stress] DEADLOCK: no progress for " << idle
                   << "s  attached=" << a << " removed=" << rm << "\n";
