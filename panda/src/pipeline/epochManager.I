@@ -49,24 +49,6 @@ leave(EpochParticipant &p) {
 }
 
 /**
- * Opportunistic reclamation for the yield/sleep family, so threads that never
- * render or poll still make progress.  No-op mid-critical-section (our slot
- * would gate it, and a writer on this thread may hold the cycler lock) and
- * throttled otherwise.  Must use this thread's own participant.
- */
-ALWAYS_INLINE void EpochManager::
-consider_reclaim(EpochParticipant &p) {
-  if (p.depth != 0) {
-    return;
-  }
-  if ((++p.reclaim_ticks & 7u) != 0) {
-    return;
-  }
-  try_advance_epoch();
-  try_reclaim(256);
-}
-
-/**
  * Relaxed pre-check for the in-place fast path; try_begin_inplace_write() does
  * the load-bearing recheck.
  */

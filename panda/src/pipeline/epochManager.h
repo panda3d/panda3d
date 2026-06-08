@@ -56,7 +56,6 @@ class EXPCL_PANDA_PIPELINE EpochManager {
 public:
   ALWAYS_INLINE static void enter(EpochParticipant &p);
   ALWAYS_INLINE static void leave(EpochParticipant &p);
-  ALWAYS_INLINE static void consider_reclaim(EpochParticipant &p);
 
   static void register_participant(EpochParticipant *p);
   static void unregister_participant(EpochParticipant *p);
@@ -66,6 +65,7 @@ public:
   static void retire(CycleData *cd);
   static void try_advance_epoch();
   static size_t try_reclaim(size_t budget = ~size_t(0));
+  static void consider_reclaim(EpochParticipant &p);
 
   static void register_thread(Thread *t, int stage);
   static void unregister_thread(Thread *t, int stage);

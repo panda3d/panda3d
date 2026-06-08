@@ -240,6 +240,24 @@ try_reclaim(size_t budget) {
 }
 
 /**
+ * Opportunistic reclamation for the yield/sleep family, so threads that never
+ * render or poll still make progress.  No-op mid-critical-section (our slot
+ * would gate it, and a writer on this thread may hold the cycler lock) and
+ * throttled otherwise.  Must use this thread's own participant.
+ */
+void EpochManager::
+consider_reclaim(EpochParticipant &p) {
+  if (p.depth != 0) {
+    return;
+  }
+  if ((++p.reclaim_ticks & 7u) != 0) {
+    return;
+  }
+  try_advance_epoch();
+  try_reclaim(256);
+}
+
+/**
  * Takes stage occupancy for a thread (for the in-place fast path).  Separate
  * from epoch participation, which is keyed to the OS thread.
  */
