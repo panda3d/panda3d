@@ -6825,7 +6825,7 @@ end_draw_primitives() {
   maybe_gl_finish();
   report_my_gl_errors();
 
-#ifndef NDEBUG
+#if !defined(NDEBUG) && !defined(OPENGLES_1)
   if (_current_shader_context != nullptr && _current_shader_context->uses_debug_buffer()) {
     drain_shader_debug_buffer(_current_shader);
   }
@@ -8589,7 +8589,7 @@ dispatch_compute(int num_groups_x, int num_groups_y, int num_groups_z) {
 
   maybe_gl_finish();
 
-#ifndef NDEBUG
+#if !defined(NDEBUG) && !defined(OPENGLES_1)
   if (gsc->uses_debug_buffer()) {
     drain_shader_debug_buffer(gsc->get_shader());
   }

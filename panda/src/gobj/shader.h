@@ -273,7 +273,7 @@ public:
    * Encapsulates information relevant to debug prints / asserts.  This is
    * filled up on the fly as SpirVDebugOutputPass gets invoked by the back-end.
    */
-  class DebugInfo {
+  class EXPCL_PANDA_GOBJ DebugInfo {
   public:
     INLINE void operator = (const DebugInfo &info);
 
@@ -299,7 +299,7 @@ public:
   private:
     LightMutex _lock;
 
-    typedef SimpleHashMap<std::string, nullptr_t, string_hash> Strings;
+    typedef SimpleHashMap<std::string, std::nullptr_t, string_hash> Strings;
     Strings _strings;
 
     typedef pvector<Assertion> Assertions;
