@@ -2682,11 +2682,11 @@ prepare_shader_buffer(ShaderBuffer *data) {
   if (use_staging_buffer) {
     usage_flags |= VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
   }
-  else if (data->get_usage_hint() == GeomEnums::UH_dynamic) {
-    usage_flags |= VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-  }
   else {
     mem_flags = (VkMemoryPropertyFlagBits)(mem_flags | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+    if (data->get_usage_hint() == GeomEnums::UH_dynamic) {
+      usage_flags |= VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+    }
   }
 
   VkBuffer buffer;
@@ -2705,7 +2705,7 @@ prepare_shader_buffer(ShaderBuffer *data) {
 
   const unsigned char *initial_data = data->get_initial_data();
   if (initial_data != nullptr) {
-    if (!_has_unified_memory) {
+    if (use_staging_buffer) {
       VkBuffer buffer;
       uint32_t buffer_offset;
       void *data = alloc_staging_buffer(data_size, buffer, buffer_offset);
