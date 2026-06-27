@@ -11,8 +11,12 @@
  * @date 2003-01-22
  * Prior system by: cary
  * @author Stan Rosenbaum "Staque" - Spring 2006
+ * @author lachbr
+ * @date 2020-10-04
+ * @author blucheeze
+ * @date 2026-05-26
  *
- * [FIRST READ FmodAudioManager for an Introduction if you haven't
+ * [FIRST READ FMODAudioManager for an Introduction if you haven't
  * already].
  *
  * Hello, all future Panda audio code people! This is my errata
@@ -42,7 +46,7 @@
  * up the basic audio classes to handle only the idea of a SOUND. The
  * idea of a Channel really wasn't prevalent as in more modern Audio
  * APIs. With this rewrite of PANDA to use the FMOD-EX API, the PANDA
- * FmodAudioSound Class, now has to handle two different parts of the
+ * FMODAudioSound Class, now has to handle two different parts of the
  * FMOD-EX API in order to play a sound.
  *
  * SOUND: The object the handles the audio data in form of WAV, AIF,
@@ -53,13 +57,13 @@
  * you go to play a sound, which I will explain in more detail in that
  * part of the code. All that you have to know right now is that
  * Channels in FMOD do not exist unless they are playing a sound. And
- * in the PANDA FmodAudioSound API class there is only ONE dedicated
+ * in the PANDA FMODAudioSound API class there is only ONE dedicated
  * channel per sound.  Otherwise there is really nothing to worry
  * about.
  */
 
-#ifndef __FMOD_AUDIO_SOUND_H__
-#define __FMOD_AUDIO_SOUND_H__
+#ifndef FMODAUDIOSOUND_H
+#define FMODAUDIOSOUND_H
 
 #include "pandabase.h"
 
@@ -70,12 +74,19 @@
 #include <fmod.hpp>
 #include <fmod_errors.h>
 
+// Compatibility shim for FMOD 2.03+ which removed the F_CALLBACK macro.
+// In FMOD 2.02, F_CALLBACK was defined as F_CALL. FMOD 2.03 removed this
+// macro, so we define it here for compatibility with both versions.
+#ifndef F_CALLBACK
+  #define F_CALLBACK F_CALL
+#endif
+
 class VirtualFile;
 
-class EXPCL_FMOD_AUDIO FmodAudioSound : public AudioSound {
+class EXPCL_FMOD_AUDIO FMODAudioSound : public AudioSound {
 public:
-  FmodAudioSound(AudioManager *manager, VirtualFile *file, bool positional);
-  ~FmodAudioSound();
+  FMODAudioSound(AudioManager *manager, VirtualFile *file, bool positional);
+  virtual ~FMODAudioSound();
 
   // For best compatibility, set the loop_count, start_time, volume, and
   // balance, prior to calling play().  You may set them while they're
@@ -131,7 +142,11 @@ public:
   AudioSound::SoundStatus status() const;
 
   virtual PN_stdfloat get_speaker_mix(int speaker);
-  virtual void set_speaker_mix(PN_stdfloat frontleft, PN_stdfloat frontright, PN_stdfloat center, PN_stdfloat sub, PN_stdfloat backleft, PN_stdfloat backright, PN_stdfloat sideleft, PN_stdfloat  sideright);
+  virtual void set_speaker_mix(int speaker, PN_stdfloat mix);
+  virtual void set_speaker_mix(PN_stdfloat frontleft, PN_stdfloat frontright,
+                               PN_stdfloat center, PN_stdfloat sub,
+                               PN_stdfloat backleft, PN_stdfloat backright,
+                               PN_stdfloat sideleft, PN_stdfloat sideright);
 
   void set_active(bool active=true);
   bool get_active() const;
@@ -140,8 +155,8 @@ public:
   void set_finished_event(std::string event);
   const std::string& get_finished_event() const;
 
- private:
-  PT(FmodAudioManager) _manager;
+private:
+  PT(FMODAudioManager) _manager;
   FMOD::Sound      *_sound;
   FMOD::Channel    *_channel;
 
@@ -153,8 +168,8 @@ public:
   int   _priority;
   float _mix[AudioManager::SPK_COUNT];
 
-  float _sampleFrequency;
-  mutable float _length;   //in seconds.
+  float _sample_frequency;
+  unsigned int _length;
 
   FMOD_SPEAKERMODE  _speakermode;
 
@@ -164,13 +179,17 @@ public:
   PN_stdfloat _min_dist;
   PN_stdfloat _max_dist;
 
+  unsigned long _loop_count;    // 0=infinite, 1=play once, n=play n times
+  unsigned int  _loop_start_ms; // loop start point in milliseconds
+
   void start_playing();
   void set_volume_on_channel();
   void set_balance_on_channel();
   void set_play_rate_on_channel();
-  void set_speaker_mix_on_channel();
   void set_3d_attributes_on_channel();
-  // void add_dsp_on_channel();
+  void set_3d_min_max_on_channel();
+  void set_loop_on_channel();
+  void set_loop_start_on_channel();
   void set_speaker_mix_or_balance_on_channel();
 
   virtual int get_priority();
@@ -180,37 +199,19 @@ public:
   bool _paused;
   PN_stdfloat _start_time;
 
+  bool _is_midi;
+
   std::string _finished_event;
 
-  // This reference-counting pointer is set to this while the sound is
-  // playing, and cleared when we get an indication that the sound has
-  // stopped.  This prevents a sound from destructing while it is playing.  We
-  // use a PT instead of managing the reference counts by hand to help guard
-  // against accidental reference count leaks or other mismanagement.
-  PT(FmodAudioSound) _self_ref;
+  static FMOD_RESULT F_CALLBACK open_callback(const char *name, unsigned int *file_size,
+                                               void **handle, void *user_data);
 
-  static FMOD_RESULT F_CALLBACK
-  sound_end_callback(FMOD_CHANNEL *  channel,
-                     FMOD_CHANNEL_CALLBACKTYPE  type,
-                     void *commanddata1,
-                     void *commanddata2);
+  static FMOD_RESULT F_CALLBACK close_callback(void *handle, void *user_data);
 
-  static FMOD_RESULT F_CALLBACK
-  open_callback(const char *name, int unicode, unsigned int *file_size,
-                void **handle, void **user_data);
+  static FMOD_RESULT F_CALLBACK read_callback(void *handle, void *buffer, unsigned int size_bytes,
+                                               unsigned int *bytes_read, void *user_data);
 
-  static FMOD_RESULT F_CALLBACK
-  close_callback(void *handle, void *user_data);
-
-  static FMOD_RESULT F_CALLBACK
-  read_callback(void *handle, void *buffer, unsigned int size_bytes,
-                unsigned int *bytes_read, void *user_data);
-
-  static FMOD_RESULT F_CALLBACK
-  seek_callback(void *handle, unsigned int pos, void *user_data);
-
-
-  // These are needed for Panda's Pointer System.  DO NOT ERASE!
+  static FMOD_RESULT F_CALLBACK seek_callback(void *handle, unsigned int pos, void *user_data);
 
  public:
   static TypeHandle get_class_type() {
@@ -218,7 +219,7 @@ public:
   }
   static void init_type() {
     AudioSound::init_type();
-    register_type(_type_handle, "FmodAudioSound", AudioSound::get_class_type());
+    register_type(_type_handle, "FMODAudioSound", AudioSound::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -230,10 +231,8 @@ public:
 
  private:
   static TypeHandle _type_handle;
-
-  // DONE
 };
 
 #include "fmodAudioSound.I"
 
-#endif /* __FMOD_AUDIO_SOUND_H__ */
+#endif // FMODAUDIOSOUND_H

@@ -2251,6 +2251,14 @@ def SdkLocatePython(prefer_thirdparty_python=False):
             py_fwx = "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/" + version
 
         if not os.path.exists(py_fwx):
+            # Try Homebrew (ARM)
+            py_fwx = "/opt/homebrew/opt/python@{0}/Frameworks/Python.framework/Versions/{0}".format(version)
+
+        if not os.path.exists(py_fwx):
+            # Try Homebrew (Intel)
+            py_fwx = "/usr/local/opt/python@{0}/Frameworks/Python.framework/Versions/{0}".format(version)
+
+        if not os.path.exists(py_fwx):
             exit("Could not locate Python installation at %s" % (py_fwx))
 
         SDK["PYTHON"] = py_fwx + "/Headers"

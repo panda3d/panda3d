@@ -13,6 +13,8 @@
  * @date 2003-10-22
  * Prior system by: cary
  * @author Stan Rosenbaum "Staque" - Spring 2006
+ * @author lachbr
+ * @date 2020-10-04
  *
  * Hello, all future Panda audio code people! This is my errata
  * documentation to help any future programmer maintain FMOD and PANDA.
@@ -32,7 +34,7 @@
  * audio [WAV, AIF, MP3, OGG, etc...] or musical file [MID, TRACKERS]
  * as the same type of an object. The API has also been structured more
  * like a sound studio, with 'sounds' and 'channels'. This will be
- * covered more in the FmodAudioSound.h/.cxx sources.
+ * covered more in the FMODAudioSound.h/.cxx sources.
  *
  * Second, FMOD now offers virtually unlimited sounds to be played at
  * once via their virtual channels system. Actually the theoretical
@@ -67,7 +69,9 @@
 
 // First the includes.
 #include "pandabase.h"
+#include "pmap.h"
 #include "pset.h"
+#include "pdeque.h"
 
 #include "audioManager.h"
 
@@ -75,16 +79,24 @@
 #include <fmod.hpp>
 #include <fmod_errors.h>
 
-class FmodAudioSound;
+class FMODAudioSound;
 
-extern void fmod_audio_errcheck(const char *context, FMOD_RESULT n);
+extern void _fmod_audio_errcheck(const char *context, FMOD_RESULT n);
 
-class EXPCL_FMOD_AUDIO FmodAudioManager : public AudioManager {
-  friend class FmodAudioSound;
+#ifdef NDEBUG
+#define fmod_audio_errcheck(context, n)
+#else
+#define fmod_audio_errcheck(context, n) _fmod_audio_errcheck(context, n)
+#endif // NDEBUG
+
+class EXPCL_FMOD_AUDIO FMODAudioManager : public AudioManager {
+  friend class FMODAudioSound;
 
 public:
-  FmodAudioManager();
-  virtual ~FmodAudioManager();
+  FMODAudioManager();
+  virtual ~FMODAudioManager();
+
+  virtual bool configure_filters(FilterProperties *config);
 
   virtual bool is_valid();
 
@@ -141,27 +153,42 @@ public:
   virtual void audio_3d_set_drop_off_factor(PN_stdfloat factor);
   virtual PN_stdfloat audio_3d_get_drop_off_factor() const;
 
-  // THESE ARE NOT USED ANYMORE. THEY ARE ONLY HERE BECAUSE THEY are still
-  // needed by Miles.  THESE are stubs in FMOD-EX version
   virtual void set_concurrent_sound_limit(unsigned int limit = 0);
   virtual unsigned int get_concurrent_sound_limit() const;
   virtual void reduce_sounds_playing_to(unsigned int count);
+
   virtual void uncache_sound(const Filename &);
   virtual void clear_cache();
   virtual void set_cache_limit(unsigned int count);
   virtual unsigned int get_cache_limit() const;
 
+  FMOD_RESULT get_speaker_mode(FMOD_SPEAKERMODE &mode) const;
+
 private:
   FMOD::DSP *make_dsp(const FilterProperties::FilterConfig &conf);
   void update_dsp_chain(FMOD::DSP *head, FilterProperties *config);
-  virtual bool configure_filters(FilterProperties *config);
 
- private:
+  void starting_sound(FMODAudioSound *sound);
+  void stopping_sound(FMODAudioSound *sound);
+  // Tell the manager that the sound dtor was called.
+  void release_sound(FMODAudioSound* sound);
+
+  void update_sounds();
+
+  // Sound data cache helpers — all must be called under _lock.
+  FMOD::Sound *_acquire_sound_data(const Filename &path, bool positional);
+  void _register_sound_data(const Filename &path, bool positional, FMOD::Sound *sound);
+  void _release_sound_data(FMOD::Sound *sound, const Filename &path, bool positional);
+  void _discard_excess_cache(unsigned int limit);
+
+private:
   // This global lock protects all access to FMod library interfaces.
   static ReMutex _lock;
 
   static FMOD::System *_system;
-  static pset<FmodAudioManager *> _all_managers;
+
+  typedef pset<FMODAudioManager *> ManagerList;
+  static ManagerList _all_managers;
 
   static bool _system_is_valid;
 
@@ -169,6 +196,7 @@ private:
   static PN_stdfloat _doppler_factor;
   static PN_stdfloat _drop_off_factor;
 
+private:
   FMOD::ChannelGroup *_channelgroup;
 
   FMOD_VECTOR _position;
@@ -183,11 +211,40 @@ private:
   bool _is_valid;
   bool _active;
 
-  // The set of all sounds.  Needed only to implement stop_all_sounds.
-  typedef pset<FmodAudioSound *> SoundSet;
-  SoundSet _all_sounds;
+  typedef phash_set<PT(FMODAudioSound)> SoundsPlaying;
+  SoundsPlaying _sounds_playing;
+
+  typedef phash_set<FMODAudioSound *> AllSounds;
+  AllSounds _all_sounds;
 
   FMOD_OUTPUTTYPE _saved_outputtype;
+
+  unsigned int _concurrent_sound_limit;
+
+  // Cache of FMOD::Sound* for preloaded sounds, keyed by (resolved_path, positional).
+  // 2D and 3D variants of the same file are cached separately because the FMOD_3D/FMOD_2D
+  // flag is baked into the FMOD::Sound at createSound() time.
+  struct SoundCacheKey {
+    Filename _path;
+    bool     _positional;
+    bool operator<(const SoundCacheKey &o) const {
+      if (_path != o._path) return _path < o._path;
+      return (int)_positional < (int)o._positional;
+    }
+  };
+  typedef pmap<SoundCacheKey, FMOD::Sound *> SoundDataCache;
+  SoundDataCache _sound_data_cache;
+
+  typedef pmap<FMOD::Sound *, int> SoundRefCounts;
+  SoundRefCounts _sound_ref_counts;
+
+  // Zero-refcount cached sounds are moved here (LRU order) instead of being
+  // freed immediately.  discard_excess_cache() frees entries from the front
+  // when the queue exceeds _cache_limit.  0 = unlimited.
+  typedef pdeque<SoundCacheKey> ExpirationQueue;
+  ExpirationQueue _expiring_sounds;
+
+  unsigned int _cache_limit;
 
 public:
   static TypeHandle get_class_type() {
@@ -195,7 +252,7 @@ public:
   }
   static void init_type() {
     AudioManager::init_type();
-    register_type(_type_handle, "FmodAudioManager", AudioManager::get_class_type());
+    register_type(_type_handle, "FMODAudioManager", AudioManager::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
