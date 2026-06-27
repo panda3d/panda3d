@@ -31,9 +31,17 @@ PathFind::PathFind(AICharacter *ai_ch) {
 
   _path_finder_obj = nullptr;
   _dynamic_avoid = false;
+  _polygon_mesh = nullptr;
 }
 
 PathFind::~PathFind() {
+}
+
+/**
+ * Sets the NavMesh object for use in pathfinding.
+ */
+void PathFind::set_nav_mesh(PT(NavMeshPoly) mesh) {
+  _polygon_mesh = mesh;
 }
 
 /**
@@ -211,6 +219,26 @@ void PathFind::path_find(LVecBase3 pos, string type) {
 
   clear_path();
 
+  // New NavMesh Logic
+  if (_polygon_mesh != nullptr) {
+    if(_ai_char->_steering->_path_follow_obj) {
+      // Use the new pathfinding system
+      PT(NavPath) path = _polygon_mesh->find_path(_ai_char->_ai_char_np.get_pos(_ai_char->_window_render), pos);
+      
+      // Convert NavPath to PathFollow format
+      pvector<LPoint3> waypoints;
+      for (int i = 0; i < path->get_num_points(); ++i) {
+        waypoints.push_back(path->get_point(i));
+      }
+      _ai_char->_steering->_path_follow_obj->set_path(waypoints);
+      
+      if(!_ai_char->_steering->_path_follow_obj->_start) {
+        _ai_char->_steering->start_follow("pathfind");
+      }
+      return;
+    }
+  }
+
   Node* src = find_in_mesh(_nav_mesh, _ai_char->_ai_char_np.get_pos(_ai_char->_window_render), _grid_size);
 
   if(src == nullptr) {
@@ -251,6 +279,26 @@ void PathFind::path_find(NodePath target, string type) {
 
   _path_find_target = target;
   _prev_position = target.get_pos(_ai_char->_window_render);
+
+  // New NavMesh Logic
+  if (_polygon_mesh != nullptr) {
+    if(_ai_char->_steering->_path_follow_obj) {
+      // Use the new pathfinding system
+      PT(NavPath) path = _polygon_mesh->find_path(_ai_char->_ai_char_np.get_pos(_ai_char->_window_render), _prev_position);
+      
+      // Convert NavPath to PathFollow format
+      pvector<LPoint3> waypoints;
+      for (int i = 0; i < path->get_num_points(); ++i) {
+        waypoints.push_back(path->get_point(i));
+      }
+      _ai_char->_steering->_path_follow_obj->set_path(waypoints);
+
+      if(!_ai_char->_steering->_path_follow_obj->_start) {
+        _ai_char->_steering->start_follow("pathfind");
+      }
+      return;
+    }
+  }
 
   Node* src = find_in_mesh(_nav_mesh, _ai_char->_ai_char_np.get_pos(_ai_char->_window_render), _grid_size);
 
