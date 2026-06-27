@@ -308,6 +308,9 @@ def GetHostArch():
 
     target = GetTarget()
     if target == 'windows':
+        machine = platform.machine().lower()
+        if machine in ('arm64', 'aarch64'):
+            return 'arm64'
         return 'x64' if host_64 else 'x86'
 
     machine = platform.machine()
@@ -341,9 +344,11 @@ def SetTarget(target, arch=None):
             arch = 'x86'
         elif arch == 'amd64':
             arch = 'x64'
+        elif arch == 'aarch64':
+            arch = 'arm64'
 
-        if arch is not None and arch != 'x86' and arch != 'x64':
-            exit("Windows architecture must be x86 or x64")
+        if arch is not None and arch not in ('x86', 'x64', 'arm64'):
+            exit("Windows architecture must be x86, x64 or arm64")
 
     elif target == 'darwin':
         DEFAULT_CC = "clang"
@@ -1394,6 +1399,8 @@ def GetThirdpartyDir():
 
         if target_arch == 'x64':
             THIRDPARTYDIR = base + "/win-libs-vc" + vc + "-x64/"
+        elif target_arch == 'arm64':
+            THIRDPARTYDIR = base + "/win-libs-vc" + vc + "-arm64/"
         else:
             THIRDPARTYDIR = base + "/win-libs-vc" + vc + "/"
 
@@ -2126,6 +2133,8 @@ def SdkLocatePython(prefer_thirdparty_python=False):
                 sdkdir += "-dbg"
             if GetTargetArch() == 'x64':
                 sdkdir += "-x64"
+            elif GetTargetArch() == 'arm64':
+                sdkdir += "-arm64"
 
         sdkdir = sdkdir.replace('\\', '/')
         SDK["PYTHON"] = sdkdir
@@ -2764,6 +2773,8 @@ def SetupVisualStudioEnviron():
         # Try the x86 tools, those should work just as well.
         if arch == 'x64' and os.path.isfile(vc_binpath + "\\x86_amd64\\cl.exe"):
             binpath = "{0}\\x86_amd64;{0}".format(vc_binpath)
+        elif arch == 'arm64' and os.path.isfile(vc_binpath + "\\Hostx64\\arm64\\cl.exe"):
+            binpath = "{0}\\Hostx64\\arm64;{0}".format(vc_binpath)
         elif winsdk_ver.startswith('10.'):
             exit("Couldn't find compilers in %s.  You may need to install the Windows SDK 7.1 and the Visual C++ 2010 SP1 Compiler Update for Windows SDK 7.1." % binpath)
         else:
@@ -3434,6 +3445,8 @@ def GetExtensionSuffix():
         suffix = 't' if gil_disabled and int(gil_disabled) else ''
         if GetTargetArch() == 'x64':
             return dllext + '.cp%d%d%s-win_amd64.pyd' % (sys.version_info[0], sys.version_info[1], suffix)
+        elif GetTargetArch() == 'arm64':
+            return dllext + '.cp%d%d%s-win_arm64.pyd' % (sys.version_info[0], sys.version_info[1], suffix)
         else:
             return dllext + '.cp%d%d%s-win32.pyd' % (sys.version_info[0], sys.version_info[1], suffix)
     elif target == 'emscripten':

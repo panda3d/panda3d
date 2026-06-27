@@ -395,6 +395,8 @@ target_arch = GetTargetArch()
 if target == 'windows':
     if target_arch == 'x64':
         PLATFORM = 'win-amd64'
+    elif target_arch == 'arm64':
+        PLATFORM = 'win-arm64'
     else:
         PLATFORM = 'win32'
 
@@ -1224,7 +1226,7 @@ def CompileCxx(obj,src,opts):
             if (building):
                 cmd += " /DBUILDING_" + building
 
-            if ("BIGOBJ" in opts) or GetTargetArch() == 'x64' or not PkgSkip("EIGEN"):
+            if ("BIGOBJ" in opts) or GetTargetArch() in ('x64', 'arm64') or not PkgSkip("EIGEN"):
                 cmd += " /bigobj"
 
             cmd += " /Zm300"
