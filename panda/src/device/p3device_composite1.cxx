@@ -6,6 +6,8 @@
 #include "clientDialDevice.cxx"
 #include "clientTrackerDevice.cxx"
 #include "evdevInputDevice.cxx"
+#include "gameInputDevice.cxx"
+#include "gameInputManager.cxx"
 #include "inputDevice.cxx"
 #include "inputDeviceManager.cxx"
 #include "inputDeviceNode.cxx"

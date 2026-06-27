@@ -20,8 +20,12 @@
 #include "inputDeviceSet.h"
 
 #ifdef _WIN32
+#ifdef HAVE_GAMEINPUT
+class GameInputDevice;
+#else
 #include "xInputDevice.h"
 class WinRawInputDevice;
+#endif
 #endif
 
 /**
