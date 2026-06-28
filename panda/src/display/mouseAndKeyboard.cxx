@@ -68,9 +68,11 @@ do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &,
 
   GraphicsWindowInputDevice *device = (GraphicsWindowInputDevice *)_device.p();
 
-  if (device->has_button_event()) {
-    PT(ButtonEventList) bel = device->get_button_events();
-    output.set_data(_button_events_output, EventParameter(bel));
+  if (ignore_input == false) {
+    if (device->has_button_event()) {
+        PT(ButtonEventList) bel = device->get_button_events();
+        output.set_data(_button_events_output, EventParameter(bel));
+    }
   }
   if (device->has_pointer_event()) {
     PT(PointerEventList) pel = device->get_pointer_events();
