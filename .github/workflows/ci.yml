@@ -131,7 +131,7 @@ jobs:
 
     - name: Cache dependencies (Windows)
       if: runner.os == 'Windows'
-      uses: actions/cache@v5
+      uses: actions/cache@v6
       with:
         path: thirdparty
         key: ci-cmake-${{ runner.OS }}-thirdparty-v1.10.16-r1
@@ -147,7 +147,7 @@ jobs:
 
     - name: ccache (non-Windows)
       if: runner.os != 'Windows'
-      uses: actions/cache@v5
+      uses: actions/cache@v6
       with:
         path: ccache
         key: ci-cmake-ccache-${{ matrix.profile }}
@@ -425,7 +425,7 @@ jobs:
         sudo apt-get install build-essential bison flex libfreetype6-dev libgl1-mesa-dev libegl1-mesa-dev libgl1-mesa-dri mesa-utils-extra libjpeg-dev libode-dev libopenal-dev libpng-dev libssl-dev libvorbis-dev libx11-dev libxcursor-dev libxrandr-dev nvidia-cg-toolkit zlib1g-dev
     - name: Cache thirdparty packages (Windows)
       if: runner.os == 'Windows'
-      uses: actions/cache@v5
+      uses: actions/cache@v6
       with:
         path: thirdparty
         key: ci-makepanda-${{ runner.OS }}-thirdparty-v1.10.16
@@ -574,7 +574,7 @@ jobs:
 
     - name: Restore Python build cache
       id: cache-emscripten-python-restore
-      uses: actions/cache/restore@v5
+      uses: actions/cache/restore@v6
       with:
         path: ~/python
         key: cache-emscripten-python-3.12.8
@@ -594,7 +594,7 @@ jobs:
     - name: Save Python build cache
       id: cache-emscripten-python-save
       if: steps.cache-emscripten-python-restore.outputs.cache-hit != 'true'
-      uses: actions/cache/save@v5
+      uses: actions/cache/save@v6
       with:
         path: ~/python
         key: ${{ steps.cache-emscripten-python-restore.outputs.cache-primary-key }}
@@ -665,7 +665,7 @@ jobs:
 
     - name: Restore Python build cache
       id: cache-android-python-restore
-      uses: actions/cache/restore@v5
+      uses: actions/cache/restore@v6
       with:
         path: ~/python-prefix
         key: cache-android-python-3.13.9-${{ matrix.android-abi }}-ndk${{ matrix.ndk-version }}
@@ -684,14 +684,14 @@ jobs:
     - name: Save Python build cache
       id: cache-android-python-save
       if: steps.cache-android-python-restore.outputs.cache-hit != 'true'
-      uses: actions/cache/save@v5
+      uses: actions/cache/save@v6
       with:
         path: ~/python-prefix
         key: ${{ steps.cache-android-python-restore.outputs.cache-primary-key }}
 
     - name: Restore thirdparty build cache
       id: cache-android-thirdparty-restore
-      uses: actions/cache/restore@v5
+      uses: actions/cache/restore@v6
       with:
         path: ./thirdparty
         key: cache-android-thirdparty-935c80380ca171e08587c570e9dad678d29db3c8-${{ matrix.android-abi }}-ndk${{ matrix.ndk-version }}
@@ -723,7 +723,7 @@ jobs:
     - name: Save thirdparty build cache
       id: cache-android-thirdparty-save
       if: steps.cache-android-thirdparty-restore.outputs.cache-hit != 'true'
-      uses: actions/cache/save@v5
+      uses: actions/cache/save@v6
       with:
         path: ./thirdparty
         key: ${{ steps.cache-android-thirdparty-restore.outputs.cache-primary-key }}
