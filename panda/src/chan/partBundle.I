@@ -83,6 +83,42 @@ get_anim_blend_flag() const {
 }
 
 /**
+ * Specifies whether the character clamps the weight of all
+ * currently playing animations to a total value of one or not.
+ * 
+ * When this value is true, the character will divide the result of the blending
+ * of all active animations by the sum of the effects each animation set on the corrisponding partBundle.
+ * For example, if you set two animations to play with an effect of 0.8 each, the end result is as if
+ * each animation was set with an effect of 0.625. (animation *= 1/(0.8 + 0.8))
+ *
+ * When this value is false, the above process does not occur, which if not accounted for may result in
+ * animations causing much more extreme, wild movements when blended together.
+ *
+ * The programmer may still account for this however, by manually dividing the weights of a semantic
+ * "animation layer" by their sum before setting their control effects.
+ * The benefit to disabling this flag is that it allows you to set "additive animation" on a character.
+ * For example, if you play animations A and B, a bone's position would be it's position in A plus it's
+ * position in b.
+ */
+INLINE void PartBundle::
+set_clamp_blend_flag(bool clamp_blend_flag) {
+  nassertv(Thread::get_current_pipeline_stage() == 0);
+  CDWriter cdata(_cycler);
+  cdata->_clamp_blend_flag = clamp_blend_flag;
+}
+
+/**
+ * Returns whether the character clamps the weight of it's active animations
+ * to one or not.
+ * See set_frame_blend_flag().
+ */
+INLINE bool PartBundle::
+get_clamp_blend_flag() const {
+  CDReader cdata(_cycler);
+  return cdata->_clamp_blend_flag;
+}
+
+/**
  * Specifies whether the character interpolates (blends) between two
  * sequential frames of an active animation, showing a smooth intra-frame
  * motion, or whether it holds each frame until the next frame is ready,

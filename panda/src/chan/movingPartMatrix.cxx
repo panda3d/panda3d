@@ -116,7 +116,7 @@ get_blend_value(const PartBundle *root) {
           if (restore_initial_pose) {
             _value = _default_value;
           }
-        } else {
+        } else if (cdata->_clamp_blend_flag) {
           _value = net_value / net_effect;
         }
       }
@@ -185,9 +185,11 @@ get_blend_value(const PartBundle *root) {
           }
 
         } else {
-          net_value /= net_effect;
-          scale /= net_effect;
-          shear /= net_effect;
+          if (cdata->_clamp_blend_flag) {
+            net_value /= net_effect;
+            scale /= net_effect;
+            shear /= net_effect;
+          }
 
           // Now rebuild the matrix with the correct scale values.
 
@@ -264,10 +266,12 @@ get_blend_value(const PartBundle *root) {
           }
 
         } else {
-          scale /= net_effect;
-          hpr /= net_effect;
-          pos /= net_effect;
-          shear /= net_effect;
+          if (cdata->_clamp_blend_flag) {
+            scale /= net_effect;
+            hpr /= net_effect;
+            pos /= net_effect;
+            shear /= net_effect;
+          }
 
           compose_matrix(_value, scale, shear, hpr, pos);
         }
@@ -342,10 +346,12 @@ get_blend_value(const PartBundle *root) {
           }
 
         } else {
-          scale /= net_effect;
-          quat /= net_effect;
-          pos /= net_effect;
-          shear /= net_effect;
+          if (cdata->_clamp_blend_flag) {
+            scale /= net_effect;
+            quat /= net_effect;
+            pos /= net_effect;
+            shear /= net_effect;
+          }
 
           // There should be no need to normalize the quaternion, assuming all
           // of the input quaternions were already normalized.

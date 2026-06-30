@@ -60,6 +60,7 @@ PartBundle(const PartBundle &copy) :
   CDReader cdata_from(copy._cycler);
   cdata->_blend_type = cdata_from->_blend_type;
   cdata->_anim_blend_flag = cdata_from->_anim_blend_flag;
+  cdata->_clamp_blend_flag = cdata_from->_clamp_blend_flag;
   cdata->_frame_blend_flag = cdata_from->_frame_blend_flag;
   cdata->_root_xform = cdata_from->_root_xform;
 }
@@ -818,6 +819,7 @@ PartBundle::CData::
 CData() {
   _blend_type = anim_blend_type;
   _anim_blend_flag = false;
+  _clamp_blend_flag = true;
   _frame_blend_flag = interpolate_frames;
   _root_xform = LMatrix4::ident_mat();
   _last_control_set = nullptr;
@@ -832,6 +834,7 @@ PartBundle::CData::
 CData(const PartBundle::CData &copy) :
   _blend_type(copy._blend_type),
   _anim_blend_flag(copy._anim_blend_flag),
+  _clamp_blend_flag(copy._clamp_blend_flag),
   _frame_blend_flag(copy._frame_blend_flag),
   _root_xform(copy._root_xform),
   _last_control_set(copy._last_control_set),
@@ -860,6 +863,7 @@ void PartBundle::CData::
 write_datagram(BamWriter *manager, Datagram &dg) const {
   dg.add_uint8(_blend_type);
   dg.add_bool(_anim_blend_flag);
+  dg.add_bool(_clamp_blend_flag);
   dg.add_bool(_frame_blend_flag);
   _root_xform.write_datagram(dg);
 
@@ -874,6 +878,7 @@ void PartBundle::CData::
 fillin(DatagramIterator &scan, BamReader *manager) {
   _blend_type = (BlendType)scan.get_uint8();
   _anim_blend_flag = scan.get_bool();
+  _clamp_blend_flag = scan.get_bool();
   _frame_blend_flag = scan.get_bool();
   _root_xform.read_datagram(scan);
 }
