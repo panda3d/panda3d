@@ -295,7 +295,8 @@ class DirectOptionMenu(DirectButton):
         if newIndex is not None:
             self.selectedIndex = newIndex
             item = self['items'][self.selectedIndex]
-            self['text'] = item
+            if self['textMayChange']:
+                self['text'] = item
             if fCommand and self['command']:
                 # Pass any extra args to command
                 self['command'](*[item] + self['extraArgs'])
