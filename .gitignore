@@ -1,6 +1,6 @@
 # makepanda directories
 /built*/
-/thirdparty/
+# /thirdparty/
 /targetroot/
 /dstroot/
 /sdks/

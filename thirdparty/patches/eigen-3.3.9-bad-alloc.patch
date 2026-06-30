@@ -1,0 +1,13 @@
+diff -ur a/Eigen/src/Core/util/Memory.h b/Eigen/src/Core/util/Memory.h
+--- a/Eigen/src/Core/util/Memory.h	2022-02-06 22:52:38.738752800 +0100
++++ b/Eigen/src/Core/util/Memory.h	2022-02-06 22:53:06.852422200 +0100
+@@ -69,8 +69,7 @@
+   #ifdef EIGEN_EXCEPTIONS
+     throw std::bad_alloc();
+   #else
+-    std::size_t huge = static_cast<std::size_t>(-1);
+-    ::operator new(huge);
++    abort();
+   #endif
+ }
+ 

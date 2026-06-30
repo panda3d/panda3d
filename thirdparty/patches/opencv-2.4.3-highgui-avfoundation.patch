@@ -1,0 +1,18 @@
+diff --git a/modules/highgui/CMakeLists.txt b/modules/highgui/CMakeLists.txt
+index b4b2896d7a..30145913e4 100644
+--- a/modules/highgui/CMakeLists.txt
++++ b/modules/highgui/CMakeLists.txt
+@@ -186,10 +186,10 @@ if(WITH_IMAGEIO)
+   endif()
+ endif(WITH_IMAGEIO)
+ 
+-if(WITH_AVFOUNDATION)
++if(APPLE)
+   add_definitions(-DHAVE_AVFOUNDATION=1)
+   list(APPEND highgui_srcs src/cap_avfoundation.mm)
+-  list(APPEND HIGHGUI_LIBRARIES "-framework AVFoundation" "-framework QuartzCore")
++  list(APPEND HIGHGUI_LIBRARIES "-framework AVFoundation" "-framework QuartzCore" "-framework CoreMedia")
+ elseif(APPLE)
+   add_definitions(-DHAVE_QUICKTIME=1)
+   if(WITH_QUICKTIME)
+
