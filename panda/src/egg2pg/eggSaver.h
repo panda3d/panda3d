@@ -60,6 +60,7 @@ PUBLISHED:
 
 private:
   typedef pmap<const CharacterJoint*, pvector<std::pair<EggVertex*,PN_stdfloat> > > CharacterJointMap;
+  typedef pvector<PT(EggGroup)> ObjectTypes;
 
   void convert_node(const WorkingNodePath &node_path, EggGroupNode *egg_parent,
                     bool has_decal, CharacterJointMap *joint_map);
@@ -98,15 +99,19 @@ private:
   bool apply_state_properties(EggRenderMode *egg_render_mode, const RenderState *state);
   bool apply_tags(EggGroup *egg_group, PandaNode *node);
   bool apply_tag(EggGroup *egg_group, PandaNode *node, const std::string &tag);
+  bool apply_object_types(EggGroup *egg_group);
 
   EggMaterial *get_egg_material(Material *tex);
   EggTexture *get_egg_texture(Texture *tex);
+
+  void build_object_types();
 
   PT(EggData) _data;
 
   PT(EggVertexPool) _vpool;
   EggMaterialCollection _materials;
   EggTextureCollection _textures;
+  ObjectTypes _object_types;
 };
 
 #include "eggSaver.I"

@@ -12,6 +12,23 @@
  */
 
 /**
+ * Checks if these two transforms are equivalent. If so, returns true.
+ */
+INLINE bool EggTransform::
+operator == (const EggTransform &other) const {
+  return _is_transform_2d == other._is_transform_2d
+    && _transform.almost_equal(other._transform);
+}
+
+/**
+ * Checks if these two transforms are NOT equivalent. If so, returns true.
+ */
+INLINE bool EggTransform::
+operator != (const EggTransform &other) const {
+  return !operator == (other);
+}
+
+/**
  *
  */
 INLINE EggTransform::Component::

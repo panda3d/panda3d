@@ -460,6 +460,227 @@ write_render_mode(ostream &out, int indent_level) const {
 }
 
 /**
+ * Checks if this group satisfies the given egg object type. Returns true if
+ * this group inherits all of the specified object type's egg attributes.
+ */
+bool EggGroup::
+satisfies_object_type(EggGroup *type) {
+  // First, check if our render mode satisfies the object type.
+  if (!EggRenderMode::satisfies_object_type(type)) {
+    return false;
+  }
+
+  // Check if our LOD settings are satisfied.
+  if (type->has_lod()) {
+    if (!has_lod() || type->get_lod() != get_lod()) {
+      return false;
+    }
+  }
+
+  // Check if our billboard settings are satisfied.
+  if (type->get_billboard_type() != BT_none) {
+    if (type->get_billboard_type() != get_billboard_type()) {
+      return false;
+    }
+  }
+
+  // Check if our billboard center matches the object type's billboard center.
+  if (type->has_billboard_center()) {
+    if (!has_billboard_center()) {
+      return false;
+    }
+    if (!type->get_billboard_center().almost_equal(get_billboard_center())) {
+      return false;
+    }
+  }
+
+  // Check if our collision solid type matches the object type.
+  if (type->get_cs_type() != CST_none) {
+    if (type->get_cs_type() != get_cs_type()) {
+      return false;
+    }
+
+    // Check if our collision name is the same, if set on the object type.
+    if (type->has_collision_name()) {
+      if (!has_collision_name()) {
+        return false;
+      }
+      if (type->get_collision_name() != get_collision_name()) {
+        return false;
+      }
+    }
+
+    // Check if our collide flags are satisfied. This is a direct comparison: we
+    // are not looking for bit matches, but for a complete match. This is
+    // because we don't want to match composite object types.
+    if (type->get_collide_flags() != CF_none) {
+      if (get_collide_flags() != type->get_collide_flags()) {
+        return false;
+      }
+    }
+  }
+
+  // Check if our overall collide mask satisfies the object type.
+  if (type->has_collide_mask()) {
+    if (get_collide_mask() != type->get_collide_mask()) {
+      return false;
+    }
+  }
+
+  // Check if our from collide mask satisfies the object type.
+  if (type->has_from_collide_mask()) {
+    if (type->get_from_collide_mask() != get_from_collide_mask()) {
+      return false;
+    }
+  }
+
+  // Check if our into collide mask satisfies the object type.
+  if (type->has_into_collide_mask()) {
+    if (type->get_into_collide_mask() != get_into_collide_mask()) {
+      return false;
+    }
+  }
+
+  // Check if our DCS type satisfies the object type.
+  if (type->has_dcs_type() && type->get_dcs_type() != get_dcs_type()) {
+    return false;
+  }
+
+  // Check if our dart type satisfies the object type.
+  if (type->get_dart_type() != DT_none) {
+    if (type->get_dart_type() != get_dart_type()) {
+      return false;
+    }
+  }
+
+  // Check if our <Model> flag satisfies the object type.
+  if (type->get_model_flag() && !get_model_flag()) {
+    return false;
+  }
+
+  // Check if our <TexList> flag satisfies the object type.
+  if (type->get_texlist_flag() && !get_texlist_flag()) {
+    return false;
+  }
+
+  // Check if our direct flag satisfies the object type.
+  if (type->get_direct_flag() && !get_direct_flag()) {
+    return false;
+  }
+
+  // Check if our <Decal> flag satisfies the object type.
+  if (type->get_decal_flag() && !get_decal_flag()) {
+    return false;
+  }
+
+  // Check if our animated switches match the object type.
+  if (type->get_switch_flag()) {
+    if (!get_switch_flag()) {
+      return false;
+    }
+
+    // Check if our switches have the same FPS, if set.
+    if (type->get_switch_fps() != 0.0) {
+      if (type->get_switch_fps() != get_switch_fps()) {
+        return false;
+      }
+    }
+  }
+
+  // Check if our transform matches the object type's transform, if set.
+  if (type->has_transform() && *(type->as_transform()) != *(as_transform())) {
+    return false;
+  }
+
+  // Check if our scroll U coordinate matches the object type.
+  if (type->get_scroll_u() != 0 && type->get_scroll_u() != get_scroll_u()) {
+    return false;
+  }
+
+  // Check if our scroll V coordinate matches the object type.
+  if (type->get_scroll_v() != 0 && type->get_scroll_v() != get_scroll_v()) {
+    return false;
+  }
+
+  // Check if our scroll W coordinate matches the object type.
+  if (type->get_scroll_w() != 0 && type->get_scroll_w() != get_scroll_w()) {
+    return false;
+  }
+
+  // Check if our scroll R coordinate matches the object type.
+  if (type->get_scroll_r() != 0 && type->get_scroll_r() != get_scroll_r()) {
+    return false;
+  }
+
+  // Check if our portal flag matches the object type.
+  if (type->get_portal_flag() && !get_portal_flag()) {
+    return false;
+  }
+
+  // Check if our occluder flag matches the object type.
+  if (type->get_occluder_flag() && !get_occluder_flag()) {
+    return false;
+  }
+
+  // Check if our polylight flag matches the object type.
+  if (type->get_polylight_flag() && !get_polylight_flag()) {
+    return false;
+  }
+
+  // Check if our indexed flag matches the object type.
+  if (type->has_indexed_flag()) {
+    if (!has_indexed_flag()) {
+      return false;
+    }
+    if (type->get_indexed_flag() != get_indexed_flag()) {
+      return false;
+    }
+  }
+
+  // Check if our scalar blend mode matches the object type.
+  if (type->get_blend_mode() != BM_unspecified) {
+    if (type->get_blend_mode() != get_blend_mode()) {
+      return false;
+    }
+  }
+
+  // Check if our blend A operand matches the object type.
+  if (type->get_blend_operand_a() != BO_unspecified) {
+    if (type->get_blend_operand_a() != get_blend_operand_a()) {
+      return false;
+    }
+  }
+
+  // Check if our blend B operand matches the object type.
+  if (type->get_blend_operand_b() != BO_unspecified) {
+    if (type->get_blend_operand_b() != get_blend_operand_b()) {
+      return false;
+    }
+  }
+
+  // Check if our blend color, if set, matches the object type.
+  if (type->has_blend_color()) {
+    if (!type->get_blend_color().almost_equal(get_blend_color())) {
+      return false;
+    }
+  }
+
+  // Check if we have all of the object type's tags.
+  TagData::const_iterator ti;
+
+  for (ti = type->_tag_data.begin(); ti != type->_tag_data.end(); ++ti) {
+    if (find(_tag_data.begin(), _tag_data.end(), (*ti)) == _tag_data.end()) {
+      // We don't have this tag, but our object type does. So we can't satisfy
+      // this object type.
+      return false;
+    }
+  }
+
+  // All of our criteria has been met! We satisfy this object type!
+  return true;
+}
+
+/**
  * Returns true if this particular node represents a <Joint> entry or not.
  * This is a handy thing to know since Joints are sorted to the end of their
  * sibling list when writing an egg file.  See EggGroupNode::write().

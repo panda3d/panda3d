@@ -89,6 +89,63 @@ write(ostream &out, int indent_level) const {
 }
 
 /**
+ * Checks if this render mode satisfies the given egg object type. Returns true
+ * if this render mode inherits all of the specified object type's egg
+ * attributes.
+ */
+bool EggRenderMode::
+satisfies_object_type(EggRenderMode *type) {
+  // Test if our alpha mode satisfies this object type.
+  if (type->get_alpha_mode() != AM_unspecified) {
+    if (type->get_alpha_mode() != get_alpha_mode()) {
+      return false;
+    }
+  }
+
+  // Test if our depth write mode satisfies this object type.
+  if (type->get_depth_write_mode() != DWM_unspecified) {
+    if (type->get_depth_write_mode() != get_depth_write_mode()) {
+      return false;
+    }
+  }
+
+  // Next, test if our depth test mode satisfies this object type.
+  if (type->get_depth_test_mode() != DTM_unspecified) {
+    if (type->get_depth_test_mode() != get_depth_test_mode()) {
+      return false;
+    }
+  }
+
+  // See if our visibility mode matches this object type.
+  if (type->get_visibility_mode() != VM_unspecified) {
+    if (type->get_visibility_mode() != get_visibility_mode()) {
+      return false;
+    }
+  }
+
+  // See if our depth offset matches this object type.
+  if (type->has_depth_offset()) {
+    if (type->get_depth_offset() != get_depth_offset()) {
+      return false;
+    }
+  }
+
+  // See if our draw order matches this object type.
+  if (type->has_draw_order() && type->get_draw_order() != get_draw_order()) {
+    return false;
+  }
+
+  // See if our bin  name matches this object type.
+  if (type->has_bin() && type->get_bin() != get_bin()) {
+    return false;
+  }
+
+  // Hooray! This egg render mode completely matches the object type's render
+  // mode!
+  return true;
+}
+
+/**
  *
  */
 bool EggRenderMode::
