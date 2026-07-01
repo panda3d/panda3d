@@ -1020,7 +1020,18 @@ if (COMPILER=="GCC"):
 
     if not PkgSkip("PYTHON"):
         python_lib = SDK["PYTHONVERSION"]
-        SmartPkgEnable("PYTHON", "", python_lib, (SDK["PYTHONVERSION"], SDK["PYTHONVERSION"] + "/Python.h"))
+
+        # --python-incdir traditionally points at the parent of the versioned
+        # include directory, but changed to prefer pointing to the directory
+        # containing Python.h.  Support both transitionally.
+        for opt, incdir in INCDIRECTORIES:
+            if opt == "PYTHON" and os.path.isfile(os.path.join(incdir, "Python.h")):
+                python_incs = ("Python.h",)
+                break
+        else:
+            python_incs = (SDK["PYTHONVERSION"], SDK["PYTHONVERSION"] + "/Python.h")
+
+        SmartPkgEnable("PYTHON", "", python_lib, python_incs)
 
         if not PkgSkip("PYTHON") and GetTarget() == "emscripten":
             # Python may have been compiled with these requirements.
