@@ -1069,6 +1069,7 @@ if (COMPILER=="GCC"):
             LibDirectory("ALWAYS", "/usr/X11R6/lib")
 
     if GetTarget() == 'darwin':
+        PkgDisable("X11")
         LibName("ALWAYS", "-framework AppKit")
         LibName("IOKIT", "-framework IOKit")
         LibName("QUARTZ", "-framework Quartz")
