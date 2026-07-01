@@ -137,7 +137,7 @@ class SceneGraphUIBase(wx.Panel):
             name = ' '
         namestr = "%s_%s_%s"%(obj[OG.OBJ_DEF].name, name, obj[OG.OBJ_UID])
         newItem = self.tree.AppendItem(parent, namestr)
-        self.tree.SetItemPyData(newItem, obj[OG.OBJ_UID])
+        self.tree.SetItemData(newItem, obj[OG.OBJ_UID])
 
         # adding children of PandaObj
         if self.shouldShowPandaObjChildren:
@@ -362,10 +362,24 @@ class SceneGraphUIBase(wx.Panel):
             return
 
         self.editor.ui.bindKeyEvents(False)
-        dialog = wx.TextEntryDialog(None, '', 'Input new name', defaultValue=self.currObj[OG.OBJ_NP].getName())
-        if dialog.ShowModal() == wx.ID_OK:
-            newName = dialog.GetValue()
-        dialog.Destroy()
-        self.editor.ui.bindKeyEvents(True)
-        self.currObj[OG.OBJ_NP].setName(newName)
-        self.changeLabel(self.currObj[OG.OBJ_UID], newName)
+
+        old_name = self.currObj[OG.OBJ_NP].getName()
+
+        dialog = wx.TextEntryDialog( self, "Input new name", "Rename object", value=old_name)
+
+        try:
+            if dialog.ShowModal() != wx.ID_OK:
+                return
+
+            new_name = dialog.GetValue().strip()
+            if not new_name or new_name == old_name:
+                return
+
+            # --- Rename ---
+            self.currObj[OG.OBJ_NP].setName(new_name)
+            self.changeLabel(self.currObj[OG.OBJ_UID], new_name)
+
+        finally:
+            dialog.Destroy()
+            self.editor.ui.bindKeyEvents(True)
+

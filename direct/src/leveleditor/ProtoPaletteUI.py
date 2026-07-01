@@ -135,7 +135,7 @@ class ProtoPaletteUI(wx.Panel):
         pos = self.ScreenToClient(pos)
 
         for menuItem in self.popupmenu.GetMenuItems():
-            self.popupmenu.RemoveItem(menuItem)
+            self.popupmenu.Remove(menuItem)
 
         hitItem, flags = self.tree.HitTest(pos)
         if hitItem.IsOk():

@@ -193,10 +193,12 @@ class ObjectMgrBase:
                     if isinstance(funcName, str):
                         if funcName.startswith('.'):
                             # when it's using default objectHandler
+                            funcName = funcName.split(".")[1]
+                            print(funcName)
                             if self.editor:
-                                func = Functor(getattr(self.editor, "objectHandler%s"%funcName))
+                                func = Functor(getattr(self.editor.objectHandler, funcName))
                             else: # when loaded outside of LE
-                                func = Functor(getattr(base, "objectHandler%s"%funcName))
+                                func = Functor(getattr(base.objectHandler, funcName))
                         else:
                             # when it's not using default objectHandler, whole name of the handling obj
                             # should be included in function name
@@ -294,7 +296,7 @@ class ObjectMgrBase:
         for child in nodePath.getChildren():
             if child.hasTag('OBJRoot'):
                 self.removeObjectByNodePath(child)
-        nodePath.remove()
+        nodePath.remove_node()
 
         self.editor.fNeedToSave = True
 
@@ -387,7 +389,7 @@ class ObjectMgrBase:
         self.editor.ui.bindKeyEvents(True)
 
     def spawnUpdateObjectUITask(self):
-        if self.currNodePath is None:
+        if self.currNodePath is None or self.currNodePath.isEmpty():
             return
 
         taskMgr.remove('_le_updateObjectUITask')
@@ -396,25 +398,32 @@ class ObjectMgrBase:
         taskMgr.add(t, '_le_updateObjectUITask')
 
     def updateObjectUITask(self, state):
-        self.editor.ui.objectPropertyUI.propX.setValue(state.np.getX())
-        self.editor.ui.objectPropertyUI.propY.setValue(state.np.getY())
-        self.editor.ui.objectPropertyUI.propZ.setValue(state.np.getZ())
+        np = getattr(state, 'np', None)
+        if np is None or np.isEmpty():
+            self.currNodePath = None
+            taskMgr.remove('_le_updateObjectUITask')
+            self.editor.ui.objectPropertyUI.clearPropUI()
+            return Task.done
 
-        h = state.np.getH()
+        self.editor.ui.objectPropertyUI.propX.setValue(np.getX())
+        self.editor.ui.objectPropertyUI.propY.setValue(np.getY())
+        self.editor.ui.objectPropertyUI.propZ.setValue(np.getZ())
+
+        h = np.getH()
         while h < 0:
             h = h + 360.0
 
         while h > 360:
             h = h - 360.0
 
-        p = state.np.getP()
+        p = np.getP()
         while p < 0:
             p = p + 360.0
 
         while p > 360:
             p = p - 360.0
 
-        r = state.np.getR()
+        r = np.getR()
         while r < 0:
             r = r + 360.0
 
@@ -425,14 +434,14 @@ class ObjectMgrBase:
         self.editor.ui.objectPropertyUI.propP.setValue(p)
         self.editor.ui.objectPropertyUI.propR.setValue(r)
 
-        self.editor.ui.objectPropertyUI.propSX.setValue(state.np.getSx())
-        self.editor.ui.objectPropertyUI.propSY.setValue(state.np.getSy())
-        self.editor.ui.objectPropertyUI.propSZ.setValue(state.np.getSz())
+        self.editor.ui.objectPropertyUI.propSX.setValue(np.getSx())
+        self.editor.ui.objectPropertyUI.propSY.setValue(np.getSy())
+        self.editor.ui.objectPropertyUI.propSZ.setValue(np.getSz())
 
         return Task.cont
 
     def updateObjectTransform(self, event):
-        if self.currNodePath is None:
+        if self.currNodePath is None or self.currNodePath.isEmpty():
             return
 
         np = hidden.attachNewNode('temp')
@@ -470,9 +479,12 @@ class ObjectMgrBase:
         np.setSz(float(self.editor.ui.objectPropertyUI.propSZ.getValue()))
 
         obj = self.findObjectByNodePath(self.currNodePath)
+        if obj is None:
+            np.remove_node()
+            return
         action = ActionTransformObj(self.editor, obj[OG.OBJ_UID], Mat4(np.getMat()))
         self.editor.actionMgr.push(action)
-        np.remove()
+        np.remove_node()
         action()
         self.editor.fNeedToSave = True
 

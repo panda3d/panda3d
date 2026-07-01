@@ -74,7 +74,7 @@ class LayerEditorUI(wx.Panel):
         pos = self.ScreenToClient(pos)
 
         for menuItem in self.popupmenu.GetMenuItems():
-            self.popupmenu.RemoveItem(menuItem)
+            self.popupmenu.Remove(menuItem)
 
         #import pdb;set_trace()
         hitItem, flags = self.llist.HitTest(pos)
