@@ -3046,6 +3046,20 @@ def SetupBuildEnvironment(compiler):
                 libdir += '64'
             SYS_LIB_DIRS += [libdir]
 
+        # On multiarch systems, system libraries live under /usr/lib/<triplet>.
+        # On some systems these don't show up in -print-search-dirs, so we try
+        # to check for this manually.
+        if target == 'linux':
+            handle = os.popen(GetCXX() + " -print-multiarch 2>/dev/null")
+            triplet = handle.read().strip()
+            handle.close()
+            if triplet:
+                sysroot = SDK.get("SYSROOT", "")
+                for prefix in ("/usr/lib/", "/lib/", "/usr/local/lib/"):
+                    libdir = os.path.normpath(sysroot + prefix + triplet)
+                    if os.path.isdir(libdir) and libdir not in SYS_LIB_DIRS:
+                        SYS_LIB_DIRS.append(libdir)
+
         if sys.platform != "darwin":
             # Some Linux distributions (eg. Fedora) don't add /usr/local/lib64
             if ("/usr/lib64" in SYS_LIB_DIRS and
