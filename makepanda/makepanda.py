@@ -1404,6 +1404,12 @@ def CompileCxx(obj,src,opts):
 
             cmd += " -Wa,--noexecstack"
 
+            # Silence the flood of -Wdeprecated-declarations warnings from
+            # Eigen's use of std::result_of (deprecated in C++17) under the
+            # NDK's libc++.  These are third-party headers we don't control.
+            if not PkgSkip("EIGEN"):
+                cmd += " -Wno-deprecated-declarations"
+
             # Do we want thumb or arm instructions?
             if arch != 'arm64' and arch.startswith('arm'):
                 if optlevel >= 3:
