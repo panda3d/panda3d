@@ -499,7 +499,7 @@ package_option(JPEG "Enable support for loading .jpg images.")
 package_status(JPEG "libjpeg")
 
 # PNG
-find_package(PNG QUIET)
+find_package(PNG QUIET MODULE)
 
 package_option(PNG
   "Enable support for loading .png images."
