@@ -672,7 +672,10 @@ def LocateBinary(binary):
 
 def oscmd(cmd, ignoreError = False, cwd=None):
     if VERBOSE:
-        print(GetColor("blue") + cmd.split(" ", 1)[0] + " " + GetColor("magenta") + cmd.split(" ", 1)[1] + GetColor())
+        if " " in cmd:
+            print(GetColor("blue") + cmd.split(" ", 1)[0] + " " + GetColor("magenta") + cmd.split(" ", 1)[1] + GetColor())
+        else:
+            print(GetColor("blue") + cmd + GetColor())
     sys.stdout.flush()
 
     if cmd[0] == '"':
