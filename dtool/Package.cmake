@@ -576,6 +576,7 @@ its own internal implementation.  The primary advantage of using
 Eigen is SSE2 support, which is only activated if LINMATH_ALIGN
 is also enabled."
   FOUND_AS Eigen3
+  IMPORTED_AS Eigen3::Eigen
   LICENSE "MPL-2")
 
 option(LINMATH_ALIGN
