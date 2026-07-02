@@ -292,6 +292,7 @@ public:
     INLINE size_t intern_string(const std::string &str);
 
     INLINE size_t get_max_num_asserts() const;
+    INLINE void set_max_num_asserts(size_t count);
     size_t add_assert(std::string expression, Filename fn, int line, Stage stage);
 
     size_t process_buffer(const unsigned char *ptr, size_t size, const Filename &fn);

@@ -962,3 +962,13 @@ INLINE size_t Shader::DebugInfo::
 get_max_num_asserts() const {
   return _assert_count;
 }
+
+/**
+ * Reserves space for the given number of assertions.  This must be set before
+ * SpirVDebugOutputPass may register assertions using add_assert, since the
+ * assertions live in a fixed-size section at the start of the debug buffer.
+ */
+INLINE void Shader::DebugInfo::
+set_max_num_asserts(size_t count) {
+  _assert_count = (uint32_t)count;
+}
