@@ -2334,7 +2334,7 @@ def CompileAnything(target, inputs, opts, progress = None):
         ProgressOutput(progress, "Building Java class", target)
         return CompileJava(target, infile, opts)
     elif origsuffix == ".obj":
-        if (infile.endswith(".cxx")):
+        if infile.endswith(".cxx") or infile.endswith(".cpp"):
             ProgressOutput(progress, "Building C++ object", target)
             return CompileCxx(target, infile, opts)
         elif infile.endswith(".c"):
