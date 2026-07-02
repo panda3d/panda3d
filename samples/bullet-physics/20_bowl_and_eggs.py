@@ -132,10 +132,13 @@ class Game(ShowBase):
         # Bowl
         visNP = loader.load_model('models/bowl.egg')
 
-        geom = (visNP.findAllMatches('**/+GeomNode')
-                .get_path(0).node().get_geom(0))
         mesh = BulletTriangleMesh()
-        mesh.addGeom(geom)
+        geomNodes = visNP.findAllMatches('**/+GeomNode')
+        for geomNode in geomNodes:
+            ts = geomNode.getTransform()
+            for geom in geomNode.node().getGeoms():
+                mesh.addGeom(geom, True, ts)
+
         shape = BulletTriangleMeshShape(mesh, dynamic=True)
 
         body = BulletRigidBodyNode('Bowl')
@@ -166,7 +169,11 @@ class Game(ShowBase):
             geom = (visNP.find_all_matches('**/+GeomNode')
                     .get_path(0).node().get_geom(0))
             shape = BulletConvexHullShape()
-            shape.addGeom(geom)
+            geomNodes = visNP.findAllMatches('**/+GeomNode')
+            for geomNode in geomNodes:
+                ts = geomNode.getTransform()
+                for geom in geomNode.node().getGeoms():
+                    shape.addGeom(geom, ts)
 
             body = BulletRigidBodyNode('Egg-%i' % i)
             bodyNP = self.worldNP.attach_new_node(body)
