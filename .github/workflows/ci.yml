@@ -771,5 +771,5 @@ jobs:
           adb push built/models /data/local/tmp/panda3d-tests/models
           adb push built/etc /data/local/tmp/panda3d-tests/etc
           adb push tests /data/local/tmp/panda3d-tests/tests
-          adb shell "cd /data/local/tmp/panda3d-tests && LD_LIBRARY_PATH=/data/local/tmp/panda3d-tests/lib ./run_cxx_tests -s"
+          adb shell "cd /data/local/tmp/panda3d-tests && LD_LIBRARY_PATH=/data/local/tmp/panda3d-tests/lib ./run_cxx_tests"
           adb shell "cd /data/local/tmp/panda3d-tests && LD_LIBRARY_PATH=/data/local/tmp/panda3d-tests/lib PYTHONPATH=/data/local/tmp/panda3d-tests/lib/python3.13/site-packages ./run_pytest --no-cxx-tests -v tests"
