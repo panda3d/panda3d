@@ -6002,7 +6002,7 @@ if PkgSkip("PYTHON") == 0:
 #
 # Build the test runner for static builds
 #
-if GetLinkAllStatic() or GetTarget() == 'android':
+if True:
     if GetTarget() == 'emscripten':
         LinkFlag('RUN_TESTS_FLAGS', '-s NODERAWFS')
         LinkFlag('RUN_TESTS_FLAGS', '-s ASSERTIONS=2')
@@ -6021,20 +6021,41 @@ if GetLinkAllStatic() or GetTarget() == 'android':
         DefSymbol('RUN_TESTS_FLAGS', 'HAVE_BULLET')
 
     OPTS=['DIR:tests', 'PYTHON', 'RUN_TESTS_FLAGS', 'SUBSYSTEM:CONSOLE']
-    PyTargetAdd('run_tests-main.obj', opts=OPTS, input='main.c')
-    PyTargetAdd('run_tests.exe', input='run_tests-main.obj')
+    PyTargetAdd('run_pytest-main.obj', opts=OPTS, input='main.c')
+    PyTargetAdd('run_pytest.exe', input='run_pytest-main.obj')
     if GetLinkAllStatic():
-        PyTargetAdd('run_tests.exe', input='core.pyd')
+        PyTargetAdd('run_pytest.exe', input='core.pyd')
         if not PkgSkip('DIRECT'):
-            PyTargetAdd('run_tests.exe', input='direct.pyd')
+            PyTargetAdd('run_pytest.exe', input='direct.pyd')
         if not PkgSkip('PANDAPHYSICS'):
-            PyTargetAdd('run_tests.exe', input='physics.pyd')
+            PyTargetAdd('run_pytest.exe', input='physics.pyd')
         if not PkgSkip('EGG'):
-            PyTargetAdd('run_tests.exe', input='egg.pyd')
+            PyTargetAdd('run_pytest.exe', input='egg.pyd')
         if not PkgSkip('BULLET'):
-            PyTargetAdd('run_tests.exe', input='bullet.pyd')
-    PyTargetAdd('run_tests.exe', input=COMMON_PANDA_LIBS)
-    PyTargetAdd('run_tests.exe', opts=['PYTHON', 'BULLET', 'RUN_TESTS_FLAGS'])
+            PyTargetAdd('run_pytest.exe', input='bullet.pyd')
+    PyTargetAdd('run_pytest.exe', input=COMMON_PANDA_LIBS)
+    PyTargetAdd('run_pytest.exe', opts=['PYTHON', 'BULLET', 'RUN_TESTS_FLAGS'])
+
+#
+# Build the C++ test suite.  Tests are discovered automatically: any
+# tests/<package>/test_*.cxx file is compiled into the run_cxx_tests binary.
+#
+
+OPTS=['DIR:tests/catch2']
+TargetAdd('run_cxx_tests_catch_amalgamated.obj', opts=OPTS, input='catch_amalgamated.cpp')
+TargetAdd('run_cxx_tests.exe', input='run_cxx_tests_catch_amalgamated.obj')
+
+for tdir in sorted(os.listdir('tests')):
+    if tdir == 'catch2' or not os.path.isdir(os.path.join('tests', tdir)):
+        continue
+    OPTS=['DIR:tests/' + tdir, 'DIR:tests/catch2', 'ZLIB']
+    for tfile in GetDirectoryContents('tests/' + tdir, ["test_*.cxx"]):
+        obj = 'run_cxx_tests_%s_%s.obj' % (tdir, os.path.splitext(tfile)[0])
+        TargetAdd(obj, opts=OPTS, input=tfile)
+        TargetAdd('run_cxx_tests.exe', input=obj)
+
+TargetAdd('run_cxx_tests.exe', input=COMMON_PANDA_LIBS)
+TargetAdd('run_cxx_tests.exe', opts=['SUBSYSTEM:CONSOLE', 'ZLIB'])
 
 #
 # Generate the models directory and samples directory
@@ -6197,16 +6218,23 @@ finally:
 
 # Run the test suite.
 if RUNTESTS:
-    if GetLinkAllStatic():
-        runner = FindLocation("run_tests.exe", [])
-        if runner.endswith(".js"):
-            cmdstr = "node " + BracketNameWithQuotes(runner)
-        else:
-            cmdstr = BracketNameWithQuotes(runner)
+    # First the C++ suite, which is quick.
+    cxx_runner = FindLocation("run_cxx_tests.exe", [])
+    if cxx_runner.endswith(".js"):
+        cmdstr = "node " + BracketNameWithQuotes(cxx_runner)
     else:
-        cmdstr = BracketNameWithQuotes(SDK["PYTHONEXEC"].replace('\\', '/'))
-        cmdstr += " -B -m pytest"
-    cmdstr += " tests"
+        cmdstr = BracketNameWithQuotes(cxx_runner)
+    if GetVerbose():
+        cmdstr += " -s"
+    oscmd(cmdstr)
+
+    # Then the Python test suite, excluding the C++ tests.
+    runner = FindLocation("run_pytest.exe", [])
+    if runner.endswith(".js"):
+        cmdstr = "node " + BracketNameWithQuotes(runner)
+    else:
+        cmdstr = BracketNameWithQuotes(runner)
+    cmdstr += " tests --no-cxx-tests"
     if GetVerbose():
         cmdstr += " --verbose"
     oscmd(cmdstr)
