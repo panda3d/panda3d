@@ -73,7 +73,9 @@ clear() {
   _array_stride = 0;
   _origin_id = 0;
   _function_id = 0;
+  _spec_id = 0;
   _members.clear();
+  _parameters.clear();
   _flags = 0;
 }
 

@@ -52,6 +52,14 @@ is_function_parameter() const {
 }
 
 /**
+ * Returns true if this is a temporary.
+ */
+INLINE bool SpirVResultDatabase::Definition::
+is_temporary() const {
+  return _dtype == DT_temporary;
+}
+
+/**
  * Returns true if this is a constant.
  */
 INLINE bool SpirVResultDatabase::Definition::

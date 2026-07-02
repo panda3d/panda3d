@@ -445,7 +445,7 @@ set_member_name(uint32_t type_id, uint32_t member_index, const std::string &name
   MemberDefinition &mdef = _db.modify_definition(type_id).modify_member(member_index);
   if (!mdef._name.empty()) {
     // Remove the existing name.
-    auto it = _new_preamble.begin();
+    auto it = _new_preamble.begin() + 5;
     while (it != _new_preamble.end()) {
       spv::Op opcode = (spv::Op)(*it & spv::OpCodeMask);
       uint32_t wcount = *it >> spv::WordCountShift;
@@ -794,6 +794,15 @@ define_type(const ShaderType *type) {
     }
 
     add_definition(spv::OpTypeStruct, args, num_members + 1);
+
+    // Write the member names to the module, so that they are not lost when
+    // the module is parsed again.
+    for (size_t i = 0; i < num_members; ++i) {
+      const ShaderType::Struct::Member &member = struct_type->get_member(i);
+      if (!member.name.empty()) {
+        set_member_name(id, i, member.name);
+      }
+    }
   }
   else if (const ShaderType::Array *array_type = type->as_array()) {
     uint32_t element_type = define_type(array_type->get_element_type());
@@ -1095,11 +1104,13 @@ r_annotate_struct_layout(uint32_t type_id) {
 
     if (const ShaderType::Matrix *matrix_type = base_type->as_matrix()) {
       // Matrix types need to be explicitly laid out.
-      uint32_t stride = matrix_type->get_row_stride_bytes();
-      add_annotation(spv::OpMemberDecorate,
-        {type_id, i, spv::DecorationMatrixStride, stride});
-      add_annotation(spv::OpMemberDecorate,
-        {type_id, i, spv::DecorationColMajor});
+      if (member_def._matrix_stride == 0) {
+        member_def._matrix_stride = matrix_type->get_row_stride_bytes();
+        add_annotation(spv::OpMemberDecorate,
+          {type_id, i, spv::DecorationMatrixStride, member_def._matrix_stride});
+        add_annotation(spv::OpMemberDecorate,
+          {type_id, i, spv::DecorationColMajor});
+      }
     } else {
       r_annotate_struct_layout(member_def._type_id);
     }

@@ -108,6 +108,7 @@ public:
     INLINE bool is_function_type() const;
     INLINE bool is_variable() const;
     INLINE bool is_function_parameter() const;
+    INLINE bool is_temporary() const;
     INLINE bool is_constant() const;
     INLINE bool is_constant(uint32_t value) const;
     INLINE bool is_null_constant() const;

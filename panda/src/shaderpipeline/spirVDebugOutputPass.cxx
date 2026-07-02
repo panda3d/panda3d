@@ -49,6 +49,9 @@ transform_debug_op(Instruction op) {
       keep = true;
     }
     _ext_inst_imports[op.args[0]] = imp;
+    if (!keep) {
+      delete_id(op.args[0]);
+    }
     return keep;
   }
   return true;

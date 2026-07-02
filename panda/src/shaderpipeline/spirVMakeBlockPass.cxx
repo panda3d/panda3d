@@ -82,6 +82,7 @@ transform_function_op(Instruction op) {
       new_args.insert(new_args.end(), op.args + 3, op.args + op.nargs);
 
       add_instruction(op.opcode, new_args.data(), new_args.size());
+      _db.set_origin(result_id, _block_var_id);
       return false;
     }
     break;
@@ -156,6 +157,7 @@ maybe_replace_with_access_chain(uint32_t &id) {
   auto it = _member_indices.find(id);
   if (it != _member_indices.end()) {
     id = op_access_chain(_block_var_id, {define_int_constant(it->second)});
+    mark_used(id);
     return true;
   }
   return false;
