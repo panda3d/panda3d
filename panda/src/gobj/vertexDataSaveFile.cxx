@@ -28,6 +28,11 @@
 #include <sys/file.h>
 #endif
 
+// Needed for lockf
+#if defined(__wasi__)
+#include "wasi.c"
+#endif // __wasi__
+
 using std::dec;
 using std::hex;
 
