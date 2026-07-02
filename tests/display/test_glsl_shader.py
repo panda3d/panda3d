@@ -1,6 +1,7 @@
 from panda3d import core
 import os
 import struct
+import sys
 from array import array
 import pytest
 from _pytest.outcomes import Failed
@@ -146,6 +147,81 @@ def test_glsl_entry_point():
     options.entry_point = "custom_main"
     module = glsl.compile_now(core.Shader.Stage.FRAGMENT, core.StringStream(code), "test.glsl", options)
     assert module is not None
+
+
+def test_glsl_debug_print(env):
+    if env.name == "gl-legacy":
+        pytest.skip("debug features not supported in legacy mode")
+
+    code = """
+    debugPrintfEXT("hello char='%c' str='%s' int='%d' float='%0.2f'", 98, "world", 123, 5.6);
+    debugPrintfEXT("second message");
+    debugPrintfEXT("third message");
+    """
+
+    stream = core.StringStream()
+    notify = core.Notify.ptr()
+    try:
+        notify.set_ostream_ptr(stream, True)
+        options = core.CompilerOptions()
+        options.debug = True
+        env.run_glsl(code, exts={'GL_EXT_debug_printf'}, options=options)
+
+        if env.name not in ("gl-cross-110", "gl-cross-120", "gl-cross-130", "gl-cross-140"):
+            assert b"hello char='b' str='world' int='123' float='5.60'\n" in stream.data
+            assert b"second message\n" in stream.data
+            assert b"third message\n" in stream.data
+    finally:
+        sys.stderr.buffer.write(stream.data)
+        sys.stderr.buffer.flush()
+        notify.set_ostream_ptr(None, False)
+
+
+def test_glsl_debug_assert(env):
+    if env.name in ("gl-legacy", "gl-cross-110", "gl-cross-120", "gl-cross-130", "gl-cross-140"):
+        pytest.skip("debug features not supported in legacy GLSL")
+
+    # The assert() defined in <panda3d/debug> conflicts with the one defined
+    # by the test harness, fortunately it also has a _p3d_assert alternative
+    preamble = """
+#include <panda3d/debug>
+#undef assert
+    """
+
+    options = core.CompilerOptions()
+    options.debug = True
+
+    env.run_glsl("_p3d_assert(true);", preamble, options=options)
+
+    with pytest.raises(AssertionError):
+        env.run_glsl("_p3d_assert(1 == 2);", preamble, options=options)
+
+    # In non-debug mode, assertion does not fire
+    options = core.CompilerOptions()
+    options.debug = False
+    env.run_glsl("_p3d_assert(1 == 2);", preamble, options=options)
+
+
+def test_glsl_debug_assert_included(env, vfs, ramdir):
+    if env.name in ("gl-legacy", "gl-cross-110", "gl-cross-120", "gl-cross-130", "gl-cross-140"):
+        pytest.skip("debug features not supported in legacy GLSL")
+
+    inc_file = ramdir / "included.glsl"
+    vfs.write_file(inc_file, b"void triggerAssert() { _p3d_assert(false); }\n", False)
+
+    preamble = """
+#include <panda3d/debug>
+#undef assert
+
+#include "included.glsl"
+    """
+
+    options = core.CompilerOptions()
+    options.debug = True
+    options.include_path = core.DSearchPath(ramdir)
+
+    with pytest.raises(AssertionError):
+        env.run_glsl("triggerAssert();", preamble, options=options)
 
 
 def test_glsl_sampler(env):

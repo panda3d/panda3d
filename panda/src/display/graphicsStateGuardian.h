@@ -461,6 +461,9 @@ public:
   Texture *get_dummy_shadow_map(bool cube_map) const;
   virtual GraphicsOutput *make_shadow_buffer(LightLensNode *light, Texture *tex, GraphicsOutput *host);
 
+  ShaderBuffer *get_shader_debug_buffer(size_t min_size = sizeof(uint32_t));
+  bool drain_shader_debug_buffer(Shader *shader);
+
   virtual void ensure_generated_shader(const RenderState *state);
 
 #ifdef DO_PSTATS
@@ -675,6 +678,8 @@ protected:
 #else // !NDEBUG
   PT(Texture) _flash_texture_unused;
 #endif // !NDEBUG
+
+  PT(ShaderBuffer) _shader_debug_buffer;
 
 public:
   // Statistics

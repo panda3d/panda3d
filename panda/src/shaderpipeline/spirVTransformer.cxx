@@ -115,13 +115,18 @@ run(SpirVTransformPass &pass) {
   for (const auto &pair : pass._deleted_members) {
     SpirVResultDatabase::Definition &def = _db.modify_definition(pair.first);
 
-    for (size_t i = 0; i < def._members.size();) {
-      if (pair.second.count(i)) {
-        def._members.erase(def._members.begin() + i);
-        nassertd(def._members[i]._new_index == (int)i) continue;
-      }
-      ++i;
+    // The set contains original member indices, so erase in descending order,
+    // which leaves the positions of the members yet to be erased unaffected.
+    for (auto rit = pair.second.rbegin(); rit != pair.second.rend(); ++rit) {
+      nassertd(*rit < def._members.size()) continue;
+      def._members.erase(def._members.begin() + *rit);
     }
+
+#ifndef NDEBUG
+    for (size_t i = 0; i < def._members.size(); ++i) {
+      nassertd(def._members[i]._new_index == (int)i) break;
+    }
+#endif
   }
 }
 
@@ -135,6 +140,203 @@ get_result() const {
   stream._words.insert(stream._words.end(), _definitions.begin(), _definitions.end());
   stream._words.insert(stream._words.end(), _functions.begin(), _functions.end());
   return stream;
+}
+
+/**
+ * Checks that the definition database, which is updated incrementally by the
+ * transform passes, is consistent with a database that is freshly parsed from
+ * the resulting module.  Logs an error for every mismatch and returns false
+ * if any was found.  Intended for validation in the test suite.
+ *
+ * Names are not compared, since the database keeps qualified names (such as
+ * "block.member" after running SpirVFlattenStructPass) that intentionally
+ * differ from the names stored in the module.  Usage tracking is compared in
+ * one direction only: the passes may conservatively consider a definition
+ * used, but a variable or function parameter that the module uses must never
+ * be marked unused, or SpirVRemoveUnusedVariablesPass would delete it.
+ */
+bool SpirVTransformer::
+validate_db() const {
+  SpirVTransformer fresh(get_result());
+  nassertr(get_id_bound() == fresh.get_id_bound(), false);
+
+  bool consistent = true;
+  auto report = [&](uint32_t id, const char *field, int64_t db_value, int64_t fresh_value) {
+    shader_cat.error()
+      << "Inconsistent database after transformation: id " << id << " has "
+      << field << " " << db_value << ", but " << fresh_value
+      << " when parsed from the module\n";
+    consistent = false;
+  };
+
+  // Decoration-derived flags that both the incremental updates and a fresh
+  // parse must agree on.  Usage-tracking flags are excluded.
+  static const int flag_mask =
+    SpirVResultDatabase::DF_buffer_block |
+    SpirVResultDatabase::DF_block |
+    SpirVResultDatabase::DF_non_writable |
+    SpirVResultDatabase::DF_non_readable |
+    SpirVResultDatabase::DF_relaxed_precision |
+    SpirVResultDatabase::DF_flat;
+
+  // Member decorations that affect the database and should round-trip.
+  static const int member_flag_mask =
+    SpirVResultDatabase::DF_non_writable |
+    SpirVResultDatabase::DF_non_readable |
+    SpirVResultDatabase::DF_flat;
+
+  // The instructions inserted by a pass may record the results of arithmetic
+  // operations as fully-typed temporaries, whereas parse_instruction only
+  // records the result type id for these, or the other way around.  Consider
+  // these definitions equivalent as long as the type id matches.
+  auto is_expression = [](const Definition &def) {
+    return def.is_temporary() || def._dtype == 0 /* DT_none */;
+  };
+
+  for (uint32_t id = 0; id < get_id_bound(); ++id) {
+    const Definition &db_def = _db.get_definition(id);
+    const Definition &fresh_def = fresh._db.get_definition(id);
+
+    if (db_def._dtype != fresh_def._dtype) {
+      if (!is_expression(db_def) || !is_expression(fresh_def)) {
+        report(id, "definition type", db_def._dtype, fresh_def._dtype);
+      }
+      else if (db_def._type_id != fresh_def._type_id) {
+        report(id, "type id", db_def._type_id, fresh_def._type_id);
+      }
+      // The other fields are meaningless if the definition type differs.
+      continue;
+    }
+
+    if (db_def._type != fresh_def._type) {
+      bool equivalent = false;
+      if (db_def._type == nullptr || fresh_def._type == nullptr) {
+        // A fresh parse doesn't resolve the type of arithmetic results, so
+        // only require the type id to match in that case.
+        equivalent = (db_def._type_id == fresh_def._type_id);
+      }
+      else if (const ShaderType::StorageBuffer *sbuffer = fresh_def._type->as_storage_buffer()) {
+        // A buffer declared the legacy way (Uniform storage class with the
+        // BufferBlock decoration) is canonicalized to a StorageBuffer type
+        // when parsed, but the passes work with the unwrapped struct type.
+        equivalent = (sbuffer->get_contained_type() == db_def._type);
+      }
+      if (!equivalent) {
+        shader_cat.error()
+          << "Inconsistent database after transformation: id " << id << " has type ";
+        if (db_def._type != nullptr) {
+          shader_cat.error(false) << *db_def._type;
+        } else {
+          shader_cat.error(false) << "(null)";
+        }
+        shader_cat.error(false) << ", but ";
+        if (fresh_def._type != nullptr) {
+          shader_cat.error(false) << *fresh_def._type;
+        } else {
+          shader_cat.error(false) << "(null)";
+        }
+        shader_cat.error(false) << " when parsed from the module\n";
+        consistent = false;
+      }
+    }
+    if (db_def._type_id != fresh_def._type_id) {
+      report(id, "type id", db_def._type_id, fresh_def._type_id);
+    }
+    if (db_def._location != fresh_def._location) {
+      report(id, "location", db_def._location, fresh_def._location);
+    }
+    if (db_def._builtin != fresh_def._builtin) {
+      shader_cat.error()
+        << "Inconsistent database after transformation: id " << id
+        << " has builtin " << spv::BuiltInToString(db_def._builtin) << ", but "
+        << spv::BuiltInToString(fresh_def._builtin)
+        << " when parsed from the module\n";
+      consistent = false;
+    }
+    if ((db_def._flags & flag_mask) != (fresh_def._flags & flag_mask)) {
+      report(id, "flags", db_def._flags & flag_mask, fresh_def._flags & flag_mask);
+    }
+    if (db_def._array_stride != fresh_def._array_stride) {
+      report(id, "array stride", db_def._array_stride, fresh_def._array_stride);
+    }
+
+    if ((db_def.is_constant() || db_def.is_spec_constant()) &&
+        db_def._constant != fresh_def._constant) {
+      report(id, "constant value", db_def._constant, fresh_def._constant);
+    }
+    if (db_def.is_spec_constant() && db_def._spec_id != fresh_def._spec_id) {
+      report(id, "spec id", db_def._spec_id, fresh_def._spec_id);
+    }
+    if ((db_def.is_variable() || db_def.is_pointer_type()) &&
+        db_def._storage_class != fresh_def._storage_class &&
+        // See above: parsing canonicalizes legacy-style buffer blocks to the
+        // StorageBuffer storage class.
+        !(db_def._storage_class == spv::StorageClassUniform &&
+          fresh_def._storage_class == spv::StorageClassStorageBuffer)) {
+      shader_cat.error()
+        << "Inconsistent database after transformation: id " << id
+        << " has storage class " << spv::StorageClassToString(db_def._storage_class)
+        << ", but " << spv::StorageClassToString(fresh_def._storage_class)
+        << " when parsed from the module\n";
+      consistent = false;
+    }
+
+    // Usage is tracked conservatively by the passes, so a definition may be
+    // marked as used even if the module no longer uses it.  The reverse is a
+    // genuine problem, however: if a variable or function parameter that the
+    // module relies on is considered unused, SpirVRemoveUnusedVariablesPass
+    // would delete it.
+    if ((db_def.is_variable() || db_def.is_function_parameter()) &&
+        fresh_def.is_used() && !db_def.is_used()) {
+      shader_cat.error()
+        << "Inconsistent database after transformation: id " << id
+        << " is not marked as used, but the module uses it\n";
+      consistent = false;
+    }
+    if ((db_def.is_variable() || db_def.is_function_parameter() ||
+         db_def.is_temporary()) &&
+        db_def._function_id != fresh_def._function_id) {
+      report(id, "function id", db_def._function_id, fresh_def._function_id);
+    }
+
+    if (db_def.is_function() || db_def.is_function_type()) {
+      if (db_def._parameters != fresh_def._parameters) {
+        report(id, "parameter count", db_def._parameters.size(), fresh_def._parameters.size());
+      }
+    }
+
+    if (db_def._members.size() != fresh_def._members.size()) {
+      report(id, "member count", db_def._members.size(), fresh_def._members.size());
+    } else {
+      for (size_t mi = 0; mi < db_def._members.size(); ++mi) {
+        const MemberDefinition &db_member = db_def._members[mi];
+        const MemberDefinition &fresh_member = fresh_def._members[mi];
+        if (db_member._type_id != fresh_member._type_id) {
+          report(id, "member type id", db_member._type_id, fresh_member._type_id);
+        }
+        if (db_member._offset != fresh_member._offset) {
+          report(id, "member offset", db_member._offset, fresh_member._offset);
+        }
+        if (db_member._location != fresh_member._location) {
+          report(id, "member location", db_member._location, fresh_member._location);
+        }
+        if (db_member._builtin != fresh_member._builtin) {
+          report(id, "member builtin", db_member._builtin, fresh_member._builtin);
+        }
+        if ((db_member._flags & member_flag_mask) !=
+            (fresh_member._flags & member_flag_mask)) {
+          report(id, "member flags", db_member._flags & member_flag_mask,
+                 fresh_member._flags & member_flag_mask);
+        }
+        if (db_member._matrix_stride != fresh_member._matrix_stride) {
+          report(id, "member matrix stride", db_member._matrix_stride,
+                 fresh_member._matrix_stride);
+        }
+      }
+    }
+  }
+
+  return consistent;
 }
 
 /**

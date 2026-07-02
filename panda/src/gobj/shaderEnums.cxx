@@ -167,6 +167,9 @@ output_capabilities(std::ostream &out, uint64_t caps) {
   if (caps & C_texture_query_samples) {
     out << "texture_query_samples ";
   }
+  if (caps & C_debug_output) {
+    out << "debug_output ";
+  }
 }
 
 /**

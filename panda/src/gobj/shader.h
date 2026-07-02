@@ -39,6 +39,7 @@
 #include "copyOnWritePointer.h"
 #include "shaderInputBinding.h"
 #include "compilerOptions.h"
+#include "simpleHashMap.h"
 
 class BamCacheRecord;
 class ShaderCompiler;
@@ -268,6 +269,48 @@ public:
     pvector<uint32_t> _indices;
   };
 
+  /**
+   * Encapsulates information relevant to debug prints / asserts.  This is
+   * filled up on the fly as SpirVDebugOutputPass gets invoked by the back-end.
+   */
+  class EXPCL_PANDA_GOBJ DebugInfo {
+  public:
+    INLINE void operator = (const DebugInfo &info);
+
+    struct Assertion {
+      std::string _expression;
+      Filename _file;
+      int _line;
+      Stage _stage;
+    };
+
+    INLINE bool empty() const;
+    INLINE size_t get_min_buffer_size() const;
+
+    INLINE size_t get_num_strings() const;
+    INLINE const std::string &get_string(size_t i) const;
+    INLINE size_t intern_string(const std::string &str);
+
+    INLINE size_t get_max_num_asserts() const;
+    INLINE void set_max_num_asserts(size_t count);
+    size_t add_assert(std::string expression, Filename fn, int line, Stage stage);
+
+    size_t process_buffer(const unsigned char *ptr, size_t size, const Filename &fn);
+
+  private:
+    LightMutex _lock;
+
+    typedef SimpleHashMap<std::string, std::nullptr_t, string_hash> Strings;
+    Strings _strings;
+
+    typedef pvector<Assertion> Assertions;
+    Assertions _asserts;
+
+    uint32_t _assert_count = 0;
+
+    friend class Shader;
+  };
+
 protected:
   bool report_parameter_error(const InternalName *name, const ShaderType *type, const char *msg);
 
@@ -280,6 +323,8 @@ public:
 
   INLINE PStatCollector &get_prepare_shader_pcollector();
   INLINE const std::string &get_debug_name() const;
+
+  void process_debug_buffer(const char *ptr, size_t size);
 
 public:
   pvector<Parameter> _parameters;
@@ -304,6 +349,8 @@ public:
   uint64_t _used_caps = 0;
 
   bool _subsumes_alpha_test = false;
+
+  DebugInfo _debug;
 
 protected:
   ShaderFile _filename;

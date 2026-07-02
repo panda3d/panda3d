@@ -52,6 +52,14 @@ is_function_parameter() const {
 }
 
 /**
+ * Returns true if this is a temporary.
+ */
+INLINE bool SpirVResultDatabase::Definition::
+is_temporary() const {
+  return _dtype == DT_temporary;
+}
+
+/**
  * Returns true if this is a constant.
  */
 INLINE bool SpirVResultDatabase::Definition::
@@ -97,6 +105,14 @@ is_function() const {
 INLINE bool SpirVResultDatabase::Definition::
 is_ext_inst() const {
   return _dtype == DT_ext_inst;
+}
+
+/**
+ * Returns true if this is the result of an OpString instruction.
+ */
+INLINE bool SpirVResultDatabase::Definition::
+is_string() const {
+  return _dtype == DT_string;
 }
 
 /**

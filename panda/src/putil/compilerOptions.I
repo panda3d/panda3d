@@ -33,6 +33,29 @@ set_suppress_log(bool enabled) {
 }
 
 /**
+ *
+ */
+INLINE bool CompilerOptions::
+get_debug() const {
+  return (_flags & F_debug) != 0;
+}
+
+/**
+ * If enabled, the shader will be compiled with debugging support.  This
+ * preserves source information and enables features such as debug printf and
+ * shader assertions.  Disabled by default; see also the shader-debug config
+ * variable to enable this globally.
+ */
+INLINE void CompilerOptions::
+set_debug(bool enabled) {
+  if (enabled) {
+    _flags |= F_debug;
+  } else {
+    _flags &= ~F_debug;
+  }
+}
+
+/**
  * Returns the current optimization setting.
  */
 INLINE CompilerOptions::Optimize CompilerOptions::
@@ -70,8 +93,32 @@ get_entry_point() const {
  * language-specific default is used.
  */
 INLINE void CompilerOptions::
-set_entry_point(const std::string &entry_point) {
-  _entry_point = entry_point;
+set_entry_point(std::string entry_point) {
+  _entry_point = std::move(entry_point);
+}
+
+/**
+ * Returns the path that includes are searched along.
+ */
+INLINE const DSearchPath &CompilerOptions::
+get_include_path() const {
+  return _include_path;
+}
+
+/**
+ * Returns the path that includes are searched along.
+ */
+INLINE DSearchPath &CompilerOptions::
+get_include_path() {
+  return _include_path;
+}
+
+/**
+ * Sets the search path that includes are searched along.
+ */
+INLINE void CompilerOptions::
+set_include_path(DSearchPath path) {
+  _include_path = std::move(path);
 }
 
 /**

@@ -17,13 +17,14 @@
 #include "pandabase.h"
 #include "pmap.h"
 #include "pnotify.h"
+#include "dSearchPath.h"
 
 /**
  * Specifies parameters that may be passed to the shader compiler.
  */
 class EXPCL_PANDA_PUTIL CompilerOptions {
 PUBLISHED:
-  CompilerOptions() = default;
+  CompilerOptions();
 
   enum class Optimize {
     NONE = 0,
@@ -35,12 +36,19 @@ public:
   INLINE bool get_suppress_log() const;
   INLINE void set_suppress_log(bool enabled);
 
+  INLINE bool get_debug() const;
+  INLINE void set_debug(bool enabled);
+
   INLINE Optimize get_optimize() const;
   INLINE void set_optimize(Optimize opt);
 
   INLINE bool has_entry_point() const;
   INLINE const std::string &get_entry_point() const;
-  INLINE void set_entry_point(const std::string &entry_point);
+  INLINE void set_entry_point(std::string entry_point);
+
+  INLINE const DSearchPath &get_include_path() const;
+  INLINE DSearchPath &get_include_path();
+  INLINE void set_include_path(DSearchPath include_path);
 
   INLINE bool has_define(const std::string &key) const;
   INLINE std::string get_define(const std::string &key) const;
@@ -50,8 +58,10 @@ PUBLISHED:
   INLINE void undef(const std::string &key);
 
   MAKE_PROPERTY(suppress_log, get_suppress_log, set_suppress_log);
+  MAKE_PROPERTY(debug, get_debug, set_debug);
   MAKE_PROPERTY(optimize, get_optimize, set_optimize);
   MAKE_PROPERTY(entry_point, get_entry_point, set_entry_point);
+  MAKE_PROPERTY(include_path, get_include_path, set_include_path);
   MAKE_MAP_PROPERTY(defines, has_define, get_define, define, undef);
 
   void output(std::ostream &out) const;
@@ -60,11 +70,13 @@ PUBLISHED:
 private:
   enum Flags {
     F_suppress_log       = 0x0001,
+    F_debug              = 0x0002,
   };
 
   int _flags = 0;
   Optimize _optimize = Optimize::PERFORMANCE;
   std::string _entry_point;
+  DSearchPath _include_path;
 
   typedef pmap<std::string, std::string> Defines;
   Defines _defines;

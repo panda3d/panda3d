@@ -308,6 +308,9 @@ def GetHostArch():
 
     target = GetTarget()
     if target == 'windows':
+        machine = platform.machine().lower()
+        if machine in ('arm64', 'aarch64'):
+            return 'arm64'
         return 'x64' if host_64 else 'x86'
 
     machine = platform.machine()
@@ -341,9 +344,11 @@ def SetTarget(target, arch=None):
             arch = 'x86'
         elif arch == 'amd64':
             arch = 'x64'
+        elif arch == 'aarch64':
+            arch = 'arm64'
 
-        if arch is not None and arch != 'x86' and arch != 'x64':
-            exit("Windows architecture must be x86 or x64")
+        if arch is not None and arch not in ('x86', 'x64', 'arm64'):
+            exit("Windows architecture must be x86, x64 or arm64")
 
     elif target == 'darwin':
         DEFAULT_CC = "clang"
@@ -667,7 +672,10 @@ def LocateBinary(binary):
 
 def oscmd(cmd, ignoreError = False, cwd=None):
     if VERBOSE:
-        print(GetColor("blue") + cmd.split(" ", 1)[0] + " " + GetColor("magenta") + cmd.split(" ", 1)[1] + GetColor())
+        if " " in cmd:
+            print(GetColor("blue") + cmd.split(" ", 1)[0] + " " + GetColor("magenta") + cmd.split(" ", 1)[1] + GetColor())
+        else:
+            print(GetColor("blue") + cmd + GetColor())
     sys.stdout.flush()
 
     if cmd[0] == '"':
@@ -1394,6 +1402,8 @@ def GetThirdpartyDir():
 
         if target_arch == 'x64':
             THIRDPARTYDIR = base + "/win-libs-vc" + vc + "-x64/"
+        elif target_arch == 'arm64':
+            THIRDPARTYDIR = base + "/win-libs-vc" + vc + "-arm64/"
         else:
             THIRDPARTYDIR = base + "/win-libs-vc" + vc + "/"
 
@@ -2144,14 +2154,24 @@ def SdkLocatePython(prefer_thirdparty_python=False):
     abiflags = getattr(sys, 'abiflags', '')
 
     if GetTarget() == 'windows':
-        sdkdir = GetThirdpartyBase() + "/win-python"
-        sdkdir += "%d.%d" % sys.version_info[:2]
+        if PkgHasCustomLocation("PYTHON"):
+            # Check our custom location instead (--python-libdir, --python-incdir)
+            sdkdir = FindOptDirectory("PYTHON")
 
-        if GetOptimize() <= 2:
-            sdkdir += "-dbg"
-        if GetTargetArch() == 'x64':
-            sdkdir += "-x64"
+            if sdkdir is None:
+                exit("Could not find a Python installation using these command line options.")
+        else:
+            sdkdir = GetThirdpartyBase() + "/win-python"
+            sdkdir += "%d.%d" % sys.version_info[:2]
 
+            if GetOptimize() <= 2:
+                sdkdir += "-dbg"
+            if GetTargetArch() == 'x64':
+                sdkdir += "-x64"
+            elif GetTargetArch() == 'arm64':
+                sdkdir += "-arm64"
+
+        sdkdir = sdkdir.replace('\\', '/')
         SDK["PYTHON"] = sdkdir
         SDK["PYTHONEXEC"] = SDK["PYTHON"] + "/python"
 
@@ -2824,6 +2844,8 @@ def SetupVisualStudioEnviron():
         # Try the x86 tools, those should work just as well.
         if arch == 'x64' and os.path.isfile(vc_binpath + "\\x86_amd64\\cl.exe"):
             binpath = "{0}\\x86_amd64;{0}".format(vc_binpath)
+        elif arch == 'arm64' and os.path.isfile(vc_binpath + "\\Hostx64\\arm64\\cl.exe"):
+            binpath = "{0}\\Hostx64\\arm64;{0}".format(vc_binpath)
         elif winsdk_ver.startswith('10.'):
             exit("Couldn't find compilers in %s.  You may need to install the Windows SDK 7.1 and the Visual C++ 2010 SP1 Compiler Update for Windows SDK 7.1." % binpath)
         else:
@@ -3094,6 +3116,20 @@ def SetupBuildEnvironment(compiler):
             if GetTargetArch() == 'x86_64':
                 libdir += '64'
             SYS_LIB_DIRS += [libdir]
+
+        # On multiarch systems, system libraries live under /usr/lib/<triplet>.
+        # On some systems these don't show up in -print-search-dirs, so we try
+        # to check for this manually.
+        if target == 'linux':
+            handle = os.popen(GetCXX() + " -print-multiarch 2>/dev/null")
+            triplet = handle.read().strip()
+            handle.close()
+            if triplet:
+                sysroot = SDK.get("SYSROOT", "")
+                for prefix in ("/usr/lib/", "/lib/", "/usr/local/lib/"):
+                    libdir = os.path.normpath(sysroot + prefix + triplet)
+                    if os.path.isdir(libdir) and libdir not in SYS_LIB_DIRS:
+                        SYS_LIB_DIRS.append(libdir)
 
         if sys.platform != "darwin":
             # Some Linux distributions (eg. Fedora) don't add /usr/local/lib64
@@ -3494,6 +3530,8 @@ def GetExtensionSuffix():
         suffix = 't' if gil_disabled and int(gil_disabled) else ''
         if GetTargetArch() == 'x64':
             return dllext + '.cp%d%d%s-win_amd64.pyd' % (sys.version_info[0], sys.version_info[1], suffix)
+        elif GetTargetArch() == 'arm64':
+            return dllext + '.cp%d%d%s-win_arm64.pyd' % (sys.version_info[0], sys.version_info[1], suffix)
         else:
             return dllext + '.cp%d%d%s-win32.pyd' % (sys.version_info[0], sys.version_info[1], suffix)
     elif target == 'emscripten':
@@ -3538,6 +3576,7 @@ def CalcLocation(fn, ipath):
     if (fn == "AndroidManifest.xml"): return OUTPUTDIR+"/"+fn
     if (fn == "classes.dex"): return OUTPUTDIR+"/"+fn
     if (fn.endswith(".cxx")): return CxxFindSource(fn, ipath)
+    if (fn.endswith(".cpp")): return CxxFindSource(fn, ipath)
     if (fn.endswith(".I")):   return CxxFindSource(fn, ipath)
     if (fn.endswith(".h")):   return CxxFindSource(fn, ipath)
     if (fn.endswith(".c")):   return CxxFindSource(fn, ipath)

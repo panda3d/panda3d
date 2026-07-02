@@ -153,6 +153,8 @@ protected:
   typedef pvector<SpecializationConstant> SpecializationConstants;
   SpecializationConstants _spec_constants;
 
+  uint32_t _assert_count = 0;
+
   friend class Shader;
 
 public:

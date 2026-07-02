@@ -19,13 +19,13 @@
 
 // Use different model cache extensions for different stages, since the same
 // shader file might have been loaded more than once for different stages.
-const char *const cache_extensions[] = {
-  "vert.smo",
-  "tesc.smo",
-  "tese.smo",
-  "geom.smo",
-  "frag.smo",
-  "comp.smo",
+const char *const stage_extensions[] = {
+  "vert",
+  "tesc",
+  "tese",
+  "geom",
+  "frag",
+  "comp",
 };
 
 TypeHandle ShaderCompiler::_type_handle;
@@ -68,7 +68,26 @@ compile_now(Stage stage, const Filename &fn, const CompilerOptions &options,
 
   PT(BamCacheRecord) record2;
   if (cache->get_cache_compiled_shaders()) {
-    record2 = cache->lookup(fullpath, cache_extensions[(int)stage]);
+    // Compose a unique extension for this combination of options.
+    std::string ext = stage_extensions[(int)stage];
+    if (options.get_debug()) {
+      ext += ".d";
+    }
+    switch (options.get_optimize()) {
+    case CompilerOptions::Optimize::SIZE:
+      ext += ".os";
+      break;
+
+    case CompilerOptions::Optimize::PERFORMANCE:
+      ext += ".op";
+      break;
+
+    default:
+      break;
+    }
+    ext += ".smo";
+
+    record2 = cache->lookup(fullpath, ext);
     if (record2 != nullptr && record2->has_data()) {
       PT(ShaderModule) module = DCAST(ShaderModule, record2->get_data());
 

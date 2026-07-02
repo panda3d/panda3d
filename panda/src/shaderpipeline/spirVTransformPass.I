@@ -38,6 +38,22 @@ unwrap_pointer_type(uint32_t id) const {
 }
 
 /**
+ * Looks up the given string, checking that it has been defined already in
+ * this pass.
+ */
+INLINE std::string SpirVTransformPass::
+resolve_string(uint32_t id) const {
+  const Definition &def = _db.get_definition(id);
+  if (!def.is_string()) {
+    error_expected(id, "a string");
+    return std::string();
+  }
+  std::string string = def._name;
+  nassertr(is_defined(id), string);
+  return string;
+}
+
+/**
  * Looks up the given constant, checking that it has been defined already in
  * this pass.
  */
@@ -141,6 +157,12 @@ decorate(uint32_t id, spv::Decoration decoration) {
   nassertv(decoration != spv::DecorationLocation);
   _new_annotations.insert(_new_annotations.end(),
     {spv::OpDecorate | (3 << spv::WordCountShift), id, (uint32_t)decoration});
+
+  // Have the database process the decoration as well, to keep it consistent
+  // with a fresh parse of the module.
+  const uint32_t args[2] = {id, (uint32_t)decoration};
+  uint32_t current_function_id = 0;
+  _db.parse_instruction(spv::OpDecorate, args, 2, current_function_id);
 }
 
 /**
@@ -151,12 +173,11 @@ decorate(uint32_t id, spv::Decoration decoration, uint32_t value) {
   _new_annotations.insert(_new_annotations.end(),
     {spv::OpDecorate | (4 << spv::WordCountShift), id, (uint32_t)decoration, value});
 
-  if (decoration == spv::DecorationLocation) {
-    _db.modify_definition(id)._location = (int)value;
-  }
-  else if (decoration == spv::DecorationBuiltIn) {
-    _db.modify_definition(id)._builtin = (spv::BuiltIn)value;
-  }
+  // Have the database process the decoration as well, to keep it consistent
+  // with a fresh parse of the module.
+  const uint32_t args[3] = {id, (uint32_t)decoration, value};
+  uint32_t current_function_id = 0;
+  _db.parse_instruction(spv::OpDecorate, args, 3, current_function_id);
 }
 
 /**

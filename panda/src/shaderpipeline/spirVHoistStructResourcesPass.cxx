@@ -74,7 +74,11 @@ transform_definition_op(Instruction op) {
         }
         else {
           const MemberDefinition &member_def = def._members[i - 1];
-          new_struct.add_member(resolve_type(member_def._type_id), member_def._name, member_def._offset);
+          if (member_def._offset >= 0) {
+            new_struct.add_member(resolve_type(member_def._type_id), member_def._name, (uint32_t)member_def._offset);
+          } else {
+            new_struct.add_member(resolve_type(member_def._type_id), member_def._name);
+          }
           new_args.push_back(op.args[i]);
         }
       }
@@ -175,6 +179,9 @@ transform_definition_op(Instruction op) {
       if (ait != _affected_types.end()) {
         uint32_t var_id = op.args[1];
         spv::StorageClass storage_class = (spv::StorageClass)op.args[2];
+
+        // The struct type has been rebuilt without the hoisted members.
+        _db.modify_definition(var_id)._type = resolve_type(type_id);
 
         for (const auto &pair : ait->second) {
           const ShaderType *new_type = pair.first;

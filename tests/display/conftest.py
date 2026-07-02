@@ -232,7 +232,7 @@ class ShaderEnvironment:
         use_compute = self.allow_compute and gsg.supports_compute_shaders and \
                       (gsg.supported_shader_capabilities & core.Shader.C_image_load_store) != 0
 
-        missing_exts = sorted(ext for ext in exts if not gsg.has_extension(ext))
+        missing_exts = sorted(ext for ext in exts if not gsg.has_extension(ext) and ext != 'GL_EXT_debug_printf')
         if missing_exts:
             pytest.skip("missing extensions: " + ' '.join(missing_exts))
 

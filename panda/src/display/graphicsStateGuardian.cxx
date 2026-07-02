@@ -2596,6 +2596,55 @@ make_shadow_buffer(LightLensNode *light, Texture *tex, GraphicsOutput *host) {
 }
 
 /**
+ * Returns the ShaderBuffer that may be written to by shaders containing debug
+ * print statements, assertions, etc.
+ */
+ShaderBuffer *GraphicsStateGuardian::
+get_shader_debug_buffer(size_t min_size) {
+  if (_shader_debug_buffer == nullptr ||
+      _shader_debug_buffer->get_data_size_bytes() < min_size) {
+    // Round the configured size up to a multiple of 4 bytes, and ensure it is
+    // at least large enough to hold the header word and assertion slots.
+    size_t size = std::max((size_t)sizeof(uint32_t), min_size);
+    size = std::max(size, (size_t)std::max(0, shader_debug_buffer_size.get_value()));
+    size = (size + 3) & ~3;
+    _shader_debug_buffer = new ShaderBuffer("debug", vector_uchar(size, 0), GeomEnums::UH_dynamic);
+  }
+  return _shader_debug_buffer;
+}
+
+/**
+ * Processes print statements and assertions issued by the current shader.
+ * Returns false if an error occurred.
+ */
+bool GraphicsStateGuardian::
+drain_shader_debug_buffer(Shader *shader) {
+#ifdef NDEBUG
+  return false;
+#else
+  if (_shader_debug_buffer == nullptr || shader == nullptr) {
+    return false;
+  }
+
+  // This will undoubtedly cause a complete pipeline stall, but since this is
+  // just for debugging...
+  vector_uchar data;
+  if (!extract_shader_buffer_data(_shader_debug_buffer, data)) {
+    return false;
+  }
+
+  size_t dirty_bytes = shader->_debug.process_buffer(data.data(), data.size(), shader->get_filename());
+
+  // Zero out the region of the buffer that was written this frame, so it's
+  // ready for the next frame.
+  memset(data.data(), 0, dirty_bytes);
+  update_shader_buffer_data(_shader_debug_buffer, 0, dirty_bytes, data.data());
+
+  return true;
+#endif
+}
+
+/**
  * Ensures that an appropriate shader has been generated for the given state.
  * This is stored in the _generated_shader field on the RenderState.
  */

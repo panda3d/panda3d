@@ -4,25 +4,6 @@ import pytest
 import sys
 
 
-@pytest.fixture(scope="session")
-def vfs():
-    return VirtualFileSystem.get_global_ptr()
-
-
-@pytest.fixture
-def ramdir():
-    """Fixture yielding a fresh ramdisk directory."""
-    from panda3d.core import VirtualFileMountRamdisk, Filename
-
-    vfs = VirtualFileSystem.get_global_ptr()
-    mount = VirtualFileMountRamdisk()
-    dir = Filename.temporary("/virtual", "ram.")
-    assert vfs.mount(mount, dir, 0)
-
-    yield dir
-    vfs.unmount(mount)
-
-
 def test_shader_load_multi(vfs, ramdir):
     # Try non-existent first.
     shad0 = Shader.load(Shader.SL_GLSL,

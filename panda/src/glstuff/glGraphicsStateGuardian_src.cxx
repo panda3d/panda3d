@@ -6824,6 +6824,12 @@ end_draw_primitives() {
   GraphicsStateGuardian::end_draw_primitives();
   maybe_gl_finish();
   report_my_gl_errors();
+
+#if !defined(NDEBUG) && !defined(OPENGLES_1)
+  if (_current_shader_context != nullptr && _current_shader_context->uses_debug_buffer()) {
+    drain_shader_debug_buffer(_current_shader);
+  }
+#endif
 }
 
 #ifndef OPENGLES_1
@@ -8582,6 +8588,12 @@ dispatch_compute(int num_groups_x, int num_groups_y, int num_groups_z) {
   _glDispatchCompute(num_groups_x, num_groups_y, num_groups_z);
 
   maybe_gl_finish();
+
+#if !defined(NDEBUG) && !defined(OPENGLES_1)
+  if (gsc->uses_debug_buffer()) {
+    drain_shader_debug_buffer(gsc->get_shader());
+  }
+#endif
 }
 #endif  // !OPENGLES_1
 

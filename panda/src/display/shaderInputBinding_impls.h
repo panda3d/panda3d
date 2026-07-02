@@ -365,6 +365,23 @@ private:
   pvector<CPT_InternalName> _resources;
 };
 
+/**
+ * This binds a parameter to the global debug buffer.
+ */
+class EXPCL_PANDA_DISPLAY ShaderDebugBufferBinding : public ShaderInputBinding {
+public:
+  ShaderDebugBufferBinding(size_t minimum_size);
+
+  virtual int get_state_dep() const override;
+
+  virtual ResourceId get_resource_id(int index) const override;
+  virtual PT(ShaderBuffer) fetch_shader_buffer(const State &state,
+                                               ResourceId resource_id) const override;
+
+private:
+  size_t _min_size;
+};
+
 #include "shaderInputBinding_impls.I"
 
 #endif

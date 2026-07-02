@@ -295,7 +295,7 @@ get_highest_on_bit(unsigned long x) {
   unsigned long result;
   return (_BitScanReverse(&result, (unsigned long) x) == 0) ? -1 : result;
 #elif defined(__GNUC__)
-  return (x == 0) ? -1 : 63 - __builtin_clzl(x);
+  return (x == 0) ? -1 : (int)(sizeof(unsigned long) * 8 - 1) - __builtin_clzl(x);
 #else
   unsigned long long w = flood_bits_down(x);
   return count_bits_in_word(w) - 1;

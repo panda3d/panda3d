@@ -73,6 +73,204 @@ Shader::
 }
 
 /**
+ * Used by SpirVDebugOutputPass, this ensures that the given assertion is
+ * registered.
+ */
+size_t Shader::DebugInfo::
+add_assert(std::string expression, Filename fn, int line, Stage stage) {
+  LightMutexHolder holder(_lock);
+  size_t assert_id = 0;
+  Assertion assertion{std::move(expression), std::move(fn), line, std::move(stage)};
+  for (assert_id = 0; assert_id < _asserts.size(); ++assert_id) {
+    if (_asserts[assert_id]._expression == assertion._expression &&
+        _asserts[assert_id]._file == assertion._file &&
+        _asserts[assert_id]._line == assertion._line &&
+        _asserts[assert_id]._stage == assertion._stage) {
+      break;
+    }
+  }
+  nassertr(assert_id < _assert_count, 0);
+  if (assert_id == _asserts.size()) {
+    _asserts.push_back(std::move(assertion));
+  }
+  return assert_id;
+}
+
+/**
+ * Returns how many bytes have been consumed.
+ */
+size_t Shader::DebugInfo::
+process_buffer(const unsigned char *data, size_t size, const Filename &fn) {
+  LightMutexHolder holder(_lock);
+  if (_asserts.empty() && _strings.is_empty()) {
+    // Nothing to do.
+    return 0;
+  }
+
+  const uint32_t *begin = (const uint32_t *)data;
+  const uint32_t *end = (const uint32_t *)data + size;
+
+  const uint32_t *ptr = begin;
+  uint32_t count = *ptr++;
+
+  if (shader_cat.is_debug()) {
+    shader_cat.debug()
+      << "Shader " << fn << " debug print log contains " << count << " words\n";
+  }
+
+  // Per assertion we store a count of how many times it triggered, as well as
+  // the invocation id (or the equivalent for this shader type).
+  const DebugInfo::Assertion *first_assert = nullptr;
+  for (size_t i = 0; i < _assert_count; ++i) {
+    if (i >= _asserts.size()) {
+      ptr += 4;
+      continue;
+    }
+    const DebugInfo::Assertion &assert = _asserts[i];
+    uint32_t assert_count = *ptr++;
+    union {
+      float f;
+      int32_t i;
+      uint32_t u;
+    } invoc_x, invoc_y, invoc_z;
+    invoc_x.u = *ptr++;
+    invoc_y.u = *ptr++;
+    invoc_z.u = *ptr++;
+
+    if (assert_count > 0) {
+      if (first_assert == nullptr) {
+        first_assert = &assert;
+      }
+
+      auto &out = shader_cat.error()
+        << "Shader assertion " << assert._expression << " at "
+        << assert._file << ":" << assert._line << " failed "
+        << assert_count << " times";
+
+      switch (assert._stage) {
+      case Stage::VERTEX:
+        out << "; first observed at vertex " << invoc_x.i << ", instance " << invoc_y.i << "\n";
+        break;
+
+      case Stage::GEOMETRY:
+      case Stage::TESS_CONTROL:
+        out << "; first observed at primitive " << invoc_x.i << ", invocation " << invoc_y.i << "\n";
+        break;
+
+      case Stage::TESS_EVALUATION:
+        out << "; first observed at primitive " << invoc_x.i << ", coord (" << invoc_y.f << ", " << invoc_z.f << ")\n";
+        break;
+
+      case Stage::FRAGMENT:
+        out << "; first observed at fragment (" << invoc_x.f << ", " << invoc_y.f << ") depth " << invoc_z.f << "\n";
+        break;
+
+      case Stage::COMPUTE:
+        out << "; first observed at invocation (" << invoc_x.u << ", " << invoc_y.u << ", " << invoc_z.u << ")\n";
+        break;
+
+      default:
+        out << "\n";
+        break;
+      }
+    }
+  }
+
+  // Now handle the print statements.  If the shader produced more output than
+  // fits in the buffer, the GPU dropped the excess; warn the user that some
+  // output was lost and how to capture it next time.
+  bool truncated = count > (uint32_t)(end - ptr);
+  if (truncated) {
+    shader_cat.warning()
+      << "Shader " << fn << " produced " << count
+      << " words of debug output, but only " << (end - ptr)
+      << " fit in the debug buffer; output was truncated.  Increase "
+         "shader-debug-buffer-size to capture more.\n";
+  }
+
+  char buf[1024];
+
+  end = std::min(end, ptr + count);
+  while (ptr != end) {
+    uint32_t index = *ptr++;
+
+    // We deliberately reserved string id 0 so that we can catch shaders
+    // having incremented the count but not written the string
+    if (index == 0 || index - 1 >= _strings.size()) {
+      if (index != 0 || !truncated) {
+        shader_cat.error()
+          << "Shader debug log is corrupt, encountered invalid string index " << index << "\n";
+      }
+      break;
+    }
+    const std::string &string = _strings.get_key(index - 1);
+
+    auto &out = nout;
+
+    const char *fmt = string.c_str();
+    while (*fmt != 0) {
+      char c = *fmt++;
+      if (c != '%') {
+        out.put(c);
+        continue;
+      }
+
+      c = *fmt++;
+      if (c == '%' || c == 0) {
+        out.put(c);
+        continue;
+      }
+
+      std::string format = "%";
+      while (!isalpha(c)) {
+        format += c;
+        c = *fmt++;
+      }
+      format += c;
+
+      union {
+        float f;
+        int32_t i;
+        uint32_t u;
+      } arg;
+      arg.u = *ptr++;
+
+      // Note that this string will never contain vector specifiers, those
+      // were expanded to individual arguments by SpirVDebugOutputPass.
+      if (c == 'u' || c == 'x' || c == 'X' || c == 'o') {
+        // Unsigned integer
+        snprintf(buf, sizeof(buf), format.c_str(), (unsigned int)arg.u);
+      }
+      else if (c == 'i' || c == 'd' || c == 'c') {
+        // Signed integer
+        snprintf(buf, sizeof(buf), format.c_str(), (int)arg.i);
+      }
+      else if (c == 'a' || c == 'A' || c == 'e' || c == 'E' || c == 'f' || c == 'F' || c == 'g' || c == 'G') {
+        // Floating-point
+        snprintf(buf, sizeof(buf), format.c_str(), (double)arg.f);
+      }
+      else if (c == 's') {
+        // %s got converted to the appropriate type, except for bool, which
+        // doesn't have its own format code.
+        out << (arg.u ? "true" : "false");
+        continue;
+      }
+      out << buf;
+    }
+    out.put('\n');
+  }
+  nout.flush();
+
+  if (first_assert != nullptr) {
+    Notify::ptr()->assert_failure(first_assert->_expression,
+                                  first_assert->_line,
+                                  first_assert->_file.c_str());
+  }
+
+  return ptr - begin;
+}
+
+/**
  * Generate an error message including a description of the specified
  * parameter.  Always returns false.
  */
@@ -994,6 +1192,7 @@ add_module(PT(ShaderModule) module) {
   }
 
   uint64_t used_caps = module->get_used_capabilities();
+  uint32_t assert_count = module->_assert_count;
 
   // Make sure that any modifications made to the module will not affect other
   // Shader objects, by storing it as copy-on-write.
@@ -1036,6 +1235,7 @@ add_module(PT(ShaderModule) module) {
   _modules.push_back(std::move(cow_module));
   _module_mask |= (1u << (uint32_t)stage);
   _used_caps |= used_caps;
+  _debug._assert_count += assert_count;
   return true;
 }
 
@@ -1292,7 +1492,9 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
     _module_mask = 0u;
 
     for (int i = 0; i < num_modules; ++i) {
-      add_module(DCAST(ShaderModule, p_list[pi++]));
+      ShaderModule *module = DCAST(ShaderModule, p_list[pi++]);
+      _debug._assert_count += module->_assert_count;
+      add_module(module);
     }
   }
 
@@ -1343,6 +1545,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _module_mask = mask;
   int num_modules = count_bits_in_word(mask);
 
+  _debug._assert_count = 0;
   for (int i = 0; i < num_modules; ++i) {
     Stage stage = (Stage)get_lowest_on_bit(mask);
     mask &= ~(1u << (uint32_t)stage);

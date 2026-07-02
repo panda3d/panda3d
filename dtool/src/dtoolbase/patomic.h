@@ -38,6 +38,11 @@
 #define ULF_WAKE_ALL 0x00000100
 #endif
 
+#ifdef __FreeBSD__
+#include <sys/types.h>
+#include <sys/umtx.h>
+#endif
+
 #if defined(THREAD_DUMMY_IMPL) || defined(THREAD_SIMPLE_IMPL)
 
 /**
@@ -173,6 +178,8 @@ EXPCL_DTOOL_DTOOLBASE extern void (__stdcall *_patomic_wake_all_func)(PVOID);
 #elif defined(__APPLE__)
 extern "C" int __ulock_wait(uint32_t op, void *addr, uint64_t value, uint32_t timeout);
 extern "C" int __ulock_wake(uint32_t op, void *addr, uint64_t wake_value);
+#elif defined(__FreeBSD__)
+// Uses the _umtx_op syscall declared in <sys/umtx.h>.
 #elif !defined(__linux__) && defined(HAVE_POSIX_THREADS)
 EXPCL_DTOOL_DTOOLBASE void _patomic_wait(const volatile uint32_t *value, uint32_t old);
 EXPCL_DTOOL_DTOOLBASE void _patomic_notify_all(volatile uint32_t *value);

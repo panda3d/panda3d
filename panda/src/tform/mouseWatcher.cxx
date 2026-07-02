@@ -811,6 +811,18 @@ intersect_regions(MouseWatcher::Regions &only_a,
       ++b_ri;
     }
   }
+
+  // Add regions left over in regions_a.
+  while (a_ri != regions_a.end()) {
+    only_a.push_back(*a_ri);
+    ++a_ri;
+  }
+
+  // Add regions left over in regions_b.
+  while (b_ri != regions_b.end()) {
+    only_b.push_back(*b_ri);
+    ++b_ri;
+  }
 }
 
 /**

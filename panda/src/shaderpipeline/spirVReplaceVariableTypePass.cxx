@@ -106,15 +106,25 @@ transform_function_op(Instruction op) {
           }
         }
         else if (new_vector != nullptr) {
-          // Convert scalar to vector.
+          // Convert the scalar, then replicate it into a vector.
           new_scalar_type = new_vector->get_scalar_type();
+          temp = op_convert(new_scalar_type, temp);
           pvector<uint32_t> components(new_vector->get_num_components(), temp);
-          temp = op_composite_construct(new_scalar, components);
+          push_id(op.args[1]);
+          op_composite_construct(new_vector, components);
+          return false;
         }
         else if (new_scalar != nullptr) {
-          // Convert vector to scalar.
           new_scalar_type = new_scalar->get_scalar_type();
-          temp = op_composite_extract(temp, {0});
+          if (old_vector != nullptr) {
+            if (old_vector->get_scalar_type() == new_scalar_type) {
+              push_id(op.args[1]);
+              op_composite_extract(temp, {0});
+              return false;
+            }
+            // Convert vector to scalar.
+            temp = op_composite_extract(temp, {0});
+          }
         }
         else {
           new_scalar_type = new_scalar->get_scalar_type();

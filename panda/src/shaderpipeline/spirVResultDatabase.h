@@ -20,6 +20,7 @@ private:
     DT_function,
     DT_temporary,
     DT_spec_constant,
+    DT_string,
   };
 
 public:
@@ -107,12 +108,14 @@ public:
     INLINE bool is_function_type() const;
     INLINE bool is_variable() const;
     INLINE bool is_function_parameter() const;
+    INLINE bool is_temporary() const;
     INLINE bool is_constant() const;
     INLINE bool is_constant(uint32_t value) const;
     INLINE bool is_null_constant() const;
     INLINE bool is_spec_constant() const;
     INLINE bool is_function() const;
     INLINE bool is_ext_inst() const;
+    INLINE bool is_string() const;
 
     INLINE bool is_used() const;
     INLINE bool is_dref_sampled() const;

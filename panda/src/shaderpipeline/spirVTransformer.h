@@ -38,6 +38,7 @@ public:
   INLINE void run(SpirVTransformPass &&pass);
 
   InstructionStream get_result() const;
+  bool validate_db() const;
 
   INLINE uint32_t get_id_bound() const;
   INLINE const SpirVResultDatabase &get_db() const;

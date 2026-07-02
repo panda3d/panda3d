@@ -2023,11 +2023,10 @@ fetch_data(const State &state, void *into, bool packed) const {
     return;
 
   default:
-#ifndef NDEBUG
     shader_cat.error()
       << "Invalid ShaderPtrData type " << (int)ptr_data._type
       << " for shader input '" << *_input << "'\n";
-#endif
+    break;
   }
 }
 
@@ -2117,11 +2116,10 @@ fetch_data(const State &state, void *into, bool packed) const {
     return;
 
   default:
-#ifndef NDEBUG
     shader_cat.error()
       << "Invalid ShaderPtrData type " << (int)ptr_data._type
       << " for shader input '" << *_input << "'\n";
-#endif
+    break;
   }
 }
 
@@ -2230,11 +2228,10 @@ fetch_data(const State &state, void *into, bool packed) const {
     return;
 
   default:
-#ifndef NDEBUG
     shader_cat.error()
       << "Invalid ShaderPtrData type " << (int)ptr_data._type
       << " for shader input '" << *_input << "'\n";
-#endif
+    break;
   }
 }
 
@@ -2971,7 +2968,7 @@ make_binding_cg(const InternalName *name, const ShaderType *type) {
       pieces[0] = "row3";
     }
   }
-  else if (pieces[0].size() == 3 && // mat_modelproj et al
+  else if (pieces.size() >= 2 && pieces[0].size() == 3 && // mat_modelproj et al
            (pieces[0] == "mat" || pieces[0] == "inv" ||
             pieces[0] == "tps" || pieces[0] == "itp")) {
     std::string trans = pieces[0];
@@ -3563,4 +3560,41 @@ make_binding_cg(const InternalName *name, const ShaderType *type) {
   // If we get here, it's not a specially recognized input, but just a regular
   // user-defined input.
   return make_shader_input(type, name);
+}
+
+/**
+ * Constructs a binding to the global debug buffer, ensuring it is large enough
+ * to hold this shader's fixed-size debug records.
+ */
+ShaderDebugBufferBinding::
+ShaderDebugBufferBinding(size_t min_size) :
+  _min_size(min_size) {
+}
+
+/**
+ * Returns a mask indicating which state changes should cause the parameter to
+ * be respecified.
+ */
+int ShaderDebugBufferBinding::
+get_state_dep() const {
+  // There is only one, so no dependency whatsoever.
+  return 0;
+}
+
+/**
+ * Returns an opaque resource identifier that can later be used to fetch the
+ * nth resource, which is of the given type.
+ */
+ShaderInputBinding::ResourceId ShaderDebugBufferBinding::
+get_resource_id(int index) const {
+  return 0;
+}
+
+/**
+ * Fetches the shader buffer associated with the given resource identifier,
+ * which was previously returned by get_resource_id.
+ */
+PT(ShaderBuffer) ShaderDebugBufferBinding::
+fetch_shader_buffer(const State &state, ResourceId resource_id) const {
+  return state.gsg->get_shader_debug_buffer(_min_size);
 }
