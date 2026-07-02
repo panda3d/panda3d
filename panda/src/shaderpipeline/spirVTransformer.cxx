@@ -115,13 +115,18 @@ run(SpirVTransformPass &pass) {
   for (const auto &pair : pass._deleted_members) {
     SpirVResultDatabase::Definition &def = _db.modify_definition(pair.first);
 
-    for (size_t i = 0; i < def._members.size();) {
-      if (pair.second.count(i)) {
-        def._members.erase(def._members.begin() + i);
-        nassertd(def._members[i]._new_index == (int)i) continue;
-      }
-      ++i;
+    // The set contains original member indices, so erase in descending order,
+    // which leaves the positions of the members yet to be erased unaffected.
+    for (auto rit = pair.second.rbegin(); rit != pair.second.rend(); ++rit) {
+      nassertd(*rit < def._members.size()) continue;
+      def._members.erase(def._members.begin() + *rit);
     }
+
+#ifndef NDEBUG
+    for (size_t i = 0; i < def._members.size(); ++i) {
+      nassertd(def._members[i]._new_index == (int)i) break;
+    }
+#endif
   }
 }
 
