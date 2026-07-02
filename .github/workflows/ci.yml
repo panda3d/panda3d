@@ -168,7 +168,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
       with:
         fetch-depth: 10
 
@@ -328,7 +328,7 @@ jobs:
         PYTHON_EXECUTABLE=$(grep 'Python_EXECUTABLE:' CMakeCache.txt | sed 's/.*=//')
         $PYTHON_EXECUTABLE -m pip install -r ../requirements-test.txt
         export COVERAGE_FILE=.coverage.$RANDOM LLVM_PROFILE_FILE=$PWD/pid-%p.profraw
-        run_pytest ../tests --cov=.
+        run_pytest --no-cxx-tests ../tests --cov=.
       # END B
 
     - name: Setup Python (Python 3.10)
@@ -361,7 +361,7 @@ jobs:
         PYTHON_EXECUTABLE=$(grep 'Python_EXECUTABLE:' CMakeCache.txt | sed 's/.*=//')
         $PYTHON_EXECUTABLE -m pip install -r ../requirements-test.txt
         export COVERAGE_FILE=.coverage.$RANDOM LLVM_PROFILE_FILE=$PWD/pid-%p.profraw
-        run_pytest ../tests --cov=.
+        run_pytest --no-cxx-tests ../tests --cov=.
       # END B
 
     - name: Setup Python (Python 3.11)
@@ -394,7 +394,7 @@ jobs:
         PYTHON_EXECUTABLE=$(grep 'Python_EXECUTABLE:' CMakeCache.txt | sed 's/.*=//')
         $PYTHON_EXECUTABLE -m pip install -r ../requirements-test.txt
         export COVERAGE_FILE=.coverage.$RANDOM LLVM_PROFILE_FILE=$PWD/pid-%p.profraw
-        run_pytest ../tests --cov=.
+        run_pytest --no-cxx-tests ../tests --cov=.
       # END B
 
     - name: Setup Python (Python 3.12)
@@ -427,7 +427,7 @@ jobs:
         PYTHON_EXECUTABLE=$(grep 'Python_EXECUTABLE:' CMakeCache.txt | sed 's/.*=//')
         $PYTHON_EXECUTABLE -m pip install -r ../requirements-test.txt
         export COVERAGE_FILE=.coverage.$RANDOM LLVM_PROFILE_FILE=$PWD/pid-%p.profraw
-        run_pytest ../tests --cov=.
+        run_pytest --no-cxx-tests ../tests --cov=.
       # END B
 
     - name: Show ASan errors
@@ -475,7 +475,7 @@ jobs:
         os: [ubuntu-24.04, windows-2022, macOS-15]
     runs-on: ${{ matrix.os }}
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
 
     - name: Install dependencies (Ubuntu)
       if: matrix.os == 'ubuntu-24.04'
@@ -532,7 +532,7 @@ jobs:
       shell: bash
       run: |
         python -m pip install -r requirements-test.txt
-        PYTHONPATH=built_dbl LD_LIBRARY_PATH=built_dbl/lib:$pythonLocation/lib DYLD_LIBRARY_PATH=built_dbl/lib python -m pytest
+        PYTHONPATH=built_dbl LD_LIBRARY_PATH=built_dbl/lib:$pythonLocation/lib DYLD_LIBRARY_PATH=built_dbl/lib python -m pytest --no-cxx-tests
 
     - name: Make installer
       run: |
@@ -550,7 +550,7 @@ jobs:
       shell: bash
       run: |
         python -m pip install -r requirements-test.txt
-        PYTHONPATH=built LD_LIBRARY_PATH=built/lib:$pythonLocation/lib DYLD_LIBRARY_PATH=built/lib python -m pytest
+        PYTHONPATH=built LD_LIBRARY_PATH=built/lib:$pythonLocation/lib DYLD_LIBRARY_PATH=built/lib python -m pytest --no-cxx-tests
 
     - name: Set up Python 3.10
       uses: actions/setup-python@v6
@@ -564,7 +564,7 @@ jobs:
       shell: bash
       run: |
         python -m pip install -r requirements-test.txt
-        PYTHONPATH=built LD_LIBRARY_PATH=built/lib:$pythonLocation/lib DYLD_LIBRARY_PATH=built/lib python -m pytest
+        PYTHONPATH=built LD_LIBRARY_PATH=built/lib:$pythonLocation/lib DYLD_LIBRARY_PATH=built/lib python -m pytest --no-cxx-tests
 
     - name: Set up Python 3.9
       uses: actions/setup-python@v6
@@ -578,7 +578,7 @@ jobs:
       shell: bash
       run: |
         python -m pip install -r requirements-test.txt
-        PYTHONPATH=built LD_LIBRARY_PATH=built/lib:$pythonLocation/lib DYLD_LIBRARY_PATH=built/lib python -m pytest
+        PYTHONPATH=built LD_LIBRARY_PATH=built/lib:$pythonLocation/lib DYLD_LIBRARY_PATH=built/lib python -m pytest --no-cxx-tests
 
     - name: Set up Python 3.8
       uses: actions/setup-python@v6
@@ -592,7 +592,7 @@ jobs:
       shell: bash
       run: |
         python -m pip install -r requirements-test.txt
-        PYTHONPATH=built LD_LIBRARY_PATH=built/lib:$pythonLocation/lib DYLD_LIBRARY_PATH=built/lib python -m pytest
+        PYTHONPATH=built LD_LIBRARY_PATH=built/lib:$pythonLocation/lib DYLD_LIBRARY_PATH=built/lib python -m pytest --no-cxx-tests
 
     - name: Make installer
       run: |
@@ -602,7 +602,7 @@ jobs:
     if: "!contains(github.event.head_commit.message, '[skip ci]') && !contains(github.event.head_commit.message, '[ci skip]')"
     runs-on: ubuntu-24.04
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
 
     - name: Install dependencies
       run: |
@@ -671,15 +671,20 @@ jobs:
       run: |
         python3 makepanda/makepanda.py --git-commit=${{github.sha}} --target emscripten --python-incdir=~/python/usr/local/include --python-libdir=~/python/usr/local/lib --static --everything --no-pandatool --no-deploytools --verbose --threads=4
 
-    - name: Install test dependencies
+    - name: Run C++ tests in node.js
+      shell: bash
+      run: |
+        node built/bin/run_cxx_tests.js
+
+    - name: Install pytest dependencies
       shell: bash
       run: |
         python3 -m pip install -t ~/python/usr/local/lib/python3.12/site-packages -r requirements-test.txt
 
-    - name: Test in node.js
+    - name: Run Python tests in node.js
       shell: bash
       run: |
-        PYTHONHOME=~/python/usr/local PYTHONPATH=built node built/bin/run_tests.js tests
+        PYTHONHOME=~/python/usr/local PYTHONPATH=built node built/bin/run_pytest.js --no-cxx-tests tests
 
   android:
     if: "!contains(github.event.head_commit.message, '[skip ci]') && !contains(github.event.head_commit.message, '[ci skip]')"
@@ -715,7 +720,7 @@ jobs:
 
     runs-on: ${{ matrix.runner }}
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
 
     - name: Setup Android SDK
       uses: android-actions/setup-android@v4
@@ -822,7 +827,8 @@ jobs:
         profile: pixel_6
         script: |
           adb shell "rm -rf /data/local/tmp/panda3d-tests"
-          adb push built/bin/run_tests /data/local/tmp/panda3d-tests/run_tests
+          adb push built/bin/run_cxx_tests /data/local/tmp/panda3d-tests/run_cxx_tests
+          adb push built/bin/run_pytest /data/local/tmp/panda3d-tests/run_pytest
           adb shell "mkdir /data/local/tmp/panda3d-tests/lib"
           adb push built/lib/*.so /data/local/tmp/panda3d-tests/lib
           adb push ~/python-prefix/lib/*.so /data/local/tmp/panda3d-tests/lib
@@ -832,4 +838,5 @@ jobs:
           adb push built/models /data/local/tmp/panda3d-tests/models
           adb push built/etc /data/local/tmp/panda3d-tests/etc
           adb push tests /data/local/tmp/panda3d-tests/tests
-          adb shell "cd /data/local/tmp/panda3d-tests && LD_LIBRARY_PATH=/data/local/tmp/panda3d-tests/lib PYTHONPATH=/data/local/tmp/panda3d-tests/lib/python3.13/site-packages ./run_tests -v tests"
+          adb shell "cd /data/local/tmp/panda3d-tests && LD_LIBRARY_PATH=/data/local/tmp/panda3d-tests/lib ./run_cxx_tests"
+          adb shell "cd /data/local/tmp/panda3d-tests && LD_LIBRARY_PATH=/data/local/tmp/panda3d-tests/lib PYTHONPATH=/data/local/tmp/panda3d-tests/lib/python3.13/site-packages ./run_pytest --no-cxx-tests -v tests"

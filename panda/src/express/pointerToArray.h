@@ -336,7 +336,8 @@ PUBLISHED:
   INLINE const Element *p() const;
   INLINE const pvector<Element> &v() const;
   INLINE const ReferenceCountedVector<Element> *v0() const;
-  INLINE PointerToArray<Element> cast_non_const() const;
+  INLINE PointerToArray<Element> cast_non_const() const &;
+  INLINE PointerToArray<Element> cast_non_const() &&;
 
   // Methods to help out Python and other high-level languages.
   INLINE const Element &get_element(size_type n) const;

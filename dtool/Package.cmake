@@ -503,7 +503,7 @@ package_option(JPEG "Enable support for loading .jpg images.")
 package_status(JPEG "libjpeg")
 
 # PNG
-find_package(PNG QUIET)
+find_package(PNG QUIET MODULE)
 
 package_option(PNG
   "Enable support for loading .png images."
@@ -580,6 +580,7 @@ its own internal implementation.  The primary advantage of using
 Eigen is SSE2 support, which is only activated if LINMATH_ALIGN
 is also enabled."
   FOUND_AS Eigen3
+  IMPORTED_AS Eigen3::Eigen
   LICENSE "MPL-2")
 
 option(LINMATH_ALIGN

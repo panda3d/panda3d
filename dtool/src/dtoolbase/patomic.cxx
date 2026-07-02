@@ -69,8 +69,8 @@ static BOOL __stdcall
 emulated_wait(volatile VOID *addr, PVOID cmp, SIZE_T size, DWORD timeout) {
   assert(size == sizeof(LONG));
 
-  LONG cmpval = *(LONG *)cmp;
-  if (*(LONG *)addr != cmpval) {
+  LONG cmpval = *(const LONG *)cmp;
+  if (InterlockedOr((volatile LONG *)addr, 0) != cmpval) {
     return TRUE;
   }
 
@@ -78,9 +78,9 @@ emulated_wait(volatile VOID *addr, PVOID cmp, SIZE_T size, DWORD timeout) {
   WaitTableEntry &entry = _wait_table[i];
   AcquireSRWLockExclusive(&entry._lock);
   ++entry._waiters;
-  while (*(LONG *)addr == cmpval) {
-    if (SleepConditionVariableSRW(&entry._cvar, &entry._lock, timeout, 0) != 0) {
-      // Timeout.
+  while (InterlockedOr((volatile LONG *)addr, 0) == cmpval) {
+    if (SleepConditionVariableSRW(&entry._cvar, &entry._lock, timeout, 0) == 0) {
+      // Timeout or failure.
       --entry._waiters;
       ReleaseSRWLockExclusive(&entry._lock);
       return FALSE;
@@ -125,7 +125,7 @@ initialize_wait(volatile VOID *addr, PVOID cmp, SIZE_T size, DWORD timeout) {
   return emulated_wait(addr, cmp, size, timeout);
 }
 
-#elif !defined(CPPPARSER) && !defined(__linux__) && !defined(__APPLE__) && defined(HAVE_POSIX_THREADS)
+#elif !defined(CPPPARSER) && !defined(__linux__) && !defined(__APPLE__) && !defined(__FreeBSD__) && defined(HAVE_POSIX_THREADS)
 
 // Same as above, but using pthreads.
 struct alignas(64) WaitTableEntry {

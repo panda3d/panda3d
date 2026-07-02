@@ -421,18 +421,6 @@ lookup_cpu_data() {
   _display_information->_get_memory_information_function = get_memory_information;
 
   // determine CPU frequency
-  uint64_t time;
-  uint64_t end_time;
-  LARGE_INTEGER counter;
-  LARGE_INTEGER end;
-  LARGE_INTEGER frequency;
-
-  time = 0;
-  end_time = 0;
-  counter.QuadPart = 0;
-  end.QuadPart = 0;
-  frequency.QuadPart = 0;
-
   int priority;
   HANDLE thread;
 
@@ -440,6 +428,16 @@ lookup_cpu_data() {
   thread = GetCurrentThread();
   priority = GetThreadPriority (thread);
   SetThreadPriority(thread, THREAD_PRIORITY_TIME_CRITICAL);
+
+#if defined(_M_IX86) || defined(_M_X64) || defined(__i386__) || defined(__x86_64__)
+  uint64_t time = 0;
+  uint64_t end_time = 0;
+  LARGE_INTEGER counter;
+  LARGE_INTEGER end;
+  LARGE_INTEGER frequency;
+  counter.QuadPart = 0;
+  end.QuadPart = 0;
+  frequency.QuadPart = 0;
 
   if (QueryPerformanceFrequency(&frequency)) {
     if (frequency.QuadPart > 0) {
@@ -455,6 +453,7 @@ lookup_cpu_data() {
       }
     }
   }
+#endif
 
   SetThreadPriority(thread, priority);
   sprintf(string, "QueryPerformanceFrequency: %I64d\n", frequency.QuadPart);
