@@ -1,0 +1,29 @@
+body
+{
+    font-family: "MODENINE";
+    font-weight: normal;
+    font-style: normal;
+    font-size: 15px;
+    background-color: #44f;
+    width: 100%;
+    height: 100%;
+}
+
+div#loading-box
+{
+    width: 400px;
+    height: 200px;
+    margin: auto;
+    background-color: #22a;
+    border-width: 2px;
+    border-color: #88f;
+    padding: 20px;
+    text-align: center;
+}
+
+p#loading-label
+{
+    font-size: 32px;
+    color: #cff;
+    margin-top: 60px;
+}
