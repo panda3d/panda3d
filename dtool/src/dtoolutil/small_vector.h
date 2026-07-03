@@ -96,7 +96,8 @@ public:
   INLINE void clear();
   INLINE void shrink_to_fit();
   INLINE void reserve(size_type n);
-  INLINE void resize(size_type n, T value = T());
+  INLINE void resize(size_type n);
+  INLINE void resize(size_type n, T value);
 
   template<class... Args>
   INLINE reference emplace_back(Args&&... args);

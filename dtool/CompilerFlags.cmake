@@ -128,6 +128,14 @@ endif()
 if(CMAKE_CXX_COMPILER_ID MATCHES "(GNU|Clang)")
   set(global_flags
     "-Wno-unused-function -Wno-unused-parameter -fno-strict-aliasing -Werror=return-type")
+
+  # Silence the spammy harmless psabi note GCC emits on ARM about the GCC 10.1
+  # change to how over-aligned/vector aggregates like the Eigen-backed LVecBase
+  # types are passed by value.
+  if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    set(global_flags "${global_flags} -Wno-psabi")
+  endif()
+
   set(release_flags "-Wno-unused-variable")
 
   if(NOT MSVC)

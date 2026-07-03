@@ -125,7 +125,7 @@ MACOS_SCRIPT_POSTFIX = """\
 fi
 """
 
-EXCLUDE_BINARIES = ["deploy-stub", "deploy-stubw", "run_tests"]
+EXCLUDE_BINARIES = ["deploy-stub", "deploy-stubw", "run_tests", "run_pytest", "run_cxx_tests"]
 
 
 def MakeInstallerNSIS(version, file, title, installdir, compressor="lzma", **kwargs):

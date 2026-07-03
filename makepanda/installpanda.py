@@ -29,7 +29,7 @@ APP_INFO = (
   ("pstats", "Panda3D Profiling Tool", ("pstats",), False),
 )
 
-EXCLUDE_BINARIES = ["deploy-stub", "deploy-stubw", "run_tests"]
+EXCLUDE_BINARIES = ["deploy-stub", "deploy-stubw", "run_tests", "run_pytest", "run_cxx_tests"]
 
 
 def WriteApplicationsFile(fname, appinfo, mimeinfo, bindir):
