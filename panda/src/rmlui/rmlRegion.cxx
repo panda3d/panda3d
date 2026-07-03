@@ -251,6 +251,8 @@ do_callback(CallbackData *cbdata) {
     region->render_now(&cull_handler, scene_setup, gsg, current_thread);
     gsg->end_scene();
   }
+
+  gsg->clear_before_callback();
 }
 
 /**
