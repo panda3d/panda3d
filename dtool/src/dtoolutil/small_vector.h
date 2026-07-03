@@ -121,7 +121,11 @@ private:
     ~Storage() {}
 
     T *_large;
-    T _small[N];
+    // Use a minimum size of 1: MSVC rejects zero-sized arrays (and it would be
+    // a non-standard extension elsewhere).  When N == 0 this is never accessed,
+    // since an empty vector has _capacity == 0 and any non-empty state uses the
+    // heap allocation in _large.
+    T _small[N ? N : 1];
   } _storage;
 
   size_type _size = 0;
