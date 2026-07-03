@@ -402,10 +402,8 @@ shrink_to_fit() {
     T *from = _storage._large;
     T *to;
     if (_size > N) {
-      _capacity = _size;
       to = (T *)PANDA_MALLOC_ARRAY(sizeof(T) * _size);
     } else {
-      _capacity = N;
       to = _storage._small;
     }
     for (size_type i = 0; i < _size; ++i) {
@@ -413,6 +411,9 @@ shrink_to_fit() {
       from[i].~T();
     }
     PANDA_FREE_ARRAY(from);
+    if (_size > N) {
+      _storage._large = to;
+    }
     _capacity = std::max(_size, (size_type)N);
   }
 }
@@ -447,13 +448,38 @@ reserve(size_type n) {
  */
 template<class T, unsigned N>
 INLINE void small_vector<T, N>::
+resize(size_type n) {
+  if (n > _size) {
+    this->reserve(n);
+
+    T *to = this->data();
+    for (size_type i = _size; i < n; ++i) {
+      new (to + i) T();
+    }
+  }
+  else {
+    T *to = this->data();
+    for (size_type i = n; i < _size; ++i) {
+      to[i].~T();
+    }
+  }
+
+  _size = n;
+}
+
+/**
+ * Resizes the vector to the given number of elements, copy-constructing any
+ * newly added elements from the given value.
+ */
+template<class T, unsigned N>
+INLINE void small_vector<T, N>::
 resize(size_type n, T value) {
   if (n > _size) {
     this->reserve(n);
 
     T *to = this->data();
     for (size_type i = _size; i < n; ++i) {
-      new (to + i) T(std::move(value));
+      new (to + i) T(value);
     }
   }
   else {
@@ -569,7 +595,7 @@ erase(const_iterator pos) {
     PANDA_FREE_ARRAY(free_ptr);
   }
 
-  return to;
+  return this->begin() + i;
 }
 
 /**
@@ -619,7 +645,7 @@ erase(const_iterator begin, const_iterator end) {
     PANDA_FREE_ARRAY(free_ptr);
   }
 
-  return to;
+  return this->begin() + i;
 }
 
 /**
@@ -687,7 +713,9 @@ INLINE typename small_vector<T, N>::iterator small_vector<T, N>::
 append() {
   size_type size = _size;
   if (size == _capacity) {
-    this->reserve(_capacity << 1u);
+    // Double the capacity, but make sure we grow past zero: a small_vector
+    // with N == 0 starts out with a capacity of zero, and 0 << 1 is still 0.
+    this->reserve(_capacity > 0 ? (_capacity << 1u) : 1);
   }
   ++_size;
   return this->begin() + size;
