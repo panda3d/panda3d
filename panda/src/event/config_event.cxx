@@ -24,6 +24,7 @@
 #include "eventParameter.h"
 #include "genericAsyncTask.h"
 #include "pointerEventList.h"
+#include "gestureEvent.h"
 
 #include "dconfig.h"
 
@@ -50,6 +51,8 @@ ConfigureFn(config_event) {
   EventStoreInt::init_type("EventStoreInt");
   EventStoreDouble::init_type("EventStoreDouble");
   GenericAsyncTask::init_type();
+  GestureEvent::init_type();
+  GestureEventList::init_type();
 
   ButtonEventList::register_with_read_factory();
   EventStoreInt::register_with_read_factory();
