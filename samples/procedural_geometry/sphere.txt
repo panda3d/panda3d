@@ -1,0 +1,34 @@
+# sphere creation parameters (do not remove value type comments):
+
+
+center = 0. 0. -.7                      # float tuple
+radius = 1.5                            # float
+segments horizontal = 40                # dict int
+segments vertical = 10                  # dict int
+segments bottom_cap = 3                 # dict int
+segments top_cap = 2                    # dict int
+segments slice_caps = 2                 # dict int
+smooth = True                           # bool
+bottom_clip = .1                        # float
+top_clip = .8                           # float
+slice = 125.                            # float
+thickness = .2                          # float
+inverted = False                        # bool
+vertex_color = None                     # float tuple
+has_uvs = True                          # bool
+tex_units bottom_cap = 6. 6.            # dict float tuple
+tex_units main = 6. 6.                  # dict float tuple
+tex_units top_cap = 6. 6.               # dict float tuple
+tex_units slice_start_cap = 6. 6.       # dict float tuple
+tex_units slice_end_cap = 6. 6.         # dict float tuple
+tex_units inner_main = 6. 6.            # dict float tuple
+tex_units inner_bottom_cap = 6. 6.      # dict float tuple
+tex_units inner_top_cap = 6. 6.         # dict float tuple
+tex_rotation bottom_cap = 160.          # dict float
+tex_rotation slice_start_cap = 90.      # dict float
+tex_offset slice_start_cap = .2 0.      # dict float tuple
+tex_rotation slice_end_cap = 60.        # dict float
+tex_scale slice_end_cap = 1.5 1.5       # dict float tuple
+tex_rotation main = 20.                 # dict float
+tex_rotation inner_main = -40.          # dict float
+tex_rotation inner_bottom_cap = 160.    # dict float
