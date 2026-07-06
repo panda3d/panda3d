@@ -108,7 +108,7 @@ private:
     return false;
 #else
     return _debug_buffer_binding >= 0
-        && (_storage_block_bindings & (1 << _debug_buffer_binding)) != 0;
+        && (_storage_block_bindings & ((uint64_t)1 << _debug_buffer_binding)) != 0;
 #endif
   }
 

@@ -800,7 +800,7 @@ r_collect_uniforms(LinkedProgram &linked_program, const Shader::Parameter &param
 
     // We can always explicitly assign SSBO bindings at compilation so we don't
     // have to worry about variants having different binding assignments.
-    if ((_storage_block_bindings & (1 << binding)) == 0) {
+    if ((_storage_block_bindings & ((uint64_t)1 << binding)) == 0) {
       if (GLCAT.is_debug()) {
         GLCAT.debug()
           << "Storage block " << name << " with type " << *type
@@ -813,7 +813,7 @@ r_collect_uniforms(LinkedProgram &linked_program, const Shader::Parameter &param
       block._binding_index = binding;
       block._writable = (sbuffer->get_access() & ShaderType::Access::WRITE_ONLY) != ShaderType::Access::NONE;
       _storage_blocks.push_back(std::move(block));
-      _storage_block_bindings |= (1 << binding);
+      _storage_block_bindings |= ((uint64_t)1 << binding);
     }
     return;
   }
@@ -3089,7 +3089,7 @@ compile_spirv_to_spirv(const ShaderModuleSpirV *module, size_t mi,
       block._binding_index = _debug_buffer_binding;
       block._writable = true;
       _storage_blocks.push_back(std::move(block));
-      _storage_block_bindings |= (1 << (uint64_t)_debug_buffer_binding);
+      _storage_block_bindings |= ((uint64_t)1 << _debug_buffer_binding);
     }
   }
 #endif
@@ -3235,7 +3235,7 @@ compile_spirv_to_glsl(const ShaderModuleSpirV *module, size_t mi,
         block._binding_index = _debug_buffer_binding;
         block._writable = true;
         _storage_blocks.push_back(std::move(block));
-        _storage_block_bindings |= (1 << _debug_buffer_binding);
+        _storage_block_bindings |= ((uint64_t)1 << _debug_buffer_binding);
       }
     }
 #endif
