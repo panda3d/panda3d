@@ -161,11 +161,14 @@ def test_convex_hull_points():
         (0.0, 1.0, 0.0),
     ])
 
-    assert shape.get_num_points() == 3
-    assert shape.num_points == 3
-    assert shape.get_point(0).almost_equal(core.LPoint3(0.0, 0.0, 0.0))
-    assert shape.get_point(1).almost_equal(core.LPoint3(1.0, 0.0, 0.0))
-    assert shape.get_point(2).almost_equal(core.LPoint3(0.0, 1.0, 0.0))
+    assert len(shape.points) == 3
+    assert shape.points[0].almost_equal(core.LPoint3(0.0, 0.0, 0.0))
+    assert shape.points[1].almost_equal(core.LPoint3(1.0, 0.0, 0.0))
+    assert shape.points[2].almost_equal(core.LPoint3(0.0, 1.0, 0.0))
+
+    points_list = list(shape.points)
+    assert len(points_list) == 3
+    assert points_list[0].almost_equal(core.LPoint3(0.0, 0.0, 0.0))
 
 
 def test_ghost():

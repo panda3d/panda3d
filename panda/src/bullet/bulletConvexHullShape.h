@@ -38,12 +38,12 @@ PUBLISHED:
   void add_geom(const Geom *geom,
                 const TransformState *ts=TransformState::make_identity());
 
+  MAKE_SEQ_PROPERTY(points, get_num_points, get_point);
+
+public:
   int get_num_points() const;
   LPoint3 get_point(int i) const;
 
-  MAKE_PROPERTY(num_points, get_num_points);
-
-public:
   virtual btCollisionShape *ptr() const;
 
 private:
