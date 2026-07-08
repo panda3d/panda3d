@@ -20,6 +20,7 @@ INLINE InputDevice::
 InputDevice() {
   _button_events = new ButtonEventList;
   _pointer_events = new PointerEventList;
+  _axis_events = new AxisEventList;
 }
 
 /**
