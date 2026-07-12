@@ -101,6 +101,9 @@ PUBLISHED:
   void set_anim_blend_flag(bool anim_blend_flag);
   INLINE bool get_anim_blend_flag() const;
 
+  INLINE void set_clamp_blend_flag(bool clamp_blend_flag);
+  INLINE bool get_clamp_blend_flag() const;
+
   INLINE void set_frame_blend_flag(bool frame_blend_flag);
   INLINE bool get_frame_blend_flag() const;
 
@@ -115,6 +118,7 @@ PUBLISHED:
 
   MAKE_PROPERTY(blend_type, get_blend_type, set_blend_type);
   MAKE_PROPERTY(anim_blend_flag, get_anim_blend_flag, set_anim_blend_flag);
+  MAKE_PROPERTY(clamp_blend_flag, get_clamp_blend_flag, set_clamp_blend_flag);
   MAKE_PROPERTY(frame_blend_flag, get_frame_blend_flag, set_frame_blend_flag);
   MAKE_PROPERTY(root_xform, get_root_xform, set_root_xform);
   MAKE_SEQ_PROPERTY(nodes, get_num_nodes, get_node);
@@ -191,6 +195,7 @@ private:
 
     BlendType _blend_type;
     bool _anim_blend_flag;
+    bool _clamp_blend_flag;
     bool _frame_blend_flag;
     LMatrix4 _root_xform;
     AnimControl *_last_control_set;
