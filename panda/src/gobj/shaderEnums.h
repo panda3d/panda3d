@@ -74,28 +74,30 @@ PUBLISHED:
      * - flat interpolation
      * - roundEven
      * - texelFetch
+     * - vertex id
      * Because all these features require the new shader model and are not
      * offered individually, they have been wrapped up in a single bit flag.
      * A shader with this bit set will not work with DirectX 9.
      */
     C_unified_model = 1ull << 7,
 
+    // GLSL 1.30 / SM 4.0
     C_noperspective_interpolation = 1ull << 8, // not supported in GLES
     C_texture_array = 1ull << 9,
     C_texture_integer = 1ull << 10, // usampler2D, isampler2D, etc.
     C_texture_query_size = 1ull << 11, // textureSize, etc. (could be emulated)
     C_sampler_cube_shadow = 1ull << 12,
-    C_vertex_id = 1ull << 13,
-    C_draw_buffers = 1ull << 14, // MRT
-    C_clip_distance = 1ull << 15, // gl_ClipDistance
+    C_draw_buffers = 1ull << 13, // MRT
+    C_clip_distance = 1ull << 14, // gl_ClipDistance
 
     // GLSL 1.40 / SM 4.0
-    C_instance_id = 1ull << 16, // ES 3.00
-    C_texture_buffer = 1ull << 17, // ES 3.20
+    C_instance_id = 1ull << 15, // ES 3.00
+    C_texture_buffer = 1ull << 16, // ES 3.20
 
-    // GLSL 1.50 / ES 3.20 / SM 4.0
-    C_geometry_shader = 1ull << 18,
-    C_primitive_id = 1ull << 19,
+    // GLSL 1.50 / SM 4.0
+    C_texture_multisample = 1ull << 17, // ES 3.10
+    C_geometry_shader = 1ull << 18, // ES 3.20
+    C_primitive_id = 1ull << 19, // ES 3.20
 
     // GLSL 3.30 / ES 3.00 / SM 4.0
     C_bit_encoding = 1ull << 20,

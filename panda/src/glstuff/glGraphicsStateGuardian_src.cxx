@@ -1970,7 +1970,6 @@ reset() {
       Shader::C_texture_lod |
       Shader::C_texture_query_size |
       Shader::C_sampler_cube_shadow |
-      Shader::C_vertex_id |
       Shader::C_draw_buffers |
       Shader::C_instance_id |
       Shader::C_bit_encoding;
@@ -2087,7 +2086,6 @@ reset() {
         Shader::C_texture_integer |
         Shader::C_texture_query_size |
         Shader::C_sampler_cube_shadow |
-        Shader::C_vertex_id |
         Shader::C_draw_buffers |
         Shader::C_clip_distance;
     }

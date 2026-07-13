@@ -331,7 +331,7 @@ def test_glsl_caps_vertex_id():
     void main() {
         gl_Position = vec4(float(gl_VertexID), 0.0, 0.0, 1.0);
     }
-    """) == Shader.C_vertex_id
+    """) == Shader.C_unified_model
 
 
 def test_glsl_caps_draw_buffers():

@@ -82,6 +82,10 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, const CompilerOption
         _used_caps |= C_atomic_counters;
         break;
 
+      case spv::CapabilityStorageImageMultisample:
+        _used_caps |= C_texture_multisample;
+        break;
+
       case spv::CapabilityUniformBufferArrayDynamicIndexing:
       case spv::CapabilitySampledImageArrayDynamicIndexing:
       case spv::CapabilityStorageBufferArrayDynamicIndexing:
@@ -206,7 +210,7 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, const CompilerOption
         }
       }
       else if (def._storage_class == spv::StorageClassOutput) {
-        if (!_outputs.empty() || num_locations > 1) {
+        if ((!_outputs.empty() || num_locations > 1) && stage == Stage::FRAGMENT) {
           // This shader requires MRT.
           _used_caps |= C_draw_buffers;
         }
@@ -301,7 +305,7 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, const CompilerOption
         break;
 
       case spv::BuiltInVertexId:
-        _used_caps |= C_vertex_id;
+        _used_caps |= C_unified_model;
         break;
 
       case spv::BuiltInInstanceId:

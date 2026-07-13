@@ -68,6 +68,9 @@ output_capabilities(std::ostream &out, uint64_t caps) {
   if (caps & C_noperspective_interpolation) {
     out << "noperspective_interpolation ";
   }
+  if (caps & C_texture_array) {
+    out << "texture_array ";
+  }
   if (caps & C_texture_integer) {
     out << "texture_integer ";
   }
@@ -76,9 +79,6 @@ output_capabilities(std::ostream &out, uint64_t caps) {
   }
   if (caps & C_sampler_cube_shadow) {
     out << "sampler_cube_shadow ";
-  }
-  if (caps & C_vertex_id) {
-    out << "vertex_id ";
   }
   if (caps & C_draw_buffers) {
     out << "draw_buffers ";
@@ -91,6 +91,9 @@ output_capabilities(std::ostream &out, uint64_t caps) {
   }
   if (caps & C_texture_buffer) {
     out << "texture_buffer ";
+  }
+  if (caps & C_texture_multisample) {
+    out << "texture_multisample ";
   }
   if (caps & C_geometry_shader) {
     out << "geometry_shader ";
