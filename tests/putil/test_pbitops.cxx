@@ -39,13 +39,15 @@ namespace {
 
   template<class T>
   int ref_highest_on_bit(T x) {
-    int result = -1;
-    for (unsigned int i = 0; i < sizeof(T) * 8; ++i) {
+    // Scans downward with an early return rather than remembering the last
+    // matching index in an upward scan: GCC 16.1 on aarch64 miscompiles the
+    // latter at -O3 by vectorizing it as a conditional last-index reduction.
+    for (int i = (int)(sizeof(T) * 8) - 1; i >= 0; --i) {
       if ((x >> i) & T(1)) {
-        result = (int)i;
+        return i;
       }
     }
-    return result;
+    return -1;
   }
 
   // Every bit at or below the highest set bit becomes 1.

@@ -106,7 +106,7 @@ class CxxTestItem(pytest.Item):
     def runtest(self):
         # A quoted test spec is matched verbatim, so that names containing
         # characters that are special in specs (commas, brackets) work.
-        spec = '"' + self.name.replace("\\", "\\\\").replace('"', '\\"') + '"'
+        spec = '"' + self.name.replace("\\", "\\\\").replace('"', '\\"').replace(",", "\\,") + '"'
         proc = _run_cxx_tests([spec])
 
         if proc.returncode == 4:

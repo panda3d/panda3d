@@ -6107,8 +6107,8 @@ if True:
 
 OPTS=['DIR:tests/catch2']
 TargetAdd('run_cxx_tests_catch_amalgamated.obj', opts=OPTS, input='catch_amalgamated.cpp')
-TargetAdd('run_cxx_tests.exe', input='run_cxx_tests_catch_amalgamated.obj')
 
+cxx_test_objs = ['run_cxx_tests_catch_amalgamated.obj']
 for tdir in sorted(os.listdir('tests')):
     if tdir == 'catch2' or not os.path.isdir(os.path.join('tests', tdir)):
         continue
@@ -6116,8 +6116,10 @@ for tdir in sorted(os.listdir('tests')):
     for tfile in GetDirectoryContents('tests/' + tdir, ["test_*.cxx"]):
         obj = 'run_cxx_tests_%s_%s.obj' % (tdir, os.path.splitext(tfile)[0])
         TargetAdd(obj, opts=OPTS, input=tfile)
-        TargetAdd('run_cxx_tests.exe', input=obj)
+        cxx_test_objs.append(obj)
 
+for obj in cxx_test_objs:
+    TargetAdd('run_cxx_tests.exe', input=obj)
 TargetAdd('run_cxx_tests.exe', input=COMMON_PANDA_LIBS)
 TargetAdd('run_cxx_tests.exe', opts=['SUBSYSTEM:CONSOLE', 'ZLIB', 'SPIRV-TOOLS'])
 

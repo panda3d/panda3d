@@ -28,7 +28,7 @@
  */
 class EXPCL_PANDABULLET BulletBaseCharacterControllerNode : public PandaNode {
 PUBLISHED:
-  explicit BulletBaseCharacterControllerNode(const char *name="character");
+  explicit BulletBaseCharacterControllerNode(std::string name="character");
 
 public:
   virtual CollideMask get_legal_collide_mask() const;

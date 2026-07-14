@@ -36,6 +36,17 @@ small_vector(std::initializer_list<T> init) :
 }
 
 /**
+ * Range constructor.
+ */
+template<class T, unsigned N>
+template<class InputIterator>
+INLINE small_vector<T, N>::
+small_vector(InputIterator first, InputIterator last) {
+  this->assign_range(first, last,
+    typename std::iterator_traits<InputIterator>::iterator_category());
+}
+
+/**
  * Copy constructor.
  */
 template<class T, unsigned N>
@@ -402,10 +413,8 @@ shrink_to_fit() {
     T *from = _storage._large;
     T *to;
     if (_size > N) {
-      _capacity = _size;
       to = (T *)PANDA_MALLOC_ARRAY(sizeof(T) * _size);
     } else {
-      _capacity = N;
       to = _storage._small;
     }
     for (size_type i = 0; i < _size; ++i) {
@@ -413,6 +422,9 @@ shrink_to_fit() {
       from[i].~T();
     }
     PANDA_FREE_ARRAY(from);
+    if (_size > N) {
+      _storage._large = to;
+    }
     _capacity = std::max(_size, (size_type)N);
   }
 }
@@ -447,13 +459,38 @@ reserve(size_type n) {
  */
 template<class T, unsigned N>
 INLINE void small_vector<T, N>::
+resize(size_type n) {
+  if (n > _size) {
+    this->reserve(n);
+
+    T *to = this->data();
+    for (size_type i = _size; i < n; ++i) {
+      new (to + i) T();
+    }
+  }
+  else {
+    T *to = this->data();
+    for (size_type i = n; i < _size; ++i) {
+      to[i].~T();
+    }
+  }
+
+  _size = n;
+}
+
+/**
+ * Resizes the vector to the given number of elements, copy-constructing any
+ * newly added elements from the given value.
+ */
+template<class T, unsigned N>
+INLINE void small_vector<T, N>::
 resize(size_type n, T value) {
   if (n > _size) {
     this->reserve(n);
 
     T *to = this->data();
     for (size_type i = _size; i < n; ++i) {
-      new (to + i) T(std::move(value));
+      new (to + i) T(value);
     }
   }
   else {
@@ -531,6 +568,119 @@ insert(const_iterator pos, T &&value) {
 }
 
 /**
+ * Inserts the given range of elements before the indicated position.
+ */
+template<class T, unsigned N>
+template<class InputIterator>
+INLINE typename small_vector<T, N>::iterator small_vector<T, N>::
+insert(const_iterator pos, InputIterator first, InputIterator last) {
+  return this->insert_range(pos, first, last,
+    typename std::iterator_traits<InputIterator>::iterator_category());
+}
+
+/**
+ * Range insert from a single-pass iterator, which cannot be measured in
+ * advance without consuming it, so the range is buffered first.
+ */
+template<class T, unsigned N>
+template<class InputIterator>
+INLINE typename small_vector<T, N>::iterator small_vector<T, N>::
+insert_range(const_iterator pos, InputIterator first, InputIterator last,
+             std::input_iterator_tag) {
+  small_vector<T, N> temp;
+  for (; first != last; ++first) {
+    temp.push_back(*first);
+  }
+  if (temp.empty()) {
+    return (iterator)pos;
+  }
+  iterator new_pos = this->insert_gap(pos, temp.size());
+  T *to = new_pos;
+  for (T &value : temp) {
+    new (to++) T(std::move(value));
+  }
+  return new_pos;
+}
+
+/**
+ * Range insert from a multi-pass iterator.
+ */
+template<class T, unsigned N>
+template<class ForwardIterator>
+INLINE typename small_vector<T, N>::iterator small_vector<T, N>::
+insert_range(const_iterator pos, ForwardIterator first, ForwardIterator last,
+             std::forward_iterator_tag) {
+  size_type count = (size_type)std::distance(first, last);
+  if (count == 0) {
+    return (iterator)pos;
+  }
+
+  if constexpr (std::is_same<typename std::iterator_traits<ForwardIterator>::value_type, T>::value) {
+    // If the source range aliases our own storage, insert_gap() would move
+    // its elements or free its memory before we read it, so copy it first.
+    const T *src = std::addressof(*first);
+    const T *data = this->data();
+    if (src >= data && src < data + _size) {
+      small_vector<T, N> temp(first, last);
+      iterator new_pos = this->insert_gap(pos, count);
+      T *to = new_pos;
+      for (T &value : temp) {
+        new (to++) T(std::move(value));
+      }
+      return new_pos;
+    }
+  }
+
+  iterator new_pos = this->insert_gap(pos, count);
+  T *to = new_pos;
+  for (; first != last; ++first) {
+    new (to++) T(*first);
+  }
+  return new_pos;
+}
+
+/**
+ * Replaces the contents of the vector with the given range of elements.
+ */
+template<class T, unsigned N>
+template<class InputIterator>
+INLINE void small_vector<T, N>::
+assign(InputIterator first, InputIterator last) {
+  this->assign_range(first, last,
+    typename std::iterator_traits<InputIterator>::iterator_category());
+}
+
+/**
+ * Range assignment from a single-pass iterator, which cannot be measured in
+ * advance without consuming it.
+ */
+template<class T, unsigned N>
+template<class InputIterator>
+INLINE void small_vector<T, N>::
+assign_range(InputIterator first, InputIterator last, std::input_iterator_tag) {
+  this->clear();
+  for (; first != last; ++first) {
+    this->push_back(*first);
+  }
+}
+
+/**
+ * Range assignment from a multi-pass iterator.
+ */
+template<class T, unsigned N>
+template<class ForwardIterator>
+INLINE void small_vector<T, N>::
+assign_range(ForwardIterator first, ForwardIterator last, std::forward_iterator_tag) {
+  this->clear();
+  this->reserve((size_type)std::distance(first, last));
+  T *to = this->data();
+  for (; first != last; ++first) {
+    new (to + _size) T(*first);
+    ++_size;
+  }
+}
+
+/**
  * Removes the element at the given position from the vector.  Usually does not
  * reallocate storage (except when removing from the beginning if the new size
  * is smaller than the preallocated storage), consider calling shrink_to_fit()
@@ -569,7 +719,7 @@ erase(const_iterator pos) {
     PANDA_FREE_ARRAY(free_ptr);
   }
 
-  return to;
+  return this->begin() + i;
 }
 
 /**
@@ -619,7 +769,7 @@ erase(const_iterator begin, const_iterator end) {
     PANDA_FREE_ARRAY(free_ptr);
   }
 
-  return to;
+  return this->begin() + i;
 }
 
 /**
@@ -687,7 +837,9 @@ INLINE typename small_vector<T, N>::iterator small_vector<T, N>::
 append() {
   size_type size = _size;
   if (size == _capacity) {
-    this->reserve(_capacity << 1u);
+    // Double the capacity, but make sure we grow past zero: a small_vector
+    // with N == 0 starts out with a capacity of zero, and 0 << 1 is still 0.
+    this->reserve(_capacity > 0 ? (_capacity << 1u) : 1);
   }
   ++_size;
   return this->begin() + size;

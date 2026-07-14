@@ -35,7 +35,7 @@ PStatCollector BulletDebugNode::_pstat_debug("App:Bullet:DoPhysics:Debug");
  *
  */
 BulletDebugNode::
-BulletDebugNode(const char *name) : PandaNode(name) {
+BulletDebugNode(std::string name) : PandaNode(std::move(name)) {
 
   _debug_stale = false;
   _debug_world = nullptr;
