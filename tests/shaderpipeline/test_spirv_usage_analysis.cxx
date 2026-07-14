@@ -175,9 +175,9 @@ TEST_CASE("SpirVUsageAnalysis flags queried image sizes and sampled image values
   Id var_tex = module.define_variable(sampler_type, spv::StorageClassUniformConstant);
   Id var_other = module.define_variable(sampler_type, spv::StorageClassUniformConstant);
 
-  Id si_tid = module.find_type(sampler_type);
-  REQUIRE(si_tid != 0);
-  Id image_tid = module.get_type_id(si_tid);
+  Id sampler_tid = module.find_type(sampler_type);
+  REQUIRE(sampler_tid != 0);
+  Id image_tid = module.get_type_id(sampler_tid);
   Id ivec2_tid = module.define_type(ivec2_type);
   Id id_c0 = module.define_int_constant(0);
 

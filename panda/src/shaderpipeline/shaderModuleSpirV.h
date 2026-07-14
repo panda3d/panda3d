@@ -138,7 +138,7 @@ private:
 public:
   static void register_with_read_factory();
   virtual void write_datagram(BamWriter *manager, Datagram &dg) override;
-  virtual void finalize(BamReader *manager);
+  virtual void finalize(BamReader *manager) override;
   virtual int complete_pointers(TypedWritable **plist, BamReader *manager) override;
 
 protected:
