@@ -56,56 +56,54 @@ public:
   void setup_instancing_attrib(int instance_mat_location);
   void mark_model_matrix(uint32_t id, bool inverse, bool transpose);
 
-  virtual void preprocess();
-  virtual bool transform_entry_point(spv::ExecutionModel model, uint32_t id, const char *name, pvector<uint32_t> &vars);
-  virtual bool transform_annotation_op(Instruction op);
-  virtual bool transform_definition_op(Instruction op);
-  virtual bool transform_function_op(Instruction op);
-  virtual void postprocess();
+  virtual void run(SpirVModule &module) override;
 
 private:
-  void inject_animation(const pvector<uint32_t> &vars);
-  void inject_animation_noop(const pvector<uint32_t> &vars);
-  void inject_instancing();
-  void inject_instancing_noop();
+  void inject_animation(SpirVBuilder &builder, const pvector<Id> &vars);
+  void inject_animation_noop(SpirVBuilder &builder, const pvector<Id> &vars);
+  void inject_instancing(SpirVBuilder &builder);
+  void inject_instancing_noop(SpirVBuilder &builder);
 
-  void define_transform_block();
+  void define_transform_block(SpirVModule &module);
   static const ShaderType *make_transform_block_type(uint32_t num_elements);
+
+  pvector<Id> make_interface(const pvector<Id> &vars,
+                             bool with_animation, bool with_instancing) const;
 
 public:
   // Settings that could be related to both instancing and animation.
   struct EntryPoint {
     std::string _name;
-    pvector<uint32_t> _vars;
+    pvector<Id> _vars;
   };
-  pmap<uint32_t, EntryPoint> _todo_entry_points;
+  pmap<Id, EntryPoint> _todo_entry_points;
   bool _make_new_entry_points = false;
-  uint32_t _transform_block_var_id = 0;
+  Id _transform_block_var_id;
   uint32_t _transform_block_binding = 0;
   uint32_t _transform_block_set = 0;
   bool _use_ssbo = false;
-  pset<uint32_t> _make_private_pointers;
+  pset<Id> _make_private_pointers;
 
   // Settings related to animation.
   uint32_t _anim_locations = 0;
   uint32_t _anim_point_locations = 0;
   int _transform_index_location = -1;
   int _transform_weight_location = -1;
-  uint32_t _transform_index_var_id = 0;
-  uint32_t _transform_weight_var_id = 0;
-  pmap<uint32_t, uint32_t> _vertex_input_ids;
-  uint32_t _transform_offset_var_id = 0;
+  Id _transform_index_var_id;
+  Id _transform_weight_var_id;
+  pmap<Id, Id> _vertex_input_ids;
+  Id _transform_offset_var_id;
 
   // Settings related to instancing.
   struct MatrixVar {
-    uint32_t _id;
+    Id _id;
     bool _inverse;
     bool _transpose;
   };
-  pmap<uint32_t, MatrixVar> _matrix_vars;
+  pmap<Id, MatrixVar> _matrix_vars;
   int _instance_mat_location = -1;
-  uint32_t _instance_mat_var_id = 0;
-  uint32_t _instance_index_var_id = 0;
+  Id _instance_mat_var_id;
+  Id _instance_index_var_id;
 };
 
 #endif

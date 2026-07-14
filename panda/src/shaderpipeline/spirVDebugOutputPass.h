@@ -29,15 +29,13 @@ public:
   SpirVDebugOutputPass(Shader::Stage stage, Shader::DebugInfo &debug_info,
                        uint32_t buffer_binding, uint32_t buffer_set);
 
-  virtual bool transform_debug_op(Instruction op);
-  virtual bool transform_definition_op(Instruction op);
-  virtual bool transform_function_op(Instruction op);
+  virtual void run(SpirVModule &module) override;
 
 private:
-  void emit_printf(const std::string &fmt_string, const uint32_t *args, uint32_t nargs);
-  void emit_assert(const std::string &expression);
+  void emit_printf(SpirVBuilder &builder, const std::string &fmt_string, const uint32_t *args, uint32_t nargs);
+  void emit_assert(SpirVBuilder &builder, const std::string &expression);
 
-  void define_buffer_block();
+  void define_buffer_block(SpirVModule &module);
   static const ShaderType *make_buffer_block_type();
 
   enum ExtInstImport {
@@ -47,21 +45,21 @@ private:
   };
 
   INLINE ExtInstImport get_ext_inst_import(uint32_t id) const;
-  INLINE uint32_t get_uint_constant(uint32_t v);
+  INLINE Id get_uint_constant(SpirVModule &module, uint32_t v);
 
 private:
   Shader::Stage _stage;
   uint32_t _buffer_binding = 0u;
   uint32_t _buffer_set = 0u;
-  uint32_t _buffer_block_var_id = 0u;
+  Id _buffer_block_var_id;
 
   Shader::DebugInfo &_debug_info;
 
-  pvector<uint32_t> _numbers;
+  pvector<Id> _numbers;
   pmap<uint32_t, ExtInstImport> _ext_inst_imports;
-  pmap<uint32_t, uint32_t> _debug_source_files;
+  pmap<uint32_t, Id> _debug_source_files;
 
-  uint32_t _current_file = 0;
+  Id _current_file;
   uint32_t _current_line = 0;
 };
 

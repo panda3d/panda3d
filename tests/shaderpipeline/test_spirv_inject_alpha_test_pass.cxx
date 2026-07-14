@@ -17,45 +17,29 @@
 #include "catch_amalgamated.hpp"
 
 TEST_CASE("SpirVInjectAlphaTestPass injects a comparison", "[shaderpipeline]") {
-  enum : uint32_t {
-    id_main = 1, id_void, id_fnvoid, id_float, id_vec4,
-    id_ptr_out, id_color, id_const_half, id_const_color,
-    id_label,
-    id_bound,
-  };
+  // out vec4 p3d_FragColor;  main() { p3d_FragColor = vec4(0); }
+  SpirVModule module = make_module();
+  const ShaderType *vec4_type = ShaderType::register_type(ShaderType::Vector(ShaderType::ST_float, 4));
 
-  // out vec4 p3d_FragColor;  main() { p3d_FragColor = vec4(0.5); }
-  ModuleBuilder b;
-  b.op(spv::OpCapability, {spv::CapabilityShader});
-  b.op(spv::OpMemoryModel, {spv::AddressingModelLogical, spv::MemoryModelGLSL450});
-  b.op(spv::OpEntryPoint, {spv::ExecutionModelFragment, id_main}, "main", {id_color});
-  b.op(spv::OpExecutionMode, {id_main, spv::ExecutionModeOriginUpperLeft});
-  b.op(spv::OpDecorate, {id_color, spv::DecorationLocation, 0});
-  b.op(spv::OpTypeVoid, {id_void});
-  b.op(spv::OpTypeFunction, {id_fnvoid, id_void});
-  b.op(spv::OpTypeFloat, {id_float, 32});
-  b.op(spv::OpTypeVector, {id_vec4, id_float, 4});
-  b.op(spv::OpTypePointer, {id_ptr_out, spv::StorageClassOutput, id_vec4});
-  b.op(spv::OpVariable, {id_ptr_out, id_color, spv::StorageClassOutput});
-  b.op(spv::OpConstant, {id_float, id_const_half, 0x3f000000u});
-  b.op(spv::OpConstantComposite, {id_vec4, id_const_color, id_const_half, id_const_half, id_const_half, id_const_half});
-  b.op(spv::OpFunction, {id_void, id_main, spv::FunctionControlMaskNone, id_fnvoid});
-  b.op(spv::OpLabel, {id_label});
-  b.op(spv::OpStore, {id_color, id_const_color});
-  b.op(spv::OpReturn, {});
-  b.op(spv::OpFunctionEnd, {});
+  Id color = module.define_variable(vec4_type, spv::StorageClassOutput);
+  module.decorate(color, spv::DecorationLocation, 0u);
 
-  InstructionStream stream = b.build(id_bound);
+  {
+    SpirVBuilder builder = make_entry_point(module, spv::ExecutionModelFragment, {color});
+    builder.op_store(color, module.define_null_constant(vec4_type));
+    builder.op_return();
+  }
+
+  InstructionStream stream = module.emit();
   REQUIRE(stream.validate());
 
   SECTION("greater-than mode kills fragments conditionally") {
     SpirVTransformer transformer(stream);
     SpirVInjectAlphaTestPass pass(SpirVInjectAlphaTestPass::M_greater, 4);
     transformer.run(pass);
-    CHECK(transformer.validate_db());
+    CHECK(transformer.get_module().validate());
 
     InstructionStream result = transformer.get_result();
-    CHECK(result.validate());
 
     // alpha > ref is tested by killing when alpha <= ref.
     CHECK(count_op(result, spv::OpFOrdLessThanEqual) == 1);
@@ -64,21 +48,72 @@ TEST_CASE("SpirVInjectAlphaTestPass injects a comparison", "[shaderpipeline]") {
 
     // A uniform was added to hold the reference alpha value.
     REQUIRE(pass._alpha_ref_var_id != 0);
-    const SpirVResultDatabase::Definition &ref_def =
-      transformer.get_db().get_definition(pass._alpha_ref_var_id);
-    CHECK(ref_def._type == ShaderType::FLOAT);
-    CHECK(ref_def._storage_class == spv::StorageClassUniformConstant);
-    CHECK(ref_def._location == 4);
+    const SpirVModule &out_module = transformer.get_module();
+    CHECK(out_module.resolve_type(pass._alpha_ref_var_id) == ShaderType::FLOAT);
+    CHECK(out_module.get_storage_class(pass._alpha_ref_var_id) == spv::StorageClassUniformConstant);
+    CHECK(out_module.get_location(pass._alpha_ref_var_id) == 4);
+
+    // The comparison is locatable by its recorded result id.
+    REQUIRE(pass._compare_op_ids.size() == 1);
+    Instruction cmp = find_op(result, spv::OpFOrdLessThanEqual);
+    REQUIRE(cmp.opcode == spv::OpFOrdLessThanEqual);
+    CHECK(cmp.args[1] == pass._compare_op_ids[0]);
   }
 
   SECTION("never mode replaces the return with a kill") {
     SpirVTransformer transformer(stream);
     transformer.run(SpirVInjectAlphaTestPass(SpirVInjectAlphaTestPass::M_never));
-    CHECK(transformer.validate_db());
+    CHECK(transformer.get_module().validate());
 
     InstructionStream result = transformer.get_result();
-    CHECK(result.validate());
     CHECK(count_op(result, spv::OpKill) == 1);
     CHECK(count_op(result, spv::OpReturn) == 0);
+  }
+}
+
+TEST_CASE("SpirVInjectAlphaTestPass tests before every return", "[shaderpipeline]") {
+  // main() { p3d_FragColor = vec4(0); if (true) return; return; }
+  // Both returns must receive their own alpha test.
+  SpirVModule module = make_module();
+  const ShaderType *vec4_type = ShaderType::register_type(ShaderType::Vector(ShaderType::ST_float, 4));
+
+  Id color = module.define_variable(vec4_type, spv::StorageClassOutput);
+  module.decorate(color, spv::DecorationLocation, 0u);
+
+  Id main_id;
+  {
+    SpirVBuilder builder = module.make_function(nullptr);
+    builder.op_store(color, module.define_null_constant(vec4_type));
+    Id merge = builder.branch_if(module.define_constant(ShaderType::BOOL, 1));
+    builder.op_return();
+    builder.branch_endif(merge);
+    builder.op_return();
+    main_id = builder.get_current_function_id();
+  }
+  module.add_entry_point(spv::ExecutionModelFragment, main_id, "main", {color});
+  module.add_execution_mode(main_id, spv::ExecutionModeOriginUpperLeft);
+
+  InstructionStream stream = module.emit();
+  REQUIRE(stream.validate());
+
+  SpirVTransformer transformer(stream);
+  SpirVInjectAlphaTestPass pass(SpirVInjectAlphaTestPass::M_less, 4);
+  transformer.run(pass);
+  CHECK(transformer.get_module().validate());
+
+  InstructionStream result = transformer.get_result();
+
+  // alpha < ref is tested by killing when alpha >= ref, once per return.
+  CHECK(count_op(result, spv::OpFOrdGreaterThanEqual) == 2);
+  CHECK(count_op(result, spv::OpKill) == 2);
+  CHECK(count_op(result, spv::OpReturn) == 2);
+
+  // Both comparisons were recorded, in stream order, and each id identifies
+  // one of the comparison instructions in the result.
+  REQUIRE(pass._compare_op_ids.size() == 2);
+  for (int i = 0; i < 2; ++i) {
+    Instruction cmp = find_op(result, spv::OpFOrdGreaterThanEqual, i);
+    REQUIRE(cmp.opcode == spv::OpFOrdGreaterThanEqual);
+    CHECK(cmp.args[1] == pass._compare_op_ids[i]);
   }
 }

@@ -25,21 +25,20 @@
  */
 class EXPCL_PANDA_SHADERPIPELINE SpirVReplaceVariableTypePass final : public SpirVTransformPass {
 public:
-  SpirVReplaceVariableTypePass(uint32_t variable_id, const ShaderType *type,
+  SpirVReplaceVariableTypePass(Id variable_id, const ShaderType *type,
                                spv::StorageClass storage_class);
 
-  virtual bool transform_definition_op(Instruction op);
-  virtual bool transform_function_op(Instruction op);
+  virtual void run(SpirVModule &module) override;
 
 private:
-  const uint32_t _variable_id;
+  const Id _variable_id;
   const ShaderType *const _new_type;
   const spv::StorageClass _new_storage_class;
 
-  uint32_t _pointer_type_id = 0;
-  uint32_t _type_id = 0;
-  pset<uint32_t> _pointer_ids;
-  pset<uint32_t> _object_ids;
+  Id _pointer_type_id;
+  Id _type_id;
+  pset<Id> _pointer_ids;
+  pset<Id> _object_ids;
 };
 
 #endif

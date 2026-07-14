@@ -15,6 +15,7 @@
 #define SPIRVEMULATETEXTUREQUERIESPASS_H
 
 #include "spirVTransformPass.h"
+#include "shader.h"
 
 /**
  * Emulates textureSize, imageSize and textureQueryLevels ops, as well as depth
@@ -25,19 +26,18 @@ public:
   SpirVEmulateTextureQueriesPass(uint64_t emulate_caps) :
     _emulate_caps(emulate_caps) {}
 
-  virtual bool transform_definition_op(Instruction op);
-  virtual bool transform_function_op(Instruction op);
+  virtual void run(SpirVModule &module) override;
 
 private:
   const uint64_t _emulate_caps;
 
-  pmap<uint32_t, AccessChain> _access_chains;
-  uint32_t _float_one_id = 0;
-  uint32_t _float_zero_id = 0;
+  pmap<Id, AccessChain> _access_chains;
+  Id _float_one_id;
+  Id _float_zero_id;
 
 public:
   // access chain to size var id
-  pmap<AccessChain, uint32_t> _size_var_ids;
+  pmap<AccessChain, Id> _size_var_ids;
 };
 
 #endif

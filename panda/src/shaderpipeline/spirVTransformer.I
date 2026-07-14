@@ -12,7 +12,7 @@
  */
 
 /**
- *
+ * Runs the given one-shot transformation pass object.
  */
 INLINE void SpirVTransformer::
 run(SpirVTransformPass &&pass) {
@@ -20,17 +20,25 @@ run(SpirVTransformPass &&pass) {
 }
 
 /**
- * Returns the number of ids allocated.
+ * Returns the id bound of the module.
  */
 INLINE uint32_t SpirVTransformer::
 get_id_bound() const {
-  return _preamble[3];
+  return _module.get_id_bound();
 }
 
 /**
- *
+ * Returns the module being transformed.
  */
-INLINE const SpirVResultDatabase &SpirVTransformer::
-get_db() const {
-  return _db;
+INLINE SpirVModule &SpirVTransformer::
+get_module() {
+  return _module;
+}
+
+/**
+ * Returns the module being transformed.
+ */
+INLINE const SpirVModule &SpirVTransformer::
+get_module() const {
+  return _module;
 }

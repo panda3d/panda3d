@@ -17,50 +17,37 @@
 #include "catch_amalgamated.hpp"
 
 TEST_CASE("SpirVRemoveUnusedVariablesPass removes unused variables", "[shaderpipeline]") {
-  enum : uint32_t {
-    id_main = 1, id_void, id_fnvoid, id_float, id_vec4,
-    id_ptr_in, id_ptr_out, id_ptr_uc,
-    id_in_color, id_out_color, id_unused,
-    id_label, id_tmp,
-    id_bound,
-  };
+  // in vec4 in_color; out vec4 out_color; uniform float unused;
+  // main() { out_color = in_color; }
+  SpirVModule module = make_module();
+  const ShaderType *vec4_type =
+    ShaderType::register_type(ShaderType::Vector(ShaderType::ST_float, 4));
 
-  ModuleBuilder b;
-  b.op(spv::OpCapability, {spv::CapabilityShader});
-  b.op(spv::OpMemoryModel, {spv::AddressingModelLogical, spv::MemoryModelGLSL450});
-  b.op(spv::OpEntryPoint, {spv::ExecutionModelFragment, id_main}, "main", {id_in_color, id_out_color});
-  b.op(spv::OpExecutionMode, {id_main, spv::ExecutionModeOriginUpperLeft});
-  b.op(spv::OpName, {id_unused}, "unused");
-  b.op(spv::OpDecorate, {id_in_color, spv::DecorationLocation, 0});
-  b.op(spv::OpDecorate, {id_out_color, spv::DecorationLocation, 0});
-  b.op(spv::OpTypeVoid, {id_void});
-  b.op(spv::OpTypeFunction, {id_fnvoid, id_void});
-  b.op(spv::OpTypeFloat, {id_float, 32});
-  b.op(spv::OpTypeVector, {id_vec4, id_float, 4});
-  b.op(spv::OpTypePointer, {id_ptr_in, spv::StorageClassInput, id_vec4});
-  b.op(spv::OpTypePointer, {id_ptr_out, spv::StorageClassOutput, id_vec4});
-  b.op(spv::OpTypePointer, {id_ptr_uc, spv::StorageClassUniformConstant, id_float});
-  b.op(spv::OpVariable, {id_ptr_in, id_in_color, spv::StorageClassInput});
-  b.op(spv::OpVariable, {id_ptr_out, id_out_color, spv::StorageClassOutput});
-  b.op(spv::OpVariable, {id_ptr_uc, id_unused, spv::StorageClassUniformConstant});
-  b.op(spv::OpFunction, {id_void, id_main, spv::FunctionControlMaskNone, id_fnvoid});
-  b.op(spv::OpLabel, {id_label});
-  b.op(spv::OpLoad, {id_vec4, id_tmp, id_in_color});
-  b.op(spv::OpStore, {id_out_color, id_tmp});
-  b.op(spv::OpReturn, {});
-  b.op(spv::OpFunctionEnd, {});
+  Id id_in_color = module.define_variable(vec4_type, spv::StorageClassInput);
+  module.decorate(id_in_color, spv::DecorationLocation, 0u);
+  Id id_out_color = module.define_variable(vec4_type, spv::StorageClassOutput);
+  module.decorate(id_out_color, spv::DecorationLocation, 0u);
+  Id id_unused = module.define_variable(ShaderType::FLOAT, spv::StorageClassUniformConstant);
+  module.set_name(id_unused, "unused");
 
-  InstructionStream stream = b.build(id_bound);
+  {
+    SpirVBuilder builder = make_entry_point(module, spv::ExecutionModelFragment,
+                                            {id_in_color, id_out_color});
+    Id tmp = builder.op_load(id_in_color);
+    builder.op_store(id_out_color, tmp);
+    builder.op_return();
+  }
+
+  InstructionStream stream = module.emit();
   REQUIRE(stream.validate());
 
   SpirVTransformer transformer(stream);
   transformer.run(SpirVRemoveUnusedVariablesPass());
-  CHECK(transformer.validate_db());
+  CHECK(transformer.get_module().validate());
 
   InstructionStream result = transformer.get_result();
-  CHECK(result.validate());
   CHECK(!has_variable(result, id_unused));
   CHECK(has_variable(result, id_in_color));
   CHECK(has_variable(result, id_out_color));
-  CHECK(!transformer.get_db().get_definition(id_unused).is_variable());
+  CHECK(transformer.get_module().get_definition_type(id_unused) == SpirVModule::DT_none);
 }

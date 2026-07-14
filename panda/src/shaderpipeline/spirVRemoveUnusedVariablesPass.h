@@ -21,7 +21,7 @@
  */
 class EXPCL_PANDA_SHADERPIPELINE SpirVRemoveUnusedVariablesPass final : public SpirVTransformPass {
 public:
-  virtual void preprocess();
+  virtual void run(SpirVModule &module) override;
 };
 
 #endif

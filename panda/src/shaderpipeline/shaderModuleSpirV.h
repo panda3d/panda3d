@@ -26,7 +26,8 @@
 
 class CompilerOptions;
 class ShaderType;
-class SpirVResultDatabase;
+class SpirVModule;
+class SpirVUsageAnalysis;
 
 /**
  * ShaderModule that contains compiled SPIR-V bytecode.  This class can extract
@@ -130,7 +131,7 @@ public:
   uint64_t _emulatable_caps = 0u;
 
 private:
-  void post_analyze(const SpirVResultDatabase &db);
+  void post_analyze(const SpirVModule &module, const SpirVUsageAnalysis &usage);
   void remap_locations(spv::StorageClass storage_class, const pmap<int, int> &locations);
   void strip_debug();
 

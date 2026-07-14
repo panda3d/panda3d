@@ -37,25 +37,17 @@ public:
   SpirVInjectAlphaTestPass(Mode mode, int ref_location = -1, bool spec_constant = false) :
     _mode(mode), _ref_location(ref_location), _spec_constant(spec_constant) {}
 
-  virtual bool transform_entry_point(spv::ExecutionModel model, uint32_t id, const char *name, pvector<uint32_t> &vars);
-  virtual bool begin_function(Instruction op);
-  virtual bool transform_function_op(Instruction op);
-  virtual void end_function(uint32_t function_id);
-  virtual void postprocess();
+  virtual void run(SpirVModule &module) override;
 
 public:
   const Mode _mode;
   const int _ref_location;
   const bool _spec_constant;
 
-  uint32_t _alpha_ref_var_id = 0;
-  uint32_t _compare_op_offset = 0;
+  Id _alpha_ref_var_id;
 
-private:
-  uint32_t _var_id = 0;
-
-  // For each entry point we access, the output variable to test.
-  pmap<uint32_t, uint32_t> _entry_points;
+  // The result ids of the injected comparison ops, one per return statement.
+  pvector<Id> _compare_op_ids;
 };
 
 #endif

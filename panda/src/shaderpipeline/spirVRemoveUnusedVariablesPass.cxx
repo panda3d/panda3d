@@ -12,51 +12,69 @@
  */
 
 #include "spirVRemoveUnusedVariablesPass.h"
+#include "spirVUsageAnalysis.h"
 
 /**
  *
  */
 void SpirVRemoveUnusedVariablesPass::
-preprocess() {
-  pmap<uint32_t, BitArray> ftype_params_used;
+run(SpirVModule &module) {
+  SpirVUsageAnalysis usage = module.analyze_usage();
 
-  for (uint32_t id = 0; id < get_id_bound(); ++id) {
-    Definition &def = _db.modify_definition(id);
+  pmap<Id, BitArray> ftype_params_used;
+  pset<Id> dead_ids;
 
-    if (def.is_variable() && !def.is_used()) {
+  for (uint32_t word = 0; word < module.get_id_bound(); ++word) {
+    Id id(word);
+    if (module.get_definition_type(id) == SpirVModule::DT_variable && !usage.is_used(id)) {
       if (shader_cat.is_debug()) {
         shader_cat.debug()
-          << "Removing unused variable " << def._name << " (" << id << ")\n";
+          << "Removing unused variable " << module.get_name(id)
+          << " (" << id << ")\n";
       }
-      def.clear();
-      delete_id(id);
+      module.delete_id(id);
+      dead_ids.insert(id);
     }
-    if (def.is_function()) {
-      for (size_t i = 0; i < def._parameters.size(); ++i) {
-        uint32_t param_id = def._parameters[i];
-        const Definition &param_def = _db.get_definition(param_id);
-        if (param_def.is_used() || !_db.get_definition(param_def._type_id).is_pointer_type()) {
-          ftype_params_used[def._type_id].set_bit(i);
-        }
+  }
+
+  for (size_t i = 0; i < module.get_num_functions(); ++i) {
+    const Function &function = module.get_function(i);
+    const pvector<Id> &params = function.parameters;
+    for (size_t i = 0; i < params.size(); ++i) {
+      // Only unused pointer parameters can be removed; a value parameter may
+      // not simply have its argument dropped without changing semantics.
+      if (usage.is_used(params[i]) ||
+          module.get_definition_type(module.get_type_id(params[i])) != SpirVModule::DT_pointer_type) {
+        ftype_params_used[function.type_id].set_bit(i);
       }
     }
   }
 
-  for (auto it = ftype_params_used.begin(); it != ftype_params_used.end(); ++it) {
-    uint32_t func_type_id = it->first;
-    const Definition &def = _db.get_definition(func_type_id);
+  // Remove any access chains and pointer copies based on the deleted
+  // variables (a chain that is never loaded or stored does not mark its
+  // variable used, so these may exist).
+  module.delete_dead_code(dead_ids);
 
-    for (size_t i = 0; i < def._parameters.size(); ++i) {
-      if (!it->second.get_bit(i)) {
+  for (const auto &item : ftype_params_used) {
+    Id func_type_id = item.first;
+    uint32_t num_params = 0;
+    {
+      const Instruction *decl = module.find_declaration(func_type_id);
+      nassertd(decl != nullptr && decl->opcode == spv::OpTypeFunction) continue;
+      num_params = (uint32_t)decl->args.size() - 2;
+    }
+
+    pset<uint32_t> deleted_params;
+    for (uint32_t i = 0; i < num_params; ++i) {
+      if (!item.second.get_bit(i)) {
         if (shader_cat.is_debug()) {
           shader_cat.debug()
             << "Removing unused function parameter " << i
             << " from function type " << func_type_id << "\n";
         }
-        delete_function_parameter(func_type_id, i);
+        deleted_params.insert(i);
       }
     }
+    module.remove_function_parameters(func_type_id, deleted_params);
   }
-
-  // This is really all we need to do; the base class takes care of deletions.
 }

@@ -22,13 +22,10 @@
  */
 class EXPCL_PANDA_SHADERPIPELINE SpirVMakeBlockPass final : public SpirVTransformPass {
 public:
-  SpirVMakeBlockPass(const ShaderType::Struct *block_type, const pvector<uint32_t> &member_ids,
+  SpirVMakeBlockPass(const ShaderType::Struct *block_type, const pvector<Id> &member_ids,
                      spv::StorageClass storage_class, uint32_t binding=0, uint32_t set=0);
 
-  virtual bool begin_function(Instruction op);
-  virtual bool transform_function_op(Instruction op);
-
-  bool maybe_replace_with_access_chain(uint32_t &id);
+  virtual void run(SpirVModule &module) override;
 
 private:
   const ShaderType::Struct *_block_type;
@@ -37,10 +34,10 @@ private:
   const uint32_t _set;
 
   // Map from id to index of the member in the struct.
-  pmap<uint32_t, uint32_t> _member_indices;
+  pmap<Id, uint32_t> _member_indices;
 
 public:
-  uint32_t _block_var_id = 0;
+  Id _block_var_id;
 };
 
 #endif

@@ -12,12 +12,13 @@
  */
 
 #include "spirVReplaceVariableTypePass.h"
+#include "spirVInstructionCursor.h"
 
 /**
  *
  */
 SpirVReplaceVariableTypePass::
-SpirVReplaceVariableTypePass(uint32_t variable_id, const ShaderType *type,
+SpirVReplaceVariableTypePass(Id variable_id, const ShaderType *type,
                              spv::StorageClass storage_class) :
   _variable_id(variable_id),
   _new_type(type),
@@ -29,193 +30,173 @@ SpirVReplaceVariableTypePass(uint32_t variable_id, const ShaderType *type,
 /**
  *
  */
-bool SpirVReplaceVariableTypePass::
-transform_definition_op(Instruction op) {
-  if (op.opcode == spv::OpVariable) {
-    if (op.args[1] == _variable_id) {
-      Definition &def = _db.modify_definition(_variable_id);
-      if (shader_cat.is_debug()) {
-        shader_cat.debug()
-          << "Changing type of variable " << _variable_id << " (" << def._name
-          << ") from " << *def._type << " to " << *_new_type << "\n";
+void SpirVReplaceVariableTypePass::
+run(SpirVModule &module) {
+  // Retype the variable declaration itself.
+  {
+    if (shader_cat.is_debug()) {
+      const ShaderType *old_type = module.resolve_type(_variable_id);
+      shader_cat.debug()
+        << "Changing type of variable " << _variable_id << " ("
+        << module.get_name(_variable_id) << ") from ";
+      if (old_type != nullptr) {
+        shader_cat.debug(false) << *old_type;
+      } else {
+        shader_cat.debug(false) << "(unknown)";
       }
-      _pointer_type_id = define_pointer_type(_new_type, _new_storage_class);
-      _type_id = unwrap_pointer_type(_pointer_type_id);
-      add_definition(spv::OpVariable, {
-        _pointer_type_id,
-        _variable_id,
-        (uint32_t)_new_storage_class,
-      });
-      def._type = _new_type;
-      def._type_id = _pointer_type_id;
-      if (def.is_used()) {
-        _db.mark_used(_variable_id);
-      }
-      return false;
-    } else {
-      return true;
+      shader_cat.debug(false) << " to " << *_new_type << "\n";
     }
-  } else {
-    return SpirVTransformPass::transform_definition_op(op);
-  }
-}
 
-/**
- *
- */
-bool SpirVReplaceVariableTypePass::
-transform_function_op(Instruction op) {
-  switch (op.opcode) {
-  case spv::OpLoad:
-    if (_pointer_ids.count(op.args[2])) {
-      Definition &def = _db.modify_definition(op.args[1]);
+    _pointer_type_id = module.define_pointer_type(_new_type, _new_storage_class);
+    _type_id = module.unwrap_pointer_type(_pointer_type_id);
 
-      // If both are vectors or scalars, we can try a conversion.
-      const ShaderType::Vector *old_vector = _new_type->as_vector();
-      const ShaderType::Scalar *old_scalar = _new_type->as_scalar();
-      const ShaderType::Vector *new_vector = def._type->as_vector();
-      const ShaderType::Scalar *new_scalar = def._type->as_scalar();
-      if ((old_vector != nullptr && new_vector != nullptr && old_vector != new_vector) ||
-          (old_scalar != nullptr && new_scalar != nullptr && old_scalar != new_scalar) ||
-          (old_vector != nullptr && new_scalar != nullptr) ||
-          (old_scalar != nullptr && new_vector != nullptr)) {
-        uint32_t temp = op_load(op.args[2]);
-        ShaderType::ScalarType new_scalar_type;
-        if (new_vector != nullptr && old_vector != nullptr) {
-          // Swizzle the vector.
-          new_scalar_type = new_vector->get_scalar_type();
-          if (new_vector->get_num_components() != old_vector->get_num_components()) {
-            pvector<uint32_t> components;
-            uint32_t i = 0;
-            while (i < new_vector->get_num_components() && i < old_vector->get_num_components()) {
-              components.push_back(i);
-              ++i;
-            }
-            // The remaining components are undefined.
-            while (i < new_vector->get_num_components()) {
-              components.push_back(0xffffffff);
-              ++i;
-            }
+    // The new pointer and pointee types are now available; update the variable
+    // declaration to refer to them.
+    Instruction *decl = module.find_declaration(_variable_id);
+    nassertv(decl != nullptr && decl->opcode == spv::OpVariable);
 
-            if (new_vector->get_scalar_type() == old_vector->get_scalar_type()) {
-              push_id(op.args[1]);
-              temp = op_vector_shuffle(temp, temp, components);
-              return false;
-            }
-            temp = op_vector_shuffle(temp, temp, components);
-          }
-        }
-        else if (new_vector != nullptr) {
-          // Convert the scalar, then replicate it into a vector.
-          new_scalar_type = new_vector->get_scalar_type();
-          temp = op_convert(new_scalar_type, temp);
-          pvector<uint32_t> components(new_vector->get_num_components(), temp);
-          push_id(op.args[1]);
-          op_composite_construct(new_vector, components);
-          return false;
-        }
-        else if (new_scalar != nullptr) {
-          new_scalar_type = new_scalar->get_scalar_type();
-          if (old_vector != nullptr) {
-            if (old_vector->get_scalar_type() == new_scalar_type) {
-              push_id(op.args[1]);
-              op_composite_extract(temp, {0});
-              return false;
-            }
-            // Convert vector to scalar.
-            temp = op_composite_extract(temp, {0});
-          }
-        }
-        else {
-          new_scalar_type = new_scalar->get_scalar_type();
-        }
-
-        // Replace the original load with our conversion.
-        push_id(op.args[1]);
-        op_convert(new_scalar_type, temp);
-        return false;
-      }
-      else {
-        def._type = _new_type;
-        def._type_id = _type_id;
-
-        op.args[0] = _type_id;
-        _object_ids.insert(op.args[1]);
-      }
-    }
-    break;
-
-  case spv::OpAtomicLoad:
-  case spv::OpAtomicExchange:
-  case spv::OpAtomicCompareExchange:
-  case spv::OpAtomicCompareExchangeWeak:
-  case spv::OpAtomicIIncrement:
-  case spv::OpAtomicIDecrement:
-  case spv::OpAtomicIAdd:
-  case spv::OpAtomicISub:
-  case spv::OpAtomicSMin:
-  case spv::OpAtomicUMin:
-  case spv::OpAtomicSMax:
-  case spv::OpAtomicUMax:
-  case spv::OpAtomicAnd:
-  case spv::OpAtomicOr:
-  case spv::OpAtomicXor:
-  case spv::OpAtomicFMinEXT:
-  case spv::OpAtomicFMaxEXT:
-  case spv::OpAtomicFAddEXT:
-    // These loads turn a pointer into a dereferenced object.
-    if (_pointer_ids.count(op.args[2])) {
-      Definition &def = _db.modify_definition(op.args[1]);
-      op.args[0] = _type_id;
-      def._type = _new_type;
-      def._type_id = _type_id;
-      _object_ids.insert(op.args[1]);
-    }
-    break;
-
-  case spv::OpCopyObject:
-  case spv::OpExpectKHR:
-    // This clones a pointer or object verbatim, so keep following the chain.
-    if (_pointer_ids.count(op.args[2])) {
-      Definition &def = _db.modify_definition(op.args[1]);
-      op.args[0] = _pointer_type_id;
-      def._type = _new_type;
-      def._type_id = _pointer_type_id;
-      _pointer_ids.insert(op.args[1]);
-    }
-    if (_object_ids.count(op.args[2])) {
-      Definition &def = _db.modify_definition(op.args[1]);
-      op.args[0] = _type_id;
-      def._type = _new_type;
-      def._type_id = _type_id;
-      _object_ids.insert(op.args[1]);
-    }
-    break;
-
-  case spv::OpSelect:
-    // The result type for this op must be the same for both operands.
-    nassertd(_pointer_ids.count(op.args[3]) == _pointer_ids.count(op.args[4])) {}
-    nassertd(_object_ids.count(op.args[3]) == _object_ids.count(op.args[4])) {}
-
-    if (_pointer_ids.count(op.args[3])) {
-      Definition &def = _db.modify_definition(op.args[1]);
-      op.args[0] = _pointer_type_id;
-      def._type = _new_type;
-      def._type_id = _pointer_type_id;
-      _pointer_ids.insert(op.args[1]);
-    }
-    if (_object_ids.count(op.args[3])) {
-      Definition &def = _db.modify_definition(op.args[1]);
-      op.args[0] = _type_id;
-      def._type = _new_type;
-      def._type_id = _type_id;
-      _object_ids.insert(op.args[1]);
-    }
-    break;
-
-  default:
-    return SpirVTransformPass::transform_function_op(op);
+    decl->args[0] = _pointer_type_id;
+    decl->args[2] = (uint32_t)_new_storage_class;
+    module.record_result(*decl, Id());
   }
 
-  return true;
+  // Now fix up all the loads and copies of the variable.
+  for (Function &function : module.modify_functions()) {
+    SpirVInstructionCursor cursor(module, function);
+    while (cursor.next()) {
+      switch (cursor->opcode) {
+      case spv::OpLoad:
+        if (_pointer_ids.count(Id(cursor->args[2]))) {
+          Id result_id(cursor->args[1]);
+          Id var_id(cursor->args[2]);
+
+          // The type the rest of the shader expects to load.
+          const ShaderType *result_type = module.resolve_type(result_id);
+          nassertv(result_type != nullptr);
+
+          // If both are vectors or scalars, we can try a conversion.
+          const ShaderType::Vector *old_vector = _new_type->as_vector();
+          const ShaderType::Scalar *old_scalar = _new_type->as_scalar();
+          const ShaderType::Vector *new_vector = result_type->as_vector();
+          const ShaderType::Scalar *new_scalar = result_type->as_scalar();
+          if ((old_vector != nullptr && new_vector != nullptr && old_vector != new_vector) ||
+              (old_scalar != nullptr && new_scalar != nullptr && old_scalar != new_scalar) ||
+              (old_vector != nullptr && new_scalar != nullptr) ||
+              (old_scalar != nullptr && new_vector != nullptr)) {
+            // Replace the original load with a load of the new type followed
+            // by a conversion, of which the final op takes over the original
+            // result id.
+            cursor.replace([&](SpirVBuilder &builder) -> Id {
+              Id temp = builder.op_load(var_id);
+
+              if (new_vector != nullptr && old_vector != nullptr) {
+                // Swizzle the vector.
+                if (new_vector->get_num_components() != old_vector->get_num_components()) {
+                  pvector<uint32_t> components;
+                  uint32_t ci = 0;
+                  while (ci < new_vector->get_num_components() && ci < old_vector->get_num_components()) {
+                    components.push_back(ci);
+                    ++ci;
+                  }
+                  // The remaining components are undefined.
+                  while (ci < new_vector->get_num_components()) {
+                    components.push_back(0xffffffff);
+                    ++ci;
+                  }
+                  temp = builder.op_vector_shuffle(temp, temp, components);
+                }
+                return builder.op_convert(new_vector->get_scalar_type(), temp);
+              }
+              if (new_vector != nullptr) {
+                // Convert the scalar, then replicate it into a vector.
+                temp = builder.op_convert(new_vector->get_scalar_type(), temp);
+                pvector<Id> components(new_vector->get_num_components(), temp);
+                return builder.op_composite_construct(new_vector, components);
+              }
+              if (old_vector != nullptr) {
+                // Take the first component of the vector.
+                temp = builder.op_composite_extract(temp, {0});
+              }
+              return builder.op_convert(new_scalar->get_scalar_type(), temp);
+            });
+          }
+          else {
+            cursor->args[0] = _type_id;
+            module.record_result(*cursor, function.id);
+            _object_ids.insert(result_id);
+          }
+        }
+        break;
+
+      case spv::OpAtomicLoad:
+      case spv::OpAtomicExchange:
+      case spv::OpAtomicCompareExchange:
+      case spv::OpAtomicCompareExchangeWeak:
+      case spv::OpAtomicIIncrement:
+      case spv::OpAtomicIDecrement:
+      case spv::OpAtomicIAdd:
+      case spv::OpAtomicISub:
+      case spv::OpAtomicSMin:
+      case spv::OpAtomicUMin:
+      case spv::OpAtomicSMax:
+      case spv::OpAtomicUMax:
+      case spv::OpAtomicAnd:
+      case spv::OpAtomicOr:
+      case spv::OpAtomicXor:
+      case spv::OpAtomicFMinEXT:
+      case spv::OpAtomicFMaxEXT:
+      case spv::OpAtomicFAddEXT:
+        // These loads turn a pointer into a dereferenced object.
+        if (_pointer_ids.count(Id(cursor->args[2]))) {
+          Instruction &op = *cursor;
+          op.args[0] = _type_id;
+          module.record_result(op, function.id);
+          _object_ids.insert(Id(op.args[1]));
+        }
+        break;
+
+      case spv::OpCopyObject:
+      case spv::OpExpectKHR:
+        // This clones a pointer or object verbatim, so keep following the chain.
+        {
+          Instruction &op = *cursor;
+          if (_pointer_ids.count(Id(op.args[2]))) {
+            op.args[0] = _pointer_type_id;
+            module.record_result(op, function.id);
+            _pointer_ids.insert(Id(op.args[1]));
+          }
+          if (_object_ids.count(Id(op.args[2]))) {
+            op.args[0] = _type_id;
+            module.record_result(op, function.id);
+            _object_ids.insert(Id(op.args[1]));
+          }
+        }
+        break;
+
+      case spv::OpSelect:
+        {
+          Instruction &op = *cursor;
+
+          // The result type for this op must be the same for both operands.
+          nassertd(_pointer_ids.count(Id(op.args[3])) == _pointer_ids.count(Id(op.args[4]))) {}
+          nassertd(_object_ids.count(Id(op.args[3])) == _object_ids.count(Id(op.args[4]))) {}
+
+          if (_pointer_ids.count(Id(op.args[3]))) {
+            op.args[0] = _pointer_type_id;
+            module.record_result(op, function.id);
+            _pointer_ids.insert(Id(op.args[1]));
+          }
+          if (_object_ids.count(Id(op.args[3]))) {
+            op.args[0] = _type_id;
+            module.record_result(op, function.id);
+            _object_ids.insert(Id(op.args[1]));
+          }
+        }
+        break;
+
+      default:
+        break;
+      }
+    }
+  }
 }

@@ -4,17 +4,22 @@ set(P3SHADERPIPELINE_HEADERS
   shaderCompilerGlslPreProc.h
   shaderModuleGlsl.h
   shaderModuleSpirV.h shaderModuleSpirV.I
+  spirVBuilder.h spirVBuilder.I
   spirVDebugOutputPass.h spirVDebugOutputPass.I
+  spirVEmulateTextureQueriesPass.h
   spirVFlattenStructPass.h
   spirVHoistStructResourcesPass.h
+  spirVId.h
   spirVInjectAlphaTestPass.h
   spirVInjectVertexTransformPass.h
+  spirVInstructionCursor.h spirVInstructionCursor.I
   spirVMakeBlockPass.h
+  spirVModule.h spirVModule.I
   spirVRemoveUnusedVariablesPass.h
   spirVReplaceVariableTypePass.h
-  spirVResultDatabase.h spirVResultDatabase.I
   spirVTransformer.h spirVTransformer.I
   spirVTransformPass.h spirVTransformPass.I
+  spirVUsageAnalysis.h spirVUsageAnalysis.I
 )
 
 set(P3SHADERPIPELINE_SOURCES
@@ -23,18 +28,20 @@ set(P3SHADERPIPELINE_SOURCES
   shaderCompilerGlslPreProc.cxx
   shaderModuleGlsl.cxx
   shaderModuleSpirV.cxx
+  spirVBuilder.cxx
   spirVEmulateTextureQueriesPass.cxx
   spirVDebugOutputPass.cxx
   spirVFlattenStructPass.cxx
   spirVHoistStructResourcesPass.cxx
   spirVInjectAlphaTestPass.cxx
   spirVInjectVertexTransformPass.cxx
+  spirVInstructionCursor.cxx
   spirVMakeBlockPass.cxx
+  spirVModule.cxx
   spirVRemoveUnusedVariablesPass.cxx
   spirVReplaceVariableTypePass.cxx
-  spirVResultDatabase.cxx
   spirVTransformer.cxx
-  spirVTransformPass.cxx
+  spirVUsageAnalysis.cxx
 )
 
 add_custom_command(

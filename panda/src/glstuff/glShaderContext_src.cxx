@@ -3190,7 +3190,7 @@ compile_spirv_to_glsl(const ShaderModuleSpirV *module, size_t mi,
   ShaderModuleSpirV::InstructionStream stream;
 
   // Do we need to emulate certain caps, like texture queries?
-  pmap<SpirVTransformPass::AccessChain, uint32_t> size_var_ids;
+  pmap<SpirVTransformPass::AccessChain, SpirVId> size_var_ids;
   uint64_t used_caps = module->get_used_capabilities();
   uint64_t supported_caps = _glgsg->get_supported_shader_capabilities();
   uint64_t emulate_caps = module->_emulatable_caps & ~supported_caps;
@@ -3467,7 +3467,7 @@ compile_spirv_to_glsl(const ShaderModuleSpirV *module, size_t mi,
         size += sprintf(buf + size, "_%d", chain[i]);
       }
       strcpy(buf + size, "_s");
-      compiler.set_name(item.second, buf);
+      compiler.set_name((uint32_t)item.second, buf);
     }
   }
 
