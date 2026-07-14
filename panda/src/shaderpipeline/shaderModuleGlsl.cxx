@@ -140,7 +140,7 @@ make_from_bam(const FactoryParams &params) {
 void ShaderModuleGlsl::
 fillin(DatagramIterator &scan, BamReader *manager) {
   _source_filename = scan.get_string();
-  _used_caps = (int)scan.get_uint64();
+  _used_caps = scan.get_uint64();
 
   _version = scan.get_int16();
   _code = scan.get_string32();
