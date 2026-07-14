@@ -225,6 +225,50 @@ assign_procedural_names(const char *prefix, const pmap<uint32_t, int> &suffixes)
 }
 
 /**
+ * Assigns a name based on the location decoration to every unnamed input and
+ * output interface block type, so that the names of interlocking blocks agree
+ * between stages.  This only exists to work around an NVIDIA driver bug.
+ */
+void SpirVTransformer::
+assign_procedural_block_names(const char *prefix) {
+  for (uint32_t word = 0; word < get_id_bound(); ++word) {
+    Id id(word);
+    if (_module.get_definition_type(id) != SpirVModule::DT_variable ||
+        _module.get_function_id(id) != 0) {
+      continue;
+    }
+    spv::StorageClass storage_class = _module.get_storage_class(id);
+    if (storage_class != spv::StorageClassInput &&
+        storage_class != spv::StorageClassOutput) {
+      continue;
+    }
+    int location = _module.get_location(id);
+    if (location < 0) {
+      // Built-in blocks like gl_PerVertex carry no location.
+      continue;
+    }
+
+    // In geometry and tessellation stages the block is wrapped in an array;
+    // the Block decoration is on the underlying struct type.
+    Id type_id = _module.unwrap_pointer_type(_module.get_type_id(id));
+    const ShaderType *type = _module.resolve_type(type_id);
+    while (type != nullptr && type->as_array() != nullptr) {
+      type_id = _module.get_type_id(type_id);
+      type = _module.resolve_type(type_id);
+    }
+    if (type_id == 0 ||
+        !_module.has_decoration(type_id, spv::DecorationBlock) ||
+        !_module.get_name(type_id).empty()) {
+      continue;
+    }
+
+    char buffer[16];
+    sprintf(buffer, "%d", location);
+    _module.set_name(type_id, std::string(prefix) + buffer);
+  }
+}
+
+/**
  * Removes location decorations from uniforms.
  */
 void SpirVTransformer::

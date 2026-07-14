@@ -3070,6 +3070,14 @@ compile_spirv_to_spirv(const ShaderModuleSpirV *module, size_t mi,
       transformer.assign_procedural_names("p", id_to_location);
     }
   }
+
+  if (_glgsg->_gl_vendor == "NVIDIA Corporation") {
+    // Similarly, the NVIDIA driver matches interface blocks between stages by
+    // name rather than by location, making up a name like "__defaultname_24"
+    // from the SPIR-V id if the OpName was stripped, so we have to give
+    // interlocking blocks matching names based on their location.
+    transformer.assign_procedural_block_names("b");
+  }
   if (!binding_ids.empty()) {
     // OpenGL has no concept of descriptor sets, so the set index is always 0.
     transformer.bind_descriptor_set(0, binding_ids);

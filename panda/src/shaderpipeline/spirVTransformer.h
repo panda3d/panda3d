@@ -43,6 +43,7 @@ public:
   void assign_locations(pmap<uint32_t, int> locations);
   void assign_flat_decorations();
   void assign_procedural_names(const char *prefix, const pmap<uint32_t, int> &suffixes);
+  void assign_procedural_block_names(const char *prefix);
   void strip_uniform_locations();
   void strip_bindings();
   void bind_descriptor_set(uint32_t set, const pvector<uint32_t> &ids);
