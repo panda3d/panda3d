@@ -1380,6 +1380,10 @@ output_signature(std::ostream &out) const {
   out << 't';
   if (_shadow) {
     out << 's';
+  } else if (_sampled_type == ST_int) {
+    out << 'i';
+  } else if (_sampled_type == ST_uint) {
+    out << 'u';
   }
   out << texture_type_signatures[_texture_type];
 }
