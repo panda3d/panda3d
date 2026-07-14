@@ -24,6 +24,7 @@ ConfigureDecl(config_shaderpipeline, EXPCL_PANDA_SHADERPIPELINE, EXPTP_PANDA_SHA
 extern ConfigVariableBool glsl_preprocess;
 extern ConfigVariableBool glsl_force_legacy_pipeline;
 extern ConfigVariableInt glsl_include_recursion_limit;
+extern ConfigVariableBool shader_paranoid_validation;
 
 extern "C" EXPCL_PANDA_SHADERPIPELINE void init_libshaderpipeline();
 

@@ -29,6 +29,7 @@ public:
                                spv::StorageClass storage_class);
 
   virtual void run(SpirVModule &module) override;
+  virtual std::string_view get_name() const override { return "SpirVReplaceVariableTypePass"; }
 
 private:
   const Id _variable_id;

@@ -13,18 +13,24 @@
 
 #include "spirVTransformer.h"
 #include "spirVTransformPass.h"
+#include "config_shaderpipeline.h"
 
 /**
  * Materializes the given instruction stream.
  */
 SpirVTransformer::
 SpirVTransformer(const InstructionStream &stream) : _module(stream) {
+  if (shader_paranoid_validation && !_module.validate()) {
+    Notify::assert_failure("SPIR-V module failed validation before running "
+                           "transformations", __LINE__, __FILE__);
+  }
 }
 
 /**
  * Runs the given transformation pass object (which can be used only once) on
  * the module.  Afterwards, merges any duplicate unique-type declarations the
- * pass may have created.
+ * pass may have created and, if shader-paranoid-validation is set, validates
+ * the resulting module.
  */
 void SpirVTransformer::
 run(SpirVTransformPass &pass) {
@@ -35,6 +41,12 @@ run(SpirVTransformPass &pass) {
   pass.run(_module);
 
   _module.deduplicate_types();
+
+  if (shader_paranoid_validation && !_module.validate()) {
+    std::string message("SPIR-V module failed validation after running ");
+    message += pass.get_name();
+    Notify::assert_failure(message, __LINE__, __FILE__);
+  }
 }
 
 /**

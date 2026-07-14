@@ -57,6 +57,7 @@ public:
   void mark_model_matrix(uint32_t id, bool inverse, bool transpose);
 
   virtual void run(SpirVModule &module) override;
+  virtual std::string_view get_name() const override { return "SpirVInjectVertexTransformPass"; }
 
 private:
   void inject_animation(SpirVBuilder &builder, const pvector<Id> &vars);

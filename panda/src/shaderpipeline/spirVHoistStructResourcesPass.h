@@ -26,6 +26,7 @@ public:
     _remove_empty_structs(remove_empty_structs) {}
 
   virtual void run(SpirVModule &module) override;
+  virtual std::string_view get_name() const override { return "SpirVHoistStructResourcesPass"; }
 
 private:
   void process_declarations(SpirVModule &module);

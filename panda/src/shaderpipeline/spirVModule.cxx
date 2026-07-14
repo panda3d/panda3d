@@ -692,7 +692,7 @@ emit() const {
  * find_declaration and the emit-time topological sort navigate by), and a
  * mutation path failing to invalidate the type resolutions.  Logs an error for
  * every mismatch and returns false if any was found.  Intended for validation
- * in the test suite.
+ * in the test suite and via the shader-paranoid-validation config variable.
  */
 bool SpirVModule::
 validate() const {

@@ -52,6 +52,17 @@ ConfigVariableInt glsl_include_recursion_limit
           "enabled.  This is used to prevent infinite recursion when "
           "two shader files include each other."));
 
+ConfigVariableBool shader_paranoid_validation
+("shader-paranoid-validation", false,
+ PRC_DESC("If this is enabled, Panda validates the SPIR-V module after "
+          "every transformation pass that is run on a shader, raising an "
+          "assertion that names the pass after which validation failed.  "
+          "This is quite slow, but useful to diagnose a shader that works "
+          "when compiled by the driver but misbehaves when it goes through "
+          "Panda's shader pipeline, which may indicate that one of the "
+          "transformation passes is mishandling the shader.  Can be combined "
+          "with assert-abort to stop right at the failing pass."));
+
 ConfigureFn(config_shaderpipeline) {
   init_libshaderpipeline();
 }

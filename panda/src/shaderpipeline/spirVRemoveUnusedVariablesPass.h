@@ -22,6 +22,7 @@
 class EXPCL_PANDA_SHADERPIPELINE SpirVRemoveUnusedVariablesPass final : public SpirVTransformPass {
 public:
   virtual void run(SpirVModule &module) override;
+  virtual std::string_view get_name() const override { return "SpirVRemoveUnusedVariablesPass"; }
 };
 
 #endif

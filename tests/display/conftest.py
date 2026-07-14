@@ -561,6 +561,9 @@ def env(request):
     else:
         allow_compute = False
 
+    # Always do paranoid validation of shaders.
+    config["shader-paranoid-validation"] = "true"
+
     prc = '\n'.join(f"{key} {value}" for key, value in config.items())
     page = core.load_prc_file_data("", prc)
 

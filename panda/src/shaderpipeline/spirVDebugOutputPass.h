@@ -30,6 +30,7 @@ public:
                        uint32_t buffer_binding, uint32_t buffer_set);
 
   virtual void run(SpirVModule &module) override;
+  virtual std::string_view get_name() const override { return "SpirVDebugOutputPass"; }
 
 private:
   void emit_printf(SpirVBuilder &builder, const std::string &fmt_string, const uint32_t *args, uint32_t nargs);

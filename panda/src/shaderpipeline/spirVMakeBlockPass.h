@@ -26,6 +26,7 @@ public:
                      spv::StorageClass storage_class, uint32_t binding=0, uint32_t set=0);
 
   virtual void run(SpirVModule &module) override;
+  virtual std::string_view get_name() const override { return "SpirVMakeBlockPass"; }
 
 private:
   const ShaderType::Struct *_block_type;

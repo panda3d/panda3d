@@ -32,6 +32,9 @@ public:
 
   virtual void run(SpirVModule &module) = 0;
 
+  // Returns the class name of the pass, for error reporting.
+  virtual std::string_view get_name() const = 0;
+
   /**
    * Helper class for storing a chain of member or array accesses.  The
    * chain elements are literal member indices, not ids.

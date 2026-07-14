@@ -38,6 +38,7 @@ public:
     _mode(mode), _ref_location(ref_location), _spec_constant(spec_constant) {}
 
   virtual void run(SpirVModule &module) override;
+  virtual std::string_view get_name() const override { return "SpirVInjectAlphaTestPass"; }
 
 public:
   const Mode _mode;

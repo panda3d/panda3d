@@ -25,6 +25,7 @@ public:
   SpirVFlattenStructPass(Id type_id);
 
   virtual void run(SpirVModule &module) override;
+  virtual std::string_view get_name() const override { return "SpirVFlattenStructPass"; }
 
 private:
   const Id _type_id;

@@ -27,6 +27,7 @@ public:
     _emulate_caps(emulate_caps) {}
 
   virtual void run(SpirVModule &module) override;
+  virtual std::string_view get_name() const override { return "SpirVEmulateTextureQueriesPass"; }
 
 private:
   const uint64_t _emulate_caps;
