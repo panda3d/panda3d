@@ -191,10 +191,14 @@ def test_glsl_debug_assert(env):
     options = core.CompilerOptions()
     options.debug = True
 
-    env.run_glsl("_p3d_assert(true);", preamble, options=options)
+    page = core.load_prc_file_data("", "assert-abort false")
+    try:
+        env.run_glsl("_p3d_assert(true);", preamble, options=options)
 
-    with pytest.raises(AssertionError):
-        env.run_glsl("_p3d_assert(1 == 2);", preamble, options=options)
+        with pytest.raises(AssertionError):
+            env.run_glsl("_p3d_assert(1 == 2);", preamble, options=options)
+    finally:
+        core.unload_prc_file(page)
 
     # In non-debug mode, assertion does not fire
     options = core.CompilerOptions()
@@ -220,8 +224,12 @@ def test_glsl_debug_assert_included(env, vfs, ramdir):
     options.debug = True
     options.include_path = core.DSearchPath(ramdir)
 
-    with pytest.raises(AssertionError):
-        env.run_glsl("triggerAssert();", preamble, options=options)
+    page = core.load_prc_file_data("", "assert-abort false")
+    try:
+        with pytest.raises(AssertionError):
+            env.run_glsl("triggerAssert();", preamble, options=options)
+    finally:
+        core.unload_prc_file(page)
 
 
 def test_glsl_sampler(env):
