@@ -267,7 +267,7 @@ class ShaderEnvironment:
         # Create a buffer to hold the results of the assertion.  We use one texel
         # per line of shader code, so we can show which lines triggered.
         engine = gsg.get_engine()
-        result = core.Texture("")
+        result = core.Texture("_triggered-" + self.name)
         if use_compute:
             result.set_clear_color((0, 0, 0, 0))
             result.setup_buffer_texture(num_lines + 1,
@@ -394,7 +394,7 @@ class ShaderEnvironment:
         if not shader:
             pytest.fail("error compiling shader:\n" + code)
 
-        result = core.Texture("")
+        result = core.Texture("_triggered")
         fbprops = core.FrameBufferProperties()
         fbprops.force_hardware = True
         fbprops.set_rgba_bits(8, 8, 8, 8)
