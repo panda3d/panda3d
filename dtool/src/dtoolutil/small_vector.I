@@ -36,6 +36,17 @@ small_vector(std::initializer_list<T> init) :
 }
 
 /**
+ * Range constructor.
+ */
+template<class T, unsigned N>
+template<class InputIterator>
+INLINE small_vector<T, N>::
+small_vector(InputIterator first, InputIterator last) {
+  this->assign_range(first, last,
+    typename std::iterator_traits<InputIterator>::iterator_category());
+}
+
+/**
  * Copy constructor.
  */
 template<class T, unsigned N>
@@ -554,6 +565,119 @@ insert(const_iterator pos, T &&value) {
   iterator new_pos = this->insert_gap(pos, 1);
   new (new_pos) T(std::move(value));
   return new_pos;
+}
+
+/**
+ * Inserts the given range of elements before the indicated position.
+ */
+template<class T, unsigned N>
+template<class InputIterator>
+INLINE typename small_vector<T, N>::iterator small_vector<T, N>::
+insert(const_iterator pos, InputIterator first, InputIterator last) {
+  return this->insert_range(pos, first, last,
+    typename std::iterator_traits<InputIterator>::iterator_category());
+}
+
+/**
+ * Range insert from a single-pass iterator, which cannot be measured in
+ * advance without consuming it, so the range is buffered first.
+ */
+template<class T, unsigned N>
+template<class InputIterator>
+INLINE typename small_vector<T, N>::iterator small_vector<T, N>::
+insert_range(const_iterator pos, InputIterator first, InputIterator last,
+             std::input_iterator_tag) {
+  small_vector<T, N> temp;
+  for (; first != last; ++first) {
+    temp.push_back(*first);
+  }
+  if (temp.empty()) {
+    return (iterator)pos;
+  }
+  iterator new_pos = this->insert_gap(pos, temp.size());
+  T *to = new_pos;
+  for (T &value : temp) {
+    new (to++) T(std::move(value));
+  }
+  return new_pos;
+}
+
+/**
+ * Range insert from a multi-pass iterator.
+ */
+template<class T, unsigned N>
+template<class ForwardIterator>
+INLINE typename small_vector<T, N>::iterator small_vector<T, N>::
+insert_range(const_iterator pos, ForwardIterator first, ForwardIterator last,
+             std::forward_iterator_tag) {
+  size_type count = (size_type)std::distance(first, last);
+  if (count == 0) {
+    return (iterator)pos;
+  }
+
+  if constexpr (std::is_same<typename std::iterator_traits<ForwardIterator>::value_type, T>::value) {
+    // If the source range aliases our own storage, insert_gap() would move
+    // its elements or free its memory before we read it, so copy it first.
+    const T *src = std::addressof(*first);
+    const T *data = this->data();
+    if (src >= data && src < data + _size) {
+      small_vector<T, N> temp(first, last);
+      iterator new_pos = this->insert_gap(pos, count);
+      T *to = new_pos;
+      for (T &value : temp) {
+        new (to++) T(std::move(value));
+      }
+      return new_pos;
+    }
+  }
+
+  iterator new_pos = this->insert_gap(pos, count);
+  T *to = new_pos;
+  for (; first != last; ++first) {
+    new (to++) T(*first);
+  }
+  return new_pos;
+}
+
+/**
+ * Replaces the contents of the vector with the given range of elements.
+ */
+template<class T, unsigned N>
+template<class InputIterator>
+INLINE void small_vector<T, N>::
+assign(InputIterator first, InputIterator last) {
+  this->assign_range(first, last,
+    typename std::iterator_traits<InputIterator>::iterator_category());
+}
+
+/**
+ * Range assignment from a single-pass iterator, which cannot be measured in
+ * advance without consuming it.
+ */
+template<class T, unsigned N>
+template<class InputIterator>
+INLINE void small_vector<T, N>::
+assign_range(InputIterator first, InputIterator last, std::input_iterator_tag) {
+  this->clear();
+  for (; first != last; ++first) {
+    this->push_back(*first);
+  }
+}
+
+/**
+ * Range assignment from a multi-pass iterator.
+ */
+template<class T, unsigned N>
+template<class ForwardIterator>
+INLINE void small_vector<T, N>::
+assign_range(ForwardIterator first, ForwardIterator last, std::forward_iterator_tag) {
+  this->clear();
+  this->reserve((size_type)std::distance(first, last));
+  T *to = this->data();
+  for (; first != last; ++first) {
+    new (to + _size) T(*first);
+    ++_size;
+  }
 }
 
 /**
