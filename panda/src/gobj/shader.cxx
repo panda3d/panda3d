@@ -1351,8 +1351,8 @@ prepare_now(PreparedGraphicsObjects *prepared_objects,
     return (*ci).second;
   }
 
-  int supported_caps = gsg->get_supported_shader_capabilities();
-  int unsupported_caps = _used_caps & ~supported_caps;
+  uint64_t supported_caps = gsg->get_supported_shader_capabilities();
+  uint64_t unsupported_caps = _used_caps & ~supported_caps;
   if (unsupported_caps != 0) {
     std::ostream &out = shader_cat.error()
       << "Cannot load shader because the graphics back-end does not support ";
