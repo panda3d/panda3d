@@ -106,8 +106,6 @@ public:
 #endif
   INLINE int find_parameter(CPT_InternalName name) const;
 
-  typedef pmap<CPT_InternalName, Variable *> VariablesByName;
-
   virtual bool link_inputs(const ShaderModule *previous, pmap<int, int> &remap) const;
   virtual void remap_input_locations(const pmap<int, int> &remap);
 
