@@ -217,7 +217,7 @@ output_signature(std::ostream &out) const {
  */
 int ShaderType::Void::
 compare_to_impl(const ShaderType &other) const {
-  return true;
+  return 0;
 }
 
 /**
@@ -1343,7 +1343,7 @@ output_signature(std::ostream &out) const {
 int ShaderType::Sampler::
 compare_to_impl(const ShaderType &other) const {
   // All samplers are the same type.
-  return true;
+  return 0;
 }
 
 /**
