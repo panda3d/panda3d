@@ -1406,6 +1406,53 @@ add_string(std::string_view str) {
 }
 
 /**
+ * Returns true if the given string id is referenced by an instruction in the
+ * module.
+ */
+bool SpirVModule::
+is_string_referenced(Id id) const {
+  for (const Instruction &op : _debug) {
+    if (op.opcode == spv::OpSource &&
+        op.args.size() >= 3 && op.args[2] == id) {
+      return true;
+    }
+  }
+
+  auto references_string = [id](const Instruction &op) {
+    switch (op.opcode) {
+    case spv::OpLine:
+      return !op.args.empty() && op.args[0] == id;
+
+    case spv::OpExtInst:
+    case spv::OpExtInstWithForwardRefsKHR:
+      for (size_t i = 4; i < op.args.size(); ++i) {
+        if (op.args[i] == id) {
+          return true;
+        }
+      }
+      return false;
+
+    default:
+      return false;
+    }
+  };
+
+  for (const Instruction &op : _declarations) {
+    if (references_string(op)) {
+      return true;
+    }
+  }
+  for (const Function &function : _functions) {
+    for (const Instruction &op : function.instructions) {
+      if (references_string(op)) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+/**
  * Returns true if the given id carries the given (non-member) decoration.
  */
 bool SpirVModule::

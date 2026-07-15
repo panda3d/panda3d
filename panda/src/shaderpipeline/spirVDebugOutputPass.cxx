@@ -74,6 +74,8 @@ run(SpirVModule &module) {
     }
   }
 
+  pset<Id> maybe_dead_strings;
+
   for (Function &function : module.modify_functions()) {
     _current_file = Id();
     _current_line = 0;
@@ -85,6 +87,15 @@ run(SpirVModule &module) {
       if (op.opcode == spv::OpExtInst && op.args.size() >= 4 &&
           get_ext_inst_import(op.args[2]) == EI_nonsemantic_debugprintf &&
           op.args[3] == 1 /*DebugPrintf*/) {
+
+        // The format string and any string arguments may be left without a
+        // reference once the print is removed; check below, when all prints
+        // have been processed.
+        for (size_t ai = 4; ai < op.args.size(); ++ai) {
+          if (module.get_definition_type(Id(op.args[ai])) == SpirVModule::DT_string) {
+            maybe_dead_strings.insert(Id(op.args[ai]));
+          }
+        }
 
 #ifndef NDEBUG
         std::string string = op.args.size() >= 5 ? module.resolve_string(Id(op.args[4])) : std::string();
@@ -140,6 +151,18 @@ run(SpirVModule &module) {
 
   for (Id import_id : deleted_imports) {
     module.delete_id(import_id);
+  }
+
+  // Delete the strings that the removed prints have orphaned.  A string that
+  // is still referenced (eg. by an OpLine or an OpSource) is kept.  This
+  // matters beyond tidiness: the NVIDIA driver rejects a SPIR-V module
+  // containing an OpString with a "%s" format specifier in it, even when
+  // nothing references the string.
+  for (Id string_id : maybe_dead_strings) {
+    if (module.get_definition_type(string_id) == SpirVModule::DT_string &&
+        !module.is_string_referenced(string_id)) {
+      module.delete_id(string_id);
+    }
   }
 }
 

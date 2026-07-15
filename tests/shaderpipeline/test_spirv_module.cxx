@@ -87,6 +87,56 @@ TEST_CASE("SpirVModule prunes deleted variables from entry point interfaces", "[
   CHECK(count_op(result, spv::OpDecorate) == 1);
 }
 
+TEST_CASE("SpirVModule finds string references exactly", "[shaderpipeline]") {
+  // The consumers of an OpString are enumerated exhaustively (OpLine,
+  // OpExtInst operands and the OpSource file operand), so an unreferenced
+  // string is recognized as such without literal-collision false positives.
+  SpirVModule module = make_module();
+  module.add_extension("SPV_KHR_non_semantic_info");
+
+  Id str_unreferenced = module.add_string("unreferenced");
+  Id str_line = module.add_string("file.glsl");
+  Id str_ext_inst = module.add_string("hello %d");
+  Id str_source = module.add_string("source.glsl");
+
+  Id import_id = module.add_ext_inst_import("NonSemantic.DebugPrintf");
+  Id void_tid = module.define_type(nullptr);
+
+  {
+    SpirVBuilder builder = make_entry_point(module);
+    builder.insert(spv::OpLine, {str_line, 1, 0});
+    Id result = module.allocate_id();
+    builder.insert(spv::OpExtInst, {void_tid, result, import_id, 1, str_ext_inst});
+    builder.op_return();
+  }
+
+  CHECK(!module.is_string_referenced(str_unreferenced));
+  CHECK(module.is_string_referenced(str_line));
+  CHECK(module.is_string_referenced(str_ext_inst));
+  CHECK(!module.is_string_referenced(str_source));
+
+  // An OpSource file operand also counts.  It can only enter via parse, so
+  // splice one into the emitted stream, after the OpString declarations.
+  InstructionStream stream = module.emit();
+  REQUIRE(stream.validate());
+
+  InstructionStream::iterator it = stream.begin();
+  while (it != stream.end() &&
+         ((*it).opcode != spv::OpString || (*it).args[0] != str_source)) {
+    ++it;
+  }
+  REQUIRE(it != stream.end());
+  ++it;
+  stream.insert(it, spv::OpSource,
+                {(uint32_t)spv::SourceLanguageGLSL, 450, str_source});
+
+  SpirVModule reparsed(stream);
+  CHECK(!reparsed.is_string_referenced(str_unreferenced));
+  CHECK(reparsed.is_string_referenced(str_line));
+  CHECK(reparsed.is_string_referenced(str_ext_inst));
+  CHECK(reparsed.is_string_referenced(str_source));
+}
+
 TEST_CASE("SpirVModule strips call arguments when removing function parameters", "[shaderpipeline]") {
   // float f(sampler2D t, float x) and float g(float y).  Removing f's
   // sampler parameter makes f's function type identical to g's; the

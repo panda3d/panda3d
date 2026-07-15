@@ -164,6 +164,7 @@ public:
   Id find_named(std::string_view name) const;
   INLINE std::string resolve_string(Id id) const;
   Id add_string(std::string_view str);
+  bool is_string_referenced(Id id) const;
 
   INLINE const Annotations *get_annotations(Id id) const;
   bool has_decoration(Id id, spv::Decoration decoration) const;
