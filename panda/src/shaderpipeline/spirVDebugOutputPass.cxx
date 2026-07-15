@@ -106,7 +106,9 @@ run(SpirVModule &module) {
             if (string == "%!") {
               // Special internal format string that issues an assertion.  The
               // argument contains the expression.
-              emit_assert(builder, !fmt_args.empty() ? module.resolve_string(Id(fmt_args[0])) : "");
+              // Older glslang versions don't support the stringizing operator
+              // (#), in which case the expression string is absent.
+              emit_assert(builder, !fmt_args.empty() ? module.resolve_string(Id(fmt_args[0])) : "<unknown>");
             } else {
               emit_printf(builder, string, fmt_args.data(), (uint32_t)fmt_args.size());
             }

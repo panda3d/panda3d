@@ -22,20 +22,31 @@
 #include <glslang/Public/ShaderLang.h>
 #include <glslang/Public/ResourceLimits.h>
 #include <glslang/SPIRV/GlslangToSpv.h>
+#include <glslang/build_info.h>
 
 #include <spirv-tools/libspirv.h>
 
-static const std::string debug_header = "\n\
+// glslang supports the stringizing operator (#) only as of version 16.1.0;
+// with older versions, the assertion fires without the expression text.
+#if GLSLANG_VERSION_GREATER_OR_EQUAL_TO(16, 1, 0)
+#define P3D_ASSERT_DEFINE "#define _p3d_assert(x) if(!(x)) { debugPrintfEXT(\"%!\", #x); }\n"
+#else
+#define P3D_ASSERT_DEFINE "#define _p3d_assert(x) if(!(x)) { debugPrintfEXT(\"%!\"); }\n"
+#endif
+
+static constexpr std::string_view debug_header = "\n\
 #ifndef _PANDA3D_DEBUG_H\n\
 #define _PANDA3D_DEBUG_H\n\
 \
 #extension GL_EXT_debug_printf : enable\n\
 \
-#define _p3d_assert(x) if(!(x)) { debugPrintfEXT(\"%!\", #x); }\n\
+" P3D_ASSERT_DEFINE "\
 #define assert(x) _p3d_assert(x)\n\
 \
 #endif\n\
 ";
+
+#undef P3D_ASSERT_DEFINE
 
 /**
  * Skips whitespace (including newlines if allow_newline is true) and comments.
