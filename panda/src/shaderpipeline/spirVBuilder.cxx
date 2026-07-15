@@ -102,6 +102,7 @@ is_block_terminator(spv::Op opcode) {
   case spv::OpIgnoreIntersectionKHR:
   case spv::OpTerminateRayKHR:
   case spv::OpEmitMeshTasksEXT:
+  case spv::OpAbortKHR:
     return true;
   default:
     return false;
