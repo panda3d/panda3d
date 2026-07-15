@@ -52,16 +52,21 @@ run(SpirVModule &module) {
   }
 
   // For each fragment entry point, find the output variable with location 0.
+  // There may be none, such as in a depth-only shader; the alpha value is
+  // then implicitly 1.
   pmap<Id, Id> entry_points;
   for (size_t i = 0; i < module.get_num_entry_points(); ++i) {
     const EntryPoint &ep = module.get_entry_point(i);
     if (ep.model == spv::ExecutionModelFragment) {
-      for (Id var_id : ep.interface_vars) {
-        if (module.get_location(var_id) == 0) {
-          entry_points[ep.function_id] = var_id;
+      Id var_id;
+      for (Id id : ep.interface_vars) {
+        if (module.get_storage_class(id) == spv::StorageClassOutput &&
+            module.get_location(id) == 0) {
+          var_id = id;
           break;
         }
       }
+      entry_points[ep.function_id] = var_id;
     }
   }
 
@@ -69,6 +74,17 @@ run(SpirVModule &module) {
     Function *function = module.find_function(item.first);
     nassertd(function != nullptr) continue;
     Id var_id = item.second;
+
+    // If the output is not a vector with an alpha channel, such as a vec3 or
+    // a missing output, the implicit alpha value is 1.
+    bool has_alpha = false;
+    if (var_id != 0) {
+      const ShaderType *type = module.resolve_type(var_id);
+      const ShaderType::Vector *vector = (type != nullptr) ? type->as_vector() : nullptr;
+      has_alpha = vector != nullptr &&
+                  vector->get_scalar_type() == ShaderType::ST_float &&
+                  vector->get_num_components() == 4;
+    }
 
     // There may be multiple returns.  Insert an alpha test before every
     // return statement.
@@ -103,7 +119,12 @@ run(SpirVModule &module) {
       }
 
       cursor.insert_before([&](SpirVBuilder &builder) {
-        Id alpha = builder.op_load(builder.op_access_chain(var_id, {module.define_int_constant(3)}));
+        Id alpha;
+        if (has_alpha) {
+          alpha = builder.op_load(builder.op_access_chain(var_id, {module.define_int_constant(3)}));
+        } else {
+          alpha = module.define_float_constant(1.0f);
+        }
         Id ref = _spec_constant ? _alpha_ref_var_id : builder.op_load(_alpha_ref_var_id);
 
         Id cond = builder.op_compare(opcode, alpha, ref);

@@ -18,7 +18,9 @@
 
 /**
  * Injects an alpha test before all return statements of fragment entry points.
- * The alpha test is always performed on the output with location 0.
+ * The alpha test is performed on the output variable with location 0.  If
+ * there is no such output, or it has no alpha channel, the alpha value is
+ * implicitly 1.
  */
 class EXPCL_PANDA_SHADERPIPELINE SpirVInjectAlphaTestPass final : public SpirVTransformPass {
 public:
