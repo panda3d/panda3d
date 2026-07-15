@@ -197,6 +197,79 @@ TEST_CASE("SpirVUsageAnalysis flags queried image sizes and sampled image values
   CHECK(!usage.was_size_or_levels_queried(var_other));
   CHECK(usage.is_sampled_image_value(image_value));
   CHECK(usage.get_origin(image_value) == var_tex);
+
+  // The query consumes the loaded image, marking the variable used.
+  CHECK(usage.is_used(var_tex));
+}
+
+TEST_CASE("SpirVUsageAnalysis defers usedness of loaded opaque values", "[shaderpipeline]") {
+  // An image or sampler variable only counts as used once the loaded value is
+  // consumed: a transform pass (such as the texture query emulation) can
+  // orphan such a load, and the variable must then read as unused.  A load of
+  // a non-opaque type marks its variable used directly.
+  SpirVModule module = make_module();
+  const ShaderType *sampler_type = ShaderType::register_type(
+    ShaderType::SampledImage(Texture::TT_2d_texture, ShaderType::ST_float, false));
+  const ShaderType *vec2_type =
+    ShaderType::register_type(ShaderType::Vector(ShaderType::ST_float, 2));
+
+  Id var_dead_load = module.define_variable(sampler_type, spv::StorageClassUniformConstant);
+  Id var_dead_image = module.define_variable(sampler_type, spv::StorageClassUniformConstant);
+  Id var_sampled = module.define_variable(sampler_type, spv::StorageClassUniformConstant);
+  Id var_plain = module.define_variable(ShaderType::FLOAT, spv::StorageClassPrivate);
+
+  Id sampler_tid = module.find_type(sampler_type);
+  REQUIRE(sampler_tid != 0);
+  Id image_tid = module.get_type_id(sampler_tid);
+  Id coord = module.define_null_constant(vec2_type);
+
+  {
+    SpirVBuilder builder = make_entry_point(module);
+
+    // A load whose value is never consumed.
+    builder.op_load(var_dead_load);
+
+    // A load only consumed by an OpImage whose result is never consumed.
+    Id loaded = builder.op_load(var_dead_image);
+    Id image_value = module.allocate_id();
+    builder.insert(spv::OpImage, {image_tid, image_value, loaded});
+
+    // A load consumed by a sample operation.
+    builder.op_image_sample(builder.op_load(var_sampled), coord);
+
+    // A dead load of a non-opaque type still marks the variable used.
+    builder.op_load(var_plain);
+    builder.op_return();
+  }
+
+  SpirVUsageAnalysis usage = module.analyze_usage();
+  CHECK(!usage.is_used(var_dead_load));
+  CHECK(!usage.is_used(var_dead_image));
+  CHECK(usage.is_used(var_sampled));
+  CHECK(usage.is_used(var_plain));
+}
+
+TEST_CASE("SpirVUsageAnalysis does not mistake literal words for opaque value ids", "[shaderpipeline]") {
+  // Debug info puts OpLine, whose line and column operands are literals, in
+  // function bodies.  A literal that happens to equal the id of an unconsumed
+  // opaque load must not read as a use of it, or the orphaned variable would
+  // escape removal whenever debug info is present.
+  SpirVModule module = make_module();
+  const ShaderType *sampler_type = ShaderType::register_type(
+    ShaderType::SampledImage(Texture::TT_2d_texture, ShaderType::ST_float, false));
+
+  Id var_orphaned = module.define_variable(sampler_type, spv::StorageClassUniformConstant);
+  Id file_id = module.add_string("shader.glsl");
+
+  {
+    SpirVBuilder builder = make_entry_point(module);
+    Id loaded = builder.op_load(var_orphaned);
+    builder.insert(spv::OpLine, {file_id, loaded, loaded});
+    builder.op_return();
+  }
+
+  SpirVUsageAnalysis usage = module.analyze_usage();
+  CHECK(!usage.is_used(var_orphaned));
 }
 
 TEST_CASE("SpirVUsageAnalysis treats spec constants as constant expressions", "[shaderpipeline]") {

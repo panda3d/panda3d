@@ -177,8 +177,13 @@ compile_module(const ShaderModule *module, DWORD *&data) {
 
         param_names[item.second] = str.str();
       }
-      transformer.run(SpirVRemoveUnusedVariablesPass());
     }
+
+    // The query emulation and hoisting may have left variables without any
+    // remaining use.  In particular, an image variable that was only used for
+    // a size query must not survive to the HLSL emission, since SPIRV-Cross
+    // cannot express separate images in legacy HLSL.
+    transformer.run(SpirVRemoveUnusedVariablesPass());
 
     stream = transformer.get_result();
 #ifndef NDEBUG

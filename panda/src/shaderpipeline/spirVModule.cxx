@@ -920,10 +920,38 @@ analyze_usage() const {
     }
   }
 
+  // Set once the first deferred-use flag is assigned, so that the operand
+  // scans below can be skipped entirely for modules without opaque loads.
+  bool any_deferred = false;
+
   for (const SpirVModule::Function &function : _functions) {
     for (const SpirVModule::Instruction &op : function.instructions) {
       switch (op.opcode) {
       case spv::OpLoad:
+        if (op.args.size() >= 3) {
+          usage.set_origin(Id(op.args[1]), usage.get_origin(Id(op.args[2])));
+
+          // For an opaque (image/sampler) value, marking the variable used is
+          // deferred until an instruction consumes the loaded value: a
+          // transform pass (eg. texture query emulation) can orphan such a
+          // load, and the variable must then read as unused, since a leftover
+          // image resource cannot always be expressed in the target shading
+          // language.  A load of any other type marks the variable used
+          // directly; tracking usage through arbitrary values would be
+          // prohibitive.
+          const Instruction *type_decl = find_declaration(Id(op.args[0]));
+          if (type_decl != nullptr &&
+              (type_decl->opcode == spv::OpTypeImage ||
+               type_decl->opcode == spv::OpTypeSampledImage ||
+               type_decl->opcode == spv::OpTypeSampler)) {
+            usage.set_flag(Id(op.args[1]), SpirVUsageAnalysis::UF_deferred_use);
+            any_deferred = true;
+          } else {
+            usage.mark_used(Id(op.args[1]));
+          }
+        }
+        break;
+
       case spv::OpAtomicLoad:
       case spv::OpAtomicExchange:
       case spv::OpAtomicCompareExchange:
@@ -960,6 +988,14 @@ analyze_usage() const {
         if (!op.args.empty()) {
           usage.mark_used(Id(op.args[0]));
         }
+        // A store of an opaque value consumes it.  Valid modules keep opaque
+        // variables in UniformConstant, which is read-only, so this cannot
+        // occur in practice; but were an unconsumed load to feed a store, the
+        // load's removal would leave the store referencing a deleted id.
+        if (op.opcode == spv::OpStore && op.args.size() >= 2 &&
+            usage.has_flag(Id(op.args[1]), SpirVUsageAnalysis::UF_deferred_use)) {
+          usage.mark_used(Id(op.args[1]));
+        }
         break;
 
       case spv::OpCopyMemory:
@@ -992,9 +1028,21 @@ analyze_usage() const {
         break;
 
       case spv::OpImageTexelPointer:
-      case spv::OpSampledImage:
         if (op.args.size() >= 3) {
           usage.set_origin(Id(op.args[1]), usage.get_origin(Id(op.args[2])));
+        }
+        break;
+
+      case spv::OpSampledImage:
+        // Combining an image with a sampler consumes both eagerly; tracking
+        // the pair through to an eventual sample would require tracking two
+        // origins per value.
+        if (op.args.size() >= 3) {
+          usage.set_origin(Id(op.args[1]), usage.get_origin(Id(op.args[2])));
+          usage.mark_used(Id(op.args[2]));
+          if (op.args.size() >= 4) {
+            usage.mark_used(Id(op.args[3]));
+          }
         }
         break;
 
@@ -1002,6 +1050,9 @@ analyze_usage() const {
         if (op.args.size() >= 3) {
           usage.set_origin(Id(op.args[1]), usage.get_origin(Id(op.args[2])));
           usage.set_flag(Id(op.args[1]), SpirVUsageAnalysis::UF_sampled_image);
+          if (usage.has_flag(Id(op.args[2]), SpirVUsageAnalysis::UF_deferred_use)) {
+            usage.set_flag(Id(op.args[1]), SpirVUsageAnalysis::UF_deferred_use);
+          }
         }
         break;
 
@@ -1010,10 +1061,17 @@ analyze_usage() const {
       case spv::OpCompositeExtract:
         // These preserve where the value came from and whether it is a
         // constant expression.  (OpCompositeExtract does not propagate the
-        // origin, only the flags; composites of pointers do not occur.)
+        // origin, only the flags; composites of pointers do not occur, and a
+        // deferred use may only be propagated together with its origin.)
         if (op.args.size() >= 3) {
           if (op.opcode != spv::OpCompositeExtract) {
             usage.set_origin(Id(op.args[1]), usage.get_origin(Id(op.args[2])));
+            if (usage.has_flag(Id(op.args[2]), SpirVUsageAnalysis::UF_deferred_use)) {
+              usage.set_flag(Id(op.args[1]), SpirVUsageAnalysis::UF_deferred_use);
+            }
+          }
+          else if (usage.has_flag(Id(op.args[2]), SpirVUsageAnalysis::UF_deferred_use)) {
+            usage.mark_used(Id(op.args[2]));
           }
           if (op.args[1] < usage._flags.size() && op.args[2] < usage._flags.size()) {
             usage._flags[op.args[1]] |= usage._flags[op.args[2]] &
@@ -1074,6 +1132,19 @@ analyze_usage() const {
             break;
           }
         }
+        // An operand referencing an opaque value (eg. a non-semantic debug
+        // instruction) consumes it.  Operands are ids in the instruction sets
+        // that occur in practice (GLSL.std.450 and the non-semantic sets).
+        // If some other set were to use literal operands and a literal value
+        // were to happen to overlap with an id, it may result in the variable
+        // being kept alive unnecessarily.
+        if (any_deferred) {
+          for (size_t i = 4; i < op.args.size(); ++i) {
+            if (usage.has_flag(Id(op.args[i]), SpirVUsageAnalysis::UF_deferred_use)) {
+              usage.mark_used(Id(op.args[i]));
+            }
+          }
+        }
         break;
 
       case spv::OpImageSampleImplicitLod:
@@ -1090,6 +1161,7 @@ analyze_usage() const {
       case spv::OpImageSparseGather:
         if (op.args.size() >= 3) {
           usage.set_origin_flag(Id(op.args[2]), SpirVUsageAnalysis::UF_non_dref_sampled);
+          usage.mark_used(Id(op.args[2]));
         }
         break;
 
@@ -1105,6 +1177,7 @@ analyze_usage() const {
       case spv::OpImageSparseDrefGather:
         if (op.args.size() >= 3) {
           usage.set_origin_flag(Id(op.args[2]), SpirVUsageAnalysis::UF_dref_sampled);
+          usage.mark_used(Id(op.args[2]));
         }
         break;
 
@@ -1113,6 +1186,29 @@ analyze_usage() const {
       case spv::OpImageQueryLevels:
         if (op.args.size() >= 3) {
           usage.set_origin_flag(Id(op.args[2]), SpirVUsageAnalysis::UF_queried_size_levels);
+          usage.mark_used(Id(op.args[2]));
+        }
+        break;
+
+      case spv::OpImageQueryLod:
+      case spv::OpImageQuerySamples:
+      case spv::OpImageQueryFormat:
+      case spv::OpImageQueryOrder:
+        if (op.args.size() >= 3) {
+          usage.mark_used(Id(op.args[2]));
+        }
+        break;
+
+      case spv::OpImageRead:
+      case spv::OpImageSparseRead:
+        if (op.args.size() >= 3) {
+          usage.mark_used(Id(op.args[2]));
+        }
+        break;
+
+      case spv::OpImageWrite:
+        if (!op.args.empty()) {
+          usage.mark_used(Id(op.args[0]));
         }
         break;
 
@@ -1230,7 +1326,46 @@ analyze_usage() const {
         }
         break;
 
+      case spv::OpCompositeInsert:
+        // The inserted object can be an opaque value (a composite of opaques
+        // can be built with OpCompositeConstruct), which this consumes.  The
+        // literal indices must not reach the scan below.
+        if (op.args.size() >= 3 &&
+            usage.has_flag(Id(op.args[2]), SpirVUsageAnalysis::UF_deferred_use)) {
+          usage.mark_used(Id(op.args[2]));
+        }
+        break;
+
+      case spv::OpLine:
+      case spv::OpNoLine:
+      case spv::OpSwitch:
+      case spv::OpVectorShuffle:
+      case spv::OpBranchConditional:
+      case spv::OpLoopMerge:
+      case spv::OpSelectionMerge:
+        // These cannot consume an opaque value, but carry literal words
+        // (line numbers, case values, component indices, branch weights,
+        // masks) that the scan below would mistake for ids.  OpLine matters
+        // most: debug info puts one before nearly every instruction, with
+        // line numbers squarely in the range of valid ids.
+        break;
+
       default:
+        // Safety net for the deferred loads: an opcode without a curated
+        // case above that references an opaque value consumes it.  Ids are
+        // unique, so a match on a word that really is an id is exact; the
+        // opcodes known to carry literal words in a function body are
+        // excluded above, and in an unknown opcode (eg. a vendor image
+        // extension) a literal colliding with a deferred value id merely
+        // keeps the variable alive.
+        if (any_deferred) {
+          size_t first = (size_t)op.has_result() + (size_t)op.has_result_type();
+          for (size_t i = first; i < op.args.size(); ++i) {
+            if (usage.has_flag(Id(op.args[i]), SpirVUsageAnalysis::UF_deferred_use)) {
+              usage.mark_used(Id(op.args[i]));
+            }
+          }
+        }
         break;
       }
     }
@@ -2899,12 +3034,13 @@ remove_function_parameters(Id type_id, const pset<uint32_t> &param_indices) {
 }
 
 /**
- * Removes function-body instructions that reference the given dead pointer
- * ids: access chains, pointer copies and casts based on a dead id are
- * removed and their results added to the dead set (cascading forward), while
- * a load from or store to a dead id triggers an assertion, since the id
- * evidently was not dead.  Instructions whose own result id is in the set
- * are removed as well.
+ * Removes function-body instructions that reference the given dead ids:
+ * access chains, pointer copies, casts, loads and image handle extractions
+ * based on a dead id are removed and their results added to the dead set
+ * (cascading forward, which suffices since SSA order puts uses after
+ * definitions), while a store to or atomic on a dead id triggers an
+ * assertion, since the id evidently was not dead.  Instructions whose own
+ * result id is in the set are removed as well.
  */
 void SpirVModule::
 delete_dead_code(pset<Id> &dead_ids) {
@@ -2928,10 +3064,16 @@ delete_dead_code(pset<Id> &dead_ids) {
       case spv::OpExpectKHR:
       case spv::OpBitcast:
       case spv::OpCopyLogical:
+      case spv::OpLoad:
+      case spv::OpImage:
         remove = op.args.size() >= 3 && dead_ids.count(Id(op.args[2])) != 0;
         break;
 
-      case spv::OpLoad:
+      case spv::OpSampledImage:
+        remove = (op.args.size() >= 3 && dead_ids.count(Id(op.args[2])) != 0) ||
+                 (op.args.size() >= 4 && dead_ids.count(Id(op.args[3])) != 0);
+        break;
+
       case spv::OpAtomicLoad:
       case spv::OpAtomicExchange:
       case spv::OpAtomicCompareExchange:

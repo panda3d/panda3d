@@ -51,3 +51,46 @@ TEST_CASE("SpirVRemoveUnusedVariablesPass removes unused variables", "[shaderpip
   CHECK(has_variable(result, id_out_color));
   CHECK(transformer.get_module().get_definition_type(id_unused) == SpirVModule::DT_none);
 }
+
+TEST_CASE("SpirVRemoveUnusedVariablesPass removes orphaned image loads", "[shaderpipeline]") {
+  // An image variable whose loaded value is never consumed (as the texture
+  // query emulation leaves behind after replacing the query) must be removed
+  // along with the load and OpImage based on it, while a sampled variable
+  // stays.  The leftover image resource matters: it cannot always be
+  // expressed in the target shading language (eg. legacy HLSL).
+  SpirVModule module = make_module();
+  const ShaderType *sampler_type = ShaderType::register_type(
+    ShaderType::SampledImage(Texture::TT_2d_texture, ShaderType::ST_float, false));
+  const ShaderType *vec2_type =
+    ShaderType::register_type(ShaderType::Vector(ShaderType::ST_float, 2));
+
+  Id id_orphaned = module.define_variable(sampler_type, spv::StorageClassUniformConstant);
+  Id id_sampled = module.define_variable(sampler_type, spv::StorageClassUniformConstant);
+
+  Id sampler_tid = module.find_type(sampler_type);
+  REQUIRE(sampler_tid != 0);
+  Id image_tid = module.get_type_id(sampler_tid);
+  Id coord = module.define_null_constant(vec2_type);
+
+  {
+    SpirVBuilder builder = make_entry_point(module);
+    Id loaded = builder.op_load(id_orphaned);
+    Id image_value = module.allocate_id();
+    builder.insert(spv::OpImage, {image_tid, image_value, loaded});
+    builder.op_image_sample(builder.op_load(id_sampled), coord);
+    builder.op_return();
+  }
+
+  InstructionStream stream = module.emit();
+  REQUIRE(stream.validate());
+
+  SpirVTransformer transformer(stream);
+  transformer.run(SpirVRemoveUnusedVariablesPass());
+  CHECK(transformer.get_module().validate());
+
+  InstructionStream result = transformer.get_result();
+  CHECK(!has_variable(result, id_orphaned));
+  CHECK(has_variable(result, id_sampled));
+  CHECK(count_op(result, spv::OpImage) == 0);
+  CHECK(count_op(result, spv::OpLoad) == 1);
+}

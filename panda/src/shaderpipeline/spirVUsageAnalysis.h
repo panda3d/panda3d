@@ -47,6 +47,11 @@ private:
     UF_non_dref_sampled = 1 << 4,
     UF_dynamically_indexed = 1 << 5,
     UF_queried_size_levels = 1 << 6,
+
+    // Set on an opaque (image/sampler) value whose load has not yet been
+    // observed to be consumed; consumption marks the origin variable used.
+    // A load of any other type marks its variable used directly.
+    UF_deferred_use = 1 << 7,
   };
 
   INLINE bool has_flag(Id id, uint8_t flag) const;

@@ -50,9 +50,10 @@ run(SpirVModule &module) {
     }
   }
 
-  // Remove any access chains and pointer copies based on the deleted
-  // variables (a chain that is never loaded or stored does not mark its
-  // variable used, so these may exist).
+  // Remove any instructions based on the deleted variables: access chains
+  // and pointer copies (which never mark their variable used), and loads of
+  // opaque values that nothing consumed (which is what left the variable
+  // unused in the first place).
   module.delete_dead_code(dead_ids);
 
   for (const auto &item : ftype_params_used) {
