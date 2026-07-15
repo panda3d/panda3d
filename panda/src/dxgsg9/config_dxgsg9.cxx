@@ -94,6 +94,15 @@ ConfigVariableBool dx_count_all_cards_memory
  PRC_DESC("Set this to false to skip the counting of extra cards memory "
           "via DX7 calls."));
 
+ConfigVariableEnum<CoordinateSystem> dx_coordinate_system
+("dx-coordinate-system", CS_yup_left,
+ PRC_DESC("Which coordinate system to use as the internal "
+          "coordinate system for Direct3D operations.  If you are "
+          "using fixed-function features, it is best to leave this "
+          "to yup-left.  However, if you are creating a shader-only "
+          "application, it may be easier and more efficient to set "
+          "this to default."));
+
 #ifndef NDEBUG
 // debugging flag values are same as D3DCULL enumtype, 0 - no force, 1 - force
 // none, 2 - force CW, 3 - force CCW

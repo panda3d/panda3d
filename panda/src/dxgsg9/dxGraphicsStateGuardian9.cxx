@@ -94,7 +94,7 @@ unsigned char *DXGraphicsStateGuardian9::_safe_buffer_start = nullptr;
  */
 DXGraphicsStateGuardian9::
 DXGraphicsStateGuardian9(GraphicsEngine *engine, GraphicsPipe *pipe) :
-  GraphicsStateGuardian(CS_yup_left, engine, pipe)
+  GraphicsStateGuardian(dx_coordinate_system, engine, pipe)
 {
   if (dxgsg9_cat.is_debug()) {
     dxgsg9_cat.debug()
@@ -904,7 +904,7 @@ calc_projection_mat(const Lens *lens) {
      0, 0, 0.5, 1);
 
   LMatrix4 result =
-    LMatrix4::convert_mat(CS_yup_left, _current_lens->get_coordinate_system()) *
+    LMatrix4::convert_mat(_internal_coordinate_system, _current_lens->get_coordinate_system()) *
     lens->get_projection_mat(_current_stereo_channel) *
     rescale_mat;
 
@@ -3384,7 +3384,7 @@ bind_light(PointLight *light_obj, const NodePath &light, int light_id) {
   // coordinate system.
   CPT(TransformState) transform = light.get_transform(_scene_setup->get_camera_path());
   const LMatrix4 &light_mat = transform->get_mat();
-  LMatrix4 rel_mat = light_mat * LMatrix4::convert_mat(CS_yup_left, CS_default);
+  LMatrix4 rel_mat = light_mat * LMatrix4::convert_mat(_internal_coordinate_system, CS_default);
   LPoint3f pos = LCAST(float, light_obj->get_point() * rel_mat);
 
   D3DCOLORVALUE black;
@@ -3434,7 +3434,7 @@ bind_light(DirectionalLight *light_obj, const NodePath &light, int light_id) {
     // to DX's coordinate system.
     CPT(TransformState) transform = light.get_transform(_scene_setup->get_camera_path());
     const LMatrix4 &light_mat = transform->get_mat();
-    LMatrix4 rel_mat = light_mat * LMatrix4::convert_mat(CS_yup_left, CS_default);
+    LMatrix4 rel_mat = light_mat * LMatrix4::convert_mat(_internal_coordinate_system, CS_default);
     LVector3f dir = LCAST(float, light_obj->get_direction() * rel_mat);
 
     D3DCOLORVALUE black;
@@ -3485,7 +3485,7 @@ bind_light(Spotlight *light_obj, const NodePath &light, int light_id) {
   // coordinate system.
   CPT(TransformState) transform = light.get_transform(_scene_setup->get_camera_path());
   const LMatrix4 &light_mat = transform->get_mat();
-  LMatrix4 rel_mat = light_mat * LMatrix4::convert_mat(CS_yup_left, CS_default);
+  LMatrix4 rel_mat = light_mat * LMatrix4::convert_mat(_internal_coordinate_system, CS_default);
   LPoint3f pos = LCAST(float, lens->get_nodal_point() * rel_mat);
   LVector3f dir = LCAST(float, lens->get_view_vector() * rel_mat);
 
@@ -4050,7 +4050,7 @@ bind_clip_plane(const NodePath &plane, int plane_id) {
   // coordinate system.
   CPT(TransformState) transform = plane.get_transform(_scene_setup->get_camera_path());
   const LMatrix4 &plane_mat = transform->get_mat();
-  LMatrix4 rel_mat = plane_mat * LMatrix4::convert_mat(CS_yup_left, CS_default);
+  LMatrix4 rel_mat = plane_mat * LMatrix4::convert_mat(_internal_coordinate_system, CS_default);
   const PlaneNode *plane_node;
   DCAST_INTO_V(plane_node, plane.node());
   LPlanef world_plane = LCAST(float, plane_node->get_plane() * rel_mat);

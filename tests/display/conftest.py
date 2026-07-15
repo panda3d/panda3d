@@ -558,6 +558,12 @@ def env(request):
 
             config["gl-force-glsl-version"] = str(version)
 
+    elif words[0] == "dx9":
+        # Set the coordinate system to z-up-right, so that we get the same
+        # results as with the other renderers.
+        config["dx-coordinate-system"] = "zup-right"
+        allow_compute = False
+
     else:
         allow_compute = False
 

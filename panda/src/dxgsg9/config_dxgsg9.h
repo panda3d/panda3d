@@ -20,6 +20,8 @@
 #include "configVariableBool.h"
 #include "configVariableInt.h"
 #include "configVariableDouble.h"
+#include "configVariableEnum.h"
+#include "coordinateSystem.h"
 
 NotifyCategoryDecl(dxgsg9, EXPCL_PANDADX, EXPTP_PANDADX);
 NotifyCategoryDecl(wdxdisplay9, EXPCL_PANDADX, EXPTP_PANDADX);
@@ -34,6 +36,7 @@ extern ConfigVariableBool dx_broken_max_index;
 extern ConfigVariableBool dx_broken_depth_bias;
 extern ConfigVariableDouble dx_depth_bias_scale;
 extern ConfigVariableBool dx_count_all_cards_memory;
+extern ConfigVariableEnum<CoordinateSystem> dx_coordinate_system;
 
 // debug flags we might want to use in full optimized build
 extern ConfigVariableBool dx_ignore_mipmaps;
