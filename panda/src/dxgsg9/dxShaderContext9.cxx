@@ -193,6 +193,25 @@ compile_module(const ShaderModule *module, DWORD *&data) {
 #endif
   }
 
+  // We have to strip this if not supported, else SPIRV-Cross chokes on it.
+  if (spv->_emulatable_caps & Shader::C_debug_output) {
+    uint32_t debug_printf_import = 0;
+    for (auto it = stream.begin(); it != stream.end();) {
+      ShaderModuleSpirV::Instruction op = *it;
+
+      if (op.opcode == spv::OpExtInstImport && strcmp((const char*)&op.args[1], "NonSemantic.DebugPrintf") == 0) {
+        debug_printf_import = op.args[0];
+        it = stream.erase(it);
+      }
+      else if (op.opcode == spv::OpExtInst && debug_printf_import == op.args[2]) {
+        it = stream.erase(it);
+      }
+      else {
+        ++it;
+      }
+    }
+  }
+
   Compiler compiler(stream);
   spirv_cross::CompilerHLSL::Options options;
   options.shader_model = 30;

@@ -150,7 +150,7 @@ def test_glsl_entry_point():
 
 
 def test_glsl_debug_print(env):
-    if env.name == "gl-legacy":
+    if env.name in ("gl-legacy", "dx9-cross"):
         pytest.skip("debug features not supported in legacy mode")
 
     code = """
@@ -178,7 +178,7 @@ def test_glsl_debug_print(env):
 
 
 def test_glsl_debug_assert(env):
-    if env.name in ("gl-legacy", "gl-cross-110", "gl-cross-120", "gl-cross-130", "gl-cross-140"):
+    if env.name in ("gl-legacy", "gl-cross-110", "gl-cross-120", "gl-cross-130", "gl-cross-140", "dx9-cross"):
         pytest.skip("debug features not supported in legacy GLSL")
 
     # The assert() defined in <panda3d/debug> conflicts with the one defined
@@ -207,7 +207,7 @@ def test_glsl_debug_assert(env):
 
 
 def test_glsl_debug_assert_included(env, vfs, ramdir):
-    if env.name in ("gl-legacy", "gl-cross-110", "gl-cross-120", "gl-cross-130", "gl-cross-140"):
+    if env.name in ("gl-legacy", "gl-cross-110", "gl-cross-120", "gl-cross-130", "gl-cross-140", "dx9-cross"):
         pytest.skip("debug features not supported in legacy GLSL")
 
     inc_file = ramdir / "included.glsl"
