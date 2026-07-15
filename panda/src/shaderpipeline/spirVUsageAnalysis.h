@@ -15,7 +15,7 @@
 #define SPIRVUSAGEANALYSIS_H
 
 #include "pandabase.h"
-#include "pvector.h"
+#include "vector_uchar.h"
 #include "spirVId.h"
 
 /**
