@@ -3395,8 +3395,16 @@ compile_spirv_to_glsl(const ShaderModuleSpirV *module, size_t mi,
   }
 
   bool explicit_uniform_locations = true;
-  if ((!options.es && options.version < 430) ||
-      (options.es && options.version < 310)) {
+  if (!size_var_ids.empty()) {
+    // The emulated size variables are queried by name (see reflect_uniform),
+    // so all locations must be remapped.  To be on the safe side, we don't
+    // set explicit locations in this case (but in practice, a driver that
+    // supports explicit locations will support the real size instructions)
+    _remap_locations = true;
+    explicit_uniform_locations = false;
+  }
+  else if ((!options.es && options.version < 430) ||
+           (options.es && options.version < 310)) {
     // Older versions of OpenGL (ES) do not support explicit uniform
     // locations, and we need to query the locations later.
     explicit_uniform_locations = false;
