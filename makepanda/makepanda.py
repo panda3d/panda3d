@@ -93,6 +93,7 @@ PkgListSet(["PYTHON", "DIRECT",                        # Python support
   "ARTOOLKIT", "OPENCV", "DIRECTCAM", "VISION",        # Augmented Reality
   "GTK3",                                              # GTK3 is used for PStats on Unix
   "MFC", "WX", "FLTK",                                 # Used for web plug-in only
+  "RMLUI",                                             # GUI libraries
   "COCOA",                                             # macOS toolkits
   "X11",                                               # Unix platform support
   "PANDATOOL", "PVIEW", "DEPLOYTOOLS",                 # Toolchain
@@ -858,6 +859,7 @@ if (COMPILER=="GCC"):
     SmartPkgEnable("SQUISH",    "",          ("squish"), "squish.h")
     SmartPkgEnable("TIFF",      "libtiff-4", ("tiff"), "tiff.h")
     SmartPkgEnable("VRPN",      "",          ("vrpn", "quat"), ("vrpn", "quat.h", "vrpn/vrpn_Types.h"))
+    SmartPkgEnable("RMLUI",     "",          ("rmlui"), ("RmlUi/Core/Core.h", "RmlUi/Core/RenderManager.h"))
     SmartPkgEnable("OPUS",      "opusfile",  ("opusfile", "opus", "ogg"), ("ogg/ogg.h", "opus/opusfile.h", "opus"))
     SmartPkgEnable("JPEG",      "",          ("jpeg"), "jpeglib.h")
     SmartPkgEnable("MIMALLOC",  "",          ("mimalloc"), "mimalloc.h")
@@ -2911,6 +2913,8 @@ if not PkgSkip("ODE"):
     panda_modules.append('ode')
 if not PkgSkip("VRPN"):
     panda_modules.append('vrpn')
+if not PkgSkip("RMLUI"):
+    panda_modules.append('rmlui')
 
 panda_modules_code = """
 "This module is deprecated.  Import from panda3d.core and other panda3d.* modules instead."
@@ -3326,6 +3330,8 @@ CopyAllHeaders('panda/src/parametrics')
 CopyAllHeaders('panda/src/pgui')
 CopyAllHeaders('panda/src/pnmimagetypes')
 CopyAllHeaders('panda/src/recorder')
+if not PkgSkip("RMLUI"):
+    CopyAllHeaders('panda/src/rmlui')
 if not PkgSkip("VRPN"):
     CopyAllHeaders('panda/src/vrpn')
 CopyAllHeaders('panda/src/wgldisplay')
@@ -4296,6 +4302,41 @@ if not PkgSkip("VISION"):
     PyTargetAdd('vision.pyd', input='libp3vision_igate.obj')
     PyTargetAdd('vision.pyd', input='libp3vision.dll')
     PyTargetAdd('vision.pyd', input=COMMON_PANDA_LIBS)
+
+#
+# DIRECTORY: panda/src/rmlui/
+#
+
+if not PkgSkip("RMLUI"):
+    # Note: the RmlUi visual debugger overlay is currently only wired up in
+    # the CMake build (HAVE_RMLUI_DEBUGGER); makepanda links the core library.
+    OPTS=['DIR:panda/src/rmlui', 'BUILDING:PANDARMLUI', 'RMLUI']
+    TargetAdd('p3rmlui_composite1.obj', opts=OPTS, input='p3rmlui_composite1.cxx')
+
+    TargetAdd('libp3rmlui.dll', input='p3rmlui_composite1.obj')
+    TargetAdd('libp3rmlui.dll', input=COMMON_PANDA_LIBS)
+    TargetAdd('libp3rmlui.dll', opts=OPTS)
+
+    OPTS=['DIR:panda/src/rmlui', 'RMLUI']
+    IGATEFILES=GetDirectoryContents('panda/src/rmlui', ["config_rmlui.h",
+        "config_rmlui.cxx", "rmlInputHandler.h", "rmlInputHandler.cxx",
+        "rmlRegion.h", "rmlRegion.I", "rmlRegion.cxx",
+        "rmlContext.h", "rmlContext.cxx", "rmlDocument.h", "rmlDocument.cxx",
+        "rmlElement.h", "rmlElement.cxx", "rmlEvent.h", "rmlEvent.cxx",
+        "rmlDataModel.h", "rmlDataModel.cxx"])
+    TargetAdd('libp3rmlui.in', opts=OPTS, input=IGATEFILES)
+    TargetAdd('libp3rmlui.in', opts=['IMOD:panda3d.rmlui', 'ILIB:libp3rmlui', 'SRCDIR:panda/src/rmlui'])
+
+    PyTargetAdd('rmlui_module.obj', input='libp3rmlui.in')
+    PyTargetAdd('rmlui_module.obj', opts=OPTS)
+    PyTargetAdd('rmlui_module.obj', opts=['IMOD:panda3d.rmlui', 'ILIB:rmlui', 'IMPORT:panda3d.core'])
+
+    PyTargetAdd('rmlui.pyd', input='rmlui_module.obj')
+    PyTargetAdd('rmlui.pyd', input='libp3rmlui_igate.obj')
+    PyTargetAdd('rmlui.pyd', input='libp3rmlui.dll')
+    PyTargetAdd('rmlui.pyd', input='libp3interrogatedb.dll')
+    PyTargetAdd('rmlui.pyd', input=COMMON_PANDA_LIBS)
+    PyTargetAdd('rmlui.pyd', opts=['RMLUI'])
 
 #
 # DIRECTORY: panda/src/p3skel

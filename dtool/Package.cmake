@@ -747,6 +747,24 @@ package_option(ODE
 
 package_status(ODE "Open Dynamics Engine")
 
+# RmlUi
+find_package(RmlUi QUIET)
+
+package_option(RmlUi
+  "Enable this option to support RmlUi HTML/CSS UI rendering."
+  LICENSE "MIT"
+  IMPORTED_AS RmlUi::RmlUi)
+
+# The visual debugger overlay lives in RmlUi's separate debugger library,
+# found as the RmlUi::Debugger target when available.
+if(HAVE_RMLUI AND TARGET RmlUi::Debugger)
+  set(HAVE_RMLUI_DEBUGGER ON)
+else()
+  set(HAVE_RMLUI_DEBUGGER OFF)
+endif()
+
+package_status(RmlUi "RmlUi")
+
 
 #
 # ------------ SpeedTree ------------

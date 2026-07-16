@@ -1,0 +1,22 @@
+body
+{
+    font-family: "Perfect DOS VGA 437";
+    font-weight: normal;
+    font-style: normal;
+
+    min-width: 100%;
+    min-height: 100%;
+
+    background-color: #000;
+}
+
+div#content
+{
+    font-size: 30px;
+    white-space: pre-wrap;
+    margin: 0;
+    padding: 16px 32px;
+    color: #888;
+    width: 100%;
+    height: 100%;
+}

@@ -1,0 +1,11 @@
+<rml>
+    <head>
+        <title>Loading</title>
+        <link type="text/rcss" href="loading.rcss"/>
+    </head>
+    <body id="loading-body">
+        <div id="loading-box">
+            <p id="loading-label">Loading...</p>
+        </div>
+    </body>
+</rml>
