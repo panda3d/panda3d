@@ -253,3 +253,11 @@ PN_stdfloat SceneGraphAnalyzer::
 get_total_normal_length() const {
   return _total_normal_length;
 }
+
+/**
+ * Returns a Texture filled pmap.
+ */
+SceneGraphAnalyzer::Textures SceneGraphAnalyzer::
+get_textures() const {
+ return _textures;
+}

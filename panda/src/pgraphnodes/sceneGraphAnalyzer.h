@@ -39,6 +39,8 @@ PUBLISHED:
   SceneGraphAnalyzer();
   ~SceneGraphAnalyzer();
 
+  typedef pmap<Texture *, int> Textures;
+
   enum LodMode {
     LM_lowest,
     LM_highest,
@@ -86,6 +88,7 @@ PUBLISHED:
   INLINE int get_num_long_normals() const;
   INLINE int get_num_short_normals() const;
   INLINE PN_stdfloat get_total_normal_length() const;
+  INLINE Textures get_textures() const;
 
 private:
   void collect_statistics(PandaNode *node, bool under_instance);
@@ -106,7 +109,6 @@ private:
   typedef pset<CPT(GeomVertexArrayData) > VADatas;
   typedef pmap<const GeomVertexData *, int, IndirectCompareTo<GeomVertexData> > UniqueVDatas;
   typedef pmap<const GeomVertexArrayData *, int, IndirectCompareTo<GeomVertexArrayData> > UniqueVADatas;
-  typedef pmap<Texture *, int> Textures;
 
   LodMode _lod_mode;
 
