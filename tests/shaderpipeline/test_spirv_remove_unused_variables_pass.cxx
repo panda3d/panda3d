@@ -31,8 +31,7 @@ TEST_CASE("SpirVRemoveUnusedVariablesPass removes unused variables", "[shaderpip
   module.set_name(id_unused, "unused");
 
   {
-    SpirVBuilder builder = make_entry_point(module, spv::ExecutionModelFragment,
-                                            {id_in_color, id_out_color});
+    SpirVBuilder builder = make_entry_point(module, spv::ExecutionModelFragment);
     Id tmp = builder.op_load(id_in_color);
     builder.op_store(id_out_color, tmp);
     builder.op_return();

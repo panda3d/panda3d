@@ -38,15 +38,15 @@ make_module() {
  * model.  The returned builder is positioned at the beginning of the empty
  * function body, after the initial OpLabel.  The caller is responsible for
  * adding a terminator (such as with op_return).
- * The given variables are added to the entry point interface.
+ * The entry point interface is derived from the body's references at emit.
  */
 inline SpirVBuilder
 make_entry_point(SpirVModule &module,
                  spv::ExecutionModel model = spv::ExecutionModelFragment,
-                 pvector<Id> interface_vars = {}, const char *name = "main") {
+                 const char *name = "main") {
   SpirVBuilder builder = module.make_function(nullptr);
   Id function_id = builder.get_current_function_id();
-  module.add_entry_point(model, function_id, name, std::move(interface_vars));
+  module.add_entry_point(model, function_id, name);
   if (model == spv::ExecutionModelFragment) {
     module.add_execution_mode(function_id, spv::ExecutionModeOriginUpperLeft);
   }

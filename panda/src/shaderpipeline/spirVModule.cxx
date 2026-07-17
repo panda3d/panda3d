@@ -19,193 +19,469 @@
 #include <algorithm>
 
 /**
- * Appends a string literal (padded with at least one zero byte) to the given
- * argument vector (a pvector or an instruction's Args).
+ * Table of per-opcode metadata for all known "simple" opcodes: the minimum
+ * operand count and a bitmask indicating which of their operands are ids
+ * (the highest bit indicating that all remaining operands are ids).
+ *
+ * Note that some instructions aren't completely covered by the mask: a few
+ * are special-cased in get_instruction_id_operands, and OpEntryPoint has its
+ * interface excluded because we ignore it altogether and regenerate it at
+ * emit-time.
+ *
+ * The table is sorted by opcode and dense up to and including OpLifetimeStop,
+ * to allow fast indexing for the most commonly used instructions.
  */
-template<class ArgsVector>
-static void
-pack_string(ArgsVector &args, std::string_view str) {
-  size_t offset = args.size();
-  args.resize(offset + str.size() / 4 + 1, 0u);
-  memcpy((char *)(args.data() + offset), str.data(), str.size());
+struct InstructionInfo {
+  uint16_t _opcode;
+  uint16_t _min_args;
+  uint16_t _id_mask;
+};
+template<class... Index>
+static constexpr uint16_t
+bits(Index... indices) {
+  return (uint16_t)((0u | ... | (1u << indices)));
+}
+static constexpr uint16_t
+bits_from(unsigned int index) {
+  return (uint16_t)(0xffffu << index);
+}
+#define UNUSED_OPCODE(opcode) {opcode, 0xffff, 0} // sentinel for gaps
+static constexpr InstructionInfo instruction_table[] = {
+  {spv::OpNop, 0, 0},
+  {spv::OpUndef, 2, bits(0)},
+  {spv::OpSourceContinued, 1, 0},
+  {spv::OpSource, 2, bits(2)},
+  {spv::OpSourceExtension, 1, 0},
+  {spv::OpName, 2, bits(0)},
+  {spv::OpMemberName, 3, bits(0)},
+  {spv::OpString, 2, 0},
+  {spv::OpLine, 3, bits(0)},
+  UNUSED_OPCODE(9),
+  {spv::OpExtension, 1, 0},
+  {spv::OpExtInstImport, 2, 0},
+  {spv::OpExtInst, 4, bits(0, 2) | bits_from(4)},
+  UNUSED_OPCODE(13),
+  {spv::OpMemoryModel, 2, 0},
+  {spv::OpEntryPoint, 3, bits(1)},  // NB. interface is excluded!
+  {spv::OpExecutionMode, 2, bits(0)},
+  {spv::OpCapability, 1, 0},
+  UNUSED_OPCODE(18),
+  {spv::OpTypeVoid, 1, 0},
+  {spv::OpTypeBool, 1, 0},
+  {spv::OpTypeInt, 3, 0},
+  {spv::OpTypeFloat, 2, 0},
+  {spv::OpTypeVector, 3, bits(1)},
+  {spv::OpTypeMatrix, 3, bits(1)},
+  {spv::OpTypeImage, 8, bits(1)},
+  {spv::OpTypeSampler, 1, 0},
+  {spv::OpTypeSampledImage, 2, bits(1)},
+  {spv::OpTypeArray, 3, bits(1, 2)},
+  {spv::OpTypeRuntimeArray, 2, bits(1)},
+  {spv::OpTypeStruct, 1, bits_from(1)},
+  {spv::OpTypeOpaque, 2, 0},
+  {spv::OpTypePointer, 3, bits(2)},
+  {spv::OpTypeFunction, 2, bits_from(1)},
+  {spv::OpTypeEvent, 1, 0},
+  {spv::OpTypeDeviceEvent, 1, 0},
+  {spv::OpTypeReserveId, 1, 0},
+  {spv::OpTypeQueue, 1, 0},
+  {spv::OpTypePipe, 2, 0},
+  {spv::OpTypeForwardPointer, 2, bits(0)},
+  UNUSED_OPCODE(40),
+  {spv::OpConstantTrue, 2, bits(0)},
+  {spv::OpConstantFalse, 2, bits(0)},
+  {spv::OpConstant, 3, bits(0)},
+  {spv::OpConstantComposite, 2, bits(0) | bits_from(2)},
+  {spv::OpConstantSampler, 5, bits(0)},
+  {spv::OpConstantNull, 2, bits(0)},
+  UNUSED_OPCODE(47),
+  {spv::OpSpecConstantTrue, 2, bits(0)},
+  {spv::OpSpecConstantFalse, 2, bits(0)},
+  {spv::OpSpecConstant, 3, bits(0)},
+  {spv::OpSpecConstantComposite, 2, bits(0) | bits_from(2)},
+  {spv::OpSpecConstantOp, 3, bits(0)},  // special-cased in get_instruction_id_operands
+  UNUSED_OPCODE(53),
+  {spv::OpFunction, 4, bits(0, 3)},
+  {spv::OpFunctionParameter, 2, bits(0)},
+  {spv::OpFunctionEnd, 0, 0},
+  {spv::OpFunctionCall, 3, bits(0) | bits_from(2)},
+  UNUSED_OPCODE(58),
+  {spv::OpVariable, 3, bits(0, 3)},
+  {spv::OpImageTexelPointer, 5, bits(0, 2, 3, 4)},
+  {spv::OpLoad, 3, bits(0, 2)},  // + trailing MemoryAccess operand(s)
+  {spv::OpStore, 2, bits(0, 1)},  // + trailing MemoryAccess operand(s)
+  {spv::OpCopyMemory, 2, bits(0, 1)},  // + trailing MemoryAccess operand(s)
+  {spv::OpCopyMemorySized, 3, bits(0, 1, 2)},  // + trailing MemoryAccess operand(s)
+  {spv::OpAccessChain, 3, bits(0) | bits_from(2)},
+  {spv::OpInBoundsAccessChain, 3, bits(0) | bits_from(2)},
+  {spv::OpPtrAccessChain, 4, bits(0) | bits_from(2)},
+  {spv::OpArrayLength, 4, bits(0, 2)},
+  {spv::OpGenericPtrMemSemantics, 3, bits(0, 2)},
+  {spv::OpInBoundsPtrAccessChain, 4, bits(0) | bits_from(2)},
+  {spv::OpDecorate, 2, bits(0)},
+  {spv::OpMemberDecorate, 3, bits(0)},
+  {spv::OpDecorationGroup, 1, 0},
+  {spv::OpGroupDecorate, 1, bits_from(0)},
+  {spv::OpGroupMemberDecorate, 1, bits(0)},  // special-cased in get_instruction_id_operands
+  UNUSED_OPCODE(76),
+  {spv::OpVectorExtractDynamic, 4, bits(0, 2, 3)},
+  {spv::OpVectorInsertDynamic, 5, bits(0, 2, 3, 4)},
+  {spv::OpVectorShuffle, 4, bits(0, 2, 3)},
+  {spv::OpCompositeConstruct, 2, bits(0) | bits_from(2)},
+  {spv::OpCompositeExtract, 3, bits(0, 2)},
+  {spv::OpCompositeInsert, 4, bits(0, 2, 3)},
+  {spv::OpCopyObject, 3, bits(0, 2)},
+  {spv::OpTranspose, 3, bits(0, 2)},
+  UNUSED_OPCODE(85),
+  {spv::OpSampledImage, 4, bits(0, 2, 3)},
+  {spv::OpImageSampleImplicitLod, 4, bits(0, 2, 3) | bits_from(5)},
+  {spv::OpImageSampleExplicitLod, 5, bits(0, 2, 3) | bits_from(5)},
+  {spv::OpImageSampleDrefImplicitLod, 5, bits(0, 2, 3, 4) | bits_from(6)},
+  {spv::OpImageSampleDrefExplicitLod, 5, bits(0, 2, 3, 4) | bits_from(6)},
+  {spv::OpImageSampleProjImplicitLod, 4, bits(0, 2, 3) | bits_from(5)},
+  {spv::OpImageSampleProjExplicitLod, 5, bits(0, 2, 3) | bits_from(5)},
+  {spv::OpImageSampleProjDrefImplicitLod, 5, bits(0, 2, 3, 4) | bits_from(6)},
+  {spv::OpImageSampleProjDrefExplicitLod, 5, bits(0, 2, 3, 4) | bits_from(6)},
+  {spv::OpImageFetch, 4, bits(0, 2, 3) | bits_from(5)},
+  {spv::OpImageGather, 5, bits(0, 2, 3, 4) | bits_from(6)},
+  {spv::OpImageDrefGather, 5, bits(0, 2, 3, 4) | bits_from(6)},
+  {spv::OpImageRead, 4, bits(0, 2, 3) | bits_from(5)},
+  {spv::OpImageWrite, 3, bits(0, 1, 2) | bits_from(4)},
+  {spv::OpImage, 3, bits(0, 2)},
+  {spv::OpImageQueryFormat, 3, bits(0, 2)},
+  {spv::OpImageQueryOrder, 3, bits(0, 2)},
+  {spv::OpImageQuerySizeLod, 4, bits(0, 2, 3)},
+  {spv::OpImageQuerySize, 3, bits(0, 2)},
+  {spv::OpImageQueryLod, 4, bits(0, 2, 3)},
+  {spv::OpImageQueryLevels, 3, bits(0, 2)},
+  {spv::OpImageQuerySamples, 3, bits(0, 2)},
+  UNUSED_OPCODE(108),
+  {spv::OpConvertFToU, 3, bits(0, 2)},
+  {spv::OpConvertFToS, 3, bits(0, 2)},
+  {spv::OpConvertSToF, 3, bits(0, 2)},
+  {spv::OpConvertUToF, 3, bits(0, 2)},
+  {spv::OpUConvert, 3, bits(0, 2)},
+  {spv::OpSConvert, 3, bits(0, 2)},
+  {spv::OpFConvert, 3, bits(0, 2)},
+  {spv::OpQuantizeToF16, 3, bits(0, 2)},
+  {spv::OpConvertPtrToU, 3, bits(0, 2)},
+  {spv::OpSatConvertSToU, 3, bits(0, 2)},
+  {spv::OpSatConvertUToS, 3, bits(0, 2)},
+  {spv::OpConvertUToPtr, 3, bits(0, 2)},
+  {spv::OpPtrCastToGeneric, 3, bits(0, 2)},
+  {spv::OpGenericCastToPtr, 3, bits(0, 2)},
+  {spv::OpGenericCastToPtrExplicit, 4, bits(0, 2)},
+  {spv::OpBitcast, 3, bits(0, 2)},
+  UNUSED_OPCODE(125),
+  {spv::OpSNegate, 3, bits(0, 2)},
+  {spv::OpFNegate, 3, bits(0, 2)},
+  {spv::OpIAdd, 4, bits(0, 2, 3)},
+  {spv::OpFAdd, 4, bits(0, 2, 3)},
+  {spv::OpISub, 4, bits(0, 2, 3)},
+  {spv::OpFSub, 4, bits(0, 2, 3)},
+  {spv::OpIMul, 4, bits(0, 2, 3)},
+  {spv::OpFMul, 4, bits(0, 2, 3)},
+  {spv::OpUDiv, 4, bits(0, 2, 3)},
+  {spv::OpSDiv, 4, bits(0, 2, 3)},
+  {spv::OpFDiv, 4, bits(0, 2, 3)},
+  {spv::OpUMod, 4, bits(0, 2, 3)},
+  {spv::OpSRem, 4, bits(0, 2, 3)},
+  {spv::OpSMod, 4, bits(0, 2, 3)},
+  {spv::OpFRem, 4, bits(0, 2, 3)},
+  {spv::OpFMod, 4, bits(0, 2, 3)},
+  {spv::OpVectorTimesScalar, 4, bits(0, 2, 3)},
+  {spv::OpMatrixTimesScalar, 4, bits(0, 2, 3)},
+  {spv::OpVectorTimesMatrix, 4, bits(0, 2, 3)},
+  {spv::OpMatrixTimesVector, 4, bits(0, 2, 3)},
+  {spv::OpMatrixTimesMatrix, 4, bits(0, 2, 3)},
+  {spv::OpOuterProduct, 4, bits(0, 2, 3)},
+  {spv::OpDot, 4, bits(0, 2, 3)},
+  {spv::OpIAddCarry, 4, bits(0, 2, 3)},
+  {spv::OpISubBorrow, 4, bits(0, 2, 3)},
+  {spv::OpUMulExtended, 4, bits(0, 2, 3)},
+  {spv::OpSMulExtended, 4, bits(0, 2, 3)},
+  UNUSED_OPCODE(153),
+  {spv::OpAny, 3, bits(0, 2)},
+  {spv::OpAll, 3, bits(0, 2)},
+  {spv::OpIsNan, 3, bits(0, 2)},
+  {spv::OpIsInf, 3, bits(0, 2)},
+  {spv::OpIsFinite, 3, bits(0, 2)},
+  {spv::OpIsNormal, 3, bits(0, 2)},
+  {spv::OpSignBitSet, 3, bits(0, 2)},
+  {spv::OpLessOrGreater, 4, bits(0, 2, 3)},
+  {spv::OpOrdered, 4, bits(0, 2, 3)},
+  {spv::OpUnordered, 4, bits(0, 2, 3)},
+  {spv::OpLogicalEqual, 4, bits(0, 2, 3)},
+  {spv::OpLogicalNotEqual, 4, bits(0, 2, 3)},
+  {spv::OpLogicalOr, 4, bits(0, 2, 3)},
+  {spv::OpLogicalAnd, 4, bits(0, 2, 3)},
+  {spv::OpLogicalNot, 3, bits(0, 2)},
+  {spv::OpSelect, 5, bits(0, 2, 3, 4)},
+  {spv::OpIEqual, 4, bits(0, 2, 3)},
+  {spv::OpINotEqual, 4, bits(0, 2, 3)},
+  {spv::OpUGreaterThan, 4, bits(0, 2, 3)},
+  {spv::OpSGreaterThan, 4, bits(0, 2, 3)},
+  {spv::OpUGreaterThanEqual, 4, bits(0, 2, 3)},
+  {spv::OpSGreaterThanEqual, 4, bits(0, 2, 3)},
+  {spv::OpULessThan, 4, bits(0, 2, 3)},
+  {spv::OpSLessThan, 4, bits(0, 2, 3)},
+  {spv::OpULessThanEqual, 4, bits(0, 2, 3)},
+  {spv::OpSLessThanEqual, 4, bits(0, 2, 3)},
+  {spv::OpFOrdEqual, 4, bits(0, 2, 3)},
+  {spv::OpFUnordEqual, 4, bits(0, 2, 3)},
+  {spv::OpFOrdNotEqual, 4, bits(0, 2, 3)},
+  {spv::OpFUnordNotEqual, 4, bits(0, 2, 3)},
+  {spv::OpFOrdLessThan, 4, bits(0, 2, 3)},
+  {spv::OpFUnordLessThan, 4, bits(0, 2, 3)},
+  {spv::OpFOrdGreaterThan, 4, bits(0, 2, 3)},
+  {spv::OpFUnordGreaterThan, 4, bits(0, 2, 3)},
+  {spv::OpFOrdLessThanEqual, 4, bits(0, 2, 3)},
+  {spv::OpFUnordLessThanEqual, 4, bits(0, 2, 3)},
+  {spv::OpFOrdGreaterThanEqual, 4, bits(0, 2, 3)},
+  {spv::OpFUnordGreaterThanEqual, 4, bits(0, 2, 3)},
+  UNUSED_OPCODE(192),
+  UNUSED_OPCODE(193),
+  {spv::OpShiftRightLogical, 4, bits(0, 2, 3)},
+  {spv::OpShiftRightArithmetic, 4, bits(0, 2, 3)},
+  {spv::OpShiftLeftLogical, 4, bits(0, 2, 3)},
+  {spv::OpBitwiseOr, 4, bits(0, 2, 3)},
+  {spv::OpBitwiseXor, 4, bits(0, 2, 3)},
+  {spv::OpBitwiseAnd, 4, bits(0, 2, 3)},
+  {spv::OpNot, 3, bits(0, 2)},
+  {spv::OpBitFieldInsert, 6, bits(0, 2, 3, 4, 5)},
+  {spv::OpBitFieldSExtract, 5, bits(0, 2, 3, 4)},
+  {spv::OpBitFieldUExtract, 5, bits(0, 2, 3, 4)},
+  {spv::OpBitReverse, 3, bits(0, 2)},
+  {spv::OpBitCount, 3, bits(0, 2)},
+  UNUSED_OPCODE(206),
+  {spv::OpDPdx, 3, bits(0, 2)},
+  {spv::OpDPdy, 3, bits(0, 2)},
+  {spv::OpFwidth, 3, bits(0, 2)},
+  {spv::OpDPdxFine, 3, bits(0, 2)},
+  {spv::OpDPdyFine, 3, bits(0, 2)},
+  {spv::OpFwidthFine, 3, bits(0, 2)},
+  {spv::OpDPdxCoarse, 3, bits(0, 2)},
+  {spv::OpDPdyCoarse, 3, bits(0, 2)},
+  {spv::OpFwidthCoarse, 3, bits(0, 2)},
+  UNUSED_OPCODE(216),
+  UNUSED_OPCODE(217),
+  {spv::OpEmitVertex, 0, 0},
+  {spv::OpEndPrimitive, 0, 0},
+  {spv::OpEmitStreamVertex, 1, bits(0)},
+  {spv::OpEndStreamPrimitive, 1, bits(0)},
+  UNUSED_OPCODE(222),
+  UNUSED_OPCODE(223),
+  {spv::OpControlBarrier, 3, bits(0, 1, 2)},
+  {spv::OpMemoryBarrier, 2, bits(0, 1)},
+  UNUSED_OPCODE(226),
+  {spv::OpAtomicLoad, 5, bits(0, 2, 3, 4)},
+  {spv::OpAtomicStore, 4, bits(0, 1, 2, 3)},
+  {spv::OpAtomicExchange, 6, bits(0, 2, 3, 4, 5)},
+  {spv::OpAtomicCompareExchange, 8, bits(0, 2, 3, 4, 5, 6, 7)},
+  {spv::OpAtomicCompareExchangeWeak, 8, bits(0, 2, 3, 4, 5, 6, 7)},
+  {spv::OpAtomicIIncrement, 5, bits(0, 2, 3, 4)},
+  {spv::OpAtomicIDecrement, 5, bits(0, 2, 3, 4)},
+  {spv::OpAtomicIAdd, 6, bits(0, 2, 3, 4, 5)},
+  {spv::OpAtomicISub, 6, bits(0, 2, 3, 4, 5)},
+  {spv::OpAtomicSMin, 6, bits(0, 2, 3, 4, 5)},
+  {spv::OpAtomicUMin, 6, bits(0, 2, 3, 4, 5)},
+  {spv::OpAtomicSMax, 6, bits(0, 2, 3, 4, 5)},
+  {spv::OpAtomicUMax, 6, bits(0, 2, 3, 4, 5)},
+  {spv::OpAtomicAnd, 6, bits(0, 2, 3, 4, 5)},
+  {spv::OpAtomicOr, 6, bits(0, 2, 3, 4, 5)},
+  {spv::OpAtomicXor, 6, bits(0, 2, 3, 4, 5)},
+  UNUSED_OPCODE(243),
+  UNUSED_OPCODE(244),
+  {spv::OpPhi, 2, bits(0) | bits_from(2)},
+  {spv::OpLoopMerge, 3, bits(0, 1)},
+  {spv::OpSelectionMerge, 2, bits(0)},
+  {spv::OpLabel, 1, 0},
+  {spv::OpBranch, 1, bits(0)},
+  {spv::OpBranchConditional, 3, bits(0, 1, 2)},
+  {spv::OpSwitch, 2, bits(0, 1)},  // special-cased in get_instruction_id_operands
+  {spv::OpKill, 0, 0},
+  {spv::OpReturn, 0, 0},
+  {spv::OpReturnValue, 1, bits(0)},
+  {spv::OpUnreachable, 0, 0},
+  {spv::OpLifetimeStart, 2, bits(0)},
+  {spv::OpLifetimeStop, 2, bits(0)},
+  // end of dense table section; the rest is sparse
+  {spv::OpImageSparseSampleImplicitLod, 4, bits(0, 2, 3) | bits_from(5)},
+  {spv::OpImageSparseSampleExplicitLod, 5, bits(0, 2, 3) | bits_from(5)},
+  {spv::OpImageSparseSampleDrefImplicitLod, 5, bits(0, 2, 3, 4) | bits_from(6)},
+  {spv::OpImageSparseSampleDrefExplicitLod, 5, bits(0, 2, 3, 4) | bits_from(6)},
+  {spv::OpImageSparseSampleProjImplicitLod, 4, bits(0, 2, 3) | bits_from(5)},
+  {spv::OpImageSparseSampleProjExplicitLod, 5, bits(0, 2, 3) | bits_from(5)},
+  {spv::OpImageSparseSampleProjDrefImplicitLod, 5, bits(0, 2, 3, 4) | bits_from(6)},
+  {spv::OpImageSparseSampleProjDrefExplicitLod, 5, bits(0, 2, 3, 4) | bits_from(6)},
+  {spv::OpImageSparseFetch, 4, bits(0, 2, 3) | bits_from(5)},
+  {spv::OpImageSparseGather, 5, bits(0, 2, 3, 4) | bits_from(6)},
+  {spv::OpImageSparseDrefGather, 5, bits(0, 2, 3, 4) | bits_from(6)},
+  {spv::OpImageSparseTexelsResident, 3, bits(0, 2)},
+  {spv::OpNoLine, 0, 0},
+  {spv::OpAtomicFlagTestAndSet, 5, bits(0, 2, 3, 4)},
+  {spv::OpAtomicFlagClear, 3, bits(0, 1, 2)},
+  {spv::OpImageSparseRead, 4, bits(0, 2, 3) | bits_from(5)},
+  {spv::OpSizeOf, 3, bits(0, 2)},
+  {spv::OpModuleProcessed, 1, 0},
+  {spv::OpExecutionModeId, 2, bits(0) | bits_from(2)},
+  {spv::OpDecorateId, 2, bits(0) | bits_from(2)},
+  {spv::OpGroupNonUniformElect, 3, bits(0, 2)},
+  {spv::OpGroupNonUniformAll, 4, bits(0, 2, 3)},
+  {spv::OpGroupNonUniformAny, 4, bits(0, 2, 3)},
+  {spv::OpGroupNonUniformAllEqual, 4, bits(0, 2, 3)},
+  {spv::OpGroupNonUniformBroadcast, 5, bits(0, 2, 3, 4)},
+  {spv::OpGroupNonUniformBroadcastFirst, 4, bits(0, 2, 3)},
+  {spv::OpGroupNonUniformBallot, 4, bits(0, 2, 3)},
+  {spv::OpGroupNonUniformInverseBallot, 4, bits(0, 2, 3)},
+  {spv::OpGroupNonUniformBallotBitExtract, 5, bits(0, 2, 3, 4)},
+  {spv::OpGroupNonUniformBallotBitCount, 5, bits(0, 2, 4)},
+  {spv::OpGroupNonUniformBallotFindLSB, 4, bits(0, 2, 3)},
+  {spv::OpGroupNonUniformBallotFindMSB, 4, bits(0, 2, 3)},
+  {spv::OpGroupNonUniformShuffle, 5, bits(0, 2, 3, 4)},
+  {spv::OpGroupNonUniformShuffleXor, 5, bits(0, 2, 3, 4)},
+  {spv::OpGroupNonUniformShuffleUp, 5, bits(0, 2, 3, 4)},
+  {spv::OpGroupNonUniformShuffleDown, 5, bits(0, 2, 3, 4)},
+  {spv::OpGroupNonUniformIAdd, 5, bits(0, 2, 4, 5)},
+  {spv::OpGroupNonUniformFAdd, 5, bits(0, 2, 4, 5)},
+  {spv::OpGroupNonUniformIMul, 5, bits(0, 2, 4, 5)},
+  {spv::OpGroupNonUniformFMul, 5, bits(0, 2, 4, 5)},
+  {spv::OpGroupNonUniformSMin, 5, bits(0, 2, 4, 5)},
+  {spv::OpGroupNonUniformUMin, 5, bits(0, 2, 4, 5)},
+  {spv::OpGroupNonUniformFMin, 5, bits(0, 2, 4, 5)},
+  {spv::OpGroupNonUniformSMax, 5, bits(0, 2, 4, 5)},
+  {spv::OpGroupNonUniformUMax, 5, bits(0, 2, 4, 5)},
+  {spv::OpGroupNonUniformFMax, 5, bits(0, 2, 4, 5)},
+  {spv::OpGroupNonUniformBitwiseAnd, 5, bits(0, 2, 4, 5)},
+  {spv::OpGroupNonUniformBitwiseOr, 5, bits(0, 2, 4, 5)},
+  {spv::OpGroupNonUniformBitwiseXor, 5, bits(0, 2, 4, 5)},
+  {spv::OpGroupNonUniformLogicalAnd, 5, bits(0, 2, 4, 5)},
+  {spv::OpGroupNonUniformLogicalOr, 5, bits(0, 2, 4, 5)},
+  {spv::OpGroupNonUniformLogicalXor, 5, bits(0, 2, 4, 5)},
+  {spv::OpGroupNonUniformQuadBroadcast, 5, bits(0, 2, 3, 4)},
+  {spv::OpGroupNonUniformQuadSwap, 5, bits(0, 2, 3, 4)},
+  {spv::OpCopyLogical, 3, bits(0, 2)},
+  {spv::OpPtrEqual, 4, bits(0, 2, 3)},
+  {spv::OpPtrNotEqual, 4, bits(0, 2, 3)},
+  {spv::OpPtrDiff, 4, bits(0, 2, 3)},
+  {spv::OpColorAttachmentReadEXT, 3, bits(0, 2, 3)},
+  {spv::OpDepthAttachmentReadEXT, 2, bits(0, 2)},
+  {spv::OpStencilAttachmentReadEXT, 2, bits(0, 2)},
+  {spv::OpTerminateInvocation, 0, 0},
+  {spv::OpTypeUntypedPointerKHR, 2, 0},
+  {spv::OpUntypedVariableKHR, 3, bits(0, 3, 4)},
+  {spv::OpUntypedAccessChainKHR, 2, bits(0) | bits_from(2)},
+  {spv::OpUntypedInBoundsAccessChainKHR, 2, bits(0) | bits_from(2)},
+  {spv::OpSubgroupBallotKHR, 3, bits(0, 2)},
+  {spv::OpSubgroupFirstInvocationKHR, 3, bits(0, 2)},
+  {spv::OpUntypedPtrAccessChainKHR, 2, bits(0) | bits_from(2)},
+  {spv::OpUntypedInBoundsPtrAccessChainKHR, 2, bits(0) | bits_from(2)},
+  {spv::OpUntypedArrayLengthKHR, 4, bits(0, 2, 3)},
+  {spv::OpSubgroupAllKHR, 3, bits(0, 2)},
+  {spv::OpSubgroupAnyKHR, 3, bits(0, 2)},
+  {spv::OpSubgroupAllEqualKHR, 3, bits(0, 2)},
+  {spv::OpGroupNonUniformRotateKHR, 5, bits(0, 2, 3, 4, 5)},
+  {spv::OpSubgroupReadInvocationKHR, 4, bits(0, 2, 3)},
+  {spv::OpExtInstWithForwardRefsKHR, 4, bits(0, 2) | bits_from(4)},
+  {spv::OpSDot, 4, bits(0, 2, 3)},
+  {spv::OpUDot, 4, bits(0, 2, 3)},
+  {spv::OpSUDot, 4, bits(0, 2, 3)},
+  {spv::OpSDotAccSat, 5, bits(0, 2, 3, 4)},
+  {spv::OpUDotAccSat, 5, bits(0, 2, 3, 4)},
+  {spv::OpSUDotAccSat, 5, bits(0, 2, 3, 4)},
+  {spv::OpTypeCooperativeMatrixKHR, 1, bits_from(1)},
+  {spv::OpCooperativeMatrixLoadKHR, 4, bits(0, 2, 3, 4)},  // + trailing MemoryAccess operand(s)
+  {spv::OpCooperativeMatrixStoreKHR, 3, bits(0, 1, 2, 3)},  // + trailing MemoryAccess operand(s)
+  {spv::OpCooperativeMatrixMulAddKHR, 5, bits(0, 2, 3, 4)},
+  {spv::OpCooperativeMatrixLengthKHR, 3, bits(0, 2)},
+  {spv::OpConstantCompositeReplicateEXT, 3, bits(0, 2)},
+  {spv::OpSpecConstantCompositeReplicateEXT, 3, bits(0, 2)},
+  {spv::OpCompositeConstructReplicateEXT, 3, bits(0, 2)},
+  {spv::OpEmitMeshTasksEXT, 3, bits(0, 1, 2, 3)},
+  {spv::OpSetMeshOutputsEXT, 2, bits(0, 1)},
+  {spv::OpWritePackedPrimitiveIndices4x8NV, 2, bits(0, 1)},
+  {spv::OpTypeCooperativeMatrixNV, 1, bits_from(1)},
+  {spv::OpCooperativeMatrixLoadNV, 5, bits(0, 2, 3, 4)},  // + trailing MemoryAccess operand(s)
+  {spv::OpCooperativeMatrixStoreNV, 4, bits(0, 1, 2, 3)},  // + trailing MemoryAccess operand(s)
+  {spv::OpCooperativeMatrixMulAddNV, 5, bits(0, 2, 3, 4)},
+  {spv::OpCooperativeMatrixLengthNV, 3, bits(0, 2)},
+  {spv::OpDemoteToHelperInvocation, 0, 0},
+  {spv::OpIsHelperInvocationEXT, 2, bits(0)},
+  {spv::OpAtomicFMinEXT, 6, bits(0, 2, 3, 4, 5)},
+  {spv::OpAtomicFMaxEXT, 6, bits(0, 2, 3, 4, 5)},
+  {spv::OpAssumeTrueKHR, 1, bits(0)},
+  {spv::OpExpectKHR, 4, bits(0, 2, 3)},
+  {spv::OpDecorateString, 2, bits(0)},
+  {spv::OpMemberDecorateString, 3, bits(0)},
+  {spv::OpAtomicFAddEXT, 6, bits(0, 2, 3, 4, 5)},
+  {spv::OpConvertFToBF16INTEL, 3, bits(0, 2)},
+  {spv::OpConvertBF16ToFINTEL, 3, bits(0, 2)},
+};
+#undef UNUSED_OPCODE
+
+// Check at compile-time whether the table is sorted properly.
+static constexpr bool
+is_sorted_by_opcode(const InstructionInfo *table, size_t count) {
+  for (size_t i = 1; i < count; ++i) {
+    if (table[i - 1]._opcode >= table[i]._opcode) {
+      return false;
+    }
+  }
+  return true;
+}
+
+static_assert(is_sorted_by_opcode(instruction_table,
+              sizeof(instruction_table) / sizeof(instruction_table[0])),
+              "instruction_table must be sorted by opcode");
+
+static_assert(instruction_table[spv::OpLifetimeStop]._opcode == spv::OpLifetimeStop,
+              "instruction_table must be dense up to OpLifetimeStop");
+
+/**
+ * Returns the instruction_table entry for the given opcode, or null if the
+ * opcode is not in the table.
+ */
+static const InstructionInfo *
+find_instruction_info(spv::Op opcode) {
+  // For most instructions, the table is dense and indexed by opcode.
+  if ((uint16_t)opcode <= spv::OpLifetimeStop) {
+    const InstructionInfo *info = &instruction_table[(uint16_t)opcode];
+    if (info->_min_args != 0xffff) {
+      return info;
+    }
+    return nullptr;
+  }
+
+  // Beyond that, the opcode numbering becomes too sparse, so do a binary
+  // search through the rest of the table.
+  const InstructionInfo *begin = instruction_table + spv::OpLifetimeStop + 1;
+  const InstructionInfo *end = instruction_table +
+    sizeof(instruction_table) / sizeof(instruction_table[0]);
+  const InstructionInfo *it = std::lower_bound(begin, end, (uint16_t)opcode,
+    [](const InstructionInfo &entry, uint16_t opcode) {
+      return entry._opcode < opcode;
+    });
+  if (it != end && it->_opcode == (uint16_t)opcode) {
+    return it;
+  }
+  return nullptr;
 }
 
 /**
- * Returns the minimum operand count of a particular SPIR-V op.
+ * Returns the number of operands that an instruction with the given opcode
+ * must at least carry.  For opcodes that aren't in the table above, this falls
+ * back to the result type/result prefix reported by spv::HasResultAndType.
  */
 static uint32_t
-get_min_operand_count(spv::Op opcode) {
-  switch (opcode) {
-  case spv::OpCapability:
-  case spv::OpExtension:
-  case spv::OpReturnValue:
-  case spv::OpLabel:
-  case spv::OpBranch:
-  case spv::OpDecorationGroup:
-  case spv::OpGroupDecorate:
-    return 1;
-
-  case spv::OpExtInstImport:
-  case spv::OpMemoryModel:
-  case spv::OpExecutionMode:
-  case spv::OpExecutionModeId:
-  case spv::OpString:
-  case spv::OpName:
-  case spv::OpDecorate:
-  case spv::OpTypeFloat:
-  case spv::OpTypeSampledImage:
-  case spv::OpTypeRuntimeArray:
-  case spv::OpTypeFunction:
-  case spv::OpConstantTrue:
-  case spv::OpConstantFalse:
-  case spv::OpConstantNull:
-  case spv::OpConstantComposite:
-  case spv::OpSpecConstantTrue:
-  case spv::OpSpecConstantFalse:
-  case spv::OpSpecConstantComposite:
-  case spv::OpUndef:
-  case spv::OpFunctionParameter:
-  case spv::OpStore:
-  case spv::OpCopyMemory:
-  case spv::OpCompositeConstruct:
-  case spv::OpSelectionMerge:
-    return 2;
-
-  case spv::OpEntryPoint:
-  case spv::OpMemberName:
-  case spv::OpMemberDecorate:
-  case spv::OpDecorateId:
-  case spv::OpLine:
-  case spv::OpTypeInt:
-  case spv::OpTypeVector:
-  case spv::OpTypeMatrix:
-  case spv::OpTypeArray:
-  case spv::OpTypePointer:
-  case spv::OpConstant:
-  case spv::OpSpecConstant:
-  case spv::OpSpecConstantOp:
-  case spv::OpVariable:
-  case spv::OpLoad:
-  case spv::OpAccessChain:
-  case spv::OpInBoundsAccessChain:
-  case spv::OpFunctionCall:
-  case spv::OpCopyObject:
-  case spv::OpCopyLogical:
-  case spv::OpBitcast:
-  case spv::OpConvertPtrToU:
-  case spv::OpConvertUToPtr:
-  case spv::OpCopyMemorySized:
-  case spv::OpImage:
-  case spv::OpImageQuerySize:
-  case spv::OpImageQueryLevels:
-  case spv::OpCompositeExtract:
-  case spv::OpAtomicFlagClear:
-  case spv::OpBranchConditional:
-  case spv::OpConvertFToU:
-  case spv::OpConvertFToS:
-  case spv::OpConvertSToF:
-  case spv::OpConvertUToF:
-  case spv::OpUConvert:
-  case spv::OpSConvert:
-  case spv::OpFConvert:
-  case spv::OpQuantizeToF16:
-  case spv::OpSNegate:
-  case spv::OpFNegate:
-  case spv::OpNot:
-  case spv::OpAny:
-  case spv::OpAll:
-  case spv::OpIsNan:
-  case spv::OpIsInf:
-  case spv::OpTranspose:
-    return 3;
-
-  case spv::OpFunction:
-  case spv::OpPtrAccessChain:
-  case spv::OpInBoundsPtrAccessChain:
-  case spv::OpSampledImage:
-  case spv::OpImageQuerySizeLod:
-  case spv::OpImageSampleImplicitLod:
-  case spv::OpImageSampleProjImplicitLod:
-  case spv::OpImageFetch:
-  case spv::OpExtInst:
-  case spv::OpCompositeInsert:
-  case spv::OpVectorShuffle:
-  case spv::OpArrayLength:
-  case spv::OpExpectKHR:
-  case spv::OpAtomicStore:
-  case spv::OpPtrEqual:
-  case spv::OpPtrNotEqual:
-  case spv::OpPtrDiff:
-  case spv::OpIAdd:
-  case spv::OpFAdd:
-  case spv::OpISub:
-  case spv::OpFSub:
-  case spv::OpIMul:
-  case spv::OpFMul:
-  case spv::OpUDiv:
-  case spv::OpSDiv:
-  case spv::OpFDiv:
-  case spv::OpUMod:
-  case spv::OpSRem:
-  case spv::OpSMod:
-  case spv::OpFRem:
-  case spv::OpFMod:
-  case spv::OpVectorTimesScalar:
-  case spv::OpMatrixTimesScalar:
-  case spv::OpVectorTimesMatrix:
-  case spv::OpMatrixTimesVector:
-  case spv::OpMatrixTimesMatrix:
-  case spv::OpOuterProduct:
-  case spv::OpDot:
-  case spv::OpShiftRightLogical:
-  case spv::OpShiftRightArithmetic:
-  case spv::OpShiftLeftLogical:
-  case spv::OpBitwiseOr:
-  case spv::OpBitwiseXor:
-  case spv::OpBitwiseAnd:
-    return 4;
-
-  case spv::OpImageSampleExplicitLod:
-  case spv::OpImageSampleProjExplicitLod:
-  case spv::OpImageSampleDrefImplicitLod:
-  case spv::OpImageSampleDrefExplicitLod:
-  case spv::OpImageSampleProjDrefImplicitLod:
-  case spv::OpImageSampleProjDrefExplicitLod:
-  case spv::OpImageGather:
-  case spv::OpImageDrefGather:
-  case spv::OpImageTexelPointer:
-  case spv::OpAtomicLoad:
-  case spv::OpAtomicIIncrement:
-  case spv::OpAtomicIDecrement:
-  case spv::OpAtomicFlagTestAndSet:
-  case spv::OpSelect:
-    return 5;
-
-  case spv::OpAtomicExchange:
-  case spv::OpAtomicIAdd:
-  case spv::OpAtomicISub:
-  case spv::OpAtomicSMin:
-  case spv::OpAtomicUMin:
-  case spv::OpAtomicSMax:
-  case spv::OpAtomicUMax:
-  case spv::OpAtomicAnd:
-  case spv::OpAtomicOr:
-  case spv::OpAtomicXor:
-  case spv::OpAtomicFMinEXT:
-  case spv::OpAtomicFMaxEXT:
-  case spv::OpAtomicFAddEXT:
-    return 6;
-
-  case spv::OpTypeImage:
-    return 8;
-
-  case spv::OpAtomicCompareExchange:
-  case spv::OpAtomicCompareExchangeWeak:
-    return 8;
-
-  default:
-    return 0;
+get_min_instruction_args(spv::Op opcode) {
+  const InstructionInfo *info = find_instruction_info(opcode);
+  if (info != nullptr) {
+    return info->_min_args;
   }
+
+  bool has_result, has_result_type;
+  spv::HasResultAndType(opcode, &has_result, &has_result_type);
+  return (uint32_t)has_result + (uint32_t)has_result_type;
 }
 
 /**
@@ -229,6 +505,73 @@ is_structural_decoration(spv::Decoration decoration) {
   default:
     return false;
   }
+}
+
+/**
+ * Returns the type that a variable with the given builtin decoration is
+ * declared with, or null if the builtin is not known here.
+ */
+static const ShaderType *
+get_builtin_type(spv::BuiltIn builtin) {
+  switch (builtin) {
+  case spv::BuiltInVertexId:
+  case spv::BuiltInInstanceId:
+  case spv::BuiltInPrimitiveId:
+  case spv::BuiltInInvocationId:
+  case spv::BuiltInLayer:
+  case spv::BuiltInViewportIndex:
+  case spv::BuiltInPatchVertices:
+  case spv::BuiltInSampleId:
+  case spv::BuiltInVertexIndex:
+  case spv::BuiltInInstanceIndex:
+    return ShaderType::INT;
+
+  case spv::BuiltInPointSize:
+  case spv::BuiltInFragDepth:
+  case spv::BuiltInTessLevelOuter:
+  case spv::BuiltInTessLevelInner:
+    return ShaderType::FLOAT;
+
+  case spv::BuiltInTessCoord:
+    return ShaderType::register_type(ShaderType::Vector(ShaderType::ST_float, 3));
+
+  case spv::BuiltInPosition:
+  case spv::BuiltInFragCoord:
+    return ShaderType::register_type(ShaderType::Vector(ShaderType::ST_float, 4));
+
+  case spv::BuiltInPointCoord:
+  case spv::BuiltInSamplePosition:
+    return ShaderType::register_type(ShaderType::Vector(ShaderType::ST_float, 2));
+
+  case spv::BuiltInFrontFacing:
+  case spv::BuiltInHelperInvocation:
+    return ShaderType::BOOL;
+
+  case spv::BuiltInNumWorkgroups:
+  case spv::BuiltInWorkgroupSize:
+  case spv::BuiltInWorkgroupId:
+  case spv::BuiltInLocalInvocationId:
+  case spv::BuiltInGlobalInvocationId:
+    return ShaderType::register_type(ShaderType::Vector(ShaderType::ST_uint, 3));
+
+  case spv::BuiltInLocalInvocationIndex:
+    return ShaderType::UINT;
+
+  default:
+    return nullptr;
+  }
+}
+
+/**
+ * Appends a string literal (padded with at least one zero byte) to the given
+ * argument vector (a pvector or an instruction's Args).
+ */
+template<class ArgsVector>
+static void
+pack_string(ArgsVector &args, std::string_view str) {
+  size_t offset = args.size();
+  args.resize(offset + str.size() / 4 + 1, 0u);
+  memcpy((char *)(args.data() + offset), str.data(), str.size());
 }
 
 /**
@@ -369,17 +712,8 @@ parse(const uint32_t *words, size_t num_words) {
 
     // Every instruction with a result id (and result type) must at least
     // carry those operands; this is what makes record_result and the various
-    // places that read op.args[0] of a type declaration safe without a
-    // per-opcode entry in the table below.
-    bool has_result, has_result_type;
-    spv::HasResultAndType(opcode, &has_result, &has_result_type);
-    uint32_t min_operands = (uint32_t)has_result + (uint32_t)has_result_type;
-    uint32_t table_min = get_min_operand_count(opcode);
-    if (table_min > min_operands) {
-      min_operands = table_min;
-    }
-
-    if (nargs < min_operands) {
+    // places that read op.args[0] of a type declaration safe.
+    if (nargs < get_min_instruction_args(opcode)) {
       shader_cat.error()
         << "Truncated instruction (opcode " << (uint32_t)opcode << ", "
         << nargs << " operands) during SPIR-V parse\n";
@@ -411,15 +745,13 @@ parse(const uint32_t *words, size_t num_words) {
 
     case spv::OpEntryPoint:
       {
+        // The trailing interface ids are deliberately not stored; emit()
+        // derives the interface from the instructions, so a declared list
+        // would only go stale.
         EntryPoint ep;
         ep.model = (spv::ExecutionModel)args[0];
         ep.function_id = Id(args[1]);
-        size_t end = 2;
-        ep.name = op.get_string(2, &end);
-        ep.interface_vars.reserve(op.args.size() - end);
-        for (size_t ai = end; ai < op.args.size(); ++ai) {
-          ep.interface_vars.push_back(Id(op.args[ai]));
-        }
+        ep.name = op.get_string(2);
         _entry_points.push_back(std::move(ep));
       }
       continue;
@@ -559,9 +891,9 @@ parse(const uint32_t *words, size_t num_words) {
 /**
  * Serializes the module back into an instruction stream.  This is where the
  * module-wide invariants are enforced: declarations are emitted in topological
- * order, tombstones are skipped, and names, decorations and entry point
- * interfaces are generated from the module's own maps, so ids that have been
- * deleted leave no trace.
+ * order, tombstones are skipped, names and decorations are generated from the
+ * module's own maps, and entry point interfaces are derived from the
+ * instructions, so ids that have been deleted leave no trace.
  *
  * Call deduplicate_types() first if a pass may have created duplicate
  * declarations of unique types (SpirVTransformer::run does this after every
@@ -597,7 +929,9 @@ emit() const {
   for (const EntryPoint &ep : _entry_points) {
     pvector<uint32_t> args({(uint32_t)ep.model, ep.function_id});
     pack_string(args, ep.name);
-    args.insert(args.end(), ep.interface_vars.begin(), ep.interface_vars.end());
+    for (Id var_id : collect_interface_vars(ep.function_id)) {
+      args.push_back(var_id);
+    }
     emit_instruction(spv::OpEntryPoint, args.data(), args.size());
   }
   for (const Instruction &op : _execution_modes) {
@@ -689,9 +1023,10 @@ emit() const {
  * emitted module, then runs the SPIR-V validator on the emitted stream.  The
  * consistency check catches a pass editing an instruction's result type in
  * place without calling record_result, a stale declaration index (which
- * find_declaration and the emit-time topological sort navigate by), and a
- * mutation path failing to invalidate the type resolutions.  Logs an error for
- * every mismatch and returns false if any was found.  Intended for validation
+ * find_declaration and the emit-time topological sort navigate by), a
+ * mutation path failing to invalidate the type resolutions, and any operand
+ * left referencing a deleted id.  Logs an error for every mismatch and
+ * returns false if any was found.  Intended for validation
  * in the test suite and via the shader-paranoid-validation config variable.
  */
 bool SpirVModule::
@@ -748,7 +1083,8 @@ validate() const {
         dtype != DT_pointer_type &&
         dtype != DT_function_type &&
         dtype != DT_ext_inst &&
-        dtype != DT_string) {
+        dtype != DT_string &&
+        dtype != DT_typeless) {
       // The index mirrors the result type operand for values; the mirror
       // must match what the instructions say.
       Id type_id = get_type_id(id);
@@ -863,6 +1199,37 @@ validate() const {
     }
   }
 
+  // Now check every id operand of every instruction (that we can classify)
+  // for dangling references (ids with DT_none).
+  small_vector<uint16_t, 8> id_operands;
+  auto check_instruction = [&](const Instruction &op) {
+    if (op.is_nop() || !get_instruction_id_operands(op, id_operands)) {
+      return;
+    }
+    for (uint16_t arg_index : id_operands) {
+      Id ref_id(op.args[arg_index]);
+      if (ref_id == 0 || ref_id >= get_id_bound() ||
+          get_definition_type(ref_id) == DT_none) {
+        shader_cat.error()
+          << "Dangling reference after transformation: operand " << arg_index
+          << " of an opcode " << (uint32_t)op.opcode
+          << " instruction refers to nonexistent id " << ref_id << "\n";
+        consistent = false;
+      }
+    }
+  };
+  for (const Instruction &op : _debug) {
+    check_instruction(op);
+  }
+  for (const Instruction &op : _declarations) {
+    check_instruction(op);
+  }
+  for (const Function &function : _functions) {
+    for (const Instruction &op : function.instructions) {
+      check_instruction(op);
+    }
+  }
+
   // Finally, run the SPIR-V validator on the emitted stream, against the
   // version the header declares.
   spv_target_env env;
@@ -924,6 +1291,7 @@ analyze_usage() const {
   // scans below can be skipped entirely for modules without opaque loads.
   bool any_deferred = false;
 
+  small_vector<uint16_t, 8> id_operands;
   for (const SpirVModule::Function &function : _functions) {
     for (const SpirVModule::Instruction &op : function.instructions) {
       switch (op.opcode) {
@@ -1326,43 +1694,20 @@ analyze_usage() const {
         }
         break;
 
-      case spv::OpCompositeInsert:
-        // The inserted object can be an opaque value (a composite of opaques
-        // can be built with OpCompositeConstruct), which this consumes.  The
-        // literal indices must not reach the scan below.
-        if (op.args.size() >= 3 &&
-            usage.has_flag(Id(op.args[2]), SpirVUsageAnalysis::UF_deferred_use)) {
-          usage.mark_used(Id(op.args[2]));
-        }
-        break;
-
-      case spv::OpLine:
-      case spv::OpNoLine:
-      case spv::OpSwitch:
-      case spv::OpVectorShuffle:
-      case spv::OpBranchConditional:
-      case spv::OpLoopMerge:
-      case spv::OpSelectionMerge:
-        // These cannot consume an opaque value, but carry literal words
-        // (line numbers, case values, component indices, branch weights,
-        // masks) that the scan below would mistake for ids.  OpLine matters
-        // most: debug info puts one before nearly every instruction, with
-        // line numbers squarely in the range of valid ids.
-        break;
-
       default:
         // Safety net for the deferred loads: an opcode without a curated
-        // case above that references an opaque value consumes it.  Ids are
-        // unique, so a match on a word that really is an id is exact; the
-        // opcodes known to carry literal words in a function body are
-        // excluded above, and in an unknown opcode (eg. a vendor image
-        // extension) a literal colliding with a deferred value id merely
-        // keeps the variable alive.
+        // case above that references an opaque value consumes it (eg.
+        // OpCompositeInsert, whose inserted object can be an opaque value).
+        // The id operand classification makes this exact for known opcodes
+        // (an OpLine line number or OpSwitch case literal is never mistaken
+        // for an id); in an unknown opcode (eg. a vendor image extension)
+        // every plausible id word is included, and a literal colliding with
+        // a deferred value id merely keeps the variable alive.
         if (any_deferred) {
-          size_t first = (size_t)op.has_result() + (size_t)op.has_result_type();
-          for (size_t i = first; i < op.args.size(); ++i) {
-            if (usage.has_flag(Id(op.args[i]), SpirVUsageAnalysis::UF_deferred_use)) {
-              usage.mark_used(Id(op.args[i]));
+          get_instruction_id_operands(op, id_operands);
+          for (uint16_t arg_index : id_operands) {
+            if (usage.has_flag(Id(op.args[arg_index]), SpirVUsageAnalysis::UF_deferred_use)) {
+              usage.mark_used(Id(op.args[arg_index]));
             }
           }
         }
@@ -1433,28 +1778,71 @@ set_memory_model(spv::AddressingModel addressing, spv::MemoryModel memory) {
  * Adds an entry point for the given function.
  */
 void SpirVModule::
-add_entry_point(spv::ExecutionModel model, Id function_id,
-                std::string name, pvector<Id> interface_vars) {
+add_entry_point(spv::ExecutionModel model, Id function_id, std::string name) {
   EntryPoint ep;
   ep.model = model;
   ep.function_id = function_id;
   ep.name = std::move(name);
-  ep.interface_vars = std::move(interface_vars);
   _entry_points.push_back(std::move(ep));
 }
 
 /**
- * Adds the given variable to the interface of every entry point with the
- * given execution model, if it is not already listed.
+ * Returns the entry point interface for the given entry function: every
+ * module-scope variable referenced by a function reachable from it,
+ * restricted to the Input and Output storage classes before SPIR-V 1.4
+ * (which lists all storage classes).
  */
-void SpirVModule::
-add_to_interfaces(spv::ExecutionModel model, Id var_id) {
-  for (EntryPoint &ep : _entry_points) {
-    if (ep.model == model &&
-        std::find(ep.interface_vars.begin(), ep.interface_vars.end(), var_id) == ep.interface_vars.end()) {
-      ep.interface_vars.push_back(var_id);
+pvector<SpirVId> SpirVModule::
+collect_interface_vars(Id function_id) const {
+  pset<Id> globals;
+  pset<Id> visited {function_id};
+  small_vector<Id, 4> worklist {function_id};
+  small_vector<uint16_t, 8> id_operands;
+
+  while (!worklist.empty()) {
+    Id fid = worklist.back();
+    worklist.pop_back();
+
+    const Function *fn = nullptr;
+    for (const Function &function : _functions) {
+      if (function.id == fid) {
+        fn = &function;
+        break;
+      }
+    }
+    if (fn == nullptr) {
+      continue;
+    }
+
+    for (const Instruction &op : fn->instructions) {
+      if (op.opcode == spv::OpFunctionCall && op.args.size() >= 3 &&
+          visited.insert(Id(op.args[2])).second) {
+        worklist.push_back(Id(op.args[2]));
+      }
+      get_instruction_id_operands(op, id_operands);
+      for (uint16_t arg_index : id_operands) {
+        uint32_t word = op.args[arg_index];
+        if (word < _defs.size() &&
+            _defs[word]._dtype == DT_variable &&
+            _defs[word]._function_id == 0) {
+          globals.insert(Id(word));
+        }
+      }
     }
   }
+
+  pvector<Id> result;
+  for (Id var_id : globals) {
+    if (_version < 0x10400) {
+      spv::StorageClass storage_class = get_storage_class(var_id);
+      if (storage_class != spv::StorageClassInput &&
+          storage_class != spv::StorageClassOutput) {
+        continue;
+      }
+    }
+    result.push_back(var_id);
+  }
+  return result;
 }
 
 /**
@@ -1542,36 +1930,28 @@ add_string(std::string_view str) {
 
 /**
  * Returns true if the given string id is referenced by an instruction in the
- * module.
+ * module.  This is exact for known opcodes (a literal that collides with the
+ * string id is never mistaken for a reference); an unknown opcode's operands
+ * are scanned conservatively, which can only over-report.
  */
 bool SpirVModule::
 is_string_referenced(Id id) const {
+  small_vector<uint16_t, 8> id_operands;
+  auto references_string = [&](const Instruction &op) {
+    get_instruction_id_operands(op, id_operands);
+    for (uint16_t arg_index : id_operands) {
+      if (op.args[arg_index] == id) {
+        return true;
+      }
+    }
+    return false;
+  };
+
   for (const Instruction &op : _debug) {
-    if (op.opcode == spv::OpSource &&
-        op.args.size() >= 3 && op.args[2] == id) {
+    if (references_string(op)) {
       return true;
     }
   }
-
-  auto references_string = [id](const Instruction &op) {
-    switch (op.opcode) {
-    case spv::OpLine:
-      return !op.args.empty() && op.args[0] == id;
-
-    case spv::OpExtInst:
-    case spv::OpExtInstWithForwardRefsKHR:
-      for (size_t i = 4; i < op.args.size(); ++i) {
-        if (op.args[i] == id) {
-          return true;
-        }
-      }
-      return false;
-
-    default:
-      return false;
-    }
-  };
-
   for (const Instruction &op : _declarations) {
     if (references_string(op)) {
       return true;
@@ -1871,6 +2251,19 @@ make_function(const ShaderType *return_type, const pvector<Id> &param_type_ids,
 
   SpirVBuilder builder(*this, id, 0);
   builder.op_label();
+  return builder;
+}
+
+/**
+ * Starts a new function taking no arguments and returning void, and registers
+ * it as an entry point.  This is a convenience method for make_function +
+ * add_entry_point, and returns a SpirVBuilder positioned at the beginning of
+ * the body, after the implicitly created OpLabel.
+ */
+SpirVBuilder SpirVModule::
+make_entry_point(spv::ExecutionModel model, std::string name) {
+  SpirVBuilder builder = make_function(nullptr, {});
+  add_entry_point(model, builder.get_current_function_id(), std::move(name));
   return builder;
 }
 
@@ -2698,93 +3091,8 @@ define_spec_constant(const ShaderType *type, uint32_t def_value) {
 }
 
 /**
- * Makes sure that a module-scope input variable with the given builtin
- * exists and is part of the interface of all entry points with the given
- * execution model, and returns its id.
- */
-SpirVId SpirVModule::
-ensure_builtin_input(spv::ExecutionModel model, spv::BuiltIn builtin) {
-  Id var_id;
-  for (uint32_t word = 0; word < _defs.size(); ++word) {
-    Id id(word);
-    const Definition &def = _defs[word];
-    if (def._dtype == DT_variable && def._function_id == 0 &&
-        get_storage_class(id) == spv::StorageClassInput &&
-        get_builtin(id) == builtin) {
-      var_id = id;
-      break;
-    }
-  }
-
-  if (var_id == 0) {
-    const ShaderType *type;
-    switch (builtin) {
-    case spv::BuiltInVertexId:
-    case spv::BuiltInInstanceId:
-    case spv::BuiltInPrimitiveId:
-    case spv::BuiltInInvocationId:
-    case spv::BuiltInLayer:
-    case spv::BuiltInViewportIndex:
-    case spv::BuiltInPatchVertices:
-    case spv::BuiltInSampleId:
-    case spv::BuiltInVertexIndex:
-    case spv::BuiltInInstanceIndex:
-      type = ShaderType::INT;
-      break;
-
-    case spv::BuiltInTessLevelOuter:
-    case spv::BuiltInTessLevelInner:
-      type = ShaderType::FLOAT;
-      break;
-
-    case spv::BuiltInTessCoord:
-      type = ShaderType::register_type(ShaderType::Vector(ShaderType::ST_float, 3));
-      break;
-
-    case spv::BuiltInFragCoord:
-      type = ShaderType::register_type(ShaderType::Vector(ShaderType::ST_float, 4));
-      break;
-
-    case spv::BuiltInPointCoord:
-    case spv::BuiltInSamplePosition:
-      type = ShaderType::register_type(ShaderType::Vector(ShaderType::ST_float, 2));
-      break;
-
-    case spv::BuiltInFrontFacing:
-    case spv::BuiltInHelperInvocation:
-      type = ShaderType::BOOL;
-      break;
-
-    case spv::BuiltInNumWorkgroups:
-    case spv::BuiltInWorkgroupSize:
-    case spv::BuiltInWorkgroupId:
-    case spv::BuiltInLocalInvocationId:
-    case spv::BuiltInGlobalInvocationId:
-      type = ShaderType::register_type(ShaderType::Vector(ShaderType::ST_uint, 3));
-      break;
-
-    case spv::BuiltInLocalInvocationIndex:
-      type = ShaderType::UINT;
-      break;
-
-    default:
-      // Unhandled / invalid input
-      nassertr(false, Id());
-      return Id();
-    }
-
-    var_id = define_variable(type, spv::StorageClassInput);
-    decorate(var_id, spv::DecorationBuiltIn, builtin);
-  }
-
-  add_to_interfaces(model, var_id);
-  return var_id;
-}
-
-/**
- * Deletes the given id: removes its declaration, name, annotations and entry
- * point interface references, and clears its index entry.  Takes effect
- * immediately.
+ * Deletes the given id: removes its declaration, name and annotations, and
+ * clears its index entry.  Takes effect immediately.
  *
  * References to the id in function bodies are the pass's responsibility
  * (see delete_dead_code for the common cascade); deletions do not cascade to
@@ -2867,15 +3175,6 @@ delete_id(Id id) {
     Instruction *decl = find_declaration(id);
     if (decl != nullptr) {
       *decl = Instruction(spv::OpNop);
-    }
-  }
-
-  // Remove it from all entry point interfaces.
-  for (EntryPoint &ep : _entry_points) {
-    for (size_t i = ep.interface_vars.size(); i-- > 0;) {
-      if (ep.interface_vars[i] == id) {
-        ep.interface_vars.erase(ep.interface_vars.begin() + i);
-      }
     }
   }
 
@@ -3343,8 +3642,12 @@ record_result_at(const Instruction &op, Id function_id,
     if (op.has_result_type()) {
       def._dtype = DT_temporary;
       def._type_id = Id(op.args[0]);
+    } else {
+      // Results without a type (labels, decoration groups): there is nothing
+      // further to index, but DT_typeless distinguishes a live id from a
+      // cleared or never-assigned one (DT_none).
+      def._dtype = DT_typeless;
     }
-    // Results without a type (labels, decoration groups) stay DT_none.
     break;
   }
 }
@@ -3898,110 +4201,244 @@ r_annotate_struct_layout(Id type_id) {
 }
 
 /**
- * Returns the operand indices of the given declarations-section instruction
- * that hold ids rather than literals.  The result id itself is not included.
+ * Appends the id operand indices of a MemoryAccess operand whose mask literal
+ * sits at the given index, and stores the index just past the operand in
+ * next_arg_index.  Returns false if an unknown mask bit makes the trailing
+ * layout unclassifiable.  An Aligned literal follows the mask; pointer scopes
+ * and aliasing-scope lists are ids.
  */
-void SpirVModule::
-get_declaration_id_operands(const Instruction &op, small_vector<uint32_t, 8> &indices) {
+static bool
+scan_memory_access_operands(const SpirVModule::Instruction &op,
+                             size_t arg_index,
+                             size_t &next_arg_index,
+                             small_vector<uint16_t, 8> &indices) {
+  if (arg_index >= op.args.size()) {
+    next_arg_index = arg_index;
+    return true;
+  }
+  uint32_t mask = op.args[arg_index];
+  ++arg_index;
+
+  const uint32_t known_mask =
+    spv::MemoryAccessVolatileMask |
+    spv::MemoryAccessAlignedMask |
+    spv::MemoryAccessNontemporalMask |
+    spv::MemoryAccessMakePointerAvailableMask |
+    spv::MemoryAccessMakePointerVisibleMask |
+    spv::MemoryAccessNonPrivatePointerMask |
+    spv::MemoryAccessAliasScopeINTELMaskMask |
+    spv::MemoryAccessNoAliasINTELMaskMask;
+  if (mask & ~known_mask) {
+    // A future mask bit may insert either a literal or an id anywhere among
+    // the trailing operands.  Their layout is therefore unknown; include all
+    // of them conservatively and prevent a caller from treating a following
+    // word as a second MemoryAccess operand.
+    for (size_t i = arg_index; i < op.args.size(); ++i) {
+      indices.push_back((uint16_t)i);
+    }
+    next_arg_index = op.args.size();
+    return false;
+  }
+
+  if (mask & spv::MemoryAccessAlignedMask) {
+    ++arg_index;
+  }
+  if (mask & spv::MemoryAccessMakePointerAvailableMask) {
+    if (arg_index < op.args.size()) {
+      indices.push_back((uint16_t)arg_index);
+    }
+    ++arg_index;
+  }
+  if (mask & spv::MemoryAccessMakePointerVisibleMask) {
+    if (arg_index < op.args.size()) {
+      indices.push_back((uint16_t)arg_index);
+    }
+    ++arg_index;
+  }
+  if (mask & spv::MemoryAccessAliasScopeINTELMaskMask) {
+    if (arg_index < op.args.size()) {
+      indices.push_back((uint16_t)arg_index);
+    }
+    ++arg_index;
+  }
+  if (mask & spv::MemoryAccessNoAliasINTELMaskMask) {
+    if (arg_index < op.args.size()) {
+      indices.push_back((uint16_t)arg_index);
+    }
+    ++arg_index;
+  }
+  next_arg_index = arg_index;
+  return true;
+}
+
+/**
+ * Collects the indices of all operands of the given instruction that
+ * reference an id (the result type counts as a reference; the result itself,
+ * being a definition, does not).  Returns false if the operand layout cannot
+ * be classified exactly, in which case every word that could plausibly be an
+ * id was conservatively included.  Each consumer chooses its failure
+ * direction on false:
+ * over-approximate where a false negative is the danger (interface
+ * derivation, usage analysis), skip or assert where a false positive is
+ * (validation, id replacement).
+ *
+ * This is a member function because some opcodes (OpSwitch) need module
+ * context to classify their operands.
+ */
+bool SpirVModule::
+get_instruction_id_operands(const Instruction &op, small_vector<uint16_t, 8> &indices) const {
   indices.clear();
+
+  size_t num_args = op.args.size();
+
+  // A few instruction forms carry more than a fixed operand mask can
+  // express; they are classified here, before the table.  OpEntryPoint is
+  // deliberately not among them: parse() dissolves it into an EntryPoint
+  // record and emit() re-derives its interface, so no consumer ever passes
+  // one here, and a stray one gets the conservative fallback.
   switch (op.opcode) {
-  case spv::OpTypeVector:
-  case spv::OpTypeMatrix:
-  case spv::OpTypeImage:
-  case spv::OpTypeSampledImage:
-  case spv::OpTypeRuntimeArray:
-    // Component / sampled / element type.
-    indices.push_back(1);
-    break;
-
-  case spv::OpTypeArray:
-    // Element type and length constant.
-    indices.push_back(1);
-    indices.push_back(2);
-    break;
-
-  case spv::OpTypeStruct:
-  case spv::OpTypeFunction:
-  case spv::OpTypeCooperativeMatrixKHR:
-  case spv::OpTypeCooperativeMatrixNV:
-    // All operands after the result id.
-    for (size_t i = 1; i < op.args.size(); ++i) {
-      indices.push_back((uint32_t)i);
-    }
-    break;
-
-  case spv::OpTypePointer:
-    // Pointee type.
-    indices.push_back(2);
-    break;
-
-  case spv::OpConstant:
-  case spv::OpSpecConstant:
-  case spv::OpConstantTrue:
-  case spv::OpConstantFalse:
-  case spv::OpConstantNull:
-  case spv::OpSpecConstantTrue:
-  case spv::OpSpecConstantFalse:
-  case spv::OpUndef:
-    // Result type only; the rest is a literal payload.
-    indices.push_back(0);
-    break;
-
-  case spv::OpConstantComposite:
-  case spv::OpSpecConstantComposite:
-    // Result type and constituents.
-    indices.push_back(0);
-    for (size_t i = 2; i < op.args.size(); ++i) {
-      indices.push_back((uint32_t)i);
-    }
-    break;
-
   case spv::OpSpecConstantOp:
-    // Result type, then (after the opcode literal) the operands.  Most of
-    // the permitted nested opcodes take only id operands; the three that
-    // take trailing literal indices are special-cased, so that a literal is
-    // never mistaken for an id (replace_type_id would corrupt it if it
-    // happened to equal the replaced id).
-    indices.push_back(0);
-    if (op.args.size() > 3) {
-      size_t num_ids;
-      switch ((spv::Op)op.args[2]) {
-      case spv::OpCompositeExtract:
-        // The composite, then literal indexes.
-        num_ids = 1;
-        break;
-      case spv::OpCompositeInsert:
-        // The object and the composite, then literal indexes.
-        num_ids = 2;
-        break;
-      case spv::OpVectorShuffle:
-        // The two vectors, then literal components.
-        num_ids = 2;
-        break;
-      default:
-        // All operands are ids.
-        num_ids = op.args.size();
-        break;
-      }
-      for (size_t i = 3; i < op.args.size() && i - 3 < num_ids; ++i) {
-        indices.push_back((uint32_t)i);
-      }
+    // Classify a synthetic instance of the nested instruction, supplying its
+    // omitted result type and result operands.  This reuses the ordinary
+    // opcode table for both all-id operations and operations with literal
+    // tails (OpCompositeExtract, OpCompositeInsert and OpVectorShuffle), and
+    // propagates conservative classification for an unknown nested opcode.
+    if (num_args >= 1) {
+      indices.push_back(0);
     }
-    break;
+    if (num_args >= 3) {
+      spv::Op nested_opcode = (spv::Op)op.args[2];
+      if (nested_opcode == spv::OpSpecConstantOp) {
+        for (size_t i = 3; i < num_args; ++i) {
+          indices.push_back((uint16_t)i);
+        }
+        return false;
+      }
 
-  case spv::OpVariable:
-    // Result type and optional initializer.
-    indices.push_back(0);
-    if (op.args.size() > 3) {
-      indices.push_back(3);
+      Instruction nested(nested_opcode);
+      nested.args.push_back(num_args >= 1 ? op.args[0] : 0);
+      nested.args.push_back(0);  // Synthetic result id; never a reference.
+      nested.args.insert(nested.args.end(), op.args.begin() + 3, op.args.end());
+
+      small_vector<uint16_t, 8> nested_indices;
+      bool known = get_instruction_id_operands(nested, nested_indices);
+      for (uint16_t nested_index : nested_indices) {
+        if (nested_index >= 2) {
+          indices.push_back((uint16_t)(nested_index + 1));
+        }
+      }
+      return known;
     }
-    break;
+    return true;
+
+  case spv::OpGroupMemberDecorate:
+    // The group id, then pairs of a target id and a literal member index.
+    if (num_args >= 1) {
+      indices.push_back(0);
+      for (size_t i = 1; i + 1 < num_args; i += 2) {
+        indices.push_back((uint16_t)i);
+      }
+    }
+    return true;
+
+  case spv::OpSwitch: {
+    // The selector and default label, then pairs of a literal (as wide as
+    // the selector type) and a case label.
+    if (num_args >= 1) {
+      indices.push_back(0);
+    }
+    if (num_args >= 2) {
+      indices.push_back(1);
+    }
+    if (num_args <= 2) {
+      return true;
+    }
+    const Instruction *type_decl = find_declaration(get_type_id(Id(op.args[0])));
+    if (type_decl == nullptr || type_decl->opcode != spv::OpTypeInt ||
+        type_decl->args.size() < 2 || type_decl->args[1] == 0) {
+      // The selector type cannot be resolved, so the pair layout is unknown;
+      // conservatively include every remaining word.
+      for (size_t i = 2; i < num_args; ++i) {
+        indices.push_back((uint16_t)i);
+      }
+      return false;
+    }
+    size_t literal_words = (type_decl->args[1] + 31) / 32;
+    for (size_t i = 2; i + literal_words < num_args; i += literal_words + 1) {
+      indices.push_back((uint16_t)(i + literal_words));
+    }
+    return true;
+  }
 
   default:
-    // Type declarations without operands (OpTypeVoid, OpTypeInt, etc.) and
-    // unrecognized instructions, which keep their original relative order.
     break;
   }
+
+  const InstructionInfo *info = find_instruction_info(op.opcode);
+  if (info != nullptr) {
+    uint16_t mask = info->_id_mask;
+    for (size_t i = 0; i < num_args && i < 15; ++i) {
+      if (mask & (1u << i)) {
+        indices.push_back((uint16_t)i);
+      }
+    }
+    if (mask & 0x8000u) {
+      for (size_t i = 15; i < num_args; ++i) {
+        indices.push_back((uint16_t)i);
+      }
+    }
+
+    // The memory access opcodes additionally carry a trailing optional
+    // MemoryAccess operand, whose layout the fixed mask cannot describe.
+    size_t mem_access_index;
+    switch (op.opcode) {
+    case spv::OpStore:
+    case spv::OpCopyMemory:
+      mem_access_index = 2;
+      break;
+    case spv::OpLoad:
+    case spv::OpCopyMemorySized:
+      mem_access_index = 3;
+      break;
+    case spv::OpCooperativeMatrixStoreKHR:
+    case spv::OpCooperativeMatrixStoreNV:
+      mem_access_index = 4;
+      break;
+    case spv::OpCooperativeMatrixLoadKHR:
+    case spv::OpCooperativeMatrixLoadNV:
+      mem_access_index = 5;
+      break;
+    default:
+      return true;
+    }
+    size_t next;
+    if (!scan_memory_access_operands(op, mem_access_index, next, indices)) {
+      return false;
+    }
+    if (op.opcode == spv::OpCopyMemory || op.opcode == spv::OpCopyMemorySized) {
+      // These take a second MemoryAccess operand for the source pointer
+      // (added in SPIR-V 1.4).
+      return scan_memory_access_operands(op, next, next, indices);
+    }
+    return true;
+  }
+
+  // Opcode absent from the table: conservatively include every word that
+  // could plausibly be an id, which is everything except the result (a
+  // definition, not a reference).
+  bool has_result, has_result_type;
+  spv::HasResultAndType(op.opcode, &has_result, &has_result_type);
+  size_t result_index = has_result ? (size_t)has_result_type : num_args;
+  for (size_t i = 0; i < num_args; ++i) {
+    if (i != result_index) {
+      indices.push_back((uint16_t)i);
+    }
+  }
+
+  // If there are no args except for the result and result type, we can still
+  // return true here, since there are no operands we can't classify.
+  size_t result_prefix_size = (size_t)has_result + (size_t)has_result_type;
+  return num_args == result_prefix_size;
 }
 
 /**
@@ -4040,16 +4477,21 @@ r_sort_declaration(size_t index, pvector<int> &state,
 
   const Instruction &op = _declarations[index];
   if (!op.is_nop()) {
-    small_vector<uint32_t, 8> id_operands;
-    get_declaration_id_operands(op, id_operands);
-    for (uint32_t arg_index : id_operands) {
-      int32_t ref_index =
-        get_definition(Id(op.args[arg_index]))._declaration_index;
-      nassertd(ref_index < (int32_t)_declarations.size()) continue;
-      if (ref_index >= 0 && (size_t)ref_index != index) {
-        r_sort_declaration((size_t)ref_index, state, order);
+    small_vector<uint16_t, 8> id_operands;
+    if (get_instruction_id_operands(op, id_operands)) {
+      for (uint16_t arg_index : id_operands) {
+        int32_t ref_index =
+          get_definition(Id(op.args[arg_index]))._declaration_index;
+        nassertd(ref_index < (int32_t)_declarations.size()) continue;
+        if (ref_index >= 0 && (size_t)ref_index != index) {
+          r_sort_declaration((size_t)ref_index, state, order);
+        }
       }
     }
+    // Do not follow conservative outgoing edges: one could invent a cycle and
+    // emit a real dependent before this instruction.  During the normal
+    // outer traversal this also leaves an unknown declaration after all
+    // declarations that originally preceded it.
     order.push_back(index);
   }
   state[index] = 2;
@@ -4061,17 +4503,29 @@ r_sort_declaration(size_t index, pvector<int> &state,
  */
 void SpirVModule::
 rewrite_type_references(Id before, Id after) {
-  small_vector<uint32_t, 8> id_operands;
-  for (Instruction &op : _declarations) {
+  small_vector<uint16_t, 8> id_operands;
+  auto rewrite_instruction = [&](Instruction &op) {
     if (op.is_nop()) {
-      continue;
+      return;
     }
-    get_declaration_id_operands(op, id_operands);
-    for (uint32_t arg_index : id_operands) {
+    if (!get_instruction_id_operands(op, id_operands)) {
+      // The conservative operand set may include literal words, which a
+      // rewrite would corrupt if one collided with the replaced id.  A known
+      // result-type position remains safe to update, however.
+      if (op.has_result_type() && !op.args.empty() && op.args[0] == before) {
+        op.args[0] = after;
+      }
+      return;
+    }
+    for (uint16_t arg_index : id_operands) {
       if (op.args[arg_index] == before) {
         op.args[arg_index] = after;
       }
     }
+  };
+
+  for (Instruction &op : _declarations) {
+    rewrite_instruction(op);
   }
 
   for (Function &function : _functions) {
@@ -4082,30 +4536,7 @@ rewrite_type_references(Id before, Id after) {
     }
 
     for (Instruction &op : function.instructions) {
-      if (op.is_nop()) {
-        continue;
-      }
-      // Type ids can occur as the result type, as the function type operand
-      // of OpFunction, and (rarely) as a regular operand of the
-      // cooperative matrix length or untyped extension instructions.
-      if (op.has_result_type() && !op.args.empty() && op.args[0] == before) {
-        op.args[0] = after;
-      }
-      if ((op.opcode == spv::OpFunction ||
-           op.opcode == spv::OpUntypedVariableKHR) &&
-          op.args.size() >= 4 && op.args[3] == before) {
-        op.args[3] = after;
-      }
-      else if ((op.opcode == spv::OpCooperativeMatrixLengthKHR ||
-                op.opcode == spv::OpCooperativeMatrixLengthNV ||
-                op.opcode == spv::OpUntypedAccessChainKHR ||
-                op.opcode == spv::OpUntypedInBoundsAccessChainKHR ||
-                op.opcode == spv::OpUntypedPtrAccessChainKHR ||
-                op.opcode == spv::OpUntypedInBoundsPtrAccessChainKHR ||
-                op.opcode == spv::OpUntypedArrayLengthKHR) &&
-               op.args.size() >= 3 && op.args[2] == before) {
-        op.args[2] = after;
-      }
+      rewrite_instruction(op);
     }
   }
 
@@ -4118,6 +4549,39 @@ rewrite_type_references(Id before, Id after) {
 }
 
 /**
+ * Makes sure that a module-scope variable of the given storage class with
+ * the given builtin exists, and returns its id.
+ */
+SpirVId SpirVModule::
+ensure_builtin(spv::StorageClass storage_class, spv::BuiltIn builtin) {
+  Id var_id;
+  for (uint32_t word = 0; word < _defs.size(); ++word) {
+    Id id(word);
+    const Definition &def = _defs[word];
+    if (def._dtype == DT_variable && def._function_id == 0 &&
+        get_storage_class(id) == storage_class &&
+        get_builtin(id) == builtin) {
+      var_id = id;
+      break;
+    }
+  }
+
+  if (var_id == 0) {
+    const ShaderType *type = get_builtin_type(builtin);
+    if (type == nullptr) {
+      // Unhandled / invalid builtin
+      nassertr(false, Id());
+      return Id();
+    }
+
+    var_id = define_variable(type, storage_class);
+    decorate(var_id, spv::DecorationBuiltIn, builtin);
+  }
+
+  return var_id;
+}
+
+/**
  * Writes a simple description of the given id to the output stream.
  */
 void SpirVModule::
@@ -4126,6 +4590,10 @@ output_id(std::ostream &out, Id id) const {
   switch (def._dtype) {
   case DT_none:
     out << "undefined";
+    break;
+
+  case DT_typeless:
+    out << "typeless result";
     break;
 
   case DT_type:

@@ -38,10 +38,11 @@ make_float_function(SpirVModule &module, const pvector<Id> &param_type_ids) {
   return fn;
 }
 
-TEST_CASE("SpirVModule prunes deleted variables from entry point interfaces", "[shaderpipeline]") {
-  // Three unused inputs; the first two (adjacent in the interface) get
-  // deleted.  Their declarations, names, decorations and interface entries
-  // must all disappear.
+TEST_CASE("SpirVModule derives entry point interfaces from references", "[shaderpipeline]") {
+  // Three inputs, of which only the third is referenced by the body: the
+  // emitted interface must list exactly that one.  The first two then get
+  // deleted; their declarations, names and decorations must all disappear,
+  // with no interface bookkeeping involved.
   SpirVModule module = make_module();
 
   Id id_in1 = module.define_variable(ShaderType::FLOAT, spv::StorageClassInput);
@@ -54,15 +55,23 @@ TEST_CASE("SpirVModule prunes deleted variables from entry point interfaces", "[
   module.decorate(id_in2, spv::DecorationLocation, 1u);
   module.decorate(id_in3, spv::DecorationLocation, 2u);
   {
-    SpirVBuilder builder = make_entry_point(
-      module, spv::ExecutionModelFragment, {id_in1, id_in2, id_in3});
+    SpirVBuilder builder = make_entry_point(module, spv::ExecutionModelFragment);
+    builder.op_load(id_in3);
     builder.op_return();
   }
 
   InstructionStream stream = module.emit();
   REQUIRE(stream.validate());
 
-  // Delete the given unused variables.
+  // The unreferenced inputs are not part of the derived interface.
+  {
+    Instruction ep = find_op(stream, spv::OpEntryPoint);
+    REQUIRE(ep.opcode == spv::OpEntryPoint);
+    REQUIRE(ep.nargs == 5);  // model, main, "main" (two words), in3
+    CHECK(ep.args[4] == id_in3);
+  }
+
+  // Delete the unreferenced variables.
   SpirVModule transformed(stream);
   pset<Id> dead = {id_in1, id_in2};
   for (Id id : dead) {
@@ -513,7 +522,7 @@ TEST_CASE("SpirVModule round-trips a module through parse and emit", "[shaderpip
   module.decorate(id_in, spv::DecorationLocation, 3u);
   module.decorate(id_out, spv::DecorationLocation, 0u);
   {
-    SpirVBuilder builder = make_entry_point(module, spv::ExecutionModelFragment, {id_in, id_out});
+    SpirVBuilder builder = make_entry_point(module, spv::ExecutionModelFragment);
     builder.op_store(id_out, builder.op_load(id_in));
     builder.op_return();
   }
@@ -536,6 +545,78 @@ TEST_CASE("SpirVModule round-trips a module through parse and emit", "[shaderpip
   CHECK(reparsed.get_location(id_in) == 3);
   CHECK(reparsed.resolve_type(id_in) == vec4_type);
   CHECK(reparsed.get_storage_class(id_in) == spv::StorageClassInput);
+}
+
+TEST_CASE("SpirVModule accepts an OpDecorateId without id parameters", "[shaderpipeline]") {
+  // The grammar makes only the target and the decoration mandatory, so a
+  // parameterless OpDecorateId must parse rather than fail the whole module.
+  // It can only enter via parse, so splice one into the emitted stream.
+  SpirVModule module = make_module();
+
+  const ShaderType *vec4_type = ShaderType::register_type(ShaderType::Vector(ShaderType::ST_float, 4));
+  Id id_out = module.define_variable(vec4_type, spv::StorageClassOutput);
+  module.decorate(id_out, spv::DecorationLocation, 0u);
+  {
+    SpirVBuilder builder = make_entry_point(module, spv::ExecutionModelFragment);
+    builder.op_return();
+  }
+
+  InstructionStream stream = module.emit();
+  InstructionStream::iterator it = stream.begin();
+  while (it != stream.end() && (*it).opcode != spv::OpDecorate) {
+    ++it;
+  }
+  REQUIRE(it != stream.end());
+  stream.insert(it, spv::OpDecorateId,
+                {(uint32_t)id_out, (uint32_t)spv::DecorationRestrict});
+
+  SpirVModule reparsed(stream);
+  CHECK(reparsed.has_decoration(id_out, spv::DecorationRestrict));
+
+  // Reading the absent parameter yields the default rather than reading past
+  // the end of the annotation.
+  CHECK(reparsed.get_decoration(id_out, spv::DecorationRestrict, 123u) == 123u);
+
+  // The decoration that does carry its operand is unaffected.
+  CHECK(reparsed.get_location(id_out) == 0);
+
+  // It survives a round trip verbatim.
+  InstructionStream stream2 = reparsed.emit();
+  CHECK(count_op(stream2, spv::OpDecorateId) == 1);
+}
+
+TEST_CASE("SpirVModule indexes typeless results as DT_typeless", "[shaderpipeline]") {
+  // A live id always has a nonzero definition type: a result that carries no
+  // result type (such as a label) is DT_typeless, so that DT_none
+  // unambiguously means an id that does not, or no longer, exists.
+  SpirVModule module = make_module();
+
+  Id function_id;
+  {
+    SpirVBuilder builder = make_entry_point(module);
+    function_id = builder.get_current_function_id();
+    builder.op_return();
+  }
+
+  const SpirVModule::Function *function = module.find_function(function_id);
+  REQUIRE(function != nullptr);
+  REQUIRE(!function->instructions.empty());
+  const SpirVModule::Instruction &label = function->instructions.front();
+  REQUIRE(label.opcode == spv::OpLabel);
+  Id label_id = label.get_result();
+  REQUIRE(label_id != 0);
+  CHECK(module.get_definition_type(label_id) == SpirVModule::DT_typeless);
+
+  // The classification survives a round trip through emit and parse.
+  InstructionStream stream = module.emit();
+  REQUIRE(stream.validate());
+  SpirVModule reparsed(stream);
+  CHECK(reparsed.get_definition_type(label_id) == SpirVModule::DT_typeless);
+
+  // Deleting the function clears the index entries of everything in it.
+  reparsed.delete_id(function_id);
+  CHECK(reparsed.get_definition_type(label_id) == SpirVModule::DT_none);
+  CHECK(reparsed.get_definition_type(function_id) == SpirVModule::DT_none);
 }
 
 TEST_CASE("SpirVModule stores function parameters structurally", "[shaderpipeline]") {
@@ -856,4 +937,155 @@ TEST_CASE("SpirVModule tracks type canonicality", "[shaderpipeline]") {
   CHECK(!parsed.is_canonical_type(id_si_ms));
   CHECK(parsed.is_canonical_type(id_image_storage));
   CHECK(!parsed.is_canonical_type(id_image_rgba8));
+}
+
+/**
+ * Returns the id operand indices of the given instruction as classified by
+ * get_instruction_id_operands, storing in known whether the operand layout
+ * was classified exactly rather than by the conservative fallback.
+ */
+static pvector<uint16_t>
+classify_id_operands(const SpirVModule &module,
+                     const SpirVModule::Instruction &op, bool &known) {
+  small_vector<uint16_t, 8> indices;
+  known = module.get_instruction_id_operands(op, indices);
+  return pvector<uint16_t>(indices.begin(), indices.end());
+}
+
+TEST_CASE("SpirVModule classifies instruction id operands", "[shaderpipeline]") {
+  SpirVModule module = make_module();
+  bool known;
+
+  // A fixed shape: the result type and both operands, but not the result.
+  CHECK(classify_id_operands(module,
+    SpirVModule::Instruction(spv::OpIAdd, {1, 2, 3, 4}), known) ==
+    pvector<uint16_t>({0, 2, 3}));
+  CHECK(known);
+
+  // The INTEL aliasing operands following a MemoryAccess mask are ids.
+  CHECK(classify_id_operands(module,
+    SpirVModule::Instruction(spv::OpLoad,
+      {1, 2, 3, (uint32_t)(spv::MemoryAccessAlignedMask |
+                           spv::MemoryAccessAliasScopeINTELMaskMask |
+                           spv::MemoryAccessNoAliasINTELMaskMask), 16, 4, 5}),
+    known) == pvector<uint16_t>({0, 2, 5, 6}));
+  CHECK(known);
+
+  // An unknown MemoryAccess bit makes the trailing layout conservative.
+  CHECK(classify_id_operands(module,
+    SpirVModule::Instruction(spv::OpLoad,
+      {1, 2, 3, 0x40, 4, 5}), known) ==
+    pvector<uint16_t>({0, 2, 4, 5}));
+  CHECK(!known);
+
+  // An unknown nested opcode makes OpSpecConstantOp conservative as well.
+  CHECK(classify_id_operands(module,
+    SpirVModule::Instruction(spv::OpSpecConstantOp,
+      {1, 2, 0x7654, 3, 4}), known) ==
+    pvector<uint16_t>({0, 3, 4}));
+  CHECK(!known);
+
+  // Nested literal indices are classified by the ordinary opcode metadata.
+  CHECK(classify_id_operands(module,
+    SpirVModule::Instruction(spv::OpSpecConstantOp,
+      {1, 2, (uint32_t)spv::OpCompositeExtract, 3, 0, 1}), known) ==
+    pvector<uint16_t>({0, 3}));
+  CHECK(known);
+
+  // A known opcode without id operands is distinct from an unknown opcode.
+  CHECK(classify_id_operands(module,
+    SpirVModule::Instruction(spv::OpTypeInt, {1, 32, 0}), known) ==
+    pvector<uint16_t>());
+  CHECK(known);
+
+  // A variadic tail: every index operand of an access chain.
+  CHECK(classify_id_operands(module,
+    SpirVModule::Instruction(spv::OpAccessChain, {1, 2, 3, 4, 5, 6}), known) ==
+    pvector<uint16_t>({0, 2, 3, 4, 5}));
+  CHECK(known);
+
+  // OpLine carries a string id followed by literals in id range.
+  CHECK(classify_id_operands(module,
+    SpirVModule::Instruction(spv::OpLine, {1, 2, 3}), known) ==
+    pvector<uint16_t>({0}));
+  CHECK(known);
+
+  // The ImageOperands mask is a literal; the operands after it are ids.
+  CHECK(classify_id_operands(module,
+    SpirVModule::Instruction(spv::OpImageSampleExplicitLod,
+      {1, 2, 3, 4, (uint32_t)spv::ImageOperandsLodMask, 5}), known) ==
+    pvector<uint16_t>({0, 2, 3, 5}));
+  CHECK(known);
+
+  // A MemoryAccess operand: the Aligned literal is skipped, the
+  // MakePointerVisible scope after it is an id.
+  CHECK(classify_id_operands(module,
+    SpirVModule::Instruction(spv::OpLoad,
+      {1, 2, 3, (uint32_t)(spv::MemoryAccessAlignedMask |
+                           spv::MemoryAccessMakePointerVisibleMask |
+                           spv::MemoryAccessNonPrivatePointerMask), 4, 5}),
+    known) == pvector<uint16_t>({0, 2, 5}));
+  CHECK(known);
+
+  // OpSwitch case literals are as wide as the selector type: one word for a
+  // 32-bit selector, two words for a 64-bit one.
+  Id id_selector_32 = module.define_int_constant(5);
+  CHECK(classify_id_operands(module,
+    SpirVModule::Instruction(spv::OpSwitch,
+      {id_selector_32, 50, 60, 51, 70, 52}), known) ==
+    pvector<uint16_t>({0, 1, 3, 5}));
+  CHECK(known);
+
+  Id id_long = module.allocate_id();
+  module.add_declaration(SpirVModule::Instruction(spv::OpTypeInt, {id_long, 64, 1}));
+  Id id_selector_64 = module.allocate_id();
+  module.add_declaration(SpirVModule::Instruction(spv::OpConstant,
+    {id_long, id_selector_64, 123, 0}));
+  CHECK(classify_id_operands(module,
+    SpirVModule::Instruction(spv::OpSwitch,
+      {id_selector_64, 50, 60, 61, 51, 70, 71, 52}), known) ==
+    pvector<uint16_t>({0, 1, 4, 7}));
+  CHECK(known);
+
+  // An unknown opcode includes every word except the result, and says so.
+  CHECK(classify_id_operands(module,
+    SpirVModule::Instruction((spv::Op)0x7654, {1, 2, 3}), known) ==
+    pvector<uint16_t>({0, 1, 2}));
+  CHECK(!known);
+
+  // An opcode absent from the classifier table is nevertheless exact when
+  // it has no operands beyond the result-type/result prefix.
+  CHECK(classify_id_operands(module,
+    SpirVModule::Instruction(spv::OpTypeAccelerationStructureKHR, {1}), known) ==
+    pvector<uint16_t>());
+  CHECK(known);
+
+  // The same is true for a genuinely unknown zero-operand opcode.
+  CHECK(classify_id_operands(module,
+    SpirVModule::Instruction((spv::Op)0x7654), known) ==
+    pvector<uint16_t>());
+  CHECK(known);
+}
+
+TEST_CASE("SpirVModule excludes literals from derived interfaces", "[shaderpipeline]") {
+  // An OpLine line number that collides with the id of an input variable must
+  // not pull that variable into the entry point interface: the id operand
+  // classification makes reference detection exact for known opcodes.
+  SpirVModule module = make_module();
+
+  Id id_in = module.define_variable(ShaderType::FLOAT, spv::StorageClassInput);
+  module.decorate(id_in, spv::DecorationLocation, 0u);
+  Id str = module.add_string("file.glsl");
+  {
+    SpirVBuilder builder = make_entry_point(module);
+    builder.insert(spv::OpLine, {str, (uint32_t)id_in, 0});
+    builder.op_return();
+  }
+
+  InstructionStream stream = module.emit();
+  REQUIRE(stream.validate());
+
+  Instruction ep = find_op(stream, spv::OpEntryPoint);
+  REQUIRE(ep.opcode == spv::OpEntryPoint);
+  CHECK(ep.nargs == 4);  // model, main, "main" (two words); no interface
 }

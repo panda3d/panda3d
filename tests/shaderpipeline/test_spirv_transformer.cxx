@@ -81,8 +81,7 @@ TEST_CASE("SpirVTransformer::assign_procedural_block_names", "[shaderpipeline]")
 
   {
     SpirVBuilder builder = make_entry_point(module,
-      spv::ExecutionModelGeometry,
-      {in_var, out_var, builtin_var, named_var, loose_var});
+      spv::ExecutionModelGeometry);
     Id function_id = builder.get_current_function_id();
     module.add_execution_mode(function_id, spv::ExecutionModeInputPoints);
     module.add_execution_mode(function_id, spv::ExecutionModeInvocations, {1});

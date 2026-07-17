@@ -27,7 +27,7 @@ TEST_CASE("SpirVReplaceVariableTypePass converts loads to the old type", "[shade
   module.decorate(id_out, spv::DecorationLocation, 0u);
 
   {
-    SpirVBuilder builder = make_entry_point(module, spv::ExecutionModelFragment, {id_out});
+    SpirVBuilder builder = make_entry_point(module, spv::ExecutionModelFragment);
     Id id_value = builder.op_load(id_var);
     builder.op_store(id_out, id_value);
     builder.op_return();
@@ -79,7 +79,7 @@ TEST_CASE("SpirVReplaceVariableTypePass replicates a scalar to a vector", "[shad
   module.decorate(id_out, spv::DecorationLocation, 0u);
 
   {
-    SpirVBuilder builder = make_entry_point(module, spv::ExecutionModelFragment, {id_out});
+    SpirVBuilder builder = make_entry_point(module, spv::ExecutionModelFragment);
     Id id_value = builder.op_load(id_var);
     builder.op_store(id_out, id_value);
     builder.op_return();

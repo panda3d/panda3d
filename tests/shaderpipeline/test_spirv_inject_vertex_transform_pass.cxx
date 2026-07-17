@@ -33,7 +33,7 @@ TEST_CASE("SpirVInjectVertexTransformPass injects transforms", "[shaderpipeline]
   module.set_name(id_mv, "p3d_ModelViewMatrix");
 
   {
-    SpirVBuilder builder = make_entry_point(module, spv::ExecutionModelVertex, {id_vertex, id_out});
+    SpirVBuilder builder = make_entry_point(module, spv::ExecutionModelVertex);
     Id load_mat = builder.op_load(id_mv);
     Id load_vtx = builder.op_load(id_vertex);
     Id xformed = builder.op_multiply(load_mat, load_vtx);

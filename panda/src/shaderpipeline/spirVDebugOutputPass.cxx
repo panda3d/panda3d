@@ -419,31 +419,31 @@ emit_assert(SpirVBuilder &builder, const std::string &expression) {
     switch (_stage) {
     case Shader::Stage::VERTEX:
       // Vertex ID, instance ID
-      invoc[0] = builder.op_bitcast(ShaderType::UINT, builder.op_load(module.ensure_builtin_input(spv::ExecutionModelVertex, spv::BuiltInVertexId)));
-      invoc[1] = builder.op_bitcast(ShaderType::UINT, builder.op_load(module.ensure_builtin_input(spv::ExecutionModelVertex, spv::BuiltInInstanceId)));
+      invoc[0] = builder.op_bitcast(ShaderType::UINT, builder.op_load(module.ensure_builtin_input(spv::BuiltInVertexId)));
+      invoc[1] = builder.op_bitcast(ShaderType::UINT, builder.op_load(module.ensure_builtin_input(spv::BuiltInInstanceId)));
       break;
 
     case Shader::Stage::GEOMETRY:
       // Primitive ID, invocation ID
       {
-        invoc[0] = builder.op_bitcast(ShaderType::UINT, builder.op_load(module.ensure_builtin_input(spv::ExecutionModelGeometry, spv::BuiltInPrimitiveId)));
-        invoc[1] = builder.op_bitcast(ShaderType::UINT, builder.op_load(module.ensure_builtin_input(spv::ExecutionModelGeometry, spv::BuiltInInvocationId)));
+        invoc[0] = builder.op_bitcast(ShaderType::UINT, builder.op_load(module.ensure_builtin_input(spv::BuiltInPrimitiveId)));
+        invoc[1] = builder.op_bitcast(ShaderType::UINT, builder.op_load(module.ensure_builtin_input(spv::BuiltInInvocationId)));
       }
       break;
 
     case Shader::Stage::TESS_CONTROL:
       // Primitive ID, invocation ID
       {
-        invoc[0] = builder.op_bitcast(ShaderType::UINT, builder.op_load(module.ensure_builtin_input(spv::ExecutionModelTessellationControl, spv::BuiltInPrimitiveId)));
-        invoc[1] = builder.op_bitcast(ShaderType::UINT, builder.op_load(module.ensure_builtin_input(spv::ExecutionModelTessellationControl, spv::BuiltInInvocationId)));
+        invoc[0] = builder.op_bitcast(ShaderType::UINT, builder.op_load(module.ensure_builtin_input(spv::BuiltInPrimitiveId)));
+        invoc[1] = builder.op_bitcast(ShaderType::UINT, builder.op_load(module.ensure_builtin_input(spv::BuiltInInvocationId)));
       }
       break;
 
     case Shader::Stage::TESS_EVALUATION:
       // Primitive ID, Tess coordinate x and y
       {
-        Id primitive_id = module.ensure_builtin_input(spv::ExecutionModelTessellationEvaluation, spv::BuiltInPrimitiveId);
-        Id tess_coord_id = module.ensure_builtin_input(spv::ExecutionModelTessellationEvaluation, spv::BuiltInTessCoord);
+        Id primitive_id = module.ensure_builtin_input(spv::BuiltInPrimitiveId);
+        Id tess_coord_id = module.ensure_builtin_input(spv::BuiltInTessCoord);
         invoc[0] = builder.op_bitcast(ShaderType::UINT, builder.op_load(primitive_id));
         invoc[1] = builder.op_bitcast(ShaderType::UINT, builder.op_load(builder.op_access_chain(tess_coord_id, {zero})));
         invoc[2] = builder.op_bitcast(ShaderType::UINT, builder.op_load(builder.op_access_chain(tess_coord_id, {one})));
@@ -453,7 +453,7 @@ emit_assert(SpirVBuilder &builder, const std::string &expression) {
     case Shader::Stage::FRAGMENT:
       // Fragment coordinate
       {
-        Id frag_coord_id = module.ensure_builtin_input(spv::ExecutionModelFragment, spv::BuiltInFragCoord);
+        Id frag_coord_id = module.ensure_builtin_input(spv::BuiltInFragCoord);
         Id two = get_uint_constant(module, 2);
         invoc[0] = builder.op_bitcast(ShaderType::UINT, builder.op_load(builder.op_access_chain(frag_coord_id, {zero})));
         invoc[1] = builder.op_bitcast(ShaderType::UINT, builder.op_load(builder.op_access_chain(frag_coord_id, {one})));
@@ -464,7 +464,7 @@ emit_assert(SpirVBuilder &builder, const std::string &expression) {
     case Shader::Stage::COMPUTE:
       // Global invocation ID
       {
-        Id value = builder.op_load(module.ensure_builtin_input(spv::ExecutionModelGLCompute, spv::BuiltInGlobalInvocationId));
+        Id value = builder.op_load(module.ensure_builtin_input(spv::BuiltInGlobalInvocationId));
         invoc[0] = builder.op_composite_extract(value, {0});
         invoc[1] = builder.op_composite_extract(value, {1});
         invoc[2] = builder.op_composite_extract(value, {2});

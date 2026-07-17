@@ -374,6 +374,24 @@ define_float_constant(float constant) {
 }
 
 /**
+ * Makes sure that a module-scope input variable with the given builtin
+ * exists, and returns its id.
+ */
+INLINE SpirVId SpirVModule::
+ensure_builtin_input(spv::BuiltIn builtin) {
+  return ensure_builtin(spv::StorageClassInput, builtin);
+}
+
+/**
+ * Makes sure that a module-scope output variable with the given builtin
+ * exists, and returns its id.
+ */
+INLINE SpirVId SpirVModule::
+ensure_builtin_output(spv::BuiltIn builtin) {
+  return ensure_builtin(spv::StorageClassOutput, builtin);
+}
+
+/**
  * Returns the index entry for the given id, or a default entry if the id is
  * out of range.
  */

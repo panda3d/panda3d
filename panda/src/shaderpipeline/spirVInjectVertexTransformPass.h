@@ -60,24 +60,17 @@ public:
   virtual std::string_view get_name() const override { return "SpirVInjectVertexTransformPass"; }
 
 private:
-  void inject_animation(SpirVBuilder &builder, const pvector<Id> &vars);
-  void inject_animation_noop(SpirVBuilder &builder, const pvector<Id> &vars);
+  void inject_animation(SpirVBuilder &builder);
+  void inject_animation_noop(SpirVBuilder &builder);
   void inject_instancing(SpirVBuilder &builder);
   void inject_instancing_noop(SpirVBuilder &builder);
 
   void define_transform_block(SpirVModule &module);
   static const ShaderType *make_transform_block_type(uint32_t num_elements);
 
-  pvector<Id> make_interface(const pvector<Id> &vars,
-                             bool with_animation, bool with_instancing) const;
-
 public:
   // Settings that could be related to both instancing and animation.
-  struct EntryPoint {
-    std::string _name;
-    pvector<Id> _vars;
-  };
-  pmap<Id, EntryPoint> _todo_entry_points;
+  pmap<Id, std::string> _todo_entry_points;
   bool _make_new_entry_points = false;
   Id _transform_block_var_id;
   uint32_t _transform_block_binding = 0;

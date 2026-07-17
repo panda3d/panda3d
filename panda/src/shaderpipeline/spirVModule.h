@@ -79,13 +79,13 @@ public:
   typedef pvector<Annotation> Annotations;
 
   /**
-   * An entry point record.
+   * An entry point record.  The interface list is not stored: emit() derives
+   * it from the instructions (see collect_interface_vars).
    */
   struct EntryPoint {
     spv::ExecutionModel model;
     Id function_id;
     std::string name;
-    pvector<Id> interface_vars;
   };
   typedef pvector<EntryPoint> EntryPoints;
 
@@ -109,7 +109,8 @@ public:
 
   /**
    * Classifies what an id refers to.  Note that DT_temporary covers every
-   * result that isn't classified more specifically.
+   * typed result that isn't classified more specifically, DT_typeless every
+   * typeless result.
    */
   enum DefinitionType {
     DT_none,
@@ -122,6 +123,7 @@ public:
     DT_function_parameter,
     DT_function,
     DT_temporary,
+    DT_typeless,
     DT_spec_constant,
     DT_string,
   };
@@ -149,8 +151,8 @@ public:
   INLINE const EntryPoint &get_entry_point(size_t i) const;
   INLINE EntryPoints &modify_entry_points();
   void add_entry_point(spv::ExecutionModel model, Id function_id,
-                       std::string name, pvector<Id> interface_vars = {});
-  void add_to_interfaces(spv::ExecutionModel model, Id var_id);
+                       std::string name);
+  pvector<Id> collect_interface_vars(Id function_id) const;
 
   INLINE size_t get_num_execution_modes() const;
   INLINE const Instruction &get_execution_mode(size_t i) const;
@@ -202,6 +204,7 @@ public:
   SpirVBuilder make_function(const ShaderType *return_type,
                              const pvector<Id> &param_type_ids = pvector<Id>(),
                              spv::FunctionControlMask control = spv::FunctionControlMaskNone);
+  SpirVBuilder make_entry_point(spv::ExecutionModel model, std::string name);
 
   // ID and definition inspection.
   INLINE uint32_t get_id_bound() const;
@@ -217,6 +220,8 @@ public:
   Id get_member_type_id(Id type_id, uint32_t member_index) const;
   Id get_composite_member_type_id(Id type_id, uint32_t member_index) const;
   void record_result(const Instruction &op, Id function_id = {});
+  bool get_instruction_id_operands(const Instruction &op,
+                                   small_vector<uint16_t, 8> &indices) const;
 
   // ShaderType resolution.
   const ShaderType *resolve_type(Id id) const;
@@ -240,7 +245,8 @@ public:
   Id define_double_constant(double constant);
   Id define_null_constant(const ShaderType *type);
   Id define_spec_constant(const ShaderType *type, uint32_t def_value);
-  Id ensure_builtin_input(spv::ExecutionModel model, spv::BuiltIn builtin);
+  INLINE Id ensure_builtin_input(spv::BuiltIn builtin);
+  INLINE Id ensure_builtin_output(spv::BuiltIn builtin);
 
   // Structural transformations.
   void delete_id(Id id);
@@ -289,12 +295,12 @@ private:
   bool has_builtin_members(Id type_id) const;
 
   void r_annotate_struct_layout(Id type_id);
-  static void get_declaration_id_operands(const Instruction &op,
-                                          small_vector<uint32_t, 8> &indices);
   pvector<size_t> sort_declarations() const;
   void r_sort_declaration(size_t index, pvector<int> &state,
                           pvector<size_t> &order) const;
   void rewrite_type_references(Id before, Id after);
+
+  Id ensure_builtin(spv::StorageClass storage_class, spv::BuiltIn builtin);
 
   void output_id(std::ostream &out, Id id) const;
   Id error_expected(Id id, const char *msg) const;

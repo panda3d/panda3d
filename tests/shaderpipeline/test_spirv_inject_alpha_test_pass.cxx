@@ -25,7 +25,7 @@ TEST_CASE("SpirVInjectAlphaTestPass injects a comparison", "[shaderpipeline]") {
   module.decorate(color, spv::DecorationLocation, 0u);
 
   {
-    SpirVBuilder builder = make_entry_point(module, spv::ExecutionModelFragment, {color});
+    SpirVBuilder builder = make_entry_point(module, spv::ExecutionModelFragment);
     builder.op_store(color, module.define_null_constant(vec4_type));
     builder.op_return();
   }
@@ -86,7 +86,7 @@ TEST_CASE("SpirVInjectAlphaTestPass ignores non-outputs at location 0", "[shader
   module.decorate(color, spv::DecorationLocation, 0u);
 
   {
-    SpirVBuilder builder = make_entry_point(module, spv::ExecutionModelFragment, {texcoord, color});
+    SpirVBuilder builder = make_entry_point(module, spv::ExecutionModelFragment);
     builder.op_store(color, module.define_null_constant(vec4_type));
     builder.op_return();
   }
@@ -120,7 +120,7 @@ TEST_CASE("SpirVInjectAlphaTestPass tests alpha of 1 for vec3 output", "[shaderp
   module.decorate(color, spv::DecorationLocation, 0u);
 
   {
-    SpirVBuilder builder = make_entry_point(module, spv::ExecutionModelFragment, {color});
+    SpirVBuilder builder = make_entry_point(module, spv::ExecutionModelFragment);
     builder.op_store(color, module.define_null_constant(vec3_type));
     builder.op_return();
   }
@@ -192,7 +192,7 @@ TEST_CASE("SpirVInjectAlphaTestPass tests before every return", "[shaderpipeline
     builder.op_return();
     main_id = builder.get_current_function_id();
   }
-  module.add_entry_point(spv::ExecutionModelFragment, main_id, "main", {color});
+  module.add_entry_point(spv::ExecutionModelFragment, main_id, "main");
   module.add_execution_mode(main_id, spv::ExecutionModeOriginUpperLeft);
 
   InstructionStream stream = module.emit();

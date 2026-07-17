@@ -103,12 +103,11 @@ run(SpirVModule &module) {
     }
   }
 
-  // Capture the vertex entry points with their original interfaces, before
-  // the variable swap below.
+  // Capture the vertex entry points.
   for (size_t i = 0; i < module.get_num_entry_points(); ++i) {
     const SpirVModule::EntryPoint &ep = module.get_entry_point(i);
     if (ep.model == spv::ExecutionModelVertex) {
-      _todo_entry_points.insert({ep.function_id, EntryPoint {ep.name, ep.interface_vars}});
+      _todo_entry_points.insert({ep.function_id, ep.name});
     }
   }
 
@@ -181,7 +180,6 @@ run(SpirVModule &module) {
     // at the top of each entry point function.
     for (const auto &item : _todo_entry_points) {
       Id function_id = item.first;
-      const EntryPoint &entry_point = item.second;
 
       nassertd(module.find_function(function_id) != nullptr) continue;
 
@@ -189,17 +187,8 @@ run(SpirVModule &module) {
       // past the OpVariable declarations that must lead it.
       SpirVBuilder builder(module);
       builder.set_insertion_point_to_body_start(function_id);
-      inject_animation(builder, entry_point._vars);
+      inject_animation(builder);
       inject_instancing(builder);
-
-      // Update the entry point interface.
-      for (SpirVModule::EntryPoint &ep : module.modify_entry_points()) {
-        if (ep.model == spv::ExecutionModelVertex && ep.function_id == function_id) {
-          ep.interface_vars = make_interface(entry_point._vars,
-                                        _anim_locations != 0u,
-                                        !_matrix_vars.empty());
-        }
-      }
     }
     _todo_entry_points.clear();
     return;
@@ -219,111 +208,45 @@ run(SpirVModule &module) {
 
   for (const auto &item : _todo_entry_points) {
     Id orig_func_id = item.first;
-    const EntryPoint &entry_point = item.second;
+    const std::string &name = item.second;
 
     {
-      SpirVBuilder builder = module.make_function(nullptr);
+      SpirVBuilder builder =
+        module.make_entry_point(spv::ExecutionModelVertex, name);
       inject_instancing_noop(builder);
-      inject_animation_noop(builder, entry_point._vars);
+      inject_animation_noop(builder);
       builder.op_function_call(orig_func_id);
       builder.op_return();
-      Id func_id = builder.get_current_function_id();
-      module.add_entry_point(spv::ExecutionModelVertex, func_id, entry_point._name,
-                             make_interface(entry_point._vars, false, false));
     }
 
     if (_anim_locations != 0u) {
-      SpirVBuilder builder = module.make_function(nullptr);
+      SpirVBuilder builder =
+        module.make_entry_point(spv::ExecutionModelVertex, name + "_anim");
       inject_instancing_noop(builder);
-      inject_animation(builder, entry_point._vars);
+      inject_animation(builder);
       builder.op_function_call(orig_func_id);
       builder.op_return();
-      Id func_id = builder.get_current_function_id();
-      module.add_entry_point(spv::ExecutionModelVertex, func_id, entry_point._name + "_anim",
-                             make_interface(entry_point._vars, true, false));
     }
 
     if (!_matrix_vars.empty()) {
-      SpirVBuilder builder = module.make_function(nullptr);
+      SpirVBuilder builder =
+        module.make_entry_point(spv::ExecutionModelVertex, name + "_inst");
       inject_instancing(builder);
-      inject_animation_noop(builder, entry_point._vars);
+      inject_animation_noop(builder);
       builder.op_function_call(orig_func_id);
       builder.op_return();
-      Id func_id = builder.get_current_function_id();
-      module.add_entry_point(spv::ExecutionModelVertex, func_id, entry_point._name + "_inst",
-                             make_interface(entry_point._vars, false, true));
     }
 
     if (!_matrix_vars.empty() && _anim_locations != 0u) {
-      SpirVBuilder builder = module.make_function(nullptr);
+      SpirVBuilder builder =
+        module.make_entry_point(spv::ExecutionModelVertex, name + "_anim_inst");
       inject_instancing(builder);
-      inject_animation(builder, entry_point._vars);
+      inject_animation(builder);
       builder.op_function_call(orig_func_id);
       builder.op_return();
-      Id func_id = builder.get_current_function_id();
-      module.add_entry_point(spv::ExecutionModelVertex, func_id, entry_point._name + "_anim_inst",
-                             make_interface(entry_point._vars, true, true));
     }
   }
   _todo_entry_points.clear();
-}
-
-/**
- * Builds an entry point interface list from the given original interface,
- * mapping the swapped input variables and appending the extra inputs used by
- * the animation and/or instancing preambles.
- */
-pvector<SpirVId> SpirVInjectVertexTransformPass::
-make_interface(const pvector<Id> &vars,
-               bool with_animation, bool with_instancing) const {
-  pvector<Id> result;
-  bool has_transform_index = false;
-  bool has_transform_weight = false;
-  bool has_instance_matrix = false;
-  bool has_instance_index = false;
-
-  for (Id var_id : vars) {
-    auto it = _vertex_input_ids.find(var_id);
-    if (it != _vertex_input_ids.end()) {
-      result.push_back(it->second);
-    } else {
-      result.push_back(var_id);
-    }
-
-    if (var_id == _transform_index_var_id) {
-      has_transform_index = true;
-    }
-    if (var_id == _transform_weight_var_id) {
-      has_transform_weight = true;
-    }
-    if (var_id == _instance_mat_var_id) {
-      has_instance_matrix = true;
-    }
-    if (var_id == _instance_index_var_id) {
-      has_instance_index = true;
-    }
-  }
-
-  if (with_animation && _anim_locations != 0u) {
-    if (!has_transform_index && _transform_index_var_id != 0u) {
-      result.push_back(_transform_index_var_id);
-    }
-    if (!has_transform_weight && _transform_weight_var_id != 0u) {
-      result.push_back(_transform_weight_var_id);
-    }
-  }
-  if (with_instancing && !_matrix_vars.empty()) {
-    if (_instance_mat_var_id != 0u) {
-      if (!has_instance_matrix) {
-        result.push_back(_instance_mat_var_id);
-      }
-    } else {
-      if (!has_instance_index && _instance_index_var_id != 0u) {
-        result.push_back(_instance_index_var_id);
-      }
-    }
-  }
-  return result;
 }
 
 /**
@@ -331,7 +254,7 @@ make_interface(const pvector<Id> &vars,
  * at the given builder's cursor.
  */
 void SpirVInjectVertexTransformPass::
-inject_animation(SpirVBuilder &builder, const pvector<Id> &vars) {
+inject_animation(SpirVBuilder &builder) {
   if (_anim_locations == 0u) {
     return;
   }
@@ -411,34 +334,32 @@ inject_animation(SpirVBuilder &builder, const pvector<Id> &vars) {
   const ShaderType *mat3x4_type = ShaderType::register_type(ShaderType::Matrix(ShaderType::ST_float, 3, 4));
   Id mat3x4 = builder.op_composite_construct(mat3x4_type, {accum_matrix_row0, accum_matrix_row1, accum_matrix_row2});
 
-  for (Id private_vec_ptr : vars) {
-    auto it = _vertex_input_ids.find(private_vec_ptr);
-    if (it != _vertex_input_ids.end()) {
-      Id input_vec_ptr = it->second;
+  for (const auto &item : _vertex_input_ids) {
+    Id private_vec_ptr = item.first;
+    Id input_vec_ptr = item.second;
 
-      const ShaderType *input_type = module.resolve_type(input_vec_ptr);
-      const ShaderType::Vector *vec_type = (input_type != nullptr) ? input_type->as_vector() : nullptr;
-      if (vec_type == nullptr || vec_type->get_num_components() < 3) {
-        continue;
-      }
-
-      bool is_point = (_anim_point_locations & (1u << module.get_location(input_vec_ptr))) != 0;
-      Id w = module.define_float_constant(is_point);
-
-      Id orig_vec = builder.op_load(input_vec_ptr);
-      if (vec_type->get_num_components() == 3) {
-        // Expand to vec4.
-        orig_vec = builder.op_composite_construct(vec4_type, {orig_vec, w});
-      }
-
-      Id result = builder.op_multiply(orig_vec, mat3x4);
-      if (vec_type->get_num_components() == 4) {
-        // It comes out as a vec3, so expand to vec4 again.
-        result = builder.op_composite_construct(vec4_type, {result, w});
-      }
-
-      builder.op_store(private_vec_ptr, result);
+    const ShaderType *input_type = module.resolve_type(input_vec_ptr);
+    const ShaderType::Vector *vec_type = (input_type != nullptr) ? input_type->as_vector() : nullptr;
+    if (vec_type == nullptr || vec_type->get_num_components() < 3) {
+      continue;
     }
+
+    bool is_point = (_anim_point_locations & (1u << module.get_location(input_vec_ptr))) != 0;
+    Id w = module.define_float_constant(is_point);
+
+    Id orig_vec = builder.op_load(input_vec_ptr);
+    if (vec_type->get_num_components() == 3) {
+      // Expand to vec4.
+      orig_vec = builder.op_composite_construct(vec4_type, {orig_vec, w});
+    }
+
+    Id result = builder.op_multiply(orig_vec, mat3x4);
+    if (vec_type->get_num_components() == 4) {
+      // It comes out as a vec3, so expand to vec4 again.
+      result = builder.op_composite_construct(vec4_type, {result, w});
+    }
+
+    builder.op_store(private_vec_ptr, result);
   }
 }
 
@@ -446,13 +367,9 @@ inject_animation(SpirVBuilder &builder, const pvector<Id> &vars) {
  * Injects the function preamble that does not apply the transformations.
  */
 void SpirVInjectVertexTransformPass::
-inject_animation_noop(SpirVBuilder &builder, const pvector<Id> &vars) {
-  for (Id private_vec_ptr : vars) {
-    auto it = _vertex_input_ids.find(private_vec_ptr);
-    if (it != _vertex_input_ids.end()) {
-      Id input_vec_ptr = it->second;
-      builder.op_store(private_vec_ptr, builder.op_load(input_vec_ptr));
-    }
+inject_animation_noop(SpirVBuilder &builder) {
+  for (const auto &item : _vertex_input_ids) {
+    builder.op_store(item.first, builder.op_load(item.second));
   }
 }
 
