@@ -580,13 +580,13 @@ class OnscreenText(NodePath):
         getter = getattr(self, 'get' + option[0].upper() + option[1:])
         return getter()
 
-    def __getAlign(self):
+    def getAlign(self):
         return self.textNode.getAlign()
 
     def setAlign(self, align):
         self.textNode.setAlign(align)
 
-    align = property(__getAlign, setAlign)
+    align = property(getAlign, setAlign)
 
     # Allow index style refererences
     __getitem__ = cget

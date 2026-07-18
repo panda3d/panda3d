@@ -1,3 +1,4 @@
+from panda3d.core import TextNode
 from direct.gui.DirectButton import DirectButton
 
 
@@ -19,3 +20,15 @@ def test_button_default_extraArgs():
 def test_button_destroy():
     btn = DirectButton(text="Test")
     btn.destroy()
+
+
+def test_button_text_align_cget():
+    btn = DirectButton(text="Kitten", text_align=TextNode.ALeft, scale=0.07)
+    try:
+        assert btn["text_align"] == TextNode.ALeft
+        btn["text_align"] = TextNode.ACenter
+        assert btn["text_align"] == TextNode.ACenter
+        btn["text_align"] = TextNode.ARight
+        assert btn["text_align"] == TextNode.ARight
+    finally:
+        btn.destroy()
