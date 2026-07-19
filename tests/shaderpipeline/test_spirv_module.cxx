@@ -939,6 +939,53 @@ TEST_CASE("SpirVModule tracks type canonicality", "[shaderpipeline]") {
   CHECK(!parsed.is_canonical_type(id_image_rgba8));
 }
 
+TEST_CASE("SpirVModule expresses image access on the variable", "[shaderpipeline]") {
+  // The OpTypeImage access qualifier operand requires the Kernel capability,
+  // so access restrictions must instead be emitted as NonWritable/NonReadable
+  // decorations on the variable, from which the parser folds them back into
+  // the variable's resolved type.
+  SpirVModule module = make_module();
+
+  const ShaderType *image_rw = ShaderType::register_type(ShaderType::Image(
+    Texture::TT_2d_texture, ShaderType::ST_float, ShaderType::Access::READ_WRITE));
+  const ShaderType *image_ro = ShaderType::register_type(ShaderType::Image(
+    Texture::TT_2d_texture, ShaderType::ST_float, ShaderType::Access::READ_ONLY));
+  const ShaderType *image_wo = ShaderType::register_type(ShaderType::Image(
+    Texture::TT_2d_texture, ShaderType::ST_float, ShaderType::Access::WRITE_ONLY));
+  const ShaderType *image_none = ShaderType::register_type(ShaderType::Image(
+    Texture::TT_2d_texture, ShaderType::ST_float, ShaderType::Access::NONE));
+
+  Id id_rw = module.define_variable(image_rw, spv::StorageClassUniformConstant);
+  Id id_ro = module.define_variable(image_ro, spv::StorageClassUniformConstant);
+  Id id_wo = module.define_variable(image_wo, spv::StorageClassUniformConstant);
+  Id id_none = module.define_variable(image_none, spv::StorageClassUniformConstant);
+
+  {
+    SpirVBuilder builder = make_entry_point(module);
+    builder.op_load(id_rw);
+    builder.op_load(id_ro);
+    builder.op_load(id_wo);
+    builder.op_load(id_none);
+    builder.op_return();
+  }
+
+  CHECK(module.validate());
+
+  InstructionStream stream = module.emit();
+  REQUIRE(stream.validate());
+
+  // The access does not distinguish the type declarations, so all four
+  // variables share a single one.
+  CHECK(count_op(stream, spv::OpTypeImage) == 1);
+
+  // The access round-trips through a fresh parse via the decorations.
+  SpirVModule parsed(stream);
+  CHECK(parsed.resolve_type(id_rw) == image_rw);
+  CHECK(parsed.resolve_type(id_ro) == image_ro);
+  CHECK(parsed.resolve_type(id_wo) == image_wo);
+  CHECK(parsed.resolve_type(id_none) == image_none);
+}
+
 /**
  * Returns the id operand indices of the given instruction as classified by
  * get_instruction_id_operands, storing in known whether the operand layout

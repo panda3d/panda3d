@@ -2684,6 +2684,23 @@ invalidate_types() {
  */
 SpirVId SpirVModule::
 define_type(const ShaderType *type) {
+  if (type != nullptr) {
+    if (const ShaderType::Image *image_type = type->as_image()) {
+      // A type declaration cannot express access restrictions in a Shader
+      // module (the OpTypeImage access qualifier operand requires the Kernel
+      // capability); they are expressed as NonWritable/NonReadable decorations
+      // on the variable instead (see define_variable).  Normalize the access
+      // so the reuse lookup below is keyed the way a fresh parse of the
+      // declaration resolves it.
+      if (image_type->get_access() != ShaderType::Access::READ_WRITE) {
+        type = ShaderType::register_type(ShaderType::Image(
+          image_type->get_texture_type(),
+          image_type->get_sampled_type(),
+          ShaderType::Access::READ_WRITE));
+      }
+    }
+  }
+
   Id id = find_type(type);
   if (id != 0) {
     return id;
@@ -2816,10 +2833,22 @@ define_image_type(const ShaderType *type, uint32_t depth, uint32_t sampled, spv:
   const ShaderType::Image *image_type = type->as_image();
   nassertr(image_type != nullptr, Id());
 
+  // Access restrictions live on the variable (as NonWritable/NonReadable
+  // decorations), not on the type: the OpTypeImage access qualifier operand
+  // requires the Kernel capability.  Record the type the way a fresh parse
+  // of the bare declaration resolves it.
+  if (image_type->get_access() != ShaderType::Access::READ_WRITE) {
+    type = ShaderType::register_type(ShaderType::Image(
+      image_type->get_texture_type(),
+      image_type->get_sampled_type(),
+      ShaderType::Access::READ_WRITE));
+    image_type = type->as_image();
+  }
+
   const ShaderType *sampled_scalar_type =
     ShaderType::register_type(ShaderType::Scalar(image_type->get_sampled_type()));
 
-  uint32_t args[9] = {
+  uint32_t args[8] = {
     0, // Result id, assigned below
     0, // Sampled type, assigned below
     0, // Dimensionality, see below
@@ -2828,7 +2857,6 @@ define_image_type(const ShaderType *type, uint32_t depth, uint32_t sampled, spv:
     0, // Multisample not supported
     sampled,
     (uint32_t)format,
-    0, // Access qualifier
   };
 
   switch (image_type->get_texture_type()) {
@@ -2866,26 +2894,6 @@ define_image_type(const ShaderType *type, uint32_t depth, uint32_t sampled, spv:
     break;
   }
 
-  uint32_t nargs = 8;
-  if (sampled != 1) {
-    switch (image_type->get_access()) {
-    case ShaderType::Access::NONE:
-      break;
-    case ShaderType::Access::READ_ONLY:
-      args[8] = spv::AccessQualifierReadOnly;
-      ++nargs;
-      break;
-    case ShaderType::Access::WRITE_ONLY:
-      args[8] = spv::AccessQualifierWriteOnly;
-      ++nargs;
-      break;
-    case ShaderType::Access::READ_WRITE:
-      args[8] = spv::AccessQualifierReadWrite;
-      ++nargs;
-      break;
-    }
-  }
-
   // If the module already declares a type with these exact operands, this
   // creates a duplicate, which deduplicate_types() merges before the module
   // is emitted.
@@ -2894,7 +2902,7 @@ define_image_type(const ShaderType *type, uint32_t depth, uint32_t sampled, spv:
   args[0] = id;
   args[1] = define_type(sampled_scalar_type);
 
-  add_declaration(Instruction(spv::OpTypeImage, args, nargs));
+  add_declaration(Instruction(spv::OpTypeImage, args, 8));
 
   modify_definition(id)._type = type;
 
@@ -2983,6 +2991,24 @@ define_variable(const ShaderType *type, spv::StorageClass storage_class) {
     variable_id,
     (uint32_t)storage_class,
   }));
+
+  // Image access restrictions cannot be expressed on the type declaration
+  // (see define_image_type); they go on the variable as NonWritable and/or
+  // NonReadable, which resolve_type folds back into the variable's type.
+  const ShaderType *unwrapped_type = type;
+  while (unwrapped_type != nullptr && unwrapped_type->as_array() != nullptr) {
+    unwrapped_type = unwrapped_type->as_array()->get_element_type();
+  }
+  if (const ShaderType::Image *image_type = (unwrapped_type != nullptr)
+        ? unwrapped_type->as_image() : nullptr) {
+    ShaderType::Access access = image_type->get_access();
+    if ((access & ShaderType::Access::WRITE_ONLY) == ShaderType::Access::NONE) {
+      decorate(variable_id, spv::DecorationNonWritable);
+    }
+    if ((access & ShaderType::Access::READ_ONLY) == ShaderType::Access::NONE) {
+      decorate(variable_id, spv::DecorationNonReadable);
+    }
+  }
 
   // Depending on the storage class, we may need to make sure it is laid out.
   if (storage_class == spv::StorageClassStorageBuffer ||

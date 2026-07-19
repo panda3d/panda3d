@@ -66,6 +66,44 @@ TEST_CASE("SpirVReplaceVariableTypePass converts loads to the old type", "[shade
   }
 }
 
+TEST_CASE("SpirVReplaceVariableTypePass converts a sampler to a shadow sampler", "[shaderpipeline]") {
+  // uniform sampler2D u;  main() { texture(u, ...); }
+  // This mirrors what ShaderModuleSpirV does when a variable is sampled with
+  // a depth reference but was not declared as a shadow sampler.
+  SpirVModule module = make_module();
+  const ShaderType *sampler_type = ShaderType::register_type(
+    ShaderType::SampledImage(Texture::TT_2d_texture, ShaderType::ST_float, false));
+  const ShaderType *shadow_type = ShaderType::register_type(
+    ShaderType::SampledImage(Texture::TT_2d_texture, ShaderType::ST_float, true));
+
+  Id id_var = module.define_variable(sampler_type, spv::StorageClassUniformConstant);
+  module.set_name(id_var, "u");
+
+  {
+    SpirVBuilder builder = make_entry_point(module, spv::ExecutionModelFragment);
+    builder.op_load(id_var);
+    builder.op_return();
+  }
+
+  InstructionStream stream = module.emit();
+  REQUIRE(stream.validate());
+
+  SpirVTransformer transformer(stream);
+  transformer.run(SpirVReplaceVariableTypePass(id_var, shadow_type,
+                                               spv::StorageClassUniformConstant));
+
+  // In particular, the type recorded for the new image type must match what a
+  // fresh parse of the module produces (which validate() checks).
+  CHECK(transformer.get_module().validate());
+  CHECK(transformer.get_module().resolve_type(id_var) == shadow_type);
+
+  // A new image type with the depth flag was added alongside the original.
+  InstructionStream result = transformer.get_result();
+  REQUIRE(count_op(result, spv::OpTypeImage) == 2);
+  Instruction image_type_op = find_op(result, spv::OpTypeImage, 1);
+  CHECK(image_type_op.args[3] == 1);
+}
+
 TEST_CASE("SpirVReplaceVariableTypePass replicates a scalar to a vector", "[shaderpipeline]") {
   // uniform vec4 u; out vec4 o;  main() { o = u; }
   SpirVModule module = make_module();
