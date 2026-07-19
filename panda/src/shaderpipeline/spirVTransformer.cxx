@@ -15,6 +15,8 @@
 #include "spirVTransformPass.h"
 #include "config_shaderpipeline.h"
 
+#include <sstream>
+
 /**
  * Materializes the given instruction stream.
  */
@@ -251,14 +253,16 @@ assign_flat_decorations() {
  * uniforms ("p<location>"), as well as to every unnamed input and output
  * interface variable ("i<stage>_<location>", such that the outputs of one
  * stage receive the same names as the matching inputs of the next stage),
- * interface block type ("b<location>") and interface block member
- * ("m<index>").
+ * interface block type ("b<location>"), non-block struct type (named after
+ * its type signature) and struct member ("m<index>").
  *
  * This only exists to work around an NVIDIA driver bug: the driver matches
  * uniforms and interface variables between stages by name rather than by
  * location, making up a name like "__defaultname_24" based on the SPIR-V id
  * if the OpName was stripped, which causes spurious conflicts and link
- * errors.
+ * errors.  It similarly invents "_struct<id>_member<n>" names for unnamed
+ * struct types, and since the SPIR-V ids differ between stages, a struct
+ * uniform used in multiple stages is seen as having mismatched types.
  */
 void SpirVTransformer::
 assign_procedural_names(const pmap<uint32_t, int> &uniform_locations,
@@ -267,6 +271,33 @@ assign_procedural_names(const pmap<uint32_t, int> &uniform_locations,
   for (const auto &item : uniform_locations) {
     sprintf(buffer, "p%d", item.second);
     _module.set_name(Id(item.first), buffer);
+  }
+
+  // Name every struct type based on its type signature.
+  for (uint32_t word = 0; word < get_id_bound(); ++word) {
+    Id id(word);
+    if (_module.get_definition_type(id) != SpirVModule::DT_type ||
+        _module.has_decoration(id, spv::DecorationBlock) ||
+        _module.has_decoration(id, spv::DecorationBufferBlock)) {
+      continue;
+    }
+    const ShaderType *type = _module.resolve_type(id);
+    if (type == nullptr || type->as_struct() == nullptr) {
+      continue;
+    }
+
+    std::ostringstream signature;
+    type->output_signature(signature);
+    _module.set_name(id, signature.str());
+
+    // Member names are not part of the signature, so overwrite them even if
+    // they are already named, lest two stages end up with the same struct
+    // name but different member names.
+    uint32_t num_members = _module.get_num_members(id);
+    for (uint32_t mi = 0; mi < num_members; ++mi) {
+      sprintf(buffer, "m%u", mi);
+      _module.set_member_name(id, mi, buffer);
+    }
   }
 
   for (uint32_t word = 0; word < get_id_bound(); ++word) {

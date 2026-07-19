@@ -35,9 +35,16 @@ TEST_CASE("SpirVTransformer::assign_procedural_names", "[shaderpipeline]") {
     ShaderType::register_type(ShaderType::Array(in_block_type, 1));
 
   // The output block gets unnamed members, to test member name assignment.
+  // The last member is a nested struct, which is named after its signature.
+  ShaderType::Struct out_nested_struct;
+  out_nested_struct.add_member(vec4_type, "x");
+  const ShaderType *out_nested_type =
+    ShaderType::register_type(std::move(out_nested_struct));
+
   ShaderType::Struct out_struct;
   out_struct.add_member(vec4_type, "");
   out_struct.add_member(ShaderType::FLOAT, "");
+  out_struct.add_member(out_nested_type, "");
   const ShaderType *out_block_type =
     ShaderType::register_type(std::move(out_struct));
 
@@ -61,6 +68,7 @@ TEST_CASE("SpirVTransformer::assign_procedural_names", "[shaderpipeline]") {
   Id out_type = module.unwrap_pointer_type(module.get_type_id(out_var));
   module.decorate(out_type, spv::DecorationBlock);
   module.set_location(out_var, 1);
+  Id out_nested_type_id = module.get_member_type_id(out_type, 2);
 
   Id builtin_var =
     module.define_variable(builtin_block_type, spv::StorageClassOutput);
@@ -80,8 +88,44 @@ TEST_CASE("SpirVTransformer::assign_procedural_names", "[shaderpipeline]") {
   Id loose_type = module.unwrap_pointer_type(module.get_type_id(loose_var));
   module.set_location(loose_var, 3);
 
+  // A loose (non-block) varying of struct type; its type is also named.
+  const ShaderType *vec2_type =
+    ShaderType::register_type(ShaderType::Vector(ShaderType::ST_float, 2));
+  ShaderType::Struct vary_struct;
+  vary_struct.add_member(vec2_type, "");
+  const ShaderType *vary_struct_type =
+    ShaderType::register_type(std::move(vary_struct));
+
+  Id vary_var =
+    module.define_variable(vary_struct_type, spv::StorageClassOutput);
+  Id vary_type_id = module.unwrap_pointer_type(module.get_type_id(vary_var));
+  module.set_location(vary_var, 4);
+
   Id uniform_var =
     module.define_variable(vec4_type, spv::StorageClassUniformConstant);
+
+  // An array-of-struct uniform, to test uniform struct type naming.  One
+  // member is itself a struct, and one member already has a name.
+  ShaderType::Struct nested_struct;
+  nested_struct.add_member(ShaderType::FLOAT, "");
+  const ShaderType *nested_struct_type =
+    ShaderType::register_type(std::move(nested_struct));
+
+  ShaderType::Struct uniform_struct;
+  uniform_struct.add_member(vec4_type, "");
+  uniform_struct.add_member(nested_struct_type, "");
+  uniform_struct.add_member(ShaderType::FLOAT, "shininess");
+  const ShaderType *uniform_struct_type =
+    ShaderType::register_type(std::move(uniform_struct));
+  const ShaderType *uniform_array_type =
+    ShaderType::register_type(ShaderType::Array(uniform_struct_type, 2));
+
+  Id struct_uniform_var = module.define_variable(
+    uniform_array_type, spv::StorageClassUniformConstant);
+  Id struct_uniform_type = module.get_type_id(
+    module.unwrap_pointer_type(module.get_type_id(struct_uniform_var)));
+  Id nested_struct_type_id =
+    module.get_member_type_id(struct_uniform_type, 1);
 
   {
     SpirVBuilder builder = make_entry_point(module,
@@ -100,6 +144,7 @@ TEST_CASE("SpirVTransformer::assign_procedural_names", "[shaderpipeline]") {
   SpirVTransformer transformer(stream);
   pmap<uint32_t, int> uniform_locations;
   uniform_locations[uniform_var] = 7;
+  uniform_locations[struct_uniform_var] = 10;
   transformer.assign_procedural_names(uniform_locations, 1);
   CHECK(transformer.get_module().validate());
 
@@ -129,11 +174,34 @@ TEST_CASE("SpirVTransformer::assign_procedural_names", "[shaderpipeline]") {
   // Unnamed block members get procedural names, named ones keep theirs.
   CHECK(result.get_member_name(out_type, 0) == "m0");
   CHECK(result.get_member_name(out_type, 1) == "m1");
+  CHECK(result.get_member_name(out_type, 2) == "m2");
   CHECK(result.get_member_name(in_type, 0) == "a");
   CHECK(result.get_member_name(in_type, 1) == "b");
 
+  // A struct nested in a block member is named after its type signature,
+  // with its member names overwritten.
+  CHECK(result.get_name(out_nested_type_id) == "Sf4_");
+  CHECK(result.get_member_name(out_nested_type_id, 0) == "m0");
+
+  // A loose struct varying's type is named after its signature as well.
+  CHECK(result.get_name(vary_var) == "i2_4");
+  CHECK(result.get_name(vary_type_id) == "Sf2_");
+  CHECK(result.get_member_name(vary_type_id, 0) == "m0");
+
   // The uniform is named after its assigned location.
   CHECK(result.get_name(uniform_var) == "p7");
+
+  // The struct uniform's type is named after its type signature (matching
+  // the naming in the SPIRV-Cross fallback path), including nested structs.
+  // Member names are not part of the signature, so they are overwritten
+  // even if already named.
+  CHECK(result.get_name(struct_uniform_var) == "p10");
+  CHECK(result.get_name(struct_uniform_type) == "Sf4Sf_f_");
+  CHECK(result.get_member_name(struct_uniform_type, 0) == "m0");
+  CHECK(result.get_member_name(struct_uniform_type, 1) == "m1");
+  CHECK(result.get_member_name(struct_uniform_type, 2) == "m2");
+  CHECK(result.get_name(nested_struct_type_id) == "Sf_");
+  CHECK(result.get_member_name(nested_struct_type_id, 0) == "m0");
 }
 
 TEST_CASE("SpirVTransformer::assign_interface_locations", "[shaderpipeline]") {
