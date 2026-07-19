@@ -1245,6 +1245,10 @@ validate() const {
   if (!emitted.validate(env)) {
     consistent = false;
   }
+  else if (!consistent) {
+    // Still emit the disassembly.
+    emitted.disassemble(shader_cat.error() << "Disassembly follows:\n");
+  }
 
   return consistent;
 }
