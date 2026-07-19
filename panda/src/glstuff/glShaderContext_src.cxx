@@ -3472,6 +3472,36 @@ compile_spirv_to_glsl(const ShaderModuleSpirV *module, size_t mi,
     }
   }
 
+  // Interface blocks passed between shader stages must also have matching
+  // block names and member names in both stages, so assign those based on
+  // the location as well.
+  auto rename_block = [&compiler, &buf](const spirv_cross::Resource &res, unsigned int index) {
+    if (!compiler.has_decoration(res.base_type_id, spv::DecorationBlock)) {
+      return;
+    }
+    uint32_t loc = compiler.get_decoration(res.id, spv::DecorationLocation);
+    sprintf(buf, "b%u_%u", index, loc);
+    compiler.set_name(res.base_type_id, buf);
+
+    const spirv_cross::SPIRType &block_type = compiler.get_type(res.base_type_id);
+    for (uint32_t i = 0; i < (uint32_t)block_type.member_types.size(); ++i) {
+      sprintf(buf, "m%u", i);
+      compiler.set_member_name(res.base_type_id, i, buf);
+    }
+  };
+  spirv_cross::ShaderResources resources =
+    compiler.get_shader_resources(compiler.get_active_interface_variables());
+  if (model != spv::ExecutionModelVertex) {
+    for (const spirv_cross::Resource &res : resources.stage_inputs) {
+      rename_block(res, (unsigned int)mi);
+    }
+  }
+  if (model != spv::ExecutionModelFragment) {
+    for (const spirv_cross::Resource &res : resources.stage_outputs) {
+      rename_block(res, (unsigned int)mi + 1u);
+    }
+  }
+
   // Assign names to emulated texture/image size variables.
   for (auto &item : size_var_ids) {
     const SpirVTransformPass::AccessChain &chain = item.first;
