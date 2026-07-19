@@ -135,3 +135,110 @@ TEST_CASE("SpirVTransformer::assign_procedural_names", "[shaderpipeline]") {
   // The uniform is named after its assigned location.
   CHECK(result.get_name(uniform_var) == "p7");
 }
+
+TEST_CASE("SpirVTransformer::assign_interface_locations", "[shaderpipeline]") {
+  const ShaderType *vec4_type =
+    ShaderType::register_type(ShaderType::Vector(ShaderType::ST_float, 4));
+
+  SECTION("geometry per-vertex input arrays occupy element locations") {
+    SpirVModule module = make_module();
+    module.add_capability(spv::CapabilityGeometry);
+
+    ShaderType::Struct block_struct;
+    block_struct.add_member(ShaderType::FLOAT, "a");
+    block_struct.add_member(vec4_type, "b");
+    const ShaderType *block_type =
+      ShaderType::register_type(std::move(block_struct));
+    const ShaderType *block_array_type =
+      ShaderType::register_type(ShaderType::Array(block_type, 3));
+    const ShaderType *vec4_array_type =
+      ShaderType::register_type(ShaderType::Array(vec4_type, 3));
+
+    Id block_var =
+      module.define_variable(block_array_type, spv::StorageClassInput);
+    Id block_type_id = module.get_type_id(
+      module.unwrap_pointer_type(module.get_type_id(block_var)));
+    module.decorate(block_type_id, spv::DecorationBlock);
+
+    Id loose_var =
+      module.define_variable(vec4_array_type, spv::StorageClassInput);
+
+    Id out_var = module.define_variable(vec4_type, spv::StorageClassOutput);
+
+    {
+      SpirVBuilder builder = make_entry_point(module,
+        spv::ExecutionModelGeometry);
+      Id function_id = builder.get_current_function_id();
+      module.add_execution_mode(function_id, spv::ExecutionModeTriangles);
+      module.add_execution_mode(function_id, spv::ExecutionModeInvocations, {1});
+      module.add_execution_mode(function_id, spv::ExecutionModeOutputPoints);
+      module.add_execution_mode(function_id, spv::ExecutionModeOutputVertices, {1});
+      builder.op_return();
+    }
+
+    InstructionStream stream = module.emit();
+    REQUIRE(stream.validate());
+
+    SpirVTransformer transformer(stream);
+    transformer.assign_interface_locations(ShaderModule::Stage::GEOMETRY);
+    CHECK(transformer.get_module().validate());
+
+    const SpirVModule &result = transformer.get_module();
+
+    // The outer per-vertex array dimension is ignored, so the block takes up
+    // only two locations, not six.
+    CHECK(result.get_location(block_var) == 0);
+    CHECK(result.get_location(loose_var) == 2);
+    CHECK(result.get_location(out_var) == 0);
+  }
+
+  SECTION("tess control outputs are per-vertex unless patch") {
+    SpirVModule module = make_module();
+    module.add_capability(spv::CapabilityTessellation);
+
+    const ShaderType *in_array_type =
+      ShaderType::register_type(ShaderType::Array(vec4_type, 32));
+    const ShaderType *out_array_type =
+      ShaderType::register_type(ShaderType::Array(vec4_type, 4));
+    const ShaderType *patch_array_type =
+      ShaderType::register_type(ShaderType::Array(vec4_type, 2));
+
+    Id in_var = module.define_variable(in_array_type, spv::StorageClassInput);
+    Id out_var = module.define_variable(out_array_type, spv::StorageClassOutput);
+
+    // An explicitly arrayed per-patch output, which is not per-vertex, so its
+    // array dimension does count.
+    Id patch_var =
+      module.define_variable(patch_array_type, spv::StorageClassOutput);
+    module.decorate(patch_var, spv::DecorationPatch);
+
+    Id out_var2 = module.define_variable(out_array_type, spv::StorageClassOutput);
+
+    {
+      SpirVBuilder builder = make_entry_point(module,
+        spv::ExecutionModelTessellationControl);
+      Id function_id = builder.get_current_function_id();
+      module.add_execution_mode(function_id, spv::ExecutionModeOutputVertices, {4});
+      builder.op_return();
+    }
+
+    InstructionStream stream = module.emit();
+    REQUIRE(stream.validate());
+
+    SpirVTransformer transformer(stream);
+    transformer.assign_interface_locations(ShaderModule::Stage::TESS_CONTROL);
+    CHECK(transformer.get_module().validate());
+
+    const SpirVModule &result = transformer.get_module();
+
+    // The per-vertex input array counts as a single location, despite being
+    // declared with gl_MaxPatchVertices entries.
+    CHECK(result.get_location(in_var) == 0);
+
+    // The first per-vertex output takes one location, the patch output takes
+    // two (its array dimension is real), so the last output lands on 3.
+    CHECK(result.get_location(out_var) == 0);
+    CHECK(result.get_location(patch_var) == 1);
+    CHECK(result.get_location(out_var2) == 3);
+  }
+}

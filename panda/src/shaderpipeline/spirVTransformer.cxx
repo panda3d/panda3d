@@ -58,6 +58,32 @@ get_result() const {
 }
 
 /**
+ * Returns the number of locations occupied by an interface variable of the
+ * given type.  In geometry and tessellation stages, some inputs and outputs
+ * have an extra outer array dimension (one element per vertex), which does
+ * not count towards the number of occupied locations.
+ */
+static int
+get_num_variable_locations(const ShaderType *type, ShaderModule::Stage stage,
+                           spv::StorageClass storage_class, bool is_patch) {
+  bool per_vertex;
+  if (storage_class == spv::StorageClassInput) {
+    per_vertex = !is_patch &&
+      (stage == ShaderModule::Stage::GEOMETRY ||
+       stage == ShaderModule::Stage::TESS_CONTROL ||
+       stage == ShaderModule::Stage::TESS_EVALUATION);
+  } else {
+    per_vertex = !is_patch && stage == ShaderModule::Stage::TESS_CONTROL;
+  }
+  if (per_vertex) {
+    if (const ShaderType::Array *array = type->as_array()) {
+      type = array->get_element_type();
+    }
+  }
+  return type->get_num_interface_locations();
+}
+
+/**
  * Assigns location decorations to all input and output variables that do not
  * have a location decoration yet.  Does not touch uniform constants.
  */
@@ -86,11 +112,17 @@ assign_interface_locations(ShaderModule::Stage stage) {
     }
     else if (storage_class == spv::StorageClassInput) {
       const ShaderType *type = _module.resolve_type(id);
-      input_locations.set_range(location, type != nullptr ? type->get_num_interface_locations() : 1);
+      input_locations.set_range(location, type != nullptr
+        ? get_num_variable_locations(type, stage, storage_class,
+                                     _module.has_decoration(id, spv::DecorationPatch))
+        : 1);
     }
     else if (storage_class == spv::StorageClassOutput) {
       const ShaderType *type = _module.resolve_type(id);
-      output_locations.set_range(location, type != nullptr ? type->get_num_interface_locations() : 1);
+      output_locations.set_range(location, type != nullptr
+        ? get_num_variable_locations(type, stage, storage_class,
+                                     _module.has_decoration(id, spv::DecorationPatch))
+        : 1);
     }
   }
 
@@ -117,7 +149,8 @@ assign_interface_locations(ShaderModule::Stage stage) {
     const char *sc_str;
 
     if (storage_class == spv::StorageClassInput) {
-      num_locations = type->get_num_interface_locations();
+      num_locations = get_num_variable_locations(type, stage, storage_class,
+        _module.has_decoration(id, spv::DecorationPatch));
       if (num_locations == 0) {
         continue;
       }
@@ -136,7 +169,8 @@ assign_interface_locations(ShaderModule::Stage stage) {
       sc_str = "input";
     }
     else if (storage_class == spv::StorageClassOutput) {
-      num_locations = type->get_num_interface_locations();
+      num_locations = get_num_variable_locations(type, stage, storage_class,
+        _module.has_decoration(id, spv::DecorationPatch));
       if (num_locations == 0) {
         continue;
       }
