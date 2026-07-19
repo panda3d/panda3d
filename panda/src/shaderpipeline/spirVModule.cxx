@@ -2774,10 +2774,13 @@ define_type(const ShaderType *type) {
     add_declaration(Instruction(spv::OpTypeSampler, {id}));
   }
   else if (const ShaderType::SampledImage *sampled_image_type = type->as_sampled_image()) {
+    // The access qualifier is meaningless for a sampled image; READ_WRITE is
+    // what r_resolve_type produces for an image without qualifiers, and the
+    // recorded type must match a fresh parse of the module.
     const ShaderType *image_type = ShaderType::register_type(ShaderType::Image(
       sampled_image_type->get_texture_type(),
       sampled_image_type->get_sampled_type(),
-      ShaderType::Access::NONE));
+      ShaderType::Access::READ_WRITE));
 
     // Sampled image, depthness 1 if shadow sampler
     uint32_t depth = sampled_image_type->is_shadow() ? (uint32_t)1 : (uint32_t)0;
