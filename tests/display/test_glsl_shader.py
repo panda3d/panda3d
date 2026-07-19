@@ -232,6 +232,94 @@ def test_glsl_debug_assert_included(env, vfs, ramdir):
         core.unload_prc_file(page)
 
 
+def test_glsl_stage_vertex(env):
+    preamble = """
+    uniform vec4 vec_param;
+    uniform sampler2D tex;
+    """
+    code = """
+    assert(p3d_Vertex.z == 0.0);
+    assert(p3d_Vertex.w == 1.0);
+    assert(vec_param == vec4(1, 2, 3, 4));
+    assert(textureLod(tex, vec2(0, 0), 0).r == 0.5);
+    """
+    tex = core.Texture("tex")
+    tex.setup_2d_texture(1, 1, core.Texture.T_float, core.Texture.F_r32)
+    tex.set_clear_color((0.5, 0, 0, 0))
+    env.run_glsl_stage('vertex', code, preamble, {'vec_param': (1, 2, 3, 4), 'tex': tex})
+
+
+def test_glsl_stage_geometry(env):
+    code = """
+    assert(gl_in.length() == 3);
+    assert(gl_PrimitiveIDIn == 0);
+    assert(gl_in[0].gl_Position == vec4(-1, -1, 0, 1));
+    assert(gl_in[1].gl_Position == vec4(3, -1, 0, 1));
+    assert(gl_in[2].gl_Position == vec4(-1, 3, 0, 1));
+    """
+    env.run_glsl_stage('geometry', code)
+
+
+def test_glsl_stage_geometry_inputs(env):
+    preamble = """
+    uniform vec4 vec_param;
+    uniform int int_param;
+    uniform sampler2D tex;
+    """
+    code = """
+    assert(vec_param == vec4(1, 2, 3, 4));
+    assert(int_param == 42);
+    assert(textureLod(tex, vec2(0, 0), 0).r == 0.5);
+    """
+    tex = core.Texture("tex")
+    tex.setup_2d_texture(1, 1, core.Texture.T_float, core.Texture.F_r32)
+    tex.set_clear_color((0.5, 0, 0, 0))
+    env.run_glsl_stage('geometry', code, preamble,
+                       {'vec_param': (1, 2, 3, 4), 'int_param': 42, 'tex': tex})
+
+
+def test_glsl_stage_tess_control(env):
+    code = """
+    assert(gl_PatchVerticesIn == 3);
+    assert(gl_InvocationID >= 0);
+    assert(gl_InvocationID < 3);
+    assert(gl_in[0].gl_Position == vec4(-1, -1, 0, 1));
+    assert(gl_in[1].gl_Position == vec4(3, -1, 0, 1));
+    assert(gl_in[2].gl_Position == vec4(-1, 3, 0, 1));
+    """
+    env.run_glsl_stage('tess_control', code)
+
+
+def test_glsl_stage_tess_evaluation(env):
+    code = """
+    assert(gl_TessCoord.x + gl_TessCoord.y + gl_TessCoord.z == 1.0);
+    assert(gl_TessLevelOuter[0] == 1.0);
+    assert(gl_TessLevelOuter[1] == 1.0);
+    assert(gl_TessLevelOuter[2] == 1.0);
+    assert(gl_TessLevelInner[0] == 1.0);
+    assert(gl_in[0].gl_Position == vec4(-1, -1, 0, 1));
+    assert(gl_in[1].gl_Position == vec4(3, -1, 0, 1));
+    assert(gl_in[2].gl_Position == vec4(-1, 3, 0, 1));
+    """
+    env.run_glsl_stage('tess_evaluation', code)
+
+
+def test_glsl_stage_tess_evaluation_inputs(env):
+    preamble = """
+    uniform vec4 vec_param;
+    uniform sampler2D tex;
+    """
+    code = """
+    assert(vec_param == vec4(5, 6, 7, 8));
+    assert(textureLod(tex, vec2(0, 0), 0).r == 0.25);
+    """
+    tex = core.Texture("tex")
+    tex.setup_2d_texture(1, 1, core.Texture.T_float, core.Texture.F_r32)
+    tex.set_clear_color((0.25, 0, 0, 0))
+    env.run_glsl_stage('tess_evaluation', code, preamble,
+                       {'vec_param': (5, 6, 7, 8), 'tex': tex})
+
+
 def test_glsl_sampler(env):
     tex1 = core.Texture("tex1-ubyte-rgba8")
     tex1.setup_1d_texture(1, core.Texture.T_unsigned_byte, core.Texture.F_rgba8)

@@ -156,6 +156,129 @@ void main() {{
 }}
 """
 
+# Templates for testing individual stages
+GLSL_STAGE_ASSERT_PREAMBLE = """
+layout(r32ui) uniform writeonly uimageBuffer _triggered;
+
+void _reset() {{
+    imageStore(_triggered, 0, uvec4(1));
+    memoryBarrier();
+}}
+
+void _assert(bool cond, int line) {{
+    if (!cond) {{
+        imageStore(_triggered, line, uvec4(1));
+    }}
+}}
+
+#define assert(cond) _assert(cond, __LINE__ - line_offset)
+"""
+
+GLSL_STAGE_VERTEX_TEMPLATE = """#version {version}
+{extensions}
+
+{preamble}
+""" + GLSL_STAGE_ASSERT_PREAMBLE + """
+in vec4 p3d_Vertex;
+
+void main() {{
+    _reset();
+    const int line_offset = __LINE__;
+{body}
+    gl_Position = p3d_Vertex;
+}}
+"""
+
+GLSL_STAGE_GEOMETRY_TEMPLATE = """#version {version}
+{extensions}
+
+layout(triangles) in;
+layout(triangle_strip, max_vertices=3) out;
+
+{preamble}
+""" + GLSL_STAGE_ASSERT_PREAMBLE + """
+void main() {{
+    _reset();
+    const int line_offset = __LINE__;
+{body}
+    for (int i = 0; i < 3; ++i) {{
+        gl_Position = gl_in[i].gl_Position;
+        EmitVertex();
+    }}
+    EndPrimitive();
+}}
+"""
+
+GLSL_STAGE_TESC_TEMPLATE = """#version {version}
+{extensions}
+
+layout(vertices = 3) out;
+
+{preamble}
+""" + GLSL_STAGE_ASSERT_PREAMBLE + """
+void main() {{
+    _reset();
+    const int line_offset = __LINE__;
+{body}
+    gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;
+    gl_TessLevelOuter[0] = 1.0;
+    gl_TessLevelOuter[1] = 1.0;
+    gl_TessLevelOuter[2] = 1.0;
+    gl_TessLevelInner[0] = 1.0;
+}}
+"""
+
+GLSL_STAGE_TESE_TEMPLATE = """#version {version}
+{extensions}
+
+layout(triangles, equal_spacing, ccw) in;
+
+{preamble}
+""" + GLSL_STAGE_ASSERT_PREAMBLE + """
+void main() {{
+    _reset();
+    const int line_offset = __LINE__;
+{body}
+    gl_Position = gl_TessCoord.x * gl_in[0].gl_Position +
+                  gl_TessCoord.y * gl_in[1].gl_Position +
+                  gl_TessCoord.z * gl_in[2].gl_Position;
+}}
+"""
+
+GLSL_PASSTHROUGH_TESC_TEMPLATE = """#version {version}
+
+layout(vertices = 3) out;
+
+void main() {{
+    gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;
+    gl_TessLevelOuter[0] = 1.0;
+    gl_TessLevelOuter[1] = 1.0;
+    gl_TessLevelOuter[2] = 1.0;
+    gl_TessLevelInner[0] = 1.0;
+}}
+"""
+
+GLSL_PASSTHROUGH_TESE_TEMPLATE = """#version {version}
+
+layout(triangles, equal_spacing, ccw) in;
+
+void main() {{
+    gl_Position = gl_TessCoord.x * gl_in[0].gl_Position +
+                  gl_TessCoord.y * gl_in[1].gl_Position +
+                  gl_TessCoord.z * gl_in[2].gl_Position;
+}}
+"""
+
+GLSL_TRIVIAL_FRAGMENT_TEMPLATE = """#version {version}
+
+layout(location = 0) out vec4 p3d_FragColor;
+
+void main() {{
+    p3d_FragColor = vec4(1, 1, 1, 1);
+}}
+"""
+
+
 # This is the template for the shader that is used by run_cg_test.
 # We render this to an nx1 texture, where n is the number of lines in the body.
 # An assert
@@ -352,6 +475,168 @@ class ShaderEnvironment:
         if use_compute:
             success = engine.extract_texture_data(result, gsg)
             assert success
+
+        triggered = result.get_ram_image()
+        triggered = tuple(memoryview(triggered).cast('I'))
+
+        if not triggered[0]:
+            pytest.fail("control check failed")
+
+        if any(triggered[1:]):
+            count = len(triggered) - triggered.count(0) - 1
+            lines = body.split('\n')
+            formatted = ''
+            for i, line in enumerate(lines):
+                if triggered[i + 1]:
+                    formatted += '=>  ' + line + '\n'
+                else:
+                    formatted += '    ' + line + '\n'
+            pytest.fail("{0} GLSL assertions triggered:\n{1}".format(count, formatted))
+
+    def run_glsl_stage(self, stage, body, preamble="", inputs={}, version=420,
+                       exts=set(), state=core.RenderState.make_empty(),
+                       options=None):
+        """ Runs a GLSL test with the given body in the main function of the
+        given stage ('vertex', 'geometry', 'tess_control', 'tess_evaluation'),
+        rendered as part of a full raster pipeline.  The body should call
+        assert(), the results of which are written to an image buffer.  Note
+        that the body may run multiple times (eg. once per vertex or patch
+        corner), with different values for the stage built-ins; asserts must
+        hold for every invocation. """
+
+        gsg = self.gsg
+        if not gsg.supports_basic_shaders:
+            pytest.skip("shaders not supported")
+
+        missing_exts = sorted(ext for ext in exts if not gsg.has_extension(ext))
+        if missing_exts:
+            pytest.skip("missing extensions: " + ' '.join(missing_exts))
+
+        version = version or 420
+        options = options or core.CompilerOptions()
+
+        extensions = ''
+        for ext in exts:
+            extensions += '#extension {ext} : require\n'.format(ext=ext)
+
+        __tracebackhide__ = True
+
+        preamble = preamble.strip()
+        body = body.rstrip().lstrip('\n')
+
+        fmt = dict(version=version, extensions=extensions, preamble=preamble, body=body)
+        vertex_code = GLSL_VERTEX_TEMPLATE.format(**fmt)
+        geometry_code = ''
+        tesc_code = ''
+        tese_code = ''
+        fragment_code = GLSL_TRIVIAL_FRAGMENT_TEMPLATE.format(**fmt)
+
+        if stage == 'vertex':
+            vertex_code = GLSL_STAGE_VERTEX_TEMPLATE.format(**fmt)
+        elif stage == 'geometry':
+            geometry_code = GLSL_STAGE_GEOMETRY_TEMPLATE.format(**fmt)
+        elif stage == 'tess_control':
+            tesc_code = GLSL_STAGE_TESC_TEMPLATE.format(**fmt)
+            tese_code = GLSL_PASSTHROUGH_TESE_TEMPLATE.format(**fmt)
+        elif stage == 'tess_evaluation':
+            tesc_code = GLSL_PASSTHROUGH_TESC_TEMPLATE.format(**fmt)
+            tese_code = GLSL_STAGE_TESE_TEMPLATE.format(**fmt)
+        else:
+            raise ValueError("unknown stage " + stage)
+
+        code = '\n'.join(c for c in (vertex_code, tesc_code, tese_code, geometry_code, fragment_code) if c)
+        shader = core.Shader.make(core.Shader.SL_GLSL, vertex_code,
+                                  fragment_code, geometry_code, tesc_code,
+                                  tese_code, options=options)
+        if not shader:
+            pytest.fail("error compiling shader:\n" + code)
+
+        unsupported_caps = shader.get_used_capabilities() & ~gsg.supported_shader_capabilities
+        if unsupported_caps != 0:
+            stream = core.StringStream()
+            core.ShaderEnums.output_capabilities(stream, unsupported_caps)
+            pytest.skip("unsupported capabilities: " + stream.data.decode('ascii'))
+
+        num_lines = body.count('\n') + 1
+
+        # One texel per line of shader code, as in the compute shader case.
+        engine = gsg.get_engine()
+        result = core.Texture("_triggered-" + self.name)
+        result.set_clear_color((0, 0, 0, 0))
+        result.setup_buffer_texture(num_lines + 1,
+                                    core.Texture.T_unsigned_int,
+                                    core.Texture.F_r32i,
+                                    core.GeomEnums.UH_static)
+
+        fbprops = core.FrameBufferProperties()
+        fbprops.force_hardware = True
+        fbprops.set_rgba_bits(8, 8, 8, 8)
+        fbprops.srgb_color = False
+
+        buffer = engine.make_output(
+            gsg.pipe,
+            'buffer',
+            0,
+            fbprops,
+            core.WindowProperties.size(1, 1),
+            core.GraphicsPipe.BF_refuse_window,
+            gsg
+        )
+        buffer.set_clear_color_active(True)
+        buffer.set_clear_color((0, 0, 0, 0))
+        engine.open_windows()
+
+        # Build up the shader inputs
+        attrib = core.ShaderAttrib.make(shader)
+        for name, value in inputs.items():
+            attrib = attrib.set_shader_input(name, value)
+        attrib = attrib.set_shader_input('_triggered', result)
+        state = state.set_attrib(attrib)
+
+        scene = core.NodePath("root")
+        scene.set_attrib(core.DepthTestAttrib.make(core.RenderAttrib.M_always))
+
+        format = core.GeomVertexFormat.get_v3()
+        vdata = core.GeomVertexData("tri", format, core.Geom.UH_static)
+        vdata.unclean_set_num_rows(3)
+
+        vertex = core.GeomVertexWriter(vdata, "vertex")
+        vertex.set_data3(-1, -1, 0)
+        vertex.set_data3(3, -1, 0)
+        vertex.set_data3(-1, 3, 0)
+
+        if stage in ('tess_control', 'tess_evaluation'):
+            prim = core.GeomPatches(3, core.Geom.UH_static)
+        else:
+            prim = core.GeomTriangles(core.Geom.UH_static)
+        prim.add_next_vertices(3)
+
+        geom = core.Geom(vdata)
+        geom.add_primitive(prim)
+
+        gnode = core.GeomNode("tri")
+        gnode.add_geom(geom, state)
+        scene.attach_new_node(gnode)
+        scene.set_two_sided(True)
+
+        camera = scene.attach_new_node(core.Camera("camera"))
+        camera.node().get_lens(0).set_near_far(-10, 10)
+        camera.node().set_cull_bounds(core.OmniBoundingVolume())
+
+        region = buffer.make_display_region()
+        region.active = True
+        region.camera = camera
+
+        try:
+            engine.render_frame()
+        except AssertionError as exc:
+            assert False, "Error executing shader:\n" + code
+        finally:
+            engine.remove_window(buffer)
+
+        # Download the buffer to check whether the assertion triggered.
+        success = engine.extract_texture_data(result, gsg)
+        assert success
 
         triggered = result.get_ram_image()
         triggered = tuple(memoryview(triggered).cast('I'))
