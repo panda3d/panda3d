@@ -345,6 +345,8 @@ bind(CLP(GraphicsStateGuardian) *glgsg) {
       if (!compile_variant(0)) {
         return false;
       }
+      // The freshly linked program's uniforms have never been specified.
+      _force_respecify |= _uniform_data_deps;
     }
     GLuint program = _linked_programs[0]._program;
     if (program != 0 && !_shader->get_error_flag()) {

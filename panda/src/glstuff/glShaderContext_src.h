@@ -23,6 +23,7 @@
 #include "paramTexture.h"
 #include "small_vector.h"
 #include "ordered_vector.h"
+#include "transformState.h"
 
 class CLP(GraphicsStateGuardian);
 class ShaderModuleSpirV;
@@ -138,9 +139,9 @@ private:
   bool _is_legacy = false;
 
   WCPT(RenderState) _state_rs;
-  const TransformState *_modelview_transform;
-  const TransformState *_camera_transform;
-  const TransformState *_projection_transform;
+  CPT(TransformState) _modelview_transform;
+  CPT(TransformState) _camera_transform;
+  CPT(TransformState) _projection_transform;
   const ColorAttrib *_color_attrib;
   const ShaderAttrib *_shader_attrib;
   const DisplayRegion *_display_region = nullptr;
