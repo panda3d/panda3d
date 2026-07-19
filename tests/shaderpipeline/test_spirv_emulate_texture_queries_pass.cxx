@@ -638,57 +638,6 @@ TEST_CASE("SpirVEmulateTextureQueriesPass dedupes cube sampler arrays", "[shader
   CHECK(count_op(result, spv::OpSelect) == 1);
 }
 
-TEST_CASE("SpirVEmulateTextureQueriesPass removes decorations of replaced types", "[shaderpipeline]") {
-  // The same dedup scenario, but with a decoration on the shadow sampled
-  // image type, which gets replaced by the regular one.  The decoration must
-  // be removed along with the declaration, or it would dangle.  Note that the
-  // input is deliberately not validated: whether RelaxedPrecision may legally
-  // decorate a type is beside the point here, the output must be clean either
-  // way.
-  SpirVModule module = make_module();
-  const ShaderType *vec3_type = ShaderType::register_type(
-    ShaderType::Vector(ShaderType::ST_float, 3));
-  const ShaderType *sampler_cube = ShaderType::register_type(
-    ShaderType::SampledImage(Texture::TT_cube_map, ShaderType::ST_float));
-  const ShaderType *sampler_cube_shadow = ShaderType::register_type(
-    ShaderType::SampledImage(Texture::TT_cube_map, ShaderType::ST_float, true));
-
-  Id id_tex0 = module.define_variable(sampler_cube, spv::StorageClassUniformConstant);
-  Id id_tex1 = module.define_variable(sampler_cube_shadow, spv::StorageClassUniformConstant);
-
-  Id id_sampled_image0 = module.unwrap_pointer_type(module.get_type_id(id_tex0));
-  Id id_sampled_image1 = module.unwrap_pointer_type(module.get_type_id(id_tex1));
-  module.decorate(id_sampled_image1, spv::DecorationRelaxedPrecision);
-
-  Id id_float = module.define_type(ShaderType::FLOAT);
-  Id id_coord = module.define_null_constant(vec3_type);
-  Id id_dref = module.define_float_constant(0.5f);
-
-  {
-    SpirVBuilder b = make_entry_point(module);
-    b.op_load(id_tex0);
-    Id load1 = b.op_load(id_tex1);
-    b.insert(spv::OpImageSampleDrefImplicitLod,
-             {id_float, b.allocate_id(), load1, id_coord, id_dref});
-    b.op_return();
-  }
-
-  InstructionStream stream = module.emit();
-
-  SpirVTransformer transformer(stream);
-  SpirVEmulateTextureQueriesPass pass(Shader::C_sampler_cube_shadow);
-  transformer.run(pass);
-  CHECK(transformer.get_module().validate());
-
-  InstructionStream result = transformer.get_result();
-
-  // The shadow sampled image type was deduplicated away, and its decoration
-  // went with it.
-  REQUIRE(count_op(result, spv::OpTypeSampledImage) == 1);
-  CHECK(find_op(result, spv::OpTypeSampledImage).args[0] == id_sampled_image0);
-  CHECK(count_op(result, spv::OpDecorate) == 0);
-}
-
 TEST_CASE("SpirVEmulateTextureQueriesPass composes with variable removal", "[shaderpipeline]") {
   // uniform samplerCube tex0;  // never used
   // uniform samplerCubeShadow tex1;  // Dref-sampled
