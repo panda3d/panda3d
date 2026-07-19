@@ -16,9 +16,9 @@
 #include "spirv_test_utils.h"
 #include "catch_amalgamated.hpp"
 
-TEST_CASE("SpirVTransformer::assign_procedural_block_names", "[shaderpipeline]") {
+TEST_CASE("SpirVTransformer::assign_procedural_names", "[shaderpipeline]") {
   // Modelled after a geometry shader: an arrayed input block, an output
-  // block, a gl_PerVertex-like built-in block and a loose varying.
+  // block, a gl_PerVertex-like built-in block, a loose varying and a uniform.
   SpirVModule module = make_module();
   module.add_capability(spv::CapabilityGeometry);
 
@@ -34,9 +34,10 @@ TEST_CASE("SpirVTransformer::assign_procedural_block_names", "[shaderpipeline]")
   const ShaderType *in_array_type =
     ShaderType::register_type(ShaderType::Array(in_block_type, 1));
 
+  // The output block gets unnamed members, to test member name assignment.
   ShaderType::Struct out_struct;
-  out_struct.add_member(vec4_type, "b");
-  out_struct.add_member(ShaderType::FLOAT, "a");
+  out_struct.add_member(vec4_type, "");
+  out_struct.add_member(ShaderType::FLOAT, "");
   const ShaderType *out_block_type =
     ShaderType::register_type(std::move(out_struct));
 
@@ -79,6 +80,9 @@ TEST_CASE("SpirVTransformer::assign_procedural_block_names", "[shaderpipeline]")
   Id loose_type = module.unwrap_pointer_type(module.get_type_id(loose_var));
   module.set_location(loose_var, 3);
 
+  Id uniform_var =
+    module.define_variable(vec4_type, spv::StorageClassUniformConstant);
+
   {
     SpirVBuilder builder = make_entry_point(module,
       spv::ExecutionModelGeometry);
@@ -94,7 +98,9 @@ TEST_CASE("SpirVTransformer::assign_procedural_block_names", "[shaderpipeline]")
   REQUIRE(stream.validate());
 
   SpirVTransformer transformer(stream);
-  transformer.assign_procedural_block_names("b");
+  pmap<uint32_t, int> uniform_locations;
+  uniform_locations[uniform_var] = 7;
+  transformer.assign_procedural_names(uniform_locations, 1);
   CHECK(transformer.get_module().validate());
 
   const SpirVModule &result = transformer.get_module();
@@ -105,10 +111,27 @@ TEST_CASE("SpirVTransformer::assign_procedural_block_names", "[shaderpipeline]")
 
   // The built-in block has no location and remains unnamed.
   CHECK(result.get_name(builtin_type).empty());
+  CHECK(result.get_name(builtin_var).empty());
 
   // The block that still had a name keeps it.
   CHECK(result.get_name(named_type) == "vData");
 
   // The loose varying is not a block, so its type is not named.
   CHECK(result.get_name(loose_type).empty());
+
+  // Interface variables are named after the stage index and location, with
+  // outputs getting the index of the next stage.
+  CHECK(result.get_name(in_var) == "i1_0");
+  CHECK(result.get_name(out_var) == "i2_1");
+  CHECK(result.get_name(loose_var) == "i2_3");
+  CHECK(result.get_name(named_var) == "i1_5");
+
+  // Unnamed block members get procedural names, named ones keep theirs.
+  CHECK(result.get_member_name(out_type, 0) == "m0");
+  CHECK(result.get_member_name(out_type, 1) == "m1");
+  CHECK(result.get_member_name(in_type, 0) == "a");
+  CHECK(result.get_member_name(in_type, 1) == "b");
+
+  // The uniform is named after its assigned location.
+  CHECK(result.get_name(uniform_var) == "p7");
 }

@@ -3060,23 +3060,18 @@ compile_spirv_to_spirv(const ShaderModuleSpirV *module, size_t mi,
 
   if (!id_to_location.empty()) {
     transformer.assign_locations(id_to_location);
-
-    if (_glgsg->_gl_vendor == "NVIDIA Corporation") {
-      // Sigh... NVIDIA driver gives an error if the SPIR-V ID doesn't match
-      // for variables with overlapping locations if the OpName is stripped.
-      // We'll have to just insert OpNames for every parameter.
-      // https://forums.developer.nvidia.com/t/gl-arb-gl-spirv-bug-duplicate-location-link-error-if-opname-is-stripped-from-spir-v-shader/128491
-      // Bug was found with 446.14 drivers on Windows 10 64-bit.
-      transformer.assign_procedural_names("p", id_to_location);
-    }
   }
 
   if (_glgsg->_gl_vendor == "NVIDIA Corporation") {
-    // Similarly, the NVIDIA driver matches interface blocks between stages by
-    // name rather than by location, making up a name like "__defaultname_24"
-    // from the SPIR-V id if the OpName was stripped, so we have to give
-    // interlocking blocks matching names based on their location.
-    transformer.assign_procedural_block_names("b");
+    // Sigh... the NVIDIA driver matches uniforms, interface variables, blocks
+    // and block members between stages by name rather than by location,
+    // making up a name like "__defaultname_24" from the SPIR-V id if the
+    // OpName was stripped, resulting in spurious conflicts and link errors.
+    // We'll have to just insert matching OpNames based on the locations.
+    // https://forums.developer.nvidia.com/t/gl-arb-gl-spirv-bug-duplicate-location-link-error-if-opname-is-stripped-from-spir-v-shader/128491
+    // Bug was found with 446.14 drivers on Windows 10 64-bit, and still
+    // present in 591.86.
+    transformer.assign_procedural_names(id_to_location, (unsigned int)mi);
   }
   if (!binding_ids.empty()) {
     // OpenGL has no concept of descriptor sets, so the set index is always 0.

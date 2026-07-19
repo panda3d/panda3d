@@ -213,24 +213,28 @@ assign_flat_decorations() {
 }
 
 /**
- * Assigns procedural names consisting of a prefix followed by an index.
+ * Assigns procedural names based on the location decoration to the given
+ * uniforms ("p<location>"), as well as to every unnamed input and output
+ * interface variable ("i<stage>_<location>", such that the outputs of one
+ * stage receive the same names as the matching inputs of the next stage),
+ * interface block type ("b<location>") and interface block member
+ * ("m<index>").
+ *
+ * This only exists to work around an NVIDIA driver bug: the driver matches
+ * uniforms and interface variables between stages by name rather than by
+ * location, making up a name like "__defaultname_24" based on the SPIR-V id
+ * if the OpName was stripped, which causes spurious conflicts and link
+ * errors.
  */
 void SpirVTransformer::
-assign_procedural_names(const char *prefix, const pmap<uint32_t, int> &suffixes) {
-  char buffer[32];
-  for (const auto &item : suffixes) {
-    sprintf(buffer, "%d", item.second);
-    _module.set_name(Id(item.first), std::string(prefix) + buffer);
+assign_procedural_names(const pmap<uint32_t, int> &uniform_locations,
+                        unsigned int stage_index) {
+  char buffer[48];
+  for (const auto &item : uniform_locations) {
+    sprintf(buffer, "p%d", item.second);
+    _module.set_name(Id(item.first), buffer);
   }
-}
 
-/**
- * Assigns a name based on the location decoration to every unnamed input and
- * output interface block type, so that the names of interlocking blocks agree
- * between stages.  This only exists to work around an NVIDIA driver bug.
- */
-void SpirVTransformer::
-assign_procedural_block_names(const char *prefix) {
   for (uint32_t word = 0; word < get_id_bound(); ++word) {
     Id id(word);
     if (_module.get_definition_type(id) != SpirVModule::DT_variable ||
@@ -244,8 +248,15 @@ assign_procedural_block_names(const char *prefix) {
     }
     int location = _module.get_location(id);
     if (location < 0) {
-      // Built-in blocks like gl_PerVertex carry no location.
+      // Built-in variables and blocks like gl_PerVertex carry no location.
       continue;
+    }
+
+    if (_module.get_name(id).empty()) {
+      sprintf(buffer, "i%u_%d",
+              storage_class == spv::StorageClassOutput ? stage_index + 1u : stage_index,
+              location);
+      _module.set_name(id, buffer);
     }
 
     // In geometry and tessellation stages the block is wrapped in an array;
@@ -256,15 +267,25 @@ assign_procedural_block_names(const char *prefix) {
       type_id = _module.get_type_id(type_id);
       type = _module.resolve_type(type_id);
     }
-    if (type_id == 0 ||
-        !_module.has_decoration(type_id, spv::DecorationBlock) ||
-        !_module.get_name(type_id).empty()) {
+    if (type_id == 0 || type == nullptr ||
+        !_module.has_decoration(type_id, spv::DecorationBlock)) {
       continue;
     }
 
-    char buffer[16];
-    sprintf(buffer, "%d", location);
-    _module.set_name(type_id, std::string(prefix) + buffer);
+    if (_module.get_name(type_id).empty()) {
+      sprintf(buffer, "b%d", location);
+      _module.set_name(type_id, buffer);
+    }
+
+    // The driver similarly makes up mismatching names for unnamed members.
+    if (const ShaderType::Struct *struct_type = type->as_struct()) {
+      for (uint32_t mi = 0; mi < (uint32_t)struct_type->get_num_members(); ++mi) {
+        if (_module.get_member_name(type_id, mi).empty()) {
+          sprintf(buffer, "m%u", mi);
+          _module.set_member_name(type_id, mi, buffer);
+        }
+      }
+    }
   }
 }
 
