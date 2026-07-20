@@ -20,19 +20,16 @@ CardMaker(std::string name) : Namable(std::move(name)) {
 }
 
 /**
- *
- */
-INLINE CardMaker::
-~CardMaker() {
-}
-
-/**
  * Sets the flag indicating whether vertices will be generated with UV's or
  * not.
  */
 INLINE void CardMaker::
 set_has_uvs(bool flag) {
-  _has_uvs = flag;
+  if (flag) {
+    _flags |= F_has_uvs;
+  } else {
+    _flags &= ~F_has_uvs;
+  }
 }
 
 /**
@@ -42,7 +39,11 @@ set_has_uvs(bool flag) {
  */
 INLINE void CardMaker::
 set_has_3d_uvs(bool flag) {
-  _has_3d_uvs = flag;
+  if (flag) {
+    _flags |= F_has_3d_uvs;
+  } else {
+    _flags &= ~F_has_3d_uvs;
+  }
 }
 
 /**
@@ -50,10 +51,10 @@ set_has_3d_uvs(bool flag) {
  */
 INLINE void CardMaker::
 set_frame(PN_stdfloat left, PN_stdfloat right, PN_stdfloat bottom, PN_stdfloat top) {
-  _ll_pos = LVector3::rfu(left,  0.0f, bottom);
-  _lr_pos = LVector3::rfu(right, 0.0f, bottom);
-  _ur_pos = LVector3::rfu(right, 0.0f, top);
-  _ul_pos = LVector3::rfu(left,  0.0f, top);
+  _ll_pos = LVertex::rfu(left,  0.0f, bottom);
+  _lr_pos = LVertex::rfu(right, 0.0f, bottom);
+  _ur_pos = LVertex::rfu(right, 0.0f, top);
+  _ul_pos = LVertex::rfu(left,  0.0f, top);
 }
 
 /**
@@ -98,7 +99,7 @@ set_color(PN_stdfloat r, PN_stdfloat g, PN_stdfloat b, PN_stdfloat a) {
 INLINE void CardMaker::
 set_color(const LVecBase4 &color) {
   _color = color;
-  _has_color = true;
+  _flags |= F_has_color;
 }
 
 /**
@@ -106,7 +107,7 @@ set_color(const LVecBase4 &color) {
  */
 INLINE void CardMaker::
 clear_color() {
-  _has_color = false;
+  _flags &= ~F_has_color;
   _color.set(1.0f, 1.0f, 1.0f, 1.0f);
 }
 
@@ -119,7 +120,11 @@ clear_color() {
  */
 INLINE void CardMaker::
 set_has_normals(bool flag) {
-  _has_normals = flag;
+  if (flag) {
+    _flags |= F_has_normals;
+  } else {
+    _flags &= ~F_has_normals;
+  }
 }
 
 /**
