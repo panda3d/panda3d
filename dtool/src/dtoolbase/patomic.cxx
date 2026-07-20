@@ -128,7 +128,13 @@ initialize_wait(volatile VOID *addr, PVOID cmp, SIZE_T size, DWORD timeout) {
 #elif !defined(CPPPARSER) && !defined(__linux__) && !defined(__APPLE__) && !defined(__FreeBSD__) && defined(HAVE_POSIX_THREADS)
 
 // Same as above, but using pthreads.
-struct alignas(64) WaitTableEntry {
+struct
+#ifdef __APPLE__ && defined(__arm64__)
+alignas(128)
+#else
+alignas(64)
+#endif
+WaitTableEntry {
   pthread_mutex_t _lock = PTHREAD_MUTEX_INITIALIZER;
   pthread_cond_t _cvar = PTHREAD_COND_INITIALIZER;
   unsigned int _waiters = 0;
