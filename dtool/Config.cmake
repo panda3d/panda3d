@@ -227,7 +227,7 @@ This is only necessary if you plan to make calls into Panda from a
 program written in Python.  This is done only if HAVE_PYTHON is also
 true." ON "HAVE_PYTHON" OFF)
 
-set(INTERROGATE_C_INTERFACE
+option(INTERROGATE_C_INTERFACE
   "Do you want to generate a C-callable interrogate interface?  This
 generates an interface similar to the Python interface above, with
 a C calling convention.  It should be useful for most other kinds
