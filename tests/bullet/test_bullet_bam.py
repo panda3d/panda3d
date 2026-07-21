@@ -153,6 +153,29 @@ def test_convex_shape():
     assert shape.margin == shape2.margin
 
 
+def test_convex_hull_optimization():
+    shape = bullet.BulletConvexHullShape()
+    shape.add_array([
+        (-1.0, -1.0, -1.0),
+        (1.0, -1.0, -1.0),
+        (-1.0, 1.0, -1.0),
+        (-1.0, -1.0, 1.0),
+        (1.0, 1.0, -1.0),
+        (1.0, -1.0, 1.0),
+        (-1.0, 1.0, 1.0),
+        (1.0, 1.0, 1.0),
+        (0.0, 0.0, 0.0),
+    ])
+
+    assert shape.get_num_points() == 9
+    assert shape.num_points == 9
+
+    shape.optimize_convex_hull()
+
+    assert shape.get_num_points() == 8
+    assert shape.num_points == 8
+
+
 def test_ghost():
     node = bullet.BulletGhostNode("some ghost node")
 

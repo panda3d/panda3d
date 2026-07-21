@@ -38,6 +38,11 @@ PUBLISHED:
   void add_geom(const Geom *geom,
                 const TransformState *ts=TransformState::make_identity());
 
+  int get_num_points() const;
+  void optimize_convex_hull();
+
+  MAKE_PROPERTY(num_points, get_num_points);
+
 public:
   virtual btCollisionShape *ptr() const;
 
