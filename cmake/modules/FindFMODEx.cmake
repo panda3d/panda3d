@@ -2,7 +2,7 @@
 # Author: kestred (8 Dec, 2013)
 #
 # Usage:
-#   find_pcackage(FMODEx [REQUIRED] [QUIET])
+#   find_package(FMODEx [REQUIRED] [QUIET])
 #
 # Once done this will define:
 #   FMODEX_FOUND       - system has FMOD Ex
@@ -11,7 +11,7 @@
 #   FMODEX_LIBRARY     - the path to the library binary
 #
 #   FMODEX_32_LIBRARY - the filepath of the FMOD Ex SDK 32-bit library
-#   FMOXEX_64_LIBRARY - the filepath of the FMOD Ex SDK 64-bit library
+#   FMODEX_64_LIBRARY - the filepath of the FMOD Ex SDK 64-bit library
 #
 
 # Find the include directory
@@ -26,6 +26,8 @@ find_path(FMODEX_INCLUDE_DIR
         "/opt/fmodex/include"
         "/opt/fmodex/api/inc"
         "C:/Program Files (x86)/FMOD SoundSystem/FMOD Programmers API Win32/api/inc"
+        "C:/Program Files (x86)/FMOD SoundSystem/FMOD Programmers API Win64/api/inc"
+        "C:/Program Files/FMOD SoundSystem/FMOD Programmers API Win64/api/inc"
   PATH_SUFFIXES "" "fmodex/fmod" "fmodex/fmod3" "fmod" "fmod3"
   DOC "The path to FMOD Ex's include directory."
 )
@@ -61,14 +63,25 @@ find_library(FMODEX_64_LIBRARY
         "/opt/fmodex"
         "/opt/fmodex/api"
         "/usr/freeware"
+        "C:/Program Files (x86)/FMOD SoundSystem/FMOD Programmers API Win64/api/lib"
+        "C:/Program Files/FMOD SoundSystem/FMOD Programmers API Win64/api/lib"
   PATH_SUFFIXES "" "lib" "lib64"
 )
 
-if(FMODEX_32_LIBRARY)
-  set(FMODEX_LIBRARY ${FMODEX_32_LIBRARY} CACHE FILEPATH "The filepath to FMOD Ex's library binary.")
-elseif(FMODEX_64_LIBRARY)
-  set(FMODEX_LIBRARY ${FMODEX_64_LIBRARY} CACHE FILEPATH "The filepath to FMOD Ex's library binary.")
+# Prefer the library matching the architecture we are compiling for.
+if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+  set(_fmodex_preferred_libs FMODEX_64_LIBRARY FMODEX_32_LIBRARY)
+else()
+  set(_fmodex_preferred_libs FMODEX_32_LIBRARY FMODEX_64_LIBRARY)
 endif()
+
+foreach(_fmodex_lib ${_fmodex_preferred_libs})
+  if(${_fmodex_lib})
+    set(FMODEX_LIBRARY ${${_fmodex_lib}} CACHE FILEPATH "The filepath to FMOD Ex's library binary.")
+    break()
+  endif()
+endforeach(_fmodex_lib)
+unset(_fmodex_preferred_libs)
 
 get_filename_component(FMODEX_LIBRARY_DIR "${FMODEX_LIBRARY}" PATH)
 set(FMODEX_LIBRARY_DIR "${FMODEX_LIBRARY_DIR}" CACHE PATH "The path to FMOD Ex's library directory.")
