@@ -470,6 +470,12 @@ package_option(OpenSSL
   "Enable OpenSSL support"
   IMPORTED_AS OpenSSL::SSL OpenSSL::Crypto)
 
+if(WIN32 AND HAVE_OPENSSL)
+  # A statically-linked OpenSSL (as shipped in the thirdparty packages) also
+  # needs these Windows system libraries.
+  target_link_libraries(PKG::OPENSSL INTERFACE crypt32 ws2_32)
+endif()
+
 option(REPORT_OPENSSL_ERRORS
   "Define this true to include the OpenSSL code to report verbose
 error messages when they occur." OFF)
