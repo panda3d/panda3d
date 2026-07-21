@@ -274,17 +274,19 @@ if(BUILD_INTERROGATE)
       -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
 
     EXCLUDE_FROM_ALL ON
-    BUILD_BYPRODUCTS "${_interrogate_dir}/bin/interrogate"
-                     "${_interrogate_dir}/bin/interrogate_module"
+    BUILD_BYPRODUCTS "${_interrogate_dir}/bin/interrogate${CMAKE_EXECUTABLE_SUFFIX}"
+                     "${_interrogate_dir}/bin/interrogate_module${CMAKE_EXECUTABLE_SUFFIX}"
   )
 
   add_executable(interrogate IMPORTED GLOBAL)
   add_dependencies(interrogate panda3d-interrogate)
-  set_target_properties(interrogate PROPERTIES IMPORTED_LOCATION "${_interrogate_dir}/bin/interrogate")
+  set_target_properties(interrogate PROPERTIES
+    IMPORTED_LOCATION "${_interrogate_dir}/bin/interrogate${CMAKE_EXECUTABLE_SUFFIX}")
 
   add_executable(interrogate_module IMPORTED GLOBAL)
   add_dependencies(interrogate_module panda3d-interrogate)
-  set_target_properties(interrogate_module PROPERTIES IMPORTED_LOCATION "${_interrogate_dir}/bin/interrogate_module")
+  set_target_properties(interrogate_module PROPERTIES
+    IMPORTED_LOCATION "${_interrogate_dir}/bin/interrogate_module${CMAKE_EXECUTABLE_SUFFIX}")
 
 else()
   find_program(INTERROGATE_EXECUTABLE interrogate)
