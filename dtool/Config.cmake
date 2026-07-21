@@ -243,16 +243,15 @@ option(INTERROGATE_VERBOSE
   "Set this if you would like interrogate to generate advanced
 debugging information." OFF)
 
-set(_default_build_interrogate OFF)
-if (INTERROGATE_C_INTERFACE OR INTERROGATE_PYTHON_INTERFACE)
-  set(_default_build_interrogate ON)
-endif()
-
-option(BUILD_INTERROGATE
+# This is a dependent option so that it is re-evaluated when the interfaces
+# are toggled later on (eg. when Python is enabled on a reconfiguration),
+# rather than permanently latching the default from the first configure.
+cmake_dependent_option(BUILD_INTERROGATE
   "Do you want to build interrogate from source?  This is necessary
 if you wish to build Python or other bindings around Panda3D's C++
 interface.  Set this to false if you already have a compatible
-version of interrogate installed." ${_default_build_interrogate})
+version of interrogate installed." ON
+  "INTERROGATE_PYTHON_INTERFACE OR INTERROGATE_C_INTERFACE" OFF)
 
 mark_as_advanced(INTERROGATE_OPTIONS)
 
