@@ -56,7 +56,7 @@ endif()
 
 # Determine the possible build types.  Must be *after* calling project().
 set(_configs Standard Release RelWithDebInfo Debug MinSizeRel)
-if(CMAKE_CXX_COMPILER_ID MATCHES "(AppleClang|Clang|GCC)")
+if(CMAKE_CXX_COMPILER_ID MATCHES "(AppleClang|Clang|GNU)")
   list(APPEND _configs Coverage)
 endif()
 
