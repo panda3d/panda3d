@@ -35,6 +35,37 @@ void PathFollow::add_to_path(LVecBase3 pos) {
 }
 
 /**
+ * Sets the path directly from a list of waypoints.
+ * Used by the new NavMesh system.
+ */
+void PathFollow::set_path(const pvector<LPoint3> &waypoints) {
+  _path.clear();
+  
+  // FIX 2: Path Direction Reversal
+  // Legacy PathFollow expects waypoints in End->Start order (backwards stack),
+  // because it pops/decrements indices from size()-1 down to 0.
+  // NavPath provides Start->End. We must reverse it.
+  for (int i = (int)waypoints.size() - 1; i >= 0; --i) {
+    _path.push_back(waypoints[i]);
+  }
+
+  // FIX 3: PathFollow Reset
+  // Reset internal state to valid starting conditions for the new path.
+  if (_path.size() > 0) {
+    _curr_path_waypoint = _path.size() - 1;
+    
+    // Update dummy node to start position immediately
+    if (!_dummy.is_empty()) {
+      _dummy.set_pos(_path[_curr_path_waypoint]);
+    }
+    
+    _time = _myClock->get_real_time();
+  } else {
+    _curr_path_waypoint = -1;
+  }
+}
+
+/**
  * This function initiates the path follow behavior.
  */
 void PathFollow::start(std::string type) {

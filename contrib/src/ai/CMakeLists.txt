@@ -42,7 +42,7 @@ set(P3AI_SOURCES
 composite_sources(p3ai P3AI_SOURCES)
 add_library(p3ai ${P3AI_HEADERS} ${P3AI_SOURCES})
 set_target_properties(p3ai PROPERTIES DEFINE_SYMBOL BUILDING_PANDAAI)
-target_link_libraries(p3ai p3contribbase)
+target_link_libraries(p3ai p3contribbase p3navmesh)
 target_interrogate(p3ai ALL)
 
 install(TARGETS p3ai
