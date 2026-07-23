@@ -2075,7 +2075,11 @@ set_state_and_transform(const RenderState *target_rs,
     target_rs->get_attrib_def(_color_attrib);
   }
 
-  if (_shader_attrib != _glgsg->_target_shader) {
+  // We only compare the pointer, so we don't need to lock the weak pointer,
+  // but we do need to make sure that it wasn't a recycled pointer from a
+  // deleted attribute.
+  if (_shader_attrib.get_orig() != _glgsg->_target_shader.p() ||
+      _shader_attrib.was_deleted()) {
     altered |= Shader::D_shader_inputs;
     _shader_attrib = _glgsg->_target_shader;
   }
@@ -2098,8 +2102,9 @@ set_state_and_transform(const RenderState *target_rs,
   }
 
   // Textures may have altered from last frame, we always have to respecify
-  // those from one frame to the next.
-  if (altered & (Shader::D_texture | Shader::D_frame)) {
+  // those from one frame to the next.  The same goes for when the shader
+  // inputs have changed, since textures and images may be bound as inputs.
+  if (altered & (Shader::D_texture | Shader::D_frame | Shader::D_shader_inputs)) {
     update_shader_texture_bindings();
   }
 

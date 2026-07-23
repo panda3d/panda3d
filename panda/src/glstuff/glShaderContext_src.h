@@ -143,7 +143,7 @@ private:
   CPT(TransformState) _camera_transform;
   CPT(TransformState) _projection_transform;
   const ColorAttrib *_color_attrib;
-  const ShaderAttrib *_shader_attrib;
+  WCPT(ShaderAttrib) _shader_attrib;
   const DisplayRegion *_display_region = nullptr;
   int _frame_number = -1;
 
