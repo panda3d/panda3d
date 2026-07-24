@@ -341,6 +341,66 @@ clear_prepared(PreparedGraphicsObjects *prepared_objects) {
 }
 
 /**
+ * Returns true if the array format can safely be used to endian-reverse a raw
+ * vertex data buffer of the indicated size.
+ */
+bool GeomVertexArrayData::
+verify_data_endianness(size_t size) const {
+  nassertr(_array_format != nullptr, false);
+
+  int stride_int = _array_format->get_stride();
+  if (stride_int <= 0) {
+    if (size == 0) {
+      return true;
+    }
+    gobj_cat.error()
+      << "Cannot endian-reverse " << size
+      << " bytes of vertex data with invalid row stride "
+      << stride_int << ".\n";
+    return false;
+  }
+
+  size_t stride = (size_t)stride_int;
+
+  if ((size % stride) != 0) {
+    gobj_cat.error()
+      << "Cannot endian-reverse " << size
+      << " bytes of vertex data with " << stride
+      << "-byte rows.\n";
+    return false;
+  }
+
+  int num_columns = _array_format->get_num_columns();
+  for (int ci = 0; ci < num_columns; ++ci) {
+    const GeomVertexColumn *col = _array_format->get_column(ci);
+    int start = col->get_start();
+    int component_bytes = col->get_component_bytes();
+    int num_components = col->get_num_components();
+
+    if (start < 0 || component_bytes <= 0 || num_components <= 0) {
+      gobj_cat.error()
+        << "Cannot endian-reverse invalid vertex column "
+        << *col->get_name() << ".\n";
+      return false;
+    }
+
+    size_t column_start = (size_t)start;
+    size_t column_bytes = (size_t)component_bytes;
+    size_t column_components = (size_t)num_components;
+
+    if (column_start > stride ||
+        column_components > (stride - column_start) / column_bytes) {
+      gobj_cat.error()
+        << "Cannot endian-reverse vertex column " << *col->get_name()
+        << " because it extends beyond the " << stride << "-byte row.\n";
+      return false;
+    }
+  }
+
+  return true;
+}
+
+/**
  * Fills a new data array with all numeric values expressed in the indicated
  * array reversed, byte-for-byte, to convert littleendian to bigendian and
  * vice-versa.
@@ -348,6 +408,10 @@ clear_prepared(PreparedGraphicsObjects *prepared_objects) {
 void GeomVertexArrayData::
 reverse_data_endianness(unsigned char *dest, const unsigned char *source,
                         size_t size) {
+  if (!verify_data_endianness(size)) {
+    return;
+  }
+
   int num_columns = _array_format->get_num_columns();
 
   // Walk through each row of the data.
@@ -450,9 +514,15 @@ finalize(BamReader *manager) {
   if (aux_data != nullptr) {
     if (aux_data->_endian_reversed) {
       // Now is the time to endian-reverse the data.
-      VertexDataBuffer new_buffer(cdata->_buffer.get_size());
-      reverse_data_endianness(new_buffer.get_write_pointer(), cdata->_buffer.get_read_pointer(true), cdata->_buffer.get_size());
-      cdata->_buffer.swap(new_buffer);
+      if (verify_data_endianness(cdata->_buffer.get_size())) {
+        VertexDataBuffer new_buffer(cdata->_buffer.get_size());
+        reverse_data_endianness(new_buffer.get_write_pointer(),
+                                cdata->_buffer.get_read_pointer(true),
+                                cdata->_buffer.get_size());
+        cdata->_buffer.swap(new_buffer);
+      } else {
+        cdata->_buffer.clear();
+      }
     }
   }
 
@@ -577,9 +647,15 @@ fillin(DatagramIterator &scan, BamReader *manager, void *extra_data) {
     } else {
       // Since we have the _array_format pointer now, we can reverse it
       // immediately (and we should, to support threaded CData updates).
-      VertexDataBuffer new_buffer(_buffer.get_size());
-      array_data->reverse_data_endianness(new_buffer.get_write_pointer(), _buffer.get_read_pointer(true), _buffer.get_size());
-      _buffer.swap(new_buffer);
+      if (array_data->verify_data_endianness(_buffer.get_size())) {
+        VertexDataBuffer new_buffer(_buffer.get_size());
+        array_data->reverse_data_endianness(new_buffer.get_write_pointer(),
+                                            _buffer.get_read_pointer(true),
+                                            _buffer.get_size());
+        _buffer.swap(new_buffer);
+      } else {
+        _buffer.clear();
+      }
     }
   }
 
