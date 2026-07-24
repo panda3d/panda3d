@@ -223,6 +223,14 @@ function(package_option name)
 
       target_link_libraries(PKG::${name} INTERFACE ${libs})
 
+      if(DEFINED ${found_as}_LIBRARY_DIRS)
+        set(libdir ${${found_as}_LIBRARY_DIRS})
+      elseif(DEFINED ${found_as}_LIBDIR)
+        set(libdir ${${found_as}_LIBDIR})
+      endif()
+
+      target_link_directories(PKG::${name} INTERFACE ${libdir})
+
       # Hide it from Interrogate
       set_target_properties(PKG::${name} PROPERTIES
         INTERFACE_INCLUDE_DIRECTORIES "$<${_is_not_interrogate}:${includes}>")
