@@ -3257,6 +3257,11 @@ if tp_dir is not None:
                     CopyFile(GetOutputDir() + "/python/ppythonw.exe", SDK["PYTHON"] + "/pythonw.exe")
                 ConditionalWriteFile(GetOutputDir() + "/python/panda.pth", "..\n../bin\n")
 
+                # Tells run_pytest.exe where to find the Python standard
+                # library relative to its own location.
+                ConditionalWriteFile(GetOutputDir() + "/bin/run_pytest._pth",
+                    "../python/Lib\n../python/DLLs\n../python/Lib/site-packages\n..\n.\n")
+
 # Copy over the MSVC runtime.
 if GetTarget() == 'windows' and "VISUALSTUDIO" in SDK:
     vcver = "%s%s" % (SDK["MSVC_VERSION"][0], 0)        # ignore minor version.

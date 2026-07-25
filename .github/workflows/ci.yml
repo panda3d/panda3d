@@ -267,7 +267,7 @@ jobs:
 
     - name: Setup Python (Python 3.8)
       if: contains(matrix.python, 'YES')
-      uses: actions/setup-python@v6
+      uses: actions/setup-python@v7
       with:
         python-version: '3.8'
     - name: Configure (Python 3.8)
@@ -300,7 +300,7 @@ jobs:
 
     - name: Setup Python (Python 3.9)
       if: contains(matrix.python, 'YES')
-      uses: actions/setup-python@v6
+      uses: actions/setup-python@v7
       with:
         python-version: '3.9'
     - name: Configure (Python 3.9)
@@ -333,7 +333,7 @@ jobs:
 
     - name: Setup Python (Python 3.10)
       if: contains(matrix.python, 'YES')
-      uses: actions/setup-python@v6
+      uses: actions/setup-python@v7
       with:
         python-version: '3.10'
     - name: Configure (Python 3.10)
@@ -366,7 +366,7 @@ jobs:
 
     - name: Setup Python (Python 3.11)
       if: contains(matrix.python, 'YES')
-      uses: actions/setup-python@v6
+      uses: actions/setup-python@v7
       with:
         python-version: '3.11'
     - name: Configure (Python 3.11)
@@ -399,7 +399,7 @@ jobs:
 
     - name: Setup Python (Python 3.12)
       if: contains(matrix.python, 'YES')
-      uses: actions/setup-python@v6
+      uses: actions/setup-python@v7
       with:
         python-version: '3.12'
     - name: Configure (Python 3.12)
@@ -507,7 +507,7 @@ jobs:
         echo "load-display p3headlessgl" >> built_dbl/etc/ci.prc
 
     - name: Set up Python 3.13
-      uses: actions/setup-python@v6
+      uses: actions/setup-python@v7
       with:
         python-version: '3.13'
     - name: Build Python 3.13
@@ -521,7 +521,7 @@ jobs:
         PYTHONPATH=built LD_LIBRARY_PATH=built/lib:$pythonLocation/lib DYLD_LIBRARY_PATH=built/lib python -m pytest
 
     - name: Set up Python 3.12
-      uses: actions/setup-python@v6
+      uses: actions/setup-python@v7
       with:
         python-version: '3.12'
     - name: Build Python 3.12 (double)
@@ -539,7 +539,7 @@ jobs:
         python makepanda/makepackage.py --verbose --lzma --outputdir=built_dbl
 
     - name: Set up Python 3.11
-      uses: actions/setup-python@v6
+      uses: actions/setup-python@v7
       with:
         python-version: '3.11'
     - name: Build Python 3.11
@@ -553,7 +553,7 @@ jobs:
         PYTHONPATH=built LD_LIBRARY_PATH=built/lib:$pythonLocation/lib DYLD_LIBRARY_PATH=built/lib python -m pytest --no-cxx-tests
 
     - name: Set up Python 3.10
-      uses: actions/setup-python@v6
+      uses: actions/setup-python@v7
       with:
         python-version: '3.10'
     - name: Build Python 3.10
@@ -567,7 +567,7 @@ jobs:
         PYTHONPATH=built LD_LIBRARY_PATH=built/lib:$pythonLocation/lib DYLD_LIBRARY_PATH=built/lib python -m pytest --no-cxx-tests
 
     - name: Set up Python 3.9
-      uses: actions/setup-python@v6
+      uses: actions/setup-python@v7
       with:
         python-version: '3.9'
     - name: Build Python 3.9
@@ -581,7 +581,7 @@ jobs:
         PYTHONPATH=built LD_LIBRARY_PATH=built/lib:$pythonLocation/lib DYLD_LIBRARY_PATH=built/lib python -m pytest --no-cxx-tests
 
     - name: Set up Python 3.8
-      uses: actions/setup-python@v6
+      uses: actions/setup-python@v7
       with:
         python-version: '3.8'
     - name: Build Python 3.8
@@ -731,7 +731,7 @@ jobs:
       run: |
         echo "ANDROID_NDK_ROOT=$ANDROID_SDK_ROOT/ndk/${{ matrix.ndk-version }}" >> $GITHUB_ENV
 
-    - uses: actions/setup-python@v6
+    - uses: actions/setup-python@v7
       with:
         python-version: '3.13'
 

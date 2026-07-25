@@ -227,7 +227,7 @@ This is only necessary if you plan to make calls into Panda from a
 program written in Python.  This is done only if HAVE_PYTHON is also
 true." ON "HAVE_PYTHON" OFF)
 
-set(INTERROGATE_C_INTERFACE
+option(INTERROGATE_C_INTERFACE
   "Do you want to generate a C-callable interrogate interface?  This
 generates an interface similar to the Python interface above, with
 a C calling convention.  It should be useful for most other kinds
@@ -243,16 +243,15 @@ option(INTERROGATE_VERBOSE
   "Set this if you would like interrogate to generate advanced
 debugging information." OFF)
 
-set(_default_build_interrogate OFF)
-if (INTERROGATE_C_INTERFACE OR INTERROGATE_PYTHON_INTERFACE)
-  set(_default_build_interrogate ON)
-endif()
-
-option(BUILD_INTERROGATE
+# This is a dependent option so that it is re-evaluated when the interfaces
+# are toggled later on (eg. when Python is enabled on a reconfiguration),
+# rather than permanently latching the default from the first configure.
+cmake_dependent_option(BUILD_INTERROGATE
   "Do you want to build interrogate from source?  This is necessary
 if you wish to build Python or other bindings around Panda3D's C++
 interface.  Set this to false if you already have a compatible
-version of interrogate installed." ${_default_build_interrogate})
+version of interrogate installed." ON
+  "INTERROGATE_PYTHON_INTERFACE OR INTERROGATE_C_INTERFACE" OFF)
 
 mark_as_advanced(INTERROGATE_OPTIONS)
 
@@ -274,17 +273,19 @@ if(BUILD_INTERROGATE)
       -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
 
     EXCLUDE_FROM_ALL ON
-    BUILD_BYPRODUCTS "${_interrogate_dir}/bin/interrogate"
-                     "${_interrogate_dir}/bin/interrogate_module"
+    BUILD_BYPRODUCTS "${_interrogate_dir}/bin/interrogate${CMAKE_EXECUTABLE_SUFFIX}"
+                     "${_interrogate_dir}/bin/interrogate_module${CMAKE_EXECUTABLE_SUFFIX}"
   )
 
   add_executable(interrogate IMPORTED GLOBAL)
   add_dependencies(interrogate panda3d-interrogate)
-  set_target_properties(interrogate PROPERTIES IMPORTED_LOCATION "${_interrogate_dir}/bin/interrogate")
+  set_target_properties(interrogate PROPERTIES
+    IMPORTED_LOCATION "${_interrogate_dir}/bin/interrogate${CMAKE_EXECUTABLE_SUFFIX}")
 
   add_executable(interrogate_module IMPORTED GLOBAL)
   add_dependencies(interrogate_module panda3d-interrogate)
-  set_target_properties(interrogate_module PROPERTIES IMPORTED_LOCATION "${_interrogate_dir}/bin/interrogate_module")
+  set_target_properties(interrogate_module PROPERTIES
+    IMPORTED_LOCATION "${_interrogate_dir}/bin/interrogate_module${CMAKE_EXECUTABLE_SUFFIX}")
 
 else()
   find_program(INTERROGATE_EXECUTABLE interrogate)

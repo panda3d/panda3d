@@ -29,7 +29,7 @@
 class EXPCL_PANDA_GRUTIL CardMaker : public Namable {
 PUBLISHED:
   INLINE explicit CardMaker(std::string name);
-  INLINE ~CardMaker();
+  ~CardMaker() = default;
 
   void reset();
   void set_uv_range(const LTexCoord &ll, const LTexCoord &ur);
@@ -61,14 +61,19 @@ PUBLISHED:
 private:
   PT(PandaNode) rescale_source_geometry();
 
-  bool _has_uvs, _has_3d_uvs;
-  LVertex _ul_tex, _ll_tex, _lr_tex, _ur_tex;
-  LTexCoord3 _ul_pos, _ll_pos, _lr_pos, _ur_pos;
+  enum Flags {
+    F_has_uvs = 1,
+    F_has_3d_uvs = 2,
+    F_has_color = 4,
+    F_has_normals = 8,
+  };
 
-  bool _has_color;
+  int _flags;
+
+  LVertex _ul_pos, _ll_pos, _lr_pos, _ur_pos;
+  LTexCoord3 _ul_tex, _ll_tex, _lr_tex, _ur_tex;
+
   LColor _color;
-
-  bool _has_normals;
 
   PT(PandaNode) _source_geometry;
   LVecBase4 _source_frame;

@@ -73,16 +73,12 @@ operator < (const HashVal &other) const {
  */
 INLINE int HashVal::
 compare_to(const HashVal &other) const {
-  if (_hv[0] != other._hv[0]) {
-    return (int)_hv[0] - (int)other._hv[0];
+  for (int i = 0; i < 4; ++i) {
+    if (_hv[i] != other._hv[i]) {
+      return (_hv[i] < other._hv[i]) ? -1 : 1;
+    }
   }
-  if (_hv[1] != other._hv[1]) {
-    return (int)_hv[1] - (int)other._hv[1];
-  }
-  if (_hv[2] != other._hv[2]) {
-    return (int)_hv[2] - (int)other._hv[2];
-  }
-  return (int)_hv[3] - (int)other._hv[3];
+  return 0;
 }
 
 /**

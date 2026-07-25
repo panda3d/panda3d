@@ -1648,7 +1648,7 @@ assemble_row(TextAssembler::TextRow &row,
 
       if (!got_glyph) {
         char buffer[512];
-        sprintf(buffer, "U+%04x", character);
+        sprintf(buffer, "U+%04x", (unsigned int)character);
         text_cat.warning()
           << "No definition in " << font->get_name()
           << " for character " << buffer;
