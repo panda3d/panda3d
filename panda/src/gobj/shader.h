@@ -46,7 +46,19 @@ class ShaderCompiler;
 class ShaderInputBinding;
 
 /**
+ * Represents a complete shader program, composed of one or more ShaderModule
+ * objects, each of which corresponds to a single programmable stage (such as
+ * the vertex or fragment stage).  Shaders are usually written in a language
+ * like GLSL, HLSL, or Cg, and compiled by ShaderCompiler to an intermediate
+ * representation, as represented by ShaderModule.  The modules are linked
+ * together with a set of parameter bindings that determine how the shader's
+ * inputs are filled in at render time.
  *
+ * A shader containing graphics pipeline stages can be applied to geometry
+ * via a ShaderAttrib in order to override parts of the fixed-function
+ * rendering pipeline.  Alternatively, a shader may consist of a single compute
+ * stage, which runs outside the graphics pipeline and is dispatched using a
+ * ComputeNode or via GraphicsEngine::dispatch_compute().
  */
 class EXPCL_PANDA_GOBJ Shader : public TypedWritableReferenceCount, public ShaderEnums {
 PUBLISHED:
