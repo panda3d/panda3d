@@ -545,11 +545,11 @@ load(const ShaderFile &sbody, const CompilerOptions &options, BamCacheRecord *re
     if (!do_load_source(Stage::VERTEX, sbody._shared, options, record)) {
       return false;
     }
-    if (!do_load_source(Stage::FRAGMENT, sbody._shared, options, record)) {
-      return false;
-    }
     if (sbody._shared.find("gshader") != string::npos &&
         !do_load_source(Stage::GEOMETRY, sbody._shared, options, record)) {
+      return false;
+    }
+    if (!do_load_source(Stage::FRAGMENT, sbody._shared, options, record)) {
       return false;
     }
 
