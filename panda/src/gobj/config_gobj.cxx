@@ -258,7 +258,7 @@ ConfigVariableBool cache_generated_shaders
 ("cache-generated-shaders", true,
  PRC_DESC("Set this true to cause all shaders created from strings, such "
           "as by the shader generator, to be cached in memory and (subject "
-          "to model-cache-compiled-shaders) on disk.  This is useful to "
+          "to model-cache-shaders) on disk.  This is useful to "
           "prevent unnecessary recompilation.  Set this false to disable all "
           "caching of such shaders."));
 

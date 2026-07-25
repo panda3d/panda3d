@@ -116,9 +116,31 @@ get_cache_compressed_textures() const {
 }
 
 /**
+ * Indicates whether compiled shader modules will be stored in the cache, as
+ * binary .smo files.
+ */
+INLINE void BamCache::
+set_cache_shaders(bool flag) {
+  ReMutexHolder holder(_lock);
+  _cache_shaders = flag;
+}
+
+/**
+ * Returns whether compiled shader modules will be stored in the cache, as
+ * binary .smo files.  See set_cache_shaders().
+ *
+ * This also returns false if get_active() is false.
+ */
+INLINE bool BamCache::
+get_cache_shaders() const {
+  ReMutexHolder holder(_lock);
+  return _cache_shaders && _active;
+}
+
+/**
  * Indicates whether compiled shader programs will be stored in the cache, as
  * binary .sho files.  This may not be supported by all shader languages or
- * graphics renderers.
+ * graphics renderers.  This currently has no effect.
  */
 INLINE void BamCache::
 set_cache_compiled_shaders(bool flag) {
@@ -128,7 +150,7 @@ set_cache_compiled_shaders(bool flag) {
 
 /**
  * Returns whether compiled shader programs will be stored in the cache, as
- * binary .txo files.  See set_cache_compiled_shaders().
+ * binary .sho files.  See set_cache_compiled_shaders().
  *
  * This also returns false if get_active() is false.
  */

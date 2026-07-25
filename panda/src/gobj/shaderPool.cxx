@@ -204,7 +204,7 @@ do_make_module(const ShaderCompiler *compiler, Shader::Stage stage,
   BamCache *cache = BamCache::get_global_ptr();
   PT(BamCacheRecord) record2;
   if ((flags & CompilerOptions::F_no_disk_cache) == 0 &&
-      cache->get_cache_compiled_shaders()) {
+      cache->get_cache_shaders()) {
     // The source of a compiled module is identified in the cache purely by
     // the hash of its contents, not by the file it may have come from.
     record2 = cache->lookup_hash(hash, "smo");

@@ -76,11 +76,16 @@ BamCache() :
               "by the GSG.  This may be set in conjunction with "
               "model-cache-textures, or it may be independent."));
 
+  ConfigVariableBool model_cache_shaders
+    ("model-cache-shaders", true,
+     PRC_DESC("If this is set to true, compiled shader modules will be "
+              "cached in the model cache, as smo files."));
+
   ConfigVariableBool model_cache_compiled_shaders
-    ("model-cache-compiled-shaders", true,
+    ("model-cache-compiled-shaders", false,
      PRC_DESC("If this is set to true, compiled shaders will be cached "
-              "in the model cache, in their binary form as compiled by the "
-              "shader compiler."));
+              "in the model cache, in their binary form as downloaded "
+              "by the GSG.  This currently has no effect."));
 
   ConfigVariableInt model_cache_max_kbytes
     ("model-cache-max-kbytes", 10485760,
@@ -89,6 +94,7 @@ BamCache() :
   _cache_models = model_cache_models;
   _cache_textures = model_cache_textures;
   _cache_compressed_textures = model_cache_compressed_textures;
+  _cache_shaders = model_cache_shaders;
   _cache_compiled_shaders = model_cache_compiled_shaders;
 
   _flush_time = model_cache_flush;

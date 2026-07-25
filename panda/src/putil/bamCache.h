@@ -57,6 +57,9 @@ PUBLISHED:
   INLINE void set_cache_compressed_textures(bool flag);
   INLINE bool get_cache_compressed_textures() const;
 
+  INLINE void set_cache_shaders(bool flag);
+  INLINE bool get_cache_shaders() const;
+
   INLINE void set_cache_compiled_shaders(bool flag);
   INLINE bool get_cache_compiled_shaders() const;
 
@@ -95,6 +98,7 @@ PUBLISHED:
   MAKE_PROPERTY(cache_textures, get_cache_textures, set_cache_textures);
   MAKE_PROPERTY(cache_compressed_textures, get_cache_compressed_textures,
                                            set_cache_compressed_textures);
+  MAKE_PROPERTY(cache_shaders, get_cache_shaders, set_cache_shaders);
   MAKE_PROPERTY(cache_compiled_shaders, get_cache_compiled_shaders,
                                         set_cache_compiled_shaders);
   MAKE_PROPERTY(root, get_root, set_root);
@@ -135,6 +139,7 @@ private:
   bool _cache_models;
   bool _cache_textures;
   bool _cache_compressed_textures;
+  bool _cache_shaders;
   bool _cache_compiled_shaders;
   bool _read_only;
   Filename _root;
