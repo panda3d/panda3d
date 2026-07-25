@@ -464,7 +464,7 @@ class MotionTrail(NodePath, DirectObject):
         if self.pause:
             state = False
 
-        update = state and self.enable
+        state = state and self.enable
 
         return state
 
