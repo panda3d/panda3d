@@ -1,6 +1,5 @@
 from panda3d.core import Shader, VirtualFileSystem, Filename
 from panda3d.core import BamCache, CompilerOptions, ShaderPool
-from panda3d.core import Notify, StringStream
 from panda3d.core import load_prc_file_data, unload_prc_file
 import time
 import pytest
@@ -29,13 +28,11 @@ def shader_disk_cache(tmp_path):
     old_ccs = cache.get_cache_compiled_shaders()
     old_root = cache.get_root()
 
-    page = load_prc_file_data("shader_disk_cache", "notify-level-shader info")
     cache.set_root(Filename.from_os_specific(str(tmp_path)))
     cache.set_active(True)
     cache.set_cache_compiled_shaders(True)
     yield cache
 
-    unload_prc_file(page)
     if not old_root.empty():
         cache.set_root(old_root)
     cache.set_active(old_active)
@@ -240,7 +237,8 @@ def test_shader_include_dir_in_cache_key(vfs, ramdir):
     assert bytes(mod_a.code) != bytes(mod_b.code)
 
 
-def test_shader_module_disk_cache(shader_disk_cache, cache_generated_shaders):
+def test_shader_module_disk_cache(tmp_path, shader_disk_cache,
+                                  cache_generated_shaders):
     """Tests that a compiled module survives a round-trip through the model
     cache on disk."""
     # These bodies must be unique to this test, since a shader with the same
@@ -252,28 +250,30 @@ def test_shader_module_disk_cache(shader_disk_cache, cache_generated_shaders):
     shad1 = Shader.make(Shader.SL_GLSL, vertex=vert, fragment=frag)
     assert shad1 is not None
 
+    entries = {p: p.read_bytes() for p in tmp_path.rglob("*.smo")}
+    assert len(entries) == 2
+
     # Clear the RAM caches, so that the next make() must go to disk.
     ShaderPool.release_all_shaders()
 
-    stream = StringStream()
-    notify = Notify.ptr()
-    notify.set_ostream_ptr(stream, False)
-    try:
-        shad2 = Shader.make(Shader.SL_GLSL, vertex=vert, fragment=frag)
-    finally:
-        notify.set_ostream_ptr(None, False)
+    # If the bam round-trip failed, the entry would be silently discarded,
+    # recompiled and re-stored.  Sleeping past a second boundary guarantees
+    # that a re-store would embed a different timestamp in the entry, which
+    # makes that failure mode detectable below.
+    time.sleep(1.1)
 
+    shad2 = Shader.make(Shader.SL_GLSL, vertex=vert, fragment=frag)
     assert shad2 is not None
     assert shad2.get_module(Shader.Stage.VERTEX) is not None
     assert shad2.get_module(Shader.Stage.FRAGMENT) is not None
 
-    # If the bam round-trip failed, the entry would have been silently
-    # discarded and recompiled, so check that it was actually loaded.
-    assert b"found in disk cache" in stream.data
-    assert b"Compiling" not in stream.data
+    # The cache entries must be untouched: rewritten entries mean the round
+    # trip failed, and additional entries mean the second make() missed.
+    assert {p: p.read_bytes() for p in tmp_path.rglob("*.smo")} == entries
 
 
-def test_shader_module_disk_cache_content_keyed(vfs, ramdir, shader_disk_cache,
+def test_shader_module_disk_cache_content_keyed(vfs, ramdir, tmp_path,
+                                                shader_disk_cache,
                                                 cache_generated_shaders):
     """Tests that a disk cache entry compiled from a file remains valid for a
     file with identical contents in the same directory, even after the
@@ -290,24 +290,25 @@ def test_shader_module_disk_cache_content_keyed(vfs, ramdir, shader_disk_cache,
                         fragment=Filename(ramdir, "ck1.frag"))
     assert shad1 is not None
 
+    entries = {p: p.read_bytes() for p in tmp_path.rglob("*.smo")}
+    assert len(entries) == 2
+
     # The entries are keyed by content, so they must remain valid even after
     # the files they were compiled from are deleted.
     vfs.delete_file(Filename(ramdir, "ck1.vert"))
     vfs.delete_file(Filename(ramdir, "ck1.frag"))
     ShaderPool.release_all_shaders()
 
-    stream = StringStream()
-    notify = Notify.ptr()
-    notify.set_ostream_ptr(stream, False)
-    try:
-        shad2 = Shader.load(Shader.SL_GLSL, vertex=Filename(ramdir, "ck2.vert"),
-                            fragment=Filename(ramdir, "ck2.frag"))
-    finally:
-        notify.set_ostream_ptr(None, False)
+    # See test_shader_module_disk_cache for why this sleep is needed.
+    time.sleep(1.1)
 
+    shad2 = Shader.load(Shader.SL_GLSL, vertex=Filename(ramdir, "ck2.vert"),
+                        fragment=Filename(ramdir, "ck2.frag"))
     assert shad2 is not None
-    assert b"found in disk cache" in stream.data
-    assert b"Compiling" not in stream.data
+
+    # A cache hit leaves the entries untouched; a recompile of ck2 would have
+    # rewritten them (or added new ones, had the content keying regressed).
+    assert {p: p.read_bytes() for p in tmp_path.rglob("*.smo")} == entries
 
 
 def test_shader_pool_garbage_collect(cache_generated_shaders):
@@ -316,35 +317,26 @@ def test_shader_pool_garbage_collect(cache_generated_shaders):
     vert = "#version 330\nvoid main() { /* gc test */ }\n"
     frag = "#version 330\nout vec4 o;\nvoid main() { o = vec4(0.125); }\n"
 
-    # Disable the disk cache, so that a recompile is observable below.
     options = CompilerOptions()
     options.flags = CompilerOptions.F_no_disk_cache
 
-    page = load_prc_file_data("test_shader_pool_garbage_collect",
-                              "notify-level-shader info")
-    try:
-        shad = Shader.make(Shader.SL_GLSL, vertex=vert, fragment=frag,
-                           options=options)
-        assert shad is not None
-        shad = None
+    # Start from a clean slate, so that the pool holds exactly this shader.
+    ShaderPool.release_all_shaders()
 
-        # Nothing references the shader now, so this releases it, and with
-        # it, its modules.
-        ShaderPool.garbage_collect()
+    shad = Shader.make(Shader.SL_GLSL, vertex=vert, fragment=frag,
+                       options=options)
+    assert shad is not None
 
-        stream = StringStream()
-        notify = Notify.ptr()
-        notify.set_ostream_ptr(stream, False)
-        try:
-            shad2 = Shader.make(Shader.SL_GLSL, vertex=vert, fragment=frag,
-                                options=options)
-        finally:
-            notify.set_ostream_ptr(None, False)
+    # The pool tracks the modules under the synthetic source filename.
+    assert ShaderPool.has_shader("created-shader")
 
-        assert shad2 is not None
-        assert b"Compiling" in stream.data
-    finally:
-        unload_prc_file(page)
+    shad = None
+
+    # Nothing references the shader now, so this releases it, and with it,
+    # its modules, leaving nothing for a second pass to find.
+    assert ShaderPool.garbage_collect() == 1
+    assert not ShaderPool.has_shader("created-shader")
+    assert ShaderPool.garbage_collect() == 0
 
 
 def test_shader_load_unifies_twins(vfs, ramdir):
