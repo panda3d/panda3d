@@ -2,6 +2,7 @@
 #ifndef _PATHFOLLOW_H
 #define _PATHFOLLOW_H
 
+#include <algorithm> // For std::reverse
 #include "aiGlobals.h"
 #include "aiCharacter.h"
 #include "meshNode.h"
@@ -24,6 +25,8 @@ public:
   PathFollow(AICharacter *ai_ch, float follow_wt);
   ~PathFollow();
   void add_to_path(LVecBase3 pos);
+  // New method to accept a full path sequence from NavMesh
+  void set_path(const pvector<LPoint3> &waypoints);
   void start(std::string type);
   void do_follow();
   bool check_if_possible();
