@@ -26,6 +26,7 @@
 #include <time.h>
 
 class BamCacheIndex;
+class HashVal;
 
 /**
  * This class maintains a cache of Bam and/or Txo objects generated from model
@@ -73,6 +74,8 @@ PUBLISHED:
 
   PT(BamCacheRecord) lookup(const Filename &source_filename,
                             std::string_view cache_extension);
+  PT(BamCacheRecord) lookup_hash(const HashVal &cache_key,
+                                 std::string_view cache_extension);
   bool store(BamCacheRecord *record);
 
   void consider_flush_index();

@@ -15,6 +15,7 @@
 #include "shaderModuleGlsl.h"
 #include "config_putil.h"
 #include "config_shaderpipeline.h"
+#include "datagram.h"
 #include "virtualFile.h"
 #include "virtualFileSystem.h"
 
@@ -80,9 +81,9 @@ get_languages() const {
  * ShaderModule on success.
  */
 PT(ShaderModule) ShaderCompilerGlslPreProc::
-compile_now(Stage stage, std::istream &in, const Filename &fullpath,
-            const CompilerOptions &options, std::ostream *output_log,
-            BamCacheRecord *record) const {
+compile_now(Stage stage, std::string_view source, const Filename &fullpath,
+            std::string_view entry_point, const CompilerOptions &options,
+            std::ostream *output_log, BamCacheRecord *record) const {
   // Create a name that's easier to read in error messages.
   std::string filename;
   if (fullpath.empty()) {
@@ -107,6 +108,9 @@ compile_now(Stage stage, std::istream &in, const Filename &fullpath,
     preamble = std::move(preamble_stream).str();
   }
 
+  // The preprocessor reads the source line by line, so wrap it in a stream.
+  std::istringstream in{std::string(source)};
+
   State state;
   if (!r_preprocess_source(state, in, filename, fullpath, preamble, record)) {
     return nullptr;
@@ -129,17 +133,31 @@ compile_now(Stage stage, std::istream &in, const Filename &fullpath,
     }
   }
 
-  if (options.has_entry_point() && options.get_entry_point() != "main") {
-    code = code + "\nvoid main() { " + options.get_entry_point() + "(); }\n";
+  if (!entry_point.empty() && entry_point != "main") {
+    code += "\nvoid main() { ";
+    code += entry_point;
+    code += "(); }\n";
   }
 
   PT(ShaderModuleGlsl) module = new ShaderModuleGlsl(stage, std::move(code), state.version);
   module->_included_files = std::move(state.included_files);
   module->_used_caps |= state.required_caps;
   for (const PT(VirtualFile) &vf : state.source_files) {
-    module->add_source_file(vf);
+    module->add_dependent_file(vf);
   }
   return module;
+}
+
+/**
+ * Adds everything that identifies the output this compiler produces to the
+ * key that compiled modules are cached under.
+ */
+void ShaderCompilerGlslPreProc::
+write_cache_key(Datagram &dg) const {
+  // Bump this whenever the preprocessing done by this compiler changes the
+  // module it produces for the same input, so that modules cached on disk by
+  // a previous build are not reused.
+  dg.add_uint16(1);
 }
 
 /**

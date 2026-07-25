@@ -22,8 +22,13 @@
 #include "shaderModule.h"
 #include "compilerOptions.h"
 
+class Datagram;
+
 /**
  * This is the base class for objects to compile various types of shader code.
+ *
+ * Compiling through this interface always compiles the module anew; use
+ * ShaderPool::load_module() to make use of caching.
  */
 class EXPCL_PANDA_GOBJ ShaderCompiler : public TypedObject, public ShaderEnums {
 protected:
@@ -40,17 +45,16 @@ PUBLISHED:
   MAKE_PROPERTY(name, get_name);
   MAKE_PROPERTY(languages, get_languages);
 
-  virtual PT(ShaderModule) compile_now(Stage stage, const Filename &path,
-                                       const CompilerOptions &options = CompilerOptions(),
-                                       std::ostream *output_log = nullptr,
-                                       BamCacheRecord *record = nullptr) const;
-  virtual PT(ShaderModule) compile_now(Stage stage, std::istream &in,
+  virtual PT(ShaderModule) compile_now(Stage stage, std::string_view source,
                                        const Filename &fullpath,
+                                       std::string_view entry_point = "",
                                        const CompilerOptions &options = CompilerOptions(),
                                        std::ostream *output_log = nullptr,
                                        BamCacheRecord *record = nullptr) const=0;
 
 public:
+  virtual void write_cache_key(Datagram &dg) const;
+
   static TypeHandle get_class_type() {
     return _type_handle;
   }

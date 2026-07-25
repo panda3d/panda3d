@@ -18,6 +18,7 @@
 #include "pmap.h"
 #include "pnotify.h"
 #include "dSearchPath.h"
+#include "hashVal.h"
 
 /**
  * Specifies parameters that may be passed to the shader compiler.
@@ -32,6 +33,19 @@ PUBLISHED:
     SIZE,
   };
 
+  // Flags that modify how the shader is compiled and cached.
+  enum Flags {
+    F_suppress_log       = 0x0001,  // don't write errors to notify stream
+    F_debug              = 0x0002,  // compile with debugging support
+    F_no_disk_cache      = 0x0010,  // disallow BamCache
+    F_no_ram_cache       = 0x0020,  // disallow in-memory caching
+    F_no_cache           = 0x0030,  // no_disk + no_ram
+  };
+
+  INLINE void set_flags(int flags);
+  INLINE int get_flags() const;
+  MAKE_PROPERTY(flags, get_flags, set_flags);
+
 public:
   INLINE bool get_suppress_log() const;
   INLINE void set_suppress_log(bool enabled);
@@ -41,10 +55,6 @@ public:
 
   INLINE Optimize get_optimize() const;
   INLINE void set_optimize(Optimize opt);
-
-  INLINE bool has_entry_point() const;
-  INLINE const std::string &get_entry_point() const;
-  INLINE void set_entry_point(std::string entry_point);
 
   INLINE const DSearchPath &get_include_path() const;
   INLINE DSearchPath &get_include_path();
@@ -60,22 +70,18 @@ PUBLISHED:
   MAKE_PROPERTY(suppress_log, get_suppress_log, set_suppress_log);
   MAKE_PROPERTY(debug, get_debug, set_debug);
   MAKE_PROPERTY(optimize, get_optimize, set_optimize);
-  MAKE_PROPERTY(entry_point, get_entry_point, set_entry_point);
   MAKE_PROPERTY(include_path, get_include_path, set_include_path);
   MAKE_MAP_PROPERTY(defines, has_define, get_define, define, undef);
 
   void output(std::ostream &out) const;
   void write_defines(std::ostream &out) const;
 
-private:
-  enum Flags {
-    F_suppress_log       = 0x0001,
-    F_debug              = 0x0002,
-  };
+public:
+  HashVal get_cache_key() const;
 
+private:
   int _flags = 0;
   Optimize _optimize = Optimize::PERFORMANCE;
-  std::string _entry_point;
   DSearchPath _include_path;
 
   typedef pmap<std::string, std::string> Defines;

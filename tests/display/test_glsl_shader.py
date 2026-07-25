@@ -77,7 +77,7 @@ def test_glsl_flat_decoration():
     glsl = reg.get_compiler_for_language(core.Shader.SL_GLSL)
 
     # Must fail
-    code = core.StringStream(b"""#version 330
+    code = b"""#version 330
 
     in uint myinput;
     out vec4 color;
@@ -85,12 +85,12 @@ def test_glsl_flat_decoration():
     void main() {
       color = vec4(float(myinput));
     }
-    """)
+    """
     module = glsl.compile_now(core.Shader.Stage.FRAGMENT, code, "test1.glsl")
     assert module is None
 
     # Must succeed
-    code = core.StringStream(b"""#version 330
+    code = b"""#version 330
 
     flat in uint myinput;
     out vec4 color;
@@ -98,7 +98,7 @@ def test_glsl_flat_decoration():
     void main() {
       color = vec4(float(myinput));
     }
-    """)
+    """
     module = glsl.compile_now(core.Shader.Stage.FRAGMENT, code, "test2.glsl")
     assert module is not None
     assert check_flat_decoration(module)
@@ -139,13 +139,12 @@ def test_glsl_entry_point():
     """
 
     # Must fail, no main() defined
-    module = glsl.compile_now(core.Shader.Stage.FRAGMENT, core.StringStream(code), "test.glsl")
+    module = glsl.compile_now(core.Shader.Stage.FRAGMENT, code, "test.glsl")
     assert module is None
 
     # Must succeed after we specify proper entry point name
-    options = core.CompilerOptions()
-    options.entry_point = "custom_main"
-    module = glsl.compile_now(core.Shader.Stage.FRAGMENT, core.StringStream(code), "test.glsl", options)
+    module = glsl.compile_now(core.Shader.Stage.FRAGMENT, code, "test.glsl",
+                              "custom_main")
     assert module is not None
 
 

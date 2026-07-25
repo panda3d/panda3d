@@ -203,29 +203,6 @@ modify_module(Stage stage) {
 }
 
 /**
- * Returns the setting of the cache_compiled_shader flag.  See
- * set_cache_compiled_shader().
- */
-INLINE bool Shader::
-get_cache_compiled_shader() const {
-  return _cache_compiled_shader;
-}
-
-/**
- * Sets the cache_compiled_shader flag.  When this is set, the next time the
- * Shader is loaded on a GSG, it will automatically extract the compiled
- * shader from the GSG and save it to the global BamCache.
- *
- * This is used to store compiled shaders in the BamCache.  This flag should
- * not be set explicitly; it is set automatically by the ShaderPool when
- * model-cache-compiled-shaders is set true.
- */
-INLINE void Shader::
-set_cache_compiled_shader(bool flag) {
-  _cache_compiled_shader = flag;
-}
-
-/**
  * Sets a boolean value for the specialization constant with the indicated
  * name.  All modules containing a specialization constant with this name
  * will be given this value.
@@ -782,6 +759,29 @@ ShaderFile(std::string vertex, std::string fragment, std::string geometry,
   _tess_control(std::move(tess_control)),
   _tess_evaluation(std::move(tess_evaluation))
 {
+}
+
+/**
+ *
+ */
+INLINE const std::string &Shader::ShaderFile::
+get_stage(Shader::Stage stage) const {
+  switch (stage) {
+  case Stage::VERTEX:
+    return _vertex;
+  case Stage::FRAGMENT:
+    return _fragment;
+  case Stage::GEOMETRY:
+    return _geometry;
+  case Stage::TESS_CONTROL:
+    return _tess_control;
+  case Stage::TESS_EVALUATION:
+    return _tess_evaluation;
+  case Stage::COMPUTE:
+    return _compute;
+  }
+
+  return _shared;
 }
 
 /**

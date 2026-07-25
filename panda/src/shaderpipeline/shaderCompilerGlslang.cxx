@@ -14,6 +14,7 @@
 #include "shaderCompilerGlslang.h"
 #include "config_putil.h"
 #include "config_shaderpipeline.h"
+#include "datagram.h"
 #include "shaderCompilerGlslPreProc.h"
 #include "virtualFile.h"
 #include "virtualFileSystem.h"
@@ -337,16 +338,15 @@ get_languages() const {
  * ShaderModule on success.
  */
 PT(ShaderModule) ShaderCompilerGlslang::
-compile_now(ShaderModule::Stage stage, std::istream &in,
-            const Filename &fullpath, const CompilerOptions &options,
-            std::ostream *output_log, BamCacheRecord *record) const {
+compile_now(ShaderModule::Stage stage, std::string_view source,
+            const Filename &fullpath, std::string_view entry_point,
+            const CompilerOptions &options, std::ostream *output_log,
+            BamCacheRecord *record) const {
 
-  vector_uchar code;
-  if (!VirtualFile::simple_read_file(&in, code)) {
-    shader_cat.error()
-      << "Failed to read " << stage << " shader from stream.\n";
-    return nullptr;
-  }
+  // Make a mutable working copy, since the preprocessing steps below may
+  // modify the code in place.
+  vector_uchar code((const unsigned char *)source.data(),
+                    (const unsigned char *)source.data() + source.size());
 
   bool is_cg = false;
   int glsl_version = 110;
@@ -399,8 +399,8 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
     // Fall back to GlslPreProc handler.  Cleaner way to do this?
     static ShaderCompilerGlslPreProc preprocessor;
 
-    std::istringstream stream(std::string((const char *)code.data(), code.size()));
-    return preprocessor.compile_now(stage, stream, fullpath, options, output_log, record);
+    std::string_view code_sv((const char *)code.data(), code.size());
+    return preprocessor.compile_now(stage, code_sv, fullpath, entry_point, options, output_log, record);
   }
 
   EShMessages messages = (EShMessages)(EShMsgDefault | EShMsgSpvRules);
@@ -465,7 +465,7 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
           << "Cg does not support " << stage << " shaders.\n";
         return nullptr;
       }
-      if (!options.has_entry_point()) {
+      if (entry_point.empty()) {
         shader.setSourceEntryPoint(source_entry_point);
       }
 
@@ -495,8 +495,9 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
   shader.setEnvClient(glslang::EShClient::EShClientOpenGL, glslang::EShTargetOpenGL_450);
   shader.setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_0);
 
-  if (options.has_entry_point()) {
-    shader.setSourceEntryPoint(options.get_entry_point().c_str());
+  const std::string entry_point_str(entry_point);
+  if (!entry_point_str.empty()) {
+    shader.setSourceEntryPoint(entry_point_str.c_str());
   }
 
   // This will squelch the warnings about missing bindings and locations, since
@@ -618,9 +619,32 @@ compile_now(ShaderModule::Stage stage, std::istream &in,
 
   PT(ShaderModuleSpirV) module = new ShaderModuleSpirV(stage, std::move(optimized), options);
   for (const PT(VirtualFile) &vf : includer._source_files) {
-    module->add_source_file(vf);
+    module->add_dependent_file(vf);
   }
   return module;
+}
+
+/**
+ * Adds everything that identifies the output this compiler produces to the
+ * key that compiled modules are cached under.
+ */
+void ShaderCompilerGlslang::
+write_cache_key(Datagram &dg) const {
+  // Bump this whenever the SPIR-V that Panda3D produces for the same input
+  // changes for a reason other than an upgrade of the libraries below, such
+  // as a change to the preprocessing in this file or to the postprocessing
+  // passes applied by ShaderModuleSpirV, so that modules cached on disk by
+  // a previous build are not reused.
+  dg.add_uint16(1);
+
+  // The version of glslang that compiled the module.
+  dg.add_uint8(GLSLANG_VERSION_MAJOR);
+  dg.add_uint8(GLSLANG_VERSION_MINOR);
+  dg.add_uint8(GLSLANG_VERSION_PATCH);
+  dg.add_string(GLSLANG_VERSION_FLAVOR);
+
+  // The version of SPIRV-Tools that optimized it.
+  dg.add_string(spvSoftwareVersionString());
 }
 
 /**

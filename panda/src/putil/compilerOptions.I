@@ -12,6 +12,24 @@
  */
 
 /**
+ * Replaces the flags bitmask.  This is a union of the values in the Flags
+ * enum.
+ */
+INLINE void CompilerOptions::
+set_flags(int flags) {
+  _flags = flags;
+}
+
+/**
+ * Returns the flags bitmask.  This is a union of the values in the Flags
+ * enum.
+ */
+INLINE int CompilerOptions::
+get_flags() const {
+  return _flags;
+}
+
+/**
  *
  */
 INLINE bool CompilerOptions::
@@ -70,31 +88,6 @@ get_optimize() const {
 INLINE void CompilerOptions::
 set_optimize(CompilerOptions::Optimize opt) {
   _optimize = opt;
-}
-
-/**
- * Returns true if a custom entry point was requested.
- */
-INLINE bool CompilerOptions::
-has_entry_point() const {
-  return !_entry_point.empty();
-}
-
-/**
- * Returns the name of the entry point.
- */
-INLINE const std::string &CompilerOptions::
-get_entry_point() const {
-  return _entry_point;
-}
-
-/**
- * Sets the name of the entry point.  If this is set to an empty string, a
- * language-specific default is used.
- */
-INLINE void CompilerOptions::
-set_entry_point(std::string entry_point) {
-  _entry_point = std::move(entry_point);
 }
 
 /**

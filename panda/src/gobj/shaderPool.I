@@ -52,10 +52,11 @@ add_shader(const Filename &filename, Shader *shader) {
 }
 
 /**
- * Removes the indicated shader from the pool, indicating it will never be
- * loaded again; the shader may then be freed.  If this function is never
- * called, a reference count will be maintained on every shader every loaded,
- * and shaders will never be freed.
+ * Removes everything that was loaded from the indicated file from the pool:
+ * the modules compiled from it, and the shaders that link any of those
+ * modules.  They may then be freed, and a subsequent load produces a fresh
+ * shader.  If this function is never called, a reference count will be
+ * maintained on every shader ever loaded, and shaders will never be freed.
  */
 INLINE void ShaderPool::
 release_shader(const Filename &filename) {
@@ -73,7 +74,8 @@ release_all_shaders() {
 /**
  * Releases only those shaders in the pool that have a reference count of
  * exactly 1; i.e.  only those shaders that are not being used outside of the
- * pool.  Returns the number of shaders released.
+ * pool.  Also releases the modules that are then no longer referenced by any
+ * shader.  Returns the number of shaders released.
  */
 INLINE int ShaderPool::
 garbage_collect() {
@@ -94,4 +96,32 @@ list_contents(std::ostream &out) {
  */
 INLINE ShaderPool::
 ShaderPool() {
+}
+
+/**
+ * Ordering operator for the modules-by-file map key.
+ */
+INLINE bool ShaderPool::ModuleFileKey::
+operator < (const ModuleFileKey &other) const {
+  if (_fullpath != other._fullpath) {
+    return _fullpath < other._fullpath;
+  }
+  if (_stage != other._stage) {
+    return _stage < other._stage;
+  }
+  if (_source_entry_point != other._source_entry_point) {
+    return _source_entry_point < other._source_entry_point;
+  }
+  return _options_hash < other._options_hash;
+}
+
+/**
+ * Returns an iterator to the first entry in the source module map for the
+ * given resolved filename, which may be the end iterator.  Entries for the
+ * same filename are adjacent.  Assumes the lock is held.
+ */
+INLINE ShaderPool::ModulesByFile::iterator ShaderPool::
+find_module_by_file(const Filename &fullpath) {
+  return _file_modules.lower_bound(
+    ModuleFileKey {fullpath, (Shader::Stage)0, std::string(), HashVal()});
 }

@@ -256,8 +256,11 @@ ConfigVariableBool dump_generated_shaders
 
 ConfigVariableBool cache_generated_shaders
 ("cache-generated-shaders", true,
- PRC_DESC("Set this true to cause all generated shaders to be cached in "
-          "memory.  This is useful to prevent unnecessary recompilation."));
+ PRC_DESC("Set this true to cause all shaders created from strings, such "
+          "as by the shader generator, to be cached in memory and (subject "
+          "to model-cache-compiled-shaders) on disk.  This is useful to "
+          "prevent unnecessary recompilation.  Set this false to disable all "
+          "caching of such shaders."));
 
 ConfigVariableBool vertices_float64
 ("vertices-float64", false,

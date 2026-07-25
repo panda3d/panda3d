@@ -54,6 +54,7 @@ set(P3GOBJ_HEADERS
   shaderEnums.h
   shaderInputBinding.h shaderInputBinding.I
   shaderModule.h shaderModule.I
+  shaderPool.h shaderPool.I
   shaderType.h shaderType.I
   simpleAllocator.h simpleAllocator.I
   simpleLru.h simpleLru.I
@@ -139,6 +140,7 @@ set(P3GOBJ_SOURCES
   shaderEnums.cxx
   shaderInputBinding.cxx
   shaderModule.cxx
+  shaderPool.cxx
   shaderType.cxx
   simpleAllocator.cxx
   simpleLru.cxx

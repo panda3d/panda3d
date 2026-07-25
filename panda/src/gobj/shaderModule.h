@@ -20,6 +20,7 @@
 #include "shaderType.h"
 #include "vector_uchar.h"
 
+class BamCacheRecord;
 class VirtualFile;
 
 /**
@@ -66,14 +67,18 @@ public:
   ShaderModule(Stage stage);
   virtual ~ShaderModule();
 
-  void add_source_file(const VirtualFile *file);
-  bool check_source_modified() const;
+  void add_dependent_file(const VirtualFile *file);
+  bool check_dependents_modified() const;
+  void record_dependent_files(BamCacheRecord *record) const;
 
   INLINE Stage get_stage() const;
   INLINE uint64_t get_used_capabilities() const;
 
   INLINE const Filename &get_source_filename() const;
   INLINE void set_source_filename(const Filename &);
+
+  INLINE const std::string &get_source_entry_point() const;
+  INLINE void set_source_entry_point(std::string entry_point);
 
 #ifdef CPPPARSER
   INLINE SpecializationConstant get_spec_constant(size_t i) const;
@@ -129,16 +134,21 @@ protected:
   void fillin(DatagramIterator &scan, BamReader *manager) override;
 
 protected:
-  struct SourceFile {
+  Stage _stage;
+  Filename _source_filename;
+  std::string _source_entry_point;
+
+  // Included files.  Note that this excludes the source file itself, since
+  // we cache modules based on a hash of the contents, and multiple source
+  // files may produce the same hash.
+  struct DependentFile {
     Filename _pathname;
     time_t _timestamp;
     std::streamsize _size;
   };
-  typedef pvector<SourceFile> SourceFiles;
+  typedef pvector<DependentFile> DependentFiles;
+  DependentFiles _dependent_files;
 
-  Stage _stage;
-  Filename _source_filename;
-  SourceFiles _source_files;
   uint64_t _used_caps = 0;
 
   typedef pvector<Variable> Variables;

@@ -95,6 +95,9 @@ PUBLISHED:
 
 PUBLISHED:
   Shader(SourceLanguage lang);
+  ~Shader();
+
+  PT(Shader) make_copy() const;
 
   static PT(Shader) load(const Filename &file, SourceLanguage lang = SL_none,
                          const CompilerOptions &options = CompilerOptions());
@@ -131,9 +134,6 @@ PUBLISHED:
   INLINE CPT(ShaderModule) get_module(Stage stage) const;
   INLINE PT(ShaderModule) modify_module(Stage stage);
   bool add_module(PT(ShaderModule) module);
-
-  INLINE bool get_cache_compiled_shader() const;
-  INLINE void set_cache_compiled_shader(bool flag);
 
   INLINE bool set_constant(CPT_InternalName name, bool value);
   INLINE bool set_constant(CPT_InternalName name, int value);
@@ -250,6 +250,8 @@ public:
     INLINE ShaderFile(std::string shared);
     INLINE ShaderFile(std::string vertex, std::string fragment, std::string geometry,
                       std::string tess_control, std::string tess_evaluation);
+
+    INLINE const std::string &get_stage(Stage stage) const;
 
     INLINE void write_datagram(Datagram &dg) const;
     INLINE void read_datagram(DatagramIterator &source);
@@ -369,18 +371,24 @@ protected:
   Filename _fullpath;
   SourceLanguage _language;
 
+  // The files that the shader was loaded from, with the timestamps they had
+  // at that time.  This is used by check_modified() to detect changes; the
+  // modules cannot track this, since they may be shared with other shaders
+  // that were loaded from different files with identical contents.
+  struct SourceFile {
+    Filename _fullpath;
+    time_t _timestamp;
+    std::streamsize _size;
+  };
+  typedef pvector<SourceFile> SourceFiles;
+  SourceFiles _source_files;
+
   typedef pvector<Filename> Filenames;
 
-  bool _cache_compiled_shader;
   unsigned int _compiled_format;
   std::string _compiled_binary;
 
   static int _shaders_generated;
-
-  typedef pmap<ShaderFile, PT(Shader)> ShaderTable;
-
-  static ShaderTable _load_table;
-  static ShaderTable _make_table;
 
   friend class ShaderContext;
   friend class PreparedGraphicsObjects;
@@ -402,10 +410,7 @@ private:
             BamCacheRecord *record = nullptr);
   bool do_read_source(ShaderModule::Stage stage, const Filename &fn,
                       const CompilerOptions &options, BamCacheRecord *record);
-  bool do_read_source(ShaderModule::Stage stage, std::istream &in,
-                      const Filename &fullpath, const CompilerOptions &options,
-                      BamCacheRecord *record);
-  bool do_load_source(ShaderModule::Stage stage, const std::string &source,
+  bool do_load_source(ShaderModule::Stage stage, std::string_view source,
                       const CompilerOptions &options, BamCacheRecord *record);
 
 public:
@@ -414,8 +419,6 @@ public:
   bool bind_vertex_input(const InternalName *name, const ShaderType *type, int location);
 
   bool check_modified() const;
-
-  ~Shader();
 
 public:
   static void register_with_read_factory();

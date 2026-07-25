@@ -46,6 +46,26 @@ set_source_filename(const Filename &filename) {
 }
 
 /**
+ * Returns the name of the function in the original source code that this
+ * module was compiled to use as its entry point.  If this is empty, the
+ * language-specific default was used (such as "main" for GLSL).
+ */
+INLINE const std::string &ShaderModule::
+get_source_entry_point() const {
+  return _source_entry_point;
+}
+
+/**
+ * Records the name of the function in the original source code that was used
+ * as the entry point when this module was compiled.  An empty string means
+ * the language-specific default.
+ */
+INLINE void ShaderModule::
+set_source_entry_point(std::string entry_point) {
+  _source_entry_point = std::move(entry_point);
+}
+
+/**
  * Returns the SpecializationConstant at the indicated index.
  */
 INLINE const ShaderModule::SpecializationConstant &ShaderModule::

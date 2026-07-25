@@ -86,7 +86,6 @@ set(P3PGRAPH_HEADERS
   shadeModelAttrib.I shadeModelAttrib.h
   shaderAttrib.I shaderAttrib.h
   shaderInput.I shaderInput.h
-  shaderPool.I shaderPool.h
   showBoundsEffect.I showBoundsEffect.h
   stateMunger.I stateMunger.h
   stencilAttrib.I stencilAttrib.h
@@ -188,7 +187,6 @@ set(P3PGRAPH_SOURCES
   shadeModelAttrib.cxx
   shaderAttrib.cxx
   shaderInput.cxx
-  shaderPool.cxx
   showBoundsEffect.cxx
   stateMunger.cxx
   stencilAttrib.cxx

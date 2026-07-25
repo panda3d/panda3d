@@ -12,6 +12,9 @@
  */
 
 #include "shaderModule.h"
+#include "bamCacheRecord.h"
+#include "bamReader.h"
+#include "bamWriter.h"
 #include "virtualFile.h"
 #include "virtualFileSystem.h"
 
@@ -49,42 +52,54 @@ ShaderModule::
 }
 
 /**
- * Adds the given file to the list of source files that this module was
- * compiled from.  This is used by check_source_modified() to detect if any
- * of the source files have changed since the module was compiled.
+ * Adds the given file to the list of files that the compilation of this
+ * module depended on, such as included files.  This is used by
+ * check_dependents_modified() to detect if any of them have changed since
+ * the module was compiled.
  */
 void ShaderModule::
-add_source_file(const VirtualFile *file) {
-  SourceFile sf;
-  sf._pathname = file->get_filename();
-  sf._timestamp = file->get_timestamp();
-  sf._size = file->get_file_size();
-  _source_files.push_back(std::move(sf));
+add_dependent_file(const VirtualFile *file) {
+  DependentFile df;
+  df._pathname = file->get_filename();
+  df._timestamp = file->get_timestamp();
+  df._size = file->get_file_size();
+  _dependent_files.push_back(std::move(df));
 }
 
 /**
- * Returns true if any of the source files that this module was compiled from
- * have been modified since the module was compiled.
+ * Returns true if any of the files that the compilation of this module
+ * depended on have been modified since the module was compiled.
  */
 bool ShaderModule::
-check_source_modified() const {
+check_dependents_modified() const {
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
 
-  for (const SourceFile &sf : _source_files) {
-    PT(VirtualFile) file = vfs->get_file(sf._pathname);
+  for (const DependentFile &df : _dependent_files) {
+    PT(VirtualFile) file = vfs->get_file(df._pathname);
     if (file == nullptr) {
       // File no longer exists.
-      if (sf._timestamp != 0) {
+      if (df._timestamp != 0) {
         return true;
       }
     } else {
-      if (file->get_timestamp() != sf._timestamp ||
-          file->get_file_size() != sf._size) {
+      if (file->get_timestamp() != df._timestamp ||
+          file->get_file_size() != df._size) {
         return true;
       }
     }
   }
   return false;
+}
+
+/**
+ * Adds all of the files that the compilation of this module depended on as
+ * dependent files of the given cache record.
+ */
+void ShaderModule::
+record_dependent_files(BamCacheRecord *record) const {
+  for (const DependentFile &df : _dependent_files) {
+    record->add_dependent_file(df._pathname);
+  }
 }
 
 /**
@@ -125,7 +140,15 @@ void ShaderModule::
 write_datagram(BamWriter *manager, Datagram &dg) {
   dg.add_uint8((int)_stage);
   dg.add_string(_source_filename);
+  dg.add_string(_source_entry_point);
   dg.add_uint64(_used_caps);
+
+  dg.add_uint16(_dependent_files.size());
+  for (const DependentFile &df : _dependent_files) {
+    dg.add_string(df._pathname);
+    dg.add_uint32(df._timestamp);
+    dg.add_uint64(df._size);
+  }
 }
 
 /**
@@ -134,7 +157,20 @@ write_datagram(BamWriter *manager, Datagram &dg) {
  */
 void ShaderModule::
 fillin(DatagramIterator &scan, BamReader *manager) {
-  _stage = (Stage)scan.get_uint8();
+  // Note that the stage is not read here; it has already been consumed by
+  // the make_from_bam function of the derived class, which needed it to
+  // construct the module.
   _source_filename = scan.get_string();
+  _source_entry_point = scan.get_string();
   _used_caps = scan.get_uint64();
+
+  _dependent_files.clear();
+  size_t num_dependent_files = scan.get_uint16();
+  _dependent_files.resize(num_dependent_files);
+  for (size_t i = 0; i < num_dependent_files; ++i) {
+    DependentFile &df = _dependent_files[i];
+    df._pathname = scan.get_string();
+    df._timestamp = scan.get_uint32();
+    df._size = scan.get_uint64();
+  }
 }

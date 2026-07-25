@@ -12,7 +12,6 @@
 #include "shadeModelAttrib.cxx"
 #include "shaderAttrib.cxx"
 #include "shaderInput.cxx"
-#include "shaderPool.cxx"
 #include "showBoundsEffect.cxx"
 #include "stateMunger.cxx"
 #include "stencilAttrib.cxx"

@@ -186,6 +186,34 @@ lookup(const Filename &source_filename, std::string_view cache_extension) {
 }
 
 /**
+ * Looks up an object in the cache by an arbitrary cache key.
+ *
+ * If the object is cacheable, then regardless of whether the object is found
+ * in the cache or not, this returns a BamCacheRecord.  On the other hand, if
+ * the object cannot be cached, returns NULL.
+ *
+ * If record->has_data() returns true, then the object was found in the cache,
+ * and you may call record->extract_data() to get the object.  If
+ * record->has_data() returns false, then the object was not found in the cache
+ * or the cache was stale; and you should reload the source, and then call
+ * record->set_data() to record the resulting loaded object; and finally, you
+ * should call store() to write the cached record to disk.
+ */
+PT(BamCacheRecord) BamCache::
+lookup_hash(const HashVal &cache_key, std::string_view cache_extension) {
+  ReMutexHolder holder(_lock);
+  consider_flush_index();
+
+  ostringstream strm;
+  cache_key.output_hex(strm);
+
+  Filename cache_filename = strm.str();
+  cache_filename.set_extension(cache_extension);
+
+  return find_and_read_record(Filename("/hash", cache_filename), cache_filename);
+}
+
+/**
  * Flushes a cache entry to disk.  You must have retrieved the cache record
  * via a prior call to lookup(), and then stored the data via
  * record->set_data().  Returns true on success, false on failure.
@@ -583,8 +611,8 @@ rebuild_index() {
   for (int ci = 0; ci < num_files; ++ci) {
     VirtualFile *file = contents->get_file(ci);
     Filename filename = file->get_filename();
-    if (filename.get_extension() == "bam" ||
-        filename.get_extension() == "txo") {
+    std::string ext = filename.get_extension();
+    if (ext == "bam" || ext == "txo" || ext == "sho" || ext == "smo") {
       Filename pathname(_root, filename);
 
       PT(BamCacheRecord) record = do_read_record(pathname, false);
@@ -1007,7 +1035,7 @@ clear() {
       Filename filename = file->get_filename();
       const std::string ext = filename.get_extension();
 
-      if (ext == "bam" || ext == "txo" || ext == "sho") {
+      if (ext == "bam" || ext == "txo" || ext == "sho" || ext == "smo") {
         Filename pathname(_root, filename);
         if (!vfs->delete_file(pathname)) {
           util_cat.debug()

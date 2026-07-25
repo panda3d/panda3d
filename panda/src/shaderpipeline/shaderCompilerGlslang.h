@@ -29,11 +29,14 @@ public:
 
   virtual std::string get_name() const override;
   virtual SourceLanguages get_languages() const override;
-  virtual PT(ShaderModule) compile_now(Stage stage, std::istream &in,
+  virtual PT(ShaderModule) compile_now(Stage stage, std::string_view source,
                                        const Filename &fullpath,
+                                       std::string_view entry_point,
                                        const CompilerOptions &options,
                                        std::ostream *output_log = nullptr,
                                        BamCacheRecord *record = nullptr) const override;
+
+  virtual void write_cache_key(Datagram &dg) const override;
 
 private:
   static bool check_cg_header(const vector_uchar &code);

@@ -20,11 +20,13 @@
 #include "preparedGraphicsObjects.h"
 #include "virtualFileSystem.h"
 #include "config_putil.h"
-#include "bamCache.h"
+#include "bamCacheRecord.h"
+#include "datagram.h"
 #include "string_utils.h"
 #include "shaderCompilerRegistry.h"
 #include "shaderCompiler.h"
 #include "shaderInputBinding.h"
+#include "shaderPool.h"
 
 using std::istream;
 using std::ostream;
@@ -32,8 +34,6 @@ using std::ostringstream;
 using std::string;
 
 TypeHandle Shader::_type_handle;
-Shader::ShaderTable Shader::_load_table;
-Shader::ShaderTable Shader::_make_table;
 int Shader::_shaders_generated;
 
 /**
@@ -51,8 +51,7 @@ static bool has_cg_header(const std::string &shader_text) {
 Shader::
 Shader(SourceLanguage lang) :
   _error_flag(false),
-  _language(lang),
-  _cache_compiled_shader(false)
+  _language(lang)
 {
 }
 
@@ -62,14 +61,36 @@ Shader(SourceLanguage lang) :
 Shader::
 ~Shader() {
   release_all();
-  // Note: don't try to erase ourselves from the table.  It currently keeps a
-  // reference forever, and so the only place where this constructor is called
-  // is in the destructor of the table itself.
-  /*if (_loaded) {
-    _load_table.erase(_filename);
-  } else {
-    _make_table.erase(_text);
-  }*/
+}
+
+/**
+ * Returns a copy of this shader that shares the compiled modules with the
+ * original, but is independent of the ShaderPool: modifying the copy never
+ * affects other users of the original shader, and vice versa.  The prepared
+ * contexts are not copied.
+ */
+PT(Shader) Shader::
+make_copy() const {
+  PT(Shader) copy = new Shader(_language);
+  copy->_parameters = _parameters;
+  copy->_vertex_inputs = _vertex_inputs;
+  copy->_matrix_cache_desc = _matrix_cache_desc;
+  copy->_matrix_cache_deps = _matrix_cache_deps;
+  copy->_error_flag = _error_flag;
+  copy->_text = _text;
+  copy->_modules = _modules;
+  copy->_module_mask = _module_mask;
+  copy->_used_caps = _used_caps;
+  copy->_subsumes_alpha_test = _subsumes_alpha_test;
+  copy->_debug = _debug;
+  copy->_filename = _filename;
+  copy->_fullpath = _fullpath;
+  copy->_source_files = _source_files;
+  copy->_compiled_format = _compiled_format;
+  copy->_compiled_binary = _compiled_binary;
+  copy->_prepare_shader_pcollector = _prepare_shader_pcollector;
+  copy->_debug_name = _debug_name;
+  return copy;
 }
 
 /**
@@ -326,14 +347,6 @@ void Shader::
 set_compiled(unsigned int format, const char *data, size_t length) {
   _compiled_format = format;
   _compiled_binary.assign(data, length);
-
-  // Store the compiled shader in the cache.
-  /*if (_cache_compiled_shader && !_record.is_null()) {
-    _record->set_data(this);
-
-    BamCache *cache = BamCache::get_global_ptr();
-    cache->store(_record);
-  }*/
 }
 
 /**
@@ -353,9 +366,6 @@ get_compiled(unsigned int &format, string &binary) const {
 bool Shader::
 read(const ShaderFile &sfile, const CompilerOptions &options, BamCacheRecord *record) {
   _text._separate = sfile._separate;
-
-  PT(BamCacheRecord) record2;
-  BamCache *cache;
 
   if (sfile._separate) {
     if (_language == SL_none) {
@@ -403,25 +413,16 @@ read(const ShaderFile &sfile, const CompilerOptions &options, BamCacheRecord *re
       return false;
     }
 
-    // Single-file shaders are cached in their linked form in one big file.
     Filename fullpath = vf->get_filename();
-    cache = BamCache::get_global_ptr();
-    if (cache->get_cache_compiled_shaders()) {
-      record2 = cache->lookup(fullpath, "sho");
-      if (record2 != nullptr && record2->has_data()) {
-        PT(Shader) shader = DCAST(Shader, record2->get_data());
-
-        if (!shader->_modules.empty()) {
-          shader_cat.info()
-            << "Shader " << fn << " found in disk cache.\n";
-
-          *this = *shader;
-          _debug_name = fullpath.get_basename();
-          _prepare_shader_pcollector = PStatCollector(std::string("Draw:Prepare:Shader:") + _debug_name);
-          return true;
-        }
-      }
+    if (record != nullptr) {
+      record->add_dependent_file(vf);
     }
+
+    SourceFile sf;
+    sf._fullpath = fullpath;
+    sf._timestamp = vf->get_timestamp();
+    sf._size = vf->get_file_size();
+    _source_files.push_back(std::move(sf));
 
     std::string source;
     if (!vf->read_file(source, true)) {
@@ -438,31 +439,21 @@ read(const ShaderFile &sfile, const CompilerOptions &options, BamCacheRecord *re
     _language = SL_Cg;
     _filename = sfile;
 
-    shader_cat.info()
-      << "Compiling Cg shader: " << fn << "\n";
-
     ShaderCompilerRegistry *registry = ShaderCompilerRegistry::get_global_ptr();
     ShaderCompiler *compiler = registry->get_compiler_for_language(SL_Cg);
     nassertr(compiler != nullptr, false);
 
-    CompilerOptions options;
-    std::istringstream in(source);
-
-    PT(ShaderModule) vertex = compiler->compile_now(Stage::VERTEX, in, fullpath, options, nullptr, record);
+    PT(ShaderModule) vertex = ShaderPool::make_module(compiler, Stage::VERTEX, source, fullpath, std::string_view(), options, nullptr, record);
     if (vertex == nullptr || !add_module(std::move(vertex))) {
       return false;
     }
     if (source.find("gshader") != string::npos) {
-      in.clear();
-      in.seekg(0);
-      PT(ShaderModule) geometry = compiler->compile_now(Stage::GEOMETRY, in, fullpath, options, nullptr, record);
+      PT(ShaderModule) geometry = ShaderPool::make_module(compiler, Stage::GEOMETRY, source, fullpath, std::string_view(), options, nullptr, record);
       if (geometry == nullptr || !add_module(std::move(geometry))) {
         return false;
       }
     }
-    in.clear();
-    in.seekg(0);
-    PT(ShaderModule) fragment = compiler->compile_now(Stage::FRAGMENT, in, fullpath, options, nullptr, record);
+    PT(ShaderModule) fragment = ShaderPool::make_module(compiler, Stage::FRAGMENT, source, fullpath, std::string_view(), options, nullptr, record);
     if (fragment == nullptr || !add_module(std::move(fragment))) {
       return false;
     }
@@ -480,15 +471,6 @@ read(const ShaderFile &sfile, const CompilerOptions &options, BamCacheRecord *re
   }
 
   _prepare_shader_pcollector = PStatCollector(std::string("Draw:Prepare:Shader:") + _debug_name);
-
-  if (record2 != nullptr) {
-    // Note that we will call link() again after loading from the cache, but
-    // putting this here will make sure that we checked that it links correctly
-    // before we write it to the cache.
-    record2->set_data(this, this);
-    cache->store(record2);
-  }
-
   return true;
 }
 
@@ -582,7 +564,23 @@ do_read_source(Stage stage, const Filename &fn, const CompilerOptions &options, 
   ShaderCompiler *compiler = registry->get_compiler_for_language(_language);
   nassertr(compiler != nullptr, false);
 
-  PT(ShaderModule) module = compiler->compile_now(stage, fn, options, nullptr, record);
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+  PT(VirtualFile) vf = vfs->find_file(fn, get_model_path());
+  if (vf == nullptr) {
+    shader_cat.error()
+      << "Could not find shader file: " << fn << "\n";
+    return false;
+  }
+
+  // Note the file's current timestamp before we start compiling, so that
+  // check_modified() errs on the side of caution if it is being modified
+  // while we are reading it.
+  SourceFile sf;
+  sf._fullpath = vf->get_filename();
+  sf._timestamp = vf->get_timestamp();
+  sf._size = vf->get_file_size();
+
+  PT(ShaderModule) module = ShaderPool::load_module(compiler, stage, sf._fullpath, std::string_view(), options, nullptr, record);
   if (!module) {
     return false;
   }
@@ -591,6 +589,7 @@ do_read_source(Stage stage, const Filename &fn, const CompilerOptions &options, 
   if (!add_module(std::move(module))) {
     return false;
   }
+  _source_files.push_back(std::move(sf));
 
   if (!_debug_name.empty()) {
     _debug_name += '/';
@@ -601,41 +600,28 @@ do_read_source(Stage stage, const Filename &fn, const CompilerOptions &options, 
 }
 
 /**
- * Loads the shader file from the given string into the given string,
- * performing any pre-processing on it that may be necessary.
+ * Compiles the shader module from the given source string and adds it to the
+ * shader.
  *
  * Returns false if there was an error with this shader bad enough to consider
  * it 'invalid'.
  */
 bool Shader::
-do_read_source(ShaderModule::Stage stage, std::istream &in,
-               const Filename &fullpath, const CompilerOptions &options,
-               BamCacheRecord *record) {
+do_load_source(ShaderModule::Stage stage, std::string_view source,
+               const CompilerOptions &options, BamCacheRecord *record) {
   ShaderCompilerRegistry *registry = ShaderCompilerRegistry::get_global_ptr();
   ShaderCompiler *compiler = registry->get_compiler_for_language(_language);
   nassertr(compiler != nullptr, false);
 
-  PT(ShaderModule) module = compiler->compile_now(stage, in, fullpath, options, nullptr, record);
+  PT(ShaderModule) module = ShaderPool::make_module(
+    compiler, stage, source, Filename("created-shader"), std::string_view(),
+    options, nullptr, record);
   if (!module) {
     return false;
   }
   nassertr(stage == module->get_stage(), false);
 
   return add_module(std::move(module));
-}
-
-/**
- * Loads the shader file from the given string into the given string,
- * performing any pre-processing on it that may be necessary.
- *
- * Returns false if there was an error with this shader bad enough to consider
- * it 'invalid'.
- */
-bool Shader::
-do_load_source(ShaderModule::Stage stage, const std::string &source,
-               const CompilerOptions &options, BamCacheRecord *record) {
-  std::istringstream in(source);
-  return do_read_source(stage, in, Filename("created-shader"), options, record);
 }
 
 /**
@@ -850,15 +836,35 @@ bind_vertex_input(const InternalName *name, const ShaderType *type, int location
 }
 
 /**
- * Checks whether the shader or any of its dependent files were modified on
- * disk.
+ * Checks whether any of the files that this shader was loaded from, or any
+ * of the files that its compilation depended on, were modified on disk.
  */
 bool Shader::
 check_modified() const {
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+
+  // The source files for the modules themselves are not checked by
+  // ShaderModule::check_dependents_modified(), since the module cache is
+  // keyed by content hash, so different files may have the same ShaderModule.
+  for (const SourceFile &sf : _source_files) {
+    PT(VirtualFile) file = vfs->get_file(sf._fullpath);
+    if (file == nullptr) {
+      // File no longer exists.
+      if (sf._timestamp != 0) {
+        return true;
+      }
+    } else {
+      if (file->get_timestamp() != sf._timestamp ||
+          file->get_file_size() != sf._size) {
+        return true;
+      }
+    }
+  }
+
   for (const LinkedModule &linked_module : _modules) {
     const ShaderModule *module = linked_module._module.get_read_pointer();
 
-    if (module->check_source_modified()) {
+    if (module->check_dependents_modified()) {
       return true;
     }
   }
@@ -871,18 +877,86 @@ check_modified() const {
 PT(Shader) Shader::
 load(const Filename &file, SourceLanguage lang, const CompilerOptions &options) {
   ShaderFile sfile(file);
-  ShaderTable::const_iterator i = _load_table.find(sfile);
-  if (i != _load_table.end() && (lang == SL_none || lang == i->second->_language)) {
-    // But check that someone hasn't modified it in the meantime.
-    if (i->second->check_modified()) {
-      shader_cat.info()
-        << "Shader " << file << " was modified on disk, reloading.\n";
+
+  bool use_cache = (options.get_flags() & CompilerOptions::F_no_ram_cache) == 0;
+
+  ShaderPool::ShaderModules modules;
+  if (use_cache) {
+    VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+    PT(VirtualFile) vf = vfs->find_file(file, get_model_path());
+
+    Filename fullpath = file;
+    time_t timestamp = 0;
+    std::streamsize size = 0;
+    if (vf != nullptr) {
+      fullpath = vf->get_filename();
+      timestamp = vf->get_timestamp();
+      size = vf->get_file_size();
     } else {
-      if (shader_cat.is_debug()) {
-        shader_cat.debug()
-          << "Shader " << file << " was found in shader cache.\n";
+      // The shader may have been registered with ShaderPool::add_shader()
+      // under a filename that does not exist on disk, which resolves the
+      // filename in the same manner.
+      vfs->resolve_filename(fullpath, get_model_path());
+    }
+
+    // If the modules of this file are memoized with an unchanged stat, we can
+    // find the previously linked shader without even reading the file.
+    PT(Shader) shader = ShaderPool::find_shader(lang, fullpath, timestamp, size, options);
+    if (shader != nullptr) {
+      return shader;
+    }
+
+    if (vf == nullptr) {
+      shader_cat.error()
+        << "Could not find shader file: " << file << "\n";
+      return nullptr;
+    }
+
+    if (lang == SL_Cg || lang == SL_none) {
+      // Compile the modules up front, so that the tuple of canonical module
+      // pointers can identify a previously linked shader in the ShaderPool.
+      // This requires reading the file, since for a single-file (Cg) shader
+      // the set of stages depends on its contents; a modified file simply
+      // produces different modules, and thereby a different shader.
+      std::string source;
+      if (!vf->read_file(source, true)) {
+        shader_cat.error()
+          << "Could not read shader file: " << file << "\n";
+        return nullptr;
       }
-      return i->second;
+
+      if (lang == SL_none && !has_cg_header(source)) {
+        shader_cat.error()
+          << "Unable to determine shader language of " << file << "\n";
+        return nullptr;
+      }
+      lang = SL_Cg;
+
+      ShaderCompilerRegistry *registry = ShaderCompilerRegistry::get_global_ptr();
+      ShaderCompiler *compiler = registry->get_compiler_for_language(SL_Cg);
+      nassertr(compiler != nullptr, nullptr);
+
+      Stage stages[3] = {Stage::VERTEX, Stage::GEOMETRY, Stage::FRAGMENT};
+      for (Stage stage : stages) {
+        if (stage == Stage::GEOMETRY && source.find("gshader") == string::npos) {
+          continue;
+        }
+        PT(ShaderModule) module = ShaderPool::make_module(
+          compiler, stage, source, fullpath, std::string_view(), options);
+        if (module == nullptr) {
+          return nullptr;
+        }
+        modules.push_back(std::move(module));
+      }
+
+      // Also memoize the modules by filename, so that the next load of this
+      // file takes the stat-only path above instead of rereading the file.
+      ShaderPool::record_file_modules(fullpath, timestamp, size, options, modules);
+
+      shader = ShaderPool::find_shader(lang, modules);
+      if (shader != nullptr) {
+        return shader;
+      }
     }
   }
 
@@ -891,15 +965,9 @@ load(const Filename &file, SourceLanguage lang, const CompilerOptions &options) 
     return nullptr;
   }
 
-  _load_table[sfile] = shader;
-
-  /*if (cache_generated_shaders) {
-    ShaderTable::const_iterator i = _make_table.find(shader->_text);
-    if (i != _make_table.end() && (lang == SL_none || lang == i->second->_language)) {
-      return i->second;
-    }
-    _make_table[shader->_text] = shader;
-  }*/
+  if (use_cache && !modules.empty()) {
+    return ShaderPool::record_shader(modules, shader);
+  }
   return shader;
 }
 
@@ -911,19 +979,40 @@ load(SourceLanguage lang, const Filename &vertex,
      const Filename &fragment, const Filename &geometry,
      const Filename &tess_control, const Filename &tess_evaluation,
      const CompilerOptions &options) {
+  if (lang == SL_none) {
+    shader_cat.error()
+      << "No shader language was specified!\n";
+    return nullptr;
+  }
+
   ShaderFile sfile(vertex, fragment, geometry, tess_control, tess_evaluation);
-  ShaderTable::const_iterator i = _load_table.find(sfile);
-  if (i != _load_table.end() && (lang == SL_none || lang == i->second->_language)) {
-    // But check that someone hasn't modified it in the meantime.
-    if (i->second->check_modified()) {
-      shader_cat.info()
-        << "Shader was modified on disk, reloading.\n";
-    } else {
-      if (shader_cat.is_debug()) {
-        shader_cat.debug()
-          << "Shader was found in shader cache.\n";
+
+  bool use_cache = (options.get_flags() & CompilerOptions::F_no_ram_cache) == 0;
+
+  // Load the module for each stage first; on a repeat load, these come out
+  // of the ShaderPool's module memo without any file being read, and the
+  // tuple of canonical module pointers identifies the linked shader.
+  ShaderPool::ShaderModules modules;
+  if (use_cache) {
+    ShaderCompilerRegistry *registry = ShaderCompilerRegistry::get_global_ptr();
+    ShaderCompiler *compiler = registry->get_compiler_for_language(lang);
+    nassertr(compiler != nullptr, nullptr);
+
+    for (Stage stage : {Stage::VERTEX, Stage::TESS_CONTROL, Stage::TESS_EVALUATION, Stage::GEOMETRY, Stage::FRAGMENT, Stage::COMPUTE}) {
+      const std::string &fn = sfile.get_stage(stage);
+      if (!fn.empty()) {
+        PT(ShaderModule) module = ShaderPool::load_module(
+          compiler, stage, fn, std::string_view(), options);
+        if (module == nullptr) {
+          return nullptr;
+        }
+        modules.push_back(std::move(module));
       }
-      return i->second;
+    }
+
+    PT(Shader) shader = ShaderPool::find_shader(lang, modules);
+    if (shader != nullptr) {
+      return shader;
     }
   }
 
@@ -932,15 +1021,9 @@ load(SourceLanguage lang, const Filename &vertex,
     return nullptr;
   }
 
-  _load_table[sfile] = shader;
-
-  /*if (cache_generated_shaders) {
-    ShaderTable::const_iterator i = _make_table.find(shader->_text);
-    if (i != _make_table.end() && (lang == SL_none || lang == i->second->_language)) {
-      return i->second;
-    }
-    _make_table[shader->_text] = shader;
-  }*/
+  if (use_cache) {
+    return ShaderPool::record_shader(modules, shader);
+  }
   return shader;
 }
 
@@ -968,54 +1051,36 @@ load_compute(SourceLanguage lang, const Filename &fn,
   sfile._separate = true;
   sfile._compute = fn;
 
-  ShaderTable::const_iterator i = _load_table.find(sfile);
-  if (i != _load_table.end() && (lang == SL_none || lang == i->second->_language)) {
-    // But check that someone hasn't modified it in the meantime.
-    if (i->second->check_modified()) {
-      shader_cat.info()
-        << "Compute shader " << fn << " was modified on disk, reloading.\n";
-    } else {
-      if (shader_cat.is_debug()) {
-        shader_cat.debug()
-          << "Compute shader " << fn << " was found in shader cache.\n";
-      }
-      return i->second;
-    }
-  }
+  bool use_cache = (options.get_flags() & CompilerOptions::F_no_ram_cache) == 0;
 
-  BamCache *cache = BamCache::get_global_ptr();
-  PT(BamCacheRecord) record = cache->lookup(fullpath, "sho");
-  if (record != nullptr) {
-    if (record->has_data()) {
-      PT(Shader) shader = DCAST(Shader, record->get_data());
-      if (shader->_module_mask == (1 << (int)Stage::COMPUTE)) {
-        shader_cat.info()
-          << "Compute shader " << fn << " was found in disk cache.\n";
-        return shader;
-      }
+  ShaderPool::ShaderModules modules;
+  if (use_cache) {
+    ShaderCompilerRegistry *registry = ShaderCompilerRegistry::get_global_ptr();
+    ShaderCompiler *compiler = registry->get_compiler_for_language(lang);
+    nassertr(compiler != nullptr, nullptr);
+
+    PT(ShaderModule) module = ShaderPool::load_module(
+      compiler, Stage::COMPUTE, fn, std::string_view(), options);
+    if (module == nullptr) {
+      return nullptr;
+    }
+    modules.push_back(std::move(module));
+
+    PT(Shader) shader = ShaderPool::find_shader(lang, modules);
+    if (shader != nullptr) {
+      return shader;
     }
   }
 
   PT(Shader) shader = new Shader(lang);
-  if (!shader->read(sfile, options, record)) {
+  if (!shader->read(sfile, options)) {
     return nullptr;
   }
-
-  _load_table[sfile] = shader;
-
-  /*if (cache_generated_shaders) {
-    ShaderTable::const_iterator i = _make_table.find(shader->_text);
-    if (i != _make_table.end() && (lang == SL_none || lang == i->second->_language)) {
-      return i->second;
-    }
-    _make_table[shader->_text] = shader;
-  }*/
-
-  // It makes little sense to cache the shader before compilation, so we keep
-  // the record for when we have the compiled the shader.
-  //shader->_record = std::move(record);
-  shader->_cache_compiled_shader = BamCache::get_global_ptr()->get_cache_compiled_shaders();
   shader->_fullpath = std::move(fullpath);
+
+  if (use_cache) {
+    return ShaderPool::record_shader(modules, shader);
+  }
   return shader;
 }
 
@@ -1037,30 +1102,48 @@ make(string body, SourceLanguage lang, const CompilerOptions &options) {
 
   ShaderFile sbody(std::move(body));
 
-  if (cache_generated_shaders) {
-    ShaderTable::const_iterator i = _make_table.find(sbody);
-    if (i != _make_table.end() && (lang == SL_none || lang == i->second->_language)) {
-      // But check that someone hasn't modified its includes in the meantime.
-      if (!i->second->check_modified()) {
-        return i->second;
+  // If cache-generated-shaders is disabled, disable caching of the shader
+  // and its modules entirely.
+  CompilerOptions new_options(options);
+  if (!cache_generated_shaders) {
+    new_options.set_flags(new_options.get_flags() | CompilerOptions::F_no_cache);
+  }
+  bool use_cache = (new_options.get_flags() & CompilerOptions::F_no_ram_cache) == 0;
+
+  // Compile (or fetch from the module cache) each of the stages that make up
+  // this single-file Cg shader, so that the tuple of canonical module
+  // pointers can identify a previously linked shader in the ShaderPool.
+  ShaderPool::ShaderModules modules;
+  if (use_cache) {
+    ShaderCompilerRegistry *registry = ShaderCompilerRegistry::get_global_ptr();
+    ShaderCompiler *compiler = registry->get_compiler_for_language(lang);
+    nassertr(compiler != nullptr, nullptr);
+
+    Stage stages[3] = {Stage::VERTEX, Stage::GEOMETRY, Stage::FRAGMENT};
+    for (Stage stage : stages) {
+      if (stage == Stage::GEOMETRY &&
+          sbody._shared.find("gshader") == string::npos) {
+        continue;
       }
+      PT(ShaderModule) module = ShaderPool::make_module(
+        compiler, stage, sbody._shared, Filename("created-shader"),
+        std::string_view(), new_options);
+      if (module == nullptr) {
+        return nullptr;
+      }
+      modules.push_back(std::move(module));
+    }
+
+    PT(Shader) shader = ShaderPool::find_shader(lang, modules);
+    if (shader != nullptr) {
+      return shader;
     }
   }
 
   PT(Shader) shader = new Shader(lang);
-  if (!shader->load(sbody, options)) {
+  if (!shader->load(sbody, new_options)) {
     return nullptr;
   }
-
-  /*if (cache_generated_shaders) {
-    ShaderTable::const_iterator i = _make_table.find(shader->_text);
-    if (i != _make_table.end() && (lang == SL_none || lang == i->second->_language)) {
-      shader = i->second;
-    } else {
-      _make_table[shader->_text] = shader;
-    }
-    _make_table[std::move(sbody)] = shader;
-  }*/
 
   if (dump_generated_shaders) {
     ostringstream fns;
@@ -1071,8 +1154,12 @@ make(string body, SourceLanguage lang, const CompilerOptions &options) {
 
     pofstream s;
     s.open(fn.c_str(), std::ios::out | std::ios::trunc);
-    s << shader->get_text();
+    s << sbody._shared;
     s.close();
+  }
+
+  if (use_cache) {
+    return ShaderPool::record_shader(modules, shader);
   }
   return shader;
 }
@@ -1092,32 +1179,52 @@ make(SourceLanguage lang, string vertex, string fragment, string geometry,
   ShaderFile sbody(std::move(vertex), std::move(fragment), std::move(geometry),
                    std::move(tess_control), std::move(tess_evaluation));
 
-  if (cache_generated_shaders) {
-    ShaderTable::const_iterator i = _make_table.find(sbody);
-    if (i != _make_table.end() && (lang == SL_none || lang == i->second->_language)) {
-      // But check that someone hasn't modified its includes in the meantime.
-      if (!i->second->check_modified()) {
-        return i->second;
+  // If cache-generated-shaders is disabled, disable caching of the shader
+  // and its modules entirely.
+  CompilerOptions new_options(options);
+  if (!cache_generated_shaders) {
+    new_options.set_flags(new_options.get_flags() | CompilerOptions::F_no_cache);
+  }
+  bool use_cache = (new_options.get_flags() & CompilerOptions::F_no_ram_cache) == 0;
+
+  // Compile (or fetch from the module cache) the module for each stage; the
+  // tuple of canonical module pointers identifies a previously linked shader
+  // in the ShaderPool, even one whose modules were loaded from files with
+  // the same contents.
+  ShaderPool::ShaderModules modules;
+  if (use_cache) {
+    ShaderCompilerRegistry *registry = ShaderCompilerRegistry::get_global_ptr();
+    ShaderCompiler *compiler = registry->get_compiler_for_language(lang);
+    nassertr(compiler != nullptr, nullptr);
+
+    for (Stage stage : {Stage::VERTEX, Stage::TESS_CONTROL, Stage::TESS_EVALUATION, Stage::GEOMETRY, Stage::FRAGMENT, Stage::COMPUTE}) {
+      const std::string &body = sbody.get_stage(stage);
+      if (!body.empty()) {
+        PT(ShaderModule) module = ShaderPool::make_module(
+          compiler, stage, body, Filename("created-shader"),
+          std::string_view(), new_options);
+        if (module == nullptr) {
+          return nullptr;
+        }
+        modules.push_back(std::move(module));
       }
+    }
+
+    PT(Shader) shader = ShaderPool::find_shader(lang, modules);
+    if (shader != nullptr) {
+      return shader;
     }
   }
 
   PT(Shader) shader = new Shader(lang);
   shader->_filename = ShaderFile("created-shader");
-  if (!shader->load(sbody, options)) {
+  if (!shader->load(sbody, new_options)) {
     return nullptr;
   }
 
-  /*if (cache_generated_shaders) {
-    ShaderTable::const_iterator i = _make_table.find(shader->_text);
-    if (i != _make_table.end() && (lang == SL_none || lang == i->second->_language)) {
-      shader = i->second;
-    } else {
-      _make_table[shader->_text] = shader;
-    }
-    _make_table[std::move(sbody)] = shader;
-  }*/
-
+  if (use_cache) {
+    return ShaderPool::record_shader(modules, shader);
+  }
   return shader;
 }
 
@@ -1136,32 +1243,43 @@ make_compute(SourceLanguage lang, string body, const CompilerOptions &options) {
   sbody._separate = true;
   sbody._compute = std::move(body);
 
-  if (cache_generated_shaders) {
-    ShaderTable::const_iterator i = _make_table.find(sbody);
-    if (i != _make_table.end() && (lang == SL_none || lang == i->second->_language)) {
-      // But check that someone hasn't modified its includes in the meantime.
-      if (!i->second->check_modified()) {
-        return i->second;
-      }
+  // If cache-generated-shaders is disabled, disable caching of the shader
+  // and its modules entirely.
+  CompilerOptions new_options(options);
+  if (!cache_generated_shaders) {
+    new_options.set_flags(new_options.get_flags() | CompilerOptions::F_no_cache);
+  }
+  bool use_cache = (new_options.get_flags() & CompilerOptions::F_no_ram_cache) == 0;
+
+  ShaderPool::ShaderModules modules;
+  if (use_cache) {
+    ShaderCompilerRegistry *registry = ShaderCompilerRegistry::get_global_ptr();
+    ShaderCompiler *compiler = registry->get_compiler_for_language(lang);
+    nassertr(compiler != nullptr, nullptr);
+
+    PT(ShaderModule) module = ShaderPool::make_module(
+      compiler, Stage::COMPUTE, sbody._compute, Filename("created-shader"),
+      std::string_view(), new_options);
+    if (module == nullptr) {
+      return nullptr;
+    }
+    modules.push_back(std::move(module));
+
+    PT(Shader) shader = ShaderPool::find_shader(lang, modules);
+    if (shader != nullptr) {
+      return shader;
     }
   }
 
   PT(Shader) shader = new Shader(lang);
   shader->_filename = ShaderFile("created-shader");
-  if (!shader->load(sbody, options)) {
+  if (!shader->load(sbody, new_options)) {
     return nullptr;
   }
 
-  /*if (cache_generated_shaders) {
-    ShaderTable::const_iterator i = _make_table.find(shader->_text);
-    if (i != _make_table.end() && (lang == SL_none || lang == i->second->_language)) {
-      shader = i->second;
-    } else {
-      _make_table[shader->_text] = shader;
-    }
-    _make_table[std::move(sbody)] = shader;
-  }*/
-
+  if (use_cache) {
+    return ShaderPool::record_shader(modules, shader);
+  }
   return shader;
 }
 

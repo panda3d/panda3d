@@ -14,6 +14,7 @@
 #include "compilerOptions.h"
 #include "config_putil.h"
 #include "configVariableBool.h"
+#include "datagram.h"
 #include "indent.h"
 
 using std::string;
@@ -58,4 +59,30 @@ write_defines(std::ostream &out) const {
       out << "#define " << pair.first << " " << pair.second << "\n";
     }
   }
+}
+
+/**
+ * Returns a hash of every setting that can affect the output of the compiler.
+ */
+HashVal CompilerOptions::
+get_cache_key() const {
+  Datagram dg;
+  dg.add_uint8((_flags & F_debug) != 0);
+  dg.add_uint8((int)_optimize);
+
+  size_t num_directories = _include_path.get_num_directories();
+  dg.add_uint32((uint32_t)num_directories);
+  for (size_t i = 0; i < num_directories; ++i) {
+    dg.add_string(_include_path.get_directory(i));
+  }
+
+  dg.add_uint32((uint32_t)_defines.size());
+  for (const auto &pair : _defines) {
+    dg.add_string(pair.first);
+    dg.add_string(pair.second);
+  }
+
+  HashVal hv;
+  hv.hash_buffer((const char *)dg.get_data(), dg.get_length());
+  return hv;
 }

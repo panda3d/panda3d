@@ -13,6 +13,7 @@
 #include "shaderEnums.cxx"
 #include "shaderInputBinding.cxx"
 #include "shaderModule.cxx"
+#include "shaderPool.cxx"
 #include "shaderType.cxx"
 #include "simpleAllocator.cxx"
 #include "simpleLru.cxx"

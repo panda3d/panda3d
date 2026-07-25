@@ -3686,8 +3686,6 @@ compile_and_link(int variant) {
 #ifndef __EMSCRIPTEN__
   bool retrieve_binary = false;
   if (_glgsg->_supports_get_program_binary) {
-    retrieve_binary = _shader->get_cache_compiled_shader();
-
 #ifndef NDEBUG
     if (gl_dump_compiled_shaders) {
       retrieve_binary = true;
