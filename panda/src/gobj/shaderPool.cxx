@@ -548,7 +548,9 @@ ns_add_shader(const Filename &orig_filename, Shader *shader) {
     size = vf->get_file_size();
   }
 
-  static HashVal options_hash = CompilerOptions().get_cache_key();
+  // Not cached in a static, since the default options include the model path,
+  // which may change over the lifetime of the process.
+  HashVal options_hash = CompilerOptions().get_cache_key();
 
   LightMutexHolder holder(_lock);
 
