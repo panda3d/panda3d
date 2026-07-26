@@ -126,6 +126,7 @@ private:
   INLINE void mark_used();
 
   void clear_prepared(PreparedGraphicsObjects *prepared_objects);
+  bool verify_data_endianness(size_t size) const;
   void reverse_data_endianness(unsigned char *dest,
                                const unsigned char *source, size_t size);
 
