@@ -15,15 +15,22 @@
 #define SPIRVBUILDER_H
 
 #include "spirVModule.h"
+#include "spirVValue.h"
+#include "spirVPointer.h"
 
 /**
  * Builds SPIR-V function bodies, inserting instructions into a SpirVModule.
  * Operations are inserted at the current cursor, which advances past them.
+ *
+ * Also offers convenient forwarders for defining variables and constants,
+ * which return SpirVPointer or SpirVValue wrappers.
  */
 class EXPCL_PANDA_SHADERPIPELINE SpirVBuilder {
 public:
   using Instruction = SpirVModule::Instruction;
   using Function = SpirVModule::Function;
+  using Pointer = SpirVPointer;
+  using Value = SpirVValue;
   using Id = SpirVId;
 
   explicit SpirVBuilder(SpirVModule &module);
@@ -43,27 +50,42 @@ public:
   INLINE void insert(spv::Op opcode, std::initializer_list<uint32_t> args);
   void insert(spv::Op opcode, const uint32_t *args, size_t nargs);
 
-  Id op_load(Id var_id, spv::MemoryAccessMask access = spv::MemoryAccessMaskNone);
-  void op_store(Id var_id, Id value);
-  Id op_select(Id cond, Id obj1, Id obj2);
-  Id op_access_chain(Id var_id, std::initializer_list<Id> chain);
-  Id op_vector_shuffle(Id vec1, Id vec2, const pvector<uint32_t> &components);
-  Id op_composite_construct(const ShaderType *type, const pvector<Id> &constituents);
-  Id op_composite_extract(Id obj_id, std::initializer_list<uint32_t> chain);
-  Id op_composite_insert(Id obj_id, Id composite_id, std::initializer_list<uint32_t> chain);
-  Id op_compare(spv::Op opcode, Id obj1, Id obj2);
-  Id op_convert(ShaderType::ScalarType to_scalar_type, Id value);
-  Id op_bitcast(const ShaderType *type, Id value);
-  Id op_transpose(Id obj);
-  Id op_add(Id left, Id right);
-  Id op_sub(Id left, Id right);
-  Id op_div(Id left, Id right);
-  Id op_dot(Id left, Id right);
-  Id op_negate(Id value);
-  Id op_multiply(Id left, Id right);
-  Id op_image_sample(Id image, Id coord, uint32_t operands = 0u, const uint32_t *ids = nullptr);
-  Id op_function_call(Id func_id);
+  // Convenience forwarders returning a Pointer.
+  Pointer define_uniform(const ShaderType *type, std::string name);
+  Pointer define_input(const ShaderType *type, std::string name, int location);
+  Pointer define_output(const ShaderType *type, std::string name, int location);
+  Pointer define_private(const ShaderType *type, std::string name = "");
+  INLINE Pointer ensure_builtin_input(spv::BuiltIn builtin);
+  INLINE Pointer ensure_builtin_output(spv::BuiltIn builtin);
 
+  // Const value constructors are defined here since vector constructors in
+  // spirVValue.h cannot take literals (Value requires a builder).
+  INLINE Value const_bool(bool value);
+  INLINE Value const_int(int32_t value);
+  INLINE Value const_uint(uint32_t value);
+  INLINE Value const_float(float value);
+  Value const_vec2(float x, float y);
+  Value const_vec3(float x, float y, float z);
+  Value const_vec4(float x, float y, float z, float w);
+
+  // Generic constructor for any (non-const) type.
+  INLINE Value construct(const ShaderType *type, std::initializer_list<glsl::Argument> constituents);
+  Value construct(const ShaderType *type, const pvector<Value> &constituents);
+  Value construct(const ShaderType *type, const glsl::Argument *constituents, size_t num_args);
+  Value construct(const ShaderType *type, glsl::Argument value);
+
+  // Low-level functions inserting instructions that directly take Ids;
+  // generally, use the higher-level Pointer/Value API instead.
+  Id op_load(Id var_id, spv::MemoryAccessMask access = spv::MemoryAccessMaskNone);
+  void op_store(Id var_id, Id value, spv::MemoryAccessMask access = spv::MemoryAccessMaskNone);
+  INLINE Id op_access_chain(Id var_id, std::initializer_list<Id> chain);
+  INLINE Id op_access_chain(Id var_id, const pvector<Id> &chain);
+  Id op_access_chain(Id var_id, const Id *chain, size_t count);
+  Id op_function_call(Id func_id);
+  Id op_image_sample(Id sampled_image, Id coord, uint32_t operands,
+                     const uint32_t *operand_ids);
+
+  // Block instructions.
   Id op_label();
   void op_branch(Id target);
   void op_return();
@@ -72,6 +94,7 @@ public:
 
   Id branch_if(Id cond);
   void branch_endif(Id label);
+  void kill_if(Id cond);
 
 private:
   SpirVModule &_module;

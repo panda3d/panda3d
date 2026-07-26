@@ -87,7 +87,7 @@ run(SpirVModule &module) {
             // by a conversion, of which the final op takes over the original
             // result id.
             cursor.replace([&](SpirVBuilder &builder) -> Id {
-              Id temp = builder.op_load(var_id);
+              Value temp = Pointer(builder, var_id).load();
 
               if (new_vector != nullptr && old_vector != nullptr) {
                 // Swizzle the vector.
@@ -103,21 +103,20 @@ run(SpirVModule &module) {
                     components.push_back(0xffffffff);
                     ++ci;
                   }
-                  temp = builder.op_vector_shuffle(temp, temp, components);
+                  temp = temp.swizzle(components);
                 }
-                return builder.op_convert(new_vector->get_scalar_type(), temp);
+                return temp.convert(new_vector->get_scalar_type());
               }
               if (new_vector != nullptr) {
                 // Convert the scalar, then replicate it into a vector.
-                temp = builder.op_convert(new_vector->get_scalar_type(), temp);
-                pvector<Id> components(new_vector->get_num_components(), temp);
-                return builder.op_composite_construct(new_vector, components);
+                temp = temp.convert(new_vector->get_scalar_type());
+                return builder.construct(new_vector, temp);
               }
               if (old_vector != nullptr) {
                 // Take the first component of the vector.
-                temp = builder.op_composite_extract(temp, {0});
+                temp = temp[0];
               }
-              return builder.op_convert(new_scalar->get_scalar_type(), temp);
+              return temp.convert(new_scalar->get_scalar_type());
             });
           }
           else {

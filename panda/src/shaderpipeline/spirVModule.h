@@ -132,6 +132,7 @@ public:
   explicit SpirVModule(const InstructionStream &stream);
 
   // Module I/O and inspection.
+  void clear();
   bool parse(const uint32_t *words, size_t num_words);
   InstructionStream emit() const;
   bool validate() const;
@@ -240,9 +241,11 @@ public:
                           const pvector<Id> &param_type_ids = pvector<Id>());
   Id define_variable(const ShaderType *type, spv::StorageClass storage_class);
   Id define_constant(const ShaderType *type, uint32_t constant);
+  Id define_composite_constant(const ShaderType *type, const pvector<Id> &constituents);
   Id define_int_constant(int32_t constant);
   INLINE Id define_float_constant(float constant);
   Id define_double_constant(double constant);
+  Id define_scalar_constant(ShaderType::ScalarType scalar_type, double value);
   Id define_null_constant(const ShaderType *type);
   Id define_spec_constant(const ShaderType *type, uint32_t def_value);
   INLINE Id ensure_builtin_input(spv::BuiltIn builtin);
@@ -302,6 +305,10 @@ private:
 
   Id ensure_builtin(spv::StorageClass storage_class, spv::BuiltIn builtin);
 
+  Id find_constant(spv::Op opcode, Id type_id,
+                   const uint32_t *operands, size_t num_operands) const;
+  void ensure_constant_map() const;
+
   void output_id(std::ostream &out, Id id) const;
   Id error_expected(Id id, const char *msg) const;
 
@@ -343,6 +350,13 @@ private:
   typedef pmap<const ShaderType *, Id> TypeMap;
   mutable TypeMap _type_map;
   mutable bool _type_map_valid = false;
+
+  // Reverse mapping for reusing existing constant declarations, keyed by
+  // the declaring opcode, type id, and literal/constituent operand words.
+  // Kept up-to-date by add_declaration.
+  typedef pmap<pvector<uint32_t>, Id> ConstantMap;
+  mutable ConstantMap _constant_map;
+  mutable bool _constant_map_valid = false;
 
   friend class SpirVInstructionCursor;
 };

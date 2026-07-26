@@ -21,6 +21,8 @@
 using Instruction = ShaderModuleSpirV::Instruction;
 using InstructionStream = ShaderModuleSpirV::InstructionStream;
 using Id = SpirVId;
+using Value = SpirVValue;
+using Pointer = SpirVPointer;
 
 /**
  * Creates an empty module with the standard capability and memory model.

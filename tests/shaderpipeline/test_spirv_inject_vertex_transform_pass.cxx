@@ -34,10 +34,9 @@ TEST_CASE("SpirVInjectVertexTransformPass injects transforms", "[shaderpipeline]
 
   {
     SpirVBuilder builder = make_entry_point(module, spv::ExecutionModelVertex);
-    Id load_mat = builder.op_load(id_mv);
-    Id load_vtx = builder.op_load(id_vertex);
-    Id xformed = builder.op_multiply(load_mat, load_vtx);
-    builder.op_store(id_out, xformed);
+    Value load_mat = Pointer(builder, id_mv).load();
+    Value load_vtx = Pointer(builder, id_vertex).load();
+    builder.op_store(id_out, load_mat * load_vtx);
     builder.op_return();
   }
 

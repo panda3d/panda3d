@@ -563,6 +563,32 @@ get_builtin_type(spv::BuiltIn builtin) {
 }
 
 /**
+ * If the given instruction declares a constant that the reuse map indexes,
+ * fills in its lookup key and returns true.
+ */
+static bool
+make_constant_key(const SpirVModule::Instruction &op, pvector<uint32_t> &key) {
+  switch (op.opcode) {
+  case spv::OpConstant:
+  case spv::OpConstantTrue:
+  case spv::OpConstantFalse:
+  case spv::OpConstantNull:
+  case spv::OpConstantComposite:
+    break;
+  default:
+    return false;
+  }
+  if (op.args.size() < 2) {
+    return false;
+  }
+  key.clear();
+  key.push_back((uint32_t)op.opcode);
+  key.push_back(op.args[0]);
+  key.insert(key.end(), op.args.begin() + 2, op.args.end());
+  return true;
+}
+
+/**
  * Appends a string literal (padded with at least one zero byte) to the given
  * argument vector (a pvector or an instruction's Args).
  */
@@ -658,19 +684,10 @@ SpirVModule(const InstructionStream &stream) {
 }
 
 /**
- * Parses the given words into this module.  Returns false if the stream is
- * malformed; the module contents are undefined in that case.
+ * Clears the state of the module as though it were freshly created.
  */
-bool SpirVModule::
-parse(const uint32_t *words, size_t num_words) {
-  if (num_words < 5 || words[0] != spv::MagicNumber) {
-    shader_cat.error()
-      << "Invalid SPIR-V file header\n";
-    return false;
-  }
-
-  // Reset any state from a previous parse, so that this may safely be called
-  // on a module that already holds contents.
+void SpirVModule::
+clear() {
   _capabilities.clear();
   _extensions.clear();
   _ext_inst_imports.clear();
@@ -687,7 +704,23 @@ parse(const uint32_t *words, size_t num_words) {
   _defs.clear();
   _type_map.clear();
   _type_map_valid = false;
+  _constant_map.clear();
+  _constant_map_valid = false;
+}
 
+/**
+ * Parses the given words into this module.  Returns false if the stream is
+ * malformed; the module contents are undefined in that case.
+ */
+bool SpirVModule::
+parse(const uint32_t *words, size_t num_words) {
+  if (num_words < 5 || words[0] != spv::MagicNumber) {
+    shader_cat.error()
+      << "Invalid SPIR-V file header\n";
+    return false;
+  }
+
+  clear();
   _version = words[1];
   _generator = words[2];
   _id_bound = words[3];
@@ -2204,6 +2237,13 @@ add_declaration(Instruction op) {
   int32_t index = (int32_t)_declarations.size();
   _declarations.push_back(std::move(op));
   record_result_at(_declarations.back(), Id(), index);
+
+  if (_constant_map_valid) {
+    pvector<uint32_t> key;
+    if (make_constant_key(_declarations.back(), key)) {
+      _constant_map.insert({std::move(key), _declarations.back().get_result()});
+    }
+  }
 }
 
 /**
@@ -2894,6 +2934,27 @@ define_image_type(const ShaderType *type, uint32_t depth, uint32_t sampled, spv:
     break;
   }
 
+  // Some dimensionalities require a capability, which differs based on
+  // whether the image is sampled or used as a storage image.
+  switch (args[2]) {
+  case spv::Dim1D:
+    add_capability(sampled == 1 ? spv::CapabilitySampled1D
+                                : spv::CapabilityImage1D);
+    break;
+  case spv::DimCube:
+    if (args[4]) {
+      add_capability(sampled == 1 ? spv::CapabilitySampledCubeArray
+                                  : spv::CapabilityImageCubeArray);
+    }
+    break;
+  case spv::DimBuffer:
+    add_capability(sampled == 1 ? spv::CapabilitySampledBuffer
+                                : spv::CapabilityImageBuffer);
+    break;
+  default:
+    break;
+  }
+
   // If the module already declares a type with these exact operands, this
   // creates a duplicate, which deduplicate_types() merges before the module
   // is emitted.
@@ -3022,19 +3083,32 @@ define_variable(const ShaderType *type, spv::StorageClass storage_class) {
 }
 
 /**
- * Defines a new constant.  Does not attempt to reuse constants.
+ * Defines a new constant, reusing an existing one if one is already defined
+ * with this exact type.
  */
 SpirVId SpirVModule::
 define_constant(const ShaderType *type, uint32_t constant) {
   Id type_id = define_type(type);
 
-  Id constant_id = allocate_id();
   if (type == ShaderType::BOOL) {
-    add_declaration(Instruction(constant ? spv::OpConstantTrue : spv::OpConstantFalse,
-                                {type_id, constant_id}));
-  } else {
-    add_declaration(Instruction(spv::OpConstant, {type_id, constant_id, constant}));
+    spv::Op opcode = constant ? spv::OpConstantTrue : spv::OpConstantFalse;
+    Id constant_id = find_constant(opcode, type_id, nullptr, 0);
+    if (constant_id != 0) {
+      return constant_id;
+    }
+
+    constant_id = allocate_id();
+    add_declaration(Instruction(opcode, {type_id, constant_id}));
+    return constant_id;
   }
+
+  Id constant_id = find_constant(spv::OpConstant, type_id, &constant, 1);
+  if (constant_id != 0) {
+    return constant_id;
+  }
+
+  constant_id = allocate_id();
+  add_declaration(Instruction(spv::OpConstant, {type_id, constant_id, constant}));
   return constant_id;
 }
 
@@ -3063,27 +3137,65 @@ define_double_constant(double constant) {
  */
 SpirVId SpirVModule::
 define_int_constant(int32_t constant) {
-  for (const Instruction &op : _declarations) {
-    if (op.opcode != spv::OpConstant || op.args.size() != 3 ||
-        op.args[2] != (uint32_t)constant) {
-      continue;
-    }
-    // Skip constants of a non-canonical type declaration (eg. a 16-bit int),
-    // which cannot be reused interchangeably with a plain int constant.
-    const Instruction *type_decl = find_declaration(Id(op.args[0]));
-    if (type_decl != nullptr && type_decl->opcode == spv::OpTypeInt &&
-        type_decl->args.size() == 3 && type_decl->args[1] == 32) {
-      if (type_decl->args[2] != 0 || constant >= 0) {
-        return Id(op.args[1]);
+  uint32_t word = (uint32_t)constant;
+
+  // A constant of the canonical uint type is interchangeable with a plain
+  // int constant when the value is non-negative.  Constants of non-canonical
+  // type declarations (eg. a 16-bit int) are not; find_type only returns
+  // canonical declarations, so those are never matched here.
+  if (constant >= 0) {
+    Id uint_type_id = find_type(ShaderType::UINT);
+    if (uint_type_id != 0) {
+      Id constant_id = find_constant(spv::OpConstant, uint_type_id, &word, 1);
+      if (constant_id != 0) {
+        return constant_id;
       }
     }
   }
 
   Id type_id = define_type(ShaderType::INT);
-  Id constant_id = allocate_id();
+  Id constant_id = find_constant(spv::OpConstant, type_id, &word, 1);
+  if (constant_id != 0) {
+    return constant_id;
+  }
 
-  add_declaration(Instruction(spv::OpConstant, {type_id, constant_id, (uint32_t)constant}));
+  constant_id = allocate_id();
+  add_declaration(Instruction(spv::OpConstant, {type_id, constant_id, word}));
   return constant_id;
+}
+
+/**
+ * Defines a constant of the given scalar type holding the given number,
+ * asserting that it is representable in that type (for bool, that it is
+ * exactly 0 or 1).  This is the definition behind a plain number written in
+ * the value layer, where the scalar type comes from the context the number
+ * appears in.  Returns 0 if the scalar type cannot hold a number at all.
+ */
+SpirVId SpirVModule::
+define_scalar_constant(ShaderType::ScalarType scalar_type, double value) {
+  switch (scalar_type) {
+  case ShaderType::ST_float:
+    return define_float_constant((float)value);
+
+  case ShaderType::ST_double:
+    return define_double_constant(value);
+
+  case ShaderType::ST_int:
+    nassertr_always((double)(int32_t)value == value, Id());
+    return define_int_constant((int32_t)value);
+
+  case ShaderType::ST_uint:
+    nassertr_always(value >= 0.0 && (double)(uint32_t)value == value, Id());
+    return define_constant(ShaderType::UINT, (uint32_t)value);
+
+  case ShaderType::ST_bool:
+    nassertr_always(value == 0.0 || value == 1.0, Id());
+    return define_constant(ShaderType::BOOL, (uint32_t)value);
+
+  default:
+    nassert_raise("a number requires a float, integer or bool typed context");
+    return Id();
+  }
 }
 
 /**
@@ -3094,15 +3206,40 @@ SpirVId SpirVModule::
 define_null_constant(const ShaderType *type) {
   Id type_id = define_type(type);
 
-  for (const Instruction &op : _declarations) {
-    if (op.opcode == spv::OpConstantNull && op.args.size() >= 2 &&
-        op.args[0] == type_id) {
-      return Id(op.args[1]);
-    }
+  Id constant_id = find_constant(spv::OpConstantNull, type_id, nullptr, 0);
+  if (constant_id != 0) {
+    return constant_id;
   }
 
-  Id constant_id = allocate_id();
+  constant_id = allocate_id();
   add_declaration(Instruction(spv::OpConstantNull, {type_id, constant_id}));
+  return constant_id;
+}
+
+/**
+ * Defines a new composite constant (such as a vector or matrix constant)
+ * with the given (constant) constituents, reusing an existing one if one is
+ * already defined with this exact type and these exact constituents.
+ */
+SpirVId SpirVModule::
+define_composite_constant(const ShaderType *type, const pvector<Id> &constituents) {
+  Id type_id = define_type(type);
+
+  pvector<uint32_t> words;
+  words.reserve(constituents.size());
+  for (Id constituent : constituents) {
+    words.push_back(constituent);
+  }
+  Id constant_id = find_constant(spv::OpConstantComposite, type_id,
+                                 words.data(), words.size());
+  if (constant_id != 0) {
+    return constant_id;
+  }
+
+  constant_id = allocate_id();
+  Instruction op(spv::OpConstantComposite, {type_id, constant_id});
+  op.args.insert(op.args.end(), words.begin(), words.end());
+  add_declaration(std::move(op));
   return constant_id;
 }
 
@@ -3683,6 +3820,62 @@ record_result_at(const Instruction &op, Id function_id,
     }
     break;
   }
+}
+
+/**
+ * Makes sure that the constant reuse map indexes all live constant
+ * declarations in the globals section.
+ */
+void SpirVModule::
+ensure_constant_map() const {
+  if (_constant_map_valid) {
+    return;
+  }
+  _constant_map.clear();
+  pvector<uint32_t> key;
+  for (const Instruction &op : _declarations) {
+    if (make_constant_key(op, key)) {
+      // If there are duplicate declarations, the first one becomes the
+      // canonical one, like the linear scans this map replaces would find.
+      _constant_map.insert({key, Id(op.args[1])});
+    }
+  }
+  _constant_map_valid = true;
+}
+
+/**
+ * Returns the id of an existing constant declaration with the given opcode,
+ * type and operand words, or 0 if there is none.
+ */
+SpirVId SpirVModule::
+find_constant(spv::Op opcode, SpirVId type_id,
+              const uint32_t *operands, size_t num_operands) const {
+  ensure_constant_map();
+
+  pvector<uint32_t> key;
+  key.reserve(num_operands + 2);
+  key.push_back((uint32_t)opcode);
+  key.push_back(type_id);
+  key.insert(key.end(), operands, operands + num_operands);
+
+  ConstantMap::const_iterator it = _constant_map.find(key);
+  if (it == _constant_map.end()) {
+    return Id();
+  }
+
+  // Verify the entry against the current declaration, so that an entry made
+  // stale by a mutation (a deleted or reassigned id) reads as a miss.
+  Id id = it->second;
+  const Instruction *decl = find_declaration(id);
+  if (decl != nullptr && decl->opcode == opcode &&
+      decl->args.size() == num_operands + 2 &&
+      decl->args[0] == type_id && decl->args[1] == id &&
+      std::equal(operands, operands + num_operands, decl->args.begin() + 2)) {
+    return id;
+  }
+
+  _constant_map.erase(it);
+  return Id();
 }
 
 /**

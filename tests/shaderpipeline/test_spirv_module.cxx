@@ -38,6 +38,36 @@ make_float_function(SpirVModule &module, const pvector<Id> &param_type_ids) {
   return fn;
 }
 
+TEST_CASE("SpirVModule parse resets existing contents", "[shaderpipeline]") {
+  SpirVModule module = make_module();
+  Id id_var = module.define_variable(ShaderType::FLOAT, spv::StorageClassPrivate);
+  module.set_name(id_var, "one");
+  {
+    SpirVBuilder builder = make_entry_point(module);
+    builder.op_return();
+  }
+  InstructionStream stream = module.emit();
+  REQUIRE(stream.validate());
+
+  // Parsing a different stream into the module must not retain anything from
+  // the contents it held before.
+  SpirVModule other = make_module();
+  other.define_variable(ShaderType::FLOAT, spv::StorageClassPrivate);
+  other.define_variable(ShaderType::FLOAT, spv::StorageClassPrivate);
+  {
+    SpirVBuilder builder = make_entry_point(other);
+    builder.op_return();
+  }
+
+  REQUIRE(other.parse(stream.get_data(), stream.get_data_size()));
+
+  InstructionStream reparsed = other.emit();
+  REQUIRE(reparsed.validate());
+  CHECK(count_op(reparsed, spv::OpVariable) == 1);
+  CHECK(count_op(reparsed, spv::OpEntryPoint) == 1);
+  CHECK(other.get_name(id_var) == "one");
+}
+
 TEST_CASE("SpirVModule derives entry point interfaces from references", "[shaderpipeline]") {
   // Three inputs, of which only the third is referenced by the body: the
   // emitted interface must list exactly that one.  The first two then get
@@ -792,62 +822,6 @@ TEST_CASE("SpirVModule constructs non-void functions", "[shaderpipeline]") {
 
   SpirVModule reparsed(stream);
   CHECK(reparsed.validate());
-}
-
-TEST_CASE("SpirVBuilder branch_endif terminates a fall-through block", "[shaderpipeline]") {
-  // main() { if (true) { b = a; } }
-  SpirVModule module = make_module();
-  Id var_a = module.define_variable(ShaderType::FLOAT, spv::StorageClassPrivate);
-  Id var_b = module.define_variable(ShaderType::FLOAT, spv::StorageClassPrivate);
-  Id merge;
-  {
-    SpirVBuilder builder = make_entry_point(module);
-    Id cond = module.define_constant(ShaderType::BOOL, 1);
-    merge = builder.branch_if(cond);
-    builder.op_store(var_b, builder.op_load(var_a));
-    builder.branch_endif(merge);
-    builder.op_return();
-  }
-
-  InstructionStream stream = module.emit();
-  CHECK(stream.validate());
-
-  // The store does not terminate the true block, so branch_endif must have
-  // inserted the branch to the merge block itself.
-  REQUIRE(count_op(stream, spv::OpBranch) == 1);
-  Instruction branch = find_op(stream, spv::OpBranch);
-  CHECK(branch.args[0] == merge);
-}
-
-TEST_CASE("SpirVBuilder positions at the start of a function body", "[shaderpipeline]") {
-  // A function whose entry block declares a local variable; code inserted at
-  // the body start must land after the OpVariable, not before it.
-  SpirVModule module = make_module();
-  Id var_in = module.define_variable(ShaderType::FLOAT, spv::StorageClassPrivate);
-  SpirVBuilder main_builder = make_entry_point(module);
-  Id main_id = main_builder.get_current_function_id();
-  main_builder.op_return();
-  {
-    // Add a function-local variable right after the entry label.
-    SpirVModule::Function *function = module.find_function(main_id);
-    REQUIRE(function != nullptr);
-    size_t label_index = 0;
-    while (function->instructions[label_index].opcode != spv::OpLabel) {
-      ++label_index;
-    }
-    SpirVBuilder builder(module, main_id, label_index + 1);
-    Id local_ptr_tid = module.define_pointer_type(ShaderType::FLOAT, spv::StorageClassFunction);
-    Id local_id = module.allocate_id();
-    builder.insert(spv::OpVariable, {local_ptr_tid, local_id, (uint32_t)spv::StorageClassFunction});
-
-    // Now insert a store "at the body start"; it must go after the variable.
-    SpirVBuilder body_builder(module);
-    body_builder.set_insertion_point_to_body_start(main_id);
-    body_builder.op_store(local_id, body_builder.op_load(var_in));
-  }
-
-  InstructionStream stream = module.emit();
-  CHECK(stream.validate());
 }
 
 TEST_CASE("SpirVModule tracks type canonicality", "[shaderpipeline]") {

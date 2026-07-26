@@ -43,7 +43,7 @@ TEST_CASE("SpirVInstructionCursor replaces an instruction while keeping its resu
       if (cursor->opcode == spv::OpLoad) {
         Id var_id(cursor->args[2]);
         cursor.replace([&](SpirVBuilder &builder) -> Id {
-          return builder.op_negate(builder.op_load(var_id));
+          return -Pointer(builder, var_id).load();
         });
       }
     }
@@ -84,9 +84,8 @@ TEST_CASE("SpirVInstructionCursor handles a replacement that collapses to one op
       if (cursor->opcode == spv::OpLoad) {
         Id var_id(cursor->args[2]);
         cursor.replace([&](SpirVBuilder &builder) -> Id {
-          Id temp = builder.op_load(var_id);
           // Converting float to float returns temp unchanged.
-          return builder.op_convert(ShaderType::ST_float, temp);
+          return Pointer(builder, var_id).load().convert(ShaderType::ST_float);
         });
       }
     }
@@ -211,8 +210,8 @@ TEST_CASE("SpirVInstructionCursor removes instructions and clears their ids", "[
   Id var_b = module.define_variable(ShaderType::FLOAT, spv::StorageClassPrivate);
   {
     SpirVBuilder builder = make_entry_point(module);
-    Id loaded = builder.op_load(var_a);
-    builder.op_negate(loaded);
+    Value loaded = Pointer(builder, var_a).load();
+    (void)-loaded;
     builder.op_store(var_b, loaded);
     builder.op_return();
   }
@@ -241,8 +240,8 @@ TEST_CASE("SpirVInstructionCursor detaches instructions with deferred id deletio
   Id var_b = module.define_variable(ShaderType::FLOAT, spv::StorageClassPrivate);
   {
     SpirVBuilder builder = make_entry_point(module);
-    Id loaded = builder.op_load(var_a);
-    builder.op_negate(loaded);
+    Value loaded = Pointer(builder, var_a).load();
+    (void)-loaded;
     builder.op_store(var_b, loaded);
     builder.op_return();
   }

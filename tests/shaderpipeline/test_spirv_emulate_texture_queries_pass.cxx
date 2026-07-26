@@ -253,8 +253,8 @@ TEST_CASE("SpirVEmulateTextureQueriesPass dedupes cube types (shadow last)", "[s
 
   {
     SpirVBuilder b = make_entry_point(module);
-    Id load0 = b.op_load(id_tex0);
-    b.op_image_sample(load0, id_coord);
+    Value load0 = Pointer(b, id_tex0).load();
+    texture(load0, Value(b, id_coord));
     Id load1 = b.op_load(id_tex1);
     b.insert(spv::OpImageSampleDrefImplicitLod,
              {id_float, b.allocate_id(), load1, id_coord, id_dref});
@@ -334,8 +334,8 @@ TEST_CASE("SpirVEmulateTextureQueriesPass dedupes cube types (shadow first)", "[
     Id load1 = b.op_load(id_tex1);
     b.insert(spv::OpImageSampleDrefImplicitLod,
              {id_float, b.allocate_id(), load1, id_coord, id_dref});
-    Id load0 = b.op_load(id_tex0);
-    b.op_image_sample(load0, id_coord);
+    Value load0 = Pointer(b, id_tex0).load();
+    texture(load0, Value(b, id_coord));
     b.op_return();
   }
 
@@ -475,8 +475,8 @@ TEST_CASE("SpirVEmulateTextureQueriesPass leaves unaffected modules untouched", 
 
   {
     SpirVBuilder b = make_entry_point(module);
-    Id load = b.op_load(id_tex);
-    b.op_image_sample(load, id_coord);
+    Value load = Pointer(b, id_tex).load();
+    texture(load, Value(b, id_coord));
     b.op_return();
   }
 
@@ -525,8 +525,8 @@ TEST_CASE("SpirVEmulateTextureQueriesPass dedupes unknown-depth cube types", "[s
 
   {
     SpirVBuilder b = make_entry_point(module);
-    Id load0 = b.op_load(id_tex0);
-    b.op_image_sample(load0, id_coord);
+    Value load0 = Pointer(b, id_tex0).load();
+    texture(load0, Value(b, id_coord));
     Id load1 = b.op_load(id_tex1);
     b.insert(spv::OpImageSampleDrefImplicitLod,
              {id_float, b.allocate_id(), load1, id_coord, id_dref});
@@ -587,8 +587,8 @@ TEST_CASE("SpirVEmulateTextureQueriesPass dedupes cube sampler arrays", "[shader
     SpirVBuilder b = make_entry_point(module);
     Id chain0 = b.op_access_chain(id_tex0, {id_const_0});
     id_ptr_si0 = module.get_type_id(chain0);
-    Id load0 = b.op_load(chain0);
-    b.op_image_sample(load0, id_coord);
+    Value load0 = Pointer(b, chain0).load();
+    texture(load0, Value(b, id_coord));
     Id chain1 = b.op_access_chain(id_tex1, {id_const_1});
     Id load1 = b.op_load(chain1);
     b.insert(spv::OpImageSampleDrefImplicitLod,

@@ -24,27 +24,31 @@ run(SpirVModule &module) {
     return;
   }
 
-  spv::Op opcode = spv::OpNop;
+  // The comparison under which the fragment is *discarded*: the negation of
+  // the mode under which it passes.  != is unordered so that a NaN alpha is
+  // discarded by M_equal, matching the FOrd comparisons discarding it in
+  // every other mode.
+  Value (*discard_if)(Value, glsl::Argument) = nullptr;
   switch (_mode) {
   case M_never:
     break;
   case M_less:
-    opcode = spv::OpFOrdGreaterThanEqual;
+    discard_if = &glsl::greater_than_equal;
     break;
   case M_equal:
-    opcode = spv::OpFUnordNotEqual;
+    discard_if = &glsl::not_equal;
     break;
   case M_less_equal:
-    opcode = spv::OpFOrdGreaterThan;
+    discard_if = &glsl::greater_than;
     break;
   case M_greater:
-    opcode = spv::OpFOrdLessThanEqual;
+    discard_if = &glsl::less_than_equal;
     break;
   case M_not_equal:
-    opcode = spv::OpFOrdEqual;
+    discard_if = &glsl::equal;
     break;
   case M_greater_equal:
-    opcode = spv::OpFOrdLessThan;
+    discard_if = &glsl::less_than;
     break;
   default:
     nassertv(false);
@@ -52,8 +56,6 @@ run(SpirVModule &module) {
   }
 
   // Find the color output: the module-scope output variable with location 0.
-  // There may be none, such as in a depth-only shader; the alpha value is
-  // then implicitly 1.
   Id var_id;
   for (uint32_t word = 0; word < module.get_id_bound(); ++word) {
     Id id(word);
@@ -119,20 +121,19 @@ run(SpirVModule &module) {
       }
 
       cursor.insert_before([&](SpirVBuilder &builder) {
-        Id alpha;
+        Value alpha;
         if (has_alpha) {
-          alpha = builder.op_load(builder.op_access_chain(var_id, {module.define_int_constant(3)}));
+          alpha = Pointer(builder, var_id)[3].load();
         } else {
-          alpha = module.define_float_constant(1.0f);
+          alpha = builder.const_float(1.0f);
         }
-        Id ref = _spec_constant ? _alpha_ref_var_id : builder.op_load(_alpha_ref_var_id);
+        Value ref = _spec_constant ? Value(builder, _alpha_ref_var_id)
+                                   : Pointer(builder, _alpha_ref_var_id).load();
 
-        Id cond = builder.op_compare(opcode, alpha, ref);
+        Value cond = discard_if(alpha, ref);
         _compare_op_ids.push_back(cond);
 
-        Id branch = builder.branch_if(cond);
-          builder.op_kill();
-        builder.branch_endif(branch);
+        builder.kill_if(cond);
       });
       // The cursor is back on the original return; next() continues past it.
     }

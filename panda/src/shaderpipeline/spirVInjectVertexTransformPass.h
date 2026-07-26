@@ -97,7 +97,6 @@ public:
   pmap<Id, MatrixVar> _matrix_vars;
   int _instance_mat_location = -1;
   Id _instance_mat_var_id;
-  Id _instance_index_var_id;
 };
 
 #endif

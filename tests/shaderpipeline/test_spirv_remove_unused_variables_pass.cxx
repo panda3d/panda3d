@@ -32,8 +32,7 @@ TEST_CASE("SpirVRemoveUnusedVariablesPass removes unused variables", "[shaderpip
 
   {
     SpirVBuilder builder = make_entry_point(module, spv::ExecutionModelFragment);
-    Id tmp = builder.op_load(id_in_color);
-    builder.op_store(id_out_color, tmp);
+    Pointer(builder, id_out_color).store(Pointer(builder, id_in_color).load());
     builder.op_return();
   }
 
@@ -73,10 +72,10 @@ TEST_CASE("SpirVRemoveUnusedVariablesPass removes orphaned image loads", "[shade
 
   {
     SpirVBuilder builder = make_entry_point(module);
-    Id loaded = builder.op_load(id_orphaned);
-    Id image_value = module.allocate_id();
-    builder.insert(spv::OpImage, {image_tid, image_value, loaded});
-    builder.op_image_sample(builder.op_load(id_sampled), coord);
+    // No high-level call emits an unconsumed OpImage, so this one stays raw.
+    Id loaded = Pointer(builder, id_orphaned).load();
+    builder.insert(spv::OpImage, {image_tid, builder.allocate_id(), loaded});
+    texture(Pointer(builder, id_sampled).load(), Value(builder, coord));
     builder.op_return();
   }
 

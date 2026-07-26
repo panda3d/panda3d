@@ -7,6 +7,7 @@ set(P3SHADERPIPELINE_HEADERS
   spirVBuilder.h spirVBuilder.I
   spirVDebugOutputPass.h spirVDebugOutputPass.I
   spirVEmulateTextureQueriesPass.h
+  spirVValue.h spirVValue.I
   spirVFlattenStructPass.h
   spirVHoistStructResourcesPass.h
   spirVId.h
@@ -15,6 +16,7 @@ set(P3SHADERPIPELINE_HEADERS
   spirVInstructionCursor.h spirVInstructionCursor.I
   spirVMakeBlockPass.h
   spirVModule.h spirVModule.I
+  spirVPointer.h spirVPointer.I
   spirVRemoveUnusedVariablesPass.h
   spirVReplaceVariableTypePass.h
   spirVTransformer.h spirVTransformer.I
@@ -31,6 +33,7 @@ set(P3SHADERPIPELINE_SOURCES
   spirVBuilder.cxx
   spirVEmulateTextureQueriesPass.cxx
   spirVDebugOutputPass.cxx
+  spirVValue.cxx
   spirVFlattenStructPass.cxx
   spirVHoistStructResourcesPass.cxx
   spirVInjectAlphaTestPass.cxx
@@ -38,6 +41,7 @@ set(P3SHADERPIPELINE_SOURCES
   spirVInstructionCursor.cxx
   spirVMakeBlockPass.cxx
   spirVModule.cxx
+  spirVPointer.cxx
   spirVRemoveUnusedVariablesPass.cxx
   spirVReplaceVariableTypePass.cxx
   spirVTransformer.cxx

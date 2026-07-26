@@ -106,7 +106,7 @@ TEST_CASE("SpirVUsageAnalysis distinguishes dref and non-dref sampling", "[shade
 
   {
     SpirVBuilder builder = make_entry_point(module);
-    builder.op_image_sample(builder.op_load(var_plain), coord);
+    texture(Pointer(builder, var_plain).load(), Value(builder, coord));
 
     Id loaded_shadow = builder.op_load(var_shadow);
     Id result = module.allocate_id();
@@ -235,7 +235,7 @@ TEST_CASE("SpirVUsageAnalysis defers usedness of loaded opaque values", "[shader
     builder.insert(spv::OpImage, {image_tid, image_value, loaded});
 
     // A load consumed by a sample operation.
-    builder.op_image_sample(builder.op_load(var_sampled), coord);
+    texture(Pointer(builder, var_sampled).load(), Value(builder, coord));
 
     // A dead load of a non-opaque type still marks the variable used.
     builder.op_load(var_plain);

@@ -304,13 +304,13 @@ emit_printf(SpirVBuilder &builder, const std::string &fmt_string, const uint32_t
 
     if (desired_type != scalar_type) {
       // Silently convert (eg. int to float).
-      arg = builder.op_convert(desired_type, arg);
+      arg = Value(builder, arg).convert(desired_type);
     }
 
     if (arg_type->as_vector() != nullptr) {
       for (uint32_t i = 0; i < req_components; ++i) {
         if (i < num_columns) {
-          fmt_args.push_back(builder.op_composite_extract(arg, {i}));
+          fmt_args.push_back(Value(builder, arg)[i]);
         } else {
           fmt_args.push_back(get_uint_constant(module, 0));
         }
@@ -339,18 +339,16 @@ emit_printf(SpirVBuilder &builder, const std::string &fmt_string, const uint32_t
   Id one = get_uint_constant(module, 1);
   Id reservation = get_uint_constant(module, num_args + 1);
 
-  Id counter_ptr = builder.op_access_chain(_buffer_block_var_id, {zero});
+  Value offset = Pointer(builder, _buffer_block_var_id)[Value(builder, zero)]
+    .atomic_add(Value(builder, reservation));
 
   Id uint_type = module.define_type(ShaderType::UINT);
-  Id offset = builder.allocate_id();
-
-  builder.insert(spv::OpAtomicIAdd, {uint_type, offset, counter_ptr, one, zero, reservation});
 
   // We have to skip the assert section, which is a fixed-size 4-word-per-assert
   // section that lives at the beginning of the data array.
   uint32_t assert_count = (uint32_t)_debug_info.get_max_num_asserts();
   if (assert_count > 0) {
-    offset = builder.op_add(offset, get_uint_constant(module, assert_count * 4));
+    offset += assert_count * 4;
   }
 
   // Get length of the data array in the SSBO
@@ -358,18 +356,21 @@ emit_printf(SpirVBuilder &builder, const std::string &fmt_string, const uint32_t
   builder.insert(spv::OpArrayLength, {uint_type, length, _buffer_block_var_id, 1});
 
   // Bounds check to make sure we don't write outside the SSBO
-  Id branch = builder.branch_if(builder.op_compare(spv::OpULessThanEqual, builder.op_add(offset, reservation), length));
+  Id branch = builder.branch_if(less_than_equal(
+    offset + Value(builder, reservation), Value(builder, length)));
+    Pointer data = Pointer(builder, _buffer_block_var_id)[Value(builder, one)];
+
     // Store the string identifier (1-based)...
-    builder.op_store(builder.op_access_chain(_buffer_block_var_id, {one, offset}), get_uint_constant(module, string_index + 1));
+    data[offset].store(Value(builder, get_uint_constant(module, string_index + 1)));
 
     // ...followed by the format arguments.
     for (uint32_t i = 0; i < (uint32_t)fmt_args.size(); ++i) {
-      Id arg = fmt_args[i];
+      Value arg(builder, fmt_args[i]);
       if (module.get_type_id(arg) != uint_type) {
         // Bitcast to uint if it isn't already.
-        arg = builder.op_bitcast(ShaderType::UINT, fmt_args[i]);
+        arg = arg.bitcast(ShaderType::UINT);
       }
-      builder.op_store(builder.op_access_chain(_buffer_block_var_id, {one, builder.op_add(offset, get_uint_constant(module, 1 + i))}), arg);
+      data[offset + (1 + i)].store(arg);
     }
     builder.op_branch(branch);
   builder.branch_endif(branch);
@@ -405,69 +406,64 @@ emit_assert(SpirVBuilder &builder, const std::string &expression) {
   Id one = get_uint_constant(module, 1);
 
   Id index = assert_id == 0 ? zero : get_uint_constant(module, assert_id * 4);
-  Id counter_ptr = builder.op_access_chain(_buffer_block_var_id, {one, index});
-
-  Id uint_type = module.define_type(ShaderType::UINT);
-  Id result = builder.allocate_id();
-  builder.insert(spv::OpAtomicIIncrement, {uint_type, result, counter_ptr, one, zero});
+  Value result = Pointer(builder, _buffer_block_var_id)[Value(builder, one)][Value(builder, index)]
+    .atomic_increment();
 
   // If we were the first occurrence, write the invocation ID as additional
   // helpful context information.
-  Id branch = builder.branch_if(builder.op_compare(spv::OpIEqual, result, zero));
+  Id branch = builder.branch_if(equal(result, Value(builder, zero)));
     Id invoc[3];
 
     switch (_stage) {
     case Shader::Stage::VERTEX:
       // Vertex ID, instance ID
-      invoc[0] = builder.op_bitcast(ShaderType::UINT, builder.op_load(module.ensure_builtin_input(spv::BuiltInVertexId)));
-      invoc[1] = builder.op_bitcast(ShaderType::UINT, builder.op_load(module.ensure_builtin_input(spv::BuiltInInstanceId)));
+      invoc[0] = builder.ensure_builtin_input(spv::BuiltInVertexId).load().bitcast(ShaderType::UINT);
+      invoc[1] = builder.ensure_builtin_input(spv::BuiltInInstanceId).load().bitcast(ShaderType::UINT);
       break;
 
     case Shader::Stage::GEOMETRY:
       // Primitive ID, invocation ID
       {
-        invoc[0] = builder.op_bitcast(ShaderType::UINT, builder.op_load(module.ensure_builtin_input(spv::BuiltInPrimitiveId)));
-        invoc[1] = builder.op_bitcast(ShaderType::UINT, builder.op_load(module.ensure_builtin_input(spv::BuiltInInvocationId)));
+        invoc[0] = builder.ensure_builtin_input(spv::BuiltInPrimitiveId).load().bitcast(ShaderType::UINT);
+        invoc[1] = builder.ensure_builtin_input(spv::BuiltInInvocationId).load().bitcast(ShaderType::UINT);
       }
       break;
 
     case Shader::Stage::TESS_CONTROL:
       // Primitive ID, invocation ID
       {
-        invoc[0] = builder.op_bitcast(ShaderType::UINT, builder.op_load(module.ensure_builtin_input(spv::BuiltInPrimitiveId)));
-        invoc[1] = builder.op_bitcast(ShaderType::UINT, builder.op_load(module.ensure_builtin_input(spv::BuiltInInvocationId)));
+        invoc[0] = builder.ensure_builtin_input(spv::BuiltInPrimitiveId).load().bitcast(ShaderType::UINT);
+        invoc[1] = builder.ensure_builtin_input(spv::BuiltInInvocationId).load().bitcast(ShaderType::UINT);
       }
       break;
 
     case Shader::Stage::TESS_EVALUATION:
       // Primitive ID, Tess coordinate x and y
       {
-        Id primitive_id = module.ensure_builtin_input(spv::BuiltInPrimitiveId);
-        Id tess_coord_id = module.ensure_builtin_input(spv::BuiltInTessCoord);
-        invoc[0] = builder.op_bitcast(ShaderType::UINT, builder.op_load(primitive_id));
-        invoc[1] = builder.op_bitcast(ShaderType::UINT, builder.op_load(builder.op_access_chain(tess_coord_id, {zero})));
-        invoc[2] = builder.op_bitcast(ShaderType::UINT, builder.op_load(builder.op_access_chain(tess_coord_id, {one})));
+        Pointer tess_coord = builder.ensure_builtin_input(spv::BuiltInTessCoord);
+        invoc[0] = builder.ensure_builtin_input(spv::BuiltInPrimitiveId).load().bitcast(ShaderType::UINT);
+        invoc[1] = tess_coord[0].load().bitcast(ShaderType::UINT);
+        invoc[2] = tess_coord[1].load().bitcast(ShaderType::UINT);
       }
       break;
 
     case Shader::Stage::FRAGMENT:
       // Fragment coordinate
       {
-        Id frag_coord_id = module.ensure_builtin_input(spv::BuiltInFragCoord);
-        Id two = get_uint_constant(module, 2);
-        invoc[0] = builder.op_bitcast(ShaderType::UINT, builder.op_load(builder.op_access_chain(frag_coord_id, {zero})));
-        invoc[1] = builder.op_bitcast(ShaderType::UINT, builder.op_load(builder.op_access_chain(frag_coord_id, {one})));
-        invoc[2] = builder.op_bitcast(ShaderType::UINT, builder.op_load(builder.op_access_chain(frag_coord_id, {two})));
+        Pointer frag_coord = builder.ensure_builtin_input(spv::BuiltInFragCoord);
+        invoc[0] = frag_coord[0].load().bitcast(ShaderType::UINT);
+        invoc[1] = frag_coord[1].load().bitcast(ShaderType::UINT);
+        invoc[2] = frag_coord[2].load().bitcast(ShaderType::UINT);
       }
       break;
 
     case Shader::Stage::COMPUTE:
       // Global invocation ID
       {
-        Id value = builder.op_load(module.ensure_builtin_input(spv::BuiltInGlobalInvocationId));
-        invoc[0] = builder.op_composite_extract(value, {0});
-        invoc[1] = builder.op_composite_extract(value, {1});
-        invoc[2] = builder.op_composite_extract(value, {2});
+        Value value = builder.ensure_builtin_input(spv::BuiltInGlobalInvocationId).load();
+        invoc[0] = value[0];
+        invoc[1] = value[1];
+        invoc[2] = value[2];
       }
       break;
 
@@ -475,10 +471,11 @@ emit_assert(SpirVBuilder &builder, const std::string &expression) {
       break;
     }
 
+    Pointer data = Pointer(builder, _buffer_block_var_id)[Value(builder, one)];
     for (size_t i = 0; i < 3; ++i) {
       if (invoc[i] != 0) {
         Id offset_id = get_uint_constant(module, assert_id * 4 + i + 1);
-        builder.op_store(builder.op_access_chain(_buffer_block_var_id, {one, offset_id}), invoc[i]);
+        data[Value(builder, offset_id)].store(Value(builder, invoc[i]));
       }
     }
     builder.op_branch(branch);

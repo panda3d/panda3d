@@ -27,6 +27,8 @@ public:
   using Function = SpirVModule::Function;
   using EntryPoint = SpirVModule::EntryPoint;
   using Id = SpirVId;
+  using Value = SpirVValue;
+  using Pointer = SpirVPointer;
 
   virtual ~SpirVTransformPass() = default;
 

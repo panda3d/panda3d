@@ -179,14 +179,12 @@ TEST_CASE("SpirVInjectAlphaTestPass tests before every return", "[shaderpipeline
   SpirVModule module = make_module();
   const ShaderType *vec4_type = ShaderType::register_type(ShaderType::Vector(ShaderType::ST_float, 4));
 
-  Id color = module.define_variable(vec4_type, spv::StorageClassOutput);
-  module.decorate(color, spv::DecorationLocation, 0u);
-
   Id main_id;
   {
     SpirVBuilder builder = module.make_function(nullptr);
-    builder.op_store(color, module.define_null_constant(vec4_type));
-    Id merge = builder.branch_if(module.define_constant(ShaderType::BOOL, 1));
+    auto color = builder.define_output(vec4_type, "color", 0u);
+    color.store(builder.const_vec4(0, 0, 0, 0));
+    Id merge = builder.branch_if(builder.const_bool(true));
     builder.op_return();
     builder.branch_endif(merge);
     builder.op_return();

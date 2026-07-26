@@ -142,13 +142,12 @@ run(SpirVModule &module) {
           Instruction orig = op;
 
           cursor.replace([&](SpirVBuilder &builder) -> Id {
-            Id sample = builder.op_image_sample(
+            Value sample(builder, builder.op_image_sample(
               Id(orig.args[2]), Id(orig.args[3]),
               orig.args.size() >= 6 ? orig.args[5] : 0u,
-              orig.args.size() > 6 ? orig.args.data() + 6 : nullptr);
-            Id depth = builder.op_composite_extract(sample, {0});
-            Id cmp = builder.op_compare(spv::OpFOrdGreaterThan, depth, Id(orig.args[4]));
-            return builder.op_select(cmp, _float_one_id, _float_zero_id);
+              orig.args.size() > 6 ? orig.args.data() + 6 : nullptr));
+            Value cmp = greater_than(sample[0], Value(builder, Id(orig.args[4])));
+            return mix(Value(builder, _float_zero_id), Value(builder, _float_one_id), cmp);
           });
         }
         break;
@@ -203,14 +202,14 @@ run(SpirVModule &module) {
           }
 
           cursor.replace([&](SpirVBuilder &builder) -> Id {
-            Id temp = builder.op_load(size_var_id);
+            Value temp = Pointer(builder, size_var_id).load();
 
             // Grab the components we need out of the vec4 size variable.
             if (query_opcode == spv::OpImageQueryLevels) {
-              temp = builder.op_composite_extract(temp, {3});
+              temp = temp[3];
             }
             else if (result_type->as_scalar() != nullptr) {
-              temp = builder.op_composite_extract(temp, {0});
+              temp = temp[0];
             }
             else {
               const ShaderType::Vector *vector = result_type->as_vector();
@@ -218,10 +217,10 @@ run(SpirVModule &module) {
               for (size_t ci = 0; ci < vector->get_num_components(); ++ci) {
                 components.push_back(ci);
               }
-              temp = builder.op_vector_shuffle(temp, temp, components);
+              temp = temp.swizzle(components);
             }
 
-            return builder.op_convert(ShaderType::ST_int, temp);
+            return temp.convert(ShaderType::ST_int);
           });
         }
         break;

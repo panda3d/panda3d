@@ -98,9 +98,6 @@ run(SpirVModule &module) {
         _vertex_input_ids[id] = module.allocate_id();
       }
     }
-    else if (module.get_builtin(id) == spv::BuiltInInstanceIndex) {
-      _instance_index_var_id = id;
-    }
   }
 
   // Capture the vertex entry points.
@@ -280,8 +277,8 @@ inject_animation(SpirVBuilder &builder) {
     module.set_name(_transform_weight_var_id, "transform_weight");
   }
 
-  Id transform_index = builder.op_load(_transform_index_var_id);
-  Id transform_weight = builder.op_load(_transform_weight_var_id);
+  Value transform_index = Pointer(builder, _transform_index_var_id).load();
+  Value transform_weight = Pointer(builder, _transform_weight_var_id).load();
 
   // How many components do we have?
   const ShaderType::Vector *transform_index_type = module.resolve_type(_transform_index_var_id)->as_vector();
@@ -295,44 +292,38 @@ inject_animation(SpirVBuilder &builder) {
       _transform_offset_var_id = module.define_variable(ShaderType::UINT, spv::StorageClassUniformConstant);
     }
 
-    // Must broadcast to a vector before we can add it.
-    Id offset = builder.op_load(_transform_offset_var_id);
-    Id vec_offset = builder.op_composite_construct(transform_index_type,
-      pvector<Id>(transform_index_type->get_num_components(), offset));
-    transform_index = builder.op_add(transform_index, vec_offset);
+    // The index vector may be signed or unsigned, so convert the offset to
+    // its scalar type; the scalar then broadcasts to the component count.
+    Value offset = Pointer(builder, _transform_offset_var_id).load();
+    transform_index += offset.convert(transform_index_type->get_scalar_type());
   }
 
   // We can't add matrices together, we have to add them per vector.
-  Id accum_matrix_row0;
-  Id accum_matrix_row1;
-  Id accum_matrix_row2;
+  Value anim_mat_row0;
+  Value anim_mat_row1;
+  Value anim_mat_row2;
 
-  Id zero = module.define_int_constant(0);
+  Pointer transform_block(builder, _transform_block_var_id);
 
   for (uint32_t i = 0; i < num_components; ++i) {
     // matrix = ubo.m[transform_index[i]]
-    Id matrix = builder.op_load(builder.op_access_chain(_transform_block_var_id, {zero, builder.op_composite_extract(transform_index, {i})}));
+    Value matrix = transform_block[0][transform_index[i]].load();
 
-    // matrix *= transform_weight[i]
-    matrix = builder.op_multiply(matrix, builder.op_composite_extract(transform_weight, {i}));
+    matrix *= transform_weight[i];
 
     // Split into rows
-    Id matrix_row0 = builder.op_composite_extract(matrix, {0});
-    Id matrix_row1 = builder.op_composite_extract(matrix, {1});
-    Id matrix_row2 = builder.op_composite_extract(matrix, {2});
     if (i == 0) {
-      accum_matrix_row0 = matrix_row0;
-      accum_matrix_row1 = matrix_row1;
-      accum_matrix_row2 = matrix_row2;
+      anim_mat_row0 = matrix[0];
+      anim_mat_row1 = matrix[1];
+      anim_mat_row2 = matrix[2];
     } else {
-      accum_matrix_row0 = builder.op_add(accum_matrix_row0, matrix_row0);
-      accum_matrix_row1 = builder.op_add(accum_matrix_row1, matrix_row1);
-      accum_matrix_row2 = builder.op_add(accum_matrix_row2, matrix_row2);
+      anim_mat_row0 += matrix[0];
+      anim_mat_row1 += matrix[1];
+      anim_mat_row2 += matrix[2];
     }
   }
 
-  const ShaderType *mat3x4_type = ShaderType::register_type(ShaderType::Matrix(ShaderType::ST_float, 3, 4));
-  Id mat3x4 = builder.op_composite_construct(mat3x4_type, {accum_matrix_row0, accum_matrix_row1, accum_matrix_row2});
+  Value anim_mat = mat3x4(anim_mat_row0, anim_mat_row1, anim_mat_row2);
 
   for (const auto &item : _vertex_input_ids) {
     Id private_vec_ptr = item.first;
@@ -345,21 +336,21 @@ inject_animation(SpirVBuilder &builder) {
     }
 
     bool is_point = (_anim_point_locations & (1u << module.get_location(input_vec_ptr))) != 0;
-    Id w = module.define_float_constant(is_point);
+    double w = is_point ? 1.0 : 0.0;
 
-    Id orig_vec = builder.op_load(input_vec_ptr);
+    Value result = Pointer(builder, input_vec_ptr).load();
     if (vec_type->get_num_components() == 3) {
       // Expand to vec4.
-      orig_vec = builder.op_composite_construct(vec4_type, {orig_vec, w});
+      result = vec4(result, w);
     }
 
-    Id result = builder.op_multiply(orig_vec, mat3x4);
+    result = result * anim_mat;
     if (vec_type->get_num_components() == 4) {
       // It comes out as a vec3, so expand to vec4 again.
-      result = builder.op_composite_construct(vec4_type, {result, w});
+      result = vec4(result, w);
     }
 
-    builder.op_store(private_vec_ptr, result);
+    Pointer(builder, private_vec_ptr).store(result);
   }
 }
 
@@ -369,7 +360,7 @@ inject_animation(SpirVBuilder &builder) {
 void SpirVInjectVertexTransformPass::
 inject_animation_noop(SpirVBuilder &builder) {
   for (const auto &item : _vertex_input_ids) {
-    builder.op_store(item.first, builder.op_load(item.second));
+    Pointer(builder, item.first).store(Pointer(builder, item.second).load());
   }
 }
 
@@ -384,7 +375,7 @@ inject_instancing(SpirVBuilder &builder) {
 
   SpirVModule &module = builder.get_module();
 
-  Id inst_mat3x4;
+  Value inst_mat3x4;
 
   if (_instance_mat_location >= 0) {
     // Make sure the instance matrix vertex input is defined.
@@ -393,23 +384,18 @@ inject_instancing(SpirVBuilder &builder) {
       module.decorate(_instance_mat_var_id, spv::DecorationLocation, (uint32_t)_instance_mat_location);
     }
 
-    inst_mat3x4 = builder.op_load(_instance_mat_var_id);
+    inst_mat3x4 = Pointer(builder, _instance_mat_var_id).load();
   } else {
     // Make sure the transform SSBO is defined.
     if (_transform_block_var_id == 0) {
       define_transform_block(module);
     }
-    if (_instance_index_var_id == 0) {
-      _instance_index_var_id = module.define_variable(ShaderType::INT, spv::StorageClassInput);
-      module.decorate(_instance_index_var_id, spv::DecorationBuiltIn, spv::BuiltInInstanceIndex);
-    }
 
-    Id inst_index = builder.op_load(_instance_index_var_id);
-    Id zero = module.define_int_constant(0);
-    inst_mat3x4 = builder.op_load(builder.op_access_chain(_transform_block_var_id, {zero, inst_index}));
+    Value inst_index = builder.ensure_builtin_input(spv::BuiltInInstanceIndex).load();
+    Pointer transform_block(builder, _transform_block_var_id);
+    inst_mat3x4 = transform_block[0][inst_index].load();
   }
 
-  const ShaderType *mat3_type = ShaderType::register_type(ShaderType::Matrix(ShaderType::ST_float, 3, 3));
   const ShaderType *vec4_type = ShaderType::register_type(ShaderType::Vector(ShaderType::ST_float, 4));
 
   // Do we need to invert the matrix?  We know that it is affine, so we
@@ -427,65 +413,40 @@ inject_instancing(SpirVBuilder &builder) {
       }
     }
   }
-  Id inv_inst_mat3;
-  Id inv_inst_mat4;
-  Id inv_inst_mat3x4;
+  Value inv_inst_mat3;
+  Value inv_inst_mat4;
+  Value inv_inst_mat3x4;
   if (need_inverse) {
-    const ShaderType *mat3x4_type = ShaderType::register_type(ShaderType::Matrix(ShaderType::ST_float, 3, 4));
-    const ShaderType *vec3_type = ShaderType::register_type(ShaderType::Vector(ShaderType::ST_float, 3));
+    auto row0 = inst_mat3x4[0];
+    auto row1 = inst_mat3x4[1];
+    auto row2 = inst_mat3x4[2];
 
-    Id r0 = builder.op_composite_construct(vec3_type, {
-      builder.op_sub(builder.op_multiply(builder.op_composite_extract(inst_mat3x4, {1, 1}), builder.op_composite_extract(inst_mat3x4, {2, 2})),
-                     builder.op_multiply(builder.op_composite_extract(inst_mat3x4, {2, 1}), builder.op_composite_extract(inst_mat3x4, {1, 2}))),
-      builder.op_sub(builder.op_multiply(builder.op_composite_extract(inst_mat3x4, {2, 1}), builder.op_composite_extract(inst_mat3x4, {0, 2})),
-                     builder.op_multiply(builder.op_composite_extract(inst_mat3x4, {0, 1}), builder.op_composite_extract(inst_mat3x4, {2, 2}))),
-      builder.op_sub(builder.op_multiply(builder.op_composite_extract(inst_mat3x4, {0, 1}), builder.op_composite_extract(inst_mat3x4, {1, 2})),
-                     builder.op_multiply(builder.op_composite_extract(inst_mat3x4, {1, 1}), builder.op_composite_extract(inst_mat3x4, {0, 2}))),
-    });
-    Id r1 = builder.op_composite_construct(vec3_type, {
-      builder.op_sub(builder.op_multiply(builder.op_composite_extract(inst_mat3x4, {1, 2}), builder.op_composite_extract(inst_mat3x4, {2, 0})),
-                     builder.op_multiply(builder.op_composite_extract(inst_mat3x4, {2, 2}), builder.op_composite_extract(inst_mat3x4, {1, 0}))),
-      builder.op_sub(builder.op_multiply(builder.op_composite_extract(inst_mat3x4, {2, 2}), builder.op_composite_extract(inst_mat3x4, {0, 0})),
-                     builder.op_multiply(builder.op_composite_extract(inst_mat3x4, {0, 2}), builder.op_composite_extract(inst_mat3x4, {2, 0}))),
-      builder.op_sub(builder.op_multiply(builder.op_composite_extract(inst_mat3x4, {0, 2}), builder.op_composite_extract(inst_mat3x4, {1, 0})),
-                     builder.op_multiply(builder.op_composite_extract(inst_mat3x4, {1, 2}), builder.op_composite_extract(inst_mat3x4, {0, 0}))),
-    });
-    Id r2 = builder.op_composite_construct(vec3_type, {
-      builder.op_sub(builder.op_multiply(builder.op_composite_extract(inst_mat3x4, {1, 0}), builder.op_composite_extract(inst_mat3x4, {2, 1})),
-                     builder.op_multiply(builder.op_composite_extract(inst_mat3x4, {2, 0}), builder.op_composite_extract(inst_mat3x4, {1, 1}))),
-      builder.op_sub(builder.op_multiply(builder.op_composite_extract(inst_mat3x4, {2, 0}), builder.op_composite_extract(inst_mat3x4, {0, 1})),
-                     builder.op_multiply(builder.op_composite_extract(inst_mat3x4, {0, 0}), builder.op_composite_extract(inst_mat3x4, {2, 1}))),
-      builder.op_sub(builder.op_multiply(builder.op_composite_extract(inst_mat3x4, {0, 0}), builder.op_composite_extract(inst_mat3x4, {1, 1})),
-                     builder.op_multiply(builder.op_composite_extract(inst_mat3x4, {1, 0}), builder.op_composite_extract(inst_mat3x4, {0, 1}))),
-    });
-    Id one = module.define_float_constant(1);
-    Id inv_det = builder.op_div(one, builder.op_dot(r0, builder.op_composite_construct(vec3_type, {
-      builder.op_composite_extract(inst_mat3x4, {0, 0}),
-      builder.op_composite_extract(inst_mat3x4, {1, 0}),
-      builder.op_composite_extract(inst_mat3x4, {2, 0}),
-    })));
+    auto r0 = vec3(row1[1] * row2[2] - row2[1] * row1[2],
+                   row2[1] * row0[2] - row0[1] * row2[2],
+                   row0[1] * row1[2] - row1[1] * row0[2]);
+    auto r1 = vec3(row1[2] * row2[0] - row2[2] * row1[0],
+                   row2[2] * row0[0] - row0[2] * row2[0],
+                   row0[2] * row1[0] - row1[2] * row0[0]);
+    auto r2 = vec3(row1[0] * row2[1] - row2[0] * row1[1],
+                   row2[0] * row0[1] - row0[0] * row2[1],
+                   row0[0] * row1[1] - row1[0] * row0[1]);
+    auto inv_det = 1.0 / dot(r0, vec3(row0[0], row1[0], row2[0]));
 
     if (need_inverse_translation) {
       // Handle the translation.
-      Id t = builder.op_composite_construct(vec3_type, {
-        builder.op_composite_extract(inst_mat3x4, {0, 3}),
-        builder.op_composite_extract(inst_mat3x4, {1, 3}),
-        builder.op_composite_extract(inst_mat3x4, {2, 3}),
-      });
+      auto t = vec3(row0[3], row1[3], row2[3]);
 
-      inv_inst_mat3x4 = builder.op_multiply(builder.op_composite_construct(mat3x4_type, {
-        builder.op_composite_construct(vec4_type, {r0, builder.op_negate(builder.op_dot(r0, t))}),
-        builder.op_composite_construct(vec4_type, {r1, builder.op_negate(builder.op_dot(r1, t))}),
-        builder.op_composite_construct(vec4_type, {r2, builder.op_negate(builder.op_dot(r2, t))}),
-      }), inv_det);
+      inv_inst_mat3x4 = mat3x4(vec4(r0, -dot(r0, t)),
+                               vec4(r1, -dot(r1, t)),
+                               vec4(r2, -dot(r2, t))) * inv_det;
     }
     else {
       // Don't bother constructing the last column.
-      inv_inst_mat3 = builder.op_multiply(builder.op_composite_construct(mat3_type, {r0, r1, r2}), inv_det);
+      inv_inst_mat3 = mat3(r0, r1, r2) * inv_det;
     }
   }
-  Id inst_mat3;
-  Id inst_mat4;
+  Value inst_mat3;
+  Value inst_mat4;
 
   for (auto &pair : _matrix_vars) {
     bool inverse = pair.second._inverse;
@@ -493,8 +454,8 @@ inject_instancing(SpirVBuilder &builder) {
     Id orig_mat_ptr = pair.second._id;
     Id result_mat_ptr = pair.first;
 
-    Id orig_mat = builder.op_load(orig_mat_ptr);
-    Id inst_mat;
+    Value orig_mat = Pointer(builder, orig_mat_ptr).load();
+    Value inst_mat;
 
     // Compose the right matrix for multiplying into the target matrix.
     const ShaderType::Matrix *matrix = module.resolve_type(orig_mat_ptr)->as_matrix();
@@ -502,78 +463,56 @@ inject_instancing(SpirVBuilder &builder) {
 
     if (matrix->get_num_rows() == 3 && matrix->get_num_columns() == 4 && transpose) {
       // Special case of affine mat * affine mat.
-      pvector<Id> rows {
-        builder.op_composite_extract(orig_mat, {0}),
-        builder.op_composite_extract(orig_mat, {1}),
-        builder.op_composite_extract(orig_mat, {2}),
-      };
+      pvector<Value> rows {orig_mat[0], orig_mat[1], orig_mat[2]};
 
-      Id orig_mat3 = builder.op_composite_construct(mat3_type, {
-        builder.op_vector_shuffle(rows[0], rows[0], {0, 1, 2}),
-        builder.op_vector_shuffle(rows[1], rows[1], {0, 1, 2}),
-        builder.op_vector_shuffle(rows[2], rows[2], {0, 1, 2}),
-      });
+      Value orig_mat3 = mat3(rows[0].get_xyz(), rows[1].get_xyz(), rows[2].get_xyz());
 
       // mat3x4 * mat3 -> mat3x4
-      Id tmp_mat = builder.op_multiply(inverse ? inv_inst_mat3x4 : inst_mat3x4, orig_mat3);
+      Value tmp_mat = (inverse ? inv_inst_mat3x4 : inst_mat3x4) * orig_mat3;
 
       // Now handle w (we assume that the matrix we modify isn't affine)
       for (uint32_t i = 0; i < matrix->get_num_rows(); ++i) {
-        Id tmp_row = builder.op_composite_extract(tmp_mat, {i});
-        Id new_w = builder.op_add(builder.op_composite_extract(tmp_mat, {i, 3}), builder.op_composite_extract(rows[i], {3}));
-        rows[i] = builder.op_composite_construct(vec4_type, {
-          builder.op_vector_shuffle(tmp_row, tmp_row, {0, 1, 2}),
-          new_w,
-        });
+        Value tmp_row = tmp_mat[i];
+        rows[i] = vec4(tmp_row.get_xyz(), tmp_row[3] + rows[i][3]);
       }
 
-      builder.op_store(result_mat_ptr, builder.op_composite_construct(matrix, rows));
+      Pointer(builder, result_mat_ptr).store(builder.construct(matrix, rows));
       continue;
     }
     else if (mat_size == 4) {
       // Construct a 4x4 matrix.
-      Id &use_inst_mat4 = inverse ? inv_inst_mat4 : inst_mat4;
-      if (use_inst_mat4 == 0) {
-        const ShaderType *mat4_type = ShaderType::register_type(ShaderType::Matrix(ShaderType::ST_float, 4, 4));
+      Value &use_inst_mat4 = inverse ? inv_inst_mat4 : inst_mat4;
+      if (!SpirVId(use_inst_mat4)) {
         Id zero = module.define_float_constant(0);
         Id one = module.define_float_constant(1);
+        Id row3 = module.define_composite_constant(vec4_type, {zero, zero, zero, one});
 
-        Id input = inverse ? inv_inst_mat3x4 : inst_mat3x4;
-        Id row0 = builder.op_composite_extract(input, {0});
-        Id row1 = builder.op_composite_extract(input, {1});
-        Id row2 = builder.op_composite_extract(input, {2});
-        Id row3 = builder.op_composite_construct(vec4_type, {zero, zero, zero, one});
-        use_inst_mat4 = builder.op_composite_construct(mat4_type, {row0, row1, row2, row3});
+        Value input = inverse ? inv_inst_mat3x4 : inst_mat3x4;
+        use_inst_mat4 = mat4(input[0], input[1], input[2], Value(builder, row3));
       }
       inst_mat = use_inst_mat4;
     }
     else {
       // Construct a 3x3 matrix without translation.
-      Id &use_inst_mat3 = inverse ? inv_inst_mat3 : inst_mat3;
-      if (use_inst_mat3 == 0) {
-        Id input = inverse ? inv_inst_mat3x4 : inst_mat3x4;
-
-        pvector<Id> rows;
-        for (uint32_t i = 0; i < mat_size; ++i) {
-          Id row = builder.op_composite_extract(input, {i});
-          rows.push_back(builder.op_vector_shuffle(row, row, {0, 1, 2}));
-        }
-        use_inst_mat3 = builder.op_composite_construct(mat3_type, rows);
+      Value &use_inst_mat3 = inverse ? inv_inst_mat3 : inst_mat3;
+      if (!SpirVId(use_inst_mat3)) {
+        // Take the upper-left 3x3 part, dropping the translation column.
+        use_inst_mat3 = mat3(inverse ? inv_inst_mat3x4 : inst_mat3x4);
       }
       inst_mat = use_inst_mat3;
     }
 
-    Id left, right;
+    Value left, right;
     if (transpose) {
       // The incoming instance matrix is already transposed.
       left = inst_mat;
       right = orig_mat;
     } else {
       left = orig_mat;
-      right = builder.op_transpose(inst_mat);
+      right = glsl::transpose(inst_mat);
     }
 
-    builder.op_store(result_mat_ptr, builder.op_multiply(left, right));
+    Pointer(builder, result_mat_ptr).store(left * right);
   }
 }
 
@@ -586,7 +525,7 @@ inject_instancing_noop(SpirVBuilder &builder) {
     Id orig_mat_ptr = pair.second._id;
     Id result_mat_ptr = pair.first;
 
-    builder.op_store(result_mat_ptr, builder.op_load(orig_mat_ptr));
+    Pointer(builder, result_mat_ptr).store(Pointer(builder, orig_mat_ptr).load());
   }
 }
 
