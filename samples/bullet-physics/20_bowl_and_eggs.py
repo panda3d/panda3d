@@ -131,11 +131,15 @@ class Game(ShowBase):
 
         # Bowl
         visNP = loader.load_model('models/bowl.egg')
+        # This is necessary to incorporate internal transforms and submeshes into the geometry imported into Bullet. If
+        # you don't want to alter your model's internal structure, you can also follow the BulletConvexHullShape example
+        # below.
+        visNP.flatten_strong()
 
-        geom = (visNP.findAllMatches('**/+GeomNode')
-                .get_path(0).node().get_geom(0))
+        geom = visNP.findAllMatches('**/+GeomNode').get_path(0).node().get_geom(0)
         mesh = BulletTriangleMesh()
         mesh.addGeom(geom)
+
         shape = BulletTriangleMeshShape(mesh, dynamic=True)
 
         body = BulletRigidBodyNode('Bowl')
@@ -163,10 +167,12 @@ class Game(ShowBase):
 
             visNP = loader.load_model('models/egg.egg')
 
-            geom = (visNP.find_all_matches('**/+GeomNode')
-                    .get_path(0).node().get_geom(0))
             shape = BulletConvexHullShape()
-            shape.addGeom(geom)
+            geomNodes = visNP.findAllMatches('**/+GeomNode')
+            for geomNode in geomNodes:
+                ts = geomNode.getTransform(visNP)
+                for geom in geomNode.node().getGeoms():
+                    shape.addGeom(geom, ts)
 
             body = BulletRigidBodyNode('Egg-%i' % i)
             bodyNP = self.worldNP.attach_new_node(body)
