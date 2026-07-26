@@ -129,7 +129,7 @@ class ActorInterval(Interval.Interval):
         """
         retval = None
         if not self.isStopped():
-            framesPlayed = self.numFrames * self.currT
+            framesPlayed = self.frameRate * self.currT
             retval = self.startFrame + framesPlayed
         return retval
 
