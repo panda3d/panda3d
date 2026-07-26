@@ -68,6 +68,8 @@ add_subdirectory(src/tinydisplay)
 add_subdirectory(src/bullet)
 # ode
 add_subdirectory(src/ode)
+# rmlui
+add_subdirectory(src/rmlui)
 # physics
 add_subdirectory(src/particlesystem)
 add_subdirectory(src/physics)
@@ -183,6 +185,12 @@ build_apps = direct.dist.commands:finalize_distribution_options
     add_python_module(panda3d.bullet p3bullet IMPORT panda3d.core COMPONENT BulletPython)
 
     export_targets(BulletPython NAMESPACE "Panda3D::Python::" COMPONENT BulletDevel)
+  endif()
+
+  if(HAVE_RMLUI)
+    add_python_module(panda3d.rmlui p3rmlui IMPORT panda3d.core COMPONENT RmlUiPython)
+
+    export_targets(RmlUiPython NAMESPACE "Panda3D::Python::" COMPONENT RmlUiDevel)
   endif()
 
   if(HAVE_EGG)

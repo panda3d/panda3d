@@ -79,6 +79,7 @@ LangString DESC_SecFMOD ${LANG_ENGLISH} "Support for decoding and playing audio 
 LangString DESC_SecFFMpeg ${LANG_ENGLISH} "Support for decoding video and audio via the FFMpeg library.  Without this option, Panda3D will only be able to play .wav and .ogg audio files."
 LangString DESC_SecBullet ${LANG_ENGLISH} "Support for the Bullet physics engine."
 LangString DESC_SecODE ${LANG_ENGLISH} "Support for the Open Dynamics Engine to implement physics."
+LangString DESC_SecRmlUi ${LANG_ENGLISH} "Support for the RmlUi GUI library.  This is an optional library that offers an HTML/CSS-like approach to creating user interfaces."
 LangString DESC_SecTools ${LANG_ENGLISH} "Useful tools and model converters to help with Panda3D development.  Recommended."
 LangString DESC_SecGroupPython ${LANG_ENGLISH} "Contains modules that provide Python support for Panda3D."
 LangString DESC_SecPyShared ${LANG_ENGLISH} "Contains the common Python code used by the Panda3D Python bindings."
@@ -112,6 +113,7 @@ var READABLE
 !insertmacro !defineifexist HAVE_FFMPEG "${BUILT}\bin\libp3ffmpeg.dll"
 !insertmacro !defineifexist HAVE_BULLET "${BUILT}\bin\libpandabullet.dll"
 !insertmacro !defineifexist HAVE_ODE "${BUILT}\bin\libpandaode.dll"
+!insertmacro !defineifexist HAVE_RMLUI "${BUILT}\bin\libp3rmlui.dll"
 !insertmacro !defineifexist HAVE_SAMPLES "${SOURCE}\samples"
 !insertmacro !defineifexist HAVE_MAYA_PLUGINS "${BUILT}\plugins\*.mll"
 
@@ -167,6 +169,14 @@ var READABLE
             SkipODEPyd:
         !endif
 
+        !ifdef HAVE_RMLUI
+            SectionGetFlags ${SecRmlUi} $R0
+            IntOp $R0 $R0 & ${SF_SELECTED}
+            StrCmp $R0 ${SF_SELECTED} 0 SkipRmlUiPyd
+            File /nonfatal /r "${BUILT}\panda3d\rmlui${EXT_SUFFIX}"
+            SkipRmlUiPyd:
+        !endif
+
         SetOutPath $INSTDIR\pandac\input
         File /r "${BUILT}\pandac\input\*"
         SetOutPath $INSTDIR\Pmw
@@ -210,7 +220,7 @@ SectionGroup "Panda3D Libraries"
         File /r "${BUILT}\etc\*"
 
         SetOutPath $INSTDIR\bin
-        File /r /x api-ms-win-*.dll /x ucrtbase.dll /x libpandagl.dll /x libpandadx9.dll /x cgD3D*.dll /x python*.dll /x libpandaode.dll /x libp3fmod_audio.dll /x fmodex*.dll /x libp3ffmpeg.dll /x av*.dll /x postproc*.dll /x swscale*.dll /x swresample*.dll /x NxCharacter*.dll /x cudart*.dll /x PhysX*.dll /x libpandaphysx.dll /x libp3rocket.dll /x boost_python*.dll /x Rocket*.dll /x _rocket*.pyd /x libpandabullet.dll /x OpenAL32.dll /x *_oal.dll /x libp3openal_audio.dll "${BUILT}\bin\*.dll"
+        File /r /x api-ms-win-*.dll /x ucrtbase.dll /x libpandagl.dll /x libpandadx9.dll /x cgD3D*.dll /x python*.dll /x libpandaode.dll /x libp3fmod_audio.dll /x fmodex*.dll /x libp3ffmpeg.dll /x av*.dll /x postproc*.dll /x swscale*.dll /x swresample*.dll /x NxCharacter*.dll /x cudart*.dll /x PhysX*.dll /x libpandaphysx.dll /x libp3rmlui.dll /x rmlui*.dll /x libpandabullet.dll /x OpenAL32.dll /x *_oal.dll /x libp3openal_audio.dll "${BUILT}\bin\*.dll"
         File /nonfatal /r "${BUILT}\bin\Microsoft.*.manifest"
 
         ; Before Windows 10, we need these stubs for the UCRT as well.
@@ -304,6 +314,16 @@ SectionGroup "Panda3D Libraries"
 
         SetOutPath "$INSTDIR\bin"
         File "${BUILT}\bin\libpandaode.dll"
+    SectionEnd
+    !endif
+
+    !ifdef HAVE_RMLUI
+    Section "RmlUi GUI" SecRmlUi
+        SectionIn 1 2
+
+        SetOutPath "$INSTDIR\bin"
+        File "${BUILT}\bin\libp3rmlui.dll"
+        File /nonfatal /r "${BUILT}\bin\rmlui*.dll"
     SectionEnd
     !endif
 SectionGroupEnd
@@ -929,6 +949,9 @@ SectionEnd
   !endif
   !ifdef HAVE_ODE
     !insertmacro MUI_DESCRIPTION_TEXT ${SecODE} $(DESC_SecODE)
+  !endif
+  !ifdef HAVE_RMLUI
+    !insertmacro MUI_DESCRIPTION_TEXT ${SecRmlUi} $(DESC_SecRmlUi)
   !endif
   !insertmacro MUI_DESCRIPTION_TEXT ${SecTools} $(DESC_SecTools)
   !insertmacro MUI_DESCRIPTION_TEXT ${SecGroupPython} $(DESC_SecGroupPython)

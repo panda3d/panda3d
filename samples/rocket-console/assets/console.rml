@@ -1,0 +1,9 @@
+<rml>
+    <head>
+        <title>Administrative Console</title>
+        <link type="text/rcss" href="console.rcss"/>
+    </head>
+    <body>
+        <div id="content"></div>
+    </body>
+</rml>
