@@ -143,6 +143,26 @@ add_geom(const Geom *geom, const TransformState *ts) {
 }
 
 /**
+ *
+ */
+int BulletConvexHullShape::
+get_num_points() const {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  return _shape->getNumPoints();
+}
+
+/**
+ *
+ */
+void BulletConvexHullShape::
+optimize_convex_hull() {
+  LightMutexHolder holder(BulletWorld::get_global_lock());
+
+  _shape->optimizeConvexHull();
+}
+
+/**
  * Tells the BamReader how to create objects of type BulletShape.
  */
 void BulletConvexHullShape::
