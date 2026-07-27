@@ -1,5 +1,15 @@
+import pytest
+
 from direct.gui.DirectFrame import DirectFrame
 from panda3d.core import NodePath, Texture
+
+
+@pytest.mark.parametrize('relief', ['flat', None])
+def test_frame_getbounds_preserves_framesize(relief):
+    frame = DirectFrame(frameSize=(-1, 1, -1, 1), relief=relief)
+    assert tuple(frame.bounds) == (-1, 1, -1, 1)
+    assert list(frame.getBounds()) == [-1, 1, -1, 1]
+    assert list(frame.bounds) == [-1, 1, -1, 1]
 
 
 def test_frame_empty():
