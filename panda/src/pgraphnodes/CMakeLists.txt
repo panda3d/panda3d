@@ -47,7 +47,7 @@ set(P3PGRAPHNODES_SOURCES
 composite_sources(p3pgraphnodes P3PGRAPHNODES_SOURCES)
 add_component_library(p3pgraphnodes SYMBOL BUILDING_PANDA_PGRAPHNODES
   ${P3PGRAPHNODES_HEADERS} ${P3PGRAPHNODES_SOURCES})
-target_link_libraries(p3pgraphnodes p3pgraph)
+target_link_libraries(p3pgraphnodes p3pgraph p3shaderpipeline)
 target_interrogate(p3pgraphnodes ALL)
 
 if(NOT BUILD_METALIBS)

@@ -3871,7 +3871,7 @@ PyTargetAdd('p3gobj_ext_composite.obj', opts=OPTS, input='p3gobj_ext_composite.c
 # DIRECTORY: panda/src/pgraphnodes/
 #
 
-OPTS=['DIR:panda/src/pgraphnodes', 'BUILDING:PANDA']
+OPTS=['DIR:panda/src/pgraphnodes', 'BUILDING:PANDA', 'SPIRV-TOOLS']
 TargetAdd('p3pgraphnodes_composite1.obj', opts=OPTS, input='p3pgraphnodes_composite1.cxx')
 TargetAdd('p3pgraphnodes_composite2.obj', opts=OPTS, input='p3pgraphnodes_composite2.cxx')
 

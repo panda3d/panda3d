@@ -28,6 +28,7 @@
 
 #include "colorAttrib.h"
 #include "lightRampAttrib.h"
+#include "material.h"
 #include "texGenAttrib.h"
 #include "textureAttrib.h"
 
@@ -76,11 +77,6 @@ PUBLISHED:
   void clear_generated_shaders();
 
 protected:
-  // Shader register allocation:
-  int _ftregs_used;
-  void reset_register_allocator();
-  const char *alloc_freg();
-
   Filename _cache_filename;
   bool _use_pointcoord;
   bool _use_shadow_filter;
@@ -98,6 +94,12 @@ protected:
     void write_datagram(Datagram &dg) const;
 
     INLINE RenderAttrib::PandaCompareFunc get_alpha_test_mode() const;
+    INLINE bool needs_color() const;
+    INLINE bool has_specular() const;
+    INLINE bool needs_point_coord() const;
+    INLINE bool needs_eye_reflection() const;
+    INLINE bool needs_view_to_world() const;
+    INLINE int find_map_index(int flag) const;
 
     enum Flags {
       F_MATERIAL_FLAGS_SHIFT  = 0,
@@ -123,6 +125,7 @@ protected:
 
       F_use_shadow_filter     = 0x08000000,
       F_disable_color_write   = 0x10000000,
+      F_calc_point_coord      = 0x20000000,
     };
 
     enum TextureFlags {
@@ -207,11 +210,54 @@ protected:
 
   static CPT(ShaderAttrib) make_attrib(const ShaderKey &key, Shader *shader);
 
-  static std::string combine_mode_as_string(const ShaderKey::TextureInfo &info,
-                      TextureStage::CombineMode c_mode, bool alpha, short texindex);
-  static std::string combine_source_as_string(const ShaderKey::TextureInfo &info,
-                                         short num, bool alpha, short texindex);
-  static const char *texture_type_as_string(Texture::TextureType ttype);
+  /**
+   * The interface between the generated vertex and fragment shaders: which
+   * intermediate results are calculated in the vertex shader and passed
+   * along, and at which locations the varyings live.  This is derived from
+   * the ShaderKey up front, so that the vertex and fragment modules can each
+   * be generated independently from just the key and the plan.
+   *
+   * A field belongs in here only if both stages must agree on it; anything
+   * only one stage cares about is instead derived from the key in that
+   * stage's generator.  The plan must remain a pure function of the key (see
+   * make_plan), so that the key uniquely identifies the generated modules.
+   */
+  struct ShaderPlan {
+    // Varying locations, or -1 if the varying is not passed.  The texcoord
+    // varyings are listed in the order in which the texture stages first
+    // reference them, and the lightcoord varyings in the order of the lights
+    // in the key, with -1 for lights that cast no shadows.
+    pvector<std::pair<const InternalName *, int> > _texcoord_locations;
+    pvector<int> _lightcoord_locations;
+    int _hpos_location = -1;
+    int _world_position_location = -1;
+    int _world_normal_location = -1;
+    int _eye_position_location = -1;
+    int _eye_normal_location = -1;
+    int _tangent_location = -1;
+    int _binormal_location = -1;
+    int _color_location = -1;
+    int _eyevec_location = -1;
+    int _pointcoord_location = -1;
+
+    int find_texcoord_location(const InternalName *name) const;
+
+    INLINE bool has_hpos() const;
+    INLINE bool has_world_position() const;
+    INLINE bool has_world_normal() const;
+    INLINE bool has_eye_position() const;
+    INLINE bool has_eye_normal() const;
+    INLINE bool has_tangents() const;
+    INLINE bool has_color() const;
+    INLINE bool has_eyevec() const;
+    INLINE bool calc_point_coord() const;
+  };
+
+  static ShaderPlan make_plan(const ShaderKey &key);
+  PT(ShaderModule) generate_vertex_shader(const ShaderKey &key,
+                                          const ShaderPlan &plan) const;
+  PT(ShaderModule) generate_fragment_shader(const ShaderKey &key,
+                                            const ShaderPlan &plan) const;
 
 public:
   static TypeHandle get_class_type() {
