@@ -29,6 +29,18 @@ SpirVTransformer(const InstructionStream &stream) : _module(stream) {
 }
 
 /**
+ * Takes an already-materialized module, avoiding a round trip through the
+ * instruction stream form.
+ */
+SpirVTransformer::
+SpirVTransformer(SpirVModule &&module) : _module(std::move(module)) {
+  if (shader_paranoid_validation && !_module.validate()) {
+    Notify::assert_failure("SPIR-V module failed validation before running "
+                           "transformations", __LINE__, __FILE__);
+  }
+}
+
+/**
  * Runs the given transformation pass object (which can be used only once) on
  * the module.  Afterwards, merges any duplicate unique-type declarations the
  * pass may have created and, if shader-paranoid-validation is set, validates

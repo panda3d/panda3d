@@ -47,90 +47,8 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, const CompilerOption
     return;
   }
 
-  // Check for caps and sanity.
-  for (InstructionIterator it = _instructions.begin(); it != _instructions.begin_annotations(); ++it) {
-    Instruction op = *it;
-    switch (op.opcode) {
-    case spv::OpMemoryModel:
-      if (op.args[0] != spv::AddressingModelLogical) {
-        shader_cat.error()
-          << "Invalid SPIR-V shader: addressing model Logical must be used.\n";
-        return;
-      }
-      if (op.args[1] != spv::MemoryModelGLSL450) {
-        shader_cat.error()
-          << "Invalid SPIR-V shader: memory model GLSL450 must be used.\n";
-        return;
-      }
-      break;
-
-    case spv::OpExecutionMode:
-    case spv::OpExecutionModeId:
-      if (op.nargs >= 3 && op.args[1] == spv::ExecutionModeInvocations) {
-        if (op.args[2] != 1) {
-          _used_caps |= C_geometry_shader_instancing;
-        }
-      }
-      break;
-
-    case spv::OpCapability:
-      switch ((spv::Capability)op.args[0]) {
-      case spv::CapabilityFloat64:
-        _used_caps |= C_double;
-        break;
-
-      case spv::CapabilityAtomicStorage:
-        _used_caps |= C_atomic_counters;
-        break;
-
-      case spv::CapabilityStorageImageMultisample:
-        _used_caps |= C_texture_multisample;
-        break;
-
-      case spv::CapabilityUniformBufferArrayDynamicIndexing:
-      case spv::CapabilitySampledImageArrayDynamicIndexing:
-      case spv::CapabilityStorageBufferArrayDynamicIndexing:
-      case spv::CapabilityStorageImageArrayDynamicIndexing:
-      case spv::CapabilityInputAttachmentArrayDynamicIndexing:
-      case spv::CapabilityUniformTexelBufferArrayDynamicIndexing:
-      case spv::CapabilityStorageTexelBufferArrayDynamicIndexing:
-        // It would be great if we could rely on this and call this a day.
-        // However, glslang is not currently capable of detecting and generating
-        // this capability (see KhronosGroup/glslang#2056).  So we still have to
-        // go through the trouble of determining this ourselves.
-        _used_caps |= C_dynamic_indexing;
-        break;
-
-      case spv::CapabilityClipDistance:
-        _used_caps |= C_clip_distance;
-        break;
-
-      case spv::CapabilityCullDistance:
-        _used_caps |= C_cull_distance;
-        break;
-
-      case spv::CapabilityImageCubeArray:
-      case spv::CapabilitySampledCubeArray:
-        _used_caps |= C_cube_map_array;
-        break;
-
-      case spv::CapabilitySampledBuffer:
-      case spv::CapabilityImageBuffer:
-        _used_caps |= C_texture_buffer;
-        break;
-
-      case spv::CapabilityDerivativeControl:
-        _used_caps |= C_derivative_control;
-        break;
-
-      default:
-        break;
-      }
-      break;
-
-    default:
-      break;
-    }
+  if (!check_capabilities()) {
+    return;
   }
 
   SpirVTransformer transformer(_instructions);
@@ -167,11 +85,82 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, const CompilerOption
   transformer.strip_uniform_locations();
   transformer.strip_bindings();
 
-  // Compute how the variables are used, for the extraction below.  The type
-  // replacements made inside the loop do not affect the usage information.
+  // Compute how the variables are used, for the extraction below.
   SpirVUsageAnalysis usage = module.analyze_usage();
 
   // Identify the inputs, outputs and uniform parameters.
+  analyze(transformer, usage);
+
+  _instructions = transformer.get_result();
+
+#ifndef NDEBUG
+  if (shader_cat.is_spam()) {
+    _instructions.disassemble(shader_cat.spam()
+      << "Disassembly for " << *this << ":\n");
+  }
+#endif
+
+  // Strip debug information unless the user opted into debug mode.
+  if (!options.get_debug()) {
+    strip_debug();
+  }
+
+  // Check for more caps, now that we've optimized the module.
+  post_analyze(module, usage);
+}
+
+/**
+ * Takes a generated SpirVModule and turns it directly into a shader module.
+ * The module is expected to be otherwise in canonical form already: interface
+ * locations must have been assigned, uniform locations and bindings must be
+ * absent, and debug names are kept as-is.
+ */
+ShaderModuleSpirV::
+ShaderModuleSpirV(Stage stage, SpirVModule &&module) :
+  ShaderModule(stage)
+{
+  SpirVTransformer transformer(std::move(module));
+
+  // Assign "Flat" decorations on uint and double output variables, in case
+  // the generator did not do so (see the note in the other constructor).
+  if (stage != Stage::FRAGMENT) {
+    transformer.assign_flat_decorations();
+  }
+
+  // Compute how the variables are used, for the extraction below.
+  SpirVUsageAnalysis usage = transformer.get_module().analyze_usage();
+
+  // Identify the inputs, outputs and uniform parameters.
+  analyze(transformer, usage);
+
+  _instructions = transformer.get_result();
+
+  if (!check_capabilities()) {
+    return;
+  }
+
+#ifndef NDEBUG
+  if (shader_cat.is_spam()) {
+    _instructions.disassemble(shader_cat.spam()
+      << "Disassembly for " << *this << ":\n");
+  }
+#endif
+
+  // Check for more caps in the function bodies.
+  post_analyze(transformer.get_module(), usage);
+}
+
+/**
+ * Extracts the inputs, outputs, uniform parameters and specialization
+ * constants from the module, and determines which capabilities are used by
+ * its variables and types.  May run passes on the transformer to correct the
+ * types of shadow samplers and built-in variables; these type replacements
+ * do not affect previously computed usage information.
+ */
+void ShaderModuleSpirV::
+analyze(SpirVTransformer &transformer, const SpirVUsageAnalysis &usage) {
+  SpirVModule &module = transformer.get_module();
+
   for (uint32_t word = 0; word < transformer.get_id_bound(); ++word) {
     Id id(word);
     SpirVModule::DefinitionType dtype = module.get_definition_type(id);
@@ -217,7 +206,7 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, const CompilerOption
       if (storage_class == spv::StorageClassInput) {
         _inputs.push_back(std::move(var));
 
-        if (stage == Stage::FRAGMENT) {
+        if (_stage == Stage::FRAGMENT) {
           // Integer varyings require shader model 4.
           if (var_type->contains_scalar_type(ShaderType::ST_uint) ||
               var_type->contains_scalar_type(ShaderType::ST_int) ||
@@ -227,7 +216,7 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, const CompilerOption
         }
       }
       else if (storage_class == spv::StorageClassOutput) {
-        if ((!_outputs.empty() || num_locations > 1) && stage == Stage::FRAGMENT) {
+        if ((!_outputs.empty() || num_locations > 1) && _stage == Stage::FRAGMENT) {
           // This shader requires MRT.
           _used_caps |= C_draw_buffers;
         }
@@ -403,23 +392,100 @@ ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words, const CompilerOption
       }
     }
   }
+}
 
-  _instructions = transformer.get_result();
+/**
+ * Scans the module preamble to determine which capabilities it requires, and
+ * checks the memory model for sanity.  Returns false if the module does not
+ * use a supported addressing and memory model.
+ */
+bool ShaderModuleSpirV::
+check_capabilities() {
+  for (InstructionIterator it = _instructions.begin(); it != _instructions.begin_annotations(); ++it) {
+    Instruction op = *it;
+    switch (op.opcode) {
+    case spv::OpMemoryModel:
+      if (op.args[0] != spv::AddressingModelLogical) {
+        shader_cat.error()
+          << "Invalid SPIR-V shader: addressing model Logical must be used.\n";
+        return false;
+      }
+      if (op.args[1] != spv::MemoryModelGLSL450) {
+        shader_cat.error()
+          << "Invalid SPIR-V shader: memory model GLSL450 must be used.\n";
+        return false;
+      }
+      break;
 
-#ifndef NDEBUG
-  if (shader_cat.is_spam()) {
-    _instructions.disassemble(shader_cat.spam()
-      << "Disassembly for " << *this << ":\n");
+    case spv::OpExecutionMode:
+    case spv::OpExecutionModeId:
+      if (op.nargs >= 3 && op.args[1] == spv::ExecutionModeInvocations) {
+        if (op.args[2] != 1) {
+          _used_caps |= C_geometry_shader_instancing;
+        }
+      }
+      break;
+
+    case spv::OpCapability:
+      switch ((spv::Capability)op.args[0]) {
+      case spv::CapabilityFloat64:
+        _used_caps |= C_double;
+        break;
+
+      case spv::CapabilityAtomicStorage:
+        _used_caps |= C_atomic_counters;
+        break;
+
+      case spv::CapabilityStorageImageMultisample:
+        _used_caps |= C_texture_multisample;
+        break;
+
+      case spv::CapabilityUniformBufferArrayDynamicIndexing:
+      case spv::CapabilitySampledImageArrayDynamicIndexing:
+      case spv::CapabilityStorageBufferArrayDynamicIndexing:
+      case spv::CapabilityStorageImageArrayDynamicIndexing:
+      case spv::CapabilityInputAttachmentArrayDynamicIndexing:
+      case spv::CapabilityUniformTexelBufferArrayDynamicIndexing:
+      case spv::CapabilityStorageTexelBufferArrayDynamicIndexing:
+        // It would be great if we could rely on this and call this a day.
+        // However, glslang is not currently capable of detecting and generating
+        // this capability (see KhronosGroup/glslang#2056).  So we still have to
+        // go through the trouble of determining this ourselves.
+        _used_caps |= C_dynamic_indexing;
+        break;
+
+      case spv::CapabilityClipDistance:
+        _used_caps |= C_clip_distance;
+        break;
+
+      case spv::CapabilityCullDistance:
+        _used_caps |= C_cull_distance;
+        break;
+
+      case spv::CapabilityImageCubeArray:
+      case spv::CapabilitySampledCubeArray:
+        _used_caps |= C_cube_map_array;
+        break;
+
+      case spv::CapabilitySampledBuffer:
+      case spv::CapabilityImageBuffer:
+        _used_caps |= C_texture_buffer;
+        break;
+
+      case spv::CapabilityDerivativeControl:
+        _used_caps |= C_derivative_control;
+        break;
+
+      default:
+        break;
+      }
+      break;
+
+    default:
+      break;
+    }
   }
-#endif
-
-  // Strip debug information unless the user opted into debug mode.
-  if (!options.get_debug()) {
-    strip_debug();
-  }
-
-  // Check for more caps, now that we've optimized the module.
-  post_analyze(module, usage);
+  return true;
 }
 
 ShaderModuleSpirV::

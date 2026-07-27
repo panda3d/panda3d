@@ -29,6 +29,7 @@ public:
   using InstructionStream = ShaderModuleSpirV::InstructionStream;
 
   SpirVTransformer(const InstructionStream &stream);
+  explicit SpirVTransformer(SpirVModule &&module);
 
   void run(SpirVTransformPass &pass);
   INLINE void run(SpirVTransformPass &&pass);

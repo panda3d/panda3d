@@ -27,6 +27,7 @@
 class CompilerOptions;
 class ShaderType;
 class SpirVModule;
+class SpirVTransformer;
 class SpirVUsageAnalysis;
 
 /**
@@ -41,6 +42,7 @@ private:
 public:
   ShaderModuleSpirV(Stage stage, std::vector<uint32_t> words,
                     const CompilerOptions &options = CompilerOptions());
+  ShaderModuleSpirV(Stage stage, SpirVModule &&module);
   virtual ~ShaderModuleSpirV();
 
   virtual PT(CopyOnWriteObject) make_cow_copy() override;
@@ -131,6 +133,8 @@ public:
   uint64_t _emulatable_caps = 0u;
 
 private:
+  bool check_capabilities();
+  void analyze(SpirVTransformer &transformer, const SpirVUsageAnalysis &usage);
   void post_analyze(const SpirVModule &module, const SpirVUsageAnalysis &usage);
   void remap_locations(spv::StorageClass storage_class, const pmap<int, int> &locations);
   void strip_debug();
