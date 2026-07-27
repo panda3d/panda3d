@@ -2953,6 +2953,15 @@ make_binding_cg(const InternalName *name, const ShaderType *type) {
             pieces[0] == "tps" || pieces[0] == "itp")) {
     std::string trans = pieces[0];
     std::string matrix = pieces[1];
+    if (matrix == "shadow") {
+      if (!expect_num_words(name, type, 3) ||
+          !expect_float_matrix(name, type, 4, 4)) {
+        return nullptr;
+      }
+      return make_matrix_compose(type, Shader::SM_view_to_world, nullptr,
+                                 Shader::SM_world_to_apiclip_light_i,
+                                 InternalName::make(pieces[2]), true);
+    }
     pieces.clear();
     if (matrix == "modelview") {
       tokenize("trans_model_to_apiview", pieces, "_");
@@ -2962,15 +2971,6 @@ make_binding_cg(const InternalName *name, const ShaderType *type) {
     }
     else if (matrix == "modelproj") {
       tokenize("trans_model_to_apiclip", pieces, "_");
-    }
-    else if (matrix == "shadow") {
-      if (!expect_num_words(name, type, 3) ||
-          !expect_float_matrix(name, type, 4, 4)) {
-        return nullptr;
-      }
-      return make_matrix_compose(type, Shader::SM_view_to_world, nullptr,
-                                 Shader::SM_world_to_apiclip_light_i,
-                                 InternalName::make(pieces[2]), true);
     }
     else {
       return report_parameter_error(name, type, "unrecognized matrix name");
