@@ -820,8 +820,10 @@ if (COMPILER == "MSVC"):
 
     IncDirectory("GLSLANG", GetThirdpartyDir() + "glslang/include")
     LibName("GLSLANG", GetThirdpartyDir() + "glslang/lib/glslang.lib")
-    LibName("GLSLANG", GetThirdpartyDir() + "glslang/lib/HLSL.lib")
-    LibName("GLSLANG", GetThirdpartyDir() + "glslang/lib/OGLCompiler.lib")
+    if os.path.isfile(GetThirdpartyDir() + "glslang/lib/HLSL.lib"):
+        LibName("GLSLANG", GetThirdpartyDir() + "glslang/lib/HLSL.lib")
+    if os.path.isfile(GetThirdpartyDir() + "glslang/lib/OGLCompiler.lib"):
+        LibName("GLSLANG", GetThirdpartyDir() + "glslang/lib/OGLCompiler.lib")
     LibName("GLSLANG", GetThirdpartyDir() + "glslang/lib/OSDependent.lib")
     LibName("GLSLANG", GetThirdpartyDir() + "glslang/lib/MachineIndependent.lib")
     LibName("GLSLANG", GetThirdpartyDir() + "glslang/lib/GenericCodeGen.lib")
