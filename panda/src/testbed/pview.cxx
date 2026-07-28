@@ -31,6 +31,17 @@
 
 using std::cerr;
 using std::endl;
+#if defined(__wasi__)
+extern "C" {
+    int __cxa_allocate_exception(int discard) {
+        abort();
+    }
+
+    int __cxa_throw(int discarda, int discardb) {
+        abort();
+    }
+}
+#endif
 
 PandaFramework framework;
 
