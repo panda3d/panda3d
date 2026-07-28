@@ -28,15 +28,16 @@ class VulkanMemoryPage final : public SimpleAllocator {
 public:
   INLINE VulkanMemoryPage(Mutex &lock);
   INLINE VulkanMemoryPage(VkDevice device, VkDeviceMemory memory, VkDeviceSize size,
-                          uint32_t type_index, VkFlags flags, Mutex &lock);
+                          uint32_t type_index, VkFlags flags,
+                          VkDeviceSize noncoherent_atom_size, Mutex &lock);
   INLINE VulkanMemoryPage(VulkanMemoryPage &&from);
   INLINE ~VulkanMemoryPage();
 
   //INLINE VulkanMemoryPage &operator = (VulkanMemoryPage &&from);
 
   INLINE bool meets_requirements(const VkMemoryRequirements &reqs,
-                                 VkFlags required_flags = 0,
-                                 bool linear_tiling = false);
+                                 uint32_t type_index,
+                                 bool linear_tiling);
 
 private:
   INLINE void *map_persistent();
@@ -47,6 +48,7 @@ private:
   VkDeviceMemory _memory;
   uint32_t _type_index;
   VkFlags _flags;
+  VkDeviceSize _noncoherent_atom_size;
   bool _linear_tiling;
   void *_persistent_ptr;
   unsigned int _persistent_ptr_count = 0;
@@ -68,6 +70,8 @@ public:
     SimpleAllocatorBlock(std::move(block)) {}
 
   INLINE VkDeviceMemory get_memory();
+  INLINE bool is_host_visible() const;
+  INLINE bool is_host_cached() const;
 
   INLINE bool bind_image(VkImage image);
   INLINE bool bind_buffer(VkBuffer buffer);
@@ -76,8 +80,12 @@ public:
   INLINE void *map_persistent();
   INLINE void unmap_persistent();
 
-  INLINE void flush();
-  INLINE void invalidate();
+  INLINE void flush(size_t start = 0, size_t size = SIZE_MAX);
+  INLINE void invalidate(size_t start = 0, size_t size = SIZE_MAX);
+
+private:
+  INLINE bool get_noncoherent_range(VkMappedMemoryRange &range,
+                                    size_t start, size_t size) const;
 
   friend class VulkanMemoryPage;
 };

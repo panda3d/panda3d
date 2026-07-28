@@ -10,3 +10,13 @@
  * @author rdb
  * @date 2016-02-16
  */
+
+/**
+ * Returns true if the given heap is a limited slice of device memory, like a
+ * 256 MiB BAR aperture, rather than unified memory or a full-size heap.
+ * Scarce heaps are reserved for allocations that get the most out of them.
+ */
+INLINE bool VulkanGraphicsPipe::
+is_scarce_heap(uint32_t heap_index) const {
+  return (_scarce_heaps & (1u << heap_index)) != 0;
+}

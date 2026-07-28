@@ -56,7 +56,7 @@ public:
   virtual std::string get_driver_version();
 
   bool allocate_memory(VulkanMemoryBlock &block, const VkMemoryRequirements &reqs,
-                       VkFlags required_flags, bool linear);
+                       VulkanMemoryPolicy policy, bool linear);
 
   VulkanTextureContext *use_texture(Texture *texture, VkImageLayout layout,
                                     VkPipelineStageFlags2 stage_mask,
@@ -190,7 +190,7 @@ private:
 
 public:
   bool create_buffer(VkDeviceSize size, VkBuffer &buffer, VulkanMemoryBlock &block,
-                     int usage_flags, VkMemoryPropertyFlagBits flags);
+                     int usage_flags, VulkanMemoryPolicy policy);
   bool create_image(VulkanTextureContext *tc, VkImageType type, VkFormat format,
                     const VkExtent3D &extent, uint32_t levels, uint32_t layers,
                     VkSampleCountFlagBits samples, VkImageUsageFlags usage,
@@ -323,7 +323,6 @@ private:
   VulkanMemoryBlock _staging_buffer_memory;
   CircularAllocator _staging_buffer_allocator;
   void *_staging_buffer_ptr = nullptr;
-  bool _has_unified_memory = false;
 
   // Stores current framebuffer info.
   VulkanTextureContext *_fb_color_tc = nullptr;
@@ -355,6 +354,10 @@ private:
   Mutex _allocator_lock;
   pdeque<VulkanMemoryPage> _memory_pages;
   VkDeviceSize _total_allocated = 0u;
+
+  // Bitmask of memory types for which creating a new page failed this frame,
+  // so that allocate_memory() does not retry them for every allocation.
+  uint32_t _exhausted_memory_types = 0;
 
   // We store references to two command buffers.  The transfer cmd is used for
   // anything that needs to happen outside a render pass (including transfers),

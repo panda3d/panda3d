@@ -482,7 +482,7 @@ reset() {
     if (!create_buffer(4, _null_vertex_buffer, _null_vertex_memory,
                        VK_BUFFER_USAGE_VERTEX_BUFFER_BIT |
                        VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-                       VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)) {
+                       MP_retained)) {
       vulkandisplay_cat.error()
         << "Failed to create null vertex buffer.\n";
       return;
@@ -651,21 +651,14 @@ reset() {
   }
 
   // Create a uniform buffer that we'll use for everything.
-  // Some cards set aside 256 MiB of device-local host-visible memory for data
-  // like this, so we use that.
   // We also use it as a vertex buffer for flat vertex colors.
   VkDeviceSize uniform_buffer_size = vulkan_global_uniform_buffer_size;
   if (!create_buffer(uniform_buffer_size, _uniform_buffer, _uniform_buffer_memory,
                      VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-                     (VkMemoryPropertyFlagBits)(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT))) {
-    // No?  Put it in GPU-accessible CPU memory, then.
-    if (!create_buffer(uniform_buffer_size, _uniform_buffer, _uniform_buffer_memory,
-                       VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-                       (VkMemoryPropertyFlagBits)(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT))) {
-      vulkandisplay_cat.error()
-        << "Failed to create global uniform buffer.\n";
-      return;
-    }
+                     MP_stream)) {
+    vulkandisplay_cat.error()
+      << "Failed to create global uniform buffer.\n";
+    return;
   }
   set_object_name(_uniform_buffer, "<global uniform buffer>");
 
@@ -677,26 +670,12 @@ reset() {
   }
   _uniform_buffer_allocator = CircularAllocator(uniform_buffer_size, limits.minUniformBufferOffsetAlignment);
 
-  // If we have only one heap, it's safe to assume we're on a UMA system,
-  // but also double-check that there is a memory type which has device-local
-  // and host-visible access simultaneously.
-  _has_unified_memory = false;
-  if (pipe->_memory_properties.memoryHeapCount == 1) {
-    for (uint32_t i = 0; i < pipe->_memory_properties.memoryTypeCount; ++i) {
-      const VkMemoryType &mem_type = pipe->_memory_properties.memoryTypes[i];
-      if ((mem_type.propertyFlags & (VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)) == (VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)) {
-        _has_unified_memory = true;
-        break;
-      }
-    }
-  }
-
   // Create a staging buffer for CPU-to-GPU uploads.
   VkDeviceSize staging_buffer_size = vulkan_staging_buffer_size;
   if (staging_buffer_size > 0) {
     if (create_buffer(staging_buffer_size, _staging_buffer, _staging_buffer_memory,
                       VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                      (VkMemoryPropertyFlagBits)(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT))) {
+                      MP_upload_staging)) {
       set_object_name(_staging_buffer, "<staging buffer>");
       _staging_buffer_ptr = _staging_buffer_memory.map_persistent();
       if (_staging_buffer_ptr != nullptr) {
@@ -1033,56 +1012,94 @@ get_driver_version() {
 }
 
 /**
- * Allocates a block of graphics memory, using the given requirements.
+ * Allocates a block of graphics memory under the given allocation policy.
+ * The block satisfies the policy's guarantees; query the block to see which
+ * non-guaranteed properties it obtained.
  */
 bool VulkanGraphicsStateGuardian::
 allocate_memory(VulkanMemoryBlock &block, const VkMemoryRequirements &reqs,
-                VkFlags required_flags, bool linear) {
+                VulkanMemoryPolicy policy, bool linear) {
   //MutexHolder holder(_allocator_lock);
-
-  for (VulkanMemoryPage &page : _memory_pages) {
-    if (page.meets_requirements(reqs, required_flags, linear)) {
-      SimpleAllocatorBlock *result = page.alloc(reqs.size, reqs.alignment);
-      if (result != nullptr) {
-        block = std::move(*result);
-        delete result;
-        return true;
-      }
-    }
-  }
 
   VulkanGraphicsPipe *vkpipe;
   DCAST_INTO_R(vkpipe, get_pipe(), false);
 
-  // We don't have a matching allocator.  Create a new one.
   uint32_t type_index;
-  if (!vkpipe->find_memory_type(type_index, reqs, required_flags)) {
+  VkMemoryRequirements remaining_reqs = reqs;
+  if (!vkpipe->find_memory_type(type_index, remaining_reqs, policy, linear)) {
     return false;
   }
-  VkFlags flags = vkpipe->_memory_properties.memoryTypes[type_index].propertyFlags;
 
   VkMemoryAllocateInfo alloc_info;
   alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
   alloc_info.pNext = nullptr;
-  alloc_info.memoryTypeIndex = type_index;
-  alloc_info.allocationSize = std::max(std::min(vkpipe->_max_allocation_size, (VkDeviceSize)vulkan_memory_page_size), reqs.size);
 
+  const VkDeviceSize atom_size = vkpipe->_gpu_properties.limits.nonCoherentAtomSize;
+
+  // Try each memory type in order of preference under this policy.
   VkDeviceMemory memory;
-  VkResult err;
+  VkResult err = VK_ERROR_OUT_OF_DEVICE_MEMORY;
+  VkDeviceSize alignment;
   do {
-    err = vkAllocateMemory(_device, &alloc_info, nullptr, &memory);
-    if (!err) {
-      break;
+    // Blocks in non-coherent mappable memory must not share a
+    // nonCoherentAtomSize atom, since flushes and invalidations are rounded
+    // out to atom boundaries and could otherwise clobber a neighbouring
+    // block's pending writes.
+    alignment = reqs.alignment;
+    VkFlags type_flags = vkpipe->_memory_properties.memoryTypes[type_index].propertyFlags;
+    if ((type_flags & (VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+                       VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)) ==
+        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) {
+      alignment = std::max(alignment, atom_size);
     }
 
-    // No?  Try a smaller allocation.
-    alloc_info.allocationSize >>= 1;
-  } while (alloc_info.allocationSize >= reqs.size);
+    // Do we already have a page of this type with enough room?
+    for (VulkanMemoryPage &page : _memory_pages) {
+      if (page.meets_requirements(reqs, type_index, linear)) {
+        SimpleAllocatorBlock *result = page.alloc(reqs.size, alignment);
+        if (result != nullptr) {
+          block = std::move(*result);
+          delete result;
+          return true;
+        }
+      }
+    }
+
+    // No, create a new page, unless this type was already found to be
+    // exhausted earlier this frame.
+    if ((_exhausted_memory_types & (1u << type_index)) == 0) {
+      alloc_info.memoryTypeIndex = type_index;
+      alloc_info.allocationSize = std::max(std::min(vkpipe->_max_allocation_size, (VkDeviceSize)vulkan_memory_page_size), reqs.size);
+
+      do {
+        err = vkAllocateMemory(_device, &alloc_info, nullptr, &memory);
+        if (!err) {
+          break;
+        }
+
+        // No?  Try a smaller allocation.
+        alloc_info.allocationSize >>= 1;
+      } while (alloc_info.allocationSize >= reqs.size);
+
+      if (!err) {
+        break;
+      }
+
+      // This memory type is exhausted; don't retry it until next frame, so
+      // that we don't replay this chain of failed allocations every time.
+      _exhausted_memory_types |= (1u << type_index);
+    }
+
+    // Fall back to the next-best type, which may score lower under this
+    // policy.
+    remaining_reqs.memoryTypeBits &= ~(1u << type_index);
+  } while (vkpipe->find_memory_type(type_index, remaining_reqs, policy, linear));
 
   if (err) {
     vulkan_error(err, "Failed to allocate new memory page");
     return false;
   }
+  VkFlags flags = vkpipe->_memory_properties.memoryTypes[type_index].propertyFlags;
 
   _total_allocated += alloc_info.allocationSize;
 
@@ -1128,14 +1145,14 @@ allocate_memory(VulkanMemoryBlock &block, const VkMemoryRequirements &reqs,
     vulkandisplay_cat.debug(false) << "\n";
   }
 
-  VulkanMemoryPage page(_device, memory, alloc_info.allocationSize, type_index, flags, _allocator_lock);
+  VulkanMemoryPage page(_device, memory, alloc_info.allocationSize, type_index, flags, atom_size, _allocator_lock);
 
   // We use a separate page for images with optimal tiling since they need to
   // have a certain distance to regular tiling allocations, according to the
   // bufferImageGranularity limit.  It's easier to just have a separate page.
   page._linear_tiling = linear;
 
-  SimpleAllocatorBlock *result = page.alloc(reqs.size, reqs.alignment);
+  SimpleAllocatorBlock *result = page.alloc(reqs.size, alignment);
   nassertr_always(result != nullptr, false);
   block = std::move(*result);
   delete result;
@@ -1639,7 +1656,7 @@ create_texture(VulkanTextureContext *tc) {
     }
     VkDeviceSize total_size = view_size * num_views;
     if (!create_buffer(total_size, buffer, block, usage,
-                       VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)) {
+                       MP_retained)) {
       return false;
     }
     set_object_name(buffer, texture->get_name());
@@ -2318,17 +2335,15 @@ prepare_vertex_buffer(GeomVertexArrayData *array_data) {
   CPT(GeomVertexArrayDataHandle) handle = array_data->get_handle();
   VkDeviceSize data_size = handle->get_data_size_bytes();
 
-  VkMemoryPropertyFlagBits mem_flags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
-  if (_has_unified_memory) {
-    // On UMA systems, we can write directly to device local buffers.
-    mem_flags = (VkMemoryPropertyFlagBits)(mem_flags | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-  }
+  // Use scarce BAR only for UH_stream.
+  VulkanMemoryPolicy policy = (array_data->get_usage_hint() == GeomEnums::UH_stream)
+                            ? MP_stream_retained : MP_retained;
 
   VkBuffer buffer;
   VulkanMemoryBlock block;
   if (!create_buffer(data_size, buffer, block,
                      VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-                     mem_flags)) {
+                     policy)) {
     vulkandisplay_cat.error()
       << "Failed to create vertex buffer.\n";
     return nullptr;
@@ -2381,9 +2396,9 @@ update_vertex_buffer(VulkanVertexBufferContext *vbc,
         _transfer_cmd.add_barrier(barrier);
         _transfer_cmd.flush_barriers();
       }
-      else if (_has_unified_memory) {
-        // If we have UMA, and the buffer is not in use, we can skip the
-        // staging buffer and write directly to buffer memory.
+      else if (vbc->_block.is_host_visible()) {
+        // The buffer is in directly writable memory and not in use, so we
+        // can skip the staging buffer and write directly to buffer memory.
         use_staging_buffer = false;
       }
 
@@ -2473,17 +2488,15 @@ prepare_index_buffer(GeomPrimitive *primitive) {
     return nullptr;
   }
 
-  VkMemoryPropertyFlagBits mem_flags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
-  if (_has_unified_memory) {
-    // On UMA systems, we can write directly to device local buffers.
-    mem_flags = (VkMemoryPropertyFlagBits)(mem_flags | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-  }
+  // Use scarce BAR only for UH_stream.
+  VulkanMemoryPolicy policy = (primitive->get_usage_hint() == GeomEnums::UH_stream)
+                            ? MP_stream_retained : MP_retained;
 
   VkBuffer buffer;
   VulkanMemoryBlock block;
   if (!create_buffer(data_size, buffer, block,
                      VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-                     mem_flags)) {
+                     policy)) {
     vulkandisplay_cat.error()
       << "Failed to create index buffer.\n";
     return nullptr;
@@ -2556,9 +2569,9 @@ update_index_buffer(VulkanIndexBufferContext *ibc,
         _transfer_cmd.add_barrier(barrier);
         _transfer_cmd.flush_barriers();
       }
-      else if (_has_unified_memory) {
-        // If we have UMA, and the buffer is not in use, we can skip the
-        // staging buffer and write directly to buffer memory.
+      else if (ibc->_block.is_host_visible()) {
+        // The buffer is in directly writable memory and not in use, so we
+        // can skip the staging buffer and write directly to buffer memory.
         use_staging_buffer = false;
       }
 
@@ -2670,28 +2683,27 @@ prepare_shader_buffer(ShaderBuffer *data) {
 
   VkDeviceSize data_size = data->get_data_size_bytes();
 
-  bool use_staging_buffer = !_has_unified_memory;
-  VkMemoryPropertyFlagBits mem_flags = (VkMemoryPropertyFlagBits)0;
-  if (data->get_usage_hint() == GeomEnums::UH_client) {
-    use_staging_buffer = false;
-  } else {
-    mem_flags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
-  }
-
+  VulkanMemoryPolicy policy;
   int usage_flags = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
-  if (use_staging_buffer) {
+  if (data->get_usage_hint() == GeomEnums::UH_client) {
+    // Read in place by the GPU from mappable memory.
+    //XXX rdb: Beware that this allows direct readback but is really slow
+    // because it allows uncached memory; I think this is a trap that the user
+    // explicitly opted by reading from a UH_client SSBO, but if someone
+    // complains we could make a new policy that prefers cached memory.
+    policy = MP_stream;
+  } else {
+    policy = (data->get_usage_hint() == GeomEnums::UH_stream)
+           ? MP_stream_retained : MP_retained;
+    // We may get memory that we cannot write to directly, and
+    // update_shader_buffer_data always copies through the staging buffer, so
+    // we need the transfer usage flags.
     usage_flags |= VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-  }
-  else {
-    mem_flags = (VkMemoryPropertyFlagBits)(mem_flags | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-    if (data->get_usage_hint() == GeomEnums::UH_dynamic) {
-      usage_flags |= VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-    }
   }
 
   VkBuffer buffer;
   VulkanMemoryBlock block;
-  if (!create_buffer(data_size, buffer, block, usage_flags, mem_flags)) {
+  if (!create_buffer(data_size, buffer, block, usage_flags, policy)) {
     vulkandisplay_cat.error()
       << "Failed to create shader buffer.\n";
     return nullptr;
@@ -2700,12 +2712,13 @@ prepare_shader_buffer(ShaderBuffer *data) {
   VulkanBufferContext *bc = new VulkanBufferContext(_prepared_objects, data);
   bc->_buffer = buffer;
   bc->_block = std::move(block);
-  bc->_host_visible = !use_staging_buffer;
+  bc->_direct_readback = (policy == MP_stream) ||
+    (bc->_block.is_host_visible() && bc->_block.is_host_cached());
   bc->update_data_size_bytes(data_size);
 
   const unsigned char *initial_data = data->get_initial_data();
   if (initial_data != nullptr) {
-    if (use_staging_buffer) {
+    if (!bc->_block.is_host_visible()) {
       VkBuffer buffer;
       uint32_t buffer_offset;
       void *data = alloc_staging_buffer(data_size, buffer, buffer_offset);
@@ -3340,6 +3353,10 @@ begin_frame(Thread *current_thread, VkSemaphore wait_for) {
     // Make sure any commands from previous frame are submitted.
     flush();
     _frame_data = nullptr;
+
+    // Memory freed since last frame (possibly by other applications) may
+    // have relieved an exhausted heap, so allow probing them again.
+    _exhausted_memory_types = 0;
   }
   if (_frame_data == nullptr) {
     _frame_data = &get_next_frame_data(true);
@@ -4647,7 +4664,7 @@ do_extract_image(VulkanTextureContext *tc, Texture *tex, int view, int z, Screen
   FrameData::QueuedDownload down;
   if (!create_buffer(buffer_size, down._buffer, down._block,
                      VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-                     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)) {
+                     MP_readback_staging)) {
     vulkandisplay_cat.error()
       << "Failed to create staging buffer for framebuffer-to-RAM copy.\n";
     return false;
@@ -4734,10 +4751,10 @@ do_extract_buffer(VulkanBufferContext *bc, vector_uchar &data, size_t start, siz
   // Create a temporary buffer for transferring into.
   VkBuffer tmp_buffer = VK_NULL_HANDLE;
   VulkanMemoryBlock tmp_block;
-  if (!bc->_host_visible) {
+  if (!bc->_direct_readback) {
     if (!create_buffer(size, tmp_buffer, tmp_block,
                        VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-                       VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)) {
+                       MP_readback_staging)) {
       vulkandisplay_cat.error()
         << "Failed to create staging buffer for buffer data extraction.\n";
       return false;
@@ -4800,9 +4817,10 @@ do_extract_buffer(VulkanBufferContext *bc, vector_uchar &data, size_t start, siz
 
   data.resize(size);
   {
-    VulkanMemoryBlock &block = (bc->_host_visible ? bc->_block : tmp_block);
-    VulkanMemoryMapping mapping = block.map(bc->_host_visible ? start : 0, size);
-    block.invalidate();
+    VulkanMemoryBlock &block = (bc->_direct_readback ? bc->_block : tmp_block);
+    size_t map_start = bc->_direct_readback ? start : 0;
+    VulkanMemoryMapping mapping = block.map(map_start, size);
+    block.invalidate(map_start, size);
     memcpy(&data[0], mapping, size);
   }
 
@@ -4915,7 +4933,7 @@ do_issue_depth_range(const DepthOffsetAttrib *target_depth_offset) {
  */
 bool VulkanGraphicsStateGuardian::
 create_buffer(VkDeviceSize size, VkBuffer &buffer, VulkanMemoryBlock &block,
-              int usage_flags, VkMemoryPropertyFlagBits flags) {
+              int usage_flags, VulkanMemoryPolicy policy) {
   VulkanGraphicsPipe *vkpipe;
   DCAST_INTO_R(vkpipe, get_pipe(), false);
 
@@ -4939,7 +4957,7 @@ create_buffer(VkDeviceSize size, VkBuffer &buffer, VulkanMemoryBlock &block,
   VkMemoryRequirements mem_reqs;
   vkGetBufferMemoryRequirements(_device, buffer, &mem_reqs);
 
-  if (!allocate_memory(block, mem_reqs, flags, true)) {
+  if (!allocate_memory(block, mem_reqs, policy, true)) {
     vulkandisplay_cat.error()
       << "Failed to allocate " << mem_reqs.size << " bytes for buffer\n";
     vkDestroyBuffer(_device, buffer, nullptr);
@@ -4996,7 +5014,7 @@ create_image(VulkanTextureContext *tc, VkImageType type, VkFormat format,
   vkGetImageMemoryRequirements(_device, image, &mem_reqs);
 
   VulkanMemoryBlock block;
-  if (!allocate_memory(block, mem_reqs, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, false)) {
+  if (!allocate_memory(block, mem_reqs, MP_retained, false)) {
     vulkandisplay_cat.error()
       << "Failed to allocate " << mem_reqs.size << " bytes for image.\n";
     vkDestroyImage(_device, image, nullptr);
@@ -6164,15 +6182,10 @@ alloc_dynamic_uniform_buffer(VkDeviceSize size, VkBuffer &buffer, uint32_t &offs
 
   if (!create_buffer(new_capacity, buffer, block,
                      VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-                     (VkMemoryPropertyFlagBits)(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT))) {
-    // No?  Put it in GPU-accessible CPU memory, then.
-    if (!create_buffer(new_capacity, buffer, block,
-                       VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-                       (VkMemoryPropertyFlagBits)(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT))) {
-      vulkandisplay_cat.error()
-        << "Failed to create global uniform buffer.\n";
-      return nullptr;
-    }
+                     MP_stream)) {
+    vulkandisplay_cat.error()
+      << "Failed to create global uniform buffer.\n";
+    return nullptr;
   }
 
   void *ptr = block.map_persistent();
@@ -6289,10 +6302,7 @@ recreate_transform_buffer(size_t min_num_transforms) {
   VulkanMemoryBlock new_memory;
   if (create_buffer(new_size_bytes, new_buffer, new_memory,
                     VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
-                    (VkMemoryPropertyFlagBits)(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)) ||
-      create_buffer(new_size_bytes, new_buffer, new_memory,
-                    VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
-                    (VkMemoryPropertyFlagBits)(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT))) {
+                    MP_stream)) {
     if (_transform_buffer != VK_NULL_HANDLE) {
       VulkanFrameData &frame_data = get_frame_data();
       frame_data._pending_destroy_buffers.push_back(_transform_buffer);
@@ -6441,7 +6451,7 @@ alloc_staging_buffer(VkDeviceSize size, VkBuffer &buffer, uint32_t &offset) {
     VulkanMemoryBlock block;
     if (create_buffer(size, buffer, block,
                       VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                      (VkMemoryPropertyFlagBits)(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT))) {
+                      MP_upload_staging)) {
       void *ptr = block.map_persistent();
       offset = 0;
       VulkanFrameData &frame_data = get_frame_data();
@@ -6471,7 +6481,7 @@ alloc_staging_buffer(VkDeviceSize size, VkBuffer &buffer, uint32_t &offset) {
   if (!create_buffer(_staging_buffer_allocator.get_capacity(),
                      buffer, block,
                      VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                     (VkMemoryPropertyFlagBits)(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT))) {
+                     MP_upload_staging)) {
     return nullptr;
   }
 

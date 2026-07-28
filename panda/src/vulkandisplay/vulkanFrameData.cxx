@@ -24,6 +24,7 @@ finish_downloads(VkDevice device) {
     size_t view_size = down._texture->get_ram_view_size();
 
     if (auto data = down._block.map()) {
+      down._block.invalidate();
       // The texture is upside down, so invert it.
       size_t row_size = down._texture->get_x_size()
                       * down._texture->get_num_components()

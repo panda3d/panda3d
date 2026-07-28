@@ -402,9 +402,24 @@ VulkanGraphicsPipe() : _max_allocation_size(0) {
   }
 
   // Default the maximum allocation size to the largest of the heaps.
+  VkDeviceSize largest_device_local = 0;
   for (uint32_t i = 0; i < _memory_properties.memoryHeapCount; ++i) {
     VkMemoryHeap &heap = _memory_properties.memoryHeaps[i];
     _max_allocation_size = std::max(_max_allocation_size, heap.size);
+    if (heap.flags & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT) {
+      largest_device_local = std::max(largest_device_local, heap.size);
+    }
+  }
+
+  // Mark device-local heaps that are a limited slice of device memory, like
+  // a 256 MiB BAR aperture, rather than unified memory or a full-size heap.
+  // Scarce heaps are reserved for allocations that get the most out of them.
+  for (uint32_t i = 0; i < _memory_properties.memoryHeapCount; ++i) {
+    VkMemoryHeap &heap = _memory_properties.memoryHeaps[i];
+    if (heap.flags & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT &&
+        heap.size < largest_device_local) {
+      _scarce_heaps |= 1u << i;
+    }
   }
 
   VkPhysicalDeviceDriverProperties driver_props = {
@@ -918,35 +933,114 @@ has_device_extension(std::string_view ext_name, uint32_t min_version) {
 }
 
 /**
- * Finds the index of the memory type that fits the given requirements.
+ * Scores the given memory type for the given allocation policy.  Higher is
+ * better; a negative score means the type does not satisfy the policy's
+ * guarantees and may not be used at all.  The linear flag should be false
+ * for optimally-tiled images, which can never be usefully written to
+ * directly.
+ */
+int VulkanGraphicsPipe::
+score_memory_type(uint32_t type_index, VulkanMemoryPolicy policy, bool linear) const {
+  const VkMemoryType &type = _memory_properties.memoryTypes[type_index];
+  VkFlags flags = type.propertyFlags;
+  bool device_local = (flags & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT) != 0;
+  bool host_visible = (flags & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) != 0;
+  bool coherent = (flags & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT) != 0;
+  bool cached = (flags & VK_MEMORY_PROPERTY_HOST_CACHED_BIT) != 0;
+
+  switch (policy) {
+  case MP_retained:
+    if (!device_local) {
+      return -1;
+    }
+    // Direct writability is nice to have, but never worth claiming memory
+    // from a scarce heap for data that is not rewritten every frame.  For
+    // optimal tiling (!linear) it is worthless outright, since the layout is
+    // opaque and uploads must copy through a buffer regardless, so all
+    // device-local types are equally fine and the driver's preferred one
+    // wins.
+    if (linear && host_visible && !is_scarce_heap(type.heapIndex)) {
+      return 4 + coherent;
+    }
+    return 0;
+
+  case MP_stream_retained:
+    if (!device_local) {
+      return -1;
+    }
+    // Data rewritten every frame has a legitimate claim on a scarce BAR
+    // heap, though unified or full-size heaps are still preferred.
+    if (linear && host_visible) {
+      return 4 + (!is_scarce_heap(type.heapIndex) ? 2 : 0) + coherent;
+    }
+    return 0;
+
+  case MP_stream:
+    // Must be mappable, without the need for explicit flushes.
+    if (!host_visible || !coherent) {
+      return -1;
+    }
+    // Read in place by the GPU every frame, so device-local memory pays off
+    // every draw; this policy outranks all others for the BAR heap.
+    return device_local ? 4 : 0;
+
+  case MP_upload_staging:
+    // Must be mappable, without the need for explicit flushes.
+    if (!host_visible || !coherent) {
+      return -1;
+    }
+    // The GPU only copies through this, so device-local buys nothing and
+    // would waste BAR or unified device memory.
+    return !device_local ? 4 : 0;
+
+  case MP_readback_staging:
+    // Must be mappable; the reader is expected to invalidate, so coherency
+    // is merely nice to have.
+    if (!host_visible) {
+      return -1;
+    }
+    // CPU reads dominate.  Reading from device memory across the bus is the
+    // worst case, even worse than uncached system memory, so avoiding
+    // device-local outranks the (large) benefit of cached mappings.
+    return (!device_local ? 8 : 0) + (cached ? 4 : 0) + coherent;
+  }
+  return -1;
+}
+
+/**
+ * Finds the index of the memory type that best fits the given requirements
+ * under the given allocation policy.
  * @return true if a matching memory type was found
  */
 bool VulkanGraphicsPipe::
-find_memory_type(uint32_t &type_index, const VkMemoryRequirements &reqs, VkFlags required_flags) const {
+find_memory_type(uint32_t &type_index, const VkMemoryRequirements &reqs,
+                 VulkanMemoryPolicy policy, bool linear) const {
   // Does this fit within the maximum allocation size?
   if (reqs.size > _max_allocation_size) {
     return false;
   }
 
+  int best_score = -1;
   uint32_t type_bits = reqs.memoryTypeBits;
   for (int i = 0; type_bits > 0; ++i) {
     if ((type_bits & 1) == 1) {
-      // Type is available.  Does it match the required properties?
+      // Type is available.  Is the heap large enough to fit the allocation?
       const VkMemoryType &type = _memory_properties.memoryTypes[i];
-      if ((type.propertyFlags & required_flags) == required_flags) {
-        type_index = i;
-
-        // Is the heap large enough to fit the allocation?
-        if (reqs.size <= _memory_properties.memoryHeaps[type.heapIndex].size) {
-          return true;
+      if (reqs.size <= _memory_properties.memoryHeaps[type.heapIndex].size) {
+        // Unsuitable types score negative and never beat the initial best.
+        // On a tie, the lowest index wins, since the driver orders memory
+        // types from most to least preferred.
+        int score = score_memory_type(i, policy, linear);
+        if (score > best_score) {
+          best_score = score;
+          type_index = i;
         }
       }
     }
     type_bits >>= 1;
   }
 
-  // Not found.
-  return false;
+  return best_score >= 0;
 }
 
 /**

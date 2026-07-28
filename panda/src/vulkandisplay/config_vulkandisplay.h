@@ -53,4 +53,45 @@ extern "C" EXPCL_VULKANDISPLAY int get_pipe_type_p3vulkandisplay();
 
 void vulkan_error(VkResult result, const char *message);
 
+/**
+ * Determines how memory for an allocation is chosen.  This is not a hint:
+ * every policy defines both an algorithm for selecting a memory type and a
+ * binding contract about what the caller may assume and must do.
+ */
+enum VulkanMemoryPolicy {
+  /**
+   * Retained on the GPU and read there.  Guaranteed device-local, not
+   * guaranteed to be host-visible (but may be so, especially in UMA).
+   * Safe for data that is rewritten from time to time; it only forgoes
+   * claiming scarce BAR memory, which is reserved for data that is rewritten
+   * (nearly) every frame.
+   */
+  MP_retained,
+
+  /**
+   * Same contract as MP_retained, but for data rewritten by the CPU (nearly)
+   * every frame: may claim host-visible (BAR) memory even if this is scarce.
+   */
+  MP_stream_retained,
+
+  /**
+   * Rewritten continuously by the CPU while the GPU reads it in place.
+   * Guaranteed writable by the CPU (host-visible and host-coherent), with a
+   * strong preference for placement in device-local BAR if possible.
+   */
+  MP_stream,
+
+  /**
+   * CPU-written transfer source, guaranteed host-visible and host-coherent,
+   * preferably *not* device-local.
+   */
+  MP_upload_staging,
+
+  /**
+   * GPU-written, CPU-readable transfer destination, guaranteed host-visible,
+   * with a preference for host-cached and a mild preference for host-coherent.
+   */
+  MP_readback_staging,
+};
+
 #endif

@@ -34,7 +34,9 @@ public:
 public:
   VkBuffer _buffer;
   VulkanMemoryBlock _block;
-  bool _host_visible = false;
+  // If false, extraction copies through a readback staging buffer, because
+  // reading the buffer's own memory directly is impossible or too slow.
+  bool _direct_readback = false;
 
   // Used for shader buffers.
   VkAccessFlags2 _write_access_mask = 0;

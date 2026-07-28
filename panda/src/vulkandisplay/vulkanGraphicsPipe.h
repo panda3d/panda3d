@@ -45,7 +45,7 @@ public:
   bool has_instance_extension(std::string_view ext_name, uint32_t min_version = 0);
   bool has_device_extension(std::string_view ext_name, uint32_t min_version = 0);
   bool find_memory_type(uint32_t &type_index, const VkMemoryRequirements &reqs,
-                        VkFlags required_flags) const;
+                        VulkanMemoryPolicy policy, bool linear) const;
   bool find_queue_family(uint32_t &queue_family_index,
                          VkFlags required_flags) const;
   bool find_queue_family_for_surface(uint32_t &queue_family_index,
@@ -58,6 +58,10 @@ public:
   static PT(GraphicsPipe) pipe_constructor();
 
 protected:
+  INLINE bool is_scarce_heap(uint32_t heap_index) const;
+  int score_memory_type(uint32_t type_index, VulkanMemoryPolicy policy,
+                        bool linear) const;
+
   virtual PT(GraphicsOutput) make_output(std::string_view name,
                                          const FrameBufferProperties &fb_prop,
                                          const WindowProperties &win_prop,
@@ -87,6 +91,10 @@ public:
   pvector<VkQueueFamilyProperties> _queue_families;
   VkDeviceSize _max_allocation_size;
   uint32_t _max_inline_uniform_block_size = 0;
+
+  // Bitmask of device-local heaps smaller than the largest device-local
+  // heap, see is_scarce_heap().
+  uint32_t _scarce_heaps = 0;
 
   PFN_vkSetDebugUtilsObjectNameEXT _vkSetDebugUtilsObjectName;
 
