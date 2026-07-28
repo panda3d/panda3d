@@ -65,7 +65,7 @@ class VulkanMemoryBlock final : public SimpleAllocatorBlock {
 public:
   VulkanMemoryBlock() = default;
   VulkanMemoryBlock(VulkanMemoryPage *page) :
-    SimpleAllocatorBlock(page, 0, page->get_max_size()) {}
+    SimpleAllocatorBlock(page, 0, page->_max_size) {}
   VulkanMemoryBlock(SimpleAllocatorBlock &&block) :
     SimpleAllocatorBlock(std::move(block)) {}
 

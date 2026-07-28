@@ -85,7 +85,7 @@ meets_requirements(const VkMemoryRequirements &reqs,
                    uint32_t type_index, bool linear_tiling) {
   return (_type_index == type_index &&
           _linear_tiling == linear_tiling &&
-          reqs.size <= (VkDeviceSize)get_max_size());
+          reqs.size <= (VkDeviceSize)_max_size);
 }
 
 /**
@@ -206,7 +206,7 @@ map(size_t start, size_t size) {
     slop = begin % atom;
     begin -= slop;
     end += (atom - end % atom) % atom;
-    end = std::min(end, (VkDeviceSize)page->get_max_size());
+    end = std::min(end, (VkDeviceSize)page->_max_size);
   }
   VkResult err = vkMapMemory(page->_device, page->_memory, begin,
                              end - begin, 0, &ptr._data);
@@ -262,7 +262,7 @@ get_noncoherent_range(VkMappedMemoryRange &range, size_t start, size_t size) con
   begin -= begin % atom;
   end += (atom - end % atom) % atom;
   // The end of the page is a valid range end even if not atom-aligned.
-  end = std::min(end, (VkDeviceSize)page->get_max_size());
+  end = std::min(end, (VkDeviceSize)page->_max_size);
   range.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
   range.pNext = nullptr;
   range.memory = page->_memory;
