@@ -664,8 +664,8 @@ reset() {
                        (VkMemoryPropertyFlagBits)(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT))) {
       vulkandisplay_cat.error()
         << "Failed to create global uniform buffer.\n";
+      return;
     }
-    return;
   }
   set_object_name(_uniform_buffer, "<global uniform buffer>");
 
