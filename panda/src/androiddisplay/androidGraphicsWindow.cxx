@@ -26,9 +26,16 @@
 #include "throw_event.h"
 #include "nativeWindowHandle.h"
 
+#include "event.h"
+#include "eventHandler.h"
+#include "eventParameter.h"
+#include "pt_Event.h"
+
 #include "android_native_app_glue.h"
 #include <android/window.h>
 #include <android/log.h>
+
+
 
 extern IMPORT_CLASS struct android_app* panda_android_app;
 
@@ -533,13 +540,49 @@ handle_key_event(const AInputEvent *event) {
 }
 
 /**
- * Processes a motion event.
+ * Processes multi motion event.
  */
 int32_t AndroidGraphicsWindow::
 handle_motion_event(const AInputEvent *event) {
   int32_t action = AMotionEvent_getAction(event);
   int32_t pointer_index = (action >> AMOTION_EVENT_ACTION_POINTER_INDEX_SHIFT);
   action &= AMOTION_EVENT_ACTION_MASK;
+
+  // added multi motion support by r1kk3, 07/29/2026
+
+  int32_t pointer_id = AMotionEvent_getPointerId(event, pointer_index);
+  float mt_x = AMotionEvent_getX(event, pointer_index) - _app->contentRect.left;
+  float mt_y = AMotionEvent_getY(event, pointer_index) - _app->contentRect.top;
+
+  if (action == AMOTION_EVENT_ACTION_DOWN || action == AMOTION_EVENT_ACTION_POINTER_DOWN) {
+      PT(Event) tevent = new Event("multi-touch-down");
+      tevent->add_parameter(EventParameter(pointer_id));
+      tevent->add_parameter(EventParameter(mt_x));
+      tevent->add_parameter(EventParameter(mt_y));
+      throw_event(tevent);
+  } 
+
+  else if (action == AMOTION_EVENT_ACTION_UP || action == AMOTION_EVENT_ACTION_POINTER_UP || action == AMOTION_EVENT_ACTION_CANCEL) {
+      PT(Event) tevent = new Event("multi-touch-up");
+      tevent->add_parameter(EventParameter(pointer_id));
+      tevent->add_parameter(EventParameter(mt_x));
+      tevent->add_parameter(EventParameter(mt_y));
+      throw_event(tevent);
+  } 
+  else if (action == AMOTION_EVENT_ACTION_MOVE) {
+      size_t pointerCount = AMotionEvent_getPointerCount(event);
+      for (size_t i = 0; i < pointerCount; ++i) {
+          int32_t pId = AMotionEvent_getPointerId(event, i);
+          float pX = AMotionEvent_getX(event, i) - _app->contentRect.left;
+          float pY = AMotionEvent_getY(event, i) - _app->contentRect.top;
+          
+          PT(Event) tevent = new Event("multi-touch-move");
+          tevent->add_parameter(EventParameter(pId));
+          tevent->add_parameter(EventParameter(pX));
+          tevent->add_parameter(EventParameter(pY));
+          throw_event(tevent);
+      }
+  }
 
   if (action == AMOTION_EVENT_ACTION_DOWN) {
     _primary_pointer_down = true;
