@@ -289,6 +289,7 @@ class build_apps(setuptools.Command):
         ('build-base=', None, 'directory to build applications in'),
         ('requirements-path=', None, 'path to requirements.txt file for pip'),
         ('platforms=', 'p', 'a list of platforms to build for'),
+        ('python-optimize=', None, 'Python optimization level (0, 1 or 2)'),
     ]
     default_file_handlers = {
     }
@@ -334,6 +335,7 @@ class build_apps(setuptools.Command):
         self.prefer_discrete_gpu = False
         self.requirements_path = os.path.join(os.getcwd(), 'requirements.txt')
         self.strip_docstrings = True
+        self.python_optimize = None
         self.use_optimized_wheels = True
         self.optimized_wheel_index = ''
         self.pypi_extra_indexes = [
@@ -455,6 +457,21 @@ class build_apps(setuptools.Command):
             key: _parse_list(value)
             for key, value in _parse_dict(self.hidden_imports).items()
         }
+
+        # Python bytecode optimization level,
+        # supersedes strip_docstrings, which is deprecated in favor of this option.
+        if self.python_optimize is None:
+            self.python_optimize = 2 if self.strip_docstrings else 1
+        else:
+            try:
+                self.python_optimize = int(self.python_optimize)
+            except (TypeError, ValueError):
+                self.python_optimize = None
+            if self.python_optimize not in (0, 1, 2):
+                raise ValueError('python_optimize must be 0, 1 or 2')
+
+        if 'strip_docstrings' in self.distribution.get_option_dict('build_apps'):
+            self.warn('strip_docstrings is deprecated, use python_optimize instead')
 
         if self.default_prc_dir is None:
             self.default_prc_dir = '<auto>etc' if not self.embed_prc_data else ''
@@ -1127,7 +1144,7 @@ class build_apps(setuptools.Command):
                 platform=platform,
                 path=path,
                 hiddenImports=self.hidden_imports,
-                optimize=2 if self.strip_docstrings else 1
+                optimize=self.python_optimize
             )
             freezer.addModule('__main__', filename=mainscript)
             if platform.startswith('android'):
