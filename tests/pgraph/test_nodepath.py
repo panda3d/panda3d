@@ -356,3 +356,31 @@ def test_nodepath_set_collide_owner():
     assert collider1.node().owner is owner3
     assert collider2.node().owner is owner3
     assert collider3.node().owner is owner2
+
+
+def test_find_all_textures_includes_node_applied():
+    """Tests that textures are found on the node."""
+    from panda3d.core import NodePath, Texture, TextureStage
+
+    tex = Texture("tex")
+    path = NodePath("node")
+    path.set_texture(tex)
+    assert path.find_texture(TextureStage.get_default()) == tex
+    assert path.find_texture("tex") == tex
+    found = path.find_all_textures()
+    assert len(found) == 1
+    assert found.get_num_textures() == 1
+    assert found.get_texture(0) == tex
+
+
+def test_find_all_materials_includes_node_applied():
+    """Tests that materials are found on the node."""
+    from panda3d.core import NodePath, Material
+
+    mat = Material("mat")
+    path = NodePath("node")
+    path.set_material(mat)
+    assert path.find_material("mat") == mat
+    found = path.find_all_materials()
+    assert found.get_num_materials() == 1
+    assert found.get_material(0) == mat

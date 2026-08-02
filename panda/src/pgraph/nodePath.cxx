@@ -6412,11 +6412,39 @@ r_find_all_vertex_columns(PandaNode *node,
 }
 
 /**
+ * Returns the first texture set by a TextureAttrib found on the indicated
+ * state whose name matches glob, or nullptr if there is no match.
+ */
+Texture *NodePath::
+find_texture_match(const RenderState *state, const GlobPattern &glob) {
+  const RenderAttrib *attrib =
+    state->get_attrib(TextureAttrib::get_class_slot());
+  if (attrib == nullptr) {
+    return nullptr;
+  }
+
+  const TextureAttrib *ta = DCAST(TextureAttrib, attrib);
+  for (int i = 0; i < ta->get_num_on_stages(); i++) {
+    Texture *texture = ta->get_on_texture(ta->get_on_stage(i));
+    if (texture != nullptr && glob.matches(texture->get_name())) {
+      return texture;
+    }
+  }
+
+  return nullptr;
+}
+
+/**
  *
  */
 Texture *NodePath::
 r_find_texture(PandaNode *node, const RenderState *state,
                const GlobPattern &glob) const {
+  Texture *texture = find_texture_match(state, glob);
+  if (texture != nullptr) {
+    return texture;
+  }
+
   if (node->is_geom_node()) {
     GeomNode *gnode;
     DCAST_INTO_R(gnode, node, nullptr);
@@ -6426,19 +6454,9 @@ r_find_texture(PandaNode *node, const RenderState *state,
       CPT(RenderState) geom_state =
         state->compose(gnode->get_geom_state(i));
 
-      // Look for a TextureAttrib on the state.
-      const RenderAttrib *attrib =
-        geom_state->get_attrib(TextureAttrib::get_class_slot());
-      if (attrib != nullptr) {
-        const TextureAttrib *ta = DCAST(TextureAttrib, attrib);
-        for (int i = 0; i < ta->get_num_on_stages(); i++) {
-          Texture *texture = ta->get_on_texture(ta->get_on_stage(i));
-          if (texture != nullptr) {
-            if (glob.matches(texture->get_name())) {
-              return texture;
-            }
-          }
-        }
+      texture = find_texture_match(geom_state, glob);
+      if (texture != nullptr) {
+        return texture;
       }
     }
   }
@@ -6460,11 +6478,35 @@ r_find_texture(PandaNode *node, const RenderState *state,
 }
 
 /**
+ * Inserts into textures any texture set by a TextureAttrib found on the
+ * indicated state.
+ */
+void NodePath::
+collect_textures(const RenderState *state, NodePath::Textures &textures) {
+  const RenderAttrib *attrib =
+    state->get_attrib(TextureAttrib::get_class_slot());
+  if (attrib == nullptr) {
+    return;
+  }
+
+  const TextureAttrib *ta = DCAST(TextureAttrib, attrib);
+  for (int i = 0; i < ta->get_num_on_stages(); i++) {
+    Texture *texture = ta->get_on_texture(ta->get_on_stage(i));
+    if (texture != nullptr) {
+      textures.insert(texture);
+    }
+  }
+}
+
+/**
  *
  */
 void NodePath::
 r_find_all_textures(PandaNode *node, const RenderState *state,
                     NodePath::Textures &textures) const {
+  // Consider textures applied directly to this node (via the net state).
+  collect_textures(state, textures);
+
   if (node->is_geom_node()) {
     GeomNode *gnode;
     DCAST_INTO_V(gnode, node);
@@ -6473,19 +6515,7 @@ r_find_all_textures(PandaNode *node, const RenderState *state,
     for (int i = 0; i < num_geoms; i++) {
       CPT(RenderState) geom_state =
         state->compose(gnode->get_geom_state(i));
-
-      // Look for a TextureAttrib on the state.
-      const RenderAttrib *attrib =
-        geom_state->get_attrib(TextureAttrib::get_class_slot());
-      if (attrib != nullptr) {
-        const TextureAttrib *ta = DCAST(TextureAttrib, attrib);
-        for (int i = 0; i < ta->get_num_on_stages(); i++) {
-          Texture *texture = ta->get_on_texture(ta->get_on_stage(i));
-          if (texture != nullptr) {
-            textures.insert(texture);
-          }
-        }
-      }
+      collect_textures(geom_state, textures);
     }
   }
 
@@ -6777,11 +6807,39 @@ r_unify_texture_stages(PandaNode *node, TextureStage *stage) {
 }
 
 /**
+ * Returns the material set by a MaterialAttrib found on the indicated state
+ * whose name matches glob, or nullptr if there is no match.
+ */
+Material *NodePath::
+find_material_match(const RenderState *state, const GlobPattern &glob) {
+  const RenderAttrib *attrib =
+    state->get_attrib(MaterialAttrib::get_class_slot());
+  if (attrib == nullptr) {
+    return nullptr;
+  }
+
+  const MaterialAttrib *ta = DCAST(MaterialAttrib, attrib);
+  if (!ta->is_off()) {
+    Material *material = ta->get_material();
+    if (material != nullptr && glob.matches(material->get_name())) {
+      return material;
+    }
+  }
+
+  return nullptr;
+}
+
+/**
  *
  */
 Material *NodePath::
 r_find_material(PandaNode *node, const RenderState *state,
                const GlobPattern &glob) const {
+  Material *material = find_material_match(state, glob);
+  if (material != nullptr) {
+    return material;
+  }
+
   if (node->is_geom_node()) {
     GeomNode *gnode;
     DCAST_INTO_R(gnode, node, nullptr);
@@ -6791,19 +6849,9 @@ r_find_material(PandaNode *node, const RenderState *state,
       CPT(RenderState) geom_state =
         state->compose(gnode->get_geom_state(i));
 
-      // Look for a MaterialAttrib on the state.
-      const RenderAttrib *attrib =
-        geom_state->get_attrib(MaterialAttrib::get_class_slot());
-      if (attrib != nullptr) {
-        const MaterialAttrib *ta = DCAST(MaterialAttrib, attrib);
-        if (!ta->is_off()) {
-          Material *material = ta->get_material();
-          if (material != nullptr) {
-            if (glob.matches(material->get_name())) {
-              return material;
-            }
-          }
-        }
+      material = find_material_match(geom_state, glob);
+      if (material != nullptr) {
+        return material;
       }
     }
   }
@@ -6825,11 +6873,35 @@ r_find_material(PandaNode *node, const RenderState *state,
 }
 
 /**
+ * Inserts into materials the material set by a MaterialAttrib found on the
+ * indicated state, if any.
+ */
+void NodePath::
+collect_materials(const RenderState *state, NodePath::Materials &materials) {
+  const RenderAttrib *attrib =
+    state->get_attrib(MaterialAttrib::get_class_slot());
+  if (attrib == nullptr) {
+    return;
+  }
+
+  const MaterialAttrib *ta = DCAST(MaterialAttrib, attrib);
+  if (!ta->is_off()) {
+    Material *material = ta->get_material();
+    if (material != nullptr) {
+      materials.insert(material);
+    }
+  }
+}
+
+/**
  *
  */
 void NodePath::
 r_find_all_materials(PandaNode *node, const RenderState *state,
                     NodePath::Materials &materials) const {
+  // Consider materials applied directly to this node (via the net state).
+  collect_materials(state, materials);
+
   if (node->is_geom_node()) {
     GeomNode *gnode;
     DCAST_INTO_V(gnode, node);
@@ -6838,19 +6910,7 @@ r_find_all_materials(PandaNode *node, const RenderState *state,
     for (int i = 0; i < num_geoms; i++) {
       CPT(RenderState) geom_state =
         state->compose(gnode->get_geom_state(i));
-
-      // Look for a MaterialAttrib on the state.
-      const RenderAttrib *attrib =
-        geom_state->get_attrib(MaterialAttrib::get_class_slot());
-      if (attrib != nullptr) {
-        const MaterialAttrib *ta = DCAST(MaterialAttrib, attrib);
-        if (!ta->is_off()) {
-          Material *material = ta->get_material();
-          if (material != nullptr) {
-            materials.insert(material);
-          }
-        }
-      }
+      collect_materials(geom_state, materials);
     }
   }
 
