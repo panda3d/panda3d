@@ -580,11 +580,45 @@ option(WANT_NATIVE_NET
   "Define this true to build the low-level native network
 implementation.  Normally this should be set true." ON)
 
-option(HAVE_NET
+cmake_dependent_option(HAVE_NET
   "Do you want to build the high-level network interface?  This layers
 on top of the low-level native_net interface, specified above.
 Normally, if you build NATIVE_NET, you will also build NET."
-  ${WANT_NATIVE_NET})
+  ON "WANT_NATIVE_NET" OFF)
+
+if(IS_MULTICONFIG AND NOT DEFINED DO_PSTATS)
+  set(_do_pstats_vars)
+  foreach(_config ${CMAKE_CONFIGURATION_TYPES})
+    string(TOUPPER "${_config}" _config_upper)
+    list(APPEND _do_pstats_vars "DO_PSTATS_${_config_upper}")
+  endforeach()
+else()
+  set(_do_pstats_vars DO_PSTATS)
+endif()
+
+if(NOT HAVE_NET OR NOT WANT_NATIVE_NET)
+  foreach(_var ${_do_pstats_vars})
+    # Remember the requested value, so that re-enabling the net library in an
+    # existing build directory restores PStats instead of silently leaving it
+    # off.
+    if(NOT DEFINED _${_var}_WITHOUT_NET)
+      set(_${_var}_WITHOUT_NET "${${_var}}" CACHE INTERNAL
+        "Value of ${_var} requested before net support was disabled")
+    endif()
+    set(${_var} OFF CACHE BOOL
+      "PStats client requires HAVE_NET and WANT_NATIVE_NET" FORCE)
+  endforeach()
+  message(WARNING "PStats requires the net library; disabling DO_PSTATS.")
+else()
+  foreach(_var ${_do_pstats_vars})
+    if(DEFINED _${_var}_WITHOUT_NET)
+      set(${_var} "${_${_var}_WITHOUT_NET}" CACHE BOOL
+        "Enable support for performance profiling using PStats?" FORCE)
+      unset(_${_var}_WITHOUT_NET CACHE)
+    endif()
+  endforeach()
+endif()
+unset(_do_pstats_vars)
 
 option(HAVE_EGG
   "Do you want to build the egg loader?  Usually there's no reason to
