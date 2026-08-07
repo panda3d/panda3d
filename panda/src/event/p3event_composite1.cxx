@@ -10,3 +10,4 @@
 #include "genericAsyncTask.cxx"
 #include "pointerEvent.cxx"
 #include "pointerEventList.cxx"
+#include "gestureEvent.cxx"

@@ -56,6 +56,7 @@ private:
   int _xy_output;
   int _button_events_output;
   int _pointer_events_output;
+  int _gesture_events_output;
 
   PT(EventStoreVec2) _pixel_xy;
   PT(EventStoreVec2) _pixel_size;
