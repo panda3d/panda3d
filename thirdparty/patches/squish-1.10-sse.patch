@@ -1,0 +1,19 @@
+diff -ur a/config.h b/config.h
+--- a/config.h	2022-02-05 17:26:37.880326316 +0100
++++ b/config.h	2022-02-05 17:29:20.424103700 +0100
+@@ -33,6 +33,15 @@
+ 
+ // Set to 1 or 2 when building squish to use SSE or SSE2 instructions.
+ #ifndef SQUISH_USE_SSE
++#if defined(__x86_64__) || defined(_M_X64) || defined(__SSE2__)
++#define SQUISH_USE_SSE 2
++#else
++#define SQUISH_USE_SSE 0
++#endif
++#endif
++
++#if defined(__aarch64__) || defined(__arm__)
++#undef SQUISH_USE_SSE
+ #define SQUISH_USE_SSE 0
+ #endif
+ 
