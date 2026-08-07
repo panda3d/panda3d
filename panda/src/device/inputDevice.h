@@ -16,6 +16,8 @@
 
 #include "pandabase.h"
 
+#include "axisEvent.h"
+#include "axisEventList.h"
 #include "buttonEvent.h"
 #include "buttonEventList.h"
 #include "pointerEvent.h"
@@ -28,6 +30,7 @@
 #include "pvector.h"
 #include "lightMutex.h"
 #include "lightMutexHolder.h"
+
 
 /**
  * This is a structure representing a single input device.  Input devices may
@@ -318,6 +321,8 @@ PUBLISHED:
   PT(ButtonEventList) get_button_events();
   bool has_pointer_event() const;
   PT(PointerEventList) get_pointer_events();
+  bool has_axis_event() const;
+  PT(AxisEventList) get_axis_events();
 
   virtual void output(std::ostream &out) const;
 
@@ -339,7 +344,8 @@ protected:
   void pointer_moved(int id, double x, double y, double time);
   void button_changed(int index, bool down);
   void axis_changed(int index, int value);
-  void set_axis_value(int index, double state);
+  void set_axis_value(int index, double value);
+  void enable_axis_updates(bool enable);
 
   void tracker_changed(const LPoint3 &pos, const LOrientation &orient, double time);
 
@@ -370,6 +376,7 @@ protected:
   bool _enable_pointer_events = false;
   PT(ButtonEventList) _button_events;
   PT(PointerEventList) _pointer_events;
+  PT(AxisEventList) _axis_events;
 
   size_t _num_pointers = 0;
   typedef pvector<PointerData> Pointers;
@@ -401,6 +408,9 @@ public:
 
 private:
   static TypeHandle _type_handle;
+  bool _axis_update_enabled = true;
+
+  friend class InputDeviceNodeRecorder;
 };
 
 INLINE std::ostream &operator << (std::ostream &out, const InputDevice &device) {

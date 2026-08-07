@@ -5,6 +5,8 @@
 #include "asyncTaskManager.cxx"
 #include "asyncTaskPause.cxx"
 #include "asyncTaskSequence.cxx"
+#include "axisEvent.cxx"
+#include "axisEventList.cxx"
 #include "buttonEvent.cxx"
 #include "buttonEventList.cxx"
 #include "genericAsyncTask.cxx"

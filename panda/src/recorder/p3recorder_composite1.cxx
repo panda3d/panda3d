@@ -1,4 +1,5 @@
 #include "config_recorder.cxx"
+#include "inputDeviceNodeRecorder.cxx"
 #include "mouseRecorder.cxx"
 #include "recorderFrame.cxx"
 #include "recorderHeader.cxx"

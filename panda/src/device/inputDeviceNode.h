@@ -6,7 +6,7 @@
  * license.  You should have received a copy of this license along
  * with this source code in a file named "LICENSE."
  *
- * @file InputDeviceNode.h
+ * @file inputDeviceNode.h
  * @author fireclaw
  * @date 2016-07-14
  */
@@ -19,6 +19,7 @@
 #include "dataNode.h"
 #include "inputDeviceManager.h"
 #include "linmath_events.h"
+#include "axisEventList.h"
 
 /**
  * Reads the controller data sent from the InputDeviceManager, and transmits
@@ -49,8 +50,10 @@ private:
 
   // outputs
   int _button_events_output;
+  int _axis_values_output;
 
   PT(InputDevice) _device;
+  PT(AxisEventList) _axis_values;
 
 public:
   static TypeHandle get_class_type() {
