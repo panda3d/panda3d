@@ -73,3 +73,23 @@ transform(const LMatrix4d &mat) {
   _switch_in = in.length();
   _switch_out = out.length();
 }
+
+/**
+ * Returns the same switch condition pointer converted to a
+ * distance switch condition pointer, if this is in fact a
+ * distance switch condition; otherwise, returns nullptr.
+ */
+const EggSwitchConditionDistance *EggSwitchCondition::
+as_distance() const {
+  return nullptr;
+}
+
+/**
+ * Returns the same switch condition pointer converted to a
+ * distance switch condition pointer, if this is in fact a
+ * distance switch condition; otherwise, returns nullptr.
+ */
+const EggSwitchConditionDistance *EggSwitchConditionDistance::
+as_distance() const {
+  return this;
+}

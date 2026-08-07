@@ -169,6 +169,15 @@ ConfigVariableInt egg_precision
           "an egg file.  Leave this at 0 to use the default setting for the "
           "stream."));
 
+ConfigVariableBool egg_rebuild_object_types
+("egg-rebuild-object-types", false,
+  PRC_DESC("Set this true to enable the automatic rebuilding of egg object "
+           "types when saving a scene graph to an .egg file. This also "
+           "applies to scenarios such as .bam to .egg file conversion, "
+           "as the scene graph is built as an intermediary step in these "
+           "cases. This option can only rebuild egg object types that are "
+           "specified in your PRC configuration. Disabled by default."));
+
 /**
  * Initializes the library.  This must be called at least once before any of
  * the functions or classes in this library can be used.  Normally it will be
