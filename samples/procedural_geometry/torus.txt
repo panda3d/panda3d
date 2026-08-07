@@ -1,0 +1,36 @@
+# torus creation parameters (do not remove value type comments):
+
+
+center = None                               # float tuple
+ring_radius = 2.6                           # float
+section_radius = 1.                         # float
+segments ring = 200                         # dict int
+segments section = 5                        # dict int
+segments ring_slice_start_cap = 2           # dict int
+segments ring_slice_end_cap = 3             # dict int
+segments section_slice_start_cap = 3        # dict int
+segments section_slice_end_cap = 2          # dict int
+smooth_ring = True                          # bool
+smooth_section = False                      # bool
+ring_slice = 125.                           # float
+section_slice = 125.                        # float
+rotation = 20.                              # float
+twist = -550.                               # float
+thickness = .5                              # float
+inverted = False                            # bool
+vertex_color = None                         # float tuple
+has_uvs = True                              # bool
+tex_units main = 6. 6.                      # dict float tuple
+tex_units section_slice_start_cap = 6. 6.   # dict float tuple
+tex_units section_slice_end_cap = 6. 6.     # dict float tuple
+tex_units ring_slice_start_cap = 6. 6.      # dict float tuple
+tex_units ring_slice_end_cap = 6. 6.        # dict float tuple
+tex_units inner_main = 6. 6.                # dict float tuple
+#tex_rotation ring_slice_start_cap = 160.    # dict float
+#tex_rotation section_slice_start_cap = 60.  # dict float
+#tex_rotation section_slice_end_cap = 60.    # dict float
+#tex_offset section_slice_start_cap = .2 0.  # dict float tuple
+#tex_rotation ring_slice_end_cap = 60.       # dict float
+#tex_scale ring_slice_end_cap = 1.5 1.5      # dict float tuple
+#tex_rotation inner_main = 10.               # dict float
+#tex_rotation main = 40.                     # dict float

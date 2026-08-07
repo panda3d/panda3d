@@ -1,0 +1,31 @@
+# cylinder creation parameters (do not remove value type comments):
+
+
+bottom_center = -.5 .3 .2               # float tuple
+top_center = .5 -.4 -.3                 # float tuple
+radius = 2.                             # float
+segments circular = 40                  # dict int
+segments axial = 5                      # dict int
+segments bottom_cap = 3                 # dict int
+segments top_cap = 2                    # dict int
+segments slice_caps_radial = 3          # dict int
+segments slice_caps_axial = 2           # dict int
+smooth = True                           # bool
+slice = 125.                            # float
+rotation = 60.                          # float
+thickness = .5                          # float
+inverted = False                        # bool
+vertex_color = None                     # float tuple
+has_uvs = True                          # bool
+tex_units bottom_cap = 6. 6.            # dict float tuple
+tex_units main = 6. 6.                  # dict float tuple
+tex_units top_cap = 6. 6.               # dict float tuple
+tex_units slice_start_cap = 6. 6.       # dict float tuple
+tex_units slice_end_cap = 6. 6.         # dict float tuple
+tex_units inner_main = 6. 6.            # dict float tuple
+tex_rotation bottom_cap = 160.          # dict float
+tex_rotation slice_start_cap = 160.     # dict float
+tex_offset slice_start_cap = .2 0.      # dict float tuple
+tex_rotation slice_end_cap = 60.        # dict float
+tex_scale slice_end_cap = 1.5 1.5       # dict float tuple
+tex_rotation inner_main = 10.           # dict float
