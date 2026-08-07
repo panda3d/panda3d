@@ -525,44 +525,6 @@ clear_open() {
 }
 
 /**
- * Specifies whether the mouse cursor should be visible.
- */
-INLINE void WindowProperties::
-set_cursor_hidden(bool cursor_hidden) {
-  if (cursor_hidden) {
-    _flags |= F_cursor_hidden;
-  } else {
-    _flags &= ~F_cursor_hidden;
-  }
-  _specified |= S_cursor_hidden;
-}
-
-/**
- * Returns true if the mouse cursor is invisible.
- */
-INLINE bool WindowProperties::
-get_cursor_hidden() const {
-  return (_flags & F_cursor_hidden) != 0;
-}
-
-/**
- * Returns true if set_cursor_hidden() has been specified.
- */
-INLINE bool WindowProperties::
-has_cursor_hidden() const {
-  return ((_specified & S_cursor_hidden) != 0);
-}
-
-/**
- * Removes the cursor_hidden specification from the properties.
- */
-INLINE void WindowProperties::
-clear_cursor_hidden() {
-  _specified &= ~S_cursor_hidden;
-  _flags &= ~F_cursor_hidden;
-}
-
-/**
  * Specifies the file that contains the icon to associate with the window when
  * it is minimized.
  */
@@ -632,6 +594,42 @@ clear_cursor_filename() {
   _specified &= ~S_cursor_filename;
   _cursor_filename = Filename();
 }
+
+/**
+ * Specifies the cursor type to be used when it is within the
+ * window, including the hidden cursor. cursor_filename has
+ * precedence.
+ */
+INLINE void WindowProperties::
+set_cursor_type(const CursorType cursor_type) {
+    _cursor_type = cursor_type;
+    _specified |= S_cursor_type;
+}
+
+/**
+ * Returns the cursor type associated with the window.
+ */
+INLINE WindowProperties::CursorType WindowProperties::
+get_cursor_type() const {
+  return _cursor_type;
+}
+
+/**
+ * Returns true if set_cursor_type() has been specified.
+ */
+INLINE bool WindowProperties::
+has_cursor_type() const {
+  return ((_specified & S_cursor_type) != 0);
+}
+
+/**
+ * Removes the cursor_type specification from the properties.
+ */
+INLINE void WindowProperties::
+clear_cursor_type() {
+  _specified &= ~S_cursor_type;
+}
+
 
 /**
  * Specifies the relative ordering of the window with respect to other
