@@ -1685,9 +1685,28 @@ handle_key_event(NSEvent *event) {
   const UCKeyboardLayout *layout = (const UCKeyboardLayout *)CFDataGetBytePtr(layout_data);
 
   if ([event type] == NSKeyDown) {
+    // NSEventModifierFlags do not have the same bit representation as the
+    // expected Carbon EventRecord.modifiers value, so we'll translate.
+    UInt32 modifier_state = 0;
+    if (modifierFlags & NSEventModifierFlagCapsLock) {
+      modifier_state |= alphaLock;
+    }
+    if (modifierFlags & NSEventModifierFlagShift) {
+      modifier_state |= shiftKey;
+    }
+    if (modifierFlags & NSEventModifierFlagControl) {
+      modifier_state |= controlKey;
+    }
+    if (modifierFlags & NSEventModifierFlagOption) {
+      modifier_state |= optionKey;
+    }
+    if (modifierFlags & NSEventModifierFlagCommand) {
+      modifier_state |= cmdKey;
+    }
+    // Bit shift to the position UCKeyTranslate expects.
+    modifier_state = (modifier_state >> 8) & 0xFF;
     // Translate it to a unicode character for keystrokes.  I would use
     // interpretKeyEvents and insertText, but that doesn't handle dead keys.
-    UInt32 modifier_state = (modifierFlags >> 16) & 0xFF;
     UniChar ustr[8];
     UniCharCount length;
 
