@@ -54,24 +54,24 @@ protected:
   // The default constructor is protected: don't try to create a PartGroup
   // without a parent.  To create a PartGroup hierarchy, you must first create
   // a PartBundle, and use that as the parent of any subsequent children.
-  INLINE PartGroup(const std::string &name = "");
+  INLINE PartGroup(std::string name = "");
   INLINE PartGroup(const PartGroup &copy);
 
 PUBLISHED:
   // This is the normal PartGroup constructor.
-  explicit PartGroup(PartGroup *parent, const std::string &name);
+  explicit PartGroup(PartGroup *parent, std::string name);
   virtual ~PartGroup();
   virtual bool is_character_joint() const;
 
-  virtual PartGroup *make_copy() const;
+  [[nodiscard]] virtual PartGroup *make_copy() const;
   PartGroup *copy_subgraph() const;
 
   int get_num_children() const;
   PartGroup *get_child(int n) const;
   MAKE_SEQ(get_children, get_num_children, get_child);
 
-  PartGroup *get_child_named(const std::string &name) const;
-  PartGroup *find_child(const std::string &name) const;
+  PartGroup *get_child_named(std::string_view name) const;
+  PartGroup *find_child(std::string_view name) const;
   void sort_descendants();
 
   MAKE_SEQ_PROPERTY(children, get_num_children, get_child);

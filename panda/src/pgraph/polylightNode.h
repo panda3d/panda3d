@@ -52,7 +52,7 @@ PUBLISHED:
     AQUADRATIC,
   };
 
-  explicit PolylightNode(const std::string &name);
+  explicit PolylightNode(std::string name);
   INLINE void enable();
   INLINE void disable();
   INLINE void set_pos(const LPoint3 &position);

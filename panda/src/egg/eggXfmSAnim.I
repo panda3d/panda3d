@@ -15,7 +15,7 @@
  *
  */
 INLINE EggXfmSAnim::
-EggXfmSAnim(const std::string &name, CoordinateSystem cs) : EggGroupNode(name) {
+EggXfmSAnim(std::string name, CoordinateSystem cs) : EggGroupNode(std::move(name)) {
   _has_fps = false;
   _coordsys = cs;
 }
@@ -88,8 +88,8 @@ get_fps() const {
  *
  */
 INLINE void EggXfmSAnim::
-set_order(const std::string &order) {
-  _order = order;
+set_order(std::string order) {
+  _order = std::move(order);
 }
 
 /**

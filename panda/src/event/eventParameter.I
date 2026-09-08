@@ -55,13 +55,13 @@ EventParameter(double value) : _ptr(new EventStoreDouble(value)) { }
  * Defines an EventParameter that stores a string value.
  */
 INLINE EventParameter::
-EventParameter(const std::string &value) : _ptr(new EventStoreString(value)) { }
+EventParameter(std::string value) : _ptr(new EventStoreString(std::move(value))) { }
 
 /**
  * Defines an EventParameter that stores a wstring value.
  */
 INLINE EventParameter::
-EventParameter(const std::wstring &value) : _ptr(new EventStoreWstring(value)) { }
+EventParameter(std::wstring value) : _ptr(new EventStoreWstring(std::move(value))) { }
 
 /**
  * Defines an EventParameter that stores a bytes value.

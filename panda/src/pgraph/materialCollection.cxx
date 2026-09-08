@@ -173,7 +173,7 @@ clear() {
  * NULL if no material has that name.
  */
 Material *MaterialCollection::
-find_material(const std::string &name) const {
+find_material(std::string_view name) const {
   int num_materials = get_num_materials();
   for (int i = 0; i < num_materials; i++) {
     Material *material = get_material(i);

@@ -85,7 +85,7 @@ get_bin_type(int bin_index) const {
  * Returns the type of the bin with the indicated name.
  */
 INLINE CullBinManager::BinType CullBinManager::
-get_bin_type(const std::string &name) const {
+get_bin_type(std::string_view name) const {
   int bin_index = find_bin(name);
   nassertr(bin_index != -1, BT_invalid);
   return get_bin_type(bin_index);
@@ -112,7 +112,7 @@ set_bin_type(int bin_index, CullBinManager::BinType type) {
  * frame, depending on the bin type.
  */
 INLINE void CullBinManager::
-set_bin_type(const std::string &name, CullBinManager::BinType type) {
+set_bin_type(std::string_view name, CullBinManager::BinType type) {
   int bin_index = find_bin(name);
   nassertv(bin_index != -1);
   set_bin_type(bin_index, type);
@@ -139,7 +139,7 @@ get_bin_sort(int bin_index) const {
  * may be changed from time to time to reorder the bins.
  */
 INLINE int CullBinManager::
-get_bin_sort(const std::string &name) const {
+get_bin_sort(std::string_view name) const {
   int bin_index = find_bin(name);
   nassertr(bin_index != -1, 0);
   return get_bin_sort(bin_index);
@@ -167,7 +167,7 @@ set_bin_sort(int bin_index, int sort) {
  * may be changed from time to time to reorder the bins.
  */
 INLINE void CullBinManager::
-set_bin_sort(const std::string &name, int sort) {
+set_bin_sort(std::string_view name, int sort) {
   int bin_index = find_bin(name);
   nassertv(bin_index != -1);
   set_bin_sort(bin_index, sort);
@@ -192,7 +192,7 @@ get_bin_active(int bin_index) const {
  * When a bin is marked inactive, all geometry assigned to it is not rendered.
  */
 INLINE bool CullBinManager::
-get_bin_active(const std::string &name) const {
+get_bin_active(std::string_view name) const {
   int bin_index = find_bin(name);
   nassertr(bin_index != -1, false);
   return get_bin_active(bin_index);
@@ -217,7 +217,7 @@ set_bin_active(int bin_index, bool active) {
  * When a bin is marked inactive, all geometry assigned to it is not rendered.
  */
 INLINE void CullBinManager::
-set_bin_active(const std::string &name, bool active) {
+set_bin_active(std::string_view name, bool active) {
   int bin_index = find_bin(name);
   nassertv(bin_index != -1);
   set_bin_active(bin_index, active);

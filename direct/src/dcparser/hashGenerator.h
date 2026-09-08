@@ -25,7 +25,7 @@ public:
   HashGenerator();
 
   void add_int(int num);
-  void add_string(const std::string &str);
+  void add_string(std::string_view str);
   void add_blob(const vector_uchar &bytes);
 
   unsigned long get_hash() const;

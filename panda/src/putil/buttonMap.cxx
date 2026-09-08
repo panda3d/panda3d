@@ -20,7 +20,7 @@ TypeHandle ButtonMap::_type_handle;
  * Registers a new button mapping.
  */
 void ButtonMap::
-map_button(ButtonHandle raw_button, ButtonHandle button, const std::string &label) {
+map_button(ButtonHandle raw_button, ButtonHandle button, std::string label) {
   int index = raw_button.get_index();
   if (_button_map.find(index) != _button_map.end()) {
     // A button with this index was already mapped.
@@ -30,8 +30,8 @@ map_button(ButtonHandle raw_button, ButtonHandle button, const std::string &labe
   ButtonNode bnode;
   bnode._raw = raw_button;
   bnode._mapped = button;
-  bnode._label = label;
-  _button_map[index] = bnode;
+  bnode._label = std::move(label);
+  _button_map[index] = std::move(bnode);
   _buttons.push_back(&_button_map[index]);
 }
 

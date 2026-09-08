@@ -33,7 +33,7 @@
  */
 class EXPCL_PANDA_GRUTIL LineSegs : public Namable {
 PUBLISHED:
-  explicit LineSegs(const std::string &name = "lines");
+  explicit LineSegs(std::string name = "lines");
   ~LineSegs();
 
   void reset();

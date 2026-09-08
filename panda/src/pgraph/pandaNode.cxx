@@ -74,8 +74,8 @@ TypeHandle PandaNodePipelineReader::_type_handle;
  *
  */
 PandaNode::
-PandaNode(const string &name) :
-  Namable(name),
+PandaNode(std::string name) :
+  Namable(std::move(name)),
   _paths_lock("PandaNode::_paths_lock"),
   _prev_transform_valid(_reset_prev_transform_seq)
 {
@@ -789,26 +789,33 @@ remove_all_children(Thread *current_thread) {
     Down::iterator di;
     for (di = down->begin(); di != down->end(); ++di) {
       PT(PandaNode) child_node = (*di).get_child();
-      CDStageWriter cdata_child(child_node->_cycler, pipeline_stage,
-                                     current_thread);
-      cdata_child->modify_up()->erase(UpConnection(this));
 
-      sever_connection(this, child_node, pipeline_stage, current_thread);
-      child_node->parents_changed();
-      child_node->mark_bam_modified();
+      // This cannot normally be null, but it may occur temporarily while
+      // reading a .bam file.
+      if (child_node != nullptr) {
+        CDStageWriter cdata_child(child_node->_cycler, pipeline_stage,
+                                       current_thread);
+        cdata_child->modify_up()->erase(UpConnection(this));
+
+        sever_connection(this, child_node, pipeline_stage, current_thread);
+        child_node->parents_changed();
+        child_node->mark_bam_modified();
+      }
     }
     down->clear();
 
     Down &stashed = *cdata->modify_stashed();
     for (di = stashed.begin(); di != stashed.end(); ++di) {
       PT(PandaNode) child_node = (*di).get_child();
-      CDStageWriter cdata_child(child_node->_cycler, pipeline_stage,
-                                     current_thread);
-      cdata_child->modify_up()->erase(UpConnection(this));
+      if (child_node != nullptr) {
+        CDStageWriter cdata_child(child_node->_cycler, pipeline_stage,
+                                       current_thread);
+        cdata_child->modify_up()->erase(UpConnection(this));
 
-      sever_connection(this, child_node, pipeline_stage, current_thread);
-      child_node->parents_changed();
-      child_node->mark_bam_modified();
+        sever_connection(this, child_node, pipeline_stage, current_thread);
+        child_node->parents_changed();
+        child_node->mark_bam_modified();
+      }
     }
     stashed.clear();
   }
@@ -1215,7 +1222,7 @@ copy_tags(PandaNode *other) {
  * of the associated tag keys.
  */
 void PandaNode::
-list_tags(ostream &out, const string &separator) const {
+list_tags(ostream &out, std::string_view separator) const {
   CDReader cdata(_cycler);
   for (size_t n = 0; n < cdata->_tag_data.size(); ++n) {
     if (n > 0) {
@@ -2207,7 +2214,9 @@ force_bounds_stale(int pipeline_stage, Thread *current_thread) {
   int num_parents = parents.get_num_parents();
   for (int i = 0; i < num_parents; ++i) {
     PandaNode *parent = parents.get_parent(i);
-    parent->mark_bounds_stale(pipeline_stage, current_thread);
+    if (parent != nullptr) {
+      parent->mark_bounds_stale(pipeline_stage, current_thread);
+    }
   }
 }
 
@@ -3280,7 +3289,7 @@ update_cached(bool update_bounds, int pipeline_stage, PandaNode::CDLockedStageRe
     // environment the pointers might go away while we're working (since we're
     // not holding a lock on our set of children right now).  But we also need
     // the regular pointers, to pass to BoundingVolume::around().
-    const BoundingVolume **child_volumes;
+    const BoundingVolume **child_volumes = nullptr;
 #if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
     pvector<CPT(BoundingVolume) > child_volumes_ref;
     if (update_bounds) {
@@ -3344,17 +3353,21 @@ update_cached(bool update_bounds, int pipeline_stage, PandaNode::CDLockedStageRe
           // the pairing of the corresponding bit from the control mask and
           // from the show mask:
 
-          // 00 : not a renderable node   (control 0, show 0) 01 : a normally
-          // visible node (control 0, show 1) 10 : a hidden node
-          // (control 1, show 0) 11 : a show-through node     (control 1, show
-          // 1)
+          //   00 : not a renderable node   (control 0, show 0)
+          //   01 : a normally visible node (control 0, show 1)
+          //   10 : a hidden node           (control 1, show 0)
+          //   11 : a show-through node     (control 1, show 1)
 
-          // Now, when we accumulate these masks, we want to do so according
-          // to the following table, for each bit position:
+          // Now, when we accumulate these masks, we want to do so
+          // according to the following table, for each bit position:
 
-          // 00   01   10   11     (child) --------------------- 00 | 00   01
-          // 10   11 01 | 01   01   01*  11 10 | 10   01*  10   11 11 | 11
-          // 11   11   11 (parent)
+          //          00   01   10   11     (child)
+          //        ---------------------
+          //     00 | 00   01   10   11
+          //     01 | 01   01   01*  11
+          //     10 | 10   01*  10   11
+          //     11 | 11   11   11   11
+          // (parent)
 
           // This table is almost the same as the union of both masks, with
           // one exception, marked with a * in the above table: if one is 10
@@ -3873,6 +3886,10 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
  */
 void PandaNode::CData::
 fillin(DatagramIterator &scan, BamReader *manager) {
+  if (!manager->expect_remaining_size(scan, 18)) {
+    return;
+  }
+
   // Read the state and transform pointers.
   manager->read_pointer(scan);
   manager->read_pointer(scan);
@@ -4071,7 +4088,10 @@ complete_down_list(PandaNode::Down &down_list, const string &tag,
 void PandaNode::CData::
 fillin_up_list(PandaNode::Up &up_list, const string &tag,
                DatagramIterator &scan, BamReader *manager) {
-  int num_parents = scan.get_uint16();
+  int num_parents = 0;
+  if (manager->expect_remaining_size(scan, 2)) {
+    num_parents = scan.get_uint16();
+  }
   manager->set_int_tag(tag, num_parents);
   manager->read_pointers(scan, num_parents);
 }
@@ -4083,7 +4103,10 @@ fillin_up_list(PandaNode::Up &up_list, const string &tag,
 void PandaNode::CData::
 fillin_down_list(PandaNode::Down &down_list, const string &tag,
                  DatagramIterator &scan, BamReader *manager) {
-  int num_children = scan.get_uint16();
+  int num_children = 0;
+  if (manager->expect_remaining_size(scan, 2)) {
+    num_children = scan.get_uint16();
+  }
 
   // Create a temporary down_list, with the right number of elements, but a
   // NULL value for each pointer (we'll fill in the pointers later).  We need
@@ -4092,6 +4115,11 @@ fillin_down_list(PandaNode::Down &down_list, const string &tag,
   new_down_list.reserve(num_children);
   for (int i = 0; i < num_children; i++) {
     manager->read_pointer(scan);
+
+    if (!manager->expect_remaining_size(scan, 4)) {
+      break;
+    }
+
     int sort = scan.get_int32();
     DownConnection connection(nullptr, sort);
     new_down_list.push_back(connection);

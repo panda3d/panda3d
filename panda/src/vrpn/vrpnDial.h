@@ -36,7 +36,7 @@ class VrpnDialDevice;
  */
 class VrpnDial {
 public:
-  VrpnDial(const std::string &dial_name, vrpn_Connection *connection);
+  VrpnDial(std::string dial_name, vrpn_Connection *connection);
   ~VrpnDial();
 
   INLINE const std::string &get_dial_name() const;

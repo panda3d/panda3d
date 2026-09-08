@@ -63,7 +63,7 @@ private:
   int record_unique(UniqueVertices &unique, const LVecBase2d &vec);
   int record_unique(UniqueVertices &unique, double pos);
 
-  void write_vertices(std::ostream &out, const std::string &prefix, int num_components,
+  void write_vertices(std::ostream &out, std::string_view prefix, int num_components,
                       const UniqueVertices &unique);
 
 private:

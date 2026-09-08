@@ -31,8 +31,8 @@ get_name() const {
  * Changes the name of this texture stage
  */
 INLINE void TextureStage::
-set_name(const std::string &name) {
-  _name = name;
+set_name(std::string name) {
+  _name = std::move(name);
 }
 
 /**
@@ -121,7 +121,7 @@ set_texcoord_name(InternalName *name) {
  * any number of associated UV sets, each of which must have a unique name.
  */
 INLINE void TextureStage::
-set_texcoord_name(const std::string &name) {
+set_texcoord_name(std::string_view name) {
   set_texcoord_name(InternalName::get_texcoord_name(name));
 }
 

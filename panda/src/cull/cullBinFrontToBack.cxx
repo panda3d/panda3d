@@ -27,9 +27,9 @@ TypeHandle CullBinFrontToBack::_type_handle;
  * Factory constructor for passing to the CullBinManager.
  */
 CullBin *CullBinFrontToBack::
-make_bin(const std::string &name, GraphicsStateGuardianBase *gsg,
+make_bin(std::string name, GraphicsStateGuardianBase *gsg,
          const PStatCollector &draw_region_pcollector) {
-  return new CullBinFrontToBack(name, gsg, draw_region_pcollector);
+  return new CullBinFrontToBack(std::move(name), gsg, draw_region_pcollector);
 }
 
 /**

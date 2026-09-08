@@ -91,7 +91,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
       with:
         fetch-depth: 10
 
@@ -137,14 +137,13 @@ jobs:
         key: ci-cmake-${{ runner.OS }}-thirdparty-v1.10.16-r1
     - name: Install dependencies (Windows)
       if: runner.os == 'Windows'
-      shell: powershell
+      shell: bash
       run: |
-        if (!(Test-Path thirdparty/win-libs-vc14-x64)) {
-          $wc = New-Object System.Net.WebClient
-          $wc.DownloadFile("https://www.panda3d.org/download/panda3d-1.10.16/panda3d-1.10.16-tools-win64.zip", "thirdparty-tools.zip")
-          Expand-Archive -Path thirdparty-tools.zip
-          Move-Item -Path thirdparty-tools/panda3d-1.10.16/thirdparty -Destination .
-        }
+        if [ ! -d thirdparty/win-libs-vc14-x64 ]; then
+          curl --retry 5 --retry-delay 10 --retry-all-errors -fLo thirdparty-tools.zip "https://www.panda3d.org/download/panda3d-1.10.16/panda3d-1.10.16-tools-win64.zip"
+          unzip -q thirdparty-tools.zip -d thirdparty-tools
+          mv thirdparty-tools/panda3d-1.10.16/thirdparty .
+        fi
 
     - name: ccache (non-Windows)
       if: runner.os != 'Windows'
@@ -212,7 +211,7 @@ jobs:
 
     - name: Setup Python (Python 3.8)
       if: contains(matrix.python, 'YES')
-      uses: actions/setup-python@v6
+      uses: actions/setup-python@v7
       with:
         python-version: '3.8'
     - name: Configure (Python 3.8)
@@ -245,7 +244,7 @@ jobs:
 
     - name: Setup Python (Python 3.9)
       if: contains(matrix.python, 'YES')
-      uses: actions/setup-python@v6
+      uses: actions/setup-python@v7
       with:
         python-version: '3.9'
     - name: Configure (Python 3.9)
@@ -273,12 +272,12 @@ jobs:
         PYTHON_EXECUTABLE=$(grep 'Python_EXECUTABLE:' CMakeCache.txt | sed 's/.*=//')
         $PYTHON_EXECUTABLE -m pip install -r ../requirements-test.txt
         export COVERAGE_FILE=.coverage.$RANDOM LLVM_PROFILE_FILE=$PWD/pid-%p.profraw
-        run_pytest ../tests --cov=.
+        run_pytest --no-cxx-tests ../tests --cov=.
       # END B
 
     - name: Setup Python (Python 3.10)
       if: contains(matrix.python, 'YES')
-      uses: actions/setup-python@v6
+      uses: actions/setup-python@v7
       with:
         python-version: '3.10'
     - name: Configure (Python 3.10)
@@ -306,12 +305,12 @@ jobs:
         PYTHON_EXECUTABLE=$(grep 'Python_EXECUTABLE:' CMakeCache.txt | sed 's/.*=//')
         $PYTHON_EXECUTABLE -m pip install -r ../requirements-test.txt
         export COVERAGE_FILE=.coverage.$RANDOM LLVM_PROFILE_FILE=$PWD/pid-%p.profraw
-        run_pytest ../tests --cov=.
+        run_pytest --no-cxx-tests ../tests --cov=.
       # END B
 
     - name: Setup Python (Python 3.11)
       if: contains(matrix.python, 'YES')
-      uses: actions/setup-python@v6
+      uses: actions/setup-python@v7
       with:
         python-version: '3.11'
     - name: Configure (Python 3.11)
@@ -339,12 +338,12 @@ jobs:
         PYTHON_EXECUTABLE=$(grep 'Python_EXECUTABLE:' CMakeCache.txt | sed 's/.*=//')
         $PYTHON_EXECUTABLE -m pip install -r ../requirements-test.txt
         export COVERAGE_FILE=.coverage.$RANDOM LLVM_PROFILE_FILE=$PWD/pid-%p.profraw
-        run_pytest ../tests --cov=.
+        run_pytest --no-cxx-tests ../tests --cov=.
       # END B
 
     - name: Setup Python (Python 3.12)
       if: contains(matrix.python, 'YES')
-      uses: actions/setup-python@v6
+      uses: actions/setup-python@v7
       with:
         python-version: '3.12'
     - name: Configure (Python 3.12)
@@ -372,7 +371,7 @@ jobs:
         PYTHON_EXECUTABLE=$(grep 'Python_EXECUTABLE:' CMakeCache.txt | sed 's/.*=//')
         $PYTHON_EXECUTABLE -m pip install -r ../requirements-test.txt
         export COVERAGE_FILE=.coverage.$RANDOM LLVM_PROFILE_FILE=$PWD/pid-%p.profraw
-        run_pytest ../tests --cov=.
+        run_pytest --no-cxx-tests ../tests --cov=.
       # END B
 
     - name: Show ASan errors
@@ -418,20 +417,27 @@ jobs:
         os: [ubuntu-24.04, windows-2022, macOS-15]
     runs-on: ${{ matrix.os }}
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
     - name: Install dependencies (Ubuntu)
       if: matrix.os == 'ubuntu-24.04'
       run: |
         sudo apt-get update
         sudo apt-get install build-essential bison flex libfreetype6-dev libgl1-mesa-dev libegl1-mesa-dev libgl1-mesa-dri mesa-utils-extra libjpeg-dev libode-dev libopenal-dev libpng-dev libssl-dev libvorbis-dev libx11-dev libxcursor-dev libxrandr-dev nvidia-cg-toolkit zlib1g-dev
+    - name: Cache thirdparty packages (Windows)
+      if: runner.os == 'Windows'
+      uses: actions/cache@v5
+      with:
+        path: thirdparty
+        key: ci-makepanda-${{ runner.OS }}-thirdparty-v1.10.16
     - name: Get thirdparty packages (Windows)
       if: runner.os == 'Windows'
-      shell: powershell
+      shell: bash
       run: |
-        $wc = New-Object System.Net.WebClient
-        $wc.DownloadFile("https://www.panda3d.org/download/panda3d-1.10.16/panda3d-1.10.16-tools-win64.zip", "thirdparty-tools.zip")
-        Expand-Archive -Path thirdparty-tools.zip
-        Move-Item -Path thirdparty-tools/panda3d-1.10.16/thirdparty -Destination .
+        if [ ! -d thirdparty/win-libs-vc14-x64 ]; then
+          curl --retry 5 --retry-delay 10 --retry-all-errors -fLo thirdparty-tools.zip "https://www.panda3d.org/download/panda3d-1.10.16/panda3d-1.10.16-tools-win64.zip"
+          unzip -q thirdparty-tools.zip -d thirdparty-tools
+          mv thirdparty-tools/panda3d-1.10.16/thirdparty .
+        fi
     - name: Get thirdparty packages (macOS)
       if: runner.os == 'macOS'
       run: |
@@ -440,6 +446,7 @@ jobs:
         mv panda3d-1.10.16/thirdparty thirdparty
         rmdir panda3d-1.10.16
         (cd thirdparty/darwin-libs-a && rm -rf rocket)
+        (cd thirdparty/darwin-libs-a && rm -rf openexr)
 
     - name: Set up XCode (macOS)
       if: runner.os == 'macOS'
@@ -457,7 +464,7 @@ jobs:
         echo "load-display p3headlessgl" >> built_dbl/etc/ci.prc
 
     - name: Set up Python 3.13
-      uses: actions/setup-python@v6
+      uses: actions/setup-python@v7
       with:
         python-version: '3.13'
     - name: Build Python 3.13
@@ -471,7 +478,7 @@ jobs:
         PYTHONPATH=built LD_LIBRARY_PATH=built/lib:$pythonLocation/lib DYLD_LIBRARY_PATH=built/lib python -m pytest
 
     - name: Set up Python 3.12
-      uses: actions/setup-python@v6
+      uses: actions/setup-python@v7
       with:
         python-version: '3.12'
     - name: Build Python 3.12 (double)
@@ -482,14 +489,14 @@ jobs:
       shell: bash
       run: |
         python -m pip install -r requirements-test.txt
-        PYTHONPATH=built_dbl LD_LIBRARY_PATH=built_dbl/lib:$pythonLocation/lib DYLD_LIBRARY_PATH=built_dbl/lib python -m pytest
+        PYTHONPATH=built_dbl LD_LIBRARY_PATH=built_dbl/lib:$pythonLocation/lib DYLD_LIBRARY_PATH=built_dbl/lib python -m pytest --no-cxx-tests
 
     - name: Make installer
       run: |
         python makepanda/makepackage.py --verbose --lzma --outputdir=built_dbl
 
     - name: Set up Python 3.11
-      uses: actions/setup-python@v6
+      uses: actions/setup-python@v7
       with:
         python-version: '3.11'
     - name: Build Python 3.11
@@ -500,10 +507,10 @@ jobs:
       shell: bash
       run: |
         python -m pip install -r requirements-test.txt
-        PYTHONPATH=built LD_LIBRARY_PATH=built/lib:$pythonLocation/lib DYLD_LIBRARY_PATH=built/lib python -m pytest
+        PYTHONPATH=built LD_LIBRARY_PATH=built/lib:$pythonLocation/lib DYLD_LIBRARY_PATH=built/lib python -m pytest --no-cxx-tests
 
     - name: Set up Python 3.10
-      uses: actions/setup-python@v6
+      uses: actions/setup-python@v7
       with:
         python-version: '3.10'
     - name: Build Python 3.10
@@ -514,10 +521,10 @@ jobs:
       shell: bash
       run: |
         python -m pip install -r requirements-test.txt
-        PYTHONPATH=built LD_LIBRARY_PATH=built/lib:$pythonLocation/lib DYLD_LIBRARY_PATH=built/lib python -m pytest
+        PYTHONPATH=built LD_LIBRARY_PATH=built/lib:$pythonLocation/lib DYLD_LIBRARY_PATH=built/lib python -m pytest --no-cxx-tests
 
     - name: Set up Python 3.9
-      uses: actions/setup-python@v6
+      uses: actions/setup-python@v7
       with:
         python-version: '3.9'
     - name: Build Python 3.9
@@ -528,10 +535,10 @@ jobs:
       shell: bash
       run: |
         python -m pip install -r requirements-test.txt
-        PYTHONPATH=built LD_LIBRARY_PATH=built/lib:$pythonLocation/lib DYLD_LIBRARY_PATH=built/lib python -m pytest
+        PYTHONPATH=built LD_LIBRARY_PATH=built/lib:$pythonLocation/lib DYLD_LIBRARY_PATH=built/lib python -m pytest --no-cxx-tests
 
     - name: Set up Python 3.8
-      uses: actions/setup-python@v6
+      uses: actions/setup-python@v7
       with:
         python-version: '3.8'
     - name: Build Python 3.8
@@ -542,7 +549,7 @@ jobs:
       shell: bash
       run: |
         python -m pip install -r requirements-test.txt
-        PYTHONPATH=built LD_LIBRARY_PATH=built/lib:$pythonLocation/lib DYLD_LIBRARY_PATH=built/lib python -m pytest
+        PYTHONPATH=built LD_LIBRARY_PATH=built/lib:$pythonLocation/lib DYLD_LIBRARY_PATH=built/lib python -m pytest --no-cxx-tests
 
     - name: Make installer
       run: |
@@ -552,7 +559,7 @@ jobs:
     if: "!contains(github.event.head_commit.message, '[skip ci]') && !contains(github.event.head_commit.message, '[ci skip]')"
     runs-on: ubuntu-24.04
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
 
     - name: Install dependencies
       run: |
@@ -597,15 +604,20 @@ jobs:
       run: |
         python3 makepanda/makepanda.py --git-commit=${{github.sha}} --target emscripten --python-incdir=~/python/usr/local/include --python-libdir=~/python/usr/local/lib --static --everything --no-pandatool --no-deploytools --verbose --threads=4
 
-    - name: Install test dependencies
+    - name: Run C++ tests in node.js
+      shell: bash
+      run: |
+        node built/bin/run_cxx_tests.js
+
+    - name: Install pytest dependencies
       shell: bash
       run: |
         python3 -m pip install -t ~/python/usr/local/lib/python3.12/site-packages -r requirements-test.txt
 
-    - name: Test in node.js
+    - name: Run Python tests in node.js
       shell: bash
       run: |
-        PYTHONHOME=~/python/usr/local PYTHONPATH=built node built/bin/run_tests.js tests
+        PYTHONHOME=~/python/usr/local PYTHONPATH=built node built/bin/run_pytest.js --no-cxx-tests tests
 
   android:
     if: "!contains(github.event.head_commit.message, '[skip ci]') && !contains(github.event.head_commit.message, '[ci skip]')"
@@ -641,10 +653,10 @@ jobs:
 
     runs-on: ${{ matrix.runner }}
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
 
     - name: Setup Android SDK
-      uses: android-actions/setup-android@v3
+      uses: android-actions/setup-android@v4
       with:
         packages: 'tools platform-tools platforms;android-21 ndk;${{ matrix.ndk-version }}'
 
@@ -652,7 +664,7 @@ jobs:
       run: |
         echo "ANDROID_NDK_ROOT=$ANDROID_SDK_ROOT/ndk/${{ matrix.ndk-version }}" >> $GITHUB_ENV
 
-    - uses: actions/setup-python@v6
+    - uses: actions/setup-python@v7
       with:
         python-version: '3.13'
 
@@ -748,7 +760,8 @@ jobs:
         profile: pixel_6
         script: |
           adb shell "rm -rf /data/local/tmp/panda3d-tests"
-          adb push built/bin/run_tests /data/local/tmp/panda3d-tests/run_tests
+          adb push built/bin/run_cxx_tests /data/local/tmp/panda3d-tests/run_cxx_tests
+          adb push built/bin/run_pytest /data/local/tmp/panda3d-tests/run_pytest
           adb shell "mkdir /data/local/tmp/panda3d-tests/lib"
           adb push built/lib/*.so /data/local/tmp/panda3d-tests/lib
           adb push ~/python-prefix/lib/*.so /data/local/tmp/panda3d-tests/lib
@@ -758,4 +771,5 @@ jobs:
           adb push built/models /data/local/tmp/panda3d-tests/models
           adb push built/etc /data/local/tmp/panda3d-tests/etc
           adb push tests /data/local/tmp/panda3d-tests/tests
-          adb shell "cd /data/local/tmp/panda3d-tests && LD_LIBRARY_PATH=/data/local/tmp/panda3d-tests/lib PYTHONPATH=/data/local/tmp/panda3d-tests/lib/python3.13/site-packages ./run_tests -v tests"
+          adb shell "cd /data/local/tmp/panda3d-tests && LD_LIBRARY_PATH=/data/local/tmp/panda3d-tests/lib ./run_cxx_tests"
+          adb shell "cd /data/local/tmp/panda3d-tests && LD_LIBRARY_PATH=/data/local/tmp/panda3d-tests/lib PYTHONPATH=/data/local/tmp/panda3d-tests/lib/python3.13/site-packages ./run_pytest --no-cxx-tests -v tests"

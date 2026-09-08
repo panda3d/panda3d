@@ -56,7 +56,7 @@ PUBLISHED:
   void begin_repack(const DCPackerInterface *root);
   bool end_repack();
 
-  bool seek(const std::string &field_name);
+  bool seek(std::string_view field_name);
   bool seek(int seek_index);
 
   INLINE bool has_nested_fields() const;
@@ -77,7 +77,7 @@ PUBLISHED:
   INLINE void pack_uint(unsigned int value);
   INLINE void pack_int64(int64_t value);
   INLINE void pack_uint64(uint64_t value);
-  INLINE void pack_string(const std::string &value);
+  INLINE void pack_string(std::string_view value);
   INLINE void pack_blob(const vector_uchar &value);
   INLINE void pack_literal_value(const vector_uchar &value);
   void pack_default_value();
@@ -110,7 +110,7 @@ PUBLISHED:
   EXTENSION(void pack_object(PyObject *object));
   EXTENSION(PyObject *unpack_object());
 
-  bool parse_and_pack(const std::string &formatted_object);
+  bool parse_and_pack(std::string formatted_object);
   bool parse_and_pack(std::istream &in);
   std::string unpack_and_format(bool show_field_names = true);
   void unpack_and_format(std::ostream &out, bool show_field_names = true);
@@ -152,7 +152,7 @@ PUBLISHED:
   INLINE void raw_pack_uint32(unsigned int value);
   INLINE void raw_pack_uint64(uint64_t value);
   INLINE void raw_pack_float64(double value);
-  INLINE void raw_pack_string(const std::string &value);
+  INLINE void raw_pack_string(std::string_view value);
   INLINE void raw_pack_blob(const vector_uchar &value);
 
 // this is a hack to allw me to get in and out of 32bit Mode Faster need to
@@ -187,7 +187,7 @@ public:
   INLINE void raw_unpack_blob(vector_uchar &value);
 
 public:
-  static void enquote_string(std::ostream &out, char quote_mark, const std::string &str);
+  static void enquote_string(std::ostream &out, char quote_mark, std::string_view str);
   static void output_hex_string(std::ostream &out, const vector_uchar &str);
 
 private:

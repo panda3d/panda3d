@@ -110,7 +110,8 @@ as_dec() const {
  * valid, false otherwise.
  */
 bool HashVal::
-set_from_dec(const string &text) {
+set_from_dec(const std::string &text) {
+  //NB: C++17 has no move-from-string yet.  Change in C++20.
   istringstream strm(text);
   input_dec(strm);
   return !strm.fail();
@@ -134,7 +135,8 @@ as_hex() const {
  * successful, false otherwise.
  */
 bool HashVal::
-set_from_hex(const string &text) {
+set_from_hex(const std::string &text) {
+  //NB: C++17 has no move-from-string yet.  Change in C++20.
   istringstream strm(text);
   input_hex(strm);
   return !strm.fail();

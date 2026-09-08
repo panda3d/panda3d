@@ -224,10 +224,19 @@ pipe_constructor() {
 }
 
 /**
+ * Releases the graphics context that is currently bound on the calling
+ * thread, if any.
+ */
+void eglGraphicsPipe::
+release_current_context() {
+  eglMakeCurrent(_egl_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+}
+
+/**
  * Creates a new window on the pipe, if possible.
  */
 PT(GraphicsOutput) eglGraphicsPipe::
-make_output(const std::string &name,
+make_output(std::string_view name,
             const FrameBufferProperties &fb_prop,
             const WindowProperties &win_prop,
             int flags,
@@ -273,7 +282,7 @@ make_output(const std::string &name,
         ((flags&BF_can_bind_every)!=0)) {
       return nullptr;
     }
-    return new eglGraphicsWindow(engine, this, name, fb_prop, win_prop,
+    return new eglGraphicsWindow(engine, this, std::string(name), fb_prop, win_prop,
                                  flags, gsg, host);
 #else
     return nullptr;
@@ -311,13 +320,13 @@ make_output(const std::string &name,
       precertify = true;
     }
 #ifdef OPENGLES_2
-    return new GLES2GraphicsBuffer(engine, this, name, fb_prop, win_prop,
+    return new GLES2GraphicsBuffer(engine, this, std::string(name), fb_prop, win_prop,
                                   flags, gsg, host);
 #elif defined(OPENGLES_1)
-    return new GLESGraphicsBuffer(engine, this, name, fb_prop, win_prop,
+    return new GLESGraphicsBuffer(engine, this, std::string(name), fb_prop, win_prop,
                                   flags, gsg, host);
 #else
-    return new GLGraphicsBuffer(engine, this, name, fb_prop, win_prop,
+    return new GLGraphicsBuffer(engine, this, std::string(name), fb_prop, win_prop,
                                 flags, gsg, host);
 #endif
   }
@@ -339,7 +348,7 @@ make_output(const std::string &name,
       }
     }
 
-    return new eglGraphicsBuffer(engine, this, name, fb_prop, win_prop,
+    return new eglGraphicsBuffer(engine, this, std::string(name), fb_prop, win_prop,
                                  flags, gsg, host);
   }
 
@@ -361,7 +370,7 @@ make_output(const std::string &name,
       return nullptr;
     }
 
-    return new eglGraphicsPixmap(engine, this, name, fb_prop, win_prop,
+    return new eglGraphicsPixmap(engine, this, std::string(name), fb_prop, win_prop,
                                  flags, gsg, host);
 #else
     return nullptr;

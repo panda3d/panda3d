@@ -20,7 +20,7 @@
 
 using std::string;
 
-AtomicAdjust::Integer AsyncTask::_next_task_id;
+patomic<int> AsyncTask::_next_task_id { 0 };
 PStatCollector AsyncTask::_tasks_pcollector("App:Tasks");
 TypeHandle AsyncTask::_type_handle;
 
@@ -28,7 +28,7 @@ TypeHandle AsyncTask::_type_handle;
  *
  */
 AsyncTask::
-AsyncTask(const string &name) :
+AsyncTask(std::string name) :
   _chain_name("default"),
   _delay(0.0),
   _has_delay(false),
@@ -45,15 +45,10 @@ AsyncTask(const string &name) :
   _total_dt(0.0),
   _num_frames(0)
 {
-  set_name(name);
+  set_name(std::move(name));
 
-  // Carefully copy _next_task_id and increment it so that we get a unique ID.
-  AtomicAdjust::Integer current_id = _next_task_id;
-  while (AtomicAdjust::compare_and_exchange(_next_task_id, current_id, current_id + 1) != current_id) {
-    current_id = _next_task_id;
-  }
-
-  _task_id = current_id;
+  // Atomically increment _next_task_id so that we get a unique ID.
+  _task_id = _next_task_id.fetch_add(1, std::memory_order_relaxed);
 }
 
 /**
@@ -170,7 +165,7 @@ get_elapsed_frames() const {
  *
  */
 void AsyncTask::
-set_name(const string &name) {
+set_name(std::string name) {
   if (_manager != nullptr) {
     MutexHolder holder(_manager->_lock);
     if (Namable::get_name() != name) {
@@ -178,45 +173,48 @@ set_name(const string &name) {
       // index.
 
       _manager->remove_task_by_name(this);
-      Namable::set_name(name);
+      Namable::set_name(std::move(name));
       _manager->add_task_by_name(this);
     }
   } else {
     // If it hasn't been started anywhere, we can just change the name.
-    Namable::set_name(name);
+    Namable::set_name(std::move(name));
   }
 
 #ifdef DO_PSTATS
   // Update the PStatCollector with the new name.  If the name includes a
   // colon, we stop the collector name there, and don't go further.
-  size_t end = name.size();
-  size_t colon = name.find(':');
-  if (colon != string::npos) {
-    end = std::min(end, colon);
-  }
+  {
+    const std::string &name = get_name();
+    size_t end = name.size();
+    size_t colon = name.find(':');
+    if (colon != string::npos) {
+      end = std::min(end, colon);
+    }
 
-  // If the name ends with a hyphen followed by a string of digits, we strip
-  // all that off, for the parent collector, to group related tasks together
-  // in the pstats graph.  We still create a child collector that contains the
-  // full name, however.
-  size_t trimmed = end;
-  size_t p = trimmed;
-  while (true) {
-    while (p > 0 && isdigit(name[p - 1])) {
-      --p;
+    // If the name ends with a hyphen followed by a string of digits, we strip
+    // all that off, for the parent collector, to group related tasks together
+    // in the pstats graph.  We still create a child collector that contains the
+    // full name, however.
+    size_t trimmed = end;
+    size_t p = trimmed;
+    while (true) {
+      while (p > 0 && isdigit(name[p - 1])) {
+        --p;
+      }
+      if (p > 0 && (name[p - 1] == '-' || name[p - 1] == '_')) {
+        --p;
+        trimmed = p;
+      } else {
+        //p = trimmed;
+        break;
+      }
     }
-    if (p > 0 && (name[p - 1] == '-' || name[p - 1] == '_')) {
-      --p;
-      trimmed = p;
-    } else {
-      //p = trimmed;
-      break;
-    }
+    PStatCollector parent(_tasks_pcollector, name.substr(0, trimmed));
+    // prevent memory leak _task_pcollector = PStatCollector(parent,
+    // name.substr(0, end));
+    _task_pcollector = parent;
   }
-  PStatCollector parent(_tasks_pcollector, name.substr(0, trimmed));
-  // prevent memory leak _task_pcollector = PStatCollector(parent,
-  // name.substr(0, end));
-  _task_pcollector = parent;
 #endif  // DO_PSTATS
 }
 
@@ -250,7 +248,7 @@ get_name_prefix() const {
  * chain runs tasks independently of the others.
  */
 void AsyncTask::
-set_task_chain(const string &chain_name) {
+set_task_chain(std::string_view chain_name) {
   if (chain_name != _chain_name) {
     if (_manager != nullptr) {
       MutexHolder holder(_manager->_lock);
@@ -406,20 +404,22 @@ unlock_and_do_task() {
   Thread *current_thread = Thread::get_current_thread();
   nassertr(current_thread->_current_task == nullptr, DS_interrupt);
 
+  TypedReferenceCount *expected = nullptr;
 #ifdef __GNUC__
   __attribute__((unused))
 #endif
-  void *ptr = AtomicAdjust::compare_and_exchange_ptr
-    (current_thread->_current_task, nullptr, (TypedReferenceCount *)this);
+  bool exchanged = current_thread->_current_task.compare_exchange_strong(
+    expected, (TypedReferenceCount *)this,
+    std::memory_order_release, std::memory_order_relaxed);
 
-  // If the return value is other than nullptr, someone else must have
-  // assigned the task first, in another thread.  That shouldn't be possible.
+  // If the exchange didn't happen, someone else must have assigned the task
+  // first, in another thread.  That shouldn't be possible.
 
   // But different versions of gcc appear to have problems compiling these
   // assertions correctly.
 #ifndef __GNUC__
-  nassertr(ptr == nullptr, DS_interrupt);
-  nassertr(current_thread->_current_task == this, DS_interrupt);
+  nassertr(exchanged, DS_interrupt);
+  nassertr(current_thread->_current_task.load(std::memory_order_relaxed) == this, DS_interrupt);
 #endif  // __GNUC__
 
   // It's important to release the lock while the task is being serviced.
@@ -441,19 +441,21 @@ unlock_and_do_task() {
   _chain->_time_in_frame += _dt;
 
   // Now indicate that this is no longer the current task.
-  nassertr(current_thread->_current_task == this, status);
+  nassertr(current_thread->_current_task.load(std::memory_order_relaxed) == this, status);
 
-  ptr = AtomicAdjust::compare_and_exchange_ptr
-    (current_thread->_current_task, (TypedReferenceCount *)this, nullptr);
+  expected = (TypedReferenceCount *)this;
+  exchanged = current_thread->_current_task.compare_exchange_strong(
+    expected, nullptr,
+    std::memory_order_release, std::memory_order_relaxed);
 
-  // If the return value is other than this, someone else must have assigned
-  // the task first, in another thread.  That shouldn't be possible.
+  // If the exchange didn't happen, someone else must have assigned the task
+  // first, in another thread.  That shouldn't be possible.
 
   // But different versions of gcc appear to have problems compiling these
   // assertions correctly.
 #ifndef __GNUC__
-  nassertr(ptr == this, DS_interrupt);
-  nassertr(current_thread->_current_task == nullptr, DS_interrupt);
+  nassertr(exchanged, DS_interrupt);
+  nassertr(current_thread->_current_task.load(std::memory_order_relaxed) == nullptr, DS_interrupt);
 #endif  // __GNUC__
 
   return status;

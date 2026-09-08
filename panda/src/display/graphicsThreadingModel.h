@@ -22,17 +22,17 @@
  */
 class EXPCL_PANDA_DISPLAY GraphicsThreadingModel {
 PUBLISHED:
-  GraphicsThreadingModel(const std::string &model = std::string());
+  GraphicsThreadingModel(std::string_view model = std::string_view());
   INLINE GraphicsThreadingModel(const GraphicsThreadingModel &copy);
   INLINE void operator = (const GraphicsThreadingModel &copy);
 
   std::string get_model() const;
   INLINE const std::string &get_cull_name() const;
-  INLINE void set_cull_name(const std::string &cull_name);
+  INLINE void set_cull_name(std::string cull_name);
   INLINE int get_cull_stage() const;
 
   INLINE const std::string &get_draw_name() const;
-  INLINE void set_draw_name(const std::string &cull_name);
+  INLINE void set_draw_name(std::string cull_name);
   INLINE int get_draw_stage() const;
 
   INLINE bool get_cull_sorting() const;

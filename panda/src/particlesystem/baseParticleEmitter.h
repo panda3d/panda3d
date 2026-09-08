@@ -31,7 +31,7 @@ PUBLISHED:
   };
 
   virtual ~BaseParticleEmitter();
-  virtual BaseParticleEmitter *make_copy() = 0;
+  [[nodiscard]] virtual BaseParticleEmitter *make_copy() = 0;
 
   void generate(LPoint3& pos, LVector3& vel);
 

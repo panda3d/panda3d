@@ -73,8 +73,8 @@ private:
 
   void do_flag_groups(EggGroupNode *egg_group);
   void rename_joints();
-  void rename_primitives(EggGroupNode *egg_group, const std::string &name);
-  void change_dart_type(EggGroupNode *egg_group, const std::string &new_dart_type);
+  void rename_primitives(EggGroupNode *egg_group, std::string_view name);
+  void change_dart_type(EggGroupNode *egg_group, std::string_view new_dart_type);
   void do_preload();
   void do_defpose();
 

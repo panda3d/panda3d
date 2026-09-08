@@ -91,7 +91,7 @@ private:
   bool parse_comment(const FltBeadID *flt_bead, EggNode *egg_node);
   bool parse_comment(const FltBead *flt_bead, EggNode *egg_node);
   bool parse_comment(const FltTexture *flt_texture, EggNode *egg_node);
-  bool parse_comment(const std::string &comment, const std::string &name,
+  bool parse_comment(std::string_view comment, std::string_view name,
                      EggNode *egg_node);
 
   PT_EggVertex make_egg_vertex(const FltVertex *flt_vertex);

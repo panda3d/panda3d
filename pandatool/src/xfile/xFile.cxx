@@ -175,7 +175,7 @@ write(ostream &out) const {
  * none.
  */
 XFileTemplate *XFile::
-find_template(const string &name) const {
+find_template(std::string_view name) const {
   XFileTemplate *standard = nullptr;
   const XFile *standard_templates = get_standard_templates();
   if (standard_templates != this) {
@@ -234,7 +234,7 @@ find_template(const WindowsGuid &guid) const {
  * or NULL if none.
  */
 XFileTemplate *XFile::
-find_standard_template(const string &name) {
+find_standard_template(std::string_view name) {
   const XFile *standard_templates = get_standard_templates();
   return standard_templates->find_template(name);
 }
@@ -254,7 +254,7 @@ find_standard_template(const WindowsGuid &guid) {
  * if none.
  */
 XFileDataNodeTemplate *XFile::
-find_data_object(const string &name) const {
+find_data_object(std::string_view name) const {
   XFileNode *child = find_descendent(name);
   if (child != nullptr &&
       child->is_of_type(XFileDataNodeTemplate::get_class_type())) {

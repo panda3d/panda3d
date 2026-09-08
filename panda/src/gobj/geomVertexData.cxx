@@ -62,12 +62,12 @@ make_cow_copy() {
  *
  */
 GeomVertexData::
-GeomVertexData(const std::string &name,
+GeomVertexData(std::string name,
                const GeomVertexFormat *format,
                GeomVertexData::UsageHint usage_hint) :
-  _name(name),
+  _name(std::move(name)),
   _cycler(GeomVertexData::CData(format, usage_hint)),
-  _char_pcollector(PStatCollector(_animation_pcollector, name)),
+  _char_pcollector(PStatCollector(_animation_pcollector, _name)),
   _skinning_pcollector(_char_pcollector, "Skinning"),
   _morphs_pcollector(_char_pcollector, "Morphs"),
   _blends_pcollector(_char_pcollector, "Calc blends")
@@ -185,9 +185,9 @@ compare_to(const GeomVertexData &other) const {
  * graph for vertex computations.
  */
 void GeomVertexData::
-set_name(const std::string &name) {
-  _name = name;
-  _char_pcollector = PStatCollector(_animation_pcollector, name);
+set_name(std::string name) {
+  _name = std::move(name);
+  _char_pcollector = PStatCollector(_animation_pcollector, _name);
   _skinning_pcollector = PStatCollector(_char_pcollector, "Skinning");
   _morphs_pcollector = PStatCollector(_char_pcollector, "Morphs");
   _blends_pcollector = PStatCollector(_char_pcollector, "Calc blends");

@@ -63,14 +63,14 @@ open_read(const Filename &bam_filename, bool report_errors) {
  * for information purposes only.  Returns true if successful, false on error.
  */
 bool BamFile::
-open_read(std::istream &in, const string &bam_filename, bool report_errors) {
+open_read(std::istream &in, std::string bam_filename, bool report_errors) {
   close();
 
   if (!_din.open(in)) {
     return false;
   }
 
-  return continue_open_read(bam_filename, report_errors);
+  return continue_open_read(std::move(bam_filename), report_errors);
 }
 
 /**
@@ -147,7 +147,13 @@ read_node(bool report_errors) {
 
   if (object == nullptr) {
     if (report_errors) {
-      loader_cat.error() << "Bam file " << _bam_filename << " is empty.\n";
+      if (is_eof()) {
+        loader_cat.error()
+          << "Bam file " << _bam_filename << " is empty.\n";
+      } else {
+        loader_cat.error()
+          << "Bam file " << _bam_filename << " contained errors.\n";
+      }
     }
 
   } else if (!object->is_of_type(PandaNode::get_class_type())) {
@@ -207,7 +213,7 @@ open_write(const Filename &bam_filename, bool report_errors) {
  * for information purposes only.  Returns true if successful, false on error.
  */
 bool BamFile::
-open_write(std::ostream &out, const string &bam_filename, bool report_errors) {
+open_write(std::ostream &out, std::string bam_filename, bool report_errors) {
   close();
 
   if (!_dout.open(out)) {
@@ -215,7 +221,7 @@ open_write(std::ostream &out, const string &bam_filename, bool report_errors) {
     return false;
   }
 
-  return continue_open_write(bam_filename, report_errors);
+  return continue_open_write(std::move(bam_filename), report_errors);
 }
 
 /**
@@ -354,8 +360,8 @@ get_writer() {
  * contents of the file.  Returns true if successful, false otherwise.
  */
 bool BamFile::
-continue_open_read(const string &bam_filename, bool report_errors) {
-  _bam_filename = bam_filename;
+continue_open_read(std::string bam_filename, bool report_errors) {
+  _bam_filename = std::move(bam_filename);
 
   if (!_bam_filename.empty()) {
     loader_cat.info()
@@ -391,8 +397,8 @@ continue_open_read(const string &bam_filename, bool report_errors) {
  * the contents of the file.  Returns true if successful, false otherwise.
  */
 bool BamFile::
-continue_open_write(const string &bam_filename, bool report_errors) {
-  _bam_filename = bam_filename;
+continue_open_write(std::string bam_filename, bool report_errors) {
+  _bam_filename = std::move(bam_filename);
 
   if (!_bam_filename.empty()) {
     loader_cat.info() << "Writing " << _bam_filename << "\n";

@@ -24,9 +24,9 @@ MovingPartScalar(const MovingPartScalar &copy) :
  *
  */
 INLINE MovingPartScalar::
-MovingPartScalar(PartGroup *parent, const std::string &name,
+MovingPartScalar(PartGroup *parent, std::string name,
                  PN_stdfloat default_value)
-  : MovingPart<ACScalarSwitchType>(parent, name, default_value) {
+  : MovingPart<ACScalarSwitchType>(parent, std::move(name), default_value) {
 }
 
 /**

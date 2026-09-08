@@ -99,7 +99,7 @@ PUBLISHED:
   MAKE_PROPERTY2(mouse_mode, has_mouse_mode, get_mouse_mode,
                              set_mouse_mode, clear_mouse_mode);
 
-  INLINE void set_title(const std::string &title);
+  INLINE void set_title(std::string title);
 #ifdef CPPPARSER
   INLINE std::string get_title() const;
 #else // CPPPARSER

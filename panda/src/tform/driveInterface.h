@@ -30,7 +30,7 @@
  */
 class EXPCL_PANDA_TFORM DriveInterface : public MouseInterfaceNode {
 PUBLISHED:
-  explicit DriveInterface(const std::string &name = "");
+  explicit DriveInterface(std::string name = "");
   ~DriveInterface();
 
   INLINE void set_forward_speed(PN_stdfloat speed);

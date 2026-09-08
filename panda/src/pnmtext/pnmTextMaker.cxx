@@ -80,7 +80,7 @@ PNMTextMaker::
  * position; the return value is the total width in pixels.
  */
 int PNMTextMaker::
-generate_into(const wstring &text, PNMImage &dest_image, int x, int y) {
+generate_into(std::wstring_view text, PNMImage &dest_image, int x, int y) {
   // First, measure the total width in pixels.
   int width = calc_width(text);
 
@@ -102,9 +102,7 @@ generate_into(const wstring &text, PNMImage &dest_image, int x, int y) {
   }
 
   // Now place the text.
-  wstring::const_iterator ti;
-  for (ti = text.begin(); ti != text.end(); ++ti) {
-    int ch = (*ti);
+  for (int ch : text) {
     PNMTextGlyph *glyph = get_glyph(ch);
     if (_interior_flag) {
       glyph->place(dest_image, xp, yp, _fg, _interior);
@@ -121,11 +119,9 @@ generate_into(const wstring &text, PNMImage &dest_image, int x, int y) {
  * Returns the width in pixels of the indicated line of text.
  */
 int PNMTextMaker::
-calc_width(const wstring &text) {
+calc_width(std::wstring_view text) {
   int width = 0;
-  wstring::const_iterator ti;
-  for (ti = text.begin(); ti != text.end(); ++ti) {
-    int ch = (*ti);
+  for (int ch : text) {
     PNMTextGlyph *glyph = get_glyph(ch);
     width += glyph->get_advance();
   }

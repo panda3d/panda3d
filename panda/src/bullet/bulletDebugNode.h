@@ -28,7 +28,7 @@ class CullTraverserData;
  */
 class EXPCL_PANDABULLET BulletDebugNode : public PandaNode {
 PUBLISHED:
-  explicit BulletDebugNode(const char *name="debug");
+  explicit BulletDebugNode(std::string name="debug");
   INLINE ~BulletDebugNode();
 
   virtual void draw_mask_changed();

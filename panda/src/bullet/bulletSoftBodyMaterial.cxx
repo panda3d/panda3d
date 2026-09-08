@@ -34,12 +34,17 @@ get_linear_stiffness() const {
 }
 
 /**
- * Setter for the property m_kLST.
+ * Sets the linear stiffness coefficient (m_kLST) for the material.
+ *
+ * Value is a coefficient in the range (0, 1], where 1 is maximally stiff
+ * and values approaching 0 are maximally compliant.  Values above 1 make
+ * the solver over-correct each step, causing the softbody to diverge.
  */
 void BulletSoftBodyMaterial::
 set_linear_stiffness(PN_stdfloat value) {
   LightMutexHolder holder(BulletWorld::get_global_lock());
 
+  nassertv(value > 0);
   _material.m_kLST = (btScalar)value;
 }
 

@@ -45,7 +45,7 @@ class CollisionEntry;
  */
 class EXPCL_PANDA_COLLIDE CollisionTraverser : public Namable {
 PUBLISHED:
-  explicit CollisionTraverser(const std::string &name = "ctrav");
+  explicit CollisionTraverser(std::string name = "ctrav");
   ~CollisionTraverser();
 
   INLINE void set_respect_prev_transform(bool flag);

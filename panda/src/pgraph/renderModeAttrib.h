@@ -50,6 +50,7 @@ PUBLISHED:
   };
 
 private:
+  friend class StaticObject<RenderModeAttrib>;
   INLINE RenderModeAttrib(Mode mode, PN_stdfloat thickness, bool perspective,
                           const LColor &wireframe_color = LColor::zero());
 
@@ -110,8 +111,8 @@ public:
     RenderAttrib::init_type();
     register_type(_type_handle, "RenderModeAttrib",
                   RenderAttrib::get_class_type());
-    _attrib_slot = register_slot(_type_handle, 100,
-                                 new RenderModeAttrib(M_filled, 1, false));
+    static StaticObject<RenderModeAttrib> default_attrib(M_filled, 1, false);
+    _attrib_slot = register_slot(_type_handle, 100, default_attrib);
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

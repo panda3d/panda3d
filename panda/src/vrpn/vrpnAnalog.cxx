@@ -24,8 +24,8 @@
  *
  */
 VrpnAnalog::
-VrpnAnalog(const std::string &analog_name, vrpn_Connection *connection) :
-  _analog_name(analog_name)
+VrpnAnalog(std::string analog_name, vrpn_Connection *connection) :
+  _analog_name(std::move(analog_name))
 {
   _analog = new vrpn_Analog_Remote(_analog_name.c_str(), connection);
 

@@ -29,8 +29,8 @@ TypeHandle PGSliderBar::_type_handle;
  *
  */
 PGSliderBar::
-PGSliderBar(const std::string &name)
-  : PGItem(name)
+PGSliderBar(std::string name)
+  : PGItem(std::move(name))
 {
   set_cull_callback();
 

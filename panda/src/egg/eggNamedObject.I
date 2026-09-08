@@ -15,7 +15,7 @@
  *
  */
 INLINE EggNamedObject::
-EggNamedObject(const std::string &name) : Namable(name) {
+EggNamedObject(std::string name) : Namable(std::move(name)) {
 }
 
 

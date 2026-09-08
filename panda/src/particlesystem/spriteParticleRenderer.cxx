@@ -192,10 +192,10 @@ extract_textures_from_node(const NodePath &node_path, NodePathCollection &np_col
  * match the new geometry.
  */
 void SpriteParticleRenderer::
-set_from_node(const NodePath &node_path, const std::string &model, const std::string &node, bool size_from_texels) {
+set_from_node(const NodePath &node_path, std::string model, std::string node, bool size_from_texels) {
   // Clear all texture information
   _anims.clear();
-  add_from_node(node_path,model,node,size_from_texels,true);
+  add_from_node(node_path, std::move(model), std::move(node), size_from_texels, true);
 }
 
 /**
@@ -244,13 +244,13 @@ set_from_node(const NodePath &node_path, bool size_from_texels) {
  * now on.  (Default is false)
  */
 void SpriteParticleRenderer::
-add_from_node(const NodePath &node_path, const std::string &model, const std::string &node, bool size_from_texels, bool resize) {
+add_from_node(const NodePath &node_path, std::string model, std::string node, bool size_from_texels, bool resize) {
   int anim_count = _anims.size();
   if (anim_count == 0)
     resize = true;
   add_from_node(node_path,size_from_texels,resize);
   if (anim_count < (int)_anims.size()) {
-    get_last_anim()->set_source_info(model,node);
+    get_last_anim()->set_source_info(std::move(model), std::move(node));
   }
 }
 

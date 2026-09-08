@@ -585,7 +585,7 @@ parse_comment(const FltTexture *flt_texture, EggNode *egg_node) {
  * success, false on syntax error (in which case _error is also set to true).
  */
 bool FltToEggConverter::
-parse_comment(const string &comment, const string &name,
+parse_comment(std::string_view comment, std::string_view name,
               EggNode *egg_node) {
   if (comment.empty()) {
     // No comment.
@@ -633,7 +633,7 @@ parse_comment(const string &comment, const string &name,
     return false;
   }
 
-  string egg_syntax = comment.substr(p, q - p);
+  string egg_syntax(comment.substr(p, q - p));
 
   if (!egg_node->parse_egg(egg_syntax)) {
     nout << "Syntax error in comment for "

@@ -45,7 +45,7 @@ public:
     T_template,
   };
 
-  INLINE XFileDataDef(XFile *x_file, const std::string &name,
+  INLINE XFileDataDef(XFile *x_file, std::string_view name,
                       Type type, XFileTemplate *xtemplate = nullptr);
   virtual ~XFileDataDef();
 

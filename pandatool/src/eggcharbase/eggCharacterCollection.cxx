@@ -118,7 +118,7 @@ add_egg(EggData *egg) {
  * collection, or NULL if it does not.
  */
 EggCharacterData *EggCharacterCollection::
-get_character_by_name(const string &character_name) const {
+get_character_by_name(std::string_view character_name) const {
   Characters::const_iterator ci;
   for (ci = _characters.begin(); ci != _characters.end(); ++ci) {
     EggCharacterData *char_data = (*ci);
@@ -167,7 +167,7 @@ make_slider_data(EggCharacterData *char_data) {
  * character, if there is not already a character by that name.
  */
 EggCharacterData *EggCharacterCollection::
-make_character(const string &character_name) {
+make_character(std::string character_name) {
   // Does the named character exist yet?
 
   Characters::iterator ci;
@@ -180,7 +180,7 @@ make_character(const string &character_name) {
 
   // Define a new character.
   EggCharacterData *char_data = make_character_data();
-  char_data->set_name(character_name);
+  char_data->set_name(std::move(character_name));
   _characters.push_back(char_data);
   return char_data;
 }
@@ -614,13 +614,13 @@ found_egg_match(EggCharacterData *char_data, EggJointData *joint_data,
  * already be used by another character in the collection.
  */
 void EggCharacterCollection::
-rename_char(int i, const string &name) {
+rename_char(int i, std::string name) {
   nassertv(i >= 0 && i < (int)_characters.size());
 
   EggCharacterData *char_data = _characters[i];
   if (char_data->get_name() != name) {
     nassertv(get_character_by_name(name) == nullptr);
-    char_data->rename_char(name);
+    char_data->rename_char(std::move(name));
   }
 }
 

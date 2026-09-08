@@ -562,7 +562,7 @@ public:
   void parse_rest(std::string &result);
   bool parse_eof();
 
-  void cp_report_error(ShaderArgInfo &arg, const std::string &msg);
+  void cp_report_error(ShaderArgInfo &arg, std::string_view msg);
   bool cp_errchk_parameter_words(ShaderArgInfo &arg, int len);
   bool cp_errchk_parameter_in(ShaderArgInfo &arg);
   bool cp_errchk_parameter_ptr(ShaderArgInfo &p);

@@ -66,8 +66,8 @@ fillin(DatagramIterator &scan, BamReader *reader) {
  *
  */
 SheetNode::
-SheetNode(const std::string &name) :
-  PandaNode(name)
+SheetNode(std::string name) :
+  PandaNode(std::move(name))
 {
   set_cull_callback();
   set_renderable();

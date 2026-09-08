@@ -31,7 +31,7 @@ PUBLISHED:
   // previously by another static initializer!
   INLINE ButtonHandle() = default;
   explicit constexpr ButtonHandle(int index);
-  ButtonHandle(const std::string &name);
+  ButtonHandle(std::string_view name);
 
 PUBLISHED:
   INLINE bool operator == (const ButtonHandle &other) const;

@@ -84,14 +84,14 @@ PUBLISHED:
   INLINE static void list_contents(std::ostream &out);
   INLINE static void list_contents();
 
-  INLINE static Texture *find_texture(const std::string &name);
-  INLINE static TextureCollection find_all_textures(const std::string &name = "*");
+  INLINE static Texture *find_texture(std::string name);
+  INLINE static TextureCollection find_all_textures(std::string name = "*");
 
   INLINE static void set_fake_texture_image(const Filename &filename);
   INLINE static void clear_fake_texture_image();
   INLINE static bool has_fake_texture_image();
   INLINE static const Filename &get_fake_texture_image();
-  INLINE static PT(Texture) make_texture(const std::string &extension);
+  INLINE static PT(Texture) make_texture(std::string_view extension);
 
   INLINE static bool register_filter(TexturePoolFilter *tex_filter);
   INLINE static bool unregister_filter(TexturePoolFilter *tex_filter);
@@ -113,9 +113,9 @@ PUBLISHED:
 
 public:
   typedef Texture::MakeTextureFunc MakeTextureFunc;
-  void register_texture_type(MakeTextureFunc *func, const std::string &extensions);
+  void register_texture_type(MakeTextureFunc *func, std::string_view extensions);
 
-  MakeTextureFunc *get_texture_type(const std::string &extension) const;
+  MakeTextureFunc *get_texture_type(std::string_view extension) const;
   void write_texture_types(std::ostream &out, int indent_level) const;
 
 private:
@@ -166,9 +166,9 @@ private:
   void ns_release_all_textures();
   int ns_garbage_collect();
   void ns_list_contents(std::ostream &out) const;
-  Texture *ns_find_texture(const std::string &name) const;
-  TextureCollection ns_find_all_textures(const std::string &name) const;
-  PT(Texture) ns_make_texture(const std::string &extension) const;
+  Texture *ns_find_texture(std::string name) const;
+  TextureCollection ns_find_all_textures(std::string name) const;
+  PT(Texture) ns_make_texture(std::string_view extension) const;
 
   void resolve_filename(Filename &new_filename, const Filename &orig_filename,
                         bool read_mipmaps, const LoaderOptions &options);

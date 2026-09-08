@@ -49,8 +49,8 @@ TypeHandle OpenCVTexture::_type_handle;
  * Sets up the texture to read frames from a camera
  */
 OpenCVTexture::
-OpenCVTexture(const std::string &name) :
-  VideoTexture(name)
+OpenCVTexture(std::string name) :
+  VideoTexture(std::move(name))
 {
 }
 
@@ -452,7 +452,7 @@ do_read_one(Texture::CData *cdata,
  */
 bool OpenCVTexture::
 do_load_one(Texture::CData *cdata,
-            const PNMImage &pnmimage, const std::string &name,
+            const PNMImage &pnmimage, std::string_view name,
             int z, int n, const LoaderOptions &options) {
   if (z <= (int)_pages.size()) {
     VideoPage &page = do_modify_page(cdata, z);

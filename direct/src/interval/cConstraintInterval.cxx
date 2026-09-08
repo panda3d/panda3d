@@ -19,7 +19,7 @@ TypeHandle CConstraintInterval::_type_handle;
  *
  */
 CConstraintInterval::
-CConstraintInterval(const std::string &name, double duration) :
-  CInterval(name, duration, true)
+CConstraintInterval(std::string name, double duration) :
+  CInterval(std::move(name), duration, true)
 {
 }

@@ -21,7 +21,7 @@
  * with certificates received from an untrusted source.
  */
 INLINE int OpenSSLWrapper::
-load_certificates_from_pem_ram(const std::string &data) {
+load_certificates_from_pem_ram(std::string_view data) {
   return load_certificates_from_pem_ram(data.data(), data.size());
 }
 
@@ -35,6 +35,6 @@ load_certificates_from_pem_ram(const std::string &data) {
  * with certificates received from an untrusted source.
  */
 INLINE int OpenSSLWrapper::
-load_certificates_from_der_ram(const std::string &data) {
+load_certificates_from_der_ram(std::string_view data) {
   return load_certificates_from_der_ram(data.data(), data.size());
 }

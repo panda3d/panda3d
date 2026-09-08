@@ -430,7 +430,7 @@ run_headers_received() {
  */
 bool HTTPChannel::
 begin_request(HTTPEnum::Method method, const DocumentSpec &url,
-              const std::string &body, bool nonblocking,
+              std::string body, bool nonblocking,
               size_t first_byte, size_t last_byte) {
 
   downloader_cat.info()
@@ -445,7 +445,7 @@ begin_request(HTTPEnum::Method method, const DocumentSpec &url,
   _request = url;
   _document_spec = DocumentSpec();
   _method = method;
-  _body = body;
+  _body = std::move(body);
 
   _first_byte_requested = first_byte;
   _last_byte_requested = last_byte;

@@ -27,7 +27,7 @@ TypeHandle TinyXGraphicsPipe::_type_handle;
  *
  */
 TinyXGraphicsPipe::
-TinyXGraphicsPipe(const std::string &display) : x11GraphicsPipe(display) {
+TinyXGraphicsPipe(std::string display) : x11GraphicsPipe(std::move(display)) {
 }
 
 /**
@@ -61,7 +61,7 @@ pipe_constructor() {
  * Creates a new window on the pipe, if possible.
  */
 PT(GraphicsOutput) TinyXGraphicsPipe::
-make_output(const std::string &name,
+make_output(std::string_view name,
             const FrameBufferProperties &fb_prop,
             const WindowProperties &win_prop,
             int flags,
@@ -90,7 +90,7 @@ make_output(const std::string &name,
         ((flags&BF_can_bind_every)!=0)) {
       return nullptr;
     }
-    return new TinyXGraphicsWindow(engine, this, name, fb_prop, win_prop,
+    return new TinyXGraphicsWindow(engine, this, std::string(name), fb_prop, win_prop,
                                    flags, gsg, host);
   }
 
@@ -103,7 +103,7 @@ make_output(const std::string &name,
         ((flags&BF_require_window)!=0)) {
       return nullptr;
     }
-    return new TinyGraphicsBuffer(engine, this, name, fb_prop, win_prop, flags, gsg, host);
+    return new TinyGraphicsBuffer(engine, this, std::string(name), fb_prop, win_prop, flags, gsg, host);
   }
 
   // Nothing else left to try.

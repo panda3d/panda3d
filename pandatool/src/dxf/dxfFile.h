@@ -57,8 +57,8 @@ public:
   // definition, and must allocate a DXFLayer instance.  This function is
   // provided so that user code may force allocate of a specialized DXFLayer
   // instance instead.
-  virtual DXFLayer *new_layer(const std::string &name) {
-    return new DXFLayer(name);
+  virtual DXFLayer *new_layer(std::string name) {
+    return new DXFLayer(std::move(name));
   }
 
   enum State {
@@ -151,7 +151,7 @@ protected:
   bool get_group();
   void change_state(State new_state);
   void change_section(Section new_section);
-  void change_layer(const std::string &layer_name);
+  void change_layer(std::string layer_name);
   void change_entity(Entity new_entity);
   void reset_entity();
 

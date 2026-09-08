@@ -32,6 +32,6 @@ enum PathStore {
 std::string format_path_store(PathStore unit);
 
 std::ostream &operator << (std::ostream &out, PathStore unit);
-PathStore string_path_store(const std::string &str);
+PathStore string_path_store(std::string_view str);
 
 #endif

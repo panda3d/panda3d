@@ -15,7 +15,7 @@
  *
  */
 INLINE ConfigVariableString::
-ConfigVariableString(const std::string &name) :
+ConfigVariableString(std::string_view name) :
   ConfigVariable(name, VT_string),
   _local_modified(initial_invalid_cache())
 {
@@ -26,12 +26,12 @@ ConfigVariableString(const std::string &name) :
  *
  */
 INLINE ConfigVariableString::
-ConfigVariableString(const std::string &name, const std::string &default_value,
-                     const std::string &description, int flags) :
+ConfigVariableString(std::string_view name, std::string_view default_value,
+                     std::string_view description, int flags) :
 #ifdef PRC_SAVE_DESCRIPTIONS
   ConfigVariable(name, VT_string, description, flags),
 #else
-  ConfigVariable(name, VT_string, std::string(), flags),
+  ConfigVariable(name, VT_string, std::string_view(), flags),
 #endif
   _local_modified(initial_invalid_cache())
 {
@@ -43,8 +43,8 @@ ConfigVariableString(const std::string &name, const std::string &default_value,
  * Reassigns the variable's local value.
  */
 INLINE void ConfigVariableString::
-operator = (const std::string &value) {
-  set_value(value);
+operator = (std::string value) {
+  set_value(std::move(value));
 }
 
 /**
@@ -52,6 +52,14 @@ operator = (const std::string &value) {
  */
 INLINE ConfigVariableString::
 operator const std::string & () const {
+  return get_value();
+}
+
+/**
+ * Returns the variable's value.
+ */
+INLINE ConfigVariableString::
+operator std::string_view () const {
   return get_value();
 }
 
@@ -116,8 +124,8 @@ operator < (const std::string &other) const {
  * Reassigns the variable's local value.
  */
 INLINE void ConfigVariableString::
-set_value(const std::string &value) {
-  set_string_value(value);
+set_value(std::string value) {
+  set_string_value(std::move(value));
 }
 
 /**
@@ -157,7 +165,7 @@ get_word(size_t n) const {
  * variable's overall value.
  */
 INLINE void ConfigVariableString::
-set_word(size_t n, const std::string &value) {
+set_word(size_t n, std::string_view value) {
   set_string_word(n, value);
 }
 

@@ -148,7 +148,7 @@ print_pipe_types() const {
  * module, or if module_name is empty, it will call load_aux_modules().
  */
 PT(GraphicsPipe) GraphicsPipeSelection::
-make_pipe(const string &type_name, const string &module_name) {
+make_pipe(std::string_view type_name, std::string_view module_name) {
   TypeRegistry *type_reg = TypeRegistry::ptr();
 
   // First, see if the type is already available.
@@ -234,7 +234,7 @@ make_pipe(TypeHandle type) {
  * GraphicsPipe.
  */
 PT(GraphicsPipe) GraphicsPipeSelection::
-make_module_pipe(const string &module_name) {
+make_module_pipe(std::string_view module_name) {
   if (display_cat.is_debug()) {
     display_cat.debug()
       << "make_module_pipe(" << module_name << ")\n";
@@ -399,7 +399,7 @@ do_load_default_module() {
  * TypeHandle::none() on failure.
  */
 TypeHandle GraphicsPipeSelection::
-load_named_module(const string &name) {
+load_named_module(std::string_view name) {
   LightMutexHolder holder(_loaded_modules_lock);
 
   LoadedModules::iterator mi = _loaded_modules.find(name);
@@ -409,7 +409,7 @@ load_named_module(const string &name) {
   }
 
   // We have not yet loaded this module.  Load it now.
-  Filename dlname = Filename::dso_filename("lib" + name + ".so");
+  Filename dlname = Filename::dso_filename(std::string("lib").append(name).append(".so"));
   display_cat.info()
     << "loading display module: " << dlname.to_os_specific() << std::endl;
   void *handle = load_dso(get_plugin_path().get_value(), dlname);
@@ -422,7 +422,7 @@ load_named_module(const string &name) {
 
   // Now get the module's recommended pipe type.  This requires calling a
   // specially-named function that should have been exported from the module.
-  string symbol_name = "get_pipe_type_" + name;
+  string symbol_name = std::string("get_pipe_type_").append(name);
   void *dso_symbol = get_dso_symbol(handle, symbol_name);
   if (display_cat.is_debug()) {
     display_cat.debug()
@@ -468,7 +468,7 @@ load_named_module(const string &name) {
       << "\n";
   }
 
-  LoadedModule &module = _loaded_modules[name];
+  LoadedModule &module = _loaded_modules[std::string(name)];
   module._module_name = name;
   module._module_handle = handle;
   module._default_pipe_type = pipe_type;

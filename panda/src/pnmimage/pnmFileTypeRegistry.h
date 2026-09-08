@@ -41,8 +41,8 @@ PUBLISHED:
   MAKE_SEQ(get_types, get_num_types, get_type);
   MAKE_SEQ_PROPERTY(types, get_num_types, get_type);
 
-  PNMFileType *get_type_from_extension(const std::string &filename) const;
-  PNMFileType *get_type_from_magic_number(const std::string &magic_number) const;
+  PNMFileType *get_type_from_extension(std::string_view filename) const;
+  PNMFileType *get_type_from_magic_number(std::string_view magic_number) const;
   PNMFileType *get_type_by_handle(TypeHandle handle) const;
 
   void write(std::ostream &out, int indent_level = 0) const;
@@ -55,7 +55,7 @@ private:
   typedef pvector<PNMFileType *> Types;
   Types _types;
 
-  typedef pmap<std::string, Types> Extensions;
+  typedef pmap<std::string, Types, std::less<>> Extensions;
   Extensions _extensions;
 
   typedef pmap<TypeHandle, PNMFileType *> Handles;

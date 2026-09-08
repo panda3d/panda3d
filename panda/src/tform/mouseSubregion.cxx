@@ -20,8 +20,8 @@ TypeHandle MouseSubregion::_type_handle;
  *
  */
 MouseSubregion::
-MouseSubregion(const std::string &name) :
-  MouseInterfaceNode(name)
+MouseSubregion(std::string name) :
+  MouseInterfaceNode(std::move(name))
 {
   _pixel_xy_input = define_input("pixel_xy", EventStoreVec2::get_class_type());
   _pixel_size_input = define_input("pixel_size", EventStoreVec2::get_class_type());

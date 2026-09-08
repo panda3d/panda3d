@@ -156,7 +156,7 @@ def usage(problem):
     print("  --everything      (enable every third-party lib)")
     print("  --directx-sdk=X   (specify version of DirectX SDK to use: jun2010, aug2009)")
     print("  --windows-sdk=X   (specify Windows SDK version, eg. 7.1, 8.1, 10 or 11.  Default is 8.1)")
-    print("  --msvc-version=X  (specify Visual C++ version, eg. 14.1, 14.2, 14.3.  Default is 14.1)")
+    print("  --msvc-version=X  (specify Visual C++ version, eg. 14.1, 14.2, 14.3, 14.5.  Default is 14.1)")
     print("  --use-icl         (experimental setting to use an intel compiler instead of MSVC on Windows)")
     print("")
     print("The simplest way to compile panda is to just type:")
@@ -309,7 +309,7 @@ def parseopts(args):
 
     if GetTarget() == 'windows':
         if not MSVC_VERSION:
-            print("No MSVC version specified. Defaulting to 14.1 (Visual Studio 2017).")
+            print("No MSVC version specified. Defaulting to 14.3 (Visual Studio 2022).")
             MSVC_VERSION = (14, 3)
         else:
             try:
@@ -358,7 +358,7 @@ if GetHost() == "darwin":
     if tuple(OSX_ARCHS) == ('arm64',):
         os.environ["MACOSX_DEPLOYMENT_TARGET"] = "11.0"
     else:
-        os.environ["MACOSX_DEPLOYMENT_TARGET"] = "10.9"
+        os.environ["MACOSX_DEPLOYMENT_TARGET"] = "10.13"
 
 ########################################################################
 ##
@@ -395,6 +395,8 @@ target_arch = GetTargetArch()
 if target == 'windows':
     if target_arch == 'x64':
         PLATFORM = 'win-amd64'
+    elif target_arch == 'arm64':
+        PLATFORM = 'win-arm64'
     else:
         PLATFORM = 'win32'
 
@@ -421,10 +423,8 @@ elif target == 'darwin':
 
     if arch_tag == 'arm64':
         PLATFORM = 'macosx-11.0-' + arch_tag
-    elif sys.version_info >= (3, 13):
-        PLATFORM = 'macosx-10.13-' + arch_tag
     else:
-        PLATFORM = 'macosx-10.9-' + arch_tag
+        PLATFORM = 'macosx-10.13-' + arch_tag
 
 elif target == 'linux' and (os.path.isfile("/lib/libc-2.5.so") or os.path.isfile("/lib64/libc-2.5.so")) and os.path.isdir("/opt/python"):
     # This is manylinux1.  A bit of a sloppy check, though.
@@ -817,7 +817,7 @@ if (COMPILER=="GCC"):
              not os.path.isfile(SDK.get("MACOSX", "") + '/usr/lib/libstdc++.6.0.9.dylib'):
             # Also, we can't target FMOD Ex on 10.14 and above
             if not PkgSkip("FMODEX"):
-                Warn("thirdparty package fmodex requires one of MacOSX 10.9-10.13 SDK, excluding from build")
+                Warn("thirdparty package fmodex requires macOS 10.13 SDK, excluding from build")
             PkgDisable("FMODEX")
 
     #if not PkgSkip("PYTHON"):
@@ -1020,7 +1020,18 @@ if (COMPILER=="GCC"):
 
     if not PkgSkip("PYTHON"):
         python_lib = SDK["PYTHONVERSION"]
-        SmartPkgEnable("PYTHON", "", python_lib, (SDK["PYTHONVERSION"], SDK["PYTHONVERSION"] + "/Python.h"))
+
+        # --python-incdir traditionally points at the parent of the versioned
+        # include directory, but changed to prefer pointing to the directory
+        # containing Python.h.  Support both transitionally.
+        for opt, incdir in INCDIRECTORIES:
+            if opt == "PYTHON" and os.path.isfile(os.path.join(incdir, "Python.h")):
+                python_incs = ("Python.h",)
+                break
+        else:
+            python_incs = (SDK["PYTHONVERSION"], SDK["PYTHONVERSION"] + "/Python.h")
+
+        SmartPkgEnable("PYTHON", "", python_lib, python_incs)
 
         if not PkgSkip("PYTHON") and GetTarget() == "emscripten":
             # Python may have been compiled with these requirements.
@@ -1069,6 +1080,7 @@ if (COMPILER=="GCC"):
             LibDirectory("ALWAYS", "/usr/X11R6/lib")
 
     if GetTarget() == 'darwin':
+        PkgDisable("X11")
         LibName("ALWAYS", "-framework AppKit")
         LibName("IOKIT", "-framework IOKit")
         LibName("QUARTZ", "-framework Quartz")
@@ -1093,6 +1105,9 @@ if (COMPILER=="GCC"):
         LibName("ANDROID", '-landroid')
         LibName("JNIGRAPHICS", '-ljnigraphics')
         LibName("OPENSLES", '-lOpenSLES')
+
+    if GetTarget() == 'freebsd':
+        LibName("EXECINFO", "-lexecinfo")
 
 DefSymbol("WITHINPANDA", "WITHIN_PANDA", "1")
 if GetLinkAllStatic() or GetTarget() == 'emscripten':
@@ -1196,7 +1211,7 @@ def CompileCxx(obj,src,opts):
             # Set the minimum version to Windows Vista.
             cmd += "/DWINVER=0x600 "
 
-            cmd += "/Fo" + obj + " /nologo /c"
+            cmd += "/Fo" + obj + " /nologo /c /std:c++17"
             if GetTargetArch() == 'x86':
                 # x86 (32 bit) MSVC 2015+ defaults to /arch:SSE2
                 if not PkgSkip("SSE2") or 'SSE2' in opts:   # x86 with SSE2
@@ -1223,7 +1238,7 @@ def CompileCxx(obj,src,opts):
             if (building):
                 cmd += " /DBUILDING_" + building
 
-            if ("BIGOBJ" in opts) or GetTargetArch() == 'x64' or not PkgSkip("EIGEN"):
+            if ("BIGOBJ" in opts) or GetTargetArch() in ('x64', 'arm64') or not PkgSkip("EIGEN"):
                 cmd += " /bigobj"
 
             cmd += " /Zm300"
@@ -1322,7 +1337,7 @@ def CompileCxx(obj,src,opts):
 
     if (COMPILER=="GCC"):
         if (src.endswith(".c")): cmd = GetCC() +' -fPIC -c -o ' + obj
-        else:                    cmd = GetCXX()+' -std=gnu++14 -ftemplate-depth-70 -fPIC -c -o ' + obj
+        else:                    cmd = GetCXX()+' -std=gnu++17 -ftemplate-depth-70 -fPIC -c -o ' + obj
         for (opt, dir) in INCDIRECTORIES:
             if (opt=="ALWAYS") or (opt in opts): cmd += ' -I' + BracketNameWithQuotes(dir)
         for (opt, dir) in FRAMEWORKDIRECTORIES:
@@ -1345,7 +1360,7 @@ def CompileCxx(obj,src,opts):
             if tuple(OSX_ARCHS) == ('arm64',):
                 cmd += " -mmacosx-version-min=11.0"
             else:
-                cmd += " -mmacosx-version-min=10.9"
+                cmd += " -mmacosx-version-min=10.13"
 
             # Use libc++ to enable C++11 features.
             cmd += " -stdlib=libc++"
@@ -1388,6 +1403,12 @@ def CompileCxx(obj,src,opts):
                 cmd += ' -march=x86-64 -msse4.2 -mpopcnt'
 
             cmd += " -Wa,--noexecstack"
+
+            # Silence the flood of -Wdeprecated-declarations warnings from
+            # Eigen's use of std::result_of (deprecated in C++17) under the
+            # NDK's libc++.  These are third-party headers we don't control.
+            if not PkgSkip("EIGEN"):
+                cmd += " -Wno-deprecated-declarations"
 
             # Do we want thumb or arm instructions?
             if arch != 'arm64' and arch.startswith('arm'):
@@ -1884,10 +1905,8 @@ def CompileLink(dll, obj, opts):
 
             if tuple(OSX_ARCHS) == ('arm64',):
                 cmd += " -mmacosx-version-min=11.0"
-            elif sys.version_info >= (3, 13) and 'PYTHON' in opts:
-                cmd += " -mmacosx-version-min=10.13"
             else:
-                cmd += " -mmacosx-version-min=10.9"
+                cmd += " -mmacosx-version-min=10.13"
 
             # Use libc++ to enable C++11 features.
             cmd += " -stdlib=libc++"
@@ -2321,7 +2340,7 @@ def CompileAnything(target, inputs, opts, progress = None):
         ProgressOutput(progress, "Building Java class", target)
         return CompileJava(target, infile, opts)
     elif origsuffix == ".obj":
-        if (infile.endswith(".cxx")):
+        if infile.endswith(".cxx") or infile.endswith(".cpp"):
             ProgressOutput(progress, "Building C++ object", target)
             return CompileCxx(target, infile, opts)
         elif infile.endswith(".c"):
@@ -2396,7 +2415,6 @@ DTOOL_CONFIG=[
     ("PHAVE_GETOPT_H",                 'UNDEF',                  '1'),
     ("PHAVE_LINUX_INPUT_H",            'UNDEF',                  '1'),
     ("IOCTL_TERMINAL_WIDTH",           'UNDEF',                  '1'),
-    ("HAVE_IOS_TYPEDEFS",              '1',                      '1'),
     ("HAVE_IOS_BINARY",                '1',                      '1'),
     ("STATIC_INIT_GETENV",             '1',                      'UNDEF'),
     ("HAVE_PROC_SELF_EXE",             'UNDEF',                  '1'),
@@ -2411,16 +2429,12 @@ DTOOL_CONFIG=[
     ("GLOBAL_ARGV",                    '__argv',                 'UNDEF'),
     ("GLOBAL_ARGC",                    '__argc',                 'UNDEF'),
     ("PHAVE_IO_H",                     '1',                      'UNDEF'),
-    ("PHAVE_IOSTREAM",                 '1',                      '1'),
     ("PHAVE_STRING_H",                 'UNDEF',                  '1'),
     ("PHAVE_LIMITS_H",                 'UNDEF',                  '1'),
-    ("PHAVE_STDLIB_H",                 'UNDEF',                  '1'),
     ("PHAVE_MALLOC_H",                 '1',                      '1'),
     ("PHAVE_SYS_MALLOC_H",             'UNDEF',                  'UNDEF'),
     ("PHAVE_ALLOCA_H",                 'UNDEF',                  '1'),
     ("PHAVE_LOCALE_H",                 'UNDEF',                  '1'),
-    ("PHAVE_SSTREAM",                  '1',                      '1'),
-    ("PHAVE_NEW",                      '1',                      '1'),
     ("PHAVE_SYS_TYPES_H",              '1',                      '1'),
     ("PHAVE_SYS_TIME_H",               'UNDEF',                  '1'),
     ("PHAVE_UNISTD_H",                 'UNDEF',                  '1'),
@@ -2428,7 +2442,6 @@ DTOOL_CONFIG=[
     ("PHAVE_GLOB_H",                   'UNDEF',                  '1'),
     ("PHAVE_DIRENT_H",                 'UNDEF',                  '1'),
     ("PHAVE_UCONTEXT_H",               'UNDEF',                  '1'),
-    ("PHAVE_STDINT_H",                 '1',                      '1'),
     ("PHAVE_EXECINFO_H",               'UNDEF',                  '1'),
     ("HAVE_RTTI",                      '1',                      '1'),
     ("HAVE_X11",                       'UNDEF',                  '1'),
@@ -3210,6 +3223,11 @@ if tp_dir is not None:
                     CopyFile(GetOutputDir() + "/python/ppythonw.exe", SDK["PYTHON"] + "/pythonw.exe")
                 ConditionalWriteFile(GetOutputDir() + "/python/panda.pth", "..\n../bin\n")
 
+                # Tells run_pytest.exe where to find the Python standard
+                # library relative to its own location.
+                ConditionalWriteFile(GetOutputDir() + "/bin/run_pytest._pth",
+                    "../python/Lib\n../python/DLLs\n../python/Lib/site-packages\n..\n.\n")
+
 # Copy over the MSVC runtime.
 if GetTarget() == 'windows' and "VISUALSTUDIO" in SDK:
     vcver = "%s%s" % (SDK["MSVC_VERSION"][0], 0)        # ignore minor version.
@@ -3523,7 +3541,7 @@ TargetAdd('libp3dtoolconfig.dll', input='p3dtoolconfig_dtoolconfig.obj')
 TargetAdd('libp3dtoolconfig.dll', input='p3prc_composite1.obj')
 TargetAdd('libp3dtoolconfig.dll', input='p3prc_composite2.obj')
 TargetAdd('libp3dtoolconfig.dll', input='libp3dtool.dll')
-TargetAdd('libp3dtoolconfig.dll', opts=['ADVAPI', 'OPENSSL', 'WINGDI', 'WINUSER'])
+TargetAdd('libp3dtoolconfig.dll', opts=['ADVAPI', 'OPENSSL', 'WINGDI', 'WINUSER', 'EXECINFO'])
 
 #
 # DIRECTORY: dtool/src/prckeys/
@@ -5995,7 +6013,7 @@ if PkgSkip("PYTHON") == 0:
 #
 # Build the test runner for static builds
 #
-if GetLinkAllStatic() or GetTarget() == 'android':
+if True:
     if GetTarget() == 'emscripten':
         LinkFlag('RUN_TESTS_FLAGS', '-s NODERAWFS')
         LinkFlag('RUN_TESTS_FLAGS', '-s ASSERTIONS=2')
@@ -6014,20 +6032,43 @@ if GetLinkAllStatic() or GetTarget() == 'android':
         DefSymbol('RUN_TESTS_FLAGS', 'HAVE_BULLET')
 
     OPTS=['DIR:tests', 'PYTHON', 'RUN_TESTS_FLAGS', 'SUBSYSTEM:CONSOLE']
-    PyTargetAdd('run_tests-main.obj', opts=OPTS, input='main.c')
-    PyTargetAdd('run_tests.exe', input='run_tests-main.obj')
+    PyTargetAdd('run_pytest-main.obj', opts=OPTS, input='main.c')
+    PyTargetAdd('run_pytest.exe', input='run_pytest-main.obj')
     if GetLinkAllStatic():
-        PyTargetAdd('run_tests.exe', input='core.pyd')
+        PyTargetAdd('run_pytest.exe', input='core.pyd')
         if not PkgSkip('DIRECT'):
-            PyTargetAdd('run_tests.exe', input='direct.pyd')
+            PyTargetAdd('run_pytest.exe', input='direct.pyd')
         if not PkgSkip('PANDAPHYSICS'):
-            PyTargetAdd('run_tests.exe', input='physics.pyd')
+            PyTargetAdd('run_pytest.exe', input='physics.pyd')
         if not PkgSkip('EGG'):
-            PyTargetAdd('run_tests.exe', input='egg.pyd')
+            PyTargetAdd('run_pytest.exe', input='egg.pyd')
         if not PkgSkip('BULLET'):
-            PyTargetAdd('run_tests.exe', input='bullet.pyd')
-    PyTargetAdd('run_tests.exe', input=COMMON_PANDA_LIBS)
-    PyTargetAdd('run_tests.exe', opts=['PYTHON', 'BULLET', 'RUN_TESTS_FLAGS'])
+            PyTargetAdd('run_pytest.exe', input='bullet.pyd')
+    PyTargetAdd('run_pytest.exe', input=COMMON_PANDA_LIBS)
+    PyTargetAdd('run_pytest.exe', opts=['PYTHON', 'BULLET', 'RUN_TESTS_FLAGS'])
+
+#
+# Build the C++ test suite.  Tests are discovered automatically: any
+# tests/<package>/test_*.cxx file is compiled into the run_cxx_tests binary.
+#
+
+OPTS=['DIR:tests/catch2']
+TargetAdd('run_cxx_tests_catch_amalgamated.obj', opts=OPTS, input='catch_amalgamated.cpp')
+
+cxx_test_objs = ['run_cxx_tests_catch_amalgamated.obj']
+for tdir in sorted(os.listdir('tests')):
+    if tdir == 'catch2' or not os.path.isdir(os.path.join('tests', tdir)):
+        continue
+    OPTS=['DIR:tests/' + tdir, 'DIR:tests/catch2', 'ZLIB']
+    for tfile in GetDirectoryContents('tests/' + tdir, ["test_*.cxx"]):
+        obj = 'run_cxx_tests_%s_%s.obj' % (tdir, os.path.splitext(tfile)[0])
+        TargetAdd(obj, opts=OPTS, input=tfile)
+        cxx_test_objs.append(obj)
+
+for obj in cxx_test_objs:
+    TargetAdd('run_cxx_tests.exe', input=obj)
+TargetAdd('run_cxx_tests.exe', input=COMMON_PANDA_LIBS)
+TargetAdd('run_cxx_tests.exe', opts=['SUBSYSTEM:CONSOLE', 'ZLIB'])
 
 #
 # Generate the models directory and samples directory
@@ -6190,16 +6231,23 @@ finally:
 
 # Run the test suite.
 if RUNTESTS:
-    if GetLinkAllStatic():
-        runner = FindLocation("run_tests.exe", [])
-        if runner.endswith(".js"):
-            cmdstr = "node " + BracketNameWithQuotes(runner)
-        else:
-            cmdstr = BracketNameWithQuotes(runner)
+    # First the C++ suite, which is quick.
+    cxx_runner = FindLocation("run_cxx_tests.exe", [])
+    if cxx_runner.endswith(".js"):
+        cmdstr = "node " + BracketNameWithQuotes(cxx_runner)
     else:
-        cmdstr = BracketNameWithQuotes(SDK["PYTHONEXEC"].replace('\\', '/'))
-        cmdstr += " -B -m pytest"
-    cmdstr += " tests"
+        cmdstr = BracketNameWithQuotes(cxx_runner)
+    if GetVerbose():
+        cmdstr += " -s"
+    oscmd(cmdstr)
+
+    # Then the Python test suite, excluding the C++ tests.
+    runner = FindLocation("run_pytest.exe", [])
+    if runner.endswith(".js"):
+        cmdstr = "node " + BracketNameWithQuotes(runner)
+    else:
+        cmdstr = BracketNameWithQuotes(runner)
+    cmdstr += " tests --no-cxx-tests"
     if GetVerbose():
         cmdstr += " --verbose"
     oscmd(cmdstr)

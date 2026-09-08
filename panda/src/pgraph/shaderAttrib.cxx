@@ -273,7 +273,7 @@ clear_shader_input(const InternalName *id) const {
  *
  */
 CPT(RenderAttrib) ShaderAttrib::
-clear_shader_input(const std::string &id) const {
+clear_shader_input(std::string_view id) const {
   return clear_shader_input(InternalName::make(id));
 }
 
@@ -306,7 +306,7 @@ get_shader_input(const InternalName *id) const {
  * function does not return NULL --- it returns the "blank" ShaderInput.
  */
 const ShaderInput &ShaderAttrib::
-get_shader_input(const std::string &id) const {
+get_shader_input(std::string_view id) const {
   return get_shader_input(InternalName::make(id));
 }
 

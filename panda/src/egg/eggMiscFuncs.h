@@ -28,7 +28,7 @@
  * always_quote is true, writes quotation marks regardless.
  */
 std::ostream &
-enquote_string(std::ostream &out, const std::string &str,
+enquote_string(std::ostream &out, std::string_view str,
                int indent_level = 0,
                bool always_quote = false);
 

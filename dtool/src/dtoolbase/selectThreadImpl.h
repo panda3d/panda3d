@@ -26,26 +26,14 @@
  * synchronization classes are defined in pandasrcexpress.
  */
 
-// This keyword should be used to mark any variable which is possibly volatile
-// because multiple threads might contend on it, unprotected by a mutex.  It
-// will be defined out in the non-threaded case.  Other uses for volatile (dma
-// buffers, for instance) should use the regular volatile keyword.
-#define TVOLATILE volatile
-
 #if !defined(HAVE_THREADS) || defined(CPPPARSER)
 
 // With threading disabled, use the do-nothing implementation.
 #define THREAD_DUMMY_IMPL 1
 
-// And the TVOLATILE keyword means nothing in the absence of threads.
-#undef TVOLATILE
-#define TVOLATILE
-
 #elif defined(SIMPLE_THREADS)
 // Use the simulated threading library.
 #define THREAD_SIMPLE_IMPL 1
-#undef TVOLATILE
-#define TVOLATILE
 
 #elif defined(_WIN32)
 

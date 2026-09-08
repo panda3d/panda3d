@@ -32,10 +32,7 @@ class EXPCL_PANDA_PIPELINE LightReMutex : public LightReMutexDirect
 {
 PUBLISHED:
   INLINE LightReMutex();
-public:
-  INLINE explicit LightReMutex(const char *name);
-PUBLISHED:
-  INLINE explicit LightReMutex(const std::string &name);
+  INLINE explicit LightReMutex(std::string_view name);
   LightReMutex(const LightReMutex &copy) = delete;
   ~LightReMutex() = default;
 

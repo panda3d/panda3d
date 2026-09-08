@@ -31,7 +31,7 @@ class NetAddress;
 class EXPCL_PANDA_NET ConnectionListener : public ConnectionReader {
 PUBLISHED:
   ConnectionListener(ConnectionManager *manager, int num_threads,
-                     const std::string &thread_name = std::string());
+                     std::string_view thread_name = std::string_view());
 
 protected:
   virtual void receive_datagram(const NetDatagram &datagram);

@@ -23,8 +23,8 @@ TypeHandle ClientDevice::_type_handle;
  */
 ClientDevice::
 ClientDevice(ClientBase *client, TypeHandle device_type,
-             const std::string &device_name) :
-  InputDevice(device_name, DeviceClass::UNKNOWN),
+             std::string device_name) :
+  InputDevice(std::move(device_name), DeviceClass::UNKNOWN),
   _client(client),
   _device_type(device_type)
 {

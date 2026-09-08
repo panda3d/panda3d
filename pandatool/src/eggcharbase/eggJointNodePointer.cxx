@@ -193,8 +193,8 @@ has_vertices() const {
  * pointer to it.
  */
 EggJointPointer *EggJointNodePointer::
-make_new_joint(const std::string &name) {
-  EggGroup *new_joint = new EggGroup(name);
+make_new_joint(std::string name) {
+  EggGroup *new_joint = new EggGroup(std::move(name));
   new_joint->set_group_type(EggGroup::GT_joint);
   _joint->add_child(new_joint);
   return new EggJointNodePointer(new_joint);
@@ -204,6 +204,6 @@ make_new_joint(const std::string &name) {
  * Applies the indicated name change to the egg file.
  */
 void EggJointNodePointer::
-set_name(const std::string &name) {
-  _joint->set_name(name);
+set_name(std::string name) {
+  _joint->set_name(std::move(name));
 }

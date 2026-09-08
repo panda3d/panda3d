@@ -31,8 +31,8 @@ ExternalThread() : Thread("External", "External") {
  * external thread that is bound via Thread::bind_thread().
  */
 ExternalThread::
-ExternalThread(const std::string &name, const std::string &sync_name) :
-  Thread(name, sync_name)
+ExternalThread(std::string name, std::string sync_name) :
+  Thread(std::move(name), std::move(sync_name))
 {
   _started = true;
 }

@@ -28,21 +28,9 @@ LightReMutex()
  */
 INLINE LightReMutex::
 #ifdef DEBUG_THREADS
-LightReMutex(const char *name) : MutexDebug(std::string(name), true, true)
+LightReMutex(std::string_view name) : MutexDebug(name, true, true)
 #else
-LightReMutex(const char *)
-#endif  // DEBUG_THREADS
-{
-}
-
-/**
- *
- */
-INLINE LightReMutex::
-#ifdef DEBUG_THREADS
-LightReMutex(const std::string &name) : MutexDebug(name, true, true)
-#else
-LightReMutex(const std::string &)
+LightReMutex(std::string_view)
 #endif  // DEBUG_THREADS
 {
 }

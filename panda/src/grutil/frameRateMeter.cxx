@@ -31,8 +31,8 @@ TypeHandle FrameRateMeter::_type_handle;
  *
  */
 FrameRateMeter::
-FrameRateMeter(const std::string &name) :
-  TextNode(name),
+FrameRateMeter(std::string name) :
+  TextNode(std::move(name)),
   _last_aspect_ratio(-1) {
 
   set_cull_callback();

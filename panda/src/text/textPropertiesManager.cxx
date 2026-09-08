@@ -45,8 +45,8 @@ TextPropertiesManager::
  * it is quietly replaced with the new definition.
  */
 void TextPropertiesManager::
-set_properties(const string &name, const TextProperties &properties) {
-  _properties[name] = properties;
+set_properties(std::string_view name, const TextProperties &properties) {
+  _properties[std::string(name)] = properties;
 }
 
 /**
@@ -59,7 +59,7 @@ set_properties(const string &name, const TextProperties &properties) {
  * defined.
  */
 TextProperties TextPropertiesManager::
-get_properties(const string &name) {
+get_properties(std::string_view name) {
   Properties::const_iterator pi;
   pi = _properties.find(name);
   if (pi != _properties.end()) {
@@ -70,7 +70,7 @@ get_properties(const string &name) {
     << "Creating default TextProperties for name '" << name << "'\n";
 
   TextProperties default_properties;
-  _properties[name] = default_properties;
+  _properties[std::string(name)] = default_properties;
   return default_properties;
 }
 
@@ -82,7 +82,7 @@ get_properties(const string &name) {
  * get_properties() has been called with the indicated name.
  */
 bool TextPropertiesManager::
-has_properties(const string &name) const {
+has_properties(std::string_view name) const {
   Properties::const_iterator pi;
   pi = _properties.find(name);
   return (pi != _properties.end());
@@ -92,8 +92,11 @@ has_properties(const string &name) const {
  * Removes the named TextProperties structure from the manager.
  */
 void TextPropertiesManager::
-clear_properties(const string &name) {
-  _properties.erase(name);
+clear_properties(std::string_view name) {
+  Properties::iterator pi = _properties.find(name);
+  if (pi != _properties.end()) {
+    _properties.erase(pi);
+  }
 }
 
 /**
@@ -106,8 +109,8 @@ clear_properties(const string &name) {
  * is quietly replaced with the new definition.
  */
 void TextPropertiesManager::
-set_graphic(const string &name, const TextGraphic &graphic) {
-  _graphics[name] = graphic;
+set_graphic(std::string_view name, const TextGraphic &graphic) {
+  _graphics[std::string(name)] = graphic;
 }
 
 /**
@@ -117,7 +120,7 @@ set_graphic(const string &name, const TextGraphic &graphic) {
  * want to have explicit control of the frame.
  */
 void TextPropertiesManager::
-set_graphic(const string &name, const NodePath &model) {
+set_graphic(std::string_view name, const NodePath &model) {
   LPoint3 min_point, max_point;
   model.calc_tight_bounds(min_point, max_point);
 
@@ -127,7 +130,7 @@ set_graphic(const string &name, const NodePath &model) {
                       min_point.dot(LVector3::up()),
                       max_point.dot(LVector3::up()));
 
-  _graphics[name] = graphic;
+  _graphics[std::string(name)] = graphic;
 }
 
 /**
@@ -140,7 +143,7 @@ set_graphic(const string &name, const NodePath &model) {
  * defined.
  */
 TextGraphic TextPropertiesManager::
-get_graphic(const string &name) {
+get_graphic(std::string_view name) {
   Graphics::const_iterator pi;
   pi = _graphics.find(name);
   if (pi != _graphics.end()) {
@@ -151,7 +154,7 @@ get_graphic(const string &name) {
     << "Creating default TextGraphic for name '" << name << "'\n";
 
   TextGraphic default_graphic;
-  _graphics[name] = default_graphic;
+  _graphics[std::string(name)] = default_graphic;
   return default_graphic;
 }
 
@@ -163,7 +166,7 @@ get_graphic(const string &name) {
  * get_graphic() has been called with the indicated name.
  */
 bool TextPropertiesManager::
-has_graphic(const string &name) const {
+has_graphic(std::string_view name) const {
   Graphics::const_iterator pi;
   pi = _graphics.find(name);
   return (pi != _graphics.end());
@@ -173,8 +176,11 @@ has_graphic(const string &name) const {
  * Removes the named TextGraphic structure from the manager.
  */
 void TextPropertiesManager::
-clear_graphic(const string &name) {
-  _graphics.erase(name);
+clear_graphic(std::string_view name) {
+  Graphics::iterator pi = _graphics.find(name);
+  if (pi != _graphics.end()) {
+    _graphics.erase(pi);
+  }
 }
 
 /**
@@ -206,7 +212,7 @@ get_global_ptr() {
  * there is no properties with that name.
  */
 const TextProperties *TextPropertiesManager::
-get_properties_ptr(const string &name) {
+get_properties_ptr(std::string_view name) {
   Properties::const_iterator pi;
   pi = _properties.find(name);
   if (pi != _properties.end()) {
@@ -220,7 +226,7 @@ get_properties_ptr(const string &name) {
  * there is no graphic with that name.
  */
 const TextGraphic *TextPropertiesManager::
-get_graphic_ptr(const string &name) {
+get_graphic_ptr(std::string_view name) {
   Graphics::const_iterator pi;
   pi = _graphics.find(name);
   if (pi != _graphics.end()) {

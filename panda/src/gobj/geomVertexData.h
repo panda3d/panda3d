@@ -72,7 +72,7 @@ protected:
   virtual PT(CopyOnWriteObject) make_cow_copy();
 
 PUBLISHED:
-  explicit GeomVertexData(const std::string &name,
+  explicit GeomVertexData(std::string name,
                           const GeomVertexFormat *format,
                           UsageHint usage_hint);
   GeomVertexData(const GeomVertexData &copy);
@@ -86,7 +86,7 @@ PUBLISHED:
   int compare_to(const GeomVertexData &other) const;
 
   INLINE const std::string &get_name() const;
-  void set_name(const std::string &name);
+  void set_name(std::string name);
   MAKE_PROPERTY(name, get_name, set_name);
 
   INLINE UsageHint get_usage_hint() const;

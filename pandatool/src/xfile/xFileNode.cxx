@@ -29,12 +29,12 @@ TypeHandle XFileNode::_type_handle;
  *
  */
 XFileNode::
-XFileNode(XFile *x_file, const string &name) :
+XFileNode(XFile *x_file, std::string_view name) :
   Namable(),
   _x_file(x_file)
 {
   if (x_file && x_file->_keep_names) {
-    set_name(name);
+    set_name(std::string(name));
   } else {
     set_name(make_nice_name(name));
   }
@@ -52,7 +52,7 @@ XFileNode::
  * Returns the child with the indicated name, if any, or NULL if none.
  */
 XFileNode *XFileNode::
-find_child(const string &name) const {
+find_child(std::string_view name) const {
   ChildrenByName::const_iterator ni;
   ni = _children_by_name.find(downcase(name));
   if (ni != _children_by_name.end()) {
@@ -67,7 +67,7 @@ find_child(const string &name) const {
  * -1 if none.
  */
 int XFileNode::
-find_child_index(const string &name) const {
+find_child_index(std::string_view name) const {
   ChildrenByName::const_iterator ni;
   ni = _children_by_name.find(downcase(name));
   if (ni != _children_by_name.end()) {
@@ -96,7 +96,7 @@ find_child_index(const XFileNode *child) const {
  * depth-first search, if any, or NULL if none.
  */
 XFileNode *XFileNode::
-find_descendent(const string &name) const {
+find_descendent(std::string_view name) const {
   XFileNode *child = find_child(name);
   if (child != nullptr) {
     return child;
@@ -180,7 +180,7 @@ is_object() const {
  * an XFileDataNodeTemplate or an XFileDataNodeReference).
  */
 bool XFileNode::
-is_standard_object(const string &template_name) const {
+is_standard_object(std::string_view template_name) const {
   return false;
 }
 
@@ -297,7 +297,7 @@ matches(const XFileNode *other) const {
  * Creates a new Mesh instance, as a child of this node.
  */
 XFileDataNode *XFileNode::
-add_Mesh(const string &name) {
+add_Mesh(std::string_view name) {
   XFileTemplate *xtemplate = XFile::find_standard_template("Mesh");
   nassertr(xtemplate != nullptr, nullptr);
   XFileDataNodeTemplate *node =
@@ -312,7 +312,7 @@ add_Mesh(const string &name) {
  * Creates a new MeshNormals instance, as a child of this node.
  */
 XFileDataNode *XFileNode::
-add_MeshNormals(const string &name) {
+add_MeshNormals(std::string_view name) {
   XFileTemplate *xtemplate = XFile::find_standard_template("MeshNormals");
   nassertr(xtemplate != nullptr, nullptr);
   XFileDataNodeTemplate *node =
@@ -327,7 +327,7 @@ add_MeshNormals(const string &name) {
  * Creates a new MeshVertexColors instance, as a child of this node.
  */
 XFileDataNode *XFileNode::
-add_MeshVertexColors(const string &name) {
+add_MeshVertexColors(std::string_view name) {
   XFileTemplate *xtemplate = XFile::find_standard_template("MeshVertexColors");
   nassertr(xtemplate != nullptr, nullptr);
   XFileDataNodeTemplate *node =
@@ -342,7 +342,7 @@ add_MeshVertexColors(const string &name) {
  * Creates a new MeshTextureCoords instance, as a child of this node.
  */
 XFileDataNode *XFileNode::
-add_MeshTextureCoords(const string &name) {
+add_MeshTextureCoords(std::string_view name) {
   XFileTemplate *xtemplate = XFile::find_standard_template("MeshTextureCoords");
   nassertr(xtemplate != nullptr, nullptr);
   XFileDataNodeTemplate *node =
@@ -357,7 +357,7 @@ add_MeshTextureCoords(const string &name) {
  * Creates a new MeshMaterialList instance, as a child of this node.
  */
 XFileDataNode *XFileNode::
-add_MeshMaterialList(const string &name) {
+add_MeshMaterialList(std::string_view name) {
   XFileTemplate *xtemplate = XFile::find_standard_template("MeshMaterialList");
   nassertr(xtemplate != nullptr, nullptr);
   XFileDataNodeTemplate *node =
@@ -372,7 +372,7 @@ add_MeshMaterialList(const string &name) {
  * Creates a new Material instance, as a child of this node.
  */
 XFileDataNode *XFileNode::
-add_Material(const string &name, const LColor &face_color,
+add_Material(std::string_view name, const LColor &face_color,
              double power, const LRGBColor &specular_color,
              const LRGBColor &emissive_color) {
   XFileTemplate *xtemplate = XFile::find_standard_template("Material");
@@ -401,7 +401,7 @@ add_Material(const string &name, const LColor &face_color,
  * Creates a new TextureFilename instance, as a child of this node.
  */
 XFileDataNode *XFileNode::
-add_TextureFilename(const string &name, const Filename &filename) {
+add_TextureFilename(std::string_view name, const Filename &filename) {
   XFileTemplate *xtemplate = XFile::find_standard_template("TextureFilename");
   nassertr(xtemplate != nullptr, nullptr);
   XFileDataNodeTemplate *node =
@@ -418,7 +418,7 @@ add_TextureFilename(const string &name, const Filename &filename) {
  * Creates a new Frame instance, as a child of this node.
  */
 XFileDataNode *XFileNode::
-add_Frame(const string &name) {
+add_Frame(std::string_view name) {
   XFileTemplate *xtemplate = XFile::find_standard_template("Frame");
   nassertr(xtemplate != nullptr, nullptr);
   XFileDataNodeTemplate *node =
@@ -471,17 +471,16 @@ add_FrameTransformMatrix(const LMatrix4d &mat) {
  * in the X File format.
  */
 string XFileNode::
-make_nice_name(const string &str) {
+make_nice_name(std::string_view str) {
   string result;
 
-  string::const_iterator si;
-  for (si = str.begin(); si != str.end(); ++si) {
-    if (isalnum(*si)) {
-      result += (*si);
+  for (char ch : str) {
+    if (isalnum((unsigned char)ch)) {
+      result += ch;
     } else {
-      switch (*si) {
+      switch (ch) {
       case '-':
-        result += (*si);
+        result += ch;
         break;
       default:
         result += "_";
@@ -489,7 +488,7 @@ make_nice_name(const string &str) {
     }
   }
 
-  if (str.empty() || isdigit(str[0])) {
+  if (str.empty() || isdigit((unsigned char)str[0])) {
     // If the name begins with a digit, or if it is empty, then we must make
     // it begin with something else, like for instance an underscore.
     result = '_' + result;

@@ -56,7 +56,7 @@ LightMutex InternalName::_literal_table_lock;
  * Use make() to make a new InternalName instance.
  */
 InternalName::
-InternalName(InternalName *parent, const string &basename) :
+InternalName(InternalName *parent, std::string basename) :
   _parent(parent),
   _basename(basename)
 {
@@ -110,7 +110,7 @@ unref() const {
  * InternalName::make(parent->get_name() + ".basename").
  */
 PT(InternalName) InternalName::
-append(const string &name) {
+append(std::string_view name) {
   test_ref_count_integrity();
 
   if (name.empty()) {
@@ -118,7 +118,7 @@ append(const string &name) {
   }
 
   size_t dot = name.rfind('.');
-  if (dot != string::npos) {
+  if (dot != std::string_view::npos) {
     return append(name.substr(0, dot))->append(name.substr(dot + 1));
   }
 
@@ -129,8 +129,8 @@ append(const string &name) {
     return (*ni).second;
   }
 
-  InternalName *internal_name = new InternalName(this, name);
-  _name_table[name] = internal_name;
+  InternalName *internal_name = new InternalName(this, std::string(name));
+  _name_table[internal_name->_basename] = internal_name;
   return internal_name;
 }
 
@@ -155,7 +155,7 @@ get_name() const {
  * Like get_name, but uses a custom separator instead of ".".
  */
 string InternalName::
-join(const string &sep) const {
+join(std::string_view sep) const {
   if (_parent == get_root()) {
     return _basename;
 
@@ -163,7 +163,10 @@ join(const string &sep) const {
     return string();
 
   } else {
-    return _parent->join(sep) + sep + _basename;
+    std::string result = _parent->join(sep);
+    result += sep;
+    result += _basename;
+    return result;
   }
 }
 
@@ -175,7 +178,7 @@ join(const string &sep) const {
  * retrieve more information about the indicated name.
  */
 int InternalName::
-find_ancestor(const string &basename) const {
+find_ancestor(std::string_view basename) const {
   test_ref_count_integrity();
 
   if (_basename == basename) {
@@ -295,7 +298,7 @@ finalize(BamReader *) {
  * Make using a string and an integer.  Concatenates the two.
  */
 PT(InternalName) InternalName::
-make(const string &name, int index) {
+make(std::string_view name, int index) {
   std::ostringstream full;
   full << name << index;
   return make(full.str());

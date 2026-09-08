@@ -26,7 +26,7 @@ class XFileDataDef;
  */
 class XFileTemplate : public XFileNode {
 public:
-  XFileTemplate(XFile *x_file, const std::string &name, const WindowsGuid &guid);
+  XFileTemplate(XFile *x_file, std::string_view name, const WindowsGuid &guid);
   virtual ~XFileTemplate();
 
   virtual bool has_guid() const;

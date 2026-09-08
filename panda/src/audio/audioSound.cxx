@@ -34,6 +34,16 @@ AudioSound(bool positional) : _positional(positional) {
   // Intentionally blank.
 }
 
+/*
+ * Copies an OpenALAudioSound into a new OpenALAudioSound.
+ * Not implemented in FMOD!
+ */
+AudioSound *AudioSound::
+make_copy() const {
+  // Intentionally blank.
+  audio_cat.error() << "Copying " << (*this) << "failed: copying an AudioSound object is currently only available with OpenAL.\n";
+  return nullptr;
+}
 
 void AudioSound::
 set_3d_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx, PN_stdfloat vy, PN_stdfloat vz) {
@@ -213,9 +223,10 @@ get_raw_comment() const {
  * i.e. "author". Case-sensitive.
  */
 bool AudioSound::
-has_comment(const std::string &key) const {
+has_comment(std::string_view key) const {
   for (const std::string &st : get_raw_comment()) {
-    if (st.rfind(key + "=", 0) == 0) {
+    if (st.size() > key.size() && st[key.size()] == '=' &&
+        st.compare(0, key.size(), key) == 0) {
       return true;
     }
   }
@@ -227,10 +238,11 @@ has_comment(const std::string &key) const {
  * returns an empty string.
  */
 std::string AudioSound::
-get_comment(const std::string &key) const {
+get_comment(std::string_view key) const {
   for (const std::string &st : get_raw_comment()) {
-    if (st.rfind(key + "=", 0) == 0) {
-      return st.substr(key.length() + 1);
+    if (st.size() > key.size() && st[key.size()] == '=' &&
+        st.compare(0, key.size(), key) == 0) {
+      return st.substr(key.size() + 1);
     }
   }
   return "";

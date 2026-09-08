@@ -25,7 +25,7 @@
  * NameUniquifier's "separator" string, followed by a number.
  */
 INLINE std::string NameUniquifier::
-add_name(const std::string &name) {
+add_name(std::string_view name) {
   return add_name_body(name, name);
 }
 
@@ -43,6 +43,6 @@ add_name(const std::string &name) {
  * NameUniquifier's "separator" string, followed by a number.
  */
 INLINE std::string NameUniquifier::
-add_name(const std::string &name, const std::string &prefix) {
+add_name(std::string_view name, std::string_view prefix) {
   return add_name_body(name, prefix);
 }

@@ -25,7 +25,7 @@
  */
 class EXPCL_PANDA_EGG EggNamedObject : public EggObject, public Namable {
 PUBLISHED:
-  INLINE explicit EggNamedObject(const std::string &name = "");
+  INLINE explicit EggNamedObject(std::string name = "");
   INLINE EggNamedObject(const EggNamedObject &copy);
   INLINE EggNamedObject &operator = (const EggNamedObject &copy);
 

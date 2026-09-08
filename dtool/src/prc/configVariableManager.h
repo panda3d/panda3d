@@ -34,11 +34,11 @@ protected:
   ~ConfigVariableManager();
 
 PUBLISHED:
-  ConfigVariableCore *make_variable(const std::string &name);
-  ConfigVariableCore *make_variable_template(const std::string &pattern,
+  ConfigVariableCore *make_variable(std::string_view name);
+  ConfigVariableCore *make_variable_template(std::string_view pattern,
                                              ConfigFlags::ValueType type,
-                                             const std::string &default_value,
-                                             const std::string &description = std::string(),
+                                             std::string_view default_value,
+                                             std::string_view description = std::string_view(),
                                              int flags = 0);
 
 
@@ -70,7 +70,7 @@ private:
   typedef std::vector<ConfigVariableCore *> Variables;
   Variables _variables;
 
-  typedef std::map<std::string, ConfigVariableCore *> VariablesByName;
+  typedef std::map<std::string, ConfigVariableCore *, std::less<>> VariablesByName;
   VariablesByName _variables_by_name;
 
   typedef std::map<GlobPattern, ConfigVariableCore *> VariableTemplates;

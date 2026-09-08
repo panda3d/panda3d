@@ -37,7 +37,7 @@
  */
 class EXPCL_PANDA_PGUI PGEntry : public PGItem {
 PUBLISHED:
-  explicit PGEntry(const std::string &name);
+  explicit PGEntry(std::string name);
   virtual ~PGEntry();
 
 protected:
@@ -69,7 +69,7 @@ PUBLISHED:
   void setup(PN_stdfloat width, int num_lines);
   void setup_minimal(PN_stdfloat width, int num_lines);
 
-  INLINE bool set_text(const std::string &text);
+  INLINE bool set_text(std::string_view text);
   INLINE std::string get_plain_text() const;
   INLINE std::string get_text() const;
 
@@ -115,11 +115,11 @@ PUBLISHED:
   INLINE bool get_overflow_mode() const;
   MAKE_PROPERTY(overflow_mode, get_overflow_mode, set_overflow_mode);
 
-  INLINE void set_candidate_active(const std::string &candidate_active);
+  INLINE void set_candidate_active(std::string candidate_active);
   INLINE const std::string &get_candidate_active() const;
   MAKE_PROPERTY(candidate_active, get_candidate_active, set_candidate_active);
 
-  INLINE void set_candidate_inactive(const std::string &candidate_inactive);
+  INLINE void set_candidate_inactive(std::string candidate_inactive);
   INLINE const std::string &get_candidate_inactive() const;
   MAKE_PROPERTY(candidate_inactive, get_candidate_inactive, set_candidate_inactive);
 

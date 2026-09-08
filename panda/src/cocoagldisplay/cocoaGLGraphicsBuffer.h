@@ -24,7 +24,7 @@
 class EXPCL_PANDA_COCOAGLDISPLAY CocoaGLGraphicsBuffer : public GLGraphicsBuffer {
 public:
   CocoaGLGraphicsBuffer(GraphicsEngine *engine, GraphicsPipe *pipe,
-                        const std::string &name,
+                        std::string name,
                         const FrameBufferProperties &fb_prop,
                         const WindowProperties &win_prop,
                         int flags,

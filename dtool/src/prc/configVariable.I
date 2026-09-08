@@ -16,7 +16,7 @@
  * ConfigVariableFoo derived class.
  */
 INLINE ConfigVariable::
-ConfigVariable(const std::string &name, ConfigVariable::ValueType value_type) :
+ConfigVariable(std::string_view name, ConfigVariable::ValueType value_type) :
   ConfigVariableBase(name, value_type)
 {
 }
@@ -26,8 +26,8 @@ ConfigVariable(const std::string &name, ConfigVariable::ValueType value_type) :
  * ConfigVariableFoo derived class.
  */
 INLINE ConfigVariable::
-ConfigVariable(const std::string &name, ConfigVariable::ValueType value_type,
-               const std::string &description, int flags) :
+ConfigVariable(std::string_view name, ConfigVariable::ValueType value_type,
+               std::string_view description, int flags) :
   ConfigVariableBase(name, value_type, description, flags)
 {
 }
@@ -38,7 +38,7 @@ ConfigVariable(const std::string &name, ConfigVariable::ValueType value_type,
  * ConfigVariable of a specific type, without having to know what type it is.
  */
 INLINE ConfigVariable::
-ConfigVariable(const std::string &name) :
+ConfigVariable(std::string_view name) :
   ConfigVariableBase(name, VT_undefined)
 {
   _core->set_used();
@@ -77,9 +77,9 @@ get_string_value() const {
  * clear_local_value() is called.
  */
 INLINE void ConfigVariable::
-set_string_value(const std::string &string_value) {
+set_string_value(std::string string_value) {
   nassertv(is_constructed());
-  _core->make_local_value()->set_string_value(string_value);
+  _core->make_local_value()->set_string_value(std::move(string_value));
 }
 
 /**
@@ -219,7 +219,7 @@ get_double_word(size_t n) const {
  * words.
  */
 INLINE void ConfigVariable::
-set_string_word(size_t n, const std::string &value) {
+set_string_word(size_t n, std::string_view value) {
   nassertv(is_constructed());
   _core->make_local_value()->set_string_word(n, value);
 }

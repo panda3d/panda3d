@@ -166,7 +166,7 @@ write_connections(std::ostream &out) const {
  * do_transmit_data() that can be used to access the input data.
  */
 int DataNode::
-define_input(const string &name, TypeHandle data_type) {
+define_input(std::string name, TypeHandle data_type) {
   // We shouldn't already be connected.
   nassertr(_data_connections.empty(), 0);
 
@@ -180,7 +180,7 @@ define_input(const string &name, TypeHandle data_type) {
   }
 
   // This wire did not already exist; add it.
-  WireDef &def = _input_wires[name];
+  WireDef &def = _input_wires[std::move(name)];
   def._data_type = data_type;
   def._index = _input_wires.size() - 1;
   return def._index;
@@ -199,7 +199,7 @@ define_input(const string &name, TypeHandle data_type) {
  * do_transmit_data() where the output data should be stored.
  */
 int DataNode::
-define_output(const string &name, TypeHandle data_type) {
+define_output(std::string name, TypeHandle data_type) {
   // We shouldn't already be connected.
   nassertr(_data_connections.empty(), 0);
 
@@ -213,7 +213,7 @@ define_output(const string &name, TypeHandle data_type) {
   }
 
   // This wire did not already exist; add it.
-  WireDef &def = _output_wires[name];
+  WireDef &def = _output_wires[std::move(name)];
   def._data_type = data_type;
   def._index = _output_wires.size() - 1;
   return def._index;

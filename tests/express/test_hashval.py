@@ -52,3 +52,39 @@ def test_hashval_md5_random():
         assert hv.as_hex() == control
 
         data.append(random.randint(0, 255))
+
+
+def test_hashval_ordering():
+    # Regression test for a HashVal ordering bug which made it unsuitable for
+    # use in a map.
+    def from_hex(hex):
+        val = core.HashVal()
+        assert val.set_from_hex(hex)
+        return val
+
+    # These three values were mutually circular before:
+    # a < b and b < c, yet c < a.
+    a = from_hex('00000000000000000000000000000000')
+    b = from_hex('60000000000000000000000000000000')
+    c = from_hex('c0000000000000000000000000000000')
+    assert a < b
+    assert b < c
+    assert a < c
+
+    # Every word must participate, most significant word first.
+    assert from_hex('00000000000000000000000000000001') < \
+           from_hex('00000000000000010000000000000000')
+
+    # The ordering must sort arbitrary hashes like 128-bit integers, and
+    # compare_to must agree with the comparison operators in both directions.
+    hexes = sorted({'%032x' % random.getrandbits(128) for i in range(100)})
+    vals = [from_hex(hex) for hex in hexes]
+    for val1, val2 in zip(vals, vals[1:]):
+        assert val1 < val2
+        assert not (val2 < val1)
+        assert val1.compare_to(val2) < 0
+        assert val2.compare_to(val1) > 0
+
+    for val in vals:
+        assert not (val < val)
+        assert val.compare_to(val) == 0

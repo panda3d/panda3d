@@ -232,7 +232,7 @@ PUBLISHED:
   };
 
 PUBLISHED:
-  explicit Texture(const std::string &name = std::string());
+  explicit Texture(std::string name = "");
 
 protected:
   Texture(const Texture &copy);
@@ -296,11 +296,11 @@ PUBLISHED:
   BLOCKING INLINE bool write(const Filename &fullpath, int z, int n,
                              bool write_pages, bool write_mipmaps);
 
-  BLOCKING bool read_txo(std::istream &in, const std::string &filename = "");
-  BLOCKING static PT(Texture) make_from_txo(std::istream &in, const std::string &filename = "");
-  BLOCKING bool write_txo(std::ostream &out, const std::string &filename = "") const;
-  BLOCKING bool read_dds(std::istream &in, const std::string &filename = "", bool header_only = false);
-  BLOCKING bool read_ktx(std::istream &in, const std::string &filename = "", bool header_only = false);
+  BLOCKING bool read_txo(std::istream &in, std::string_view filename = std::string_view());
+  BLOCKING static PT(Texture) make_from_txo(std::istream &in, std::string_view filename = std::string_view());
+  BLOCKING bool write_txo(std::ostream &out, std::string_view filename = std::string_view()) const;
+  BLOCKING bool read_dds(std::istream &in, std::string_view filename = std::string_view(), bool header_only = false);
+  BLOCKING bool read_ktx(std::istream &in, std::string_view filename = std::string_view(), bool header_only = false);
 
   BLOCKING INLINE bool load(const PNMImage &pnmimage, const LoaderOptions &options = LoaderOptions());
   BLOCKING INLINE bool load(const PNMImage &pnmimage, int z, int n, const LoaderOptions &options = LoaderOptions());
@@ -454,17 +454,17 @@ PUBLISHED:
   INLINE CPTA_uchar get_ram_image();
   INLINE CompressionMode get_ram_image_compression() const;
   INLINE CPTA_uchar get_uncompressed_ram_image();
-  CPTA_uchar get_ram_image_as(const std::string &requested_format);
+  CPTA_uchar get_ram_image_as(std::string_view requested_format);
   INLINE PTA_uchar modify_ram_image();
   INLINE PTA_uchar make_ram_image();
 #if !defined(CPPPARSER) || !defined(HAVE_PYTHON)
   INLINE void set_ram_image(CPTA_uchar image, CompressionMode compression = CM_off,
                             size_t page_size = 0);
-  void set_ram_image_as(CPTA_uchar image, const std::string &provided_format);
+  void set_ram_image_as(CPTA_uchar image, std::string_view provided_format);
 #else // !CPPPARSER || !HAVE_PYTHON
   PY_EXTEND(void set_ram_image(PyObject *image, CompressionMode compression = CM_off,
                                size_t page_size = 0));
-  PY_EXTEND(void set_ram_image_as(PyObject *image, const std::string &provided_format));
+  PY_EXTEND(void set_ram_image_as(PyObject *image, std::string_view provided_format));
 #endif // !CPPPARSER || !HAVE_PYTHON
   INLINE void clear_ram_image();
   INLINE void set_keep_ram_image(bool keep_ram_image);
@@ -553,9 +553,9 @@ PUBLISHED:
 
   size_t estimate_texture_memory() const;
 
-  void set_aux_data(const std::string &key, TypedReferenceCount *aux_data);
-  void clear_aux_data(const std::string &key);
-  TypedReferenceCount *get_aux_data(const std::string &key) const;
+  void set_aux_data(std::string key, TypedReferenceCount *aux_data);
+  void clear_aux_data(std::string_view key);
+  TypedReferenceCount *get_aux_data(std::string_view key) const;
   MAKE_MAP_PROPERTY(aux_data, get_aux_data, get_aux_data,
                     set_aux_data, clear_aux_data);
 
@@ -611,23 +611,23 @@ PUBLISHED:
   static int down_to_power_2(int value);
 
   void consider_rescale(PNMImage &pnmimage);
-  static void consider_rescale(PNMImage &pnmimage, const std::string &name, AutoTextureScale auto_texture_scale = ATS_unspecified);
+  static void consider_rescale(PNMImage &pnmimage, std::string_view name, AutoTextureScale auto_texture_scale = ATS_unspecified);
   INLINE bool rescale_texture();
 
   static std::string format_texture_type(TextureType tt);
-  static TextureType string_texture_type(const std::string &str);
+  static TextureType string_texture_type(std::string_view str);
 
   static std::string format_component_type(ComponentType ct);
-  static ComponentType string_component_type(const std::string &str);
+  static ComponentType string_component_type(std::string_view str);
 
   static std::string format_format(Format f);
-  static Format string_format(const std::string &str);
+  static Format string_format(std::string_view str);
 
   static std::string format_compression_mode(CompressionMode cm);
-  static CompressionMode string_compression_mode(const std::string &str);
+  static CompressionMode string_compression_mode(std::string_view str);
 
   static std::string format_quality_level(QualityLevel tql);
-  static QualityLevel string_quality_level(const std::string &str);
+  static QualityLevel string_quality_level(std::string_view str);
 
 public:
   void texture_uploaded();
@@ -646,9 +646,9 @@ public:
   static bool is_srgb(Format format);
   static bool is_integer(Format format);
 
-  static bool adjust_size(int &x_size, int &y_size, const std::string &name,
+  static bool adjust_size(int &x_size, int &y_size, std::string_view name,
                           bool for_padding, AutoTextureScale auto_texture_scale = ATS_unspecified);
-  INLINE bool adjust_this_size(int &x_size, int &y_size, const std::string &name,
+  INLINE bool adjust_this_size(int &x_size, int &y_size, std::string_view name,
                                bool for_padding) const;
 
   virtual void ensure_loader_type(const Filename &filename);
@@ -667,7 +667,7 @@ protected:
   // pointer representing that lock); generally, they also avoid adjusting the
   // _properties_modified and _image_modified semaphores.
   virtual bool do_adjust_this_size(const CData *cdata,
-                                   int &x_size, int &y_size, const std::string &name,
+                                   int &x_size, int &y_size, std::string_view name,
                                    bool for_padding) const;
 
   virtual bool do_read(CData *cdata,
@@ -681,19 +681,19 @@ protected:
                            const LoaderOptions &options,
                            bool header_only, BamCacheRecord *record);
   virtual bool do_load_one(CData *cdata,
-                           const PNMImage &pnmimage, const std::string &name,
+                           const PNMImage &pnmimage, std::string_view name,
                            int z, int n, const LoaderOptions &options);
   virtual bool do_load_one(CData *cdata,
-                           const PfmFile &pfm, const std::string &name,
+                           const PfmFile &pfm, std::string_view name,
                            int z, int n, const LoaderOptions &options);
   virtual bool do_load_sub_image(CData *cdata, const PNMImage &image,
                                  int x, int y, int z, int n);
   bool do_read_txo_file(CData *cdata, const Filename &fullpath);
-  bool do_read_txo(CData *cdata, std::istream &in, const std::string &filename);
+  bool do_read_txo(CData *cdata, std::istream &in, std::string_view filename);
   bool do_read_dds_file(CData *cdata, const Filename &fullpath, bool header_only);
-  bool do_read_dds(CData *cdata, std::istream &in, const std::string &filename, bool header_only);
+  bool do_read_dds(CData *cdata, std::istream &in, std::string_view filename, bool header_only);
   bool do_read_ktx_file(CData *cdata, const Filename &fullpath, bool header_only);
-  bool do_read_ktx(CData *cdata, std::istream &in, const std::string &filename, bool header_only);
+  bool do_read_ktx(CData *cdata, std::istream &in, std::string_view filename, bool header_only);
 
   bool do_write(CData *cdata, const Filename &fullpath, int z, int n,
                 bool write_pages, bool write_mipmaps);
@@ -701,7 +701,7 @@ protected:
   bool do_store_one(CData *cdata, PNMImage &pnmimage, int z, int n);
   bool do_store_one(CData *cdata, PfmFile &pfm, int z, int n);
   bool do_write_txo_file(const CData *cdata, const Filename &fullpath) const;
-  bool do_write_txo(const CData *cdata, std::ostream &out, const std::string &filename) const;
+  bool do_write_txo(const CData *cdata, std::ostream &out, std::string_view filename) const;
 
   virtual CData *unlocked_ensure_ram_image(bool allow_compression);
   virtual void do_reload_ram_image(CData *cdata, bool allow_compression);
@@ -868,7 +868,7 @@ private:
 
   void clear_prepared(PreparedGraphicsObjects *prepared_objects);
 
-  static void consider_downgrade(PNMImage &pnmimage, int num_channels, const std::string &name);
+  static void consider_downgrade(PNMImage &pnmimage, int num_channels, std::string_view name);
 
   static bool compare_images(const PNMImage &a, const PNMImage &b);
 
@@ -1091,7 +1091,7 @@ protected:
 
 private:
   // The auxiliary data is not recorded to a bam file.
-  typedef pmap<std::string, PT(TypedReferenceCount) > AuxData;
+  typedef pmap<std::string, PT(TypedReferenceCount), std::less<>> AuxData;
   AuxData _aux_data;
 
   static AutoTextureScale _textures_power_2;

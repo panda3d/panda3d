@@ -48,11 +48,10 @@ add_int(int num) {
  * Adds a string to the hash, by breaking it down into a sequence of integers.
  */
 void HashGenerator::
-add_string(const std::string &str) {
+add_string(std::string_view str) {
   add_int(str.length());
-  std::string::const_iterator si;
-  for (si = str.begin(); si != str.end(); ++si) {
-    add_int(*si);
+  for (char c : str) {
+    add_int(c);
   }
 }
 

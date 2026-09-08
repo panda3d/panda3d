@@ -390,10 +390,11 @@ new_page() {
 void CullResult::
 delete_page(AllocationPage *page) {
   size_t size = std::exchange(page->_size, 0);
+  CullableObject *objects = std::launder(reinterpret_cast<CullableObject *>(page->_memory));
   for (size_t i = 0; i < size; ++i) {
-    ((CullableObject *)page->_memory)[i].~CullableObject();
+    objects[i].~CullableObject();
 #ifdef DO_MEMORY_USAGE
-    //MemoryUsage::remove_void_pointer(&((CullableObject *)page->_memory)[i]);
+    //MemoryUsage::remove_void_pointer(&objects[i]);
 #endif
   }
 

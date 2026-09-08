@@ -27,7 +27,7 @@ class HashGenerator;
  */
 class EXPCL_DIRECT_DCPARSER DCKeyword : public DCDeclaration {
 public:
-  DCKeyword(const std::string &name, int historical_flag = ~0);
+  DCKeyword(std::string name, int historical_flag = ~0);
   virtual ~DCKeyword();
 
 PUBLISHED:

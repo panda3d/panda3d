@@ -23,7 +23,7 @@ StringStream() : std::iostream(&_buf) {
  * data.
  */
 INLINE StringStream::
-StringStream(const std::string &source) : std::iostream(&_buf) {
+StringStream(std::string_view source) : std::iostream(&_buf) {
   set_data(source);
 }
 
@@ -70,7 +70,7 @@ get_data() {
  * Replaces the contents of the data stream.  This implicitly reseeks to 0.
  */
 INLINE void StringStream::
-set_data(const std::string &data) {
+set_data(std::string_view data) {
   _buf.clear();
   if (!data.empty()) {
     set_data((const unsigned char *)data.data(), data.size());

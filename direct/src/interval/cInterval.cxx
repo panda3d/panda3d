@@ -26,24 +26,23 @@ PStatCollector CInterval::_root_pcollector("App:Tasks:ivalLoop");
 TypeHandle CInterval::_type_handle;
 
 static inline string
-get_pstats_name(const string &name) {
-  string pname = name;
-  size_t hyphen = pname.find('-');
-  if (hyphen != string::npos) {
-    pname = pname.substr(0, hyphen);
+get_pstats_name(std::string_view name) {
+  size_t hyphen = name.find('-');
+  if (hyphen != std::string_view::npos) {
+    name = name.substr(0, hyphen);
   }
-  return pname;
+  return string(name);
 }
 
 /**
  *
  */
 CInterval::
-CInterval(const string &name, double duration, bool open_ended) :
+CInterval(string name, double duration, bool open_ended) :
   _state(S_initial),
   _curr_t(0.0),
-  _name(name),
-  _pname(get_pstats_name(name)),
+  _name(std::move(name)),
+  _pname(get_pstats_name(_name)),
   _duration(std::max(duration, 0.0)),
   _open_ended(open_ended),
   _dirty(false),

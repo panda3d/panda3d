@@ -145,9 +145,6 @@ you may build Panda3D using a command like the following:
 python makepanda/makepanda.py --everything --installer
 ```
 
-You may target a specific minimum macOS version using the --osxtarget flag
-followed by the release number, eg. 10.9 or 10.14.
-
 If the build was successful, makepanda will have generated a .dmg file in
 the source directory containing the installer.  Simply open it and run the
 package file in order to install the SDK onto your system.

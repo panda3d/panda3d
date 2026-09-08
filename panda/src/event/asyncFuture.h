@@ -73,7 +73,7 @@ PUBLISHED:
 
   virtual bool cancel();
 
-  INLINE void set_done_event(const std::string &done_event);
+  INLINE void set_done_event(std::string done_event);
   INLINE const std::string &get_done_event() const;
   MAKE_PROPERTY(done_event, get_done_event, set_done_event);
 

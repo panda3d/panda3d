@@ -15,7 +15,7 @@
  *
  */
 INLINE EggNurbsCurve::
-EggNurbsCurve(const std::string &name) : EggCurve(name) {
+EggNurbsCurve(std::string name) : EggCurve(std::move(name)) {
   _order = 0;
 }
 

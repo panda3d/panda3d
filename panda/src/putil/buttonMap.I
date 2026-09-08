@@ -67,7 +67,7 @@ get_mapped_button(ButtonHandle raw) const {
  * given raw button.
  */
 INLINE ButtonHandle ButtonMap::
-get_mapped_button(const std::string &raw_name) const {
+get_mapped_button(std::string_view raw_name) const {
   ButtonHandle raw_button = ButtonRegistry::ptr()->find_button(raw_name);
   if (raw_button == ButtonHandle::none()) {
     return ButtonHandle::none();
@@ -105,7 +105,7 @@ get_mapped_button_label(ButtonHandle raw) const {
  * returns the name of the Panda event associated with the button.
  */
 INLINE const std::string &ButtonMap::
-get_mapped_button_label(const std::string &raw_name) const {
+get_mapped_button_label(std::string_view raw_name) const {
   ButtonHandle raw_button = ButtonRegistry::ptr()->find_button(raw_name);
   if (raw_button == ButtonHandle::none()) {
     static const std::string empty = "";

@@ -38,7 +38,7 @@ public:
   INLINE Type *make_instance(TypeHandle handle,
                              const FactoryParams &params = FactoryParams());
 
-  INLINE Type *make_instance(const std::string &type_name,
+  INLINE Type *make_instance(std::string_view type_name,
                              const FactoryParams &params = FactoryParams());
 
   INLINE Type *
@@ -46,7 +46,7 @@ public:
                              const FactoryParams &params = FactoryParams());
 
   INLINE Type *
-  make_instance_more_general(const std::string &type_name,
+  make_instance_more_general(std::string_view type_name,
                              const FactoryParams &params = FactoryParams());
 
   INLINE void register_factory(TypeHandle handle, CreateFunc *func,

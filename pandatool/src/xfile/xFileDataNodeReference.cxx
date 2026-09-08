@@ -89,6 +89,6 @@ get_element(int n) {
  * name.
  */
 XFileDataObject *XFileDataNodeReference::
-get_element(const std::string &name) {
+get_element(std::string_view name) {
   return &((*_object)[name]);
 }

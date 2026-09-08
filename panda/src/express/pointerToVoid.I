@@ -76,7 +76,5 @@ operator != (const PointerToVoid &other) const {
  */
 INLINE void PointerToVoid::
 swap(PointerToVoid &other) noexcept {
-  AtomicAdjust::Pointer temp = _void_ptr;
-  _void_ptr = other._void_ptr;
-  other._void_ptr = temp;
+  std::swap(_void_ptr, other._void_ptr);
 }

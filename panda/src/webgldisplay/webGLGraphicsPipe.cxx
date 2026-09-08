@@ -68,7 +68,7 @@ get_preferred_window_thread() const {
  * Creates a new window on the pipe, if possible.
  */
 PT(GraphicsOutput) WebGLGraphicsPipe::
-make_output(const std::string &name,
+make_output(std::string_view name,
             const FrameBufferProperties &fb_prop,
             const WindowProperties &win_prop,
             int flags,
@@ -99,7 +99,7 @@ make_output(const std::string &name,
         ((flags&BF_can_bind_every)!=0)) {
       return NULL;
     }
-    return new WebGLGraphicsWindow(engine, this, name, fb_prop, win_prop,
+    return new WebGLGraphicsWindow(engine, this, std::string(name), fb_prop, win_prop,
                                    flags, gsg, host);
   }
 
@@ -129,7 +129,7 @@ make_output(const std::string &name,
         (fb_prop.is_basic())) {
       precertify = true;
     }
-    return new GLES2GraphicsBuffer(engine, this, name, fb_prop, win_prop,
+    return new GLES2GraphicsBuffer(engine, this, std::string(name), fb_prop, win_prop,
                                   flags, gsg, host);
   }
 

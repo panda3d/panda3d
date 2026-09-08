@@ -34,8 +34,8 @@ extern struct Dtool_PyTypedObject Dtool_PythonTask;
  *
  */
 PythonTask::
-PythonTask(PyObject *func_or_coro, const std::string &name) :
-  AsyncTask(name),
+PythonTask(PyObject *func_or_coro, std::string name) :
+  AsyncTask(std::move(name)),
   _function(nullptr),
   _upon_death(nullptr),
   _owner(nullptr),
@@ -865,7 +865,7 @@ do_python_task() {
     case DS_again:
       Py_XDECREF(_generator);
       _generator = nullptr;
-      // Fall through.
+      [[fallthrough]];
 
     case DS_done:
     case DS_cont:

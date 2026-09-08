@@ -15,9 +15,9 @@
  *
  */
 INLINE MouseWatcherRegion::
-MouseWatcherRegion(const std::string &name, PN_stdfloat left, PN_stdfloat right,
+MouseWatcherRegion(std::string name, PN_stdfloat left, PN_stdfloat right,
                    PN_stdfloat bottom, PN_stdfloat top) :
-  Namable(name)
+  Namable(std::move(name))
 {
   _sort = 0;
   _flags = F_active;
@@ -28,8 +28,8 @@ MouseWatcherRegion(const std::string &name, PN_stdfloat left, PN_stdfloat right,
  *
  */
 INLINE MouseWatcherRegion::
-MouseWatcherRegion(const std::string &name, const LVecBase4 &frame) :
-  Namable(name),
+MouseWatcherRegion(std::string name, const LVecBase4 &frame) :
+  Namable(std::move(name)),
   _frame(frame)
 {
   _sort = 0;

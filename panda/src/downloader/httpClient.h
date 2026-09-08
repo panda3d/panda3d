@@ -62,24 +62,24 @@ PUBLISHED:
 
   static void init_random_seed();
 
-  void set_proxy_spec(const std::string &proxy_spec);
+  void set_proxy_spec(std::string_view proxy_spec);
   std::string get_proxy_spec() const;
 
-  void set_direct_host_spec(const std::string &direct_host_spec);
+  void set_direct_host_spec(std::string_view direct_host_spec);
   std::string get_direct_host_spec() const;
 
   INLINE void set_try_all_direct(bool try_all_direct);
   INLINE bool get_try_all_direct() const;
 
   void clear_proxy();
-  void add_proxy(const std::string &scheme, const URLSpec &proxy);
+  void add_proxy(std::string_view scheme, const URLSpec &proxy);
   void clear_direct_host();
-  void add_direct_host(const std::string &hostname);
+  void add_direct_host(std::string_view hostname);
 
   std::string get_proxies_for_url(const URLSpec &url) const;
 
-  void set_username(const std::string &server, const std::string &realm, const std::string &username);
-  std::string get_username(const std::string &server, const std::string &realm) const;
+  void set_username(std::string_view server, std::string_view realm, std::string username);
+  std::string get_username(std::string_view server, std::string_view realm) const;
 
   void set_cookie(const HTTPCookie &cookie);
   bool clear_cookie(const HTTPCookie &cookie);
@@ -92,20 +92,20 @@ PUBLISHED:
   void send_cookies(std::ostream &out, const URLSpec &url);
 
   INLINE void set_client_certificate_filename(const Filename &filename);
-  INLINE void set_client_certificate_pem(const std::string &pem);
-  INLINE void set_client_certificate_passphrase(const std::string &passphrase);
+  INLINE void set_client_certificate_pem(std::string pem);
+  INLINE void set_client_certificate_passphrase(std::string passphrase);
   bool load_client_certificate();
 
   bool add_preapproved_server_certificate_filename(const URLSpec &url, const Filename &filename);
-  bool add_preapproved_server_certificate_pem(const URLSpec &url, const std::string &pem);
-  bool add_preapproved_server_certificate_name(const URLSpec &url, const std::string &name);
+  bool add_preapproved_server_certificate_pem(const URLSpec &url, std::string_view pem);
+  bool add_preapproved_server_certificate_name(const URLSpec &url, std::string_view name);
   void clear_preapproved_server_certificates(const URLSpec &url);
   void clear_all_preapproved_server_certificates();
 
   INLINE void set_http_version(HTTPEnum::HTTPVersion version);
   INLINE HTTPEnum::HTTPVersion get_http_version() const;
   std::string get_http_version_string() const;
-  static HTTPEnum::HTTPVersion parse_http_version_string(const std::string &version);
+  static HTTPEnum::HTTPVersion parse_http_version_string(std::string_view version);
 
   bool load_certificates(const Filename &filename);
 
@@ -118,16 +118,16 @@ PUBLISHED:
   INLINE void set_verify_ssl(VerifySSL verify_ssl);
   INLINE VerifySSL get_verify_ssl() const;
 
-  INLINE void set_cipher_list(const std::string &cipher_list);
+  INLINE void set_cipher_list(std::string cipher_list);
   INLINE const std::string &get_cipher_list() const;
 
   PT(HTTPChannel) make_channel(bool persistent_connection);
-  BLOCKING PT(HTTPChannel) post_form(const URLSpec &url, const std::string &body);
+  BLOCKING PT(HTTPChannel) post_form(const URLSpec &url, std::string body);
   BLOCKING PT(HTTPChannel) get_document(const URLSpec &url);
   BLOCKING PT(HTTPChannel) get_header(const URLSpec &url);
 
-  INLINE static std::string base64_encode(const std::string &s);
-  INLINE static std::string base64_decode(const std::string &s);
+  INLINE static std::string base64_encode(std::string_view s);
+  INLINE static std::string base64_decode(std::string_view s);
 
   static HTTPClient *get_global_ptr();
 
@@ -140,27 +140,27 @@ private:
   void check_preapproved_server_certificate(const URLSpec &url, X509 *cert,
                                             bool &cert_preapproved, bool &cert_name_preapproved) const;
 
-  bool get_proxies_for_scheme(const std::string &scheme,
+  bool get_proxies_for_scheme(std::string_view scheme,
                               pvector<URLSpec> &proxies) const;
 
-  void add_http_username(const std::string &http_username);
+  void add_http_username(std::string_view http_username);
   std::string select_username(const URLSpec &url, bool is_proxy,
-                         const std::string &realm) const;
+                         std::string_view realm) const;
 
   HTTPAuthorization *select_auth(const URLSpec &url, bool is_proxy,
-                                 const std::string &last_realm);
+                                 std::string_view last_realm);
   PT(HTTPAuthorization) generate_auth(const URLSpec &url, bool is_proxy,
-                                      const std::string &challenge);
+                                      std::string_view challenge);
 
   void unload_client_certificate();
 
-  static X509_NAME *parse_x509_name(const std::string &source);
+  static X509_NAME *parse_x509_name(std::string_view source);
   static bool x509_name_subset(X509_NAME *name_a, X509_NAME *name_b);
 
-  static void split_whitespace(std::string &a, std::string &b, const std::string &c);
+  static void split_whitespace(std::string &a, std::string &b, std::string_view c);
 
   typedef pvector<URLSpec> Proxies;
-  typedef pmap<std::string, Proxies> ProxiesByScheme;
+  typedef pmap<std::string, Proxies, std::less<>> ProxiesByScheme;
   ProxiesByScheme _proxies_by_scheme;
   typedef pvector<GlobPattern> DirectHosts;
   DirectHosts _direct_hosts;
@@ -170,10 +170,10 @@ private:
   VerifySSL _verify_ssl;
   std::string _cipher_list;
 
-  typedef pmap<std::string, std::string> Usernames;
+  typedef pmap<std::string, std::string, std::less<>> Usernames;
   Usernames _usernames;
 
-  typedef pmap<std::string, PT(HTTPAuthorization)> Realms;
+  typedef pmap<std::string, PT(HTTPAuthorization), std::less<>> Realms;
   class Domain {
   public:
     Realms _realms;

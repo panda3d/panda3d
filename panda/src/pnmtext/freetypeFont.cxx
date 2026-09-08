@@ -198,7 +198,7 @@ unload_font() {
  * WindingOrder value.
  */
 FreetypeFont::WindingOrder FreetypeFont::
-string_winding_order(const string &string) {
+string_winding_order(std::string_view string) {
   if (cmp_nocase_uh(string, "default") == 0) {
     return WO_default;
   } else if (cmp_nocase_uh(string, "left") == 0) {

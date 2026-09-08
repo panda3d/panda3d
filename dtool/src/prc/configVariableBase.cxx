@@ -21,9 +21,9 @@ ConfigVariableBase::Unconstructed *ConfigVariableBase::_unconstructed;
  * ConfigVariableFoo derived class.
  */
 ConfigVariableBase::
-ConfigVariableBase(const std::string &name,
+ConfigVariableBase(std::string_view name,
                    ConfigVariableBase::ValueType value_type,
-                   const std::string &description, int flags) :
+                   std::string_view description, int flags) :
   _core(ConfigVariableManager::get_global_ptr()->make_variable(name))
 {
 #ifndef NDEBUG

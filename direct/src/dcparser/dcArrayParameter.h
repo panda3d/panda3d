@@ -46,10 +46,10 @@ public:
   virtual DCPackerInterface *get_nested_field(int n) const;
   virtual bool validate_num_nested_fields(int num_nested_fields) const;
 
-  virtual void output_instance(std::ostream &out, bool brief, const std::string &prename,
-                               const std::string &name, const std::string &postname) const;
+  virtual void output_instance(std::ostream &out, bool brief, std::string_view prename,
+                               std::string_view name, std::string_view postname) const;
   virtual void generate_hash(HashGenerator &hashgen) const;
-  virtual void pack_string(DCPackData &pack_data, const std::string &value,
+  virtual void pack_string(DCPackData &pack_data, std::string_view value,
                            bool &pack_error, bool &range_error) const;
   virtual void pack_blob(DCPackData &pack_data, const vector_uchar &value,
                          bool &pack_error, bool &range_error) const;

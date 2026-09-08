@@ -15,8 +15,8 @@
  *
  */
 INLINE void EggVertexAux::
-set_name(const std::string &name) {
-  Namable::set_name(name);
+set_name(std::string name) {
+  Namable::set_name(std::move(name));
 }
 
 /**

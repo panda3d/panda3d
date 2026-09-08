@@ -28,7 +28,7 @@
  */
 class PythonTask final : public AsyncTask {
 PUBLISHED:
-  PythonTask(PyObject *function = Py_None, const std::string &name = std::string());
+  PythonTask(PyObject *function = Py_None, std::string name = "");
   virtual ~PythonTask();
   ALLOC_DELETED_CHAIN(PythonTask);
 

@@ -28,8 +28,8 @@ TypeHandle EggTexture::_type_handle;
  *
  */
 EggTexture::
-EggTexture(const string &tref_name, const Filename &filename)
-  : EggFilenameNode(tref_name, filename)
+EggTexture(std::string tref_name, const Filename &filename)
+  : EggFilenameNode(std::move(tref_name), filename)
 {
   _texture_type = TT_unspecified;
   _format = F_unspecified;
@@ -661,7 +661,7 @@ multitexture_over(EggTexture *other) {
  * TextureType value.
  */
 EggTexture::TextureType EggTexture::
-string_texture_type(const string &string) {
+string_texture_type(std::string_view string) {
   if (cmp_nocase_uh(string, "1d") == 0 ||
       cmp_nocase_uh(string, "1dtexture") == 0 ||
       cmp_nocase_uh(string, "1d_texture") == 0) {
@@ -692,7 +692,7 @@ string_texture_type(const string &string) {
  * or F_unspecified if the string does not match any known Format value.
  */
 EggTexture::Format EggTexture::
-string_format(const string &string) {
+string_format(std::string_view string) {
   if (cmp_nocase_uh(string, "rgba") == 0) {
     return F_rgba;
   } else if (cmp_nocase_uh(string, "srgb_alpha") == 0) {
@@ -749,7 +749,7 @@ string_format(const string &string) {
  * CompressionMode value.
  */
 EggTexture::CompressionMode EggTexture::
-string_compression_mode(const string &string) {
+string_compression_mode(std::string_view string) {
   if (cmp_nocase_uh(string, "off") == 0) {
     return CM_off;
   } else if (cmp_nocase_uh(string, "on") == 0) {
@@ -776,7 +776,7 @@ string_compression_mode(const string &string) {
  * or WM_unspecified if the string does not match any known WrapMode value.
  */
 EggTexture::WrapMode EggTexture::
-string_wrap_mode(const string &string) {
+string_wrap_mode(std::string_view string) {
   if (cmp_nocase_uh(string, "repeat") == 0) {
     return WM_repeat;
   } else if (cmp_nocase_uh(string, "clamp") == 0) {
@@ -798,7 +798,7 @@ string_wrap_mode(const string &string) {
  * FilterType value.
  */
 EggTexture::FilterType EggTexture::
-string_filter_type(const string &string) {
+string_filter_type(std::string_view string) {
   // Old egg filter types.
   if (cmp_nocase_uh(string, "point") == 0) {
     return FT_nearest;
@@ -843,7 +843,7 @@ string_filter_type(const string &string) {
  * or ET_unspecified if the string does not match any known EnvType value.
  */
 EggTexture::EnvType EggTexture::
-string_env_type(const string &string) {
+string_env_type(std::string_view string) {
   if (cmp_nocase_uh(string, "modulate") == 0) {
     return ET_modulate;
 
@@ -910,7 +910,7 @@ string_env_type(const string &string) {
  * CombineMode value.
  */
 EggTexture::CombineMode EggTexture::
-string_combine_mode(const string &string) {
+string_combine_mode(std::string_view string) {
   if (cmp_nocase_uh(string, "replace") == 0) {
     return CM_replace;
 
@@ -946,7 +946,7 @@ string_combine_mode(const string &string) {
  * CombineSource value.
  */
 EggTexture::CombineSource EggTexture::
-string_combine_source(const string &string) {
+string_combine_source(std::string_view string) {
   if (cmp_nocase_uh(string, "texture") == 0) {
     return CS_texture;
 
@@ -976,7 +976,7 @@ string_combine_source(const string &string) {
  * CombineOperand value.
  */
 EggTexture::CombineOperand EggTexture::
-string_combine_operand(const string &string) {
+string_combine_operand(std::string_view string) {
   if (cmp_nocase_uh(string, "src_color") == 0) {
     return CO_src_color;
 
@@ -999,7 +999,7 @@ string_combine_operand(const string &string) {
  * or ET_unspecified if the string does not match any known TexGen value.
  */
 EggTexture::TexGen EggTexture::
-string_tex_gen(const string &string) {
+string_tex_gen(std::string_view string) {
   if (cmp_nocase_uh(string, "unspecified") == 0) {
     return TG_unspecified;
 
@@ -1039,7 +1039,7 @@ string_tex_gen(const string &string) {
  * or ET_unspecified if the string does not match any known TexGen value.
  */
 EggTexture::QualityLevel EggTexture::
-string_quality_level(const string &string) {
+string_quality_level(std::string_view string) {
   if (cmp_nocase_uh(string, "unspecified") == 0) {
     return QL_unspecified;
 

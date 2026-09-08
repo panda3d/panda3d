@@ -39,7 +39,7 @@ public:
 
 protected:
   void append_command_comment(EggData *_data);
-  static void append_command_comment(EggData *_data, const std::string &comment);
+  static void append_command_comment(EggData *_data, std::string comment);
 
   static bool dispatch_normals(ProgramBase *self, const std::string &opt, const std::string &arg, void *mode);
   bool ns_dispatch_normals(const std::string &opt, const std::string &arg, void *mode);

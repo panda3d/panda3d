@@ -28,8 +28,8 @@ TypeHandle TextureStage::_type_handle;
  * Initialize the texture stage at construction
  */
 TextureStage::
-TextureStage(const std::string &name) : _used_by_auto_shader(false) {
-  _name = name;
+TextureStage(std::string name) : _used_by_auto_shader(false) {
+  _name = std::move(name);
   _sort = 0;
   _priority = 0;
   _texcoord_name = InternalName::get_texcoord();

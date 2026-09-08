@@ -67,7 +67,7 @@ PUBLISHED:
 
   void operator = (const Geom &copy) = delete;
 
-  virtual Geom *make_copy() const;
+  [[nodiscard]] virtual Geom *make_copy() const;
 
   INLINE PrimitiveType get_primitive_type() const;
   INLINE ShadeModel get_shade_model() const;

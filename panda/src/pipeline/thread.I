@@ -297,7 +297,7 @@ preempt() {
  */
 INLINE TypedReferenceCount *Thread::
 get_current_task() const {
-  return (TypedReferenceCount *)_current_task;
+  return _current_task.load(std::memory_order_relaxed);
 }
 
 /**

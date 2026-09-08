@@ -128,8 +128,8 @@ get_nested_field(int n) const {
  * identifier.
  */
 void DCClassParameter::
-output_instance(std::ostream &out, bool brief, const std::string &prename,
-                const std::string &name, const std::string &postname) const {
+output_instance(std::ostream &out, bool brief, std::string_view prename,
+                std::string_view name, std::string_view postname) const {
   if (get_typedef() != nullptr) {
     output_typedef_name(out, brief, prename, name, postname);
 

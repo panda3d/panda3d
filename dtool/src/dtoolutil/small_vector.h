@@ -20,6 +20,8 @@
 #include <stdint.h>
 #include <utility>
 #include <iterator>
+#include <memory>
+#include <type_traits>
 
 /**
  * A vector type that is particularly optimized for the case where there is a
@@ -55,6 +57,8 @@ public:
   ALWAYS_INLINE constexpr small_vector() = default;
   INLINE small_vector(TypeHandle type_handle);
   INLINE small_vector(std::initializer_list<T> init);
+  template<class InputIterator>
+  INLINE small_vector(InputIterator first, InputIterator last);
   INLINE small_vector(const small_vector &copy);
   INLINE small_vector(small_vector &&from) noexcept;
   INLINE ~small_vector();
@@ -96,7 +100,8 @@ public:
   INLINE void clear();
   INLINE void shrink_to_fit();
   INLINE void reserve(size_type n);
-  INLINE void resize(size_type n, T value = T());
+  INLINE void resize(size_type n);
+  INLINE void resize(size_type n, T value);
 
   template<class... Args>
   INLINE reference emplace_back(Args&&... args);
@@ -105,10 +110,23 @@ public:
   INLINE void pop_back();
   INLINE iterator insert(const_iterator pos, const T &value);
   INLINE iterator insert(const_iterator pos, T &&value);
+  template<class InputIterator>
+  INLINE iterator insert(const_iterator pos, InputIterator first, InputIterator last);
+  template<class InputIterator>
+  INLINE void assign(InputIterator first, InputIterator last);
   INLINE iterator erase(const_iterator pos);
   INLINE iterator erase(const_iterator begin, const_iterator end);
 
 private:
+  template<class InputIterator>
+  INLINE iterator insert_range(const_iterator pos, InputIterator first, InputIterator last, std::input_iterator_tag);
+  template<class ForwardIterator>
+  INLINE iterator insert_range(const_iterator pos, ForwardIterator first, ForwardIterator last, std::forward_iterator_tag);
+  template<class InputIterator>
+  INLINE void assign_range(InputIterator first, InputIterator last, std::input_iterator_tag);
+  template<class ForwardIterator>
+  INLINE void assign_range(ForwardIterator first, ForwardIterator last, std::forward_iterator_tag);
+
   INLINE iterator insert_gap(const_iterator pos, size_type count);
   INLINE iterator append();
 
@@ -120,7 +138,11 @@ private:
     ~Storage() {}
 
     T *_large;
-    T _small[N];
+    // Use a minimum size of 1: MSVC rejects zero-sized arrays (and it would be
+    // a non-standard extension elsewhere).  When N == 0 this is never accessed,
+    // since an empty vector has _capacity == 0 and any non-empty state uses the
+    // heap allocation in _large.
+    T _small[N ? N : 1];
   } _storage;
 
   size_type _size = 0;

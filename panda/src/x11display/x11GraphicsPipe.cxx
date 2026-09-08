@@ -34,12 +34,12 @@ LightReMutex x11GraphicsPipe::_x_mutex;
  *
  */
 x11GraphicsPipe::
-x11GraphicsPipe(const std::string &display) :
+x11GraphicsPipe(std::string display) :
   _xcursor_size(-1),
   _have_xrandr(false),
   _XF86DGADirectVideo(nullptr) {
 
-  std::string display_spec = display;
+  std::string display_spec = std::move(display);
   if (display_spec.empty()) {
     display_spec = display_cfg;
   }

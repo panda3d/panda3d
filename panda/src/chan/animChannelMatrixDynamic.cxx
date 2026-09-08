@@ -49,8 +49,8 @@ AnimChannelMatrixDynamic(AnimGroup *parent, const AnimChannelMatrixDynamic &copy
  *
  */
 AnimChannelMatrixDynamic::
-AnimChannelMatrixDynamic(const std::string &name)
-  : AnimChannelMatrix(name)
+AnimChannelMatrixDynamic(std::string name)
+  : AnimChannelMatrix(std::move(name))
 {
   _value = TransformState::make_identity();
   _last_value = nullptr;  // This is impossible; thus, has_changed() will

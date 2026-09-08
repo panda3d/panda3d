@@ -26,7 +26,7 @@ TypeHandle PGButton::_type_handle;
  *
  */
 PGButton::
-PGButton(const std::string &name) : PGItem(name)
+PGButton(std::string name) : PGItem(std::move(name))
 {
   _button_down = false;
   _click_buttons.insert(MouseButton::one());
@@ -154,7 +154,7 @@ click(const MouseWatcherParameter &param) {
  * to the size of the text.
  */
 void PGButton::
-setup(const std::string &label, PN_stdfloat bevel) {
+setup(std::string_view label, PN_stdfloat bevel) {
   LightReMutexHolder holder(_lock);
   clear_state_def(S_ready);
   clear_state_def(S_depressed);

@@ -42,8 +42,8 @@ TypeHandle Loader::_type_handle;
  *
  */
 Loader::
-Loader(const string &name) :
-  Namable(name)
+Loader(std::string name) :
+  Namable(std::move(name))
 {
   _task_manager = AsyncTaskManager::get_global_ptr();
   _task_chain = name;

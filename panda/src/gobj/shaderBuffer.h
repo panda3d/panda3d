@@ -38,8 +38,8 @@ private:
 PUBLISHED:
   ~ShaderBuffer();
 
-  INLINE explicit ShaderBuffer(const std::string &name, uint64_t size, UsageHint usage_hint);
-  INLINE explicit ShaderBuffer(const std::string &name, vector_uchar initial_data, UsageHint usage_hint);
+  INLINE explicit ShaderBuffer(std::string name, uint64_t size, UsageHint usage_hint);
+  INLINE explicit ShaderBuffer(std::string name, vector_uchar initial_data, UsageHint usage_hint);
 
 public:
   INLINE uint64_t get_data_size_bytes() const;

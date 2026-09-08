@@ -33,12 +33,12 @@ class EventReceiver;
  */
 class EXPCL_PANDA_EVENT Event : public TypedReferenceCount {
 PUBLISHED:
-  Event(const std::string &event_name, EventReceiver *receiver = nullptr);
+  Event(std::string event_name, EventReceiver *receiver = nullptr);
   Event(const Event &copy);
   void operator = (const Event &copy);
   ~Event();
 
-  INLINE void set_name(const std::string &name);
+  INLINE void set_name(std::string name);
   INLINE void clear_name();
   INLINE bool has_name() const;
   INLINE const std::string &get_name() const;

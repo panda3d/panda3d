@@ -69,8 +69,8 @@ PartBundle(const PartBundle &copy) :
  * get created when a PartBundleNode is created.
  */
 PartBundle::
-PartBundle(const string &name) :
-  PartGroup(name)
+PartBundle(std::string name) :
+  PartGroup(std::move(name))
 {
   _update_delay = 0.0;
 }
@@ -368,7 +368,7 @@ wait_pending() {
  * child is not a joint (or slider) or does not exist.
  */
 bool PartBundle::
-freeze_joint(const string &joint_name, const TransformState *transform) {
+freeze_joint(std::string_view joint_name, const TransformState *transform) {
   PartGroup *child = find_child(joint_name);
   if (child == nullptr) {
     return false;
@@ -389,7 +389,7 @@ freeze_joint(const string &joint_name, const TransformState *transform) {
  * child is not a joint (or slider) or does not exist.
  */
 bool PartBundle::
-freeze_joint(const string &joint_name, const LVecBase3 &pos, const LVecBase3 &hpr, const LVecBase3 &scale) {
+freeze_joint(std::string_view joint_name, const LVecBase3 &pos, const LVecBase3 &hpr, const LVecBase3 &scale) {
   PartGroup *child = find_child(joint_name);
   if (child == nullptr) {
     return false;
@@ -410,7 +410,7 @@ freeze_joint(const string &joint_name, const LVecBase3 &pos, const LVecBase3 &hp
  * child is not a joint (or slider) or does not exist.
  */
 bool PartBundle::
-freeze_joint(const string &joint_name, PN_stdfloat value) {
+freeze_joint(std::string_view joint_name, PN_stdfloat value) {
   PartGroup *child = find_child(joint_name);
   if (child == nullptr) {
     return false;
@@ -432,7 +432,7 @@ freeze_joint(const string &joint_name, PN_stdfloat value) {
  * child is not a joint (or slider) or does not exist.
  */
 bool PartBundle::
-control_joint(const string &joint_name, PandaNode *node) {
+control_joint(std::string_view joint_name, PandaNode *node) {
   PartGroup *child = find_child(joint_name);
   if (child == nullptr) {
     return false;
@@ -453,7 +453,7 @@ control_joint(const string &joint_name, PandaNode *node) {
  * previously controlled or frozen, or it does not exist.
  */
 bool PartBundle::
-release_joint(const string &joint_name) {
+release_joint(std::string_view joint_name) {
   PartGroup *child = find_child(joint_name);
   if (child == nullptr) {
     return false;

@@ -23,8 +23,8 @@ TypeHandle AmbientLight::_type_handle;
  *
  */
 AmbientLight::
-AmbientLight(const std::string &name) :
-  LightNode(name)
+AmbientLight(std::string name) :
+  LightNode(std::move(name))
 {
 }
 

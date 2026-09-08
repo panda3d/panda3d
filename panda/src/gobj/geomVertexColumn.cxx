@@ -4494,10 +4494,10 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
   // when packing an argb, we want to make sure we cap the input values at 1
   // since going above one will cause the value to be truncated.
   *(uint32_t *)pointer = GeomVertexData::pack_abcd
-    ((unsigned int)(min(max(data[3], 0.0f), 1.0f) * 255.0f),
-     (unsigned int)(min(max(data[0], 0.0f), 1.0f) * 255.0f),
-     (unsigned int)(min(max(data[1], 0.0f), 1.0f) * 255.0f),
-     (unsigned int)(min(max(data[2], 0.0f), 1.0f) * 255.0f));
+    ((unsigned int)(std::clamp(data[3], 0.0f, 1.0f) * 255.0f),
+     (unsigned int)(std::clamp(data[0], 0.0f, 1.0f) * 255.0f),
+     (unsigned int)(std::clamp(data[1], 0.0f, 1.0f) * 255.0f),
+     (unsigned int)(std::clamp(data[2], 0.0f, 1.0f) * 255.0f));
 }
 
 /**
@@ -4508,10 +4508,10 @@ set_data4d(unsigned char *pointer, const LVecBase4d &data) {
   // when packing an argb, we want to make sure we cap the input values at 1
   // since going above one will cause the value to be truncated.
   *(uint32_t *)pointer = GeomVertexData::pack_abcd
-    ((unsigned int)(min(max(data[3], 0.0), 1.0) * 255.0),
-     (unsigned int)(min(max(data[0], 0.0), 1.0) * 255.0),
-     (unsigned int)(min(max(data[1], 0.0), 1.0) * 255.0),
-     (unsigned int)(min(max(data[2], 0.0), 1.0) * 255.0));
+    ((unsigned int)(std::clamp(data[3], 0.0, 1.0) * 255.0),
+     (unsigned int)(std::clamp(data[0], 0.0, 1.0) * 255.0),
+     (unsigned int)(std::clamp(data[1], 0.0, 1.0) * 255.0),
+     (unsigned int)(std::clamp(data[2], 0.0, 1.0) * 255.0));
 }
 
 /**
@@ -4541,10 +4541,10 @@ get_data4d(const unsigned char *pointer) {
  */
 void GeomVertexColumn::Packer_rgba_uint8_4::
 set_data4f(unsigned char *pointer, const LVecBase4f &data) {
-  pointer[0] = (unsigned int)(min(max(data[0], 0.0f), 1.0f) * 255.0f);
-  pointer[1] = (unsigned int)(min(max(data[1], 0.0f), 1.0f) * 255.0f);
-  pointer[2] = (unsigned int)(min(max(data[2], 0.0f), 1.0f) * 255.0f);
-  pointer[3] = (unsigned int)(min(max(data[3], 0.0f), 1.0f) * 255.0f);
+  pointer[0] = (unsigned int)(std::clamp(data[0], 0.0f, 1.0f) * 255.0f);
+  pointer[1] = (unsigned int)(std::clamp(data[1], 0.0f, 1.0f) * 255.0f);
+  pointer[2] = (unsigned int)(std::clamp(data[2], 0.0f, 1.0f) * 255.0f);
+  pointer[3] = (unsigned int)(std::clamp(data[3], 0.0f, 1.0f) * 255.0f);
 }
 
 /**
@@ -4552,10 +4552,10 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
  */
 void GeomVertexColumn::Packer_rgba_uint8_4::
 set_data4d(unsigned char *pointer, const LVecBase4d &data) {
-  pointer[0] = (unsigned int)(min(max(data[0], 0.0), 1.0) * 255.0);
-  pointer[1] = (unsigned int)(min(max(data[1], 0.0), 1.0) * 255.0);
-  pointer[2] = (unsigned int)(min(max(data[2], 0.0), 1.0) * 255.0);
-  pointer[3] = (unsigned int)(min(max(data[3], 0.0), 1.0) * 255.0);
+  pointer[0] = (unsigned int)(std::clamp(data[0], 0.0, 1.0) * 255.0);
+  pointer[1] = (unsigned int)(std::clamp(data[1], 0.0, 1.0) * 255.0);
+  pointer[2] = (unsigned int)(std::clamp(data[2], 0.0, 1.0) * 255.0);
+  pointer[3] = (unsigned int)(std::clamp(data[3], 0.0, 1.0) * 255.0);
 }
 
 /**

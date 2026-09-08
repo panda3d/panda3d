@@ -28,13 +28,13 @@ TypeHandle glxGraphicsPixmap::_type_handle;
  */
 glxGraphicsPixmap::
 glxGraphicsPixmap(GraphicsEngine *engine, GraphicsPipe *pipe,
-                  const std::string &name,
+                  std::string name,
                   const FrameBufferProperties &fb_prop,
                   const WindowProperties &win_prop,
                   int flags,
                   GraphicsStateGuardian *gsg,
                   GraphicsOutput *host) :
-  GraphicsBuffer(engine, pipe, name, fb_prop, win_prop, flags, gsg, host)
+  GraphicsBuffer(engine, pipe, std::move(name), fb_prop, win_prop, flags, gsg, host)
 {
   glxGraphicsPipe *glx_pipe;
   DCAST_INTO_V(glx_pipe, _pipe);

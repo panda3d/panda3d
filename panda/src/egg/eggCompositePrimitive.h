@@ -25,7 +25,7 @@
  */
 class EXPCL_PANDA_EGG EggCompositePrimitive : public EggPrimitive {
 PUBLISHED:
-  INLINE explicit EggCompositePrimitive(const std::string &name = "");
+  INLINE explicit EggCompositePrimitive(std::string name = "");
   INLINE EggCompositePrimitive(const EggCompositePrimitive &copy);
   INLINE EggCompositePrimitive &operator = (const EggCompositePrimitive &copy);
   virtual ~EggCompositePrimitive();

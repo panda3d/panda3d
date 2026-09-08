@@ -31,7 +31,7 @@ private:
 
   friend class WebcamVideoCursorV4L;
   friend void find_all_webcams_v4l();
-  static void add_options_for_size(int fd, const std::string &dev, const char *name,
+  static void add_options_for_size(int fd, std::string_view dev, const char *name,
                                    unsigned width, unsigned height,
                                    unsigned pixelformat);
 

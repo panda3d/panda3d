@@ -38,7 +38,7 @@ using std::string;
  * in scene graph order; state sorting and alpha sorting is lost.
  */
 GraphicsThreadingModel::
-GraphicsThreadingModel(const string &model) {
+GraphicsThreadingModel(std::string_view model) {
   _cull_sorting = true;
   size_t start = 0;
   if (!model.empty() && model[0] == '-') {
@@ -47,7 +47,7 @@ GraphicsThreadingModel(const string &model) {
   }
 
   size_t slash = model.find('/', start);
-  if (slash == string::npos) {
+  if (slash == std::string_view::npos) {
     _cull_name = model.substr(start);
   } else {
     _cull_name = model.substr(start, slash - start);

@@ -16,9 +16,9 @@
  * true if successful, false on failure.
  */
 INLINE bool Extension<PStatClient>::
-connect(const std::string &hostname, int port) {
+connect(std::string hostname, int port) {
   PStatClient *client = PStatClient::get_global_pstats();
-  return invoke_extension<PStatClient>(client).client_connect(hostname, port);
+  return invoke_extension<PStatClient>(client).client_connect(std::move(hostname), port);
 }
 
 /**

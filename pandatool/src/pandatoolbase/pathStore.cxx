@@ -57,7 +57,7 @@ operator << (std::ostream &out, PathStore store) {
  * PathStore types.  Returns PS_invalid if the string is unknown.
  */
 PathStore
-string_path_store(const std::string &str) {
+string_path_store(std::string_view str) {
   if (cmp_nocase(str, "relative") == 0 ||
       cmp_nocase(str, "rel") == 0) {
     return PS_relative;

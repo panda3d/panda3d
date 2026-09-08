@@ -347,7 +347,7 @@ expose(EggGroup::DCSType dcs_type) {
  * downwards.
  */
 void EggJointData::
-zero_channels(const string &components) {
+zero_channels(std::string_view components) {
   BackPointers::iterator bpi;
   for (bpi = _back_pointers.begin(); bpi != _back_pointers.end(); ++bpi) {
     EggBackPointer *back = (*bpi);
@@ -364,7 +364,7 @@ zero_channels(const string &components) {
  * downwards to all joints below.
  */
 void EggJointData::
-quantize_channels(const string &components, double quantum) {
+quantize_channels(std::string_view components, double quantum) {
   BackPointers::iterator bpi;
   for (bpi = _back_pointers.begin(); bpi != _back_pointers.end(); ++bpi) {
     EggBackPointer *back = (*bpi);
@@ -628,7 +628,7 @@ do_finish_reparent() {
  * intended to be called only from EggCharacterData::make_new_joint().
  */
 EggJointData *EggJointData::
-make_new_joint(const string &name) {
+make_new_joint(std::string name) {
   EggJointData *child = new EggJointData(_collection, _char_data);
   child->set_name(name);
   child->_parent = this;
@@ -654,7 +654,7 @@ make_new_joint(const string &name) {
  * recursively for an exact match of the preferred joint name.
  */
 EggJointData *EggJointData::
-find_joint_exact(const string &name) {
+find_joint_exact(std::string_view name) {
   Children::const_iterator ci;
   for (ci = _children.begin(); ci != _children.end(); ++ci) {
     EggJointData *child = (*ci);
@@ -675,7 +675,7 @@ find_joint_exact(const string &name) {
  * recursively for any acceptable match.
  */
 EggJointData *EggJointData::
-find_joint_matches(const string &name) {
+find_joint_matches(std::string_view name) {
   Children::const_iterator ci;
   for (ci = _children.begin(); ci != _children.end(); ++ci) {
     EggJointData *child = (*ci);

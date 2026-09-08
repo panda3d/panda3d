@@ -237,7 +237,7 @@ total_turns(double sec) const {
  * to be in order to be considered significant.
  */
 double PointerEventList::
-match_pattern(const std::string &ascpat, double rot, double seglen) {
+match_pattern(std::string_view ascpat, double rot, double seglen) {
   // Convert the pattern from ascii to a more usable form.
   vector_double pattern;
   parse_pattern(ascpat, pattern);
@@ -254,7 +254,7 @@ match_pattern(const std::string &ascpat, double rot, double seglen) {
  * Parses a pattern as used by match_pattern.
  */
 void PointerEventList::
-parse_pattern(const std::string &ascpat, vector_double &pattern) {
+parse_pattern(std::string_view ascpat, vector_double &pattern) {
   int chars = 0;
   double dir = 180.0;
   for (size_t i=0; i<ascpat.size(); i++) {

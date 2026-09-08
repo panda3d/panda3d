@@ -60,8 +60,8 @@ public:
 private:
   void record_vertex_extras();
   INLINE int get_joint_membership_index(EggGroup *joint);
-  INLINE int get_dxyz_index(const std::string &morph_name);
-  INLINE int get_drgba_index(const std::string &morph_name);
+  INLINE int get_dxyz_index(std::string morph_name);
+  INLINE int get_drgba_index(std::string morph_name);
 
   void apply_match();
   PT(EggGroup) do_uniform_tesselate(int &tris) const;

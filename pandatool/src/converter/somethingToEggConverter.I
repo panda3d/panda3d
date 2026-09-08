@@ -82,8 +82,8 @@ get_animation_convert() const {
  * its associated animations.
  */
 INLINE void SomethingToEggConverter::
-set_character_name(const std::string &character_name) {
-  _character_name = character_name;
+set_character_name(std::string character_name) {
+  _character_name = std::move(character_name);
 }
 
 /**

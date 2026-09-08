@@ -28,9 +28,9 @@ int CullBinAttrib::_attrib_slot;
  * only to certain kinds of bins (in particular CullBinFixed type bins).
  */
 CPT(RenderAttrib) CullBinAttrib::
-make(const std::string &bin_name, int draw_order) {
+make(std::string bin_name, int draw_order) {
   CullBinAttrib *attrib = new CullBinAttrib;
-  attrib->_bin_name = bin_name;
+  attrib->_bin_name = std::move(bin_name);
   attrib->_draw_order = draw_order;
   return return_new(attrib);
 }

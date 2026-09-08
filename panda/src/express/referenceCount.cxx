@@ -12,7 +12,6 @@
  */
 
 #include "referenceCount.h"
-#include "atomicAdjust.h"
 #include "mutexImpl.h"
 
 TypeHandle ReferenceCount::_type_handle;

@@ -38,7 +38,7 @@ public:
   virtual PreferredWindowThread get_preferred_window_thread() const;
 
 protected:
-  virtual PT(GraphicsOutput) make_output(const std::string &name,
+  virtual PT(GraphicsOutput) make_output(std::string_view name,
                                          const FrameBufferProperties &fb_prop,
                                          const WindowProperties &win_prop,
                                          int flags,

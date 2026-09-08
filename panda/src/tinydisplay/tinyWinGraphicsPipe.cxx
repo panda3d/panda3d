@@ -62,7 +62,7 @@ pipe_constructor() {
  * only called from GraphicsEngine::make_output.
  */
 PT(GraphicsOutput) TinyWinGraphicsPipe::
-make_output(const std::string &name,
+make_output(std::string_view name,
             const FrameBufferProperties &fb_prop,
             const WindowProperties &win_prop,
             int flags,
@@ -100,7 +100,7 @@ make_output(const std::string &name,
         return nullptr;
       }
     }
-    return new TinyWinGraphicsWindow(engine, this, name, fb_prop, win_prop,
+    return new TinyWinGraphicsWindow(engine, this, std::string(name), fb_prop, win_prop,
                                      flags, gsg, host);
   }
 
@@ -110,7 +110,7 @@ make_output(const std::string &name,
         ((flags&BF_require_window)!=0)) {
       return nullptr;
     }
-    return new TinyGraphicsBuffer(engine, this, name, fb_prop, win_prop,
+    return new TinyGraphicsBuffer(engine, this, std::string(name), fb_prop, win_prop,
                                   flags, gsg, host);
   }
 

@@ -36,7 +36,7 @@ TypeHandle BulletBodyNode::_type_handle;
  *
  */
 BulletBodyNode::
-BulletBodyNode(const char *name) : PandaNode(name) {
+BulletBodyNode(std::string name) : PandaNode(std::move(name)) {
 
   // Shape
   _shape = new btEmptyShape();

@@ -26,8 +26,8 @@ using std::string;
  * via delete when the switch destructs.
  */
 DCSwitch::
-DCSwitch(const string &name, DCField *key_parameter) :
-  _name(name),
+DCSwitch(string name, DCField *key_parameter) :
+  _name(std::move(name)),
   _key_parameter(key_parameter)
 {
   _default_case = nullptr;
@@ -164,7 +164,7 @@ get_field(int case_index, int n) const {
  * no field has this name.
  */
 DCField *DCSwitch::
-get_field_by_name(int case_index, const string &name) const {
+get_field_by_name(int case_index, std::string_view name) const {
   nassertr(case_index >= 0 && case_index < (int)_cases.size(), nullptr);
 
   const FieldsByName &fields_by_name = _cases[case_index]->_fields->_fields_by_name;
@@ -314,8 +314,8 @@ write(ostream &out, bool brief, int indent_level) const {
  * stream.
  */
 void DCSwitch::
-output_instance(ostream &out, bool brief, const string &prename,
-                const string &name, const string &postname) const {
+output_instance(ostream &out, bool brief, std::string_view prename,
+                std::string_view name, std::string_view postname) const {
   out << "switch";
   if (!_name.empty()) {
     out << " " << _name;
@@ -359,8 +359,8 @@ output_instance(ostream &out, bool brief, const string &prename,
  */
 void DCSwitch::
 write_instance(ostream &out, bool brief, int indent_level,
-               const string &prename, const string &name,
-               const string &postname) const {
+               std::string_view prename, std::string_view name,
+               std::string_view postname) const {
   indent(out, indent_level)
     << "switch";
   if (!_name.empty()) {
@@ -554,8 +554,8 @@ start_new_case() {
  *
  */
 DCSwitch::SwitchFields::
-SwitchFields(const string &name) :
-  DCPackerInterface(name)
+SwitchFields(string name) :
+  DCPackerInterface(std::move(name))
 {
   _has_nested_fields = true;
   _num_nested_fields = 0;

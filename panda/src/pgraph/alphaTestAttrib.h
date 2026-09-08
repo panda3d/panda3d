@@ -25,6 +25,7 @@ class FactoryParams;
  */
 class EXPCL_PANDA_PGRAPH AlphaTestAttrib final : public RenderAttrib {
 private:
+  friend class StaticObject<AlphaTestAttrib>;
   INLINE AlphaTestAttrib(PandaCompareFunc mode = M_always,
                          PN_stdfloat reference_alpha = 1.0f);
 
@@ -76,7 +77,8 @@ public:
     RenderAttrib::init_type();
     register_type(_type_handle, "AlphaTestAttrib",
                   RenderAttrib::get_class_type());
-    _attrib_slot = register_slot(_type_handle, 100, new AlphaTestAttrib);
+    static StaticObject<AlphaTestAttrib> default_attrib;
+    _attrib_slot = register_slot(_type_handle, 100, default_attrib);
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

@@ -176,7 +176,7 @@ clear() {
  * any, or NULL if no texture_stage has that name.
  */
 TextureStage *TextureStageCollection::
-find_texture_stage(const std::string &name) const {
+find_texture_stage(std::string_view name) const {
   int num_texture_stages = get_num_texture_stages();
   for (int i = 0; i < num_texture_stages; i++) {
     TextureStage *texture_stage = get_texture_stage(i);

@@ -34,8 +34,8 @@ class ConfigDeclaration;
  */
 class EXPCL_DTOOL_PRC ConfigVariableCore : public ConfigFlags, public MemoryBase {
 private:
-  ConfigVariableCore(const std::string &name);
-  ConfigVariableCore(const ConfigVariableCore &templ, const std::string &name);
+  ConfigVariableCore(std::string name);
+  ConfigVariableCore(const ConfigVariableCore &templ, std::string name);
   ~ConfigVariableCore();
 
 PUBLISHED:
@@ -52,8 +52,8 @@ PUBLISHED:
 
   void set_value_type(ValueType value_type);
   void set_flags(int flags);
-  void set_description(const std::string &description);
-  void set_default_value(const std::string &default_value);
+  void set_description(std::string_view description);
+  void set_default_value(std::string_view default_value);
   INLINE void set_used();
 
   ConfigDeclaration *make_local_value();

@@ -52,7 +52,7 @@ add_vmap(const LwoVertexMap *lwo_vmap) {
  * given vertex, false otherwise.  If true, fills in uv with the value.
  */
 bool CLwoPoints::
-get_uv(const std::string &uv_name, int n, LPoint2 &uv) const {
+get_uv(std::string_view uv_name, int n, LPoint2 &uv) const {
   VMap::const_iterator ni = _txuv.find(uv_name);
   if (ni == _txuv.end()) {
     return false;

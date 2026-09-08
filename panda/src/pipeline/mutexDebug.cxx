@@ -27,8 +27,8 @@ MutexTrueImpl *MutexDebug::_global_lock;
  *
  */
 MutexDebug::
-MutexDebug(const std::string &name, bool allow_recursion, bool lightweight) :
-  Namable(name),
+MutexDebug(std::string_view name, bool allow_recursion, bool lightweight) :
+  Namable(std::string(name)),
   _allow_recursion(allow_recursion),
   _lightweight(lightweight),
   _locking_thread(nullptr),

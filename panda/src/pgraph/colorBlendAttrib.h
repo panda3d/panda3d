@@ -73,6 +73,7 @@ PUBLISHED:
   };
 
 private:
+  friend class StaticObject<ColorBlendAttrib>;
   INLINE ColorBlendAttrib();
   INLINE ColorBlendAttrib(Mode mode, Operand a, Operand b,
                           Mode alpha_mode, Operand alpha_a, Operand alpha_b,
@@ -156,7 +157,8 @@ public:
     RenderAttrib::init_type();
     register_type(_type_handle, "ColorBlendAttrib",
                   RenderAttrib::get_class_type());
-    _attrib_slot = register_slot(_type_handle, 100, new ColorBlendAttrib);
+    static StaticObject<ColorBlendAttrib> default_attrib;
+    _attrib_slot = register_slot(_type_handle, 100, default_attrib);
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

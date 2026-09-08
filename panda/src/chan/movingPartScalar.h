@@ -30,7 +30,7 @@ protected:
   INLINE MovingPartScalar(const MovingPartScalar &copy);
 
 public:
-  INLINE MovingPartScalar(PartGroup *parent, const std::string &name,
+  INLINE MovingPartScalar(PartGroup *parent, std::string name,
                           PN_stdfloat default_value = 0);
   virtual ~MovingPartScalar();
 

@@ -83,7 +83,7 @@ then(Callable callable) && {
         return;
       }
 
-      Callable *callable = (Callable *)data->_storage;
+      Callable *callable = std::launder(reinterpret_cast<Callable *>(data->_storage));
       std::move(*callable)(success && (prev_count & ~0xffff) == 0);
       callable->~Callable();
       delete data;

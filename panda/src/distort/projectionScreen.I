@@ -67,7 +67,7 @@ get_undist_lut() const {
  * stages of the multitexture pipeline.
  */
 INLINE void ProjectionScreen::
-set_texcoord_name(const std::string &texcoord_name) {
+set_texcoord_name(std::string_view texcoord_name) {
   _texcoord_name = InternalName::get_texcoord_name(texcoord_name);
   _stale = true;
 }

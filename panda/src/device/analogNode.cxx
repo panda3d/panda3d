@@ -23,8 +23,8 @@ TypeHandle AnalogNode::_type_handle;
  *
  */
 AnalogNode::
-AnalogNode(ClientBase *client, const std::string &device_name) :
-  DataNode(device_name)
+AnalogNode(ClientBase *client, std::string_view device_name) :
+  DataNode(std::string(device_name))
 {
   _xy_output = define_output("xy", EventStoreVec2::get_class_type());
   _xy = new EventStoreVec2(LPoint2(0));

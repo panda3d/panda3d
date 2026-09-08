@@ -24,8 +24,8 @@ TypeHandle InstancedNode::CData::_type_handle;
  *
  */
 InstancedNode::
-InstancedNode(const std::string &name) :
-  PandaNode(name)
+InstancedNode(std::string name) :
+  PandaNode(std::move(name))
 {
   set_cull_callback();
 }

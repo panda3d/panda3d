@@ -30,6 +30,11 @@ add_library(p3vision ${P3VISION_HEADERS} ${P3VISION_SOURCES})
 set_target_properties(p3vision PROPERTIES DEFINE_SYMBOL BUILDING_VISION)
 target_link_libraries(p3vision panda
   PKG::OPENCV PKG::ARTOOLKIT)
+
+if(WIN32)
+  # For the DirectShow webcam support in webcamVideoDS.cxx.
+  target_link_libraries(p3vision strmiids quartz odbc32 odbccp32)
+endif()
 set_target_properties(p3vision PROPERTIES CXX_EXCEPTIONS ON)
 target_interrogate(p3vision ALL)
 

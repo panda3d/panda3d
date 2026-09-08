@@ -36,7 +36,7 @@ PUBLISHED:
   bool has_material(Material *material) const;
   void clear();
 
-  Material *find_material(const std::string &name) const;
+  Material *find_material(std::string_view name) const;
 
   int get_num_materials() const;
   Material *get_material(int index) const;

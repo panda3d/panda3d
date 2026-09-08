@@ -27,8 +27,6 @@ using std::string;
 
 TypeHandle EggXfmSAnim::_type_handle;
 
-const string EggXfmSAnim::_standard_order = "srpht";
-
 /**
  * Converts the older-style XfmAnim table to the newer-style XfmSAnim table.
  */
@@ -205,7 +203,7 @@ compose_with_order(LMatrix4d &mat,
                    const LVecBase3d &shear,
                    const LVecBase3d &hpr,
                    const LVecBase3d &trans,
-                   const string &order,
+                   std::string_view order,
                    CoordinateSystem cs) {
 
   mat = LMatrix4d::ident_mat();
@@ -219,9 +217,8 @@ compose_with_order(LMatrix4d &mat,
     reverse_roll = true;
   }
 
-  string::const_iterator pi;
-  for (pi = order.begin(); pi != order.end(); ++pi) {
-    switch (*pi) {
+  for (char c : order) {
+    switch (c) {
     case 's':
       mat = mat * LMatrix4d::scale_shear_mat(scale, shear, cs);
       break;
@@ -248,7 +245,7 @@ compose_with_order(LMatrix4d &mat,
 
     default:
       egg_cat.warning()
-        << "Invalid letter in order string: " << *pi << "\n";
+        << "Invalid letter in order string: " << c << "\n";
     }
   }
 }
@@ -553,12 +550,12 @@ add_data(const LMatrix4d &mat) {
  * the table.
  */
 void EggXfmSAnim::
-add_component_data(const string &component_name, double value) {
+add_component_data(std::string_view component_name, double value) {
   EggNode *child = find_child(component_name);
   EggSAnimData *sanim;
   if (child == nullptr) {
     // We don't have this component yet; create it.
-    sanim = new EggSAnimData(component_name);
+    sanim = new EggSAnimData(std::string(component_name));
     add_child(sanim);
 
   } else {

@@ -34,7 +34,7 @@
 class EXPCL_PANDA_EGG EggGroup : public EggGroupNode, public EggRenderMode, public EggTransform {
 PUBLISHED:
   typedef pmap<PT_EggVertex, double> VertexRef;
-  typedef pmap<std::string, std::string> TagData;
+  typedef pmap<std::string, std::string, std::less<>> TagData;
 
   // These bits are all stored somewhere in _flags.
   enum GroupType {
@@ -132,7 +132,7 @@ PUBLISHED:
     BO_one_minus_alpha_scale,
   };
 
-  explicit EggGroup(const std::string &name = "");
+  explicit EggGroup(std::string name = "");
   EggGroup(const EggGroup &copy);
   EggGroup &operator = (const EggGroup &copy);
   ~EggGroup();
@@ -177,7 +177,7 @@ PUBLISHED:
   INLINE void set_collide_flags(int flags);
   INLINE CollideFlags get_collide_flags() const;
 
-  INLINE void set_collision_name(const std::string &collision_name);
+  INLINE void set_collision_name(std::string collision_name);
   INLINE void clear_collision_name();
   INLINE bool has_collision_name() const;
   INLINE const std::string &get_collision_name() const;
@@ -195,13 +195,13 @@ PUBLISHED:
   INLINE void set_switch_fps(double fps);
   INLINE double get_switch_fps() const;
 
-  INLINE void add_object_type(const std::string &object_type);
+  INLINE void add_object_type(std::string object_type);
   INLINE void clear_object_types();
   INLINE int get_num_object_types() const;
   INLINE std::string get_object_type(int index) const;
   MAKE_SEQ(get_object_types, get_num_object_types, get_object_type);
-  bool has_object_type(const std::string &object_type) const;
-  bool remove_object_type(const std::string &object_type);
+  bool has_object_type(std::string_view object_type) const;
+  bool remove_object_type(std::string_view object_type);
 
   INLINE void set_model_flag(bool flag);
   INLINE bool get_model_flag() const;
@@ -263,10 +263,10 @@ PUBLISHED:
   INLINE bool has_lod() const;
   INLINE const EggSwitchCondition &get_lod() const;
 
-  INLINE void set_tag(const std::string &key, const std::string &value);
-  INLINE std::string get_tag(const std::string &key) const;
-  INLINE bool has_tag(const std::string &key) const;
-  INLINE void clear_tag(const std::string &key);
+  INLINE void set_tag(std::string key, std::string value);
+  INLINE std::string get_tag(std::string_view key) const;
+  INLINE bool has_tag(std::string_view key) const;
+  INLINE void clear_tag(std::string_view key);
 
   INLINE const EggTransform &get_default_pose() const;
   INLINE EggTransform &modify_default_pose();
@@ -355,14 +355,14 @@ PUBLISHED:
   void remove_group_ref(int n);
   void clear_group_refs();
 
-  static GroupType string_group_type(const std::string &strval);
-  static DartType string_dart_type(const std::string &strval);
-  static DCSType string_dcs_type(const std::string &strval);
-  static BillboardType string_billboard_type(const std::string &strval);
-  static CollisionSolidType string_cs_type(const std::string &strval);
-  static CollideFlags string_collide_flags(const std::string &strval);
-  static BlendMode string_blend_mode(const std::string &strval);
-  static BlendOperand string_blend_operand(const std::string &strval);
+  static GroupType string_group_type(std::string_view strval);
+  static DartType string_dart_type(std::string_view strval);
+  static DCSType string_dcs_type(std::string_view strval);
+  static BillboardType string_billboard_type(std::string_view strval);
+  static CollisionSolidType string_cs_type(std::string_view strval);
+  static CollideFlags string_collide_flags(std::string_view strval);
+  static BlendMode string_blend_mode(std::string_view strval);
+  static BlendOperand string_blend_operand(std::string_view strval);
 
 public:
   virtual EggTransform *as_transform();

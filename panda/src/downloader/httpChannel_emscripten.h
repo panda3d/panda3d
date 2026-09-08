@@ -110,8 +110,8 @@ PUBLISHED:
   BLOCKING INLINE bool get_subdocument(const DocumentSpec &url,
                                        size_t first_byte, size_t last_byte);
   BLOCKING INLINE bool get_header(const DocumentSpec &url);
-  BLOCKING INLINE bool post_form(const DocumentSpec &url, const std::string &body);
-  BLOCKING INLINE bool put_document(const DocumentSpec &url, const std::string &body);
+  BLOCKING INLINE bool post_form(const DocumentSpec &url, std::string body);
+  BLOCKING INLINE bool put_document(const DocumentSpec &url, std::string body);
   BLOCKING INLINE bool delete_document(const DocumentSpec &url);
   BLOCKING INLINE bool get_options(const DocumentSpec &url);
 
@@ -119,7 +119,7 @@ PUBLISHED:
   INLINE void begin_get_subdocument(const DocumentSpec &url,
                                     size_t first_byte, size_t last_byte);
   INLINE void begin_get_header(const DocumentSpec &url);
-  INLINE void begin_post_form(const DocumentSpec &url, const std::string &body);
+  INLINE void begin_post_form(const DocumentSpec &url, std::string body);
   bool run();
 
   BLOCKING bool download_to_ram(Ramfile *ramfile, bool subdocument_resumes = true);
@@ -143,7 +143,7 @@ private:
   bool run_headers_received();
 
   bool begin_request(HTTPEnum::Method method, const DocumentSpec &url,
-                     const std::string &body, bool nonblocking,
+                     std::string body, bool nonblocking,
                      size_t first_byte, size_t last_byte);
   void reset_for_new_request();
 

@@ -15,9 +15,9 @@
  *
  */
 INLINE void PGItem::
-set_name(const std::string &name) {
-  Namable::set_name(name);
+set_name(std::string name) {
   _lock.set_name(name);
+  Namable::set_name(std::move(name));
 }
 
 /**
@@ -235,9 +235,9 @@ get_id() const {
  * decide to redefine the ID to be something possibly more meaningful.
  */
 INLINE void PGItem::
-set_id(const std::string &id) {
+set_id(std::string id) {
   LightReMutexHolder holder(_lock);
-  _region->set_name(id);
+  _region->set_name(std::move(id));
 }
 
 /**

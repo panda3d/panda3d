@@ -32,21 +32,21 @@
 class EXPCL_PANDA_DOWNLOADER HTTPCookie {
 PUBLISHED:
   INLINE HTTPCookie() = default;
-  INLINE explicit HTTPCookie(const std::string &format, const URLSpec &url);
-  INLINE explicit HTTPCookie(const std::string &name, const std::string &path,
-                             const std::string &domain);
+  INLINE explicit HTTPCookie(std::string_view format, const URLSpec &url);
+  INLINE explicit HTTPCookie(std::string name, std::string path,
+                             std::string domain);
   INLINE ~HTTPCookie();
 
-  INLINE void set_name(const std::string &name);
+  INLINE void set_name(std::string name);
   INLINE const std::string &get_name() const;
 
-  INLINE void set_value(const std::string &value);
+  INLINE void set_value(std::string value);
   INLINE const std::string &get_value() const;
 
-  INLINE void set_domain(const std::string &domain);
+  INLINE void set_domain(std::string domain);
   INLINE const std::string &get_domain() const;
 
-  INLINE void set_path(const std::string &path);
+  INLINE void set_path(std::string path);
   INLINE const std::string &get_path() const;
 
   INLINE void set_expires(const HTTPDate &expires);
@@ -70,7 +70,7 @@ PUBLISHED:
   bool operator < (const HTTPCookie &other) const;
   void update_from(const HTTPCookie &other);
 
-  bool parse_set_cookie(const std::string &format, const URLSpec &url);
+  bool parse_set_cookie(std::string_view format, const URLSpec &url);
   INLINE bool is_expired(const HTTPDate &now = HTTPDate::now()) const;
   bool matches_url(const URLSpec &url) const;
 
@@ -85,7 +85,7 @@ PUBLISHED:
   MAKE_PROPERTY(secure, get_secure, set_secure);
 
 private:
-  bool parse_cookie_param(const std::string &param, bool first_param);
+  bool parse_cookie_param(std::string_view param, bool first_param);
 
   std::string _name;
   std::string _value;

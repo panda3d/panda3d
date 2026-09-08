@@ -40,7 +40,7 @@ enum ColorSpace {
   CS_scRGB,
 };
 
-EXPCL_PANDA_PUTIL ColorSpace parse_color_space_string(const std::string &str);
+EXPCL_PANDA_PUTIL ColorSpace parse_color_space_string(std::string_view str);
 EXPCL_PANDA_PUTIL std::string format_color_space(ColorSpace cs);
 
 END_PUBLISH

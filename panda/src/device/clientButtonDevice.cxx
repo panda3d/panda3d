@@ -23,8 +23,8 @@ TypeHandle ClientButtonDevice::_type_handle;
  *
  */
 ClientButtonDevice::
-ClientButtonDevice(ClientBase *client, const std::string &device_name):
-  ClientDevice(client, get_class_type(), device_name)
+ClientButtonDevice(ClientBase *client, std::string device_name):
+  ClientDevice(client, get_class_type(), std::move(device_name))
 {
 }
 

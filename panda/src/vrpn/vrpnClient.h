@@ -48,44 +48,44 @@ public:
 
 protected:
   virtual PT(ClientDevice) make_device(TypeHandle device_type,
-                                       const std::string &device_name);
+                                       std::string_view device_name);
 
   virtual bool disconnect_device(TypeHandle device_type,
-                                 const std::string &device_name,
+                                 std::string_view device_name,
                                  ClientDevice *device);
 
   virtual void do_poll();
 
 private:
-  PT(ClientDevice) make_tracker_device(const std::string &device_name);
-  PT(ClientDevice) make_button_device(const std::string &device_name);
-  PT(ClientDevice) make_analog_device(const std::string &device_name);
-  PT(ClientDevice) make_dial_device(const std::string &device_name);
+  PT(ClientDevice) make_tracker_device(std::string_view device_name);
+  PT(ClientDevice) make_button_device(std::string_view device_name);
+  PT(ClientDevice) make_analog_device(std::string_view device_name);
+  PT(ClientDevice) make_dial_device(std::string_view device_name);
   void disconnect_tracker_device(VrpnTrackerDevice *device);
   void disconnect_button_device(VrpnButtonDevice *device);
   void disconnect_analog_device(VrpnAnalogDevice *device);
   void disconnect_dial_device(VrpnDialDevice *device);
 
-  VrpnTracker *get_tracker(const std::string &tracker_name);
+  VrpnTracker *get_tracker(std::string_view tracker_name);
   void free_tracker(VrpnTracker *vrpn_tracker);
 
-  VrpnButton *get_button(const std::string &button_name);
+  VrpnButton *get_button(std::string_view button_name);
   void free_button(VrpnButton *vrpn_button);
 
-  VrpnAnalog *get_analog(const std::string &analog_name);
+  VrpnAnalog *get_analog(std::string_view analog_name);
   void free_analog(VrpnAnalog *vrpn_analog);
 
-  VrpnDial *get_dial(const std::string &dial_name);
+  VrpnDial *get_dial(std::string_view dial_name);
   void free_dial(VrpnDial *vrpn_dial);
 
 private:
   std::string _server_name;
   vrpn_Connection *_connection;
 
-  typedef pmap<std::string, VrpnTracker *> Trackers;
-  typedef pmap<std::string, VrpnButton *> Buttons;
-  typedef pmap<std::string, VrpnAnalog *> Analogs;
-  typedef pmap<std::string, VrpnDial *> Dials;
+  typedef pmap<std::string, VrpnTracker *, std::less<>> Trackers;
+  typedef pmap<std::string, VrpnButton *, std::less<>> Buttons;
+  typedef pmap<std::string, VrpnAnalog *, std::less<>> Analogs;
+  typedef pmap<std::string, VrpnDial *, std::less<>> Dials;
 
   Trackers _trackers;
   Buttons _buttons;

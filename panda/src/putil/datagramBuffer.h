@@ -35,7 +35,7 @@ PUBLISHED:
   INLINE void clear();
 
 public:
-  bool write_header(const std::string &header);
+  bool write_header(std::string_view header);
   virtual bool put_datagram(const Datagram &data) override;
   virtual void flush() override;
 

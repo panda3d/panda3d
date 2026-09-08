@@ -15,7 +15,7 @@
  *
  */
 INLINE ConfigVariableInt64::
-ConfigVariableInt64(const std::string &name) :
+ConfigVariableInt64(std::string_view name) :
   ConfigVariable(name, VT_int64),
   _local_modified(initial_invalid_cache())
 {
@@ -26,12 +26,12 @@ ConfigVariableInt64(const std::string &name) :
  *
  */
 INLINE ConfigVariableInt64::
-ConfigVariableInt64(const std::string &name, int64_t default_value,
-                    const std::string &description, int flags) :
+ConfigVariableInt64(std::string_view name, int64_t default_value,
+                    std::string_view description, int flags) :
 #ifdef PRC_SAVE_DESCRIPTIONS
   ConfigVariable(name, ConfigVariableCore::VT_int64, description, flags),
 #else
-  ConfigVariable(name, ConfigVariableCore::VT_int64, std::string(), flags),
+  ConfigVariable(name, ConfigVariableCore::VT_int64, std::string_view(), flags),
 #endif
   _local_modified(initial_invalid_cache())
 {
@@ -43,12 +43,12 @@ ConfigVariableInt64(const std::string &name, int64_t default_value,
  *
  */
 INLINE ConfigVariableInt64::
-ConfigVariableInt64(const std::string &name, const std::string &default_value,
-                    const std::string &description, int flags) :
+ConfigVariableInt64(std::string_view name, std::string_view default_value,
+                    std::string_view description, int flags) :
 #ifdef PRC_SAVE_DESCRIPTIONS
   ConfigVariable(name, ConfigVariableCore::VT_int64, description, flags),
 #else
-  ConfigVariable(name, ConfigVariableCore::VT_int64, std::string(), flags),
+  ConfigVariable(name, ConfigVariableCore::VT_int64, std::string_view(), flags),
 #endif
   _local_modified(initial_invalid_cache())
 {

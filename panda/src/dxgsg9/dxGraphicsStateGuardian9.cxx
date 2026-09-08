@@ -4443,21 +4443,21 @@ set_texture_blend_mode(int i, const TextureStage *stage) {
         (i, D3DTSS_COLORARG0,
          get_texture_argument(stage->get_combine_rgb_source2(),
                               stage->get_combine_rgb_operand2()));
-      // fall through
+      [[fallthrough]];
 
     case 2:
       set_texture_stage_state
         (i, D3DTSS_COLORARG2,
          get_texture_argument(stage->get_combine_rgb_source1(),
                               stage->get_combine_rgb_operand1()));
-      // fall through
+      [[fallthrough]];
 
     case 1:
       set_texture_stage_state
         (i, D3DTSS_COLORARG1,
          get_texture_argument(stage->get_combine_rgb_source0(),
                               stage->get_combine_rgb_operand0()));
-      // fall through
+      [[fallthrough]];
 
     default:
       break;
@@ -4474,21 +4474,21 @@ set_texture_blend_mode(int i, const TextureStage *stage) {
         (i, D3DTSS_ALPHAARG0,
          get_texture_argument(stage->get_combine_alpha_source2(),
                               stage->get_combine_alpha_operand2()));
-      // fall through
+      [[fallthrough]];
 
     case 2:
       set_texture_stage_state
         (i, D3DTSS_ALPHAARG2,
          get_texture_argument(stage->get_combine_alpha_source1(),
                               stage->get_combine_alpha_operand1()));
-      // fall through
+      [[fallthrough]];
 
     case 1:
       set_texture_stage_state
         (i, D3DTSS_ALPHAARG1,
          get_texture_argument(stage->get_combine_alpha_source0(),
                               stage->get_combine_alpha_operand0()));
-      // fall through
+      [[fallthrough]];
 
     default:
       break;

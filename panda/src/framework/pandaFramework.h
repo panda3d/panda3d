@@ -53,15 +53,15 @@ public:
   NodePath get_mouse(GraphicsOutput *window);
   void remove_mouse(const GraphicsOutput *window);
 
-  void define_key(const std::string &event_name,
-                  const std::string &description,
+  void define_key(std::string_view event_name,
+                  std::string description,
                   EventHandler::EventCallbackFunction *function,
                   void *data);
-  void define_key(const std::string &event_name,
-                  const std::string &description,
+  void define_key(std::string_view event_name,
+                  std::string description,
                   EventHandler::EventLambda function);
 
-  INLINE void set_window_title(const std::string &title);
+  INLINE void set_window_title(std::string title);
   virtual void get_default_window_props(WindowProperties &props);
 
   WindowFramework *open_window();

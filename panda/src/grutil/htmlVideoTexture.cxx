@@ -43,8 +43,8 @@ TypeHandle HTMLVideoTexture::_type_handle;
  * Creates a blank movie texture.  Movies must be added using do_read_one.
  */
 HTMLVideoTexture::
-HTMLVideoTexture(const std::string &name) :
-  Texture(name)
+HTMLVideoTexture(std::string name) :
+  Texture(std::move(name))
 {
   EM_ASM_INT({
     if (!window._htmlVideoData) {
@@ -372,7 +372,7 @@ do_can_reload(const Texture::CData *cdata) const {
  */
 bool HTMLVideoTexture::
 do_adjust_this_size(const Texture::CData *cdata_tex,
-                    int &x_size, int &y_size, const std::string &name,
+                    int &x_size, int &y_size, std::string_view name,
                     bool for_padding) const {
   // We always scale, for now.  May change in the future.
   AutoTextureScale ats = do_get_auto_texture_scale(cdata_tex);
@@ -510,7 +510,7 @@ do_read_one(Texture::CData *cdata_tex,
  */
 bool HTMLVideoTexture::
 do_load_one(Texture::CData *cdata_tex,
-            const PNMImage &pnmimage, const std::string &name, int z, int n,
+            const PNMImage &pnmimage, std::string_view name, int z, int n,
             const LoaderOptions &options) {
   grutil_cat.error() << "You cannot load a static image into an HTMLVideoTexture\n";
   return false;
@@ -521,7 +521,7 @@ do_load_one(Texture::CData *cdata_tex,
  */
 bool HTMLVideoTexture::
 do_load_one(Texture::CData *cdata_tex,
-            const PfmFile &pfm, const std::string &name, int z, int n,
+            const PfmFile &pfm, std::string_view name, int z, int n,
             const LoaderOptions &options) {
   grutil_cat.error() << "You cannot load a static image into an HTMLVideoTexture\n";
   return false;

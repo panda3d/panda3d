@@ -17,34 +17,34 @@ throw_event(const CPT_Event &event) {
 }
 
 INLINE void
-throw_event(const std::string &event_name) {
-  EventQueue::get_global_event_queue()->queue_event(new Event(event_name));
+throw_event(std::string event_name) {
+  EventQueue::get_global_event_queue()->queue_event(new Event(std::move(event_name)));
 }
 
 INLINE void
-throw_event(const std::string &event_name,
+throw_event(std::string event_name,
             const EventParameter &p1) {
-  Event *event = new Event(event_name);
+  Event *event = new Event(std::move(event_name));
   event->add_parameter(p1);
   EventQueue::get_global_event_queue()->queue_event(event);
 }
 
 INLINE void
-throw_event(const std::string &event_name,
+throw_event(std::string event_name,
             const EventParameter &p1,
             const EventParameter &p2) {
-  Event *event = new Event(event_name);
+  Event *event = new Event(std::move(event_name));
   event->add_parameter(p1);
   event->add_parameter(p2);
   EventQueue::get_global_event_queue()->queue_event(event);
 }
 
 INLINE void
-throw_event(const std::string &event_name,
+throw_event(std::string event_name,
             const EventParameter &p1,
             const EventParameter &p2,
             const EventParameter &p3) {
-  Event *event = new Event(event_name);
+  Event *event = new Event(std::move(event_name));
   event->add_parameter(p1);
   event->add_parameter(p2);
   event->add_parameter(p3);
@@ -52,12 +52,12 @@ throw_event(const std::string &event_name,
 }
 
 INLINE void
-throw_event(const std::string &event_name,
+throw_event(std::string event_name,
             const EventParameter &p1,
             const EventParameter &p2,
             const EventParameter &p3,
             const EventParameter &p4) {
-  Event *event = new Event(event_name);
+  Event *event = new Event(std::move(event_name));
   event->add_parameter(p1);
   event->add_parameter(p2);
   event->add_parameter(p3);
@@ -74,25 +74,25 @@ throw_event_directly(EventHandler& handler,
 
 INLINE void
 throw_event_directly(EventHandler& handler,
-                     const std::string &event_name) {
-  handler.dispatch_event(new Event(event_name));
+                     std::string event_name) {
+  handler.dispatch_event(new Event(std::move(event_name)));
 }
 
 INLINE void
 throw_event_directly(EventHandler& handler,
-                     const std::string &event_name,
+                     std::string event_name,
                      const EventParameter &p1) {
-  Event *event = new Event(event_name);
+  Event *event = new Event(std::move(event_name));
   event->add_parameter(p1);
   handler.dispatch_event(event);
 }
 
 INLINE void
 throw_event_directly(EventHandler& handler,
-                     const std::string &event_name,
+                     std::string event_name,
                      const EventParameter &p1,
                      const EventParameter &p2) {
-  Event *event = new Event(event_name);
+  Event *event = new Event(std::move(event_name));
   event->add_parameter(p1);
   event->add_parameter(p2);
   handler.dispatch_event(event);
@@ -100,11 +100,11 @@ throw_event_directly(EventHandler& handler,
 
 INLINE void
 throw_event_directly(EventHandler& handler,
-                     const std::string &event_name,
+                     std::string event_name,
                      const EventParameter &p1,
                      const EventParameter &p2,
                      const EventParameter &p3) {
-  Event *event = new Event(event_name);
+  Event *event = new Event(std::move(event_name));
   event->add_parameter(p1);
   event->add_parameter(p2);
   event->add_parameter(p3);

@@ -201,7 +201,7 @@ draw_guide_bar(int x, GuideBarStyle style) {
  */
 void GtkStatsTimeline::
 draw_bar(int row, int from_x, int to_x, int collector_index,
-         const std::string &collector_name) {
+         std::string_view collector_name) {
   int top = row_to_pixel(row);
   int bottom = row_to_pixel(row + 1);
   int scale = _pixel_scale;
@@ -238,7 +238,8 @@ draw_bar(int row, int from_x, int to_x, int collector_index,
 
       // Make sure that the text doesn't run off the chart.
       int text_width, text_height;
-      PangoLayout *layout = gtk_widget_create_pango_layout(_graph_window, collector_name.c_str());
+      PangoLayout *layout = gtk_widget_create_pango_layout(_graph_window, nullptr);
+      pango_layout_set_text(layout, collector_name.data(), collector_name.size());
       pango_layout_set_attributes(layout, _pango_attrs);
       pango_layout_set_height(layout, -1);
       pango_layout_get_pixel_size(layout, &text_width, &text_height);
@@ -252,12 +253,12 @@ draw_bar(int row, int from_x, int to_x, int collector_index,
         size_t c = collector_name.rfind(':');
         if (text_right - text_left < scale * 6) {
           // It's a really tiny space.  Draw a single letter.
-          const char *ch = collector_name.data() + (c != std::string::npos ? c + 1 : 0);
+          const char *ch = collector_name.data() + (c != std::string_view::npos ? c + 1 : 0);
           pango_layout_set_alignment(layout, PANGO_ALIGN_CENTER);
           pango_layout_set_text(layout, ch, 1);
         } else {
           // Maybe just use everything after the last colon.
-          if (c != std::string::npos) {
+          if (c != std::string_view::npos) {
             pango_layout_set_text(layout, collector_name.data() + c + 1,
                                           collector_name.size() - c - 1);
             pango_layout_get_pixel_size(layout, &text_width, &text_height);

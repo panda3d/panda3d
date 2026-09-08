@@ -110,6 +110,7 @@ public:
     PWT_draw
   };
   virtual PreferredWindowThread get_preferred_window_thread() const;
+  virtual void release_current_context();
 
   INLINE GraphicsDevice *get_device() const;
   virtual PT(GraphicsDevice) make_device(void *scrn = nullptr);
@@ -121,7 +122,7 @@ protected:
 
   virtual void close_gsg(GraphicsStateGuardian *gsg);
 
-  virtual PT(GraphicsOutput) make_output(const std::string &name,
+  virtual PT(GraphicsOutput) make_output(std::string_view name,
                                          const FrameBufferProperties &fb_prop,
                                          const WindowProperties &win_prop,
                                          int flags,

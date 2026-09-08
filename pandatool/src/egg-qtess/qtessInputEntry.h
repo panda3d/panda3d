@@ -32,11 +32,11 @@ public:
     T_min_u, T_min_v
   };
 
-  QtessInputEntry(const std::string &name = std::string());
+  QtessInputEntry(std::string name = std::string());
   INLINE QtessInputEntry(const QtessInputEntry &copy);
   void operator = (const QtessInputEntry &copy);
 
-  INLINE void add_node_name(const std::string &name);
+  INLINE void add_node_name(std::string name);
   INLINE void set_importance(double i);
   INLINE void set_match_uu();
   INLINE void set_match_vv();

@@ -50,8 +50,8 @@ fillin(DatagramIterator &scan, BamReader *manager) {
  *
  */
 SphereLight::
-SphereLight(const std::string &name) :
-  PointLight(name)
+SphereLight(std::string name) :
+  PointLight(std::move(name))
 {
 }
 

@@ -622,21 +622,21 @@ apply_wrap_border_color_magfilter(ZTextureDef *texture_def, int s, int t, unsign
 // functions instead saves two additional function calls per pixel.
 PIXEL
 apply_wrap_clamp_minfilter(ZTextureDef *texture_def, int s, int t, unsigned int level, unsigned int level_dx) {
-  s = min(max(s, 0), texture_def->s_max);
-  t = min(max(t, 0), texture_def->t_max);
+  s = std::clamp(s, 0, texture_def->s_max);
+  t = std::clamp(t, 0, texture_def->t_max);
   return (*texture_def->tex_minfilter_func_impl)(texture_def, s, t, level, level_dx);
 }
 
 PIXEL
 apply_wrap_clamp_magfilter(ZTextureDef *texture_def, int s, int t, unsigned int level, unsigned int level_dx) {
-  s = min(max(s, 0), texture_def->s_max);
-  t = min(max(t, 0), texture_def->t_max);
+  s = std::clamp(s, 0, texture_def->s_max);
+  t = std::clamp(t, 0, texture_def->t_max);
   return (*texture_def->tex_magfilter_func_impl)(texture_def, s, t, level, level_dx);
 }
 
 int
 texcoord_clamp(int coord, int max_coord) {
-  return min(max(coord, 0), max_coord);
+  return std::clamp(coord, 0, max_coord);
 }
 
 int

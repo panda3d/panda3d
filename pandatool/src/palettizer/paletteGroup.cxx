@@ -50,8 +50,8 @@ PaletteGroup() {
  * palette groups into different install directories.
  */
 void PaletteGroup::
-set_dirname(const string &dirname) {
-  _dirname = dirname;
+set_dirname(std::string dirname) {
+  _dirname = std::move(dirname);
 }
 
 /**

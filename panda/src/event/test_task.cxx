@@ -20,8 +20,8 @@ using std::cerr;
 
 class MyTask : public AsyncTask {
 public:
-  MyTask(const std::string &name, double length, int repeat_count) :
-    AsyncTask(name),
+  MyTask(std::string name, double length, int repeat_count) :
+    AsyncTask(std::move(name)),
     _length(length),
     _repeat_count(repeat_count)
   {

@@ -60,14 +60,13 @@ static void conv_rgba4444(uint16_t in, xel &rgb, xelval &alpha) {
  *
  */
 PNMFileTypeAndroid::Reader::
-Reader(PNMFileType *type, std::istream *file, bool owns_file, std::string magic_number) :
+Reader(PNMFileType *type, std::istream *file, bool owns_file, std::string_view magic_number) :
   PNMReader(type, file, owns_file), _bitmap(nullptr)
 {
   // Hope we can putback() more than one character.
-  for (std::string::reverse_iterator mi = magic_number.rbegin();
-       mi != magic_number.rend(); ++mi) {
+  for (auto mi = magic_number.rbegin(); mi != magic_number.rend(); ++mi) {
     _file->putback(*mi);
-  };
+  }
   if (_file->fail()) {
     android_cat.error()
       << "Unable to put back magic number.\n";

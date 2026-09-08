@@ -38,7 +38,7 @@
  */
 class EXPCL_PANDA_DEVICE AnalogNode : public DataNode {
 PUBLISHED:
-  explicit AnalogNode(ClientBase *client, const std::string &device_name);
+  explicit AnalogNode(ClientBase *client, std::string_view device_name);
   explicit AnalogNode(InputDevice *device);
   virtual ~AnalogNode();
 

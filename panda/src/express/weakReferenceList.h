@@ -54,7 +54,7 @@ private:
   // This has a very large number added to it if the object is still alive.
   // It could be 1, but having it be a large number makes it easy to check
   // whether the object has been deleted or not.
-  static const int _alive_offset = (1 << 30);
+  static constexpr int _alive_offset = (1 << 30);
   mutable patomic<int> _count;
 
   friend class ReferenceCount;

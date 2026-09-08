@@ -41,10 +41,7 @@ class EXPCL_PANDA_PIPELINE LightMutex : public LightMutexDirect
 {
 PUBLISHED:
   INLINE LightMutex();
-public:
-  INLINE explicit LightMutex(const char *name);
-PUBLISHED:
-  INLINE explicit LightMutex(const std::string &name);
+  INLINE explicit LightMutex(std::string_view name);
   LightMutex(const LightMutex &copy) = delete;
   ~LightMutex() = default;
 

@@ -89,8 +89,8 @@ public:
 
 protected:
   virtual int append_cv_impl(const LVecBase4 &v);
-  virtual bool format_egg(std::ostream &out, const std::string &name,
-                          const std::string &curve_type, int indent_level) const;
+  virtual bool format_egg(std::ostream &out, std::string_view name,
+                          std::string_view curve_type, int indent_level) const;
 
   int find_cv(PN_stdfloat t);
 

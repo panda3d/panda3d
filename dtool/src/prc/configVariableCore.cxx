@@ -31,8 +31,8 @@ using std::string;
  * ConfigVariableCore.
  */
 ConfigVariableCore::
-ConfigVariableCore(const string &name) :
-  _name(name),
+ConfigVariableCore(std::string name) :
+  _name(std::move(name)),
   _is_used(false),
   _value_type(VT_undefined),
   _flags(0),
@@ -52,8 +52,8 @@ ConfigVariableCore(const string &name) :
  * pre-defined.
  */
 ConfigVariableCore::
-ConfigVariableCore(const ConfigVariableCore &templ, const string &name) :
-  _name(name),
+ConfigVariableCore(const ConfigVariableCore &templ, std::string name) :
+  _name(std::move(name)),
   _is_used(templ._is_used),
   _value_type(templ._value_type),
   _description(templ._description),
@@ -147,7 +147,7 @@ set_flags(int flags) {
  * printed.
  */
 void ConfigVariableCore::
-set_description(const string &description) {
+set_description(std::string_view description) {
   if (_value_queried && _description != description) {
     if ((_flags & F_dconfig) != 0) {
       // As a special exception, if the flags include F_dconfig, we don't
@@ -188,11 +188,11 @@ set_description(const string &description) {
  * prc file.
  */
 void ConfigVariableCore::
-set_default_value(const string &default_value) {
+set_default_value(std::string_view default_value) {
   if (_default_value == nullptr) {
     // Defining the default value for the first time.
     ConfigPage *default_page = ConfigPage::get_default_page();
-    _default_value = default_page->make_declaration(this, default_value);
+    _default_value = default_page->make_declaration(this, std::string(default_value));
 
   } else {
     // Modifying an existing default value.
@@ -201,7 +201,7 @@ set_default_value(const string &default_value) {
     // when the config variable in question happens to be consulted in
     // NotifyCategory::out() (for instance, notify-timestamp).
     string orig_default_value = _default_value->get_string_value();
-    _default_value->set_string_value(default_value);
+    _default_value->set_string_value(std::string(default_value));
 
     if (orig_default_value != default_value) {
       if ((_flags & F_dconfig) != 0) {

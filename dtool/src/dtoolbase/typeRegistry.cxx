@@ -36,7 +36,7 @@ TypeRegistry *TypeRegistry::_global_pointer = nullptr;
  * defined before, false if it was.
  */
 bool TypeRegistry::
-register_type(TypeHandle &type_handle, const string &name) {
+register_type(TypeHandle &type_handle, std::string_view name) {
   _lock.lock();
 
   if (type_handle != TypeHandle::none()) {
@@ -61,9 +61,9 @@ register_type(TypeHandle &type_handle, const string &name) {
     TypeHandle new_handle;
     new_handle._index = (int)_handle_registry.size();
 
-    TypeRegistryNode *rnode = new TypeRegistryNode(new_handle, name, type_handle);
+    TypeRegistryNode *rnode = new TypeRegistryNode(new_handle, std::string(name), type_handle);
     _handle_registry.push_back(rnode);
-    _name_registry[name] = rnode;
+    _name_registry[rnode->_name] = rnode;
     _derivations_fresh = false;
 
     type_handle = new_handle;
@@ -118,7 +118,7 @@ register_type(TypeHandle &type_handle, const string &name) {
  * TypeHandle that was last used for this typename is returned.
  */
 TypeHandle TypeRegistry::
-register_dynamic_type(const string &name) {
+register_dynamic_type(std::string_view name) {
   _lock.lock();
 
   NameRegistry::iterator ri;
@@ -134,9 +134,9 @@ register_dynamic_type(const string &name) {
     TypeHandle *new_handle = new TypeHandle;
     new_handle->_index = (int)_handle_registry.size();
 
-    TypeRegistryNode *rnode = new TypeRegistryNode(*new_handle, name, *new_handle);
+    TypeRegistryNode *rnode = new TypeRegistryNode(*new_handle, std::string(name), *new_handle);
     _handle_registry.push_back(rnode);
-    _name_registry[name] = rnode;
+    _name_registry[rnode->_name] = rnode;
     _derivations_fresh = false;
 
     _lock.unlock();
@@ -186,13 +186,13 @@ record_derivation(TypeHandle child, TypeHandle parent) {
  * correctly read from old Bam files.
  */
 void TypeRegistry::
-record_alternate_name(TypeHandle type, const string &name) {
+record_alternate_name(TypeHandle type, std::string_view name) {
   _lock.lock();
 
   TypeRegistryNode *rnode = look_up(type, nullptr);
   if (rnode != nullptr) {
     NameRegistry::iterator ri =
-      _name_registry.insert(NameRegistry::value_type(name, rnode)).first;
+      _name_registry.insert(NameRegistry::value_type(std::string(name), rnode)).first;
 
     if ((*ri).second != rnode) {
       _lock.unlock();
@@ -231,7 +231,7 @@ record_python_type(TypeHandle type, PyTypeObject *cls, PythonWrapFunc *wrap_func
  * TypeHandle if it exists, or TypeHandle::none() if there is no such type.
  */
 TypeHandle TypeRegistry::
-find_type(const string &name) const {
+find_type(std::string_view name) const {
   _lock.lock();
 
   TypeHandle handle = TypeHandle::none();

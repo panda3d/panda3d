@@ -57,5 +57,5 @@ has_vertices() const {
  * Applies the indicated name change to the egg file.
  */
 void EggBackPointer::
-set_name(const std::string &name) {
+set_name(std::string name) {
 }

@@ -32,7 +32,7 @@ TypeHandle EggGroup::_type_handle;
  *
  */
 EggGroup::
-EggGroup(const string &name) : EggGroupNode(name) {
+EggGroup(std::string name) : EggGroupNode(std::move(name)) {
   _flags = 0;
   _flags2 = 0;
   _fps = 0.0;
@@ -142,7 +142,7 @@ set_group_type(GroupType type) {
  * false otherwise.
  */
 bool EggGroup::
-has_object_type(const string &object_type) const {
+has_object_type(std::string_view object_type) const {
   vector_string::const_iterator oi;
   for (oi = _object_types.begin(); oi != _object_types.end(); ++oi) {
     if (cmp_nocase_uh((*oi), object_type) == 0) {
@@ -158,7 +158,7 @@ has_object_type(const string &object_type) const {
  * false otherwise.
  */
 bool EggGroup::
-remove_object_type(const string &object_type) {
+remove_object_type(std::string_view object_type) {
   vector_string::iterator oi;
   for (oi = _object_types.begin(); oi != _object_types.end(); ++oi) {
     if (cmp_nocase_uh((*oi), object_type) == 0) {
@@ -805,7 +805,7 @@ clear_group_refs() {
  * GroupType value.
  */
 EggGroup::GroupType EggGroup::
-string_group_type(const string &strval) {
+string_group_type(std::string_view strval) {
   if (cmp_nocase_uh(strval, "group") == 0) {
     return GT_group;
   } else if (cmp_nocase_uh(strval, "instance") == 0) {
@@ -822,7 +822,7 @@ string_group_type(const string &strval) {
  * or DT_none if the string does not match any known DartType value.
  */
 EggGroup::DartType EggGroup::
-string_dart_type(const string &strval) {
+string_dart_type(std::string_view strval) {
   if (cmp_nocase_uh(strval, "sync") == 0) {
     return DT_sync;
   } else if (cmp_nocase_uh(strval, "nosync") == 0) {
@@ -841,7 +841,7 @@ string_dart_type(const string &strval) {
  * or DC_unspecified if the string does not match any known DCSType value.
  */
 EggGroup::DCSType EggGroup::
-string_dcs_type(const string &strval) {
+string_dcs_type(std::string_view strval) {
   if (cmp_nocase_uh(strval, "none") == 0) {
     return DC_none;
   } else if (cmp_nocase_uh(strval, "local") == 0) {
@@ -863,7 +863,7 @@ string_dcs_type(const string &strval) {
  * BillboardType value.
  */
 EggGroup::BillboardType EggGroup::
-string_billboard_type(const string &strval) {
+string_billboard_type(std::string_view strval) {
   if (cmp_nocase_uh(strval, "axis") == 0) {
     return BT_axis;
   } else if (cmp_nocase_uh(strval, "point_eye") == 0) {
@@ -883,7 +883,7 @@ string_billboard_type(const string &strval) {
  * CollisionSolidType value.
  */
 EggGroup::CollisionSolidType EggGroup::
-string_cs_type(const string &strval) {
+string_cs_type(std::string_view strval) {
   if (cmp_nocase_uh(strval, "plane") == 0) {
     return CST_plane;
   } else if (cmp_nocase_uh(strval, "polygon") == 0) {
@@ -915,7 +915,7 @@ string_cs_type(const string &strval) {
  * attempt to parse a string of keywords.
  */
 EggGroup::CollideFlags EggGroup::
-string_collide_flags(const string &strval) {
+string_collide_flags(std::string_view strval) {
   if (cmp_nocase_uh(strval, "intangible") == 0) {
     return CF_intangible;
   } else if (cmp_nocase_uh(strval, "event") == 0) {
@@ -943,7 +943,7 @@ string_collide_flags(const string &strval) {
  * BlendMode.
  */
 EggGroup::BlendMode EggGroup::
-string_blend_mode(const string &strval) {
+string_blend_mode(std::string_view strval) {
   if (cmp_nocase_uh(strval, "none") == 0) {
     return BM_none;
   } else if (cmp_nocase_uh(strval, "add") == 0) {
@@ -967,7 +967,7 @@ string_blend_mode(const string &strval) {
  * BlendOperand.
  */
 EggGroup::BlendOperand EggGroup::
-string_blend_operand(const string &strval) {
+string_blend_operand(std::string_view strval) {
   if (cmp_nocase_uh(strval, "zero") == 0) {
     return BO_zero;
   } else if (cmp_nocase_uh(strval, "one") == 0) {

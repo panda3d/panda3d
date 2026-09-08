@@ -29,8 +29,8 @@ public:
   typedef void BirthFunc(GenericAsyncTask *task, void *user_data);
   typedef void DeathFunc(GenericAsyncTask *task, bool clean_exit, void *user_data);
 
-  GenericAsyncTask(const std::string &name = std::string());
-  GenericAsyncTask(const std::string &name, TaskFunc *function, void *user_data);
+  GenericAsyncTask(std::string name = std::string());
+  GenericAsyncTask(std::string name, TaskFunc *function, void *user_data);
   ALLOC_DELETED_CHAIN(GenericAsyncTask);
 
   INLINE void set_function(TaskFunc *function);

@@ -35,7 +35,7 @@ public:
   ALLOC_DELETED_CHAIN(TextureReloadRequest);
 
 PUBLISHED:
-  INLINE explicit TextureReloadRequest(const std::string &name,
+  INLINE explicit TextureReloadRequest(std::string name,
                                        PreparedGraphicsObjects *pgo,
                                        Texture *texture,
                                        bool allow_compressed);

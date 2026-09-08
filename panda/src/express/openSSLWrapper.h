@@ -54,8 +54,8 @@ PUBLISHED:
   int load_certificates_from_pem_ram(const char *data, size_t data_size);
   int load_certificates_from_der_ram(const char *data, size_t data_size);
 
-  INLINE int load_certificates_from_pem_ram(const std::string &data);
-  INLINE int load_certificates_from_der_ram(const std::string &data);
+  INLINE int load_certificates_from_pem_ram(std::string_view data);
+  INLINE int load_certificates_from_der_ram(std::string_view data);
 
   X509_STORE *get_x509_store();
 

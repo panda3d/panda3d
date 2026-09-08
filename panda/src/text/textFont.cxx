@@ -102,7 +102,7 @@ get_invalid_glyph() {
  * RenderMode value.
  */
 TextFont::RenderMode TextFont::
-string_render_mode(const string &string) {
+string_render_mode(std::string_view string) {
   if (cmp_nocase_uh(string, "texture") == 0) {
     return RM_texture;
   } else if (cmp_nocase_uh(string, "wireframe") == 0) {

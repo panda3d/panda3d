@@ -26,7 +26,7 @@ PUBLISHED:
  bool bogus_variable;
 
 public:
-  CConstraintInterval(const std::string &name, double duration);
+  CConstraintInterval(std::string name, double duration);
 
 public:
   static TypeHandle get_class_type() {

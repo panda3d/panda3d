@@ -120,11 +120,11 @@ has_collector(int index) const {
  * such collector has been defined by the client.
  */
 int PStatClientData::
-find_collector(const std::string &fullname) const {
+find_collector(std::string_view fullname) const {
   // Take the last bit, we can compare it more cheaply, only check the full
   // name if the basename matches.
-  const char *colon = strrchr(fullname.c_str(), ':');
-  std::string name(colon != nullptr ? colon + 1 : fullname.c_str());
+  size_t colon = fullname.rfind(':');
+  std::string_view name = (colon != std::string_view::npos) ? fullname.substr(colon + 1) : fullname;
 
   for (int index = 0; index < get_num_collectors(); ++index) {
     const PStatCollectorDef *def = _collectors[index]._def;
@@ -269,7 +269,7 @@ has_thread(int index) const {
  * has yet been defined.
  */
 int PStatClientData::
-find_thread(const std::string &name) const {
+find_thread(std::string_view name) const {
   for (int index = 0; index < get_num_threads(); ++index) {
     if (_threads[index]._name == name) {
       return index;
@@ -370,7 +370,7 @@ add_collector(PStatCollectorDef *def) {
  * information just arrived from the client.
  */
 void PStatClientData::
-define_thread(int thread_index, const string &name, bool mark_alive) {
+define_thread(int thread_index, std::string name, bool mark_alive) {
   // A sanity check on the index number.
   nassertv(thread_index < 1000);
 
@@ -384,7 +384,7 @@ define_thread(int thread_index, const string &name, bool mark_alive) {
   }
 
   if (!name.empty()) {
-    _threads[thread_index]._name = name;
+    _threads[thread_index]._name = std::move(name);
   }
 
   if (_threads[thread_index]._data.is_null()) {

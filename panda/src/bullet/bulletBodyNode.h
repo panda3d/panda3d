@@ -32,7 +32,7 @@
  */
 class EXPCL_PANDABULLET BulletBodyNode : public PandaNode {
 protected:
-  BulletBodyNode(const char *name);
+  BulletBodyNode(std::string name);
   BulletBodyNode(const BulletBodyNode &copy);
 
 PUBLISHED:

@@ -38,7 +38,7 @@ PUBLISHED:
   void add_region(PT(MouseWatcherRegion) region);
   bool has_region(MouseWatcherRegion *region) const;
   bool remove_region(MouseWatcherRegion *region);
-  MouseWatcherRegion *find_region(const std::string &name) const;
+  MouseWatcherRegion *find_region(std::string_view name) const;
   void clear_regions();
 
   INLINE void sort_regions();

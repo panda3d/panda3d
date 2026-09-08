@@ -89,11 +89,11 @@ finish() {
  * request is already done, performs the write synchronously.
  */
 void ScreenshotRequest::
-add_output_file(const Filename &filename, const std::string &image_comment) {
+add_output_file(const Filename &filename, std::string image_comment) {
   if (!done()) {
     LightMutexHolder holder(_lock);
     if (!done()) {
-      _output_files[filename] = image_comment;
+      _output_files[filename] = std::move(image_comment);
       return;
     }
   }
@@ -101,6 +101,6 @@ add_output_file(const Filename &filename, const std::string &image_comment) {
   Texture *tex = get_result();
   PNMImage image;
   tex->store(image);
-  image.set_comment(image_comment);
+  image.set_comment(std::move(image_comment));
   image.write(filename);
 }

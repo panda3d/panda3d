@@ -36,8 +36,8 @@ TypeHandle MovieTexture::_type_handle;
  * do_load_one.
  */
 MovieTexture::
-MovieTexture(const std::string &name) :
-  Texture(name)
+MovieTexture(std::string name) :
+  Texture(std::move(name))
 {
 }
 
@@ -189,7 +189,7 @@ do_recalculate_image_properties(CData *cdata, Texture::CData *cdata_tex, const L
  */
 bool MovieTexture::
 do_adjust_this_size(const Texture::CData *cdata_tex,
-                    int &x_size, int &y_size, const std::string &name,
+                    int &x_size, int &y_size, std::string_view name,
                     bool for_padding) const {
   AutoTextureScale ats = do_get_auto_texture_scale(cdata_tex);
   if (ats != ATS_none) {
@@ -286,7 +286,7 @@ do_load_one(Texture::CData *cdata_tex,
  */
 bool MovieTexture::
 do_load_one(Texture::CData *cdata_tex,
-            const PNMImage &pnmimage, const std::string &name, int z, int n,
+            const PNMImage &pnmimage, std::string_view name, int z, int n,
             const LoaderOptions &options) {
   grutil_cat.error() << "You cannot load a static image into a MovieTexture\n";
   return false;
@@ -297,7 +297,7 @@ do_load_one(Texture::CData *cdata_tex,
  */
 bool MovieTexture::
 do_load_one(Texture::CData *cdata_tex,
-            const PfmFile &pfm, const std::string &name, int z, int n,
+            const PfmFile &pfm, std::string_view name, int z, int n,
             const LoaderOptions &options) {
   grutil_cat.error() << "You cannot load a static image into a MovieTexture\n";
   return false;

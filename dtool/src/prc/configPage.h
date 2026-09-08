@@ -29,7 +29,7 @@ class ConfigVariableCore;
  */
 class EXPCL_DTOOL_PRC ConfigPage {
 private:
-  ConfigPage(const std::string &name, bool implicit_load, int page_seq);
+  ConfigPage(std::string name, bool implicit_load, int page_seq);
   ~ConfigPage();
 
 public:
@@ -61,10 +61,10 @@ PUBLISHED:
 
   void clear();
   bool read_prc(std::istream &in);
-  bool read_encrypted_prc(std::istream &in, const std::string &password);
+  bool read_encrypted_prc(std::istream &in, std::string_view password);
 
-  ConfigDeclaration *make_declaration(const std::string &variable, const std::string &value);
-  ConfigDeclaration *make_declaration(ConfigVariableCore *variable, const std::string &value);
+  ConfigDeclaration *make_declaration(std::string_view variable, std::string value);
+  ConfigDeclaration *make_declaration(ConfigVariableCore *variable, std::string value);
   bool delete_declaration(ConfigDeclaration *decl);
 
   size_t get_num_declarations() const;
@@ -82,7 +82,7 @@ PUBLISHED:
 
 private:
   INLINE void make_dirty();
-  void read_prc_line(const std::string &line);
+  void read_prc_line(std::string_view line);
   static unsigned int hex_digit(unsigned char digit);
 
   std::string _name;

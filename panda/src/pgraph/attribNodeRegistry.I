@@ -16,10 +16,12 @@
  */
 INLINE AttribNodeRegistry *AttribNodeRegistry::
 get_global_ptr() {
-  if (_global_ptr == nullptr) {
+  AttribNodeRegistry *ptr = _global_ptr.load(std::memory_order_consume);
+  if (ptr == nullptr) {
     make_global_ptr();
+    ptr = _global_ptr.load(std::memory_order_consume);
   }
-  return _global_ptr;
+  return ptr;
 }
 
 /**
@@ -37,9 +39,9 @@ Entry(const NodePath &node) :
  *
  */
 INLINE AttribNodeRegistry::Entry::
-Entry(TypeHandle type, const std::string &name) :
+Entry(TypeHandle type, std::string name) :
   _type(type),
-  _name(name)
+  _name(std::move(name))
 {
 }
 

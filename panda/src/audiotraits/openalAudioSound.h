@@ -78,7 +78,7 @@ public:
 
   // This is the string that throw_event() will throw when the sound finishes
   // playing.  It is not triggered when the sound is stopped with stop().
-  void set_finished_event(const std::string& event);
+  void set_finished_event(std::string event);
   const std::string& get_finished_event() const;
 
   const std::string &get_name() const;
@@ -114,6 +114,9 @@ public:
   void set_3d_cone_outer_gain(PN_stdfloat gain);
   PN_stdfloat get_3d_cone_outer_gain() const;
 
+  // Construct a near-identical copy of this object on the heap and return a pointer to the new copy
+  virtual AudioSound *make_copy() const;
+
   AudioSound::SoundStatus status() const;
 
   void finished();
@@ -125,6 +128,7 @@ private:
                    MovieAudio *movie,
                    bool positional,
                    int mode);
+  OpenALAudioSound(const OpenALAudioSound &copy_sound);
   INLINE void   set_calibrated_clock(double rtc, double t, double playrate);
   INLINE double get_calibrated_clock(double rtc) const;
   void          correct_calibrated_clock(double rtc, double t);

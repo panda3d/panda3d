@@ -22,7 +22,7 @@
  *
  */
 DCMolecularField::
-DCMolecularField(const std::string &name, DCClass *dclass) : DCField(name, dclass) {
+DCMolecularField(std::string name, DCClass *dclass) : DCField(std::move(name), dclass) {
   _got_keywords = false;
 }
 

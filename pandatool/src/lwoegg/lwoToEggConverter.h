@@ -53,7 +53,7 @@ public:
   CLwoLayer *get_layer(int number) const;
   CLwoClip *get_clip(int number) const;
 
-  CLwoSurface *get_surface(const std::string &name) const;
+  CLwoSurface *get_surface(std::string_view name) const;
 
   bool _make_materials;
 
@@ -83,7 +83,7 @@ private:
   typedef pvector<CLwoPolygons *> Polygons;
   Polygons _polygons;
 
-  typedef pmap<std::string, CLwoSurface *> Surfaces;
+  typedef pmap<std::string, CLwoSurface *, std::less<>> Surfaces;
   Surfaces _surfaces;
 };
 

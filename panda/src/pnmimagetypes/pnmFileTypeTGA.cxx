@@ -153,8 +153,8 @@ get_suggested_extension() const {
  * returns NULL.
  */
 PNMReader *PNMFileTypeTGA::
-make_reader(istream *file, bool owns_file, const string &magic_number) {
-  return new Reader(this, file, owns_file, magic_number);
+make_reader(istream *file, bool owns_file, std::string_view magic_number) {
+  return new Reader(this, file, owns_file, std::string(magic_number));
 }
 
 /**
@@ -574,7 +574,7 @@ make_from_bam(const FactoryParams &params) {
 }
 
 void PNMFileTypeTGA::Reader::
-readtga( istream *ifp, struct ImageHeader *tgaP, const string &magic_number ) {
+readtga( istream *ifp, struct ImageHeader *tgaP, std::string_view magic_number ) {
     unsigned char flags;
     ImageIDField junk;
 

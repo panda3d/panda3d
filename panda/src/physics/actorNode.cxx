@@ -23,14 +23,14 @@ TypeHandle ActorNode::_type_handle;
  * Constructor
  */
 ActorNode::
-ActorNode(const std::string &name) :
-    PhysicalNode(name) {
+ActorNode(std::string name) :
+    PhysicalNode(std::move(name)) {
   _contact_vector = LVector3::zero();
   add_physical(new Physical(1, true));
   _mass_center = get_physical(0)->get_phys_body();
   _mass_center->set_active(true);
   #ifndef NDEBUG
-    _mass_center->set_name(name);
+    _mass_center->set_name(get_name());
   #endif
   _ok_to_callback = true;
   _transform_limit = 0.0;

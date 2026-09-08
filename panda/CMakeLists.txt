@@ -162,7 +162,7 @@ del core, scope, name
     file(WRITE "${PROJECT_BINARY_DIR}/panda3d/__init__.py" ${init_file})
     file(WRITE "${PROJECT_BINARY_DIR}/panda3d/dtoolconfig.py" ${dtoolconfig_file})
     if(HAVE_NET)
-      file(WRITE "${PROJECT_BINARY_DIR}/${config}/panda3d/net.py" ${net_file})
+      file(WRITE "${PROJECT_BINARY_DIR}/panda3d/net.py" ${net_file})
     endif()
   endif()
 

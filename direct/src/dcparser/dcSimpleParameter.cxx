@@ -94,7 +94,7 @@ DCSimpleParameter(DCSubatomicType type, unsigned int divisor) :
 
   case ST_blob32:
     _num_length_bytes = 4;
-    // fall through
+    [[fallthrough]];
   case ST_blob:
     // For blob and string, we will present an array interface as an array of
     // uint8, but we will also accept a set_value() with a string parameter.
@@ -1027,7 +1027,7 @@ pack_uint64(DCPackData &pack_data, uint64_t value,
  * Packs the indicated numeric or string value into the stream.
  */
 void DCSimpleParameter::
-pack_string(DCPackData &pack_data, const string &value,
+pack_string(DCPackData &pack_data, std::string_view value,
             bool &pack_error, bool &range_error) const {
   size_t string_length = value.length();
 
@@ -2292,8 +2292,8 @@ unpack_skip(const char *data, size_t length, size_t &p,
  * identifier.
  */
 void DCSimpleParameter::
-output_instance(std::ostream &out, bool brief, const string &prename,
-                const string &name, const string &postname) const {
+output_instance(std::ostream &out, bool brief, std::string_view prename,
+                std::string_view name, std::string_view postname) const {
   if (get_typedef() != nullptr) {
     output_typedef_name(out, brief, prename, name, postname);
 

@@ -36,7 +36,7 @@ class VrpnTrackerDevice;
  */
 class VrpnTracker {
 public:
-  VrpnTracker(const std::string &tracker_name, vrpn_Connection *connection);
+  VrpnTracker(std::string tracker_name, vrpn_Connection *connection);
   ~VrpnTracker();
 
   INLINE const std::string &get_tracker_name() const;

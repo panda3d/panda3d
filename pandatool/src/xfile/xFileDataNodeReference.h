@@ -41,7 +41,7 @@ public:
 protected:
   virtual int get_num_elements() const;
   virtual XFileDataObject *get_element(int n);
-  virtual XFileDataObject *get_element(const std::string &name);
+  virtual XFileDataObject *get_element(std::string_view name);
 
 private:
   PT(XFileDataNodeTemplate) _object;

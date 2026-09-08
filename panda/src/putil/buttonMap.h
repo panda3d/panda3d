@@ -35,15 +35,15 @@ PUBLISHED:
   INLINE const std::string &get_mapped_button_label(size_t i) const;
 
   INLINE ButtonHandle get_mapped_button(ButtonHandle raw) const;
-  INLINE ButtonHandle get_mapped_button(const std::string &raw_name) const;
+  INLINE ButtonHandle get_mapped_button(std::string_view raw_name) const;
   INLINE const std::string &get_mapped_button_label(ButtonHandle raw) const;
-  INLINE const std::string &get_mapped_button_label(const std::string &raw_name) const;
+  INLINE const std::string &get_mapped_button_label(std::string_view raw_name) const;
 
   void output(std::ostream &out) const;
   void write(std::ostream &out, int indent_level = 0) const;
 
 public:
-  void map_button(ButtonHandle raw_button, ButtonHandle button, const std::string &label = "");
+  void map_button(ButtonHandle raw_button, ButtonHandle button, std::string label = "");
 
 private:
   struct ButtonNode {

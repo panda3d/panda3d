@@ -209,6 +209,19 @@ get_datagram(Datagram &datagram) {
 }
 
 /**
+ * Checks whether the datagram contains at least N more bytes.  If not, raises
+ * an error, marks the .bam file as corrupt and returns false.
+ */
+INLINE bool BamReader::
+expect_remaining_size(DatagramIterator &scan, size_t num_bytes) {
+  if (UNLIKELY(scan.get_remaining_size() < num_bytes)) {
+    error_remaining_size(scan, num_bytes);
+    return false;
+  }
+  return true;
+}
+
+/**
  *
  */
 INLINE BamReader::AuxData::

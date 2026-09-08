@@ -34,7 +34,7 @@ protected:
   INLINE MovingPartBase(const MovingPartBase &copy);
 
 public:
-  MovingPartBase(PartGroup *parent, const std::string &name);
+  MovingPartBase(PartGroup *parent, std::string name);
 
 PUBLISHED:
   INLINE int get_max_bound() const;

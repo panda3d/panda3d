@@ -30,7 +30,7 @@
  */
 class EXPCL_PANDA_PGRAPH OccluderNode : public PandaNode {
 PUBLISHED:
-  explicit OccluderNode(const std::string &name);
+  explicit OccluderNode(std::string name);
 
 protected:
   OccluderNode(const OccluderNode &copy);

@@ -19,9 +19,9 @@
 
 class PNMFileType;
 
-void extract_param_value(const std::string &str, std::string &param, std::string &value);
+void extract_param_value(std::string_view str, std::string &param, std::string &value);
 
-bool parse_image_type_request(const std::string &word, PNMFileType *&color_type,
+bool parse_image_type_request(std::string_view word, PNMFileType *&color_type,
                               PNMFileType *&alpha_type);
 
 #endif

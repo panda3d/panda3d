@@ -98,7 +98,7 @@ create_hierarchy(XFileToEggConverter *converter) {
  * Returns the table associated with the indicated joint name.
  */
 EggXfmSAnim *XFileAnimationSet::
-get_table(const std::string &joint_name) const {
+get_table(std::string_view joint_name) const {
   Tables::const_iterator ti;
   ti = _tables.find(joint_name);
   if (ti != _tables.end()) {

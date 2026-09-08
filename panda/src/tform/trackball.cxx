@@ -34,8 +34,8 @@ TypeHandle Trackball::_type_handle;
  *
  */
 Trackball::
-Trackball(const std::string &name) :
-  MouseInterfaceNode(name)
+Trackball(std::string name) :
+  MouseInterfaceNode(std::move(name))
 {
   _pixel_xy_input = define_input("pixel_xy", EventStoreVec2::get_class_type());
 

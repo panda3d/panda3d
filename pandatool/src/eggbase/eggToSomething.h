@@ -25,8 +25,8 @@
  */
 class EggToSomething : public EggConverter {
 public:
-  EggToSomething(const std::string &format_name,
-                 const std::string &preferred_extension = std::string(),
+  EggToSomething(std::string format_name,
+                 std::string preferred_extension = std::string(),
                  bool allow_last_param = true,
                  bool allow_stdout = true);
 

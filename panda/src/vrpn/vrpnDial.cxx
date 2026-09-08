@@ -24,8 +24,8 @@
  *
  */
 VrpnDial::
-VrpnDial(const std::string &dial_name, vrpn_Connection *connection) :
-  _dial_name(dial_name)
+VrpnDial(std::string dial_name, vrpn_Connection *connection) :
+  _dial_name(std::move(dial_name))
 {
   _dial = new vrpn_Dial_Remote(_dial_name.c_str(), connection);
 

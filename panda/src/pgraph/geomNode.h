@@ -33,7 +33,7 @@ class GraphicsStateGuardianBase;
  */
 class EXPCL_PANDA_PGRAPH GeomNode : public PandaNode {
 PUBLISHED:
-  explicit GeomNode(const std::string &name);
+  explicit GeomNode(std::string name);
 
 protected:
   GeomNode(const GeomNode &copy);

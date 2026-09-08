@@ -34,6 +34,10 @@ NullAudioSound::~NullAudioSound() {
   // Intentionally blank.
 }
 
+AudioSound *NullAudioSound::make_copy() const {
+  return new NullAudioSound();
+}
+
 void NullAudioSound::play() {
   // Intentionally blank.
 }
@@ -106,7 +110,7 @@ bool NullAudioSound::get_active() const {
   return false;
 }
 
-void NullAudioSound::set_finished_event(const string& event) {
+void NullAudioSound::set_finished_event(string event) {
   // Intentionally blank.
 }
 

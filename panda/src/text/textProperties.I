@@ -566,8 +566,8 @@ get_shadow() const {
  * "fixed".
  */
 INLINE void TextProperties::
-set_bin(const std::string &bin) {
-  _bin = bin;
+set_bin(std::string bin) {
+  _bin = std::move(bin);
   _specified |= F_has_bin;
   _text_state.clear();
   _shadow_state.clear();

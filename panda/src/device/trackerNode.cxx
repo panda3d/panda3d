@@ -23,8 +23,8 @@ TypeHandle TrackerNode::_type_handle;
  *
  */
 TrackerNode::
-TrackerNode(ClientBase *client, const std::string &device_name) :
-  DataNode(device_name)
+TrackerNode(ClientBase *client, std::string_view device_name) :
+  DataNode(std::string(device_name))
 {
   _transform_output = define_output("transform", TransformState::get_class_type());
 

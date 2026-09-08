@@ -15,8 +15,8 @@
  *
  */
 INLINE EggComment::
-EggComment(const std::string &node_name, const std::string &comment)
-  : EggNode(node_name), _comment(comment) {
+EggComment(std::string node_name, std::string comment)
+  : EggNode(std::move(node_name)), _comment(std::move(comment)) {
 }
 
 /**
@@ -31,8 +31,8 @@ EggComment(const EggComment &copy) : EggNode(copy), _comment(copy._comment) {
  *
  */
 INLINE EggComment &EggComment::
-operator = (const std::string &comment) {
-  _comment = comment;
+operator = (std::string comment) {
+  _comment = std::move(comment);
   return *this;
 }
 
@@ -60,8 +60,8 @@ operator const std::string & () const {
  *
  */
 INLINE void EggComment::
-set_comment(const std::string &comment) {
-  _comment = comment;
+set_comment(std::string comment) {
+  _comment = std::move(comment);
 }
 
 

@@ -130,7 +130,7 @@ handle_args(ProgramBase::Args &args) {
  * Reads a single line from the pts file.
  */
 void PtsToBam::
-process_line(const string &line) {
+process_line(std::string_view line) {
   _line_number++;
 
   if (_line_number % 1000000 == 0) {

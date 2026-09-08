@@ -43,9 +43,9 @@ MovingPart(const MovingPart<SwitchType> &copy) :
  */
 template<class SwitchType>
 INLINE MovingPart<SwitchType>::
-MovingPart(PartGroup *parent, const std::string &name,
+MovingPart(PartGroup *parent, std::string name,
            const ValueType &default_value) :
-  MovingPartBase(parent, name),
+  MovingPartBase(parent, std::move(name)),
   _value(default_value),
   _default_value(default_value)
 {

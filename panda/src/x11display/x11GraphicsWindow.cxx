@@ -91,13 +91,13 @@ TypeHandle x11GraphicsWindow::_type_handle;
  */
 x11GraphicsWindow::
 x11GraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
-                  const string &name,
+                  std::string name,
                   const FrameBufferProperties &fb_prop,
                   const WindowProperties &win_prop,
                   int flags,
                   GraphicsStateGuardian *gsg,
                   GraphicsOutput *host) :
-  GraphicsWindow(engine, pipe, name, fb_prop, win_prop, flags, gsg, host) {
+  GraphicsWindow(engine, pipe, std::move(name), fb_prop, win_prop, flags, gsg, host) {
   x11GraphicsPipe *x11_pipe;
   DCAST_INTO_V(x11_pipe, _pipe);
   _display = x11_pipe->get_display();

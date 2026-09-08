@@ -54,7 +54,7 @@ public:
   EggCharacterData(EggCharacterCollection *collection);
   virtual ~EggCharacterData();
 
-  void rename_char(const std::string &name);
+  void rename_char(std::string name);
 
   void add_model(int model_index, EggNode *model_root, EggData *egg_data);
   INLINE int get_num_models() const;
@@ -66,8 +66,8 @@ public:
   double get_frame_rate(int model_index) const;
 
   INLINE EggJointData *get_root_joint() const;
-  INLINE EggJointData *find_joint(const std::string &name) const;
-  INLINE EggJointData *make_new_joint(const std::string &name, EggJointData *parent);
+  INLINE EggJointData *find_joint(std::string_view name) const;
+  INLINE EggJointData *make_new_joint(std::string name, EggJointData *parent);
   INLINE int get_num_joints() const;
   INLINE EggJointData *get_joint(int n) const;
 
@@ -76,8 +76,8 @@ public:
 
   INLINE int get_num_sliders() const;
   INLINE EggSliderData *get_slider(int n) const;
-  EggSliderData *find_slider(const std::string &name) const;
-  EggSliderData *make_slider(const std::string &name);
+  EggSliderData *find_slider(std::string_view name) const;
+  EggSliderData *make_slider(std::string name);
 
   INLINE int get_num_components() const;
   INLINE EggComponentData *get_component(int n) const;
@@ -99,7 +99,7 @@ private:
   EggCharacterCollection *_collection;
   EggJointData *_root_joint;
 
-  typedef pmap<std::string, EggSliderData *> SlidersByName;
+  typedef pmap<std::string, EggSliderData *, std::less<>> SlidersByName;
   SlidersByName _sliders_by_name;
 
   typedef pvector<EggSliderData *> Sliders;

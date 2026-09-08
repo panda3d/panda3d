@@ -39,7 +39,7 @@ PUBLISHED:
   bool has_task(AsyncTask *task) const;
   void clear();
 
-  AsyncTask *find_task(const std::string &name) const;
+  AsyncTask *find_task(std::string_view name) const;
 
   size_t get_num_tasks() const;
   AsyncTask *get_task(size_t index) const;

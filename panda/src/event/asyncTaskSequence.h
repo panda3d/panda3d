@@ -32,7 +32,7 @@ class AsyncTaskManager;
  */
 class EXPCL_PANDA_EVENT AsyncTaskSequence : public AsyncTask, public AsyncTaskCollection {
 PUBLISHED:
-  explicit AsyncTaskSequence(const std::string &name);
+  explicit AsyncTaskSequence(std::string name);
   virtual ~AsyncTaskSequence();
   ALLOC_DELETED_CHAIN(AsyncTaskSequence);
 

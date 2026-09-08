@@ -55,7 +55,7 @@ public:
   virtual bool scan_directory(vector_string &contents,
                               const Filename &dir) const;
 
-  virtual bool atomic_compare_and_exchange_contents(const Filename &file, std::string &orig_contents, const std::string &old_contents, const std::string &new_contents);
+  virtual bool atomic_compare_and_exchange_contents(const Filename &file, std::string &orig_contents, std::string_view old_contents, std::string_view new_contents);
   virtual bool atomic_read_contents(const Filename &file, std::string &contents) const;
 
   virtual void output(std::ostream &out) const;
@@ -67,7 +67,7 @@ private:
 
   class EXPCL_PANDA_EXPRESS FileBase : public TypedReferenceCount {
   public:
-    INLINE FileBase(const std::string &basename);
+    INLINE FileBase(std::string basename);
     virtual ~FileBase();
     INLINE bool operator < (const FileBase &other) const;
 
@@ -96,7 +96,7 @@ private:
 
   class EXPCL_PANDA_EXPRESS File : public FileBase {
   public:
-    INLINE File(const std::string &basename);
+    INLINE File(std::string basename);
 
     std::stringstream _data;
     StreamWrapper _wrapper;
@@ -123,14 +123,14 @@ private:
 
   class EXPCL_PANDA_EXPRESS Directory : public FileBase {
   public:
-    INLINE Directory(const std::string &basename);
+    INLINE Directory(std::string basename);
 
     virtual bool is_directory() const;
 
-    PT(FileBase) do_find_file(const std::string &filename) const;
-    PT(File) do_create_file(const std::string &filename);
-    PT(Directory) do_make_directory(const std::string &filename);
-    PT(FileBase) do_delete_file(const std::string &filename);
+    PT(FileBase) do_find_file(std::string_view filename) const;
+    PT(File) do_create_file(std::string_view filename);
+    PT(Directory) do_make_directory(std::string_view filename);
+    PT(FileBase) do_delete_file(std::string_view filename);
     bool do_scan_directory(vector_string &contents) const;
 
     Files _files;

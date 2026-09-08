@@ -65,7 +65,7 @@ class EXPCL_PANDA_DISPLAY GraphicsOutput : public GraphicsOutputBase, public Dra
 protected:
   GraphicsOutput(GraphicsEngine *engine,
                  GraphicsPipe *pipe,
-                 const std::string &name,
+                 std::string name,
                  const FrameBufferProperties &fb_prop,
                  const WindowProperties &win_prop, int flags,
                  GraphicsStateGuardian *gsg,
@@ -225,23 +225,23 @@ PUBLISHED:
   MAKE_SEQ_PROPERTY(active_display_regions, get_num_active_display_regions, get_active_display_region);
 
   GraphicsOutput *make_texture_buffer(
-      const std::string &name, int x_size, int y_size,
+      std::string_view name, int x_size, int y_size,
       Texture *tex = nullptr, bool to_ram = false, FrameBufferProperties *fbp = nullptr);
-  GraphicsOutput *make_cube_map(const std::string &name, int size,
+  GraphicsOutput *make_cube_map(std::string_view name, int size,
                                 NodePath &camera_rig,
                                 DrawMask camera_mask = PandaNode::get_all_camera_mask(),
                                 bool to_ram = false, FrameBufferProperties *fbp = nullptr);
 
   INLINE static Filename make_screenshot_filename(
-      const std::string &prefix = "screenshot");
+      std::string_view prefix = "screenshot");
   INLINE Filename save_screenshot_default(
-      const std::string &prefix = "screenshot");
+      std::string_view prefix = "screenshot");
   INLINE bool save_screenshot(
-      const Filename &filename, const std::string &image_comment = "");
+      const Filename &filename, std::string image_comment = "");
   INLINE bool get_screenshot(PNMImage &image);
   INLINE PT(Texture) get_screenshot();
   PT(ScreenshotRequest) save_async_screenshot(const Filename &filename,
-                                              const std::string &image_comment = "");
+                                              std::string image_comment = "");
   PT(ScreenshotRequest) get_async_screenshot();
 
   NodePath get_texture_card();
@@ -322,7 +322,7 @@ private:
   INLINE void determine_display_regions() const;
   void do_determine_display_regions(CData *cdata);
 
-  static unsigned int parse_color_mask(const std::string &word);
+  static unsigned int parse_color_mask(std::string_view word);
 
 protected:
   PT(GraphicsStateGuardian) _gsg;

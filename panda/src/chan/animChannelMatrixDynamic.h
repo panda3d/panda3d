@@ -36,7 +36,7 @@ protected:
   AnimChannelMatrixDynamic(AnimGroup *parent, const AnimChannelMatrixDynamic &copy);
 
 public:
-  AnimChannelMatrixDynamic(const std::string &name);
+  AnimChannelMatrixDynamic(std::string name);
 
   virtual bool has_changed(int last_frame, double last_frac,
                            int this_frame, double this_frac);

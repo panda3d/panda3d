@@ -55,7 +55,7 @@ PUBLISHED:
   explicit EventHandler(EventQueue *ev_queue);
   ~EventHandler() {}
 
-  AsyncFuture *get_future(const std::string &event_name);
+  AsyncFuture *get_future(std::string_view event_name);
 
   void process_events();
 
@@ -66,19 +66,19 @@ PUBLISHED:
   INLINE static EventHandler *get_global_event_handler(EventQueue *queue = nullptr);
 
 public:
-  bool add_hook(const std::string &event_name, EventFunction *function);
-  bool add_hook(const std::string &event_name, EventCallbackFunction *function,
+  bool add_hook(std::string_view event_name, EventFunction *function);
+  bool add_hook(std::string_view event_name, EventCallbackFunction *function,
                 void *data);
-  void add_hook(const std::string &event_name, EventLambda function);
-  bool has_hook(const std::string &event_name) const;
-  bool has_hook(const std::string &event_name, EventFunction *function) const;
-  bool has_hook(const std::string &event_name, EventCallbackFunction *function,
+  void add_hook(std::string_view event_name, EventLambda function);
+  bool has_hook(std::string_view event_name) const;
+  bool has_hook(std::string_view event_name, EventFunction *function) const;
+  bool has_hook(std::string_view event_name, EventCallbackFunction *function,
                 void *data) const;
-  bool remove_hook(const std::string &event_name, EventFunction *function);
-  bool remove_hook(const std::string &event_name, EventCallbackFunction *function,
+  bool remove_hook(std::string_view event_name, EventFunction *function);
+  bool remove_hook(std::string_view event_name, EventCallbackFunction *function,
                    void *data);
 
-  bool remove_hooks(const std::string &event_name);
+  bool remove_hooks(std::string_view event_name);
   bool remove_hooks_with(void *data);
 
   void remove_all_hooks();
@@ -86,13 +86,13 @@ public:
 protected:
 
   typedef pset<EventFunction *> Functions;
-  typedef pmap<std::string, Functions> Hooks;
+  typedef pmap<std::string, Functions, std::less<>> Hooks;
   typedef std::pair<EventCallbackFunction*, void*> CallbackFunction;
   typedef pset<CallbackFunction> CallbackFunctions;
-  typedef pmap<std::string, CallbackFunctions> CallbackHooks;
+  typedef pmap<std::string, CallbackFunctions, std::less<>> CallbackHooks;
   typedef pvector<EventLambda> LambdaFunctions;
-  typedef pmap<std::string, LambdaFunctions> LambdaHooks;
-  typedef pmap<std::string, PT(AsyncFuture)> Futures;
+  typedef pmap<std::string, LambdaFunctions, std::less<>> LambdaHooks;
+  typedef pmap<std::string, PT(AsyncFuture), std::less<>> Futures;
 
   Hooks _hooks;
   CallbackHooks _cbhooks;

@@ -85,7 +85,7 @@ PUBLISHED:
   MAKE_PROPERTY(winding_order, get_winding_order, set_winding_order);
 
 public:
-  static WindingOrder string_winding_order(const std::string &string);
+  static WindingOrder string_winding_order(std::string_view string);
 
 protected:
   INLINE FT_Face acquire_face() const;

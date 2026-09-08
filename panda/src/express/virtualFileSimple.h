@@ -60,7 +60,7 @@ PUBLISHED:
   virtual bool get_system_info(SubfileInfo &info);
 
 public:
-  virtual bool atomic_compare_and_exchange_contents(std::string &orig_contents, const std::string &old_contents, const std::string &new_contents);
+  virtual bool atomic_compare_and_exchange_contents(std::string &orig_contents, std::string_view old_contents, std::string_view new_contents);
   virtual bool atomic_read_contents(std::string &contents) const;
 
   virtual bool read_file(vector_uchar &result, bool auto_unwrap) const;

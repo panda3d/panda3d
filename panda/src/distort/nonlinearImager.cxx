@@ -73,7 +73,7 @@ add_screen(ProjectionScreen *screen) {
  * The return value is the index number of the new screen.
  */
 int NonlinearImager::
-add_screen(const NodePath &screen, const std::string &name) {
+add_screen(const NodePath &screen, std::string name) {
   nassertr(!screen.is_empty() &&
            screen.node()->is_of_type(ProjectionScreen::get_class_type()), -1);
 
@@ -83,7 +83,7 @@ add_screen(const NodePath &screen, const std::string &name) {
   Screen &new_screen = _screens.back();
   new_screen._screen = screen;
   new_screen._screen_node = screen_node;
-  new_screen._name = name;
+  new_screen._name = std::move(name);
   new_screen._buffer = nullptr;
   new_screen._tex_width = 256;
   new_screen._tex_height = 256;

@@ -37,7 +37,7 @@ class VrpnAnalogDevice;
  */
 class VrpnAnalog {
 public:
-  VrpnAnalog(const std::string &analog_name, vrpn_Connection *connection);
+  VrpnAnalog(std::string analog_name, vrpn_Connection *connection);
   ~VrpnAnalog();
 
   INLINE const std::string &get_analog_name() const;

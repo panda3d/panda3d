@@ -457,7 +457,7 @@ get_data() const {
  */
 template<class Element>
 INLINE void PointerToArray<Element>::
-set_data(const std::string &data) {
+set_data(std::string_view data) {
   set_subdata(0, size(), data);
 }
 
@@ -489,7 +489,7 @@ get_subdata(size_type n, size_type count) const {
  */
 template<class Element>
 INLINE void PointerToArray<Element>::
-set_subdata(size_type n, size_type count, const std::string &data) {
+set_subdata(size_type n, size_type count, std::string_view data) {
   nassertv((data.length() % sizeof(Element)) == 0);
   nassertv(n <= size() && n + count <= size());
   if ((this->_void_ptr) == nullptr) {
@@ -924,9 +924,22 @@ v0() const {
  */
 template<class Element>
 INLINE PointerToArray<Element> ConstPointerToArray<Element>::
-cast_non_const() const {
+cast_non_const() const & {
   PointerToArray<Element> non_const;
   non_const = (To *)(this->_void_ptr);
+  return non_const;
+}
+
+/**
+ * As cast_non_const(), but consumes the CPTA, transferring its reference into
+ * the returned PTA without an extra atomic ref/unref pair.
+ */
+template<class Element>
+INLINE PointerToArray<Element> ConstPointerToArray<Element>::
+cast_non_const() && {
+  PointerToArray<Element> non_const(_type_handle);
+  non_const._void_ptr = this->_void_ptr;
+  this->_void_ptr = nullptr;
   return non_const;
 }
 

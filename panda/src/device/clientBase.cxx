@@ -113,7 +113,7 @@ fork_asynchronous_thread(double poll_time) {
  * NULL is returned.
  */
 PT(ClientDevice) ClientBase::
-get_device(TypeHandle device_type, const std::string &device_name) {
+get_device(TypeHandle device_type, std::string_view device_name) {
   DevicesByName &dbn = _devices[device_type];
 
   DevicesByName::iterator dbni;
@@ -127,7 +127,7 @@ get_device(TypeHandle device_type, const std::string &device_name) {
   PT(ClientDevice) device = make_device(device_type, device_name);
 
   if (device != nullptr) {
-    dbn.insert(DevicesByName::value_type(device_name, device));
+    dbn.insert(DevicesByName::value_type(std::string(device_name), device));
   }
 
   return device;
@@ -142,7 +142,7 @@ get_device(TypeHandle device_type, const std::string &device_name) {
  * unknown (e.g.  it was disconnected previously).
  */
 bool ClientBase::
-disconnect_device(TypeHandle device_type, const std::string &device_name,
+disconnect_device(TypeHandle device_type, std::string_view device_name,
                   ClientDevice *device) {
   DevicesByName &dbn = _devices[device_type];
 

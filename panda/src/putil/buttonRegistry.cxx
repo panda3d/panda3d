@@ -41,7 +41,7 @@ ButtonRegistry *ButtonRegistry::_global_pointer = nullptr;
  * right.
  */
 bool ButtonRegistry::
-register_button(ButtonHandle &button_handle, const std::string &name,
+register_button(ButtonHandle &button_handle, std::string name,
                 ButtonHandle alias, char ascii_equivalent) {
   NameRegistry::iterator ri;
   ri = _name_registry.find(name);
@@ -79,9 +79,9 @@ register_button(ButtonHandle &button_handle, const std::string &name,
     ButtonHandle new_handle;
     new_handle._index = index;
 
-    RegistryNode *rnode = new RegistryNode(new_handle, alias, name);
+    RegistryNode *rnode = new RegistryNode(new_handle, alias, std::move(name));
     _handle_registry[index] = rnode;
-    _name_registry[name] = rnode;
+    _name_registry[rnode->_name] = rnode;
 
     button_handle = new_handle;
     return true;
@@ -109,7 +109,7 @@ register_button(ButtonHandle &button_handle, const std::string &name,
  * is no such ButtonHandle, registers a new one and returns it.
  */
 ButtonHandle ButtonRegistry::
-get_button(const std::string &name) {
+get_button(std::string_view name) {
   NameRegistry::const_iterator ri;
   ri = _name_registry.find(name);
 
@@ -118,7 +118,7 @@ get_button(const std::string &name) {
   }
 
   ButtonHandle button;
-  register_button(button, name);
+  register_button(button, std::string(name));
   return button;
 }
 
@@ -127,7 +127,7 @@ get_button(const std::string &name) {
  * is no such ButtonHandle, returns ButtonHandle::none().
  */
 ButtonHandle ButtonRegistry::
-find_button(const std::string &name) {
+find_button(std::string_view name) {
   NameRegistry::const_iterator ri;
   ri = _name_registry.find(name);
 

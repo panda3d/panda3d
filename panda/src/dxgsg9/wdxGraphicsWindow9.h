@@ -27,7 +27,7 @@ class wdxGraphicsPipe9;
 class EXPCL_PANDADX wdxGraphicsWindow9 : public WinGraphicsWindow {
 public:
   wdxGraphicsWindow9(GraphicsEngine *engine, GraphicsPipe *pipe,
-                     const std::string &name,
+                     std::string name,
                      const FrameBufferProperties &fb_prop,
                      const WindowProperties &win_prop,
                      int flags,

@@ -17,7 +17,7 @@
  * the string with this constructor.
  */
 INLINE HTTPCookie::
-HTTPCookie(const std::string &format, const URLSpec &url) {
+HTTPCookie(std::string_view format, const URLSpec &url) {
   parse_set_cookie(format, url);
 }
 
@@ -27,10 +27,10 @@ HTTPCookie(const std::string &format, const URLSpec &url) {
  * the HTTPClient.
  */
 INLINE HTTPCookie::
-HTTPCookie(const std::string &name, const std::string &path, const std::string &domain) :
-  _name(name),
-  _path(path),
-  _domain(domain),
+HTTPCookie(std::string name, std::string path, std::string domain) :
+  _name(std::move(name)),
+  _path(std::move(path)),
+  _domain(std::move(domain)),
   _secure(false),
   _samesite(SS_unspecified)
 {
@@ -47,8 +47,8 @@ INLINE HTTPCookie::
  *
  */
 INLINE void HTTPCookie::
-set_name(const std::string &name) {
-  _name = name;
+set_name(std::string name) {
+  _name = std::move(name);
 }
 
 /**
@@ -64,8 +64,8 @@ get_name() const {
  *
  */
 INLINE void HTTPCookie::
-set_value(const std::string &value) {
-  _value = value;
+set_value(std::string value) {
+  _value = std::move(value);
 }
 
 /**
@@ -81,8 +81,8 @@ get_value() const {
  *
  */
 INLINE void HTTPCookie::
-set_domain(const std::string &domain) {
-  _domain = domain;
+set_domain(std::string domain) {
+  _domain = std::move(domain);
 }
 
 /**
@@ -97,8 +97,8 @@ get_domain() const {
  *
  */
 INLINE void HTTPCookie::
-set_path(const std::string &path) {
-  _path = path;
+set_path(std::string path) {
+  _path = std::move(path);
 }
 
 /**

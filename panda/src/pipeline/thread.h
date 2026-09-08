@@ -22,6 +22,7 @@
 #include "threadImpl.h"
 #include "pnotify.h"
 #include "config_pipeline.h"
+#include "patomic.h"
 
 #ifdef ANDROID
 typedef struct _JNIEnv JNIEnv;
@@ -45,7 +46,7 @@ class AsyncTask;
 // Due to a GCC bug, we can't use alignas() together with an attribute.
 class ALIGN_64BYTE EXPCL_PANDA_PIPELINE Thread : public TypedReferenceCount, public Namable {
 protected:
-  Thread(const std::string &name, const std::string &sync_name);
+  Thread(std::string name, std::string sync_name);
   Thread(const Thread &copy) = delete;
 
 PUBLISHED:
@@ -153,7 +154,7 @@ private:
   int _pipeline_stage;
   PStatsCallback *_pstats_callback;
   bool _joinable;
-  AtomicAdjust::Pointer _current_task;
+  patomic<TypedReferenceCount *> _current_task;
 
   int _python_index;
 

@@ -37,7 +37,7 @@ struct EggLexerState;
  */
 class EXPCL_PANDA_EGG EggNode : public EggNamedObject {
 PUBLISHED:
-  INLINE explicit EggNode(const std::string &name = "");
+  INLINE explicit EggNode(std::string name = "");
   INLINE EggNode(const EggNode &copy);
   INLINE EggNode &operator = (const EggNode &copy);
 

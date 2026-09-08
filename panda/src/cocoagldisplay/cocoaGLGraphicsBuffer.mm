@@ -25,13 +25,13 @@ TypeHandle CocoaGLGraphicsBuffer::_type_handle;
  */
 CocoaGLGraphicsBuffer::
 CocoaGLGraphicsBuffer(GraphicsEngine *engine, GraphicsPipe *pipe,
-                    const std::string &name,
-                    const FrameBufferProperties &fb_prop,
-                    const WindowProperties &win_prop,
-                    int flags,
-                    GraphicsStateGuardian *gsg,
-                    GraphicsOutput *host) : // Ignore the host.
-  GLGraphicsBuffer(engine, pipe, name, fb_prop, win_prop, flags, gsg, nullptr)
+                      std::string name,
+                      const FrameBufferProperties &fb_prop,
+                      const WindowProperties &win_prop,
+                      int flags,
+                      GraphicsStateGuardian *gsg,
+                      GraphicsOutput *host) : // Ignore the host.
+  GLGraphicsBuffer(engine, pipe, std::move(name), fb_prop, win_prop, flags, gsg, nullptr)
 {
 }
 

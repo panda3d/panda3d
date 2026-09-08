@@ -113,7 +113,7 @@ private:
   class PageThreadManager;
   class EXPCL_PANDA_GOBJ PageThread : public Thread {
   public:
-    PageThread(PageThreadManager *manager, const std::string &name);
+    PageThread(PageThreadManager *manager, std::string_view name);
 
   protected:
     virtual void thread_main();

@@ -386,8 +386,8 @@ scan_directory(vector_string &contents, const Filename &dir) const {
  */
 bool VirtualFileMountSystem::
 atomic_compare_and_exchange_contents(const Filename &file, string &orig_contents,
-                                     const string &old_contents,
-                                     const string &new_contents) {
+                                     std::string_view old_contents,
+                                     std::string_view new_contents) {
 #ifdef _WIN32
   // First ensure that the file exists to validate its case.
   if (VirtualFileSystem::get_global_ptr()->vfs_case_sensitive) {

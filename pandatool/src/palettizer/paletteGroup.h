@@ -44,7 +44,7 @@ class PaletteGroup : public TypedWritable, public Namable {
 public:
   PaletteGroup();
 
-  void set_dirname(const std::string &dirname);
+  void set_dirname(std::string dirname);
   bool has_dirname() const;
   const std::string &get_dirname() const;
 

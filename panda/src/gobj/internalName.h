@@ -37,10 +37,10 @@ class FactoryParams;
  */
 class EXPCL_PANDA_GOBJ InternalName final : public TypedWritableReferenceCount {
 private:
-  InternalName(InternalName *parent, const std::string &basename);
+  InternalName(InternalName *parent, std::string basename);
 
 public:
-  INLINE static PT(InternalName) make(const std::string &name);
+  INLINE static PT(InternalName) make(std::string_view name);
 
   template<int N>
   INLINE static PT(InternalName) make(const char (&literal)[N]);
@@ -49,19 +49,19 @@ PUBLISHED:
   virtual ~InternalName();
   virtual bool unref() const;
 
-  static PT(InternalName) make(const std::string &name, int index);
-  PT(InternalName) append(const std::string &basename);
+  static PT(InternalName) make(std::string_view name, int index);
+  PT(InternalName) append(std::string_view basename);
 
   INLINE InternalName *get_parent() const;
   std::string get_name() const;
-  std::string join(const std::string &sep) const;
+  std::string join(std::string_view sep) const;
   INLINE const std::string &get_basename() const;
 
   MAKE_PROPERTY(parent, get_parent);
   MAKE_PROPERTY(name, get_name);
   MAKE_PROPERTY(basename, get_basename);
 
-  int find_ancestor(const std::string &basename) const;
+  int find_ancestor(std::string_view basename) const;
   const InternalName *get_ancestor(int n) const;
   const InternalName *get_top() const;
   std::string get_net_basename(int n) const;
@@ -74,11 +74,11 @@ PUBLISHED:
   INLINE static PT(InternalName) get_vertex();
   INLINE static PT(InternalName) get_normal();
   INLINE static PT(InternalName) get_tangent();
-  INLINE static PT(InternalName) get_tangent_name(const std::string &name);
+  INLINE static PT(InternalName) get_tangent_name(std::string_view name);
   INLINE static PT(InternalName) get_binormal();
-  INLINE static PT(InternalName) get_binormal_name(const std::string &name);
+  INLINE static PT(InternalName) get_binormal_name(std::string_view name);
   INLINE static PT(InternalName) get_texcoord();
-  INLINE static PT(InternalName) get_texcoord_name(const std::string &name);
+  INLINE static PT(InternalName) get_texcoord_name(std::string_view name);
   INLINE static PT(InternalName) get_color();
   INLINE static PT(InternalName) get_rotate();
   INLINE static PT(InternalName) get_size();
@@ -86,7 +86,7 @@ PUBLISHED:
   INLINE static PT(InternalName) get_transform_blend();
   INLINE static PT(InternalName) get_transform_weight();
   INLINE static PT(InternalName) get_transform_index();
-  INLINE static PT(InternalName) get_morph(InternalName *column, const std::string &slider);
+  INLINE static PT(InternalName) get_morph(InternalName *column, std::string_view slider);
   INLINE static PT(InternalName) get_index();
   INLINE static PT(InternalName) get_world();
   INLINE static PT(InternalName) get_camera();
@@ -200,6 +200,7 @@ public:
   INLINE CPT_InternalName(const ConstPointerTo<InternalName> &copy);
   INLINE CPT_InternalName(ConstPointerTo<InternalName> &&from) noexcept;
   INLINE CPT_InternalName(const std::string &name);
+  INLINE CPT_InternalName(std::string_view name);
 
   template<int N>
   INLINE CPT_InternalName(const char (&literal)[N]);

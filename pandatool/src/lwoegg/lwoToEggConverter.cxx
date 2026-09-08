@@ -182,7 +182,7 @@ get_clip(int number) const {
  * there is no such surface.
  */
 CLwoSurface *LwoToEggConverter::
-get_surface(const std::string &name) const {
+get_surface(std::string_view name) const {
   Surfaces::const_iterator si;
   si = _surfaces.find(name);
   if (si != _surfaces.end()) {

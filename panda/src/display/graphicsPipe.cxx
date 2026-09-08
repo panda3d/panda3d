@@ -214,6 +214,15 @@ GraphicsPipe::get_preferred_window_thread() const {
 }
 
 /**
+ * Releases the graphics context that is currently bound on the calling
+ * thread, if any.  After this call, no context will be current on this
+ * thread.  The default implementation does nothing.
+ */
+void GraphicsPipe::
+release_current_context() {
+}
+
+/**
  * This is called when make_output() is used to create a
  * CallbackGraphicsWindow.  If the GraphicsPipe can construct a GSG that's not
  * associated with any particular window object, do so now, assuming the
@@ -253,7 +262,7 @@ close_gsg(GraphicsStateGuardian *gsg) {
  * Creates a new window on the pipe, if possible.
  */
 PT(GraphicsOutput) GraphicsPipe::
-make_output(const std::string &name,
+make_output(std::string_view name,
             const FrameBufferProperties &fb_prop,
             const WindowProperties &win_prop,
             int flags,

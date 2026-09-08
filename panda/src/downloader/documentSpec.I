@@ -37,6 +37,18 @@ DocumentSpec(const std::string &url) :
  *
  */
 INLINE DocumentSpec::
+DocumentSpec(std::string_view url) :
+  _url(url)
+{
+  _request_mode = RM_any;
+  _cache_control = CC_allow_cache;
+  _flags = 0;
+}
+
+/**
+ *
+ */
+INLINE DocumentSpec::
 DocumentSpec(const URLSpec &url) :
   _url(url)
 {

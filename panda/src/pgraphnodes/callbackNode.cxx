@@ -26,8 +26,8 @@ TypeHandle CallbackNode::_type_handle;
  *
  */
 CallbackNode::
-CallbackNode(const std::string &name) :
-  PandaNode(name)
+CallbackNode(std::string name) :
+  PandaNode(std::move(name))
 {
   PandaNode::set_cull_callback();
   PandaNode::set_renderable();

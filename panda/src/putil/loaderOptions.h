@@ -81,9 +81,9 @@ PUBLISHED:
 
 private:
   void write_flag(std::ostream &out, std::string &sep,
-                  const std::string &flag_name, int flag) const;
+                  std::string_view flag_name, int flag) const;
   void write_texture_flag(std::ostream &out, std::string &sep,
-                          const std::string &flag_name, int flag) const;
+                          std::string_view flag_name, int flag) const;
   int _flags;
   int _texture_flags;
   int _texture_format;

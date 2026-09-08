@@ -29,13 +29,13 @@ public:
   EncryptStreamBuf();
   virtual ~EncryptStreamBuf();
 
-  void open_read(std::istream *source, bool owns_source, const std::string &password);
+  void open_read(std::istream *source, bool owns_source, std::string_view password);
   void close_read();
 
-  void open_write(std::ostream *dest, bool owns_dest, const std::string &password);
+  void open_write(std::ostream *dest, bool owns_dest, std::string_view password);
   void close_write();
 
-  INLINE void set_algorithm(const std::string &algorithm);
+  INLINE void set_algorithm(std::string algorithm);
   INLINE const std::string &get_algorithm() const;
 
   INLINE void set_key_length(int key_length);

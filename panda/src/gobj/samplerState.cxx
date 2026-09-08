@@ -119,7 +119,7 @@ format_filter_type(FilterType ft) {
  * FilterType value.
  */
 SamplerState::FilterType SamplerState::
-string_filter_type(const string &string) {
+string_filter_type(std::string_view string) {
   if (cmp_nocase_uh(string, "nearest") == 0) {
     return FT_nearest;
   } else if (cmp_nocase_uh(string, "linear") == 0) {
@@ -172,7 +172,7 @@ format_wrap_mode(WrapMode wm) {
  * or WM_invalid if the string does not match any known WrapMode value.
  */
 SamplerState::WrapMode SamplerState::
-string_wrap_mode(const string &string) {
+string_wrap_mode(std::string_view string) {
   if (cmp_nocase_uh(string, "repeat") == 0 ||
       cmp_nocase_uh(string, "wrap") == 0) {
     return WM_repeat;

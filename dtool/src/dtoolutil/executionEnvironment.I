@@ -97,14 +97,14 @@ get_dtool_name() {
  * Do not use.
  */
 INLINE void ExecutionEnvironment::
-set_binary_name(const std::string &name) {
-  get_ptr()->_binary_name = name;
+set_binary_name(std::string name) {
+  get_ptr()->_binary_name = std::move(name);
 }
 
 /**
  * Do not use.
  */
 INLINE void ExecutionEnvironment::
-set_dtool_name(const std::string &name) {
-  get_ptr()->_dtool_name = name;
+set_dtool_name(std::string name) {
+  get_ptr()->_dtool_name = std::move(name);
 }

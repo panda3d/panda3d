@@ -393,11 +393,8 @@ if(HAVE_PYTHON)
     if(_arch_tag STREQUAL "arm64" AND _target VERSION_LESS "11.0")
       set(_target "11.0")
 
-    elseif(PYTHON_VERSION_STRING VERSION_GREATER_EQUAL "3.13" AND _target VERSION_LESS "10.13")
+    elseif(_target VERSION_LESS "10.13")
       set(_target "10.13")
-
-    elseif(PYTHON_VERSION_STRING VERSION_GREATER_EQUAL "3.8" AND _target VERSION_LESS "10.9")
-      set(_target "10.9")
 
     endif()
 
@@ -473,6 +470,12 @@ package_option(OpenSSL
   "Enable OpenSSL support"
   IMPORTED_AS OpenSSL::SSL OpenSSL::Crypto)
 
+if(WIN32 AND HAVE_OPENSSL)
+  # A statically-linked OpenSSL (as shipped in the thirdparty packages) also
+  # needs these Windows system libraries.
+  target_link_libraries(PKG::OPENSSL INTERFACE crypt32 ws2_32)
+endif()
+
 option(REPORT_OPENSSL_ERRORS
   "Define this true to include the OpenSSL code to report verbose
 error messages when they occur." OFF)
@@ -502,7 +505,7 @@ package_option(JPEG "Enable support for loading .jpg images.")
 package_status(JPEG "libjpeg")
 
 # PNG
-find_package(PNG QUIET)
+find_package(PNG QUIET MODULE)
 
 package_option(PNG
   "Enable support for loading .png images."
@@ -579,6 +582,7 @@ its own internal implementation.  The primary advantage of using
 Eigen is SSE2 support, which is only activated if LINMATH_ALIGN
 is also enabled."
   FOUND_AS Eigen3
+  IMPORTED_AS Eigen3::Eigen
   LICENSE "MPL-2")
 
 option(LINMATH_ALIGN
