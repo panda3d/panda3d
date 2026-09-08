@@ -55,6 +55,12 @@ class LevelEditorBase(DirectObject):
 
         self.mode = self.BASE_MODE
         self.preMode = None
+        
+        # In LevelEditorBase or your editor object
+        self._isSelecting = False
+
+
+
 
     def initialize(self):
         """ You should call this in your __init__ method of inherited LevelEditor class """
@@ -206,18 +212,28 @@ class LevelEditorBase(DirectObject):
                 action()
 
     def select(self, nodePath, fMultiSelect=0, fSelectTag=1, fResetAncestry=1, fLEPane=0, fUndo=1):
-        if fUndo:
-            # Select tagged object if present
-            if fSelectTag:
-                for tag in base.direct.selected.tagList:
-                    if nodePath.hasNetTag(tag):
-                        nodePath = nodePath.findNetTag(tag)
-                        break
-            action = ActionSelectObj(self, nodePath, fMultiSelect)
-            self.actionMgr.push(action)
-            action()
-        else:
-            base.direct.selectCB(nodePath, fMultiSelect, fSelectTag, fResetAncestry, fLEPane, fUndo)
+        # Flag to prevent infinite recursion
+        if getattr(self, "_isSelecting", False):
+            return
+        self._isSelecting = True
+        try:
+            if fUndo:
+                # Select tagged object if present
+                if fSelectTag:
+                    for tag in base.direct.selected.tagList:
+                        if nodePath.hasNetTag(tag):
+                            nodePath = nodePath.findNetTag(tag)
+                            break
+                # Create the action and push it to history
+                action = ActionSelectObj(self, nodePath, fMultiSelect)
+                self.actionMgr.push(action)
+                action()
+            else:
+                # Direct call without recording an action
+                base.direct.selectCB(nodePath, fMultiSelect, fSelectTag, fResetAncestry, fLEPane, fUndo)
+        finally:
+            self._isSelecting = False
+
 
     def selectedNodePathHook(self, nodePath, fMultiSelect = 0, fSelectTag = 1, fLEPane = 0):
         # handle unpickable nodepath
@@ -280,23 +296,23 @@ class LevelEditorBase(DirectObject):
         view.camLens.setFilmSize(x, y)
 
     def save(self):
-        self.ui.SetCursor(wx.StockCursor(wx.CURSOR_WAIT))
+        self.ui.SetCursor(wx.Cursor(wx.CURSOR_WAIT))
         if self.currentFile:
             self.fileMgr.saveToFile(self.currentFile)
-        self.ui.SetCursor(wx.StockCursor(wx.CURSOR_ARROW))
+        self.ui.SetCursor(wx.Cursor(wx.CURSOR_ARROW))
 
     def saveAs(self, fileName):
-        self.ui.SetCursor(wx.StockCursor(wx.CURSOR_WAIT))
+        self.ui.SetCursor(wx.Cursor(wx.CURSOR_WAIT))
         self.fileMgr.saveToFile(fileName)
         self.currentFile = fileName
-        self.ui.SetCursor(wx.StockCursor(wx.CURSOR_ARROW))
+        self.ui.SetCursor(wx.Cursor(wx.CURSOR_ARROW))
 
     def load(self, fileName):
-        self.ui.SetCursor(wx.StockCursor(wx.CURSOR_WAIT))
+        self.ui.SetCursor(wx.Cursor(wx.CURSOR_WAIT))
         self.reset()
         self.fileMgr.loadFromFile(fileName)
         self.currentFile = fileName
-        self.ui.SetCursor(wx.StockCursor(wx.CURSOR_ARROW))
+        self.ui.SetCursor(wx.Cursor(wx.CURSOR_ARROW))
 
     def saveSettings(self):
         if self.settingsFile is None:
@@ -437,3 +453,4 @@ class LevelEditorBase(DirectObject):
         else:
             parentNP[0] = None
         return True
+

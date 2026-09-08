@@ -136,7 +136,7 @@ class CurveEditor(DirectObject):
 
                 # transform newobj to cursor position
                 self.controler.setMat(Mat4(np.getMat()))
-                np.remove()
+                np.remove_node()
             iRay.collisionNodePath.removeNode()
             del iRay
 
