@@ -31,7 +31,8 @@
  * array of vertices, each of which may be in a different coordinate space (as
  * defined by a NodePath), as well as an optional knot vector.
  */
-class EXPCL_PANDA_PARAMETRICS NurbsSurfaceEvaluator : public ReferenceCount {
+class EXPCL_PANDA_PARAMETRICS NurbsSurfaceEvaluator : public TypedWritable {
+  friend class NurbsSurfaceEvaluatorBamSerializer;
 PUBLISHED:
   NurbsSurfaceEvaluator();
   ~NurbsSurfaceEvaluator();
@@ -89,6 +90,14 @@ public:
   typedef pvector<LPoint3> Vert3Array;
   void get_vertices(Vert4Array &verts, const NodePath &rel_to) const;
   void get_vertices(Vert3Array &verts, const NodePath &rel_to) const;
+
+  virtual void register_with_read_factory() override;
+  virtual void write_datagram(Datagram &datagram) const override;
+  static TypedWritable* make_from_bam(DatagramIterator &di);
+  virtual void fillin(DatagramIterator &di) override;
+  virtual void complete_pointers() override;
+  virtual TypeHandle get_type() const override;
+
 
 private:
   INLINE NurbsVertex &vert(int ui, int vi);
