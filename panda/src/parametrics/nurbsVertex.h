@@ -46,6 +46,8 @@ public:
   void set_extended_vertex(int d, PN_stdfloat value);
   PN_stdfloat get_extended_vertex(int d) const;
 
+  int get_num_extended() const;
+
 private:
   LVecBase4 _vertex;
   NodePath _space;

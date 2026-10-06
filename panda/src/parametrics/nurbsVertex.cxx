@@ -48,3 +48,10 @@ get_extended_vertex(int d) const {
   }
   return (*ei).second;
 }
+
+/**
+ * returns the number of extended attributes
+ */
+int NurbsVertex::
+get_num_extended() const
+{return _extended.size();}

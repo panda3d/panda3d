@@ -378,5 +378,38 @@ recompute_v_basis() {
     }
   }
 
+/**
+ * Resolves pointers for BAM objects that contain / reference other objects.
+ */
+void NurbsSurfaceEvaluator::
+complete_pointers(){NurbsSurfaceEvaluatorBamSerializer::complete_pointers(*this);}
+
+/**
+ * Simple identity getter. "What object am I?"
+ */
+TypeHandle NurbsSurfaceEvaluator::
+get_type() const {return get_class_type();}
+
+
+/**
+ *  Basically is going to pull the info from the bam file through the DatagramIterator
+ *  into the NurbsSurfaceEvaluator object and return that.
+ */
+TypeWritable* NurbsSurfaceEvaluator::
+make_from_bam(DatagramIterator &di)
+{
+  NurbsSurfaceEvaluator *PulledData = new NurbsSurfaceEvaluator();
+  NurbsSurfaceEvaluatorBamSerializer::fillin(*PulledData, di);
+  return PulledData;
+}
+
+/**
+ * Registers the object as one that will be read from / written to a BAM
+ */
+void NurbsSurfaceEvaluator::
+register_with_read_factory()
+{BamReader::register_with_read_factory(get_class_type());}
+
+
   _v_basis_dirty = false;
 }
