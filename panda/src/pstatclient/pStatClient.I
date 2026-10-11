@@ -70,8 +70,8 @@ get_thread_object(int index) const {
  * true if successful, false on failure.
  */
 INLINE bool PStatClient::
-connect(const std::string &hostname, int port) {
-  return get_global_pstats()->client_connect(hostname, port);
+connect(std::string hostname, int port) {
+  return get_global_pstats()->client_connect(std::move(hostname), port);
 }
 
 /**
@@ -161,10 +161,10 @@ get_thread_ptr(int thread_index) const {
  *
  */
 INLINE PStatClient::Collector::
-Collector(int parent_index, const std::string &name) :
+Collector(int parent_index, std::string name) :
   _def(nullptr),
   _parent_index(parent_index),
-  _name(name)
+  _name(std::move(name))
 {
 }
 

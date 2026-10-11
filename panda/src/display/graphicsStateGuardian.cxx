@@ -768,14 +768,38 @@ release_shader_buffers(const pvector<BufferContext *> &contexts) {
 
 /**
  * This method should only be called by the GraphicsEngine.  Do not call it
+ * directly; call GraphicsEngine::update_shader_buffer_data() instead.
+ *
+ * This method will be called in the draw thread to upload data to (a part of)
+ * the shader buffer from the CPU.  If data is null, clears the buffer instead.
+ */
+bool GraphicsStateGuardian::
+update_shader_buffer_data(ShaderBuffer *buffer, size_t start, size_t size,
+                          const unsigned char *data) {
+  return false;
+}
+
+/**
+ * This method should only be called by the GraphicsEngine.  Do not call it
  * directly; call GraphicsEngine::extract_texture_data() instead.
  *
  * This method will be called in the draw thread to download the buffer's
  * current contents synchronously.
  */
 bool GraphicsStateGuardian::
-extract_shader_buffer_data(ShaderBuffer *buffer, vector_uchar &data) {
+extract_shader_buffer_data(ShaderBuffer *buffer, vector_uchar &data,
+                           size_t start, size_t size) {
   return false;
+}
+
+/**
+ * Asynchronous version of extract_shader_buffer_data.  It is the caller's
+ * responsibility that the data argument outlasts the token.
+ */
+void GraphicsStateGuardian::
+async_extract_shader_buffer_data(ShaderBuffer *buffer, vector_uchar &data,
+                                 size_t start, size_t size, CompletionToken token) {
+  token.complete(extract_shader_buffer_data(buffer, data, start, size));
 }
 
 /**
@@ -2496,7 +2520,7 @@ fetch_specified_texture(Shader::ShaderTexSpec &spec, SamplerState &sampler,
       return default_normal_height_tex;
     }
 
-  case Shader::STO_stage_selector_i:
+  case Shader::STO_stage_metallic_roughness_i:
     {
       const TextureAttrib *texattrib;
       if (_target_rs->get_attrib(texattrib)) {
@@ -2505,7 +2529,8 @@ fetch_specified_texture(Shader::ShaderTexSpec &spec, SamplerState &sampler,
           TextureStage *stage = texattrib->get_on_stage(i);
           TextureStage::Mode mode = stage->get_mode();
 
-          if (mode == TextureStage::M_selector) {
+          if (mode == TextureStage::M_metallic_roughness ||
+              mode == TextureStage::M_occlusion_metallic_roughness) {
             if (si++ == spec._stage) {
               sampler = texattrib->get_on_sampler(stage);
               view += stage->get_tex_view_offset();
@@ -2527,6 +2552,28 @@ fetch_specified_texture(Shader::ShaderTexSpec &spec, SamplerState &sampler,
           TextureStage::Mode mode = stage->get_mode();
 
           if (mode == TextureStage::M_emission) {
+            if (si++ == spec._stage) {
+              sampler = texattrib->get_on_sampler(stage);
+              view += stage->get_tex_view_offset();
+              return texattrib->get_on_texture(stage);
+            }
+          }
+        }
+      }
+    }
+    break;
+
+  case Shader::STO_stage_occlusion_i:
+    {
+      const TextureAttrib *texattrib;
+      if (_target_rs->get_attrib(texattrib)) {
+        int si = 0;
+        for (int i = 0; i < texattrib->get_num_on_stages(); ++i) {
+          TextureStage *stage = texattrib->get_on_stage(i);
+          TextureStage::Mode mode = stage->get_mode();
+
+          if (mode == TextureStage::M_occlusion ||
+              mode == TextureStage::M_occlusion_metallic_roughness) {
             if (si++ == spec._stage) {
               sampler = texattrib->get_on_sampler(stage);
               view += stage->get_tex_view_offset();
@@ -3035,6 +3082,15 @@ reset() {
   _last_max_stage_index = 0;
 
   _is_valid = true;
+}
+
+/**
+ * Ensures that the context is current.  May return false if the context cannot
+ * be bound without a window.
+ */
+bool GraphicsStateGuardian::
+make_current() {
+  return false;
 }
 
 /**
@@ -3971,7 +4027,7 @@ ensure_generated_shader(const RenderState *state) {
  * string.  This currently is only implemented by the OpenGL back-end.
  */
 bool GraphicsStateGuardian::
-has_extension(const string &extension) const {
+has_extension(std::string_view extension) const {
   return false;
 }
 

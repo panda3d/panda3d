@@ -186,8 +186,8 @@ clear_draw_order() {
  * CullTraverser) in use for this to work.  See also set_draw_order().
  */
 INLINE void EggRenderMode::
-set_bin(const std::string &bin) {
-  _bin = bin;
+set_bin(std::string bin) {
+  _bin = std::move(bin);
 }
 
 /**

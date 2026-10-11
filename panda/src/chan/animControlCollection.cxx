@@ -39,7 +39,7 @@ AnimControlCollection::
  * this name.
  */
 void AnimControlCollection::
-store_anim(AnimControl *control, const string &name) {
+store_anim(AnimControl *control, std::string name) {
   ControlsByName::iterator ci = _controls_by_name.find(name);
 
   if (ci == _controls_by_name.end()) {
@@ -48,8 +48,8 @@ store_anim(AnimControl *control, const string &name) {
     ControlDef cdef;
     cdef._control = control;
     cdef._name = name;
-    _controls.push_back(cdef);
-    _controls_by_name.insert(ControlsByName::value_type(name, index));
+    _controls.push_back(std::move(cdef));
+    _controls_by_name.insert(ControlsByName::value_type(std::move(name), index));
 
   } else {
     // Replace an existing control.
@@ -68,7 +68,7 @@ store_anim(AnimControl *control, const string &name) {
  * control has been associated.
  */
 AnimControl *AnimControlCollection::
-find_anim(const string &name) const {
+find_anim(std::string_view name) const {
   ControlsByName::const_iterator ci = _controls_by_name.find(name);
   if (ci == _controls_by_name.end()) {
     return nullptr;
@@ -85,7 +85,7 @@ find_anim(const string &name) const {
  * the indicated name.
  */
 bool AnimControlCollection::
-unbind_anim(const string &name) {
+unbind_anim(std::string_view name) {
   ControlsByName::iterator ci = _controls_by_name.find(name);
   if (ci == _controls_by_name.end()) {
     return false;

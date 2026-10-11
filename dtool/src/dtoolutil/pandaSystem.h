@@ -60,17 +60,16 @@ PUBLISHED:
 
   MAKE_PROPERTY(platform, get_platform);
 
-  bool has_system(const std::string &system) const;
+  bool has_system(std::string_view system) const;
   size_t get_num_systems() const;
   std::string get_system(size_t n) const;
   MAKE_SEQ(get_systems, get_num_systems, get_system);
   MAKE_SEQ_PROPERTY(systems, get_num_systems, get_system);
 
-  std::string get_system_tag(const std::string &system, const std::string &tag) const;
+  std::string get_system_tag(std::string_view system, std::string_view tag) const;
 
-  void add_system(const std::string &system);
-  void set_system_tag(const std::string &system, const std::string &tag,
-                      const std::string &value);
+  void add_system(std::string_view system);
+  void set_system_tag(std::string_view system, std::string tag, std::string value);
 
   bool heap_trim(size_t pad);
 
@@ -82,8 +81,8 @@ PUBLISHED:
 private:
   void reset_system_names();
 
-  typedef pmap<std::string, std::string> SystemTags;
-  typedef pmap<std::string, SystemTags> Systems;
+  typedef pmap<std::string, std::string, std::less<> > SystemTags;
+  typedef pmap<std::string, SystemTags, std::less<> > Systems;
   typedef pvector<std::string> SystemNames;
 
   Systems _systems;

@@ -24,9 +24,9 @@ extern "C" {
 /**
  * Callback passed to dr_flac to implement file I/O via the VirtualFileSystem.
  */
-static size_t cb_read_proc(void *user, void *buffer, size_t size) {
-  std::istream *stream = (std::istream *)user;
-  nassertr(stream != nullptr, false);
+size_t cb_read_proc(void *user, void *buffer, size_t size) {
+  std::istream *stream = static_cast<FlacAudioCursor*>(user)->_stream;
+  nassertr(stream != nullptr, 0);
 
   stream->read((char *)buffer, size);
 
@@ -39,14 +39,53 @@ static size_t cb_read_proc(void *user, void *buffer, size_t size) {
 }
 
 /**
- * Callback passed to dr_flac to implement file I/O via the VirtualFileSystem.
+ * Callback passed to dr_flac to implement file seeking via the VirtualFileSystem.
  */
-static bool cb_seek_proc(void *user, int offset) {
-  std::istream *stream = (std::istream *)user;
-  nassertr(stream != nullptr, false);
+drflac_bool32 cb_seek_proc(void* user, int offset, drflac_seek_origin origin) {
+  std::istream* stream = static_cast<FlacAudioCursor*>(user)->_stream;
+  nassertr(stream != nullptr, DRFLAC_FALSE);
 
-  stream->seekg(offset, std::ios::cur);
-  return !stream->fail();
+  std::ios_base::seekdir dir;
+  switch (origin) {
+    case DRFLAC_SEEK_SET:
+      dir = std::ios_base::beg;
+      break;
+    case DRFLAC_SEEK_CUR:
+      dir = std::ios_base::cur;
+      break;
+    default:
+      return DRFLAC_FALSE;
+  }
+
+  stream->seekg(offset, dir);
+  return !stream->fail() ? DRFLAC_TRUE : DRFLAC_FALSE;
+}
+
+/**
+ * Callback passed to dr_flac to report the current stream position.
+ */
+drflac_bool32 cb_tell_proc(void *user, drflac_int64 *pCursor) {
+  std::istream *stream = static_cast<FlacAudioCursor*>(user)->_stream;
+  nassertr(stream != nullptr, DRFLAC_FALSE);
+
+  *pCursor = (drflac_int64)stream->tellg();
+  return !stream->fail() ? DRFLAC_TRUE : DRFLAC_FALSE;
+}
+
+/**
+ * Callback passed to dr_flac to process metadata found inside flac files.
+ */
+void cb_meta_proc(void* pUserData, drflac_metadata* pMetadata) {
+  FlacAudioCursor* cursor = static_cast<FlacAudioCursor*>(pUserData);
+  if (pMetadata->type == DRFLAC_METADATA_BLOCK_TYPE_VORBIS_COMMENT) {
+    drflac_vorbis_comment_iterator iter;
+    drflac_init_vorbis_comment_iterator(&iter, pMetadata->data.vorbis_comment.commentCount, pMetadata->data.vorbis_comment.pComments);
+    const char* next_comment;
+    drflac_uint32 comment_length;
+    while ((next_comment = drflac_next_vorbis_comment(&iter, &comment_length)) != nullptr) {
+      cursor->raw_comment.push_back({ next_comment, comment_length });
+    }
+  }
 }
 
 TypeHandle FlacAudioCursor::_type_handle;
@@ -60,12 +99,13 @@ FlacAudioCursor(FlacAudio *src, std::istream *stream) :
   MovieAudioCursor(src),
   _is_valid(false),
   _drflac(nullptr),
-  _stream(stream)
+  _stream(stream),
+  raw_comment()
 {
   nassertv(stream != nullptr);
   nassertv(stream->good());
 
-  _drflac = drflac_open(&cb_read_proc, &cb_seek_proc, (void *)stream);
+  _drflac = drflac_open_with_metadata(&cb_read_proc, &cb_seek_proc, &cb_tell_proc, &cb_meta_proc, (void *)this, nullptr);
 
   if (_drflac == nullptr) {
     movies_cat.error()
@@ -73,7 +113,7 @@ FlacAudioCursor(FlacAudio *src, std::istream *stream) :
     _is_valid = false;
   }
 
-  _length = (_drflac->totalSampleCount / _drflac->channels) / (double)_drflac->sampleRate;
+  _length = _drflac->totalPCMFrameCount / (double)_drflac->sampleRate;
 
   _audio_channels = _drflac->channels;
   _audio_rate = _drflac->sampleRate;
@@ -107,7 +147,7 @@ seek(double t) {
 
   uint64_t sample = t * _drflac->sampleRate;
 
-  if (drflac_seek_to_sample(_drflac, sample * _drflac->channels)) {
+  if (drflac_seek_to_pcm_frame(_drflac, sample)) {
     _last_seek = sample / (double)_drflac->sampleRate;
     _samples_read = 0;
   }
@@ -120,8 +160,15 @@ seek(double t) {
  */
 int FlacAudioCursor::
 read_samples(int n, int16_t *data) {
-  int desired = n * _audio_channels;
-  n = drflac_read_s16(_drflac, desired, data) / _audio_channels;
+  n = (int)drflac_read_pcm_frames_s16(_drflac, n, data);
   _samples_read += n;
   return n;
+}
+
+/**
+ *
+ */
+vector_string FlacAudioCursor::
+get_raw_comment() const {
+  return raw_comment;
 }

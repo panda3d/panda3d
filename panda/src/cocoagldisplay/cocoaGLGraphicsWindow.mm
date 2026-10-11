@@ -24,13 +24,13 @@ TypeHandle CocoaGLGraphicsWindow::_type_handle;
  */
 CocoaGLGraphicsWindow::
 CocoaGLGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
-                      const std::string &name,
+                      std::string name,
                       const FrameBufferProperties &fb_prop,
                       const WindowProperties &win_prop,
                       int flags,
                       GraphicsStateGuardian *gsg,
                       GraphicsOutput *host) :
-  CocoaGraphicsWindow(engine, pipe, name, fb_prop, win_prop, flags, gsg, host)
+  CocoaGraphicsWindow(engine, pipe, std::move(name), fb_prop, win_prop, flags, gsg, host)
 {
 }
 
@@ -194,7 +194,7 @@ open_window() {
   if (_gsg == nullptr) {
     // There is no old gsg.  Create a new one.
     cocoagsg = new CocoaGLGraphicsStateGuardian(_engine, _pipe, nullptr);
-    cocoagsg->choose_pixel_format(_fb_properties, _display, false);
+    cocoagsg->choose_pixel_format(_fb_properties, _display, true, false);
     _gsg = cocoagsg;
   } else {
     // If the old gsg has the wrong pixel format, create a new one that shares
@@ -203,7 +203,7 @@ open_window() {
     if (cocoagsg->get_engine() != _engine ||
         !cocoagsg->get_fb_properties().subsumes(_fb_properties)) {
       cocoagsg = new CocoaGLGraphicsStateGuardian(_engine, _pipe, cocoagsg);
-      cocoagsg->choose_pixel_format(_fb_properties, _display, false);
+      cocoagsg->choose_pixel_format(_fb_properties, _display, true, false);
       _gsg = cocoagsg;
     }
   }

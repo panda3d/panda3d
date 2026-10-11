@@ -142,9 +142,9 @@ project(const LPoint3 &point3d, LPoint3 &point2d) const {
  * to automatically track changes to camera fov, etc.  in the application.
  */
 INLINE void Lens::
-set_change_event(const std::string &event) {
+set_change_event(std::string event) {
   CDWriter cdata(_cycler, true);
-  cdata->_change_event = event;
+  cdata->_change_event = std::move(event);
 }
 
 /**

@@ -24,7 +24,7 @@ TypeHandle ButtonHandle::_type_handle;
  * ButtonRegistry::register_button().
  */
 ButtonHandle::
-ButtonHandle(const std::string &name) {
+ButtonHandle(std::string_view name) {
   _index = ButtonRegistry::ptr()->get_button(name)._index;
 }
 

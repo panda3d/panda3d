@@ -146,7 +146,7 @@ write(std::ostream &out, int indent_level) const {
  * been called for the same device_type/device_name).
  */
 PT(ClientDevice) VrpnClient::
-make_device(TypeHandle device_type, const string &device_name) {
+make_device(TypeHandle device_type, std::string_view device_name) {
   if (device_type == ClientTrackerDevice::get_class_type()) {
     return make_tracker_device(device_name);
 
@@ -173,7 +173,7 @@ make_device(TypeHandle device_type, const string &device_name) {
  * unknown (e.g.  it was disconnected previously).
  */
 bool VrpnClient::
-disconnect_device(TypeHandle device_type, const string &device_name,
+disconnect_device(TypeHandle device_type, std::string_view device_name,
                   ClientDevice *device) {
   if (vrpn_cat.is_debug()) {
     vrpn_cat.debug()
@@ -264,18 +264,18 @@ do_poll() {
  * indicated sensor number.
  */
 PT(ClientDevice) VrpnClient::
-make_tracker_device(const string &device_name) {
+make_tracker_device(std::string_view device_name) {
   if (vrpn_cat.is_debug()) {
     vrpn_cat.debug()
       << "Making tracker device for " << device_name << "\n";
   }
 
-  string tracker_name = device_name;
+  std::string_view tracker_name = device_name;
   int sensor = 0;
   VrpnTrackerDevice::DataType data_type = VrpnTrackerDevice::DT_position;
 
   size_t colon = device_name.rfind(':');
-  if (colon != string::npos && colon + 1 < device_name.length()) {
+  if (colon != std::string_view::npos && colon + 1 < device_name.length()) {
     size_t begin = colon + 1;
     size_t end = device_name.length();
     VrpnTrackerDevice::DataType maybe_data_type = data_type;
@@ -297,7 +297,7 @@ make_tracker_device(const string &device_name) {
       break;
     }
     int maybe_sensor;
-    if (string_to_int(device_name.substr(begin, end - begin), maybe_sensor)) {
+    if (string_to_int(std::string(device_name.substr(begin, end - begin)), maybe_sensor)) {
       // It seems to be a legitimate integer!
       sensor = maybe_sensor;
       data_type = maybe_data_type;
@@ -308,7 +308,7 @@ make_tracker_device(const string &device_name) {
   VrpnTracker *tracker = get_tracker(tracker_name);
 
   VrpnTrackerDevice *device =
-    new VrpnTrackerDevice(this, device_name, sensor, data_type, tracker);
+    new VrpnTrackerDevice(this, std::string(device_name), sensor, data_type, tracker);
 
   if (vrpn_cat.is_debug()) {
     vrpn_cat.debug()
@@ -324,7 +324,7 @@ make_tracker_device(const string &device_name) {
  * library.
  */
 PT(ClientDevice) VrpnClient::
-make_button_device(const string &device_name) {
+make_button_device(std::string_view device_name) {
   if (vrpn_cat.is_debug()) {
     vrpn_cat.debug()
       << "Making button device for " << device_name << "\n";
@@ -333,7 +333,7 @@ make_button_device(const string &device_name) {
   VrpnButton *button = get_button(device_name);
 
   VrpnButtonDevice *device =
-    new VrpnButtonDevice(this, device_name, button);
+    new VrpnButtonDevice(this, std::string(device_name), button);
 
   if (vrpn_cat.is_debug()) {
     vrpn_cat.debug()
@@ -349,7 +349,7 @@ make_button_device(const string &device_name) {
  * library.
  */
 PT(ClientDevice) VrpnClient::
-make_analog_device(const string &device_name) {
+make_analog_device(std::string_view device_name) {
   if (vrpn_cat.is_debug()) {
     vrpn_cat.debug()
       << "Making analog device for " << device_name << "\n";
@@ -358,7 +358,7 @@ make_analog_device(const string &device_name) {
   VrpnAnalog *analog = get_analog(device_name);
 
   VrpnAnalogDevice *device =
-    new VrpnAnalogDevice(this, device_name, analog);
+    new VrpnAnalogDevice(this, std::string(device_name), analog);
 
   if (vrpn_cat.is_debug()) {
     vrpn_cat.debug()
@@ -374,7 +374,7 @@ make_analog_device(const string &device_name) {
  * library.
  */
 PT(ClientDevice) VrpnClient::
-make_dial_device(const string &device_name) {
+make_dial_device(std::string_view device_name) {
   if (vrpn_cat.is_debug()) {
     vrpn_cat.debug()
       << "Making dial device for " << device_name << "\n";
@@ -383,7 +383,7 @@ make_dial_device(const string &device_name) {
   VrpnDial *dial = get_dial(device_name);
 
   VrpnDialDevice *device =
-    new VrpnDialDevice(this, device_name, dial);
+    new VrpnDialDevice(this, std::string(device_name), dial);
 
   if (vrpn_cat.is_debug()) {
     vrpn_cat.debug()
@@ -447,7 +447,7 @@ disconnect_dial_device(VrpnDialDevice *device) {
  * exists, or creates a new one if it does not.
  */
 VrpnTracker *VrpnClient::
-get_tracker(const string &tracker_name) {
+get_tracker(std::string_view tracker_name) {
   Trackers::iterator ti;
   ti = _trackers.find(tracker_name);
 
@@ -455,8 +455,9 @@ get_tracker(const string &tracker_name) {
     return (*ti).second;
   }
 
-  VrpnTracker *vrpn_tracker = new VrpnTracker(tracker_name, _connection);
-  _trackers.insert(Trackers::value_type(tracker_name, vrpn_tracker));
+  std::string name(tracker_name);
+  VrpnTracker *vrpn_tracker = new VrpnTracker(name, _connection);
+  _trackers.insert(Trackers::value_type(std::move(name), vrpn_tracker));
 
   if (vrpn_cat.is_debug()) {
     vrpn_cat.debug()
@@ -493,7 +494,7 @@ free_tracker(VrpnTracker *vrpn_tracker) {
  * exists, or creates a new one if it does not.
  */
 VrpnButton *VrpnClient::
-get_button(const string &button_name) {
+get_button(std::string_view button_name) {
   Buttons::iterator bi;
   bi = _buttons.find(button_name);
 
@@ -501,8 +502,9 @@ get_button(const string &button_name) {
     return (*bi).second;
   }
 
-  VrpnButton *vrpn_button = new VrpnButton(button_name, _connection);
-  _buttons.insert(Buttons::value_type(button_name, vrpn_button));
+  std::string name(button_name);
+  VrpnButton *vrpn_button = new VrpnButton(name, _connection);
+  _buttons.insert(Buttons::value_type(std::move(name), vrpn_button));
 
   if (vrpn_cat.is_debug()) {
     vrpn_cat.debug()
@@ -539,7 +541,7 @@ free_button(VrpnButton *vrpn_button) {
  * exists, or creates a new one if it does not.
  */
 VrpnAnalog *VrpnClient::
-get_analog(const string &analog_name) {
+get_analog(std::string_view analog_name) {
   Analogs::iterator ai;
   ai = _analogs.find(analog_name);
 
@@ -547,8 +549,9 @@ get_analog(const string &analog_name) {
     return (*ai).second;
   }
 
-  VrpnAnalog *vrpn_analog = new VrpnAnalog(analog_name, _connection);
-  _analogs.insert(Analogs::value_type(analog_name, vrpn_analog));
+  std::string name(analog_name);
+  VrpnAnalog *vrpn_analog = new VrpnAnalog(name, _connection);
+  _analogs.insert(Analogs::value_type(std::move(name), vrpn_analog));
 
   if (vrpn_cat.is_debug()) {
     vrpn_cat.debug()
@@ -585,7 +588,7 @@ free_analog(VrpnAnalog *vrpn_analog) {
  * exists, or creates a new one if it does not.
  */
 VrpnDial *VrpnClient::
-get_dial(const string &dial_name) {
+get_dial(std::string_view dial_name) {
   Dials::iterator di;
   di = _dials.find(dial_name);
 
@@ -593,8 +596,9 @@ get_dial(const string &dial_name) {
     return (*di).second;
   }
 
-  VrpnDial *vrpn_dial = new VrpnDial(dial_name, _connection);
-  _dials.insert(Dials::value_type(dial_name, vrpn_dial));
+  std::string name(dial_name);
+  VrpnDial *vrpn_dial = new VrpnDial(name, _connection);
+  _dials.insert(Dials::value_type(std::move(name), vrpn_dial));
 
   if (vrpn_cat.is_debug()) {
     vrpn_cat.debug()

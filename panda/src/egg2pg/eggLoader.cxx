@@ -982,7 +982,7 @@ load_texture(TextureDef &def, EggTexture *egg_tex) {
   case EggTexture::TT_unspecified:
   case EggTexture::TT_1d_texture:
     options.set_texture_flags(options.get_texture_flags() | LoaderOptions::TF_allow_1d);
-    // Fall through.
+    [[fallthrough]];
 
   case EggTexture::TT_2d_texture:
     if (egg_tex->has_alpha_filename() && wanted_alpha) {
@@ -1579,8 +1579,8 @@ make_texture_stage(const EggTexture *egg_tex) {
     stage->set_mode(TextureStage::M_height);
     break;
 
-  case EggTexture::ET_selector:
-    stage->set_mode(TextureStage::M_selector);
+  case EggTexture::ET_metallic_roughness:
+    stage->set_mode(TextureStage::M_metallic_roughness);
     break;
 
   case EggTexture::ET_normal_gloss:
@@ -1589,6 +1589,14 @@ make_texture_stage(const EggTexture *egg_tex) {
 
   case EggTexture::ET_emission:
     stage->set_mode(TextureStage::M_emission);
+    break;
+
+  case EggTexture::ET_occlusion:
+    stage->set_mode(TextureStage::M_occlusion);
+    break;
+
+  case EggTexture::ET_occlusion_metallic_roughness:
+    stage->set_mode(TextureStage::M_occlusion_metallic_roughness);
     break;
 
   case EggTexture::ET_unspecified:
@@ -2632,7 +2640,7 @@ make_blend_table(EggVertexPool *vertex_pool, EggNode *primitive_home,
 void EggLoader::
 record_morph(GeomVertexArrayFormat *array_format,
              CharacterMaker *character_maker,
-             const string &morph_name, InternalName *column_name,
+             std::string_view morph_name, InternalName *column_name,
              int num_components) {
   PT(InternalName) delta_name =
     InternalName::get_morph(column_name, morph_name);
@@ -3749,7 +3757,7 @@ expand_object_types(EggGroup *egg_group, const pset<string> &expanded,
 bool EggLoader::
 do_expand_object_type(EggGroup *egg_group, const pset<string> &expanded,
                       const pvector<string> &expanded_history,
-                      const string &object_type) {
+                      std::string_view object_type) {
   // Try to find the egg syntax that the given objecttype is shorthand for.
   // First, look in the config file.
 
@@ -3843,7 +3851,7 @@ get_combine_mode(const EggTexture *egg_tex,
                  EggTexture::CombineChannel channel) {
   switch (egg_tex->get_combine_mode(channel)) {
   case EggTexture::CM_unspecified:
-    // fall through
+    [[fallthrough]];
 
   case EggTexture::CM_modulate:
     return TextureStage::CM_modulate;
@@ -3892,7 +3900,7 @@ get_combine_source(const EggTexture *egg_tex,
     case 2:
       return TextureStage::CS_constant;
     }
-    // Otherwise, fall through
+    [[fallthrough]];
 
   case EggTexture::CS_texture:
     return TextureStage::CS_texture;

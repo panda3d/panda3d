@@ -14,8 +14,10 @@
 
 // Panda Headers
 #include "throw_event.h"
+#include "coordinateSystem.h"
 #include "openalAudioSound.h"
 #include "openalAudioManager.h"
+#include "vector_string.h"
 
 TypeHandle OpenALAudioSound::_type_handle;
 
@@ -87,6 +89,67 @@ OpenALAudioSound(OpenALAudioManager *manager,
       audio_warning("stereo sound " << movie->get_filename() << " will not be spatialized");
     }
   }
+
+  _comment = std::move(_sd->_comment);
+  release_sound_data(false);
+}
+
+/**
+ * Copy constructor (to be used with make_copy).
+ */
+OpenALAudioSound::
+OpenALAudioSound(const OpenALAudioSound &copy_sound) :
+  AudioSound(copy_sound.is_positional()),
+  _movie(copy_sound._movie),
+  _sd(copy_sound._sd),
+  _playing_loops(copy_sound._playing_loops),
+  _playing_rate(copy_sound._playing_rate),
+  _loops_completed(copy_sound._loops_completed),
+  _source(copy_sound._source),
+  _manager(copy_sound._manager),
+  _volume(copy_sound._volume),
+  _balance(copy_sound._balance),
+  _play_rate(copy_sound._play_rate),
+  _min_dist(copy_sound._min_dist),
+  _max_dist(copy_sound._max_dist),
+  _drop_off_factor(copy_sound._drop_off_factor),
+  _length(copy_sound._length),
+  _loop_count(copy_sound._loop_count),
+  _loop_start(copy_sound._loop_start),
+  _desired_mode(copy_sound._desired_mode),
+  _start_time(copy_sound._start_time),
+  _current_time(0.0),
+  _basename(copy_sound._basename),
+  _active(copy_sound._active),
+  _paused(copy_sound._paused),
+  _cone_inner_angle(copy_sound._cone_inner_angle),
+  _cone_outer_angle(copy_sound._cone_outer_angle),
+  _cone_outer_gain(copy_sound._cone_outer_gain)
+{
+  _location[0] = copy_sound._location[0];
+  _location[1] = copy_sound._location[1];
+  _location[2] = copy_sound._location[2];
+  _velocity[0] = copy_sound._velocity[0];
+  _velocity[1] = copy_sound._velocity[1];
+  _velocity[2] = copy_sound._velocity[2];
+  _direction[0] = copy_sound._direction[0];
+  _direction[1] = copy_sound._direction[1];
+  _direction[2] = copy_sound._direction[2];
+
+  ReMutexHolder holder(OpenALAudioManager::_lock);
+
+  if (!require_sound_data()) {
+    cleanup();
+    return;
+  }
+
+  if (copy_sound.is_positional()) {
+    if (_sd->_channels != 1) {
+      audio_warning("copied stereo sound " << _movie->get_filename() << " will not be spatialized");
+    }
+  }
+
+  _comment = std::move(_sd->_comment);
   release_sound_data(false);
 }
 
@@ -117,6 +180,20 @@ cleanup() {
   }
   _manager->release_sound(this);
   _manager = nullptr;
+}
+
+/**
+ * Copies an OpenALAudioSound into a new OpenALAudioSound.
+ */
+AudioSound *OpenALAudioSound::
+make_copy() const {
+  OpenALAudioSound *copy_sound = new OpenALAudioSound(*this);
+
+  // throw errors if the copied-to node doesn't match the copied-from
+  nassertr(copy_sound->is_valid() == this->is_valid(), nullptr);
+  nassertr(copy_sound->has_sound_data() == this->has_sound_data(), nullptr);
+
+  return copy_sound;
 }
 
 /**
@@ -745,13 +822,53 @@ length() const {
 void OpenALAudioSound::
 set_3d_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx, PN_stdfloat vy, PN_stdfloat vz) {
   ReMutexHolder holder(OpenALAudioManager::_lock);
-  _location[0] = px;
-  _location[1] = pz;
-  _location[2] = -py;
+  CoordinateSystem cs = get_default_coordinate_system();
 
-  _velocity[0] = vx;
-  _velocity[1] = vz;
-  _velocity[2] = -vy;
+  switch (cs) {
+  case CS_yup_right:
+    _location[0] = px;
+    _location[1] = py;
+    _location[2] = pz;
+
+    _velocity[0] = vx;
+    _velocity[1] = vy;
+    _velocity[2] = vz;
+    break;
+
+  case CS_zup_right:
+    _location[0] = px;
+    _location[1] = pz;
+    _location[2] = -py;
+
+    _velocity[0] = vx;
+    _velocity[1] = vz;
+    _velocity[2] = -vy;
+    break;
+
+  case CS_yup_left:
+    _location[0] = px;
+    _location[1] = py;
+    _location[2] = -pz;
+
+    _velocity[0] = vx;
+    _velocity[1] = vy;
+    _velocity[2] = -vz;
+    break;
+
+  case CS_zup_left:
+    _location[0] = px;
+    _location[1] = pz;
+    _location[2] = py;
+
+    _velocity[0] = vx;
+    _velocity[1] = vz;
+    _velocity[2] = vy;
+    break;
+
+  default:
+    nassert_raise("invalid coordinate system");
+    return;
+  }
 
   if (is_playing()) {
     _manager->make_current();
@@ -1014,8 +1131,8 @@ get_active() const {
  *
  */
 void OpenALAudioSound::
-set_finished_event(const std::string& event) {
-  _finished_event = event;
+set_finished_event(std::string event) {
+  _finished_event = std::move(event);
 }
 
 /**
@@ -1050,4 +1167,12 @@ status() const {
   } else {
     return AudioSound::PLAYING;
   }
+}
+
+/**
+ * Returns the comments attached to this audio file.
+ */
+const vector_string& OpenALAudioSound::
+get_raw_comment() const {
+  return _comment;
 }

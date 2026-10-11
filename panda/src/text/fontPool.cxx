@@ -37,7 +37,7 @@ write(std::ostream &out) {
  * The nonstatic implementation of has_font().
  */
 bool FontPool::
-ns_has_font(const string &str) {
+ns_has_font(std::string_view str) {
   LightMutexHolder holder(_lock);
 
   string index_str;
@@ -59,7 +59,7 @@ ns_has_font(const string &str) {
  * The nonstatic implementation of load_font().
  */
 TextFont *FontPool::
-ns_load_font(const string &str) {
+ns_load_font(std::string_view str) {
   string index_str;
   Filename filename;
   int face_index;
@@ -140,7 +140,7 @@ ns_load_font(const string &str) {
  * The nonstatic implementation of add_font().
  */
 void FontPool::
-ns_add_font(const string &str, TextFont *font) {
+ns_add_font(std::string_view str, TextFont *font) {
   LightMutexHolder holder(_lock);
 
   string index_str;
@@ -156,7 +156,7 @@ ns_add_font(const string &str, TextFont *font) {
  * The nonstatic implementation of release_font().
  */
 void FontPool::
-ns_release_font(const string &str) {
+ns_release_font(std::string_view str) {
   LightMutexHolder holder(_lock);
 
   string index_str;
@@ -234,7 +234,7 @@ ns_list_contents(std::ostream &out) const {
  * normalized to contain the full path.)
  */
 void FontPool::
-lookup_filename(const string &str, string &index_str,
+lookup_filename(std::string_view str, string &index_str,
                 Filename &filename, int &face_index) {
   int colon = (int)str.length() - 1;
   // Scan backwards over digits for a colon.
@@ -242,7 +242,7 @@ lookup_filename(const string &str, string &index_str,
     --colon;
   }
   if (colon >= 0 && str[colon] == ':') {
-    string digits = str.substr(colon + 1);
+    string digits(str.substr(colon + 1));
     filename = str.substr(0, colon);
     face_index = atoi(digits.c_str());
   } else {

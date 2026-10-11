@@ -23,8 +23,8 @@ TypeHandle MouseRecorder::_type_handle;
  *
  */
 MouseRecorder::
-MouseRecorder(const std::string &name) :
-  DataNode(name)
+MouseRecorder(std::string name) :
+  DataNode(std::move(name))
 {
   _pixel_xy_input = define_input("pixel_xy", EventStoreVec2::get_class_type());
   _pixel_size_input = define_input("pixel_size", EventStoreVec2::get_class_type());

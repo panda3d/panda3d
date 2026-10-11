@@ -151,7 +151,7 @@ private:
    CharacterMaker *character_maker);
   void record_morph
   (GeomVertexArrayFormat *array_format,
-   CharacterMaker *character_maker, const std::string &morph_name,
+   CharacterMaker *character_maker, std::string_view morph_name,
    InternalName *column_name, int num_components);
 
   void make_primitive(const EggRenderState *render_state,
@@ -210,7 +210,7 @@ private:
                            const pvector<std::string> &expanded_history);
   bool do_expand_object_type(EggGroup *egg_group, const pset<std::string> &expanded,
                              const pvector<std::string> &expanded_history,
-                             const std::string &object_type);
+                             std::string_view object_type);
 
   static TextureStage::CombineMode
   get_combine_mode(const EggTexture *egg_tex,

@@ -19,21 +19,13 @@
 #include "config_net.h"
 #include "socket_tcp_listen.h"
 
-static std::string
-listener_thread_name(const std::string &thread_name) {
-  if (!thread_name.empty()) {
-    return thread_name;
-  }
-  return "ListenerThread";
-}
-
 /**
  *
  */
 ConnectionListener::
 ConnectionListener(ConnectionManager *manager, int num_threads,
-                   const std::string &thread_name) :
-  ConnectionReader(manager, num_threads, listener_thread_name(thread_name))
+                   std::string_view thread_name) :
+  ConnectionReader(manager, num_threads, !thread_name.empty() ? thread_name : "ListenerThread")
 {
 }
 

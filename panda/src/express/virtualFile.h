@@ -57,17 +57,17 @@ PUBLISHED:
   BLOCKING void ls_all(std::ostream &out = std::cout) const;
 
   PY_EXTENSION(PyObject *read_file(bool auto_unwrap) const);
-  BLOCKING virtual std::istream *open_read_file(bool auto_unwrap) const;
+  [[nodiscard]] BLOCKING virtual std::istream *open_read_file(bool auto_unwrap) const;
   BLOCKING virtual void close_read_file(std::istream *stream) const;
   virtual bool was_read_successful() const;
 
   PY_EXTENSION(PyObject *write_file(PyObject *data, bool auto_wrap));
-  BLOCKING virtual std::ostream *open_write_file(bool auto_wrap, bool truncate);
-  BLOCKING virtual std::ostream *open_append_file();
+  [[nodiscard]] BLOCKING virtual std::ostream *open_write_file(bool auto_wrap, bool truncate);
+  [[nodiscard]] BLOCKING virtual std::ostream *open_append_file();
   BLOCKING virtual void close_write_file(std::ostream *stream);
 
-  BLOCKING virtual std::iostream *open_read_write_file(bool truncate);
-  BLOCKING virtual std::iostream *open_read_append_file();
+  [[nodiscard]] BLOCKING virtual std::iostream *open_read_write_file(bool truncate);
+  [[nodiscard]] BLOCKING virtual std::iostream *open_read_append_file();
   BLOCKING virtual void close_read_write_file(std::iostream *stream);
 
   BLOCKING virtual std::streamsize get_file_size(std::istream *stream) const;
@@ -77,11 +77,11 @@ PUBLISHED:
   virtual bool get_system_info(SubfileInfo &info);
 
 public:
-  virtual bool atomic_compare_and_exchange_contents(std::string &orig_contents, const std::string &old_contents, const std::string &new_contents);
+  virtual bool atomic_compare_and_exchange_contents(std::string &orig_contents, std::string_view old_contents, std::string_view new_contents);
   virtual bool atomic_read_contents(std::string &contents) const;
 
   INLINE std::string read_file(bool auto_unwrap) const;
-  INLINE bool write_file(const std::string &data, bool auto_wrap);
+  INLINE bool write_file(std::string_view data, bool auto_wrap);
 
   INLINE void set_original_filename(const Filename &filename);
   virtual bool read_file(std::string &result, bool auto_unwrap) const;

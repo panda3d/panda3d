@@ -67,8 +67,8 @@ fillin(DatagramIterator &scan, BamReader *reader) {
  *
  */
 RopeNode::
-RopeNode(const std::string &name) :
-  PandaNode(name)
+RopeNode(std::string name) :
+  PandaNode(std::move(name))
 {
   set_cull_callback();
   set_renderable();
@@ -282,7 +282,7 @@ do_recompute_bounds(const NodePath &rel_to, int pipeline_stage,
 
     GeometricBoundingVolume *gbv;
     DCAST_INTO_R(gbv, bound, bound);
-    gbv->around(&verts[0], &verts[0] + verts.size());
+    gbv->around(verts.data(), verts.data() + verts.size());
   }
   return bound;
 }

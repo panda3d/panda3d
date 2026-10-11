@@ -28,9 +28,9 @@ class EXPCL_PANDA_PIPELINE GenericThread : public Thread {
 public:
   typedef void ThreadFunc(void *user_data);
 
-  GenericThread(const std::string &name, const std::string &sync_name);
-  GenericThread(const std::string &name, const std::string &sync_name, ThreadFunc *function, void *user_data);
-  GenericThread(const std::string &name, const std::string &sync_name, std::function<void()> function);
+  GenericThread(std::string name, std::string sync_name);
+  GenericThread(std::string name, std::string sync_name, ThreadFunc *function, void *user_data);
+  GenericThread(std::string name, std::string sync_name, std::function<void()> function);
 
   INLINE void set_function(std::function<void()> function);
   INLINE const std::function<void()> &get_function() const;

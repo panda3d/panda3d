@@ -58,7 +58,7 @@ public:
 
     INLINE int get_num_entries() const;
     INLINE const Entry &get_entry(int n) const;
-    INLINE int find_entry_by_name(const std::string &name) const;
+    INLINE int find_entry_by_name(std::string_view name) const;
     INLINE int find_entry_by_field(const DCPackerInterface *field) const;
 
   private:
@@ -71,7 +71,7 @@ public:
 
   INLINE int get_num_entries() const;
   INLINE const Entry &get_entry(int n) const;
-  int find_entry_by_name(const std::string &name) const;
+  int find_entry_by_name(std::string_view name) const;
   int find_entry_by_field(const DCPackerInterface *field) const;
 
   const LiveCatalog *get_live_catalog(const char *data, size_t length) const;
@@ -96,7 +96,7 @@ private:
   typedef pvector<Entry> Entries;
   Entries _entries;
 
-  typedef pmap<std::string, int> EntriesByName;
+  typedef pmap<std::string, int, std::less<>> EntriesByName;
   EntriesByName _entries_by_name;
 
   typedef pmap<const DCPackerInterface *, int> EntriesByField;

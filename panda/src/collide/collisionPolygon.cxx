@@ -439,7 +439,7 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
       // also compute the actual contact point and time of contact for
       // handlers that need it
       actual_t = ((dist_to_p - from_radius) / -dot);
-      actual_t = min((PN_stdfloat)1.0, max((PN_stdfloat)0.0, actual_t));
+      actual_t = std::clamp(actual_t, (PN_stdfloat)0.0, (PN_stdfloat)1.0);
       contact_point = a + (actual_t * delta);
 
       if (t >= 1.0f) {
@@ -899,7 +899,7 @@ test_intersection_from_capsule(const CollisionEntry &entry) const {
     LVector2 pv = p2 - p1;
     if (is_right(v, pv)) {
       PN_stdfloat t = v.dot(pv) / pv.length_squared();
-      t = max(min(t, (PN_stdfloat)1), (PN_stdfloat)0);
+      t = std::clamp(t, (PN_stdfloat)0, (PN_stdfloat)1);
 
       LPoint2 p = p1 + pv * t;
       PN_stdfloat d = (p - intersect_2d).length_squared();
@@ -916,7 +916,7 @@ test_intersection_from_capsule(const CollisionEntry &entry) const {
   LVector3 from_v = from_b - from_a;
 
   PN_stdfloat t = (closest_p_3d - from_a).dot(from_v) / from_v.length_squared();
-  LPoint3 ref_point_3d = from_a + from_v * max(min(t, (PN_stdfloat)1), (PN_stdfloat)0);
+  LPoint3 ref_point_3d = from_a + from_v * std::clamp(t, (PN_stdfloat)0, (PN_stdfloat)1);
 
   // Okay, now we have a point to apply the sphere test on.
 
@@ -947,7 +947,7 @@ test_intersection_from_capsule(const CollisionEntry &entry) const {
     LVector2 pv = p2 - p1;
     if (is_right(v, pv)) {
       PN_stdfloat t = v.dot(pv) / pv.length_squared();
-      t = max(min(t, (PN_stdfloat)1), (PN_stdfloat)0);
+      t = std::clamp(t, (PN_stdfloat)0, (PN_stdfloat)1);
 
       LPoint2 p = p1 + pv * t;
       PN_stdfloat d = (p - ref_point_2d).length_squared();
@@ -1010,7 +1010,7 @@ test_intersection_from_capsule(const CollisionEntry &entry) const {
       LVector2 pv = p2 - p1;
       if (is_right(v, pv)) {
         PN_stdfloat t = v.dot(pv) / pv.length_squared();
-        t = max(min(t, (PN_stdfloat)1), (PN_stdfloat)0);
+        t = std::clamp(t, (PN_stdfloat)0, (PN_stdfloat)1);
 
         LPoint2 p = p1 + pv * t;
         PN_stdfloat d = (p - deepest_2d).length_squared();

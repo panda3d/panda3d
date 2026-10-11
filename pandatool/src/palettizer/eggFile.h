@@ -40,7 +40,7 @@ public:
   bool from_command_line(EggData *data,
                          const Filename &source_filename,
                          const Filename &dest_filename,
-                         const std::string &egg_comment);
+                         std::string egg_comment);
 
   const Filename &get_source_filename() const;
 

@@ -37,12 +37,12 @@ protected:
 
 public:
   INLINE void lock();
-  INLINE bool try_lock();
+  [[nodiscard]] INLINE bool try_lock();
   INLINE void unlock();
 
 PUBLISHED:
   BLOCKING INLINE void acquire() const;
-  BLOCKING INLINE bool try_acquire() const;
+  [[nodiscard]] BLOCKING INLINE bool try_acquire() const;
   INLINE void release() const;
   INLINE bool debug_is_locked() const;
 

@@ -45,7 +45,7 @@ PUBLISHED:
   INLINE EventQueue *get_event_queue() const;
 
   int add_c_interval(CInterval *interval, bool external);
-  int find_c_interval(const std::string &name) const;
+  int find_c_interval(std::string_view name) const;
 
   CInterval *get_c_interval(int index) const;
   void remove_c_interval(int index);
@@ -79,7 +79,7 @@ private:
   };
   typedef pvector<IntervalDef> Intervals;
   Intervals _intervals;
-  typedef pmap<std::string, int> NameIndex;
+  typedef pmap<std::string, int, std::less<>> NameIndex;
   NameIndex _name_index;
   typedef vector_int Removed;
   Removed _removed;

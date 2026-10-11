@@ -27,10 +27,10 @@ TypeHandle CConstrainTransformInterval::_type_handle;
  * local transform will be copied unaltered.
  */
 CConstrainTransformInterval::
-CConstrainTransformInterval(const std::string &name, double duration,
+CConstrainTransformInterval(std::string name, double duration,
                             const NodePath &node, const NodePath &target,
                             bool wrt) :
-  CConstraintInterval(name, duration),
+  CConstraintInterval(std::move(name), duration),
   _node(node),
   _target(target),
   _wrt(wrt)

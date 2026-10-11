@@ -24,8 +24,8 @@ TypeHandle PGTop::_type_handle;
  *
  */
 PGTop::
-PGTop(const std::string &name) :
-  PandaNode(name)
+PGTop(std::string name) :
+  PandaNode(std::move(name))
 {
   set_cull_callback();
 

@@ -34,8 +34,8 @@ AnimChannelMatrixFixed(AnimGroup *parent, const AnimChannelMatrixFixed &copy) :
  *
  */
 AnimChannelMatrixFixed::
-AnimChannelMatrixFixed(const std::string &name, const LVecBase3 &pos, const LVecBase3 &hpr, const LVecBase3 &scale) :
-  AnimChannel<ACMatrixSwitchType>(name),
+AnimChannelMatrixFixed(std::string name, const LVecBase3 &pos, const LVecBase3 &hpr, const LVecBase3 &scale) :
+  AnimChannel<ACMatrixSwitchType>(std::move(name)),
   _pos(pos), _hpr(hpr), _scale(scale)
 {
 }

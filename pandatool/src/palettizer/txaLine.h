@@ -37,7 +37,7 @@ class TxaLine {
 public:
   TxaLine();
 
-  bool parse(const std::string &line);
+  bool parse(std::string_view line);
 
   bool match_egg(EggFile *egg_file) const;
   bool match_texture(TextureImage *texture) const;

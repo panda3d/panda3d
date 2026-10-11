@@ -32,23 +32,11 @@ BioStreamBuf() {
   _read_open = false;
   _write_open = false;
 
-#ifdef PHAVE_IOSTREAM
   _buffer = (char *)PANDA_MALLOC_ARRAY(8192);
   char *ebuf = _buffer + 8192;
   char *mbuf = _buffer + 4096;
   setg(_buffer, mbuf, mbuf);
   setp(mbuf, ebuf);
-
-#else
-  allocate();
-  // Chop the buffer in half.  The bottom half goes to the get buffer; the top
-  // half goes to the put buffer.
-  char *b = base();
-  char *t = ebuf();
-  char *m = b + (t - b) / 2;
-  setg(b, m, m);
-  setp(b, m);
-#endif
 }
 
 /**
@@ -57,9 +45,7 @@ BioStreamBuf() {
 BioStreamBuf::
 ~BioStreamBuf() {
   close();
-#ifdef PHAVE_IOSTREAM
   PANDA_FREE_ARRAY(_buffer);
-#endif
 }
 
 /**

@@ -37,8 +37,8 @@ ConfigPage *ConfigPage::_local_page = nullptr;
  * the ConfigPageManager make_page() interface.
  */
 ConfigPage::
-ConfigPage(const string &name, bool implicit_load, int page_seq) :
-  _name(name),
+ConfigPage(std::string name, bool implicit_load, int page_seq) :
+  _name(std::move(name)),
   _implicit_load(implicit_load),
   _page_seq(page_seq),
   _sort(implicit_load ? 10 : 0),
@@ -221,7 +221,7 @@ read_prc(istream &in) {
  * Note that if the password is incorrect, the result may be garbage.
  */
 bool ConfigPage::
-read_encrypted_prc(istream &in, const string &password) {
+read_encrypted_prc(istream &in, std::string_view password) {
 #ifdef HAVE_OPENSSL
   IDecryptStream decrypt(&in, false, password);
   return read_prc(decrypt);
@@ -234,18 +234,18 @@ read_encrypted_prc(istream &in, const string &password) {
  * Adds the indicated variable/value pair as a new declaration on the page.
  */
 ConfigDeclaration *ConfigPage::
-make_declaration(const string &variable, const string &value) {
+make_declaration(std::string_view variable, std::string value) {
   ConfigVariableManager *variable_mgr = ConfigVariableManager::get_global_ptr();
-  return make_declaration(variable_mgr->make_variable(variable), value);
+  return make_declaration(variable_mgr->make_variable(variable), std::move(value));
 }
 
 /**
  * Adds the indicated variable/value pair as a new declaration on the page.
  */
 ConfigDeclaration *ConfigPage::
-make_declaration(ConfigVariableCore *variable, const string &value) {
+make_declaration(ConfigVariableCore *variable, std::string value) {
   ConfigDeclaration *decl = new ConfigDeclaration
-    (this, variable, value, _next_decl_seq);
+    (this, variable, std::move(value), _next_decl_seq);
   _next_decl_seq++;
 
   _declarations.push_back(decl);
@@ -380,7 +380,7 @@ write(ostream &out) const {
  * internally by read_prc() for each line.
  */
 void ConfigPage::
-read_prc_line(const string &line) {
+read_prc_line(std::string_view line) {
   if (line.substr(0, 7) == "##!sig ") {
     // This is a signature.  Accumulate it into the signature and return, and
     // don't count it as contributing to the hash.
@@ -433,10 +433,10 @@ read_prc_line(const string &line) {
   }
   size_t value_end = p;
 
-  string variable = line.substr(variable_begin, variable_end - variable_begin);
-  string value = line.substr(value_begin, value_end - value_begin);
+  std::string_view variable = line.substr(variable_begin, variable_end - variable_begin);
+  std::string_view value = line.substr(value_begin, value_end - value_begin);
 
-  make_declaration(variable, value);
+  make_declaration(variable, std::string(value));
 }
 
 /**

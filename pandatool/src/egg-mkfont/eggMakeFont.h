@@ -55,7 +55,7 @@ private:
   EggTexture *make_tref(PNMTextGlyph *glyph, int character);
   void add_extra_glyphs(const Filename &extra_filename);
   void r_add_extra_glyphs(EggGroupNode *egg_group);
-  static bool is_numeric(const std::string &str);
+  static bool is_numeric(std::string_view str);
 
 
 private:

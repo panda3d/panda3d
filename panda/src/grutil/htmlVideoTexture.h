@@ -25,10 +25,14 @@
  * - No RAM access of video data is possible
  * - No explicit synchronization with audio
  * - No loop count
+ *
+ * Unlike MovieTexture, this has an additional "muted" attribute which is true
+ * by default but can be set to false in order to play the video's audio via
+ * the browser interface.  The "volume" property can configure the volume.
  */
 class EXPCL_PANDA_GRUTIL HTMLVideoTexture : public Texture {
 PUBLISHED:
-  explicit HTMLVideoTexture(const std::string &name);
+  explicit HTMLVideoTexture(std::string name);
   HTMLVideoTexture(const HTMLVideoTexture &copy) = delete;
   virtual ~HTMLVideoTexture();
 
@@ -47,6 +51,12 @@ PUBLISHED:
   double get_play_rate() const;
   bool is_playing() const;
 
+public:
+  bool is_muted() const;
+  void set_muted(bool muted);
+  double get_volume() const;
+  void set_volume(double volume);
+
 PUBLISHED:
   MAKE_PROPERTY(video_length, get_video_length);
   MAKE_PROPERTY(video_width, get_video_width);
@@ -56,6 +66,9 @@ PUBLISHED:
   MAKE_PROPERTY(loop, get_loop, set_loop);
   MAKE_PROPERTY(play_rate, get_play_rate, set_play_rate);
   MAKE_PROPERTY(playing, is_playing);
+
+  MAKE_PROPERTY(muted, is_muted, set_muted);
+  MAKE_PROPERTY(volume, get_volume, set_volume);
 
 public:
   static PT(Texture) make_texture();
@@ -72,7 +85,7 @@ protected:
   virtual bool do_can_reload(const Texture::CData *cdata) const;
 
   virtual bool do_adjust_this_size(const Texture::CData *cdata,
-                                   int &x_size, int &y_size, const std::string &name,
+                                   int &x_size, int &y_size, std::string_view name,
                                    bool for_padding) const;
 
   virtual bool do_read_one(Texture::CData *cdata,
@@ -81,10 +94,10 @@ protected:
                            const LoaderOptions &options,
                            bool header_only, BamCacheRecord *record);
   virtual bool do_load_one(Texture::CData *cdata,
-                           const PNMImage &pnmimage, const std::string &name,
+                           const PNMImage &pnmimage, std::string_view name,
                            int z, int n, const LoaderOptions &options);
   virtual bool do_load_one(Texture::CData *cdata,
-                           const PfmFile &pfm, const std::string &name,
+                           const PfmFile &pfm, std::string_view name,
                            int z, int n, const LoaderOptions &options);
 
 private:

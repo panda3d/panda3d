@@ -69,7 +69,7 @@ update_from(const HTTPCookie &other) {
  * is parsed correctly, false if something is not understood.
  */
 bool HTTPCookie::
-parse_set_cookie(const string &format, const URLSpec &url) {
+parse_set_cookie(std::string_view format, const URLSpec &url) {
   _name = string();
   _value = string();
   _domain = url.get_server();
@@ -169,11 +169,11 @@ output(std::ostream &out) const {
  * false on failure.
  */
 bool HTTPCookie::
-parse_cookie_param(const string &param, bool first_param) {
+parse_cookie_param(std::string_view param, bool first_param) {
   size_t equals = param.find('=');
 
-  string key, value;
-  if (equals == string::npos) {
+  std::string_view key, value;
+  if (equals == std::string_view::npos) {
     key = param;
   } else {
     key = param.substr(0, equals);
@@ -181,21 +181,21 @@ parse_cookie_param(const string &param, bool first_param) {
   }
 
   if (first_param) {
-    _name = key;
-    _value = value;
+    _name.assign(key);
+    _value.assign(value);
 
   } else {
-    key = downcase(key);
-    if (key == "expires") {
+    string lc_key = downcase(key);
+    if (lc_key == "expires") {
       _expires = HTTPDate(value);
       if (!_expires.is_valid()) {
         return false;
       }
 
-    } else if (key == "path") {
-      _path = value;
+    } else if (lc_key == "path") {
+      _path.assign(value);
 
-    } else if (key == "domain") {
+    } else if (lc_key == "domain") {
       _domain = downcase(value);
 
       // From RFC 2965: If an explicitly specified value does not start with a
@@ -204,18 +204,18 @@ parse_cookie_param(const string &param, bool first_param) {
         _domain = string(".") + _domain;
       }
 
-    } else if (key == "secure") {
+    } else if (lc_key == "secure") {
       _secure = true;
 
-    } else if (key == "samesite") {
-      value = downcase(value);
-      if (value == "lax") {
+    } else if (lc_key == "samesite") {
+      string lc_value = downcase(value);
+      if (lc_value == "lax") {
         _samesite = SS_lax;
       }
-      else if (value == "strict") {
+      else if (lc_value == "strict") {
         _samesite = SS_strict;
       }
-      else if (value == "none") {
+      else if (lc_value == "none") {
         _samesite = SS_none;
       }
 

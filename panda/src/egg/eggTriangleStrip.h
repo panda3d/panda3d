@@ -24,7 +24,7 @@
  */
 class EXPCL_PANDA_EGG EggTriangleStrip : public EggCompositePrimitive {
 PUBLISHED:
-  INLINE explicit EggTriangleStrip(const std::string &name = "");
+  INLINE explicit EggTriangleStrip(std::string name = "");
   INLINE EggTriangleStrip(const EggTriangleStrip &copy);
   INLINE EggTriangleStrip &operator = (const EggTriangleStrip &copy);
   virtual ~EggTriangleStrip();

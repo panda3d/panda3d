@@ -89,7 +89,7 @@ void FFTCompressor::
 set_quality(int quality) {
 #ifndef HAVE_FFTW
   // If we don't actually have FFTW, we can't really compress anything.
-  if (_quality <= 100) {
+  if (quality <= 100) {
     mathutil_cat.warning()
       << "FFTW library is not available; generating uncompressed output.\n";
   }

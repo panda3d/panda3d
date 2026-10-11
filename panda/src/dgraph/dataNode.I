@@ -15,8 +15,8 @@
  *
  */
 INLINE DataNode::
-DataNode(const std::string &name) :
-  PandaNode(name)
+DataNode(std::string name) :
+  PandaNode(std::move(name))
 {
 }
 

@@ -76,7 +76,7 @@ ConfigVariableInt audio_preload_threshold
           "time - the hard drive seek time makes it stutter."));
 
 ConfigVariableBool audio_want_hrtf
-("audio-want-hrtf", true,
+("audio-want-hrtf", false,
  PRC_DESC("This determines whether OpenAL-Soft should activate HRTF in "
           "certain hardware configurations. Set it to true to cause "
           "OpenAL to automatically apply HRTF processing to all output "

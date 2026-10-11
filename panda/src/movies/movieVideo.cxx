@@ -26,8 +26,8 @@ TypeHandle MovieVideo::_type_handle;
  * need to construct a subclass of this class.
  */
 MovieVideo::
-MovieVideo(const std::string &name) :
-  Namable(name)
+MovieVideo(std::string name) :
+  Namable(std::move(name))
 {
 }
 

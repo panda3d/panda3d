@@ -92,7 +92,7 @@ get_record_timestamp() const {
  * reduced in size after this operation, until the next call to repack().
  */
 INLINE bool ZipArchive::
-remove_subfile(const std::string &subfile_name) {
+remove_subfile(std::string_view subfile_name) {
   int index = find_subfile(subfile_name);
   if (index >= 0) {
     remove_subfile(index);

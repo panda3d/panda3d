@@ -26,13 +26,13 @@
  */
 void CardMaker::
 reset() {
+  _flags = F_has_normals;
+
   set_frame(0.0f, 1.0f, 0.0f, 1.0f);
   set_uv_range(LTexCoord(0.0f, 0.0f), LTexCoord(1.0f, 1.0f));
 
-  _has_color = false;
   _color.set(1.0f, 1.0f, 1.0f, 1.0f);
 
-  _has_normals = true;
   _source_geometry = nullptr;
   _source_frame.set(0.0f, 0.0f, 0.0f, 0.0f);
 }
@@ -50,9 +50,9 @@ generate() {
   PT(GeomNode) gnode = new GeomNode(get_name());
 
   CPT(GeomVertexFormat) format;
-  if (_has_normals) {
-    if (_has_uvs) {
-      if (_has_3d_uvs) {
+  if (_flags & F_has_normals) {
+    if (_flags & F_has_uvs) {
+      if (_flags & F_has_3d_uvs) {
         format = GeomVertexFormat::register_format
           (new GeomVertexArrayFormat
            (InternalName::get_vertex(), 3,
@@ -68,8 +68,8 @@ generate() {
       format = GeomVertexFormat::get_v3n3();
     }
   } else {
-    if (_has_uvs) {
-      if (_has_3d_uvs) {
+    if (_flags & F_has_uvs) {
+      if (_flags & F_has_3d_uvs) {
         format = GeomVertexFormat::register_format
           (new GeomVertexArrayFormat
            (InternalName::get_vertex(), 3,
@@ -86,36 +86,37 @@ generate() {
 
   PT(GeomVertexData) vdata = new GeomVertexData
     ("card", format, Geom::UH_static);
+  vdata->unclean_set_num_rows(4);
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
 
-  vertex.add_data3(_ul_pos);
-  vertex.add_data3(_ll_pos);
-  vertex.add_data3(_ur_pos);
-  vertex.add_data3(_lr_pos);
+  vertex.set_data3(_ul_pos);
+  vertex.set_data3(_ll_pos);
+  vertex.set_data3(_ur_pos);
+  vertex.set_data3(_lr_pos);
 
-  if (_has_uvs) {
+  if (_flags & F_has_uvs) {
     GeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
-    texcoord.add_data3(_ul_tex);
-    texcoord.add_data3(_ll_tex);
-    texcoord.add_data3(_ur_tex);
-    texcoord.add_data3(_lr_tex);
+    texcoord.set_data3(_ul_tex);
+    texcoord.set_data3(_ll_tex);
+    texcoord.set_data3(_ur_tex);
+    texcoord.set_data3(_lr_tex);
   }
 
-  if (_has_normals) {
+  if (_flags & F_has_normals) {
     GeomVertexWriter normal(vdata, InternalName::get_normal());
     LVector3 n;
     n = (_ll_pos - _ul_pos).cross(_ur_pos - _ul_pos);
     n.normalize();
-    normal.add_data3(n);
+    normal.set_data3(n);
     n = (_lr_pos - _ll_pos).cross(_ul_pos - _ll_pos);
     n.normalize();
-    normal.add_data3(n);
+    normal.set_data3(n);
     n = (_ul_pos - _ur_pos).cross(_lr_pos - _ur_pos);
     n.normalize();
-    normal.add_data3(n);
+    normal.set_data3(n);
     n = (_ur_pos - _lr_pos).cross(_ll_pos - _lr_pos);
     n.normalize();
-    normal.add_data3(n);
+    normal.set_data3(n);
   }
 
   PT(GeomTristrips) strip = new GeomTristrips(Geom::UH_static);
@@ -127,7 +128,7 @@ generate() {
   geom->add_primitive(strip);
 
   CPT(RenderState) state = RenderState::make_empty();
-  if (_has_color) {
+  if (_flags & F_has_color) {
     state = RenderState::make(ColorAttrib::make_flat(_color));
   }
 
@@ -148,8 +149,7 @@ set_uv_range(const LTexCoord3 &ll, const LTexCoord3 &lr, const LTexCoord3 &ur, c
   _lr_tex = lr;
   _ur_tex = ur;
   _ul_tex = ul;
-  _has_uvs = true;
-  _has_3d_uvs = true;
+  _flags |= F_has_uvs | F_has_3d_uvs;
 }
 
 /**
@@ -164,8 +164,7 @@ set_uv_range(const LTexCoord &ll, const LTexCoord &lr, const LTexCoord &ur, cons
   _lr_tex.set(lr[0], lr[1], 0.0f);
   _ur_tex.set(ur[0], ur[1], 0.0f);
   _ul_tex.set(ul[0], ul[1], 0.0f);
-  _has_uvs = true;
-  _has_3d_uvs = false;
+  _flags = (_flags | F_has_uvs) & ~F_has_3d_uvs;
 }
 
 /**
@@ -180,8 +179,7 @@ set_uv_range(const LTexCoord &ll, const LTexCoord &ur) {
   _lr_tex.set(ur[0], ll[1], 0.0f);
   _ur_tex.set(ur[0], ur[1], 0.0f);
   _ul_tex.set(ll[0], ur[1], 0.0f);
-  _has_uvs = true;
-  _has_3d_uvs = false;
+  _flags = (_flags | F_has_uvs) & ~F_has_3d_uvs;
 }
 
 /**
@@ -196,8 +194,7 @@ set_uv_range(const LVector4 &x, const LVector4 &y, const LVector4 &z) {
   _lr_tex.set(x[1], y[1], z[1]);
   _ur_tex.set(x[2], y[2], z[2]);
   _ul_tex.set(x[3], y[3], z[3]);
-  _has_uvs = true;
-  _has_3d_uvs = true;
+  _flags |= F_has_uvs | F_has_3d_uvs;
 }
 
 /**
@@ -259,7 +256,7 @@ rescale_source_geometry() {
     TransformState::make_pos_hpr_scale(trans, LPoint3(0.0f, 0.0f, 0.0f), scale);
   root->set_transform(transform);
 
-  if (_has_color) {
+  if (_flags & F_has_color) {
     root->set_attrib(ColorAttrib::make_flat(_color));
   }
 

@@ -55,7 +55,7 @@ PUBLISHED:
 
   bool   encircles(int x, int y) const;
   double total_turns(double sec) const;
-  double match_pattern(const std::string &pattern, double rot, double seglen);
+  double match_pattern(std::string_view pattern, double rot, double seglen);
 
 public:
   INLINE PointerEventList(const PointerEventList &copy);
@@ -68,7 +68,7 @@ public:
   void write(std::ostream &out, int indent_level = 0) const;
 
 private:
-  void parse_pattern(const std::string &ascpat, vector_double &pattern);
+  void parse_pattern(std::string_view ascpat, vector_double &pattern);
   typedef pdeque<PointerEvent> Events;
   Events _events;
 

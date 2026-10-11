@@ -54,8 +54,8 @@ AnimChannelMatrixXfmTable(AnimGroup *parent, const AnimChannelMatrixXfmTable &co
  *
  */
 AnimChannelMatrixXfmTable::
-AnimChannelMatrixXfmTable(AnimGroup *parent, const std::string &name)
-  : AnimChannelMatrix(parent, name)
+AnimChannelMatrixXfmTable(AnimGroup *parent, std::string name)
+  : AnimChannelMatrix(parent, std::move(name))
 {
   for (int i = 0; i < num_matrix_components; i++) {
     _tables[i] = CPTA_stdfloat(get_class_type());

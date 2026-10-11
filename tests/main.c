@@ -113,7 +113,7 @@ int main(int argc, char **argv) {
 
 #ifdef ANDROID
   // No caching on Android
-  PyRun_SimpleString("import sys; sys.argv.insert(1, '-o cache_dir=/dev/null')");
+  PyRun_SimpleString("import sys; sys.argv.insert(1, '-pno:cacheprovider')");
 #endif
 
   return Py_RunMain();

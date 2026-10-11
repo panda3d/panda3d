@@ -450,7 +450,7 @@ apply_transform(EggTransform *egg_transform, FltBead *flt_node) {
  * comment, so that flt2egg will reapply it to the egg groups.
  */
 void EggToFlt::
-apply_egg_syntax(const std::string &egg_syntax, FltRecord *flt_record) {
+apply_egg_syntax(std::string_view egg_syntax, FltRecord *flt_record) {
   if (!egg_syntax.empty()) {
     std::ostringstream out;
     out << "<egg> {\n"

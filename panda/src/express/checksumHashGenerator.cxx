@@ -17,10 +17,9 @@
  * Adds a string to the hash, by breaking it down into a sequence of integers.
  */
 void ChecksumHashGenerator::
-add_string(const std::string &str) {
+add_string(std::string_view str) {
   add_int(str.length());
-  std::string::const_iterator si;
-  for (si = str.begin(); si != str.end(); ++si) {
-    add_int(*si);
+  for (char ch : str) {
+    add_int(ch);
   }
 }

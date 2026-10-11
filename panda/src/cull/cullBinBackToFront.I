@@ -15,9 +15,9 @@
  *
  */
 INLINE CullBinBackToFront::
-CullBinBackToFront(const std::string &name, GraphicsStateGuardianBase *gsg,
+CullBinBackToFront(std::string name, GraphicsStateGuardianBase *gsg,
                    const PStatCollector &draw_region_pcollector) :
-  CullBin(name, BT_back_to_front, gsg, draw_region_pcollector)
+  CullBin(std::move(name), BT_back_to_front, gsg, draw_region_pcollector)
 {
 }
 

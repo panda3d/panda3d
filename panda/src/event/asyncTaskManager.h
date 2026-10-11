@@ -47,7 +47,7 @@
  */
 class EXPCL_PANDA_EVENT AsyncTaskManager : public TypedReferenceCount, public Namable {
 PUBLISHED:
-  explicit AsyncTaskManager(const std::string &name);
+  explicit AsyncTaskManager(std::string name);
   BLOCKING virtual ~AsyncTaskManager();
 
   BLOCKING void cleanup();
@@ -59,22 +59,22 @@ PUBLISHED:
   int get_num_task_chains() const;
   AsyncTaskChain *get_task_chain(int n) const;
   MAKE_SEQ(get_task_chains, get_num_task_chains, get_task_chain);
-  AsyncTaskChain *make_task_chain(const std::string &name);
-  AsyncTaskChain *make_task_chain(const std::string &name, int num_threads,
+  AsyncTaskChain *make_task_chain(std::string name);
+  AsyncTaskChain *make_task_chain(std::string name, int num_threads,
                                   ThreadPriority thread_priority);
-  AsyncTaskChain *find_task_chain(const std::string &name);
-  BLOCKING bool remove_task_chain(const std::string &name);
+  AsyncTaskChain *find_task_chain(std::string name);
+  BLOCKING bool remove_task_chain(std::string name);
 
   void add(AsyncTask *task);
 #ifndef CPPPARSER
   template<class Callable>
-  INLINE AsyncTask *add(Callable callable, const std::string &name,
+  INLINE AsyncTask *add(Callable callable, std::string name,
                         int sort = 0, int priority = 0);
 #endif
   bool has_task(AsyncTask *task) const;
 
-  AsyncTask *find_task(const std::string &name) const;
-  AsyncTaskCollection find_tasks(const std::string &name) const;
+  AsyncTask *find_task(std::string name) const;
+  AsyncTaskCollection find_tasks(std::string name) const;
   AsyncTaskCollection find_tasks_matching(const GlobPattern &pattern) const;
 
   bool remove(AsyncTask *task);
@@ -103,9 +103,9 @@ PUBLISHED:
   INLINE static AsyncTaskManager *get_global_ptr();
 
 protected:
-  AsyncTaskChain *do_make_task_chain(const std::string &name, int num_threads=0,
+  AsyncTaskChain *do_make_task_chain(std::string name, int num_threads=0,
                                      ThreadPriority thread_priority=TP_normal);
-  AsyncTaskChain *do_find_task_chain(const std::string &name);
+  AsyncTaskChain *do_find_task_chain(std::string name);
 
   INLINE void add_task_by_name(AsyncTask *task);
   void remove_task_by_name(AsyncTask *task);

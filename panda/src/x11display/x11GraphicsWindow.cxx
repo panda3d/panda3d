@@ -91,13 +91,13 @@ TypeHandle x11GraphicsWindow::_type_handle;
  */
 x11GraphicsWindow::
 x11GraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
-                  const string &name,
+                  std::string name,
                   const FrameBufferProperties &fb_prop,
                   const WindowProperties &win_prop,
                   int flags,
                   GraphicsStateGuardian *gsg,
                   GraphicsOutput *host) :
-  GraphicsWindow(engine, pipe, name, fb_prop, win_prop, flags, gsg, host) {
+  GraphicsWindow(engine, pipe, std::move(name), fb_prop, win_prop, flags, gsg, host) {
   x11GraphicsPipe *x11_pipe;
   DCAST_INTO_V(x11_pipe, _pipe);
   _display = x11_pipe->get_display();
@@ -634,10 +634,10 @@ process_events() {
     Atom type;
     int format;
     unsigned long nItem, bytesAfter;
-    unsigned char *new_window_properties = NULL;
+    unsigned char *new_window_properties = nullptr;
     // gather all properties from the active dispplay and window
     XGetWindowProperty(_display, _xwindow, wmState, 0, LONG_MAX, false, AnyPropertyType, &type, &format, &nItem, &bytesAfter, &new_window_properties);
-    if (nItem > 0) {
+    if (nItem > 0 && new_window_properties != nullptr) {
       x11GraphicsPipe *x11_pipe;
       DCAST_INTO_V(x11_pipe, _pipe);
       // run through all found items
@@ -650,6 +650,7 @@ process_events() {
           is_maximized = true;
         }
       }
+      XFree(new_window_properties);
     }
 
     // Debug entry
@@ -1532,6 +1533,9 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
   XSetWMProperties(_display, _xwindow, window_name_p, window_name_p,
                    nullptr, 0, size_hints_p, wm_hints_p, class_hints_p);
 
+  if (window_name_p != nullptr) {
+    XFree(window_name.value);
+  }
   if (size_hints_p != nullptr) {
     XFree(size_hints_p);
   }
@@ -2755,7 +2759,7 @@ enable_detectable_auto_repeat() {
   if (!x_detectable_auto_repeat) {
     return;
   }
-  
+
   Bool supported;
   if (XkbSetDetectableAutoRepeat(_display, True, &supported)) {
     x11display_cat.info() << "Detectable auto-repeat enabled.\n";

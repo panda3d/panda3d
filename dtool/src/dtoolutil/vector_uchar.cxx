@@ -19,3 +19,25 @@
 #define NAME vector_uchar
 
 #include "vector_src.cxx"
+
+/**
+ * Writes a hex representation of the bytes to the output stream.
+ */
+std::ostream &
+operator << (std::ostream &out, const vector_uchar &data) {
+  static const char nibble_to_hex[] = "0123456789abcdef";
+
+  if (data.empty()) {
+    return out;
+  }
+
+  out << nibble_to_hex[(data[0] & 0xf0) >> 4];
+  out << nibble_to_hex[data[0] & 0xf];
+
+  for (size_t i = 1; i < data.size(); ++i) {
+    out << ' ';
+    out << nibble_to_hex[(data[i] & 0xf0) >> 4];
+    out << nibble_to_hex[data[i] & 0xf];
+  }
+  return out;
+}

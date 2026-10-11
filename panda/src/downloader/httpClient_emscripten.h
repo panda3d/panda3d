@@ -41,8 +41,8 @@ private:
   HTTPClient();
 
 PUBLISHED:
-  void set_username(const std::string &server, const std::string &realm, const std::string &username);
-  std::string get_username(const std::string &server, const std::string &realm) const;
+  void set_username(std::string_view server, std::string_view realm, std::string username);
+  std::string get_username(std::string_view server, std::string_view realm) const;
 
   void set_cookie(const HTTPCookie &cookie);
   bool clear_cookie(const HTTPCookie &cookie);
@@ -53,27 +53,27 @@ PUBLISHED:
   void write_cookies(std::ostream &out) const;
 
   PT(HTTPChannel) make_channel(bool persistent_connection);
-  BLOCKING PT(HTTPChannel) post_form(const URLSpec &url, const std::string &body);
+  BLOCKING PT(HTTPChannel) post_form(const URLSpec &url, std::string body);
   BLOCKING PT(HTTPChannel) get_document(const URLSpec &url);
   BLOCKING PT(HTTPChannel) get_header(const URLSpec &url);
 
-  INLINE static std::string base64_encode(const std::string &s);
-  INLINE static std::string base64_decode(const std::string &s);
+  INLINE static std::string base64_encode(std::string_view s);
+  INLINE static std::string base64_decode(std::string_view s);
 
   static HTTPClient *get_global_ptr();
 
 private:
-  void add_http_username(const std::string &http_username);
-  std::string select_username(const URLSpec &url, const std::string &realm) const;
+  void add_http_username(std::string_view http_username);
+  std::string select_username(const URLSpec &url, std::string_view realm) const;
 
-  HTTPAuthorization *select_auth(const URLSpec &url, const std::string &last_realm);
+  HTTPAuthorization *select_auth(const URLSpec &url, std::string_view last_realm);
   PT(HTTPAuthorization) generate_auth(const URLSpec &url,
-                                      const std::string &challenge);
+                                      std::string_view challenge);
 
-  typedef pmap<std::string, std::string> Usernames;
+  typedef pmap<std::string, std::string, std::less<>> Usernames;
   Usernames _usernames;
 
-  typedef pmap<std::string, PT(HTTPAuthorization)> Realms;
+  typedef pmap<std::string, PT(HTTPAuthorization), std::less<>> Realms;
   class Domain {
   public:
     Realms _realms;

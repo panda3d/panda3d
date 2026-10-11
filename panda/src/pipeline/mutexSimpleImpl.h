@@ -39,7 +39,7 @@ public:
   constexpr MutexSimpleImpl() = default;
 
   INLINE void lock();
-  INLINE bool try_lock();
+  [[nodiscard]] INLINE bool try_lock();
   INLINE void unlock();
   INLINE void unlock_quietly();
 

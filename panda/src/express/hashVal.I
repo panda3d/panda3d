@@ -73,16 +73,12 @@ operator < (const HashVal &other) const {
  */
 INLINE int HashVal::
 compare_to(const HashVal &other) const {
-  if (_hv[0] != other._hv[0]) {
-    return (int)_hv[0] - (int)other._hv[0];
+  for (int i = 0; i < 4; ++i) {
+    if (_hv[i] != other._hv[i]) {
+      return (_hv[i] < other._hv[i]) ? -1 : 1;
+    }
   }
-  if (_hv[1] != other._hv[1]) {
-    return (int)_hv[1] - (int)other._hv[1];
-  }
-  if (_hv[2] != other._hv[2]) {
-    return (int)_hv[2] - (int)other._hv[2];
-  }
-  return (int)_hv[3] - (int)other._hv[3];
+  return 0;
 }
 
 /**
@@ -176,7 +172,7 @@ hash_ramfile(const Ramfile &ramfile) {
  * Generates the hash value by hashing the indicated data.
  */
 INLINE void HashVal::
-hash_string(const std::string &data) {
+hash_string(std::string_view data) {
   hash_buffer(data.data(), data.length());
 }
 
@@ -185,7 +181,7 @@ hash_string(const std::string &data) {
  */
 INLINE void HashVal::
 hash_bytes(const vector_uchar &data) {
-  hash_buffer((const char *)&data[0], data.size());
+  hash_buffer((const char *)data.data(), data.size());
 }
 
 /**

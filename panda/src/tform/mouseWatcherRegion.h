@@ -30,9 +30,9 @@ class MouseWatcherParameter;
  */
 class EXPCL_PANDA_TFORM MouseWatcherRegion : public TypedWritableReferenceCount, public Namable {
 PUBLISHED:
-  INLINE explicit MouseWatcherRegion(const std::string &name, PN_stdfloat left, PN_stdfloat right,
+  INLINE explicit MouseWatcherRegion(std::string name, PN_stdfloat left, PN_stdfloat right,
                                      PN_stdfloat bottom, PN_stdfloat top);
-  INLINE explicit MouseWatcherRegion(const std::string &name, const LVecBase4 &frame);
+  INLINE explicit MouseWatcherRegion(std::string name, const LVecBase4 &frame);
 
   INLINE void set_frame(PN_stdfloat left, PN_stdfloat right, PN_stdfloat bottom, PN_stdfloat top);
   INLINE void set_frame(const LVecBase4 &frame);

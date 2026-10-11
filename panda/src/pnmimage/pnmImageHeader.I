@@ -175,8 +175,8 @@ get_comment() const {
  * Writes a user comment string to the image (header).
  */
 INLINE void PNMImageHeader::
-set_comment(const std::string& comment) {
-  _comment = comment;
+set_comment(std::string comment) {
+  _comment = std::move(comment);
 }
 
 /**

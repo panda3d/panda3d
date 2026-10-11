@@ -25,7 +25,7 @@
  */
 class EXPCL_DIRECT_INTERVAL CLerpNodePathInterval : public CLerpInterval {
 PUBLISHED:
-  explicit CLerpNodePathInterval(const std::string &name, double duration,
+  explicit CLerpNodePathInterval(std::string name, double duration,
                                  BlendType blend_type, bool bake_in_start,
                                  bool fluid,
                                  const NodePath &node, const NodePath &other);

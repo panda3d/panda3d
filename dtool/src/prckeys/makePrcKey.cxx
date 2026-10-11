@@ -72,7 +72,7 @@ output_ssl_errors() {
  * string.
  */
 void
-output_c_string(std::ostream &out, const string &string_name,
+output_c_string(std::ostream &out, std::string_view string_name,
                 size_t index, BIO *mbio) {
   char *data_ptr;
   size_t data_size = BIO_get_mem_data(mbio, &data_ptr);

@@ -15,9 +15,9 @@
  *
  */
 INLINE CLerpAnimEffectInterval::
-CLerpAnimEffectInterval(const std::string &name, double duration,
+CLerpAnimEffectInterval(std::string name, double duration,
                         CLerpInterval::BlendType blend_type) :
-  CLerpInterval(name, duration, blend_type)
+  CLerpInterval(std::move(name), duration, blend_type)
 {
 }
 
@@ -30,19 +30,19 @@ CLerpAnimEffectInterval(const std::string &name, double duration,
  * for output.
  */
 INLINE void CLerpAnimEffectInterval::
-add_control(AnimControl *control, const std::string &name,
+add_control(AnimControl *control, std::string name,
             float begin_effect, float end_effect) {
-  _controls.push_back(ControlDef(control, name, begin_effect, end_effect));
+  _controls.push_back(ControlDef(control, std::move(name), begin_effect, end_effect));
 }
 
 /**
  *
  */
 INLINE CLerpAnimEffectInterval::ControlDef::
-ControlDef(AnimControl *control, const std::string &name,
+ControlDef(AnimControl *control, std::string name,
            float begin_effect, float end_effect) :
   _control(control),
-  _name(name),
+  _name(std::move(name)),
   _begin_effect(begin_effect),
   _end_effect(end_effect)
 {

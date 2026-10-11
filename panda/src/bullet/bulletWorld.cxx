@@ -24,8 +24,6 @@
 #include "collideMask.h"
 #include "lightMutexHolder.h"
 
-#define clamp(x, x_min, x_max) std::max(std::min(x, x_max), x_min)
-
 using std::endl;
 using std::istream;
 using std::ostream;
@@ -226,7 +224,7 @@ do_physics(PN_stdfloat dt, int max_substeps, PN_stdfloat stepsize) {
 
   _pstat_physics.start();
 
-  int num_substeps = clamp(int(dt / stepsize), 1, max_substeps);
+  int num_substeps = std::max(std::min(int(dt / stepsize), max_substeps), 1);
 
   // Synchronize Panda to Bullet
   _pstat_p2b.start();

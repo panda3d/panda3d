@@ -54,7 +54,7 @@ PUBLISHED:
   MAKE_SEQ(get_vertices, get_num_vertices, get_vertex);
 
   INLINE void set_vertex_space(int i, const NodePath &space);
-  INLINE void set_vertex_space(int i, const std::string &space);
+  INLINE void set_vertex_space(int i, std::string space);
   NodePath get_vertex_space(int i, const NodePath &rel_to) const;
 
   INLINE void set_extended_vertex(int i, int d, PN_stdfloat value);

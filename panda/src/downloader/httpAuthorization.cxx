@@ -110,7 +110,7 @@ is_valid() {
  */
 void HTTPAuthorization::
 parse_authentication_schemes(HTTPAuthorization::AuthenticationSchemes &schemes,
-                             const string &field_value) {
+                             std::string_view field_value) {
   // This string will consist of one or more records of the form: scheme
   // token=value[,token=value[,...]] If there are multiple records, they will
   // be comma-delimited, which makes parsing just a bit tricky.
@@ -182,7 +182,7 @@ get_canonical_url(const URLSpec &url) {
  * maintaining a 76-char line length.
  */
 string HTTPAuthorization::
-base64_encode(const string &s) {
+base64_encode(std::string_view s) {
   // Collect the string 3 bytes at a time into 24-bit words, then output each
   // word using 4 bytes.
   size_t num_words = (s.size() + 2) / 3;
@@ -227,7 +227,7 @@ base64_encode(const string &s) {
  * Returns the string decoded from base64.
  */
 string HTTPAuthorization::
-base64_decode(const string &s) {
+base64_decode(std::string_view s) {
   // Build up the invert table if this is the first time.
   if (!got_base64_invert) {
     int i;
@@ -279,7 +279,7 @@ base64_decode(const string &s) {
  * its closing quote mark).
  */
 size_t HTTPAuthorization::
-scan_quoted_or_unquoted_string(string &result, const string &source,
+scan_quoted_or_unquoted_string(string &result, std::string_view source,
                                size_t start) {
   result = string();
 

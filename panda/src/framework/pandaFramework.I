@@ -57,8 +57,8 @@ get_task_mgr() {
  * Specifies the title that is set for all subsequently created windows.
  */
 INLINE void PandaFramework::
-set_window_title(const std::string &title) {
-  _window_title = title;
+set_window_title(std::string title) {
+  _window_title = std::move(title);
 }
 
 /**

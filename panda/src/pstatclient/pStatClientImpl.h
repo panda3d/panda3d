@@ -53,7 +53,7 @@ public:
   PStatClientImpl(PStatClient *client);
   ~PStatClientImpl();
 
-  INLINE void set_client_name(const std::string &name);
+  INLINE void set_client_name(std::string name);
   INLINE std::string get_client_name() const;
   INLINE void set_max_rate(double rate);
   INLINE double get_max_rate() const;

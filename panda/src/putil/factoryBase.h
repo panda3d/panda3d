@@ -48,13 +48,13 @@ public:
   TypedObject *make_instance(TypeHandle handle,
                              const FactoryParams &params);
 
-  INLINE TypedObject *make_instance(const std::string &type_name,
+  INLINE TypedObject *make_instance(std::string_view type_name,
                                     const FactoryParams &params);
 
   TypedObject *make_instance_more_general(TypeHandle handle,
                                           const FactoryParams &params);
 
-  INLINE TypedObject *make_instance_more_general(const std::string &type_name,
+  INLINE TypedObject *make_instance_more_general(std::string_view type_name,
                                                  const FactoryParams &params);
 
   TypeHandle find_registered_type(TypeHandle handle);

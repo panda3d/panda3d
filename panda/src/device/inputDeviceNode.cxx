@@ -19,8 +19,8 @@
 TypeHandle InputDeviceNode::_type_handle;
 
 InputDeviceNode::
-InputDeviceNode(InputDevice *device, const std::string &name) :
-  DataNode(name),
+InputDeviceNode(InputDevice *device, std::string name) :
+  DataNode(std::move(name)),
   _device(device)
 {
   _button_events_output = define_output("button_events", ButtonEventList::get_class_type());

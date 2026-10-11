@@ -26,7 +26,7 @@
  */
 class EXPCL_PANDA_PHYSICS ForceNode : public PandaNode {
 PUBLISHED:
-  explicit ForceNode(const std::string &name);
+  explicit ForceNode(std::string name);
   INLINE void clear();
   INLINE BaseForce *get_force(size_t index) const;
   INLINE size_t get_num_forces() const;

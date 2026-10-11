@@ -1,8 +1,8 @@
-if(NOT HAVE_EGL OR NOT HAVE_X11)
+if(NOT HAVE_EGL)
   return()
 endif()
 
-if(NOT HAVE_GLES1 AND NOT HAVE_GLES2)
+if(NOT HAVE_GLES1 AND NOT HAVE_GLES2 AND NOT HAVE_GL)
   return()
 endif()
 
@@ -26,7 +26,33 @@ set(P3EGLDISPLAY_SOURCES
 
 composite_sources(p3egldisplay P3EGLDISPLAY_SOURCES)
 
-# We actually build this twice!  Once for GLES1, once for GLES2.
+# We actually build this thrice!  Once for GL, once for GLES1, once for GLES2.
+if(HAVE_GL AND NOT WIN32 AND NOT APPLE)
+  add_component_library(p3egldisplay_gl SYMBOL BUILDING_PANDAGL
+    INIT init_libegldisplay config_egldisplay.h
+    ${P3EGLDISPLAY_HEADERS} ${P3EGLDISPLAY_SOURCES})
+  target_link_libraries(p3egldisplay_gl p3glgsg
+    PKG::EGL PKG::GL)
+
+  if(HAVE_X11 AND NOT HAVE_GLX)
+    target_link_librarise(p3egldisplay_gl p3x11display)
+    target_compile_definitions(p3egldisplay_gl PUBLIC USE_X11)
+  else()
+    target_compile_definitions(p3egldisplay_gl PRIVATE EGL_NO_X11)
+  endif()
+
+  if(NOT BUILD_METALIBS)
+    install(TARGETS p3egldisplay_gl
+      EXPORT OpenGL COMPONENT OpenGL
+      DESTINATION ${CMAKE_INSTALL_LIBDIR}
+      RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+      INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/panda3d
+      ARCHIVE COMPONENT OpenGLDevel)
+  endif()
+
+  install(FILES ${P3EGLDISPLAY_HEADERS} COMPONENT OpenGLDevel DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/panda3d)
+endif()
+
 if(HAVE_GLES1)
   add_component_library(p3egldisplay_gles1 SYMBOL BUILDING_PANDAGLES
     INIT init_libegldisplay config_egldisplay.h

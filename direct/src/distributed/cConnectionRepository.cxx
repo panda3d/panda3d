@@ -865,7 +865,7 @@ handle_update_field_owner() {
  * description on the indicated output stream.
  */
 void CConnectionRepository::
-describe_message(std::ostream &out, const string &prefix,
+describe_message(std::ostream &out, std::string_view prefix,
                  const Datagram &dg) const {
   DCPacker packer;
 
@@ -873,7 +873,7 @@ describe_message(std::ostream &out, const string &prefix,
   CHANNEL_TYPE do_id;
   unsigned int msg_type;
   bool is_update = false;
-  string full_prefix = "CR::" + prefix;
+  string full_prefix = "CR::" + string(prefix);
 
   if (!_client_datagram)
   {

@@ -15,8 +15,8 @@
  *
  */
 INLINE void Event::
-set_name(const std::string &name) {
-  _name = name;
+set_name(std::string name) {
+  _name = std::move(name);
 }
 
 /**

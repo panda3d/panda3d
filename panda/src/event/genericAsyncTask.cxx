@@ -20,8 +20,8 @@ TypeHandle GenericAsyncTask::_type_handle;
  *
  */
 GenericAsyncTask::
-GenericAsyncTask(const std::string &name) :
-  AsyncTask(name)
+GenericAsyncTask(std::string name) :
+  AsyncTask(std::move(name))
 {
   _function = nullptr;
   _upon_birth = nullptr;
@@ -33,8 +33,8 @@ GenericAsyncTask(const std::string &name) :
  *
  */
 GenericAsyncTask::
-GenericAsyncTask(const std::string &name, GenericAsyncTask::TaskFunc *function, void *user_data) :
-  AsyncTask(name),
+GenericAsyncTask(std::string name, GenericAsyncTask::TaskFunc *function, void *user_data) :
+  AsyncTask(std::move(name)),
   _function(function),
   _user_data(user_data)
 {

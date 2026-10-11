@@ -24,12 +24,12 @@ TypeHandle CallbackGraphicsWindow::RenderCallbackData::_type_handle;
  */
 CallbackGraphicsWindow::
 CallbackGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
-                       const std::string &name,
+                       std::string name,
                        const FrameBufferProperties &fb_prop,
                        const WindowProperties &win_prop,
                        int flags,
                        GraphicsStateGuardian *gsg) :
-  GraphicsWindow(engine, pipe, name, fb_prop, win_prop, flags, gsg, nullptr)
+  GraphicsWindow(engine, pipe, std::move(name), fb_prop, win_prop, flags, gsg, nullptr)
 {
 #ifdef DO_MEMORY_USAGE
   MemoryUsage::update_type(this, this);
@@ -52,8 +52,8 @@ CallbackGraphicsWindow::
  * Returns the index of the new device.
  */
 int CallbackGraphicsWindow::
-create_input_device(const std::string &name) {
-  return add_input_device(GraphicsWindowInputDevice::pointer_and_keyboard(this, name));
+create_input_device(std::string name) {
+  return add_input_device(GraphicsWindowInputDevice::pointer_and_keyboard(this, std::move(name)));
 }
 
 /**

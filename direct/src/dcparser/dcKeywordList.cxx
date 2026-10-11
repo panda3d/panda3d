@@ -57,7 +57,7 @@ DCKeywordList::
  * Returns true if this list includes the indicated keyword, false otherwise.
  */
 bool DCKeywordList::
-has_keyword(const std::string &name) const {
+has_keyword(std::string_view name) const {
   return (_keywords_by_name.find(name) != _keywords_by_name.end());
 }
 
@@ -92,7 +92,7 @@ get_keyword(int n) const {
  * is no keyword in the list with that name.
  */
 const DCKeyword *DCKeywordList::
-get_keyword_by_name(const std::string &name) const {
+get_keyword_by_name(std::string_view name) const {
   KeywordsByName::const_iterator ni;
   ni = _keywords_by_name.find(name);
   if (ni != _keywords_by_name.end()) {

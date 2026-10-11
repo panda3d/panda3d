@@ -6,6 +6,7 @@ from importlib.machinery import ModuleSpec
 
 from importlib import _bootstrap_external
 
+# This should not be needed once we bump the minimum python version requirement to 3.13
 sys.platform = "android"
 
 class AndroidExtensionFinder(MetaPathFinder):

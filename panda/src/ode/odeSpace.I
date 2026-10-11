@@ -103,8 +103,8 @@ is_enabled() {
 }
 
 INLINE void OdeSpace::
-set_collision_event(const std::string &event_name) {
-  _collision_event = event_name;
+set_collision_event(std::string event_name) {
+  _collision_event = std::move(event_name);
 }
 
 INLINE std::string OdeSpace::

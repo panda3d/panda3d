@@ -42,7 +42,7 @@ public:
   INLINE bool had_error() const;
 
   INLINE void clear();
-  INLINE void add_pattern(const std::string &orig_prefix, const std::string &replacement_prefix);
+  INLINE void add_pattern(std::string orig_prefix, std::string replacement_prefix);
 
   INLINE int get_num_patterns() const;
   INLINE const std::string &get_orig_prefix(int n) const;
@@ -88,7 +88,7 @@ private:
 
   class Component {
   public:
-    INLINE Component(const std::string &component);
+    INLINE Component(std::string_view component);
     INLINE Component(const Component &copy);
     INLINE void operator = (const Component &copy);
 
@@ -99,7 +99,7 @@ private:
 
   class Entry {
   public:
-    Entry(const std::string &orig_prefix, const std::string &replacement_prefix);
+    Entry(std::string orig_prefix, std::string replacement_prefix);
     INLINE Entry(const Entry &copy);
     INLINE void operator = (const Entry &copy);
 

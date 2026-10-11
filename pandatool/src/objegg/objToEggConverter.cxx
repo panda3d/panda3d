@@ -221,7 +221,7 @@ process(const Filename &filename) {
  *
  */
 bool ObjToEggConverter::
-process_line(const string &line) {
+process_line(std::string_view line) {
   vector_string words;
   tokenize(line, words, " \t", true);
   nassertr(!words.empty(), false);
@@ -256,7 +256,7 @@ process_line(const string &line) {
  *
  */
 bool ObjToEggConverter::
-process_ref_plane_res(const string &line) {
+process_ref_plane_res(std::string_view line) {
   // the #_ref_plane_res line is a DRZ extension that defines the pixel
   // resolution of the projector device.  It's needed to properly scale the
   // xvt lines.
@@ -492,7 +492,7 @@ process_g(vector_string &words) {
  * reference.
  */
 EggVertex *ObjToEggConverter::
-get_face_vertex(const string &reference) {
+get_face_vertex(std::string_view reference) {
   VertexEntry entry(this, reference);
 
   // Synthesize a vertex.
@@ -610,7 +610,7 @@ process_node(const Filename &filename) {
  *
  */
 bool ObjToEggConverter::
-process_line_node(const string &line) {
+process_line_node(std::string_view line) {
   vector_string words;
   tokenize(line, words, " \t", true);
   nassertr(!words.empty(), false);
@@ -819,7 +819,7 @@ add_synth_normal(const LVecBase3d &normal) {
  * reference.
  */
 ObjToEggConverter::VertexEntry::
-VertexEntry(const ObjToEggConverter *converter, const string &obj_vertex) {
+VertexEntry(const ObjToEggConverter *converter, std::string_view obj_vertex) {
   _vi = 0;
   _vti = 0;
   _vni = 0;
@@ -877,8 +877,8 @@ VertexEntry(const ObjToEggConverter *converter, const string &obj_vertex) {
  *
  */
 ObjToEggConverter::VertexData::
-VertexData(PandaNode *parent, const string &name) :
-  _parent(parent), _name(name)
+VertexData(PandaNode *parent, std::string name) :
+  _parent(parent), _name(std::move(name))
 {
   _geom_node = nullptr;
 

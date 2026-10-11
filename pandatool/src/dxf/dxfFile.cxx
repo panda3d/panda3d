@@ -623,9 +623,9 @@ change_section(Section new_section) {
  * creates a new layer definition.
  */
 void DXFFile::
-change_layer(const string &layer_name) {
+change_layer(string layer_name) {
   if (_layer == nullptr || _layer->get_name() != layer_name) {
-    _layer = _layers.get_layer(layer_name, this);
+    _layer = _layers.get_layer(std::move(layer_name), this);
   }
 }
 

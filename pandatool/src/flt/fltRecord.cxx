@@ -237,8 +237,8 @@ clear_comment() {
  * Changes the comment for this record.
  */
 void FltRecord::
-set_comment(const std::string &comment) {
-  _comment = comment;
+set_comment(std::string comment) {
+  _comment = std::move(comment);
 }
 
 /**
@@ -251,7 +251,7 @@ set_comment(const std::string &comment) {
  * this is exactly the sort of thing we expect.
  */
 void FltRecord::
-check_remaining_size(const DatagramIterator &di, const std::string &name) const {
+check_remaining_size(const DatagramIterator &di, std::string_view name) const {
   if (di.get_remaining_size() == 0) {
     return;
   }

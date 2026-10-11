@@ -48,10 +48,10 @@ public:
   INLINE PStatCollector(PStatClient *client, int index);
 
 PUBLISHED:
-  INLINE explicit PStatCollector(const std::string &name,
+  INLINE explicit PStatCollector(std::string_view name,
                                  PStatClient *client = nullptr);
   INLINE explicit PStatCollector(const PStatCollector &parent,
-                                 const std::string &name);
+                                 std::string_view name);
 
   INLINE PStatCollector(const PStatCollector &copy);
   INLINE void operator = (const PStatCollector &copy);
@@ -108,10 +108,10 @@ public:
   INLINE PStatCollector();
 
 PUBLISHED:
-  INLINE PStatCollector(const std::string &name,
+  INLINE PStatCollector(std::string_view name,
                         PStatClient *client = nullptr);
   INLINE PStatCollector(const PStatCollector &parent,
-                        const std::string &name);
+                        std::string_view name);
 
   INLINE bool is_active() { return false; }
   INLINE bool is_started() { return false; }

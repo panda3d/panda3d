@@ -120,7 +120,7 @@ get_net_max_block() {
 // This function is used in the ReaderThread and WriterThread constructors to
 // make a simple name for each thread.
 std::string
-make_thread_name(const std::string &thread_name, int thread_index) {
+make_thread_name(std::string_view thread_name, int thread_index) {
   std::ostringstream stream;
   stream << thread_name << "_" << thread_index;
   return stream.str();

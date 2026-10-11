@@ -15,7 +15,7 @@
  *
  */
 INLINE EggCurve::
-EggCurve(const std::string &name) : EggPrimitive(name) {
+EggCurve(std::string name) : EggPrimitive(std::move(name)) {
   _subdiv = 0;
   _type = CT_none;
 }

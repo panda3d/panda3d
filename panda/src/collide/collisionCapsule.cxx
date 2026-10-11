@@ -264,8 +264,7 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
     return nullptr;
   }
 
-  // doubles, not floats, to satisfy min and max templates.
-  actual_t = std::min(1.0, std::max(0.0, t1));
+  actual_t = std::clamp(t1, 0.0, 1.0);
   contact_point = from_a + actual_t * (from_b - from_a);
 
   if (collide_cat.is_debug()) {

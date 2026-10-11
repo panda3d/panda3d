@@ -15,7 +15,7 @@
  *
  */
 INLINE EggPrimitive::
-EggPrimitive(const std::string &name): EggNode(name) {
+EggPrimitive(std::string name): EggNode(std::move(name)) {
   _bface = false;
   _connected_shading = S_unknown;
 }

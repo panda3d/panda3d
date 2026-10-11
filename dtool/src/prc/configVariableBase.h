@@ -45,9 +45,9 @@
  */
 class EXPCL_DTOOL_PRC ConfigVariableBase : public ConfigFlags, public MemoryBase {
 protected:
-  INLINE ConfigVariableBase(const std::string &name, ValueType type);
-  ConfigVariableBase(const std::string &name, ValueType type,
-                     const std::string &description, int flags);
+  INLINE ConfigVariableBase(std::string_view name, ValueType type);
+  ConfigVariableBase(std::string_view name, ValueType type,
+                     std::string_view description, int flags);
   INLINE ~ConfigVariableBase();
 
 PUBLISHED:

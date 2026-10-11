@@ -31,10 +31,10 @@
  */
 class EXPCL_DIRECT_INTERVAL CLerpAnimEffectInterval : public CLerpInterval {
 PUBLISHED:
-  INLINE explicit CLerpAnimEffectInterval(const std::string &name, double duration,
+  INLINE explicit CLerpAnimEffectInterval(std::string name, double duration,
                                           BlendType blend_type);
 
-  INLINE void add_control(AnimControl *control, const std::string &name,
+  INLINE void add_control(AnimControl *control, std::string name,
                           float begin_effect, float end_effect);
 
   virtual void priv_step(double t);
@@ -44,7 +44,7 @@ PUBLISHED:
 private:
   class ControlDef {
   public:
-    INLINE ControlDef(AnimControl *control, const std::string &name,
+    INLINE ControlDef(AnimControl *control, std::string name,
                       float begin_effect, float end_effect);
     PT(AnimControl) _control;
     std::string _name;

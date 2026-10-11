@@ -73,8 +73,8 @@ Character(const Character &copy, bool copy_bundles) :
  *
  */
 Character::
-Character(const std::string &name) :
-  PartBundleNode(name, new CharacterJointBundle(name)),
+Character(std::string_view name) :
+  PartBundleNode(std::string(name), new CharacterJointBundle(std::string(name))),
   _last_auto_update(-1.0),
   _view_frame(-1),
   _view_distance2(0.0f),
@@ -326,7 +326,7 @@ clear_lod_animation() {
  * to a slider.
  */
 CharacterJoint *Character::
-find_joint(const std::string &name) const {
+find_joint(std::string_view name) const {
   LightMutexHolder holder(_lock);
   for (PartBundleHandle *handle : _bundles) {
     PartGroup *part = handle->get_bundle()->find_child(name);
@@ -344,7 +344,7 @@ find_joint(const std::string &name) const {
  * to a joint.
  */
 CharacterSlider *Character::
-find_slider(const std::string &name) const {
+find_slider(std::string_view name) const {
   LightMutexHolder holder(_lock);
   for (PartBundleHandle *handle : _bundles) {
     PartGroup *part = handle->get_bundle()->find_child(name);

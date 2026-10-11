@@ -85,8 +85,8 @@ get_suggested_extension() const {
  * returns NULL.
  */
 PNMReader *PNMFileTypeIMG::
-make_reader(istream *file, bool owns_file, const string &magic_number) {
-  return new Reader(this, file, owns_file, magic_number);
+make_reader(istream *file, bool owns_file, std::string_view magic_number) {
+  return new Reader(this, file, owns_file, std::string(magic_number));
 }
 
 /**

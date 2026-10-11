@@ -123,8 +123,8 @@ static const char *hosts_prefix = "/hosts/";
 static size_t hosts_prefix_length = 7;
 
 static string
-front_to_back_slash(const string &str) {
-  string result = str;
+front_to_back_slash(std::string_view str) {
+  string result(str);
   string::iterator si;
   for (si = result.begin(); si != result.end(); ++si) {
     if ((*si) == '/') {
@@ -136,8 +136,8 @@ front_to_back_slash(const string &str) {
 }
 
 static string
-back_to_front_slash(const string &str) {
-  string result = str;
+back_to_front_slash(std::string_view str) {
+  string result(str);
   string::iterator si;
   for (si = result.begin(); si != result.end(); ++si) {
     if ((*si) == '\\') {
@@ -337,7 +337,7 @@ Filename(const Filename &dirname, const Filename &basename) {
  * and some forward slashes.
  */
 Filename Filename::
-from_os_specific(const string &os_specific, Filename::Type type) {
+from_os_specific(std::string_view os_specific, Filename::Type type) {
 #ifdef _WIN32
   string result = back_to_front_slash(os_specific);
   const string &panda_root = get_panda_root();
@@ -403,7 +403,7 @@ from_os_specific(const string &os_specific, Filename::Type type) {
  * converted from an os-specific wide-character string.
  */
 Filename Filename::
-from_os_specific_w(const wstring &os_specific, Filename::Type type) {
+from_os_specific_w(std::wstring_view os_specific, Filename::Type type) {
   TextEncoder encoder;
   encoder.set_encoding(get_filesystem_encoding());
   encoder.set_wtext(os_specific);
@@ -416,7 +416,7 @@ from_os_specific_w(const wstring &os_specific, Filename::Type type) {
  * automatically elevates the file to its true case if needed.
  */
 Filename Filename::
-expand_from(const string &os_specific, Filename::Type type) {
+expand_from(std::string_view os_specific, Filename::Type type) {
   Filename file = from_os_specific(ExecutionEnvironment::expand_string(os_specific),
                                    type);
   file.make_true_case();
@@ -433,7 +433,7 @@ expand_from(const string &os_specific, Filename::Type type) {
  * process could simultaneously create a file by the same name.
  */
 Filename Filename::
-temporary(const string &dirname, const string &prefix, const string &suffix,
+temporary(std::string_view dirname, const string &prefix, const string &suffix,
           Type type) {
   Filename fdirname = dirname;
 #if defined(_WIN32) || defined(ANDROID) || defined(__wasi__)
@@ -722,7 +722,7 @@ get_common_appdata_directory() {
  * also be achieved with the assignment operator.
  */
 void Filename::
-set_fullpath(const string &s) {
+set_fullpath(std::string_view s) {
   (*this) = s;
 }
 
@@ -731,7 +731,7 @@ set_fullpath(const string &s) {
  * filename up to, but not including the rightmost slash.
  */
 void Filename::
-set_dirname(const string &s) {
+set_dirname(std::string_view s) {
   if (s.empty()) {
     // Remove the directory prefix altogether.
     _filename.replace(0, _basename_start, "");
@@ -747,11 +747,9 @@ set_dirname(const string &s) {
     // Replace the existing directory prefix, or insert a new one.
 
     // We build the string ss to include the terminal slash.
-    string ss;
-    if (s[s.length()-1] == '/') {
-      ss = s;
-    } else {
-      ss = s+'/';
+    string ss(s);
+    if (ss.back() != '/') {
+      ss += '/';
     }
 
     int length_change = (int)ss.length() - (int)_basename_start;
@@ -781,19 +779,18 @@ set_dirname(const string &s) {
  * filename after the rightmost slash, including any extensions.
  */
 void Filename::
-set_basename(const string &s) {
+set_basename(std::string_view s) {
   _filename.replace(_basename_start, string::npos, s);
   locate_extension();
   locate_hash();
 }
-
 
 /**
  * Replaces the full filename--directory and basename parts--except for the
  * extension.
  */
 void Filename::
-set_fullpath_wo_extension(const string &s) {
+set_fullpath_wo_extension(std::string_view s) {
   int length_change = (int)s.length() - (int)_basename_end;
 
   _filename.replace(0, _basename_end, s);
@@ -805,12 +802,11 @@ set_fullpath_wo_extension(const string &s) {
   locate_hash();
 }
 
-
 /**
  * Replaces the basename part of the filename, without the file extension.
  */
 void Filename::
-set_basename_wo_extension(const string &s) {
+set_basename_wo_extension(std::string_view s) {
   int length_change = (int)s.length() - (int)(_basename_end - _basename_start);
 
   if (_basename_end == string::npos) {
@@ -825,13 +821,12 @@ set_basename_wo_extension(const string &s) {
   locate_hash();
 }
 
-
 /**
  * Replaces the file extension.  This is everything after the rightmost dot,
  * if there is one, or the empty string if there is not.
  */
 void Filename::
-set_extension(const string &s) {
+set_extension(std::string_view s) {
   if (s.empty()) {
     // Remove the extension altogether.
     if (_basename_end != string::npos) {
@@ -844,7 +839,8 @@ set_extension(const string &s) {
     // Insert an extension where there was none before.
     _basename_end = _filename.length();
     _extension_start = _filename.length() + 1;
-    _filename += '.' + s;
+    _filename += '.';
+    _filename += s;
 
   } else {
     // Replace an existing extension.
@@ -883,7 +879,7 @@ get_filename_index(int index) const {
  * to the end of the filename.
  */
 void Filename::
-set_hash_to_end(const string &s) {
+set_hash_to_end(std::string_view s) {
   _filename.replace(_hash_start, string::npos, s);
 
   locate_basename();
@@ -1618,7 +1614,7 @@ get_file_size() const {
  */
 bool Filename::
 resolve_filename(const DSearchPath &searchpath,
-                 const string &default_extension) {
+                 std::string_view default_extension) {
   Filename found;
 
   if (is_local()) {
@@ -2656,7 +2652,7 @@ get_hash() const {
  * (small) file with the specified contents, assuming it hasn't changed since
  * the last time the file was read.
  *
- * This is designed to be similar to AtomicAdjust::compare_and_exchange().
+ * This is designed to be similar to patomic::compare_exchange_strong().
  * The method writes new_contents to the file, completely replacing the
  * original contents; but only if the original contents exactly matched
  * old_contents.  If the file was modified, returns true.  If, however, the
@@ -2681,8 +2677,8 @@ get_hash() const {
  */
 bool Filename::
 atomic_compare_and_exchange_contents(string &orig_contents,
-                                     const string &old_contents,
-                                     const string &new_contents) const {
+                                     std::string_view old_contents,
+                                     std::string_view new_contents) const {
 #ifdef _WIN32
   wstring os_specific = to_os_specific_w();
   HANDLE hfile = CreateFileW(os_specific.c_str(), GENERIC_READ | GENERIC_WRITE,
@@ -3039,7 +3035,7 @@ locate_hash() {
  * common to both filenames.
  */
 size_t Filename::
-get_common_prefix(const string &other) const {
+get_common_prefix(std::string_view other) const {
   size_t len = 0;
 
   // First, get the length of the common initial substring.
@@ -3061,9 +3057,9 @@ get_common_prefix(const string &other) const {
  * counting a terminal slash.
  */
 int Filename::
-count_slashes(const string &str) {
+count_slashes(std::string_view str) {
   int count = 0;
-  string::const_iterator si;
+  std::string_view::const_iterator si;
   si = str.begin();
 
   while (si != str.end()) {

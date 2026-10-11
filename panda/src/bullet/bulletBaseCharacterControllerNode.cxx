@@ -19,7 +19,7 @@ TypeHandle BulletBaseCharacterControllerNode::_type_handle;
  *
  */
 BulletBaseCharacterControllerNode::
-BulletBaseCharacterControllerNode(const char *name) : PandaNode(name) {
+BulletBaseCharacterControllerNode(std::string name) : PandaNode(std::move(name)) {
 
   // Default collide mask
   set_into_collide_mask(CollideMask::all_on());

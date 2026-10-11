@@ -15,7 +15,7 @@
  *
  */
 INLINE EggCompositePrimitive::
-EggCompositePrimitive(const std::string &name) : EggPrimitive(name) {
+EggCompositePrimitive(std::string name) : EggPrimitive(std::move(name)) {
 }
 
 /**
@@ -67,7 +67,8 @@ get_component(size_t i) {
 INLINE void EggCompositePrimitive::
 set_component(size_t i, const EggAttributes *attrib) {
   nassertv(i < _components.size());
-  _components[i] = new EggAttributes(*attrib);
+  EggAttributes *old = std::exchange(_components[i], new EggAttributes(*attrib));
+  delete old;
 }
 
 /**

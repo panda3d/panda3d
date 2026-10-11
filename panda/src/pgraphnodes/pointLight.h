@@ -24,7 +24,7 @@
  */
 class EXPCL_PANDA_PGRAPHNODES PointLight : public LightLensNode {
 PUBLISHED:
-  explicit PointLight(const std::string &name);
+  explicit PointLight(std::string name);
 
 protected:
   PointLight(const PointLight &copy);

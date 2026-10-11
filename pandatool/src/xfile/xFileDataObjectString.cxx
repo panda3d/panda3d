@@ -23,9 +23,9 @@ TypeHandle XFileDataObjectString::_type_handle;
  *
  */
 XFileDataObjectString::
-XFileDataObjectString(const XFileDataDef *data_def, const string &value) :
+XFileDataObjectString(const XFileDataDef *data_def, std::string value) :
   XFileDataObject(data_def),
-  _value(value)
+  _value(std::move(value))
 {
 }
 
@@ -51,8 +51,8 @@ write_data(std::ostream &out, int indent_level, const char *separator) const {
  * Sets the object's value as a string, if this is legal.
  */
 void XFileDataObjectString::
-set_string_value(const string &string_value) {
-  _value = string_value;
+set_string_value(std::string string_value) {
+  _value = std::move(string_value);
 }
 
 /**

@@ -25,9 +25,9 @@ using std::string;
  *
  */
 DCAtomicField::
-DCAtomicField(const string &name, DCClass *dclass,
+DCAtomicField(string name, DCClass *dclass,
               bool bogus_field) :
-  DCField(name, dclass)
+  DCField(std::move(name), dclass)
 {
   _bogus_field = bogus_field;
 }

@@ -26,7 +26,7 @@
  */
 class EXPCL_PANDA_EXPRESS StringStream : public std::iostream {
 public:
-  INLINE StringStream(const std::string &source);
+  INLINE StringStream(std::string_view source);
   INLINE StringStream(vector_uchar source);
 
 PUBLISHED:
@@ -48,7 +48,7 @@ PUBLISHED:
 public:
 #ifndef CPPPARSER
   INLINE std::string get_data();
-  INLINE void set_data(const std::string &data);
+  INLINE void set_data(std::string_view data);
   void set_data(const unsigned char *data, size_t size);
 #endif // !CPPPARSER
 

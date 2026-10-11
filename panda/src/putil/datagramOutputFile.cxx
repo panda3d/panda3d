@@ -97,7 +97,7 @@ write_header(const vector_uchar &header) {
   nassertr(_out != nullptr, false);
   nassertr(!_wrote_first_datagram, false);
 
-  _out->write((const char *)&header[0], header.size());
+  _out->write((const char *)header.data(), header.size());
   thread_consider_yield();
   return !_out->fail();
 }
@@ -109,7 +109,7 @@ write_header(const vector_uchar &header) {
  * written.
  */
 bool DatagramOutputFile::
-write_header(const std::string &header) {
+write_header(std::string_view header) {
   nassertr(_out != nullptr, false);
   nassertr(!_wrote_first_datagram, false);
 

@@ -28,8 +28,8 @@ TypeHandle TextureStage::_type_handle;
  * Initialize the texture stage at construction
  */
 TextureStage::
-TextureStage(const std::string &name) : _used_by_auto_shader(false) {
-  _name = name;
+TextureStage(std::string name) : _used_by_auto_shader(false) {
+  _name = std::move(name);
   _sort = 0;
   _priority = 0;
   _texcoord_name = InternalName::get_texcoord();
@@ -519,14 +519,20 @@ operator << (ostream &out, TextureStage::Mode mode) {
   case TextureStage::M_height:
     return out << "height";
 
-  case TextureStage::M_selector:
-    return out << "selector";
+  case TextureStage::M_metallic_roughness:
+    return out << "metallic_roughness";
 
   case TextureStage::M_normal_gloss:
     return out << "normal_gloss";
 
   case TextureStage::M_emission:
     return out << "emission";
+
+  case TextureStage::M_occlusion:
+    return out << "occlusion";
+
+  case TextureStage::M_occlusion_metallic_roughness:
+    return out << "occlusion_metallic_roughness";
   }
 
   return out << "**invalid Mode(" << (int)mode << ")**";

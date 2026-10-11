@@ -81,7 +81,7 @@ read_header(const Filename &filename, PNMFileType *type,
  * Returns true if successful, false on error.
  */
 bool PNMImageHeader::
-read_header(istream &data, const string &filename, PNMFileType *type,
+read_header(istream &data, std::string_view filename, PNMFileType *type,
             bool report_unknown_type) {
   PNMReader *reader = PNMImageHeader::make_reader
     (&data, false, filename, string(), type, report_unknown_type);

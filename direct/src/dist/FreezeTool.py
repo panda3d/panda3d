@@ -102,6 +102,7 @@ defaultHiddenImports = {
     'scipy.stats._stats': ['scipy.special.cython_special'],
     'setuptools.monkey': ['setuptools.msvc'],
     'shapely._geometry_helpers': ['shapely._geos'],
+    'jnius': ['jnius_config'],
 }
 
 
@@ -139,11 +140,22 @@ def getline(filename, lineno, module_globals=None):
     return ''
 
 def clearcache():
-    global cache
-    cache = {}
+    cache.clear()
 
 def getlines(filename, module_globals=None):
     return []
+
+def _getline_from_code(filename, lineno):
+    return ''
+
+def _make_key(code):
+    return (code.co_filename, code.co_qualname, code.co_firstlineno)
+
+def _getlines_from_code(code):
+    return []
+
+def _source_unavailable(filename):
+    return True
 
 def checkcache(filename=None):
     pass
@@ -1237,8 +1249,12 @@ class Freezer:
                 pass
 
         # Check if any new modules we found have "hidden" imports
-        for origName in list(self.mf.modules.keys()):
+        checkHiddenImports = set(self.mf.modules.keys())
+        while checkHiddenImports:
+            origName = next(iter(checkHiddenImports))
+            checkHiddenImports.discard(origName)
             hidden = self.hiddenImports.get(origName, [])
+            preModules = frozenset(self.mf.modules.keys())
             for modname in hidden:
                 if modname.endswith('.*'):
                     mdefs = self._gatherSubmodules(modname, implicit = True)
@@ -1252,6 +1268,9 @@ class Freezer:
                         self.__loadModule(self.ModuleDef(modname, implicit = True))
                     except ImportError:
                         pass
+            addedModules = set(self.mf.modules.keys())
+            addedModules -= preModules
+            checkHiddenImports |= addedModules
 
         # Special case for sysconfig, which depends on a platform-specific
         # sysconfigdata module on POSIX systems.

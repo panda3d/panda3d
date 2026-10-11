@@ -47,7 +47,7 @@ __rmul__(FLOATTYPE scalar) const {
  */
 INLINE_LINMATH std::string Extension<FLOATNAME(LMatrix3)>::
 __repr__() const {
-  char buf[32 * 17] = "LMatrix4";
+  char buf[32 * 17] = "LMatrix3";
   char *p = buf + strlen(buf);
   *(p++) = FLOATTOKEN;
   *(p++) = '(';

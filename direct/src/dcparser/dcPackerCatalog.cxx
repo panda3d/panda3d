@@ -58,7 +58,7 @@ DCPackerCatalog::
  * get_entry().
  */
 int DCPackerCatalog::
-find_entry_by_name(const string &name) const {
+find_entry_by_name(std::string_view name) const {
   EntriesByName::const_iterator ni;
   ni = _entries_by_name.find(name);
   if (ni != _entries_by_name.end()) {

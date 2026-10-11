@@ -67,7 +67,7 @@ PUBLISHED:
     S_per_vertex
   };
 
-  INLINE explicit EggPrimitive(const std::string &name = "");
+  INLINE explicit EggPrimitive(std::string name = "");
   INLINE EggPrimitive(const EggPrimitive &copy);
   INLINE EggPrimitive &operator = (const EggPrimitive &copy);
   INLINE ~EggPrimitive();

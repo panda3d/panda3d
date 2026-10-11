@@ -189,7 +189,7 @@ clear() {
  */
 template<class MorphType>
 void EggMorphList<MorphType>::
-write(std::ostream &out, int indent_level, const std::string &tag,
+write(std::ostream &out, int indent_level, std::string_view tag,
       int num_dimensions) const {
   const_iterator i;
 

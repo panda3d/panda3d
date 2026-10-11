@@ -36,7 +36,7 @@ protected:
   AnimChannelScalarDynamic(AnimGroup *parent, const AnimChannelScalarDynamic &copy);
 
 public:
-  AnimChannelScalarDynamic(const std::string &name);
+  AnimChannelScalarDynamic(std::string name);
 
   virtual bool has_changed(int last_frame, double last_frac,
                            int this_frame, double this_frac);

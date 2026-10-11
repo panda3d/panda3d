@@ -126,14 +126,14 @@ get_joint_membership_index(EggGroup *joint) {
  * Dxyz morph offset should be stored.
  */
 INLINE int QtessSurface::
-get_dxyz_index(const std::string &morph_name) {
+get_dxyz_index(std::string morph_name) {
   MorphTable::iterator mti = _dxyz_table.find(morph_name);
   if (mti != _dxyz_table.end()) {
     return (*mti).second;
   }
   int d = _next_d;
   _next_d += 3;
-  _dxyz_table[morph_name] = d;
+  _dxyz_table[std::move(morph_name)] = d;
   return d;
 }
 
@@ -142,13 +142,13 @@ get_dxyz_index(const std::string &morph_name) {
  * Drgba morph offset should be stored.
  */
 INLINE int QtessSurface::
-get_drgba_index(const std::string &morph_name) {
+get_drgba_index(std::string morph_name) {
   MorphTable::iterator mti = _drgba_table.find(morph_name);
   if (mti != _drgba_table.end()) {
     return (*mti).second;
   }
   int d = _next_d;
   _next_d += 4;
-  _drgba_table[morph_name] = d;
+  _drgba_table[std::move(morph_name)] = d;
   return d;
 }

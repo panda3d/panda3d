@@ -15,7 +15,7 @@
  *
  */
 INLINE VirtualFileMountRamdisk::FileBase::
-FileBase(const std::string &basename) : _basename(basename), _timestamp(time(nullptr)) {
+FileBase(std::string basename) : _basename(std::move(basename)), _timestamp(time(nullptr)) {
 }
 
 /**
@@ -30,8 +30,8 @@ operator < (const FileBase &other) const {
  *
  */
 INLINE VirtualFileMountRamdisk::File::
-File(const std::string &basename) :
-  FileBase(basename),
+File(std::string basename) :
+  FileBase(std::move(basename)),
   _wrapper(&_data, false, true)
 {
 }
@@ -40,5 +40,5 @@ File(const std::string &basename) :
  *
  */
 INLINE VirtualFileMountRamdisk::Directory::
-Directory(const std::string &basename) : FileBase(basename) {
+Directory(std::string basename) : FileBase(std::move(basename)) {
 }

@@ -42,6 +42,7 @@ PUBLISHED:
   };
 
 private:
+  friend class StaticObject<AntialiasAttrib>;
   INLINE AntialiasAttrib(unsigned short mode);
 
 PUBLISHED:

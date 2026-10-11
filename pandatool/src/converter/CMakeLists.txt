@@ -21,3 +21,7 @@ install(TARGETS p3converter
   INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/panda3d
   ARCHIVE COMPONENT ToolsDevel)
 install(FILES ${P3CONVERTER_HEADERS} COMPONENT ToolsDevel DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/panda3d)
+
+add_executable(txo-converter txoConverter.cxx txoConverter.h)
+target_link_libraries(txo-converter p3progbase panda)
+install(TARGETS txo-converter EXPORT Tools COMPONENT Tools DESTINATION ${CMAKE_INSTALL_BINDIR})

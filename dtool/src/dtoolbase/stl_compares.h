@@ -150,12 +150,18 @@ public:
  * This hash_compare class hashes a string.  It assumes the Key is a string or
  * provides begin() and end() methods that iterate through Key::value_type.
  */
-template<class Key, class Compare = std::less<Key> >
+template<class Key, class Compare = std::less<> >
 class sequence_hash : public stl_hash_compare<Key, Compare> {
 public:
+  using is_transparent = void;  // Enables map.find(string_view) etc.
+
   INLINE size_t operator () (const Key &key) const;
   INLINE bool operator () (const Key &a, const Key &b) const {
     return stl_hash_compare<Key, Compare>::operator () (a, b);
+  }
+  template<class A, class B>
+  INLINE bool operator () (const A &a, const B &b) const {
+    return Compare{}(a, b);
   }
   INLINE static size_t add_hash(size_t start, const Key &key);
 };

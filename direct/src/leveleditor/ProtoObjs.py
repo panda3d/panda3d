@@ -2,7 +2,7 @@
 Palette for Prototyping
 """
 import os
-import imp
+import importlib.util
 
 
 class ProtoObjs:
@@ -15,8 +15,13 @@ class ProtoObjs:
     def populate(self):
         moduleName = self.name
         try:
-            file, pathname, description = imp.find_module(moduleName, [self.dirname])
-            module = imp.load_module(moduleName, file, pathname, description)
+            pathname = self.dirname + self.filename
+            spec = importlib.util.spec_from_file_location(moduleName, pathname)
+            if spec is None or spec.loader is None:
+                raise ImportError
+
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
             self.data = module.protoData
         except Exception:
             print(f"{self.name} doesn't exist")

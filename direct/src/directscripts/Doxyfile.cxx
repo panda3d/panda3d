@@ -807,7 +807,6 @@ EXCLUDE                = dtool/src/parser-inc \
                          panda/src/wgldisplay/wglext.h \
                          panda/src/glxdisplay/panda_glxext.h \
                          pandatool/src/gtk-stats \
-                         dtool/src/dtoolbase/fakestringstream.h \
                          dtool/src/dtoolbase/pdtoa.cxx \
                          dtool/src/dtoolutil/panda_getopt_long.h \
                          dtool/src/dtoolutil/panda_getopt_impl.h \
@@ -1979,8 +1978,7 @@ INCLUDE_FILE_PATTERNS  =
 # recursively expanded use the := operator instead of the = operator.
 # This tag requires that the tag ENABLE_PREPROCESSING is set to YES.
 
-PREDEFINED             = TVOLATILE= \
-                         INLINE=inline \
+PREDEFINED             = INLINE=inline \
                          ALWAYS_INLINE=inline \
                          PUBLISHED=public \
                          protected=private \

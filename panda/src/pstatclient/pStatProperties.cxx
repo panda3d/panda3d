@@ -224,7 +224,7 @@ static LevelCollectorProperties level_properties[] = {
  * properties appropriately if it is found.
  */
 static void
-initialize_collector_def_from_table(const string &fullname, PStatCollectorDef *def) {
+initialize_collector_def_from_table(std::string_view fullname, PStatCollectorDef *def) {
   int i;
 
   for (i = 0;

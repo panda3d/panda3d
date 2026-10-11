@@ -117,9 +117,9 @@ set_vertex_space(int i, const NodePath &space) {
  * node relative to the rel_to NodePath when the curve is evaluated.
  */
 INLINE void NurbsCurveEvaluator::
-set_vertex_space(int i, const std::string &space) {
+set_vertex_space(int i, std::string space) {
   nassertv(i >= 0 && i < (int)_vertices.size());
-  _vertices[i].set_space(space);
+  _vertices[i].set_space(std::move(space));
 }
 
 /**

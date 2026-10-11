@@ -22,18 +22,18 @@
 // The magic number for a BAM file.  It includes a carriage return and newline
 // character to help detect files damaged due to faulty ASCIIBinary
 // conversion.
-static const std::string _bam_header = std::string("pbj\0\n\r", 6);
+inline const std::string _bam_header{"pbj\0\n\r", 6};
 
-static const unsigned short _bam_major_ver = 6;
+inline constexpr unsigned short _bam_major_ver = 6;
 // Bumped to major version 2 on 2000-07-06 due to major changes in Character.
 // Bumped to major version 3 on 2000-12-08 to change float64's to float32's.
 // Bumped to major version 4 on 2002-04-10 to store new scene graph.
 // Bumped to major version 5 on 2005-05-06 for new Geom implementation.
 // Bumped to major version 6 on 2006-02-11 to factor out PandaNode::CData.
 
-static const unsigned short _bam_first_minor_ver = 14;
-static const unsigned short _bam_last_minor_ver = 46;
-static const unsigned short _bam_minor_ver = 46;
+inline constexpr unsigned short _bam_first_minor_ver = 14;
+inline constexpr unsigned short _bam_last_minor_ver = 46;
+inline constexpr unsigned short _bam_minor_ver = 46;
 // Bumped to minor version 14 on 2007-12-19 to change default ColorAttrib.
 // Bumped to minor version 15 on 2008-04-09 to add TextureAttrib::_implicit_sort.
 // Bumped to minor version 16 on 2008-05-13 to add Texture::_quality_level.

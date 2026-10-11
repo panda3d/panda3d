@@ -41,8 +41,8 @@ TypeHandle PortalNode::_type_handle;
  * Then you can set the vertices yourself, with addVertex.
  */
 PortalNode::
-PortalNode(const std::string &name) :
-  PandaNode(name),
+PortalNode(std::string name) :
+  PandaNode(std::move(name)),
   _from_portal_mask(PortalMask::all_on()),
   _into_portal_mask(PortalMask::all_on()),
   _flags(0)
@@ -61,8 +61,8 @@ PortalNode(const std::string &name) :
  * portal and setup from Python
  */
 PortalNode::
-PortalNode(const std::string &name, LPoint3 pos, PN_stdfloat scale) :
-  PandaNode(name),
+PortalNode(std::string name, LPoint3 pos, PN_stdfloat scale) :
+  PandaNode(std::move(name)),
   _from_portal_mask(PortalMask::all_on()),
   _into_portal_mask(PortalMask::all_on()),
   _flags(0)
@@ -348,7 +348,7 @@ compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
   // Now actually compute the bounding volume by putting it around all of our
   // vertices.
 
-  const LPoint3 *vertices_begin = &_vertices[0];
+  const LPoint3 *vertices_begin = _vertices.data();
   const LPoint3 *vertices_end = vertices_begin + _vertices.size();
 
   // Now actually compute the bounding volume by putting it around all

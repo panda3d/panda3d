@@ -48,7 +48,7 @@ using std::string;
  * keylen is the length in bytes of the required key hash.
  */
 string
-password_hash(const string &password, const string &salt,
+password_hash(std::string_view password, std::string_view salt,
               int iters, int keylen) {
   nassertr(iters > 0 && keylen > 0, string());
   unsigned char *dk = (unsigned char *)PANDA_MALLOC_ARRAY(keylen);

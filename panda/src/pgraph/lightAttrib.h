@@ -29,6 +29,7 @@
  */
 class EXPCL_PANDA_PGRAPH LightAttrib final : public RenderAttrib {
 protected:
+  friend class StaticObject<LightAttrib>;
   INLINE LightAttrib();
   LightAttrib(const LightAttrib &copy);
 
@@ -167,7 +168,8 @@ public:
     RenderAttrib::init_type();
     register_type(_type_handle, "LightAttrib",
                   RenderAttrib::get_class_type());
-    _attrib_slot = register_slot(_type_handle, 20, new LightAttrib);
+    static StaticObject<LightAttrib> default_attrib;
+    _attrib_slot = register_slot(_type_handle, 20, default_attrib);
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

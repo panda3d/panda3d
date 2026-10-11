@@ -160,7 +160,7 @@ ExecutionEnvironment() {
  * Returns the expanded string.
  */
 string ExecutionEnvironment::
-expand_string(const string &str) {
+expand_string(std::string_view str) {
   string result;
 
   size_t last = 0;

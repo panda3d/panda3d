@@ -32,11 +32,11 @@
  */
 class XFileDataNode : public XFileNode, public XFileDataObject {
 public:
-  XFileDataNode(XFile *x_file, const std::string &name,
+  XFileDataNode(XFile *x_file, std::string_view name,
                 XFileTemplate *xtemplate);
 
   virtual bool is_object() const;
-  virtual bool is_standard_object(const std::string &template_name) const;
+  virtual bool is_standard_object(std::string_view template_name) const;
   virtual std::string get_type_name() const;
 
   INLINE const XFileDataNode &get_data_child(int n) const;

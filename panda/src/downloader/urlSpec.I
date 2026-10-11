@@ -15,7 +15,7 @@
  *
  */
 INLINE URLSpec::
-URLSpec(const std::string &url, bool server_name_expected) {
+URLSpec(std::string_view url, bool server_name_expected) {
   set_url(url, server_name_expected);
 }
 
@@ -24,6 +24,14 @@ URLSpec(const std::string &url, bool server_name_expected) {
  */
 INLINE void URLSpec::
 operator = (const std::string &url) {
+  set_url(url);
+}
+
+/**
+ *
+ */
+INLINE void URLSpec::
+operator = (std::string_view url) {
   set_url(url);
 }
 

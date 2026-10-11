@@ -31,7 +31,7 @@
  */
 class EXPCL_DTOOL_DTOOLUTIL GlobPattern {
 PUBLISHED:
-  INLINE GlobPattern(const std::string &pattern = std::string());
+  INLINE GlobPattern(std::string pattern = std::string());
   INLINE GlobPattern(const GlobPattern &copy);
   INLINE void operator = (const GlobPattern &copy);
 
@@ -39,7 +39,7 @@ PUBLISHED:
   INLINE bool operator != (const GlobPattern &other) const;
   INLINE bool operator < (const GlobPattern &other) const;
 
-  INLINE void set_pattern(const std::string &pattern);
+  INLINE void set_pattern(std::string pattern);
   INLINE const std::string &get_pattern() const;
   MAKE_PROPERTY(pattern, get_pattern, set_pattern);
 
@@ -47,11 +47,11 @@ PUBLISHED:
   INLINE bool get_case_sensitive() const;
   MAKE_PROPERTY(case_sensitive, get_case_sensitive, set_case_sensitive);
 
-  INLINE void set_nomatch_chars(const std::string &nomatch_chars);
+  INLINE void set_nomatch_chars(std::string nomatch_chars);
   INLINE const std::string &get_nomatch_chars() const;
   MAKE_PROPERTY(nomatch_chars, get_nomatch_chars, set_nomatch_chars);
 
-  INLINE bool matches(const std::string &candidate) const;
+  INLINE bool matches(std::string_view candidate) const;
   bool matches_file(Filename candidate) const;
 
   INLINE void output(std::ostream &out) const;
@@ -64,14 +64,10 @@ PUBLISHED:
 #endif
 
 private:
-  bool matches_substr(std::string::const_iterator pi,
-                      std::string::const_iterator pend,
-                      std::string::const_iterator ci,
-                      std::string::const_iterator cend) const;
+  bool matches_substr(const char *pi, const char *pend,
+                      const char *ci, const char *cend) const;
 
-  bool matches_set(std::string::const_iterator &pi,
-                   std::string::const_iterator pend,
-                   char ch) const;
+  bool matches_set(const char *&pi, const char *pend, char ch) const;
 
   int r_match_files(const Filename &prefix, const std::string &suffix,
                     vector_string &results, const Filename &cwd);

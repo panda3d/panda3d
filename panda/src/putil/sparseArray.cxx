@@ -588,6 +588,10 @@ do_intersection(const SparseArray &other) {
     do_remove_range(other._subranges[i]._end, other._subranges[i + 1]._begin);
   }
 
+  if (_subranges.empty()) {
+    return;
+  }
+
   int my_end = (*(_subranges.begin() + _subranges.size() - 1))._end;
   int other_end = (*(other._subranges.begin() + other._subranges.size() - 1))._end;
   do_remove_range(other_end, my_end);

@@ -21,12 +21,12 @@ using std::string;
  * the tag is quoted, with an optional W/ prefix.)
  */
 HTTPEntityTag::
-HTTPEntityTag(const string &text) {
+HTTPEntityTag(std::string_view text) {
   _weak = false;
 
   size_t p = 0;
   if (text.length() >= 2) {
-    string sub = text.substr(0, 2);
+    std::string_view sub = text.substr(0, 2);
     if (sub == "W/" || sub == "w/") {
       _weak = true;
       p = 2;
@@ -65,7 +65,7 @@ get_string() const {
     case '"':
     case '\\':
       result << '\\';
-      // fall through
+      [[fallthrough]];
 
     default:
       result << (*ti);

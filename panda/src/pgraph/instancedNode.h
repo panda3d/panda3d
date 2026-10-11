@@ -33,7 +33,7 @@
  */
 class EXPCL_PANDA_PGRAPH InstancedNode : public PandaNode {
 PUBLISHED:
-  explicit InstancedNode(const std::string &name);
+  explicit InstancedNode(std::string name);
 
 protected:
   InstancedNode(const InstancedNode &copy);

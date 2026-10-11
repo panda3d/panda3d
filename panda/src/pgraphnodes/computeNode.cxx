@@ -27,8 +27,8 @@ TypeHandle ComputeNode::_type_handle;
  * assign a shader using a ShaderAttrib.
  */
 ComputeNode::
-ComputeNode(const std::string &name) :
-  PandaNode(name),
+ComputeNode(std::string name) :
+  PandaNode(std::move(name)),
   _dispatcher(new ComputeNode::Dispatcher)
 {
   set_internal_bounds(new OmniBoundingVolume);

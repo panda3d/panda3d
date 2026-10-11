@@ -42,13 +42,13 @@ TypeHandle IPhoneGraphicsWindow::_type_handle;
  */
 IPhoneGraphicsWindow::
 IPhoneGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
-                     const string &name,
+                     std::string name,
                      const FrameBufferProperties &fb_prop,
                      const WindowProperties &win_prop,
                      int flags,
                      GraphicsStateGuardian *gsg,
                      GraphicsOutput *host) :
-  GraphicsWindow(engine, pipe, name, fb_prop, win_prop, flags, gsg, host)
+  GraphicsWindow(engine, pipe, std::move(name), fb_prop, win_prop, flags, gsg, host)
 {
   IPhoneGraphicsPipe *ipipe;
   DCAST_INTO_V(ipipe, _pipe);

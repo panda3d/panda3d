@@ -22,10 +22,10 @@
  * just used in printing error messages and such.
  */
 SomethingToEgg::
-SomethingToEgg(const std::string &format_name,
-               const std::string &preferred_extension,
+SomethingToEgg(std::string format_name,
+               std::string preferred_extension,
                bool allow_last_param, bool allow_stdout) :
-  EggConverter(format_name, preferred_extension, allow_last_param, allow_stdout)
+  EggConverter(std::move(format_name), std::move(preferred_extension), allow_last_param, allow_stdout)
 {
   clear_runlines();
   if (_allow_last_param) {

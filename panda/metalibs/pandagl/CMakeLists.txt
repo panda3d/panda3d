@@ -17,11 +17,19 @@ elseif(HAVE_COCOA)
   set(PANDAGL_PIPE_TYPE "CocoaGLGraphicsPipe")
   set(PANDAGL_PIPE_INCLUDE "cocoaGLGraphicsPipe.h")
 
+elseif(HAVE_EGL)
+  list(APPEND PANDAGL_LINK_TARGETS p3egldisplay)
+  set(PANDAGL_PIPE_TYPE "eglGraphicsPipe")
+
+  if(HAVE_X11)
+    list(APPEND PANDAGL_LINK_TARGETS p3x11display)
+  endif()
+
 else()
   message("") # Add extra line before error
   message(SEND_ERROR
     "When compiling with OpenGL (HAVE_GL), at least one of:
-  HAVE_WGL, HAVE_COCOA, or HAVE_GLX must be defined.")
+  HAVE_WGL, HAVE_COCOA, HAVE_GLX, or HAVE_EGL must be defined.")
 
 endif()
 
@@ -41,5 +49,22 @@ install(TARGETS pandagl
   EXPORT OpenGL COMPONENT OpenGL
   DESTINATION ${MODULE_DESTINATION}
   ARCHIVE COMPONENT OpenGLDevel)
+
+if(HAVE_EGL AND HAVE_GLX AND NOT WIN32 AND NOT APPLE)
+  # As a temporary solution for #1086, build this module, which we can use as a
+  # fallback to OpenGL for headless systems.
+  set(CMAKE_INSTALL_DEFAULT_COMPONENT_NAME "OpenGLDevel")
+  add_metalib(p3headlessgl ${MODULE_TYPE}
+    INCLUDE "eglGraphicsPipe.h"
+    INIT init_libpandagl pandagl.h
+    EXPORT int get_pipe_type_p3headlessgl "eglGraphicsPipe::get_class_type().get_index()"
+    COMPONENTS p3egldisplay_gl p3glgsg p3glstuff)
+  unset(CMAKE_INSTALL_DEFAULT_COMPONENT_NAME)
+
+  install(TARGETS p3headlessgl
+    EXPORT OpenGL COMPONENT OpenGL
+    DESTINATION ${MODULE_DESTINATION}
+    ARCHIVE COMPONENT OpenGLDevel)
+endif()
 
 export_targets(OpenGL NAMESPACE "Panda3D::OpenGL::" COMPONENT OpenGLDevel)

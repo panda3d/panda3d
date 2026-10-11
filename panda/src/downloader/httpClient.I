@@ -51,8 +51,8 @@ set_client_certificate_filename(const Filename &filename) {
  * client certificate.
  */
 INLINE void HTTPClient::
-set_client_certificate_pem(const std::string &pem) {
-  _client_certificate_pem = pem;
+set_client_certificate_pem(std::string pem) {
+  _client_certificate_pem = std::move(pem);
   _client_certificate_filename = Filename();
   unload_client_certificate();
 }
@@ -62,8 +62,8 @@ set_client_certificate_pem(const std::string &pem) {
  * named by set_client_certificate_filename() or set_client_certificate_pem().
  */
 INLINE void HTTPClient::
-set_client_certificate_passphrase(const std::string &passphrase) {
-  _client_certificate_passphrase = passphrase;
+set_client_certificate_passphrase(std::string passphrase) {
+  _client_certificate_passphrase = std::move(passphrase);
   unload_client_certificate();
 }
 
@@ -116,8 +116,8 @@ get_verify_ssl() const {
  * "DEFAULT" to use the built-in OpenSSL default value.
  */
 INLINE void HTTPClient::
-set_cipher_list(const std::string &cipher_list) {
-  _cipher_list = cipher_list;
+set_cipher_list(std::string cipher_list) {
+  _cipher_list = std::move(cipher_list);
 }
 
 /**
@@ -135,7 +135,7 @@ get_cipher_list() const {
  * C++ code should probably use HTTPAuthorization directly.
  */
 INLINE std::string HTTPClient::
-base64_encode(const std::string &s) {
+base64_encode(std::string_view s) {
   return HTTPAuthorization::base64_encode(s);
 }
 
@@ -145,6 +145,6 @@ base64_encode(const std::string &s) {
  * C++ code should probably use HTTPAuthorization directly.
  */
 INLINE std::string HTTPClient::
-base64_decode(const std::string &s) {
+base64_decode(std::string_view s) {
   return HTTPAuthorization::base64_decode(s);
 }

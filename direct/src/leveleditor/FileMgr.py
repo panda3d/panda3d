@@ -1,5 +1,5 @@
 import os
-import imp
+import importlib.util
 
 
 class FileMgr:
@@ -32,10 +32,10 @@ class FileMgr:
                 f.write(data)
                 f.write('\n')
             f.close()
-            self.editor.updateStatusReadout('Sucessfully saved to %s'%fileName)
+            self.editor.updateStatusReadout(f'Sucessfully saved to {fileName}')
             self.editor.fNeedToSave = False
         except IOError:
-            print('failed to save %s'%fileName)
+            print(f'failed to save {fileName}')
             if f:
                 f.close()
 
@@ -43,10 +43,11 @@ class FileMgr:
         dirname, moduleName = os.path.split(fileName)
         if moduleName.endswith('.py'):
             moduleName = moduleName[:-3]
-        file, pathname, description = imp.find_module(moduleName, [dirname])
+        spec = importlib.util.spec_from_file_location(moduleName, fileName)
         try:
-            module = imp.load_module(moduleName, file, pathname, description)
-            self.editor.updateStatusReadout('Sucessfully opened file %s'%fileName)
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            self.editor.updateStatusReadout(f'Sucessfully opened file {fileName}')
             self.editor.fNeedToSave = False
         except Exception:
-            print('failed to load %s'%fileName)
+            print(f'failed to load {fileName}')

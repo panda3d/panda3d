@@ -168,8 +168,8 @@ is_raw_button_down(ButtonHandle button) const {
  * values.
  */
 INLINE void MouseWatcher::
-set_button_down_pattern(const std::string &pattern) {
-  _button_down_pattern = pattern;
+set_button_down_pattern(std::string pattern) {
+  _button_down_pattern = std::move(pattern);
 }
 
 /**
@@ -186,8 +186,8 @@ get_button_down_pattern() const {
  * when a button is released.  See set_button_down_pattern().
  */
 INLINE void MouseWatcher::
-set_button_up_pattern(const std::string &pattern) {
-  _button_up_pattern = pattern;
+set_button_up_pattern(std::string pattern) {
+  _button_up_pattern = std::move(pattern);
 }
 
 /**
@@ -212,8 +212,8 @@ get_button_up_pattern() const {
  * values.
  */
 INLINE void MouseWatcher::
-set_button_repeat_pattern(const std::string &pattern) {
-  _button_repeat_pattern = pattern;
+set_button_repeat_pattern(std::string pattern) {
+  _button_repeat_pattern = std::move(pattern);
 }
 
 /**
@@ -233,8 +233,8 @@ get_button_repeat_pattern() const {
  * it might be "within" multiple nested regions.
  */
 INLINE void MouseWatcher::
-set_enter_pattern(const std::string &pattern) {
-  _enter_pattern = pattern;
+set_enter_pattern(std::string pattern) {
+  _enter_pattern = std::move(pattern);
 }
 
 /**
@@ -255,8 +255,8 @@ get_enter_pattern() const {
  * it might be "within" multiple nested regions.
  */
 INLINE void MouseWatcher::
-set_leave_pattern(const std::string &pattern) {
-  _leave_pattern = pattern;
+set_leave_pattern(std::string pattern) {
+  _leave_pattern = std::move(pattern);
 }
 
 /**
@@ -277,8 +277,8 @@ get_leave_pattern() const {
  * given time, while it might be "within" multiple nested regions.
  */
 INLINE void MouseWatcher::
-set_within_pattern(const std::string &pattern) {
-  _within_pattern = pattern;
+set_within_pattern(std::string pattern) {
+  _within_pattern = std::move(pattern);
 }
 
 /**
@@ -299,8 +299,8 @@ get_within_pattern() const {
  * given time, while it might be "within" multiple nested regions.
  */
 INLINE void MouseWatcher::
-set_without_pattern(const std::string &pattern) {
-  _without_pattern = pattern;
+set_without_pattern(std::string pattern) {
+  _without_pattern = std::move(pattern);
 }
 
 /**
@@ -483,8 +483,8 @@ clear_inactivity_timeout() {
  * timeout counter expires.  See set_inactivity_timeout().
  */
 INLINE void MouseWatcher::
-set_inactivity_timeout_event(const std::string &event) {
-  _inactivity_timeout_event = event;
+set_inactivity_timeout_event(std::string event) {
+  _inactivity_timeout_event = std::move(event);
 }
 
 /**

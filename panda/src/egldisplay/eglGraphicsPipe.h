@@ -67,7 +67,7 @@ public:
   INLINE EGLDisplay get_egl_display() const;
 
 protected:
-  virtual PT(GraphicsOutput) make_output(const std::string &name,
+  virtual PT(GraphicsOutput) make_output(std::string_view name,
                                          const FrameBufferProperties &fb_prop,
                                          const WindowProperties &win_prop,
                                          int flags,
@@ -76,6 +76,8 @@ protected:
                                          GraphicsOutput *host,
                                          int retry,
                                          bool &precertify);
+
+  virtual void release_current_context();
 
 private:
   EGLDisplay _egl_display = 0;

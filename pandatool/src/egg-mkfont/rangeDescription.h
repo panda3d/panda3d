@@ -25,7 +25,7 @@ class RangeDescription {
 public:
   RangeDescription();
 
-  bool parse_parameter(const std::string &param);
+  bool parse_parameter(std::string_view param);
   INLINE void add_singleton(int code);
   INLINE void add_range(int from_code, int to_code);
   INLINE bool is_empty() const;
@@ -33,9 +33,9 @@ public:
   void output(std::ostream &out) const;
 
 private:
-  bool parse_word(const std::string &word);
-  bool parse_code(const std::string &word, int &code);
-  bool parse_bracket(const std::string &str);
+  bool parse_word(std::string_view word);
+  bool parse_code(std::string_view word, int &code);
+  bool parse_bracket(std::string_view str);
 
 private:
   class Range {

@@ -162,7 +162,7 @@ set_root(const Filename &root) {
  * record to disk.
  */
 PT(BamCacheRecord) BamCache::
-lookup(const Filename &source_filename, const string &cache_extension) {
+lookup(const Filename &source_filename, std::string_view cache_extension) {
   ReMutexHolder holder(_lock);
   consider_flush_index();
 
@@ -1047,7 +1047,7 @@ reset_in_memory_index() {
  * fullpath string to the source filename.
  */
 string BamCache::
-hash_filename(const string &filename) {
+hash_filename(std::string_view filename) {
   // Use the MD5 hash of the filename.
   HashVal hv;
   hv.hash_string(filename);

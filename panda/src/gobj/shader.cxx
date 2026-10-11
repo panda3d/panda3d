@@ -47,7 +47,7 @@ CGcontext Shader::_cg_context = 0;
  * parameter.
  */
 void Shader::
-cp_report_error(ShaderArgInfo &p, const string &msg) {
+cp_report_error(ShaderArgInfo &p, std::string_view msg) {
 
   string vstr;
   if (p._varying) {
@@ -742,7 +742,7 @@ cp_add_mat_spec(ShaderMatSpec &spec) {
     spec._cache_offset[p] = offset + begin[p] * size;
   }
   if (spec._func == SMF_shader_input_ptr) {
-    _mat_scratch_size = std::max(_mat_scratch_size, spec._array_count);
+    _mat_scratch_size = std::max(_mat_scratch_size, spec._array_count * ((spec._num_components + 3) / 4));
 
     // We specify SSD_frame because a PTA may be modified by the app from
     // frame to frame, and we have no way to know.  So, we must respecify a
@@ -812,7 +812,7 @@ cg_recurse_parameters(CGparameter parameter, const ShaderType &type,
 
             arg_dim[0]  = cgGetArraySize(parameter, 0);
 
-            // Fall through
+            [[fallthrough]];
           default: {
             arg_dim[1] = cgGetParameterRows(parameter);
             arg_dim[2] = cgGetParameterColumns(parameter);

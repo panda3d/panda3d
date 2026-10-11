@@ -35,13 +35,13 @@ DCTypedef(DCParameter *parameter, bool implicit) :
  * Creates a bogus typedef reference.
  */
 DCTypedef::
-DCTypedef(const string &name) :
+DCTypedef(string name) :
   _parameter(new DCSimpleParameter(ST_invalid)),
   _bogus_typedef(true),
   _implicit_typedef(false),
   _number(-1)
 {
-  _parameter->set_name(name);
+  _parameter->set_name(std::move(name));
 }
 
 /**

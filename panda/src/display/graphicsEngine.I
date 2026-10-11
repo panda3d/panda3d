@@ -104,7 +104,7 @@ close_gsg(GraphicsPipe *pipe, GraphicsStateGuardian *gsg) {
  * sharing of resources.
  */
 INLINE GraphicsOutput *GraphicsEngine::
-make_buffer(GraphicsOutput *host, const std::string &name,
+make_buffer(GraphicsOutput *host, std::string_view name,
             int sort, int x_size, int y_size) {
   GraphicsOutput *result = make_output(host->get_pipe(), name, sort,
                                        FrameBufferProperties(),
@@ -130,7 +130,7 @@ make_buffer(GraphicsOutput *host, const std::string &name,
  * the first parameter.
  */
 INLINE GraphicsOutput *GraphicsEngine::
-make_buffer(GraphicsStateGuardian *gsg, const std::string &name,
+make_buffer(GraphicsStateGuardian *gsg, std::string_view name,
             int sort, int x_size, int y_size) {
   FrameBufferProperties fb_props = FrameBufferProperties::get_default();
   fb_props.set_back_buffers(0);
@@ -152,7 +152,7 @@ make_buffer(GraphicsStateGuardian *gsg, const std::string &name,
  * Syntactic shorthand for make_buffer.
  */
 INLINE GraphicsOutput *GraphicsEngine::
-make_parasite(GraphicsOutput *host, const std::string &name,
+make_parasite(GraphicsOutput *host, std::string_view name,
               int sort, int x_size, int y_size) {
   GraphicsOutput *result = make_output(host->get_pipe(), name, sort,
                                        FrameBufferProperties(),
@@ -195,29 +195,20 @@ run_on_draw_thread(Callable &&callable) -> decltype(callable()) {
  */
 template<class Callable>
 INLINE auto GraphicsEngine::RenderThread::
-run_on_thread(Callable &&callable) ->
-  typename std::enable_if<!std::is_void<decltype(callable())>::value, decltype(callable())>::type {
-
+run_on_thread(Callable &&callable) -> decltype(callable()) {
   using ReturnType = decltype(callable());
-  alignas(ReturnType) unsigned char storage[sizeof(ReturnType)];
+  if constexpr (std::is_void<ReturnType>::value) {
+    run_on_thread([] (RenderThread *data) {
+      std::move(*(Callable *)data->_callback_data)();
+    }, &callable, nullptr);
+  } else {
+    alignas(ReturnType) unsigned char storage[sizeof(ReturnType)];
 
-  run_on_thread([] (RenderThread *data) {
-    new (data->_return_data) ReturnType(std::move(*(Callable *)data->_callback_data)());
-  }, &callable, storage);
+    run_on_thread([] (RenderThread *data) {
+      new (data->_return_data) ReturnType(std::move(*(Callable *)data->_callback_data)());
+    }, &callable, storage);
 
-  return *(ReturnType *)storage;
-}
-
-/**
- * Waits for this thread to become idle, then runs the given function on it.
- */
-template<class Callable>
-INLINE auto GraphicsEngine::RenderThread::
-run_on_thread(Callable &&callable) ->
-  typename std::enable_if<std::is_void<decltype(callable())>::value, decltype(callable())>::type {
-
-  run_on_thread([] (RenderThread *data) {
-    std::move(*(Callable *)data->_callback_data)();
-  }, &callable, nullptr);
+    return *std::launder(reinterpret_cast<ReturnType *>(storage));
+  }
 }
 #endif  // CPPPARSER

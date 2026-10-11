@@ -53,7 +53,7 @@ PUBLISHED:
   };
 
   DSearchPath() = default;
-  explicit DSearchPath(const std::string &path, const std::string &separator = std::string());
+  explicit DSearchPath(std::string_view path, std::string_view separator = std::string_view());
   explicit DSearchPath(const Filename &directory);
   DSearchPath(const DSearchPath &copy) = default;
   DSearchPath(DSearchPath &&from) = default;
@@ -65,8 +65,8 @@ PUBLISHED:
   void clear();
   void append_directory(const Filename &directory);
   void prepend_directory(const Filename &directory);
-  void append_path(const std::string &path,
-                   const std::string &separator = std::string());
+  void append_path(std::string_view path,
+                   std::string_view separator = std::string_view());
   void append_path(const DSearchPath &path);
   void prepend_path(const DSearchPath &path);
 
@@ -81,10 +81,10 @@ PUBLISHED:
   INLINE Results find_all_files(const Filename &filename) const;
 
   INLINE static Filename
-  search_path(const Filename &filename, const std::string &path,
-              const std::string &separator = std::string());
+  search_path(const Filename &filename, std::string_view path,
+              std::string_view separator = std::string_view());
 
-  void output(std::ostream &out, const std::string &separator = std::string()) const;
+  void output(std::ostream &out, std::string_view separator = std::string_view()) const;
   void write(std::ostream &out, int indent_level = 0) const;
 
 private:

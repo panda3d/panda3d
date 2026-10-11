@@ -51,7 +51,7 @@ private:
   void convert_group(EggGroup *egg_group, FltBead *flt_node,
                      FltGeometry::BillboardType billboard);
   void apply_transform(EggTransform *egg_transform, FltBead *flt_node);
-  void apply_egg_syntax(const std::string &egg_syntax, FltRecord *flt_record);
+  void apply_egg_syntax(std::string_view egg_syntax, FltRecord *flt_record);
   FltVertex *get_flt_vertex(EggVertex *egg_vertex, EggNode *context);
   FltTexture *get_flt_texture(EggTexture *egg_texture);
 

@@ -75,11 +75,11 @@ PUBLISHED:
   INLINE void add_be_float32(PN_float32 value);
   INLINE void add_be_float64(PN_float64 value);
 
-  INLINE void add_string(const std::string &str);
-  INLINE void add_string32(const std::string &str);
-  INLINE void add_z_string(const std::string &str);
-  INLINE void add_fixed_string(const std::string &str, size_t size);
-  void add_wstring(const std::wstring &str);
+  INLINE void add_string(std::string_view str);
+  INLINE void add_string32(std::string_view str);
+  INLINE void add_z_string(std::string_view str);
+  INLINE void add_fixed_string(std::string_view str, size_t size);
+  void add_wstring(std::wstring_view str);
 
   INLINE void add_blob(const vector_uchar &);
   INLINE void add_blob32(const vector_uchar &);
@@ -159,9 +159,9 @@ generic_write_datagram(Datagram &dest, float value);
 INLINE void
 generic_write_datagram(Datagram &dest, double value);
 INLINE void
-generic_write_datagram(Datagram &dest, const std::string &value);
+generic_write_datagram(Datagram &dest, std::string_view value);
 INLINE void
-generic_write_datagram(Datagram &dest, const std::wstring &value);
+generic_write_datagram(Datagram &dest, std::wstring_view value);
 INLINE void
 generic_write_datagram(Datagram &dest, const vector_uchar &value);
 

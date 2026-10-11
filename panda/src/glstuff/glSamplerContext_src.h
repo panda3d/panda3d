@@ -25,13 +25,15 @@ class CLP(GraphicsStateGuardian);
  */
 class EXPCL_GL CLP(SamplerContext) : public SamplerContext {
 public:
-  INLINE CLP(SamplerContext)(CLP(GraphicsStateGuardian) *glgsg,
-                             const SamplerState &sampler);
+  CLP(SamplerContext)(CLP(GraphicsStateGuardian) *glgsg,
+                      const SamplerState &sampler);
   ALLOC_DELETED_CHAIN(CLP(SamplerContext));
 
   virtual ~CLP(SamplerContext)();
   virtual void evict_lru();
   void reset_data();
+
+  virtual uint64_t get_native_id() const;
 
   // This is the GL "name" of the sampler object.
   GLuint _index;

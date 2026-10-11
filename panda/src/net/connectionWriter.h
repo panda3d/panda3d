@@ -35,7 +35,7 @@ class NetAddress;
 class EXPCL_PANDA_NET ConnectionWriter {
 PUBLISHED:
   explicit ConnectionWriter(ConnectionManager *manager, int num_threads,
-                            const std::string &thread_name = std::string());
+                            std::string_view thread_name = std::string_view());
   ~ConnectionWriter();
 
   void set_max_queue_size(int max_size);
@@ -83,7 +83,7 @@ private:
 
   class WriterThread : public Thread {
   public:
-    WriterThread(ConnectionWriter *writer, const std::string &thread_name,
+    WriterThread(ConnectionWriter *writer, std::string_view thread_name,
                  int thread_index);
     virtual void thread_main();
 

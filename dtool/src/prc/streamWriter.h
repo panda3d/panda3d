@@ -64,21 +64,21 @@ PUBLISHED:
   BLOCKING INLINE void add_be_float32(float value);
   BLOCKING INLINE void add_be_float64(PN_float64 value);
 
-  BLOCKING INLINE void add_string(const std::string &str);
-  BLOCKING INLINE void add_string32(const std::string &str);
+  BLOCKING INLINE void add_string(std::string_view str);
+  BLOCKING INLINE void add_string32(std::string_view str);
   BLOCKING INLINE void add_z_string(std::string str);
-  BLOCKING INLINE void add_fixed_string(const std::string &str, size_t size);
+  BLOCKING INLINE void add_fixed_string(std::string_view str, size_t size);
 
   BLOCKING void pad_bytes(size_t size);
   PY_EXTENSION(void append_data(PyObject *data));
 
   BLOCKING INLINE void flush();
 
-  BLOCKING INLINE void write(const std::string &str);
+  BLOCKING INLINE void write(std::string_view str);
 
 public:
   BLOCKING INLINE void append_data(const void *data, size_t size);
-  BLOCKING INLINE void append_data(const std::string &data);
+  BLOCKING INLINE void append_data(std::string_view data);
 
 private:
   std::ostream *_out;

@@ -109,8 +109,8 @@ get_task_manager() const {
  * is the initial name of the Loader object.
  */
 INLINE void Loader::
-set_task_chain(const std::string &task_chain) {
-  _task_chain = task_chain;
+set_task_chain(std::string task_chain) {
+  _task_chain = std::move(task_chain);
 }
 
 /**

@@ -30,11 +30,11 @@
  */
 class EXPCL_PANDA_CULL CullBinBackToFront : public CullBin {
 public:
-  INLINE CullBinBackToFront(const std::string &name,
+  INLINE CullBinBackToFront(std::string name,
                             GraphicsStateGuardianBase *gsg,
                             const PStatCollector &draw_region_pcollector);
 
-  static CullBin *make_bin(const std::string &name,
+  static CullBin *make_bin(std::string name,
                            GraphicsStateGuardianBase *gsg,
                            const PStatCollector &draw_region_pcollector);
 

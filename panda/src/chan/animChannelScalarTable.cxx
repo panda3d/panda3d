@@ -47,8 +47,8 @@ AnimChannelScalarTable(AnimGroup *parent, const AnimChannelScalarTable &copy) :
  *
  */
 AnimChannelScalarTable::
-AnimChannelScalarTable(AnimGroup *parent, const std::string &name) :
-  AnimChannelScalar(parent, name),
+AnimChannelScalarTable(AnimGroup *parent, std::string name) :
+  AnimChannelScalar(parent, std::move(name)),
   _table(get_class_type())
 {
 }

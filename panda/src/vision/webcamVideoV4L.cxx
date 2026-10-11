@@ -94,7 +94,7 @@ TypeHandle WebcamVideoV4L::_type_handle;
  *
  */
 void WebcamVideoV4L::
-add_options_for_size(int fd, const std::string &dev, const char *name, unsigned width, unsigned height, unsigned pixelformat) {
+add_options_for_size(int fd, std::string_view dev, const char *name, unsigned width, unsigned height, unsigned pixelformat) {
   struct v4l2_frmivalenum frmivalenum;
   for (int k = 0;; k++) {
     memset(&frmivalenum, 0, sizeof frmivalenum);

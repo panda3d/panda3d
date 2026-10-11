@@ -53,8 +53,8 @@ private:
 
 public:
   Person() {}
-  Person(const std::string &name, const sex Gender) :
-     _name(name), myGender(Gender), _bro(nullptr), _sis(nullptr) {
+  Person(std::string name, const sex Gender) :
+     _name(std::move(name)), myGender(Gender), _bro(nullptr), _sis(nullptr) {
 
   }
   virtual ~Person() {
@@ -100,7 +100,7 @@ private:
 
 public:
   Parent() {}
-  Parent(const std::string &name, const sex Gender) : Person(name, Gender) {
+  Parent(std::string name, const sex Gender) : Person(std::move(name), Gender) {
 
   }
   virtual ~Parent() {
@@ -146,7 +146,7 @@ private:
 
 public:
   Child() {}
-  Child(const std::string &name, const sex Gender) : Person(name, Gender) {
+  Child(std::string name, const sex Gender) : Person(std::move(name), Gender) {
 
   }
   virtual ~Child() {

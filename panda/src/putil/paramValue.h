@@ -22,6 +22,7 @@
 #include "bamReader.h"
 #include "bamWriter.h"
 #include "luse.h"
+#include "vector_uchar.h"
 
 /**
  * A non-template base class of ParamValue (below), which serves mainly to
@@ -104,7 +105,7 @@ protected:
   INLINE ParamValue();
 
 PUBLISHED:
-  INLINE ParamValue(const Type &value);
+  INLINE ParamValue(Type value);
   INLINE virtual ~ParamValue();
 
   INLINE virtual TypeHandle get_value_type() const;
@@ -130,7 +131,7 @@ public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
-  static void init_type(const std::string &type_name = "UndefinedParamValue") {
+  static void init_type(std::string_view type_name = "UndefinedParamValue") {
     ParamValueBase::init_type();
     _type_handle = register_dynamic_type
       (type_name, ParamValueBase::get_class_type());
@@ -152,6 +153,7 @@ private:
 
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_PUTIL, EXPTP_PANDA_PUTIL, ParamValue<std::string>);
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_PUTIL, EXPTP_PANDA_PUTIL, ParamValue<std::wstring>);
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_PUTIL, EXPTP_PANDA_PUTIL, ParamValue<vector_uchar>);
 
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_PUTIL, EXPTP_PANDA_PUTIL, ParamValue<LVecBase2d>);
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_PUTIL, EXPTP_PANDA_PUTIL, ParamValue<LVecBase2f>);
@@ -173,6 +175,7 @@ EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_PUTIL, EXPTP_PANDA_PUTIL, ParamValue<LMatrix4f
 
 typedef ParamValue<std::string> ParamString;
 typedef ParamValue<std::wstring> ParamWstring;
+typedef ParamValue<vector_uchar> ParamBytes;
 
 typedef ParamValue<LVecBase2d> ParamVecBase2d;
 typedef ParamValue<LVecBase2f> ParamVecBase2f;

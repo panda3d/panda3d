@@ -15,7 +15,7 @@
  *
  */
 INLINE EggTriangleStrip::
-EggTriangleStrip(const std::string &name) : EggCompositePrimitive(name) {
+EggTriangleStrip(std::string name) : EggCompositePrimitive(std::move(name)) {
 }
 
 /**

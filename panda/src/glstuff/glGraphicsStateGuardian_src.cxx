@@ -107,7 +107,7 @@ static PStatCollector _create_map_pbo_pcollector("Draw:Transfer data:Texture:Cre
 static PStatCollector _load_texture_copy_pcollector("Draw:Transfer data:Texture:Copy/Convert");
 
 #if defined(HAVE_CG) && !defined(OPENGLES)
-AtomicAdjust::Integer CLP(GraphicsStateGuardian)::_num_gsgs_with_cg_contexts = 0;
+patomic<int> CLP(GraphicsStateGuardian)::_num_gsgs_with_cg_contexts { 0 };
 small_vector<CGcontext> CLP(GraphicsStateGuardian)::_destroyed_cg_contexts;
 #endif
 
@@ -1337,10 +1337,12 @@ reset() {
   if (is_at_least_gl_version(4, 3) || has_extension("GL_ARB_clear_buffer_object")) {
     _glClearBufferData = (PFNGLCLEARBUFFERDATAPROC)
       get_extension_func("glClearBufferData");
+    _glClearBufferSubData = (PFNGLCLEARBUFFERSUBDATAPROC)
+      get_extension_func("glClearBufferSubData");
 
-    if (_glClearBufferData == nullptr) {
+    if (_glClearBufferData == nullptr || _glClearBufferSubData == nullptr) {
       GLCAT.warning()
-        << "GL_ARB_clear_buffer_object advertised as supported by OpenGL runtime, but could not get pointers to extension function.\n";
+        << "GL_ARB_clear_buffer_object advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
     } else {
       _supports_clear_buffer = true;
     }
@@ -2057,7 +2059,8 @@ reset() {
   // Check for support for other types of shaders that can be used by Cg.
   _supports_basic_shaders = false;
 #if defined(HAVE_CG) && !defined(OPENGLES)
-  if (has_extension("GL_ARB_vertex_program") &&
+  if (may_support_cg_shaders() &&
+      has_extension("GL_ARB_vertex_program") &&
       has_extension("GL_ARB_fragment_program")) {
     _supports_basic_shaders = true;
     _shader_caps._active_vprofile = (int)CG_PROFILE_ARBVP1;
@@ -2833,6 +2836,15 @@ reset() {
       _glMapNamedBufferRange = (PFNGLMAPNAMEDBUFFERRANGEPROC)
         get_extension_func("glMapNamedBufferRange");
     }
+
+    _glNamedBufferSubData = (PFNGLNAMEDBUFFERSUBDATAPROC)
+      get_extension_func("glNamedBufferSubData");
+    _glClearNamedBufferSubData = (PFNGLCLEARNAMEDBUFFERSUBDATAPROC)
+      get_extension_func("glClearNamedBufferSubData");
+    _glCopyNamedBufferSubData = (PFNGLCOPYNAMEDBUFFERSUBDATAPROC)
+      get_extension_func("glCopyNamedBufferSubData");
+    _glGetNamedBufferSubData = (PFNGLGETNAMEDBUFFERSUBDATAPROC)
+      get_extension_func("glGetNamedBufferSubData");
 
     _supports_dsa = true;
   } else {
@@ -3986,8 +3998,8 @@ reset() {
   }
   _auto_detect_shader_model = _shader_model;
 
-  if (GLCAT.is_debug()) {
 #ifdef HAVE_CG
+  if (GLCAT.is_debug() && may_support_cg_shaders()) {
 #if CG_VERSION_NUM >= 2200
     GLCAT.debug() << "Supported Cg profiles:\n";
     int num_profiles = cgGetNumSupportedProfiles();
@@ -4025,8 +4037,10 @@ reset() {
     GLCAT.debug()
       << "Cg active geometry profile = "
       << cgGetProfileString((CGprofile)_shader_caps._active_gprofile) << "\n";
+  }
 #endif  // HAVE_CG
 
+  if (GLCAT.is_debug()) {
     GLCAT.debug() << "shader model = " << _shader_model << "\n";
   }
 #endif  // !OPENGLES
@@ -4577,7 +4591,7 @@ begin_frame(Thread *current_thread) {
 #endif  // NDEBUG
 
 #ifndef OPENGLES
-  if (_current_properties->get_srgb_color()) {
+  if (_current_properties != nullptr && _current_properties->get_srgb_color()) {
     glEnable(GL_FRAMEBUFFER_SRGB);
   }
 #endif
@@ -4624,7 +4638,7 @@ end_frame(Thread *current_thread) {
   report_my_gl_errors();
 
 #ifndef OPENGLES
-  if (_current_properties->get_srgb_color()) {
+  if (_current_properties != nullptr && _current_properties->get_srgb_color()) {
     glDisable(GL_FRAMEBUFFER_SRGB);
   }
 #endif
@@ -7016,6 +7030,22 @@ prepare_shader(Shader *se) {
 void CLP(GraphicsStateGuardian)::
 release_shader(ShaderContext *sc) {
 #ifndef OPENGLES_1
+  if (_vertex_array_shader_context == sc) {
+    _vertex_array_shader = nullptr;
+    _vertex_array_shader_context = nullptr;
+  }
+
+  if (_texture_binding_shader_context == sc) {
+    _texture_binding_shader = nullptr;
+    _texture_binding_shader_context = nullptr;
+  }
+
+  if (_current_shader_context == sc) {
+    sc->unbind();
+    _current_shader = nullptr;
+    _current_shader_context = nullptr;
+  }
+
   if (sc->is_of_type(CLP(ShaderContext)::get_class_type())) {
     ((CLP(ShaderContext) *)sc)->release_resources();
   }
@@ -7024,7 +7054,7 @@ release_shader(ShaderContext *sc) {
     ((CLP(CgShaderContext) *)sc)->release_resources();
   }
 #endif
-#endif
+#endif  // !OPENGLES_1
 
   delete sc;
 }
@@ -7610,6 +7640,9 @@ prepare_shader_buffer(ShaderBuffer *data) {
       if (data->get_usage_hint() == GeomEnums::UH_client) {
         flags |= GL_CLIENT_STORAGE_BIT;
       }
+      if (data->get_usage_hint() == GeomEnums::UH_dynamic) {
+        flags |= GL_DYNAMIC_STORAGE_BIT;
+      }
       _glBufferStorage(GL_SHADER_STORAGE_BUFFER, num_bytes, data->get_initial_data(), flags);
     } else {
       _glBufferData(GL_SHADER_STORAGE_BUFFER, num_bytes, data->get_initial_data(), get_usage(data->get_usage_hint()));
@@ -7692,6 +7725,12 @@ release_shader_buffer(BufferContext *bc) {
     _current_sbuffer_index = 0;
   }
 
+  for (GLuint &index : _current_sbuffer_base) {
+    if (index == gbc->_index) {
+      index = 0;
+    }
+  }
+
   _glDeleteBuffers(1, &gbc->_index);
   report_my_gl_errors();
 
@@ -7731,6 +7770,12 @@ release_shader_buffers(const pvector<BufferContext *> &contexts) {
       _current_sbuffer_index = 0;
     }
 
+    for (GLuint &index : _current_sbuffer_base) {
+      if (index == gbc->_index) {
+        index = 0;
+      }
+    }
+
     if (debug) {
       GLCAT.debug()
         << "deleting shader buffer " << gbc->_index << "\n";
@@ -7748,34 +7793,160 @@ release_shader_buffers(const pvector<BufferContext *> &contexts) {
 
 /**
  * This method should only be called by the GraphicsEngine.  Do not call it
- * directly; call GraphicsEngine::extract_texture_data() instead.
+ * directly; call GraphicsEngine::update_shader_buffer_data() instead.
  *
- * This method will be called in the draw thread to download the buffer's
- * current contents synchronously.
+ * This method will be called in the draw thread to upload data to (a part of)
+ * the shader buffer from the CPU.  If data is null, clears the buffer instead.
  */
 bool CLP(GraphicsStateGuardian)::
-extract_shader_buffer_data(ShaderBuffer *buffer, vector_uchar &data) {
+update_shader_buffer_data(ShaderBuffer *buffer, size_t start, size_t size,
+                          const unsigned char *data) {
+  nassertr(buffer->get_usage_hint() == GeomEnums::UH_dynamic, false);
+
   BufferContext *bc = buffer->prepare_now(get_prepared_objects(), this);
   if (bc == nullptr || !bc->is_of_type(CLP(BufferContext)::get_class_type())) {
     return false;
   }
   CLP(BufferContext) *gbc = DCAST(CLP(BufferContext), bc);
 
-  data.resize(buffer->get_data_size_bytes());
+  if (_glMemoryBarrier != nullptr) {
+    _glMemoryBarrier(GL_BUFFER_UPDATE_BARRIER_BIT);
+  }
+
+#ifndef OPENGLES
+  if (_supports_dsa) {
+    if (data != nullptr) {
+      _glNamedBufferSubData(gbc->_index, start, size, data);
+    }
+    else if (_supports_clear_buffer) {
+      _glClearNamedBufferSubData(gbc->_index, GL_R8, start, size, GL_RED, GL_UNSIGNED_BYTE, nullptr);
+    }
+    else {
+      void *null_data = calloc(1, size);
+      _glNamedBufferSubData(gbc->_index, start, size, null_data);
+      free(null_data);
+    }
+  } else
+#endif
+  {
+    _glBindBuffer(GL_SHADER_STORAGE_BUFFER, gbc->_index);
+    if (data != nullptr) {
+      _glBufferSubData(GL_SHADER_STORAGE_BUFFER, start, size, data);
+    }
+#ifndef OPENGLES
+    else if (_supports_clear_buffer) {
+      _glClearBufferSubData(GL_SHADER_STORAGE_BUFFER, GL_R8, start, size, GL_RED, GL_UNSIGNED_BYTE, nullptr);
+    }
+#endif
+    else {
+      void *null_data = calloc(1, size);
+      _glBufferSubData(GL_SHADER_STORAGE_BUFFER, start, size, null_data);
+      free(null_data);
+    }
+    _glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+    _current_sbuffer_index = 0;
+  }
+  report_my_gl_errors();
+
+  if (data != nullptr || !_supports_clear_buffer) {
+    _data_transferred_pcollector.add_level(size);
+  }
+  return false;
+}
+
+/**
+ * This method should only be called by the GraphicsEngine.  Do not call it
+ * directly; call GraphicsEngine::extract_texture_data() instead.
+ *
+ * This method will be called in the draw thread to download the buffer's
+ * current contents synchronously.
+ */
+bool CLP(GraphicsStateGuardian)::
+extract_shader_buffer_data(ShaderBuffer *buffer, vector_uchar &data,
+                           size_t start, size_t size) {
+  BufferContext *bc = buffer->prepare_now(get_prepared_objects(), this);
+  if (bc == nullptr || !bc->is_of_type(CLP(BufferContext)::get_class_type())) {
+    return false;
+  }
+  CLP(BufferContext) *gbc = DCAST(CLP(BufferContext), bc);
+
+  size_t total_size = buffer->get_data_size_bytes();
+  if (start >= total_size) {
+    data.clear();
+    return true;
+  }
+
+  data.resize(std::min(total_size - start, size));
 
   if (_glMemoryBarrier != nullptr) {
     _glMemoryBarrier(GL_BUFFER_UPDATE_BARRIER_BIT);
   }
 
-  _glBindBuffer(GL_SHADER_STORAGE_BUFFER, gbc->_index);
-
-  _glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, data.size(), &data[0]);
-
-  _glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-  _current_sbuffer_index = 0;
+  if (_supports_dsa) {
+    _glGetNamedBufferSubData(gbc->_index, start, data.size(), &data[0]);
+  } else {
+    _glBindBuffer(GL_SHADER_STORAGE_BUFFER, gbc->_index);
+    _glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, start, data.size(), &data[0]);
+    _glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+    _current_sbuffer_index = 0;
+  }
   report_my_gl_errors();
 
   return true;
+}
+#endif
+
+#ifndef OPENGLES
+/**
+ * Asynchronous version of extract_shader_buffer_data.  It is the caller's
+ * responsibility that the data argument outlasts the token.
+ */
+void CLP(GraphicsStateGuardian)::
+async_extract_shader_buffer_data(ShaderBuffer *buffer, vector_uchar &data,
+                                 size_t start, size_t size, CompletionToken token) {
+  BufferContext *bc = buffer->prepare_now(get_prepared_objects(), this);
+  if (bc == nullptr || !bc->is_of_type(CLP(BufferContext)::get_class_type())) {
+    token.complete(false);
+    return;
+  }
+
+  CLP(BufferContext) *gbc = DCAST(CLP(BufferContext), bc);
+
+  size_t total_size = buffer->get_data_size_bytes();
+  if (start >= total_size) {
+    data.clear();
+    token.complete(true);
+    return;
+  }
+
+  size = std::min(total_size - start, size);
+
+  GLuint staging_buffer = 0;
+  void *mapped_ptr = nullptr;
+
+  bind_new_client_buffer(staging_buffer, mapped_ptr, GL_COPY_WRITE_BUFFER, size);
+  if (_glMemoryBarrier != nullptr) {
+    _glMemoryBarrier(GL_BUFFER_UPDATE_BARRIER_BIT);
+  }
+
+  _glBindBuffer(GL_SHADER_STORAGE_BUFFER, gbc->_index);
+  _glCopyBufferSubData(GL_SHADER_STORAGE_BUFFER, GL_COPY_WRITE_BUFFER, start, 0, size);
+  _glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+  _glBindBuffer(GL_COPY_WRITE_BUFFER, 0);
+  _current_sbuffer_index = 0;
+
+  if (_supports_buffer_storage && _glMemoryBarrier != nullptr) {
+    _glMemoryBarrier(GL_CLIENT_MAPPED_BUFFER_BARRIER_BIT);
+  }
+
+  insert_fence([=, &data, token = std::move(token)] (bool success) mutable {
+    if (success) {
+      data = vector_uchar((const unsigned char *)mapped_ptr, (const unsigned char *)mapped_ptr + size);
+      token.complete(true);
+    } else {
+      token.complete(false);
+    }
+  });
 }
 #endif
 
@@ -8200,6 +8371,7 @@ framebuffer_copy_to_ram(Texture *tex, int view, int z,
                         const DisplayRegion *dr, const RenderBuffer &rb,
                         ScreenshotRequest *request) {
   nassertr(tex != nullptr && dr != nullptr, false);
+  nassertr(_current_properties != nullptr, false);
   set_read_buffer(rb._buffer_type);
   glPixelStorei(GL_PACK_ALIGNMENT, 1);
   clear_color_write_mask();
@@ -9140,7 +9312,7 @@ do_issue_material() {
 
   call_glMaterialfv(face, GL_SPECULAR, material->get_specular());
   call_glMaterialfv(face, GL_EMISSION, material->get_emission());
-  glMaterialf(face, GL_SHININESS, max(min(material->get_shininess(), (PN_stdfloat)128), (PN_stdfloat)0));
+  glMaterialf(face, GL_SHININESS, std::clamp(material->get_shininess(), (PN_stdfloat)0, (PN_stdfloat)128));
 
   if ((material->has_ambient() && material->has_diffuse()) || material->has_base_color()) {
     // The material has both an ambient and diffuse specified.  This means we
@@ -9561,7 +9733,7 @@ bind_light(Spotlight *light_obj, const NodePath &light, int light_id) {
   call_glLightfv(id, GL_POSITION, fpos);
   call_glLightfv(id, GL_SPOT_DIRECTION, dir);
 
-  glLightf(id, GL_SPOT_EXPONENT, max(min(light_obj->get_exponent(), (PN_stdfloat)128), (PN_stdfloat)0));
+  glLightf(id, GL_SPOT_EXPONENT, std::clamp(light_obj->get_exponent(), (PN_stdfloat)0, (PN_stdfloat)128));
   glLightf(id, GL_SPOT_CUTOFF, lens->get_hfov() * 0.5f);
 
   const LVecBase3 &att = light_obj->get_attenuation();
@@ -9767,7 +9939,7 @@ get_error_string(GLenum error_code) {
  * string is returned.
  */
 string CLP(GraphicsStateGuardian)::
-show_gl_string(const string &name, GLenum id) {
+show_gl_string(std::string_view name, GLenum id) {
   string result;
 
   const GLubyte *text = glGetString(id);
@@ -9970,14 +10142,13 @@ report_extensions() const {
     std::ostream &out = GLCAT.debug();
     out << "GL Extensions:\n";
 
-    pset<string>::const_iterator ei;
-    for (ei = _extensions.begin(); ei != _extensions.end(); ++ei) {
+    for (auto ei = _extensions.cbegin(); ei != _extensions.cend(); ++ei) {
       size_t len = (*ei).size();
       out << "  " << (*ei);
 
       // Display a second column.
       if (len <= 38) {
-        if (++ei != _extensions.end()) {
+        if (++ei != _extensions.cend()) {
           for (int i = len; i < 38; ++i) {
             out.put(' ');
           }
@@ -10082,6 +10253,18 @@ get_extension_func(const char *name) {
 void *CLP(GraphicsStateGuardian)::
 do_get_extension_func(const char *) {
   return nullptr;
+}
+
+/**
+ * Returns true if this implementation may support Cg shaders.
+ */
+bool CLP(GraphicsStateGuardian)::
+may_support_cg_shaders() {
+#if defined(HAVE_CG) && !defined(OPENGLES)
+  return true;
+#else
+  return false;
+#endif
 }
 
 /**
@@ -10762,7 +10945,8 @@ get_external_image_format(Texture *tex) const {
 #ifdef OPENGLES
       return GL_ETC1_RGB8_OES;
 #endif
-      // Fall through - ETC2 is backward compatible
+      // ETC2 is backward compatible.
+      [[fallthrough]];
     case Texture::CM_etc2:
       if (format == Texture::F_rgbm) {
         return GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2;
@@ -11277,7 +11461,8 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
 #ifdef OPENGLES
       return GL_ETC1_RGB8_OES;
 #endif
-      // Fall through - ETC2 is backward compatible
+      // ETC2 is backward compatible.
+      [[fallthrough]];
     case Texture::CM_etc2:
       if (format == Texture::F_rgbm) {
         return GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2;
@@ -11341,7 +11526,7 @@ get_internal_image_format(Texture *tex, bool force_sized) const {
         return force_sized ? GL_DEPTH24_STENCIL8 : GL_DEPTH_STENCIL;
       }
     }
-    // Fall through.
+    [[fallthrough]];
 
   case Texture::F_depth_component:
 #ifndef OPENGLES
@@ -11837,7 +12022,7 @@ GLint CLP(GraphicsStateGuardian)::
 get_texture_combine_type(TextureStage::CombineMode cm) {
 #ifdef SUPPORT_FIXED_FUNCTION
   switch (cm) {
-  case TextureStage::CM_undefined: // fall through
+  case TextureStage::CM_undefined: [[fallthrough]];
   case TextureStage::CM_replace: return GL_REPLACE;
   case TextureStage::CM_modulate: return GL_MODULATE;
   case TextureStage::CM_add: return GL_ADD;
@@ -11863,7 +12048,7 @@ get_texture_src_type(TextureStage::CombineSource cs,
                      int this_stage) const {
 #ifdef SUPPORT_FIXED_FUNCTION
   switch (cs) {
-  case TextureStage::CS_undefined: // fall through
+  case TextureStage::CS_undefined: [[fallthrough]];
   case TextureStage::CS_texture: return GL_TEXTURE;
   case TextureStage::CS_constant: return GL_CONSTANT;
   case TextureStage::CS_primary_color: return GL_PRIMARY_COLOR;
@@ -11909,7 +12094,7 @@ get_texture_src_type(TextureStage::CombineSource cs,
 GLint CLP(GraphicsStateGuardian)::
 get_texture_operand_type(TextureStage::CombineOperand co) {
   switch (co) {
-  case TextureStage::CO_undefined: // fall through
+  case TextureStage::CO_undefined: [[fallthrough]];
   case TextureStage::CO_src_alpha: return GL_SRC_ALPHA;
   case TextureStage::CO_one_minus_src_alpha: return GL_ONE_MINUS_SRC_ALPHA;
   case TextureStage::CO_src_color: return GL_SRC_COLOR;
@@ -12919,7 +13104,7 @@ free_pointers() {
 
     // Don't destroy the Cg context until the last GSG that uses Cg has been
     // destroyed.  This works around a Cg bug, see #1117.
-    if (!AtomicAdjust::dec(_num_gsgs_with_cg_contexts)) {
+    if (_num_gsgs_with_cg_contexts.fetch_sub(1, std::memory_order_acq_rel) == 1) {
       for (CGcontext context : _destroyed_cg_contexts) {
         cgDestroyContext(context);
       }
@@ -12947,7 +13132,7 @@ get_cg_context() {
     }
 #endif
 
-    AtomicAdjust::inc(_num_gsgs_with_cg_contexts);
+    _num_gsgs_with_cg_contexts.fetch_add(1, std::memory_order_relaxed);
     _cg_context = context;
   }
 
@@ -13149,7 +13334,7 @@ update_standard_texture_bindings() {
                                             last_stage, last_saved_result, i));
           glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND2_RGB,
                        get_texture_operand_type(stage->get_combine_rgb_operand2()));
-          // fall through
+          [[fallthrough]];
 
         case 2:
           glTexEnvi(GL_TEXTURE_ENV, GL_SRC1_RGB,
@@ -13157,7 +13342,7 @@ update_standard_texture_bindings() {
                                             last_stage, last_saved_result, i));
           glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB,
                        get_texture_operand_type(stage->get_combine_rgb_operand1()));
-          // fall through
+          [[fallthrough]];
 
         case 1:
           glTexEnvi(GL_TEXTURE_ENV, GL_SRC0_RGB,
@@ -13165,7 +13350,7 @@ update_standard_texture_bindings() {
                                             last_stage, last_saved_result, i));
           glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB,
                        get_texture_operand_type(stage->get_combine_rgb_operand0()));
-          // fall through
+          [[fallthrough]];
 
         default:
           break;
@@ -13180,7 +13365,7 @@ update_standard_texture_bindings() {
                                             last_stage, last_saved_result, i));
           glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND2_ALPHA,
                        get_texture_operand_type(stage->get_combine_alpha_operand2()));
-          // fall through
+          [[fallthrough]];
 
         case 2:
           glTexEnvi(GL_TEXTURE_ENV, GL_SRC1_ALPHA,
@@ -13188,7 +13373,7 @@ update_standard_texture_bindings() {
                                             last_stage, last_saved_result, i));
           glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA,
                        get_texture_operand_type(stage->get_combine_alpha_operand1()));
-          // fall through
+          [[fallthrough]];
 
         case 1:
           glTexEnvi(GL_TEXTURE_ENV, GL_SRC0_ALPHA,
@@ -13196,7 +13381,7 @@ update_standard_texture_bindings() {
                                             last_stage, last_saved_result, i));
           glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA,
                        get_texture_operand_type(stage->get_combine_alpha_operand0()));
-          // fall through
+          [[fallthrough]];
 
         default:
           break;
@@ -14770,6 +14955,7 @@ upload_texture_view(CLP(TextureContext) *gtc, int view, bool needs_reload,
 
     int width = tex->get_expected_mipmap_x_size(n);
     int height = tex->get_expected_mipmap_y_size(n);
+    int depth = tex->get_expected_mipmap_z_size(n);
 
     // we grab the mipmap pointer first, if it is NULL we grab the normal
     // mipmap image pointer which is a PTA_uchar
@@ -15706,14 +15892,14 @@ do_extract_texture_data(CLP(TextureContext) *gtc, int view) {
 #endif
   }
 
+  GLint width = gtc->_width, height = gtc->_height, depth = gtc->_depth;
+
+#ifndef OPENGLES
   GLenum page_target = target;
   if (target == GL_TEXTURE_CUBE_MAP) {
     // We need a particular page to get the level parameter from.
     page_target = GL_TEXTURE_CUBE_MAP_POSITIVE_X;
   }
-
-  GLint width = gtc->_width, height = gtc->_height, depth = gtc->_depth;
-#ifndef OPENGLES
   glGetTexLevelParameteriv(page_target, 0, GL_TEXTURE_WIDTH, &width);
   if (target != GL_TEXTURE_1D) {
     glGetTexLevelParameteriv(page_target, 0, GL_TEXTURE_HEIGHT, &height);
@@ -16249,8 +16435,7 @@ do_extract_texture_data(CLP(TextureContext) *gtc, int view) {
   PTA_uchar image;
   size_t page_size = 0;
 
-  if (!extract_texture_image(image, page_size, tex, target, page_target,
-                             type, compression, 0)) {
+  if (!extract_texture_image(image, page_size, tex, target, type, compression, 0)) {
     return false;
   }
 
@@ -16268,8 +16453,7 @@ do_extract_texture_data(CLP(TextureContext) *gtc, int view) {
 
   // Also get the mipmap levels.
   for (int n = 1; n < gtc->_num_levels; ++n) {
-    if (!extract_texture_image(image, page_size, tex, target, page_target,
-                               type, compression, n)) {
+    if (!extract_texture_image(image, page_size, tex, target, type, compression, n)) {
       return false;
     }
     if (num_views == 1) {
@@ -16289,7 +16473,7 @@ do_extract_texture_data(CLP(TextureContext) *gtc, int view) {
  */
 bool CLP(GraphicsStateGuardian)::
 extract_texture_image(PTA_uchar &image, size_t &page_size,
-                      Texture *tex, GLenum target, GLenum page_target,
+                      Texture *tex, GLenum target,
                       Texture::ComponentType type,
                       Texture::CompressionMode compression, int n) {
 #ifdef OPENGLES  // Extracting texture data unsupported in OpenGL ES.
@@ -16318,8 +16502,8 @@ extract_texture_image(PTA_uchar &image, size_t &page_size,
 
     if (compression != Texture::CM_off) {
       GLint image_size;
-      glGetTexLevelParameteriv(page_target, n,
-                                  GL_TEXTURE_COMPRESSED_IMAGE_SIZE, &image_size);
+      glGetTexLevelParameteriv(GL_TEXTURE_CUBE_MAP_POSITIVE_X, n,
+                               GL_TEXTURE_COMPRESSED_IMAGE_SIZE, &image_size);
       nassertr(image_size <= (int)page_size, false);
       page_size = image_size;
     }
@@ -16327,7 +16511,7 @@ extract_texture_image(PTA_uchar &image, size_t &page_size,
     image = PTA_uchar::empty_array(page_size * 6);
 
     for (int z = 0; z < 6; ++z) {
-      page_target = GL_TEXTURE_CUBE_MAP_POSITIVE_X + z;
+      GLenum page_target = GL_TEXTURE_CUBE_MAP_POSITIVE_X + z;
 
       if (compression == Texture::CM_off) {
         glGetTexImage(page_target, n, external_format, pixel_type,
@@ -16701,6 +16885,9 @@ map_read_buffer(GLenum target, GLuint buffer, size_t size) {
 #endif
 
   _glBindBuffer(target, 0);
+  if (target == GL_SHADER_STORAGE_BUFFER) {
+    _current_sbuffer_index = 0;
+  }
   return mapped_ptr;
 }
 

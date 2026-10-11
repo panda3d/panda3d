@@ -154,12 +154,12 @@ get_encryption_flag() const {
  * implicit call to flush().
  */
 INLINE void Multifile::
-set_encryption_password(const std::string &encryption_password) {
+set_encryption_password(std::string encryption_password) {
   if (_encryption_password != encryption_password) {
     if (!_new_subfiles.empty()) {
       flush();
     }
-    _encryption_password = encryption_password;
+    _encryption_password = std::move(encryption_password);
   }
 }
 
@@ -187,12 +187,12 @@ get_encryption_password() const {
  * flush().
  */
 INLINE void Multifile::
-set_encryption_algorithm(const std::string &encryption_algorithm) {
+set_encryption_algorithm(std::string encryption_algorithm) {
   if (_encryption_algorithm != encryption_algorithm) {
     if (!_new_subfiles.empty()) {
       flush();
     }
-    _encryption_algorithm = encryption_algorithm;
+    _encryption_algorithm = std::move(encryption_algorithm);
   }
 }
 
@@ -279,7 +279,7 @@ get_encryption_iteration_count() const {
  * reduced in size after this operation, until the next call to repack().
  */
 INLINE bool Multifile::
-remove_subfile(const std::string &subfile_name) {
+remove_subfile(std::string_view subfile_name) {
   int index = find_subfile(subfile_name);
   if (index >= 0) {
     remove_subfile(index);

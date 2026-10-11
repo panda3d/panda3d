@@ -44,7 +44,7 @@ public:
  */
 class EXPCL_PANDA_GOBJ AdaptiveLru : public Namable {
 PUBLISHED:
-  explicit AdaptiveLru(const std::string &name, size_t max_size);
+  explicit AdaptiveLru(std::string name, size_t max_size);
   ~AdaptiveLru();
 
   INLINE size_t get_total_size() const;

@@ -15,8 +15,8 @@
  *
  */
 INLINE LODNode::
-LODNode(const std::string &name) :
-  PandaNode(name)
+LODNode(std::string name) :
+  PandaNode(std::move(name))
 {
   set_cull_callback();
 }

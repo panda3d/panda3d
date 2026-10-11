@@ -31,13 +31,13 @@ TypeHandle TinyWinGraphicsWindow::_type_handle;
  */
 TinyWinGraphicsWindow::
 TinyWinGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
-                      const std::string &name,
+                      std::string name,
                       const FrameBufferProperties &fb_prop,
                       const WindowProperties &win_prop,
                       int flags,
                       GraphicsStateGuardian *gsg,
                       GraphicsOutput *host) :
-  WinGraphicsWindow(engine, pipe, name, fb_prop, win_prop, flags, gsg, host)
+  WinGraphicsWindow(engine, pipe, std::move(name), fb_prop, win_prop, flags, gsg, host)
 {
   _frame_buffer = nullptr;
   _hdc = (HDC)0;

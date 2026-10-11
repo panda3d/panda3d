@@ -130,7 +130,7 @@ mount(ZipArchive *archive, const Filename &mount_point, int flags) {
  */
 bool VirtualFileSystem::
 mount(const Filename &physical_filename, const Filename &mount_point,
-      int flags, const string &password) {
+      int flags, std::string password) {
   if (!physical_filename.exists()) {
     express_cat->warning()
       << "Attempt to mount " << physical_filename << ", not found.\n";
@@ -184,7 +184,7 @@ mount(const Filename &physical_filename, const Filename &mount_point,
       close_read_file(stream);
 
       PT(Multifile) multifile = new Multifile;
-      multifile->set_encryption_password(password);
+      multifile->set_encryption_password(std::move(password));
 
       if (!multifile->open_read(physical_filename)) {
         return false;
@@ -221,7 +221,7 @@ mount(const Filename &physical_filename, const Filename &mount_point,
  */
 bool VirtualFileSystem::
 mount_loop(const Filename &virtual_filename, const Filename &mount_point,
-           int flags, const string &password) {
+           int flags, std::string password) {
   PT(VirtualFile) file = get_file(virtual_filename, false);
   if (file == nullptr) {
     express_cat->warning()
@@ -237,7 +237,7 @@ mount_loop(const Filename &virtual_filename, const Filename &mount_point,
   } else {
     // It's not a directory; it must be a Multifile.
     PT(Multifile) multifile = new Multifile;
-    multifile->set_encryption_password(password);
+    multifile->set_encryption_password(std::move(password));
 
     // For now these are always opened read only.  Maybe later we'll support
     // read-write on Multifiles.
@@ -750,7 +750,7 @@ copy_file(const Filename &orig_filename, const Filename &new_filename) {
 bool VirtualFileSystem::
 resolve_filename(Filename &filename,
                  const DSearchPath &searchpath,
-                 const string &default_extension) const {
+                 std::string_view default_extension) const {
   PT(VirtualFile) found;
 
   if (filename.is_local()) {
@@ -1153,8 +1153,8 @@ close_read_write_file(iostream *stream) {
  */
 bool VirtualFileSystem::
 atomic_compare_and_exchange_contents(const Filename &filename, string &orig_contents,
-                                     const string &old_contents,
-                                     const string &new_contents) {
+                                     std::string_view old_contents,
+                                     std::string_view new_contents) {
   PT(VirtualFile) file = create_file(filename);
   if (file == nullptr) {
     return false;
@@ -1222,14 +1222,14 @@ scan_mount_points(vector_string &names, const Filename &path) const {
  * Config.prc line.
  */
 void VirtualFileSystem::
-parse_options(const string &options, int &flags, string &password) {
+parse_options(std::string_view options, int &flags, string &password) {
   flags = 0;
   password = string();
 
   // Split the options up by commas.
   size_t p = 0;
   size_t q = options.find(',', p);
-  while (q != string::npos) {
+  while (q != std::string_view::npos) {
     parse_option(options.substr(p, q - p),
                  flags, password);
     p = q + 1;
@@ -1243,7 +1243,7 @@ parse_options(const string &options, int &flags, string &password) {
  * Config.prc line.
  */
 void VirtualFileSystem::
-parse_option(const string &option, int &flags, string &password) {
+parse_option(std::string_view option, int &flags, string &password) {
   if (option == "0" || option.empty()) {
     // 0 is the null option.
   } else if (option == "ro") {

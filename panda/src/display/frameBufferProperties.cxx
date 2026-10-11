@@ -631,7 +631,7 @@ get_quality(const FrameBufferProperties &reqs) const {
  * false.
  */
 bool FrameBufferProperties::
-verify_hardware_software(const FrameBufferProperties &props, const std::string &renderer) const {
+verify_hardware_software(const FrameBufferProperties &props, std::string_view renderer) const {
 
   if (get_force_hardware() < props.get_force_hardware()) {
     display_cat.error()

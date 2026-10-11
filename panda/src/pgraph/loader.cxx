@@ -42,8 +42,8 @@ TypeHandle Loader::_type_handle;
  *
  */
 Loader::
-Loader(const string &name) :
-  Namable(name)
+Loader(std::string name) :
+  Namable(std::move(name))
 {
   _task_manager = AsyncTaskManager::get_global_ptr();
   _task_chain = name;
@@ -326,7 +326,10 @@ try_load_file(const Filename &pathname, const LoaderOptions &options,
 
       if (result != nullptr) {
         if (report_errors) {
-          TypeHandle loaded_type = model_root->get_loader_type();
+          TypeHandle loaded_type = TypeHandle::none();
+          if (model_root != nullptr) {
+            loaded_type = model_root->get_loader_type();
+          }
           if (loaded_type != TypeHandle::none()) {
             loader_cat.info()
               << "Model " << pathname << " found in disk cache (loaded using "

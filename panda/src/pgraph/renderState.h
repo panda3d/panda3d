@@ -338,7 +338,11 @@ private:
   };
   unsigned int _flags;
 
-  vector_int *_read_overrides;  // Only used during bam reading.
+  // This data is only needed when reading from a bam file.
+  class BamAuxData : public BamReader::AuxData {
+  public:
+    vector_int _overrides;
+  };
 
   // This mutex protects _flags, and all of the above computed values.
   LightMutex _lock;

@@ -31,10 +31,12 @@ public:
   virtual void write(std::ostream &out, int indent_level) const;
 
 PUBLISHED:
+  virtual uint64_t get_native_id() const;
+
+public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
-public:
   static void init_type() {
     TypedObject::init_type();
     register_type(_type_handle, "SavedContext",

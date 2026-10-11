@@ -438,11 +438,13 @@ finalize(BamReader *manager) {
 
   CDWriter cdata(_cycler, true);
 
-  CPT(GeomVertexArrayFormat) new_array_format =
-    GeomVertexArrayFormat::register_format(_array_format);
+  if (_array_format != nullptr) {
+    CPT(GeomVertexArrayFormat) new_array_format =
+      GeomVertexArrayFormat::register_format(_array_format);
 
-  manager->change_pointer(_array_format, new_array_format);
-  _array_format = new_array_format;
+    manager->change_pointer(_array_format, new_array_format);
+    _array_format = new_array_format;
+  }
 
   PT(BamAuxData) aux_data = (BamAuxData *)manager->get_aux_data(this, "");
   if (aux_data != nullptr) {
@@ -532,6 +534,10 @@ write_datagram(BamWriter *manager, Datagram &dg, void *extra_data) const {
 void GeomVertexArrayData::CData::
 fillin(DatagramIterator &scan, BamReader *manager, void *extra_data) {
   GeomVertexArrayData *array_data = (GeomVertexArrayData *)extra_data;
+
+  if (!manager->expect_remaining_size(scan, (manager->get_file_minor_ver() < 8) ? 3 : 5)) {
+    return;
+  }
   _usage_hint = (UsageHint)scan.get_uint8();
 
   if (manager->get_file_minor_ver() < 8) {
@@ -545,6 +551,11 @@ fillin(DatagramIterator &scan, BamReader *manager, void *extra_data) {
   } else {
     // Now, the array data is just stored directly.
     size_t size = scan.get_uint32();
+
+    if (!manager->expect_remaining_size(scan, size)) {
+      return;
+    }
+
     _buffer.unclean_realloc(size);
     _buffer.set_size(size);
 

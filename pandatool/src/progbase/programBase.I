@@ -15,6 +15,6 @@
  * Formats the indicated text to stderr with the known _terminal_width.
  */
 INLINE void ProgramBase::
-show_text(const std::string &text) {
-  show_text("", 0, text);
+show_text(std::string_view text) {
+  show_text("", 0, std::string(text));
 }

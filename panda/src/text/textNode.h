@@ -51,8 +51,8 @@
  */
 class EXPCL_PANDA_TEXT TextNode : public PandaNode, public TextEncoder, public TextProperties {
 PUBLISHED:
-  explicit TextNode(const std::string &name);
-  explicit TextNode(const std::string &name, const TextProperties &copy);
+  explicit TextNode(std::string name);
+  explicit TextNode(std::string name, const TextProperties &copy);
 protected:
   TextNode(const TextNode &copy);
   virtual PandaNode *make_copy() const;
@@ -171,7 +171,7 @@ PUBLISHED:
   INLINE void set_shadow(const LVecBase2 &shadow_offset);
   INLINE void clear_shadow();
 
-  INLINE void set_bin(const std::string &bin);
+  INLINE void set_bin(std::string bin);
   INLINE void clear_bin();
 
   INLINE int set_draw_order(int draw_order);
@@ -193,7 +193,7 @@ PUBLISHED:
   // These methods calculate the width of a single character or a line of text
   // in the current font.
   PN_stdfloat calc_width(wchar_t character) const;
-  INLINE PN_stdfloat calc_width(const std::string &line) const;
+  INLINE PN_stdfloat calc_width(std::string_view line) const;
 
   bool has_exact_character(wchar_t character) const;
   bool has_character(wchar_t character) const;
@@ -359,6 +359,7 @@ private:
     PN_stdfloat _frame_width;
     PN_stdfloat _card_border_size;
     PN_stdfloat _card_border_uv_portion;
+    UpdateSeq _font_modified;
 
     LVector2 _frame_ul, _frame_lr;
     LVector2 _card_ul, _card_lr;

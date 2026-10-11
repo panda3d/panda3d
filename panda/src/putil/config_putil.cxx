@@ -212,6 +212,7 @@ init_libputil() {
   FactoryParam::init_type();
   Namable::init_type();
   NodeCachedReferenceCount::init_type();
+  ParamBytes::init_type("ParamBytes");
   ParamMatrix3d::init_type("ParamMatrix3d");
   ParamMatrix3f::init_type("ParamMatrix3f");
   ParamMatrix4d::init_type("ParamMatrix4d");

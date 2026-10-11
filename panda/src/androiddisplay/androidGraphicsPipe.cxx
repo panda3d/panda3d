@@ -101,7 +101,7 @@ AndroidGraphicsPipe::get_preferred_window_thread() const {
  * Creates a new window on the pipe, if possible.
  */
 PT(GraphicsOutput) AndroidGraphicsPipe::
-make_output(const std::string &name,
+make_output(std::string_view name,
             const FrameBufferProperties &fb_prop,
             const WindowProperties &win_prop,
             int flags,
@@ -135,7 +135,7 @@ make_output(const std::string &name,
         ((flags&BF_can_bind_every)!=0)) {
       return nullptr;
     }
-    return new AndroidGraphicsWindow(engine, this, name, fb_prop, win_prop,
+    return new AndroidGraphicsWindow(engine, this, std::string(name), fb_prop, win_prop,
                                      flags, gsg, host);
   }
 
@@ -194,7 +194,7 @@ make_output(const std::string &name,
       }
     }
 
-    return new eglGraphicsBuffer(engine, this, name, fb_prop, win_prop,
+    return new eglGraphicsBuffer(engine, this, std::string(name), fb_prop, win_prop,
                                  flags, gsg, host);
   }
 

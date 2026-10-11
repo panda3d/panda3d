@@ -27,15 +27,15 @@
  */
 class EXPCL_PANDA_PUTIL NameUniquifier {
 public:
-  NameUniquifier(const std::string &separator = std::string(),
-                 const std::string &empty = std::string());
+  NameUniquifier(std::string separator = std::string(),
+                 std::string empty = std::string());
   ~NameUniquifier();
 
-  INLINE std::string add_name(const std::string &name);
-  INLINE std::string add_name(const std::string &name, const std::string &prefix);
+  INLINE std::string add_name(std::string_view name);
+  INLINE std::string add_name(std::string_view name, std::string_view prefix);
 
 private:
-  std::string add_name_body(const std::string &name, const std::string &prefix);
+  std::string add_name_body(std::string_view name, std::string_view prefix);
 
   typedef pset<std::string, string_hash> Names;
   Names _names;

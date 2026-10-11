@@ -29,8 +29,8 @@ TypeHandle CMetaInterval::_type_handle;
  *
  */
 CMetaInterval::
-CMetaInterval(const string &name) :
-  CInterval(name, 0.0, true)
+CMetaInterval(string name) :
+  CInterval(std::move(name), 0.0, true)
 {
   _precision = interval_precision;
   _current_nesting_level = 0;
@@ -98,13 +98,13 @@ clear_intervals() {
  * The return value is the index of the def entry created by this push.
  */
 int CMetaInterval::
-push_level(const string &name, double rel_time, RelativeStart rel_to) {
+push_level(string name, double rel_time, RelativeStart rel_to) {
   nassertr(_event_queue.empty() && !_processing_events, -1);
 
   _defs.push_back(IntervalDef());
   IntervalDef &def = _defs.back();
   def._type = DT_push_level;
-  def._ext_name = name;
+  def._ext_name = std::move(name);
   def._rel_time = rel_time;
   def._rel_to = rel_to;
   _current_nesting_level++;
@@ -156,7 +156,7 @@ add_c_interval(CInterval *c_interval,
  * interval.
  */
 int CMetaInterval::
-add_ext_index(int ext_index, const string &name, double duration,
+add_ext_index(int ext_index, string name, double duration,
               bool open_ended,
               double rel_time, RelativeStart rel_to) {
   nassertr(_event_queue.empty() && !_processing_events, -1);
@@ -165,7 +165,7 @@ add_ext_index(int ext_index, const string &name, double duration,
   IntervalDef &def = _defs.back();
   def._type = DT_ext_index;
   def._ext_index = ext_index;
-  def._ext_name = name;
+  def._ext_name = std::move(name);
   def._ext_duration = duration;
   def._ext_open_ended = open_ended;
   def._rel_time = rel_time;
@@ -208,7 +208,7 @@ pop_level(double duration) {
  * interval is not found, nothing is changed and false is returned.
  */
 bool CMetaInterval::
-set_interval_start_time(const string &name, double rel_time,
+set_interval_start_time(std::string_view name, double rel_time,
                         CMetaInterval::RelativeStart rel_to) {
   nassertr(_event_queue.empty() && !_processing_events, false);
   Defs::iterator di;
@@ -246,7 +246,7 @@ set_interval_start_time(const string &name, double rel_time,
  * is not found.
  */
 double CMetaInterval::
-get_interval_start_time(const string &name) const {
+get_interval_start_time(std::string_view name) const {
   recompute();
   Defs::const_iterator di;
   for (di = _defs.begin(); di != _defs.end(); ++di) {
@@ -280,7 +280,7 @@ get_interval_start_time(const string &name) const {
  * not found.
  */
 double CMetaInterval::
-get_interval_end_time(const string &name) const {
+get_interval_end_time(std::string_view name) const {
   recompute();
   Defs::const_iterator di;
   for (di = _defs.begin(); di != _defs.end(); ++di) {

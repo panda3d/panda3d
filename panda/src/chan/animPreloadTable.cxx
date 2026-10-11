@@ -60,7 +60,7 @@ get_num_anims() const {
  * Filename::get_basename_wo_extension().
  */
 int AnimPreloadTable::
-find_anim(const std::string &basename) const {
+find_anim(std::string_view basename) const {
   consider_sort();
   AnimRecord record;
   record._basename = basename;
@@ -96,13 +96,13 @@ remove_anim(int n) {
  * See find_anim().  This will invalidate existing index numbers.
  */
 void AnimPreloadTable::
-add_anim(const std::string &basename, PN_stdfloat base_frame_rate, int num_frames) {
+add_anim(std::string basename, PN_stdfloat base_frame_rate, int num_frames) {
   AnimRecord record;
-  record._basename = basename;
+  record._basename = std::move(basename);
   record._base_frame_rate = base_frame_rate;
   record._num_frames = num_frames;
 
-  _anims.push_back(record);
+  _anims.push_back(std::move(record));
   _needs_sort = true;
 }
 

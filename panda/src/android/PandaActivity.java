@@ -82,6 +82,16 @@ public class PandaActivity extends NativeActivity {
     }
 
     /**
+     * Called by android_native_app_glue to spawn the application thread.
+     * Gets passed a function pointer and a data pointer to pass to it.
+     */
+    protected void spawnAppThread(long ptr, long data) {
+        new Thread(() -> {
+            nativeThreadEntry(ptr, data);
+        }).start();
+    }
+
+    /**
      * Maps the blob to memory and returns the pointer.
      */
     public long mapBlobFromResource(long offset) {
@@ -160,6 +170,18 @@ public class PandaActivity extends NativeActivity {
     }
 
     /**
+     * Sets the window title.
+     */
+    public void setWindowTitle(final CharSequence title) {
+        final PandaActivity activity = this;
+        runOnUiThread(new Runnable() {
+            public void run() {
+                activity.setTitle(title);
+            }
+        });
+    }
+
+    /**
      * Shows a pop-up notification.
      */
     public void showToast(final String text, final int duration) {
@@ -181,4 +203,5 @@ public class PandaActivity extends NativeActivity {
     }
 
     private static native long nativeMmap(int fd, long off, long len);
+    private static native void nativeThreadEntry(long ptr, long data);
 }

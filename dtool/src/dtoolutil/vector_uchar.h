@@ -30,4 +30,7 @@
 
 #include "vector_src.h"
 
+EXPCL_DTOOL_DTOOLUTIL std::ostream &
+operator << (std::ostream &out, const vector_uchar &data);
+
 #endif

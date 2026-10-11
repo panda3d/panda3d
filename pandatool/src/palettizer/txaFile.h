@@ -31,7 +31,7 @@ class TxaFile {
 public:
   TxaFile();
 
-  bool read(std::istream &in, const std::string &filename);
+  bool read(std::istream &in, std::string_view filename);
 
   bool match_egg(EggFile *egg_file) const;
   bool match_texture(TextureImage *texture) const;

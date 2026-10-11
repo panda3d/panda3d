@@ -44,6 +44,7 @@ PUBLISHED:
   };
 
 private:
+  friend class StaticObject<TransparencyAttrib>;
   INLINE TransparencyAttrib(Mode mode = M_none);
 
 PUBLISHED:
@@ -88,7 +89,8 @@ public:
     RenderAttrib::init_type();
     register_type(_type_handle, "TransparencyAttrib",
                   RenderAttrib::get_class_type());
-    _attrib_slot = register_slot(_type_handle, 100, new TransparencyAttrib);
+    static StaticObject<TransparencyAttrib> default_attrib;
+    _attrib_slot = register_slot(_type_handle, 100, default_attrib);
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

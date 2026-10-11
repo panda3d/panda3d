@@ -1547,9 +1547,9 @@ update_anim_controls() {
  * etc.).
  */
 void WindowFramework::
-setup_shuttle_button(const string &label, int index,
+setup_shuttle_button(std::string_view label, int index,
                      EventHandler::EventCallbackFunction *func) {
-  PT(PGButton) button = new PGButton(label);
+  PT(PGButton) button = new PGButton(std::string(label));
   button->set_frame(-0.05f, 0.05f, 0.0f, 0.07f);
 
   PN_stdfloat bevel = 0.005f;

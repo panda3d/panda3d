@@ -56,7 +56,7 @@ ParentNodes() {
  * group per polygon.
  */
 EggGroupNode *FltToEggLevelState::
-get_synthetic_group(const std::string &name,
+get_synthetic_group(std::string name,
                     const FltBead *transform_bead,
                     FltGeometry::BillboardType type) {
   LMatrix4d transform = transform_bead->get_transform();
@@ -83,7 +83,7 @@ get_synthetic_group(const std::string &name,
   switch (type) {
   case FltGeometry::BT_axial:
     if (nodes->_axial_billboard == nullptr) {
-      nodes->_axial_billboard = new EggGroup(name);
+      nodes->_axial_billboard = new EggGroup(std::move(name));
       _egg_parent->add_child(nodes->_axial_billboard);
       nodes->_axial_billboard->set_billboard_type(EggGroup::BT_axis);
       if (!is_identity) {
@@ -95,7 +95,7 @@ get_synthetic_group(const std::string &name,
 
   case FltGeometry::BT_point:
     if (nodes->_point_billboard == nullptr) {
-      nodes->_point_billboard = new EggGroup(name);
+      nodes->_point_billboard = new EggGroup(std::move(name));
       _egg_parent->add_child(nodes->_point_billboard);
       nodes->_point_billboard->set_billboard_type(EggGroup::BT_point_world_relative);
       if (!is_identity) {
@@ -108,7 +108,7 @@ get_synthetic_group(const std::string &name,
   default: // Normally, BT_none, although we've occasionally seen a
            // value of 3 come in here, whatever that's supposed to mean.
     if (nodes->_plain == nullptr) {
-      nodes->_plain = new EggGroup(name);
+      nodes->_plain = new EggGroup(std::move(name));
       _egg_parent->add_child(nodes->_plain);
       if (!is_identity) {
         set_transform(transform_bead, nodes->_plain);

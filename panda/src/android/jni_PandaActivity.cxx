@@ -38,3 +38,11 @@ Java_org_panda3d_android_PandaActivity_nativeMmap(JNIEnv* env, jclass, jint fd, 
     return (jlong)0;
   }
 }
+
+/**
+ * Calls the given function pointer, passing the given data pointer.
+ */
+EXPORT_JNI void
+Java_org_panda3d_android_PandaActivity_nativeThreadEntry(JNIEnv* env, jobject self, jlong func, jlong data) {
+  ((void (*)(void *))(void *)func)((void *)data);
+}

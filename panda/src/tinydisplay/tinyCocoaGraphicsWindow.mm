@@ -29,13 +29,13 @@ TypeHandle TinyCocoaGraphicsWindow::_type_handle;
  */
 TinyCocoaGraphicsWindow::
 TinyCocoaGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
-                        const std::string &name,
+                        std::string name,
                         const FrameBufferProperties &fb_prop,
                         const WindowProperties &win_prop,
                         int flags,
                         GraphicsStateGuardian *gsg,
                         GraphicsOutput *host) :
-  CocoaGraphicsWindow(engine, pipe, name, fb_prop, win_prop, flags, gsg, host),
+  CocoaGraphicsWindow(engine, pipe, std::move(name), fb_prop, win_prop, flags, gsg, host),
   _color_space(CGColorSpaceCreateDeviceRGB())
 {
   update_pixel_factor();

@@ -87,7 +87,7 @@ has_magic_number() const {
  * otherwise.
  */
 bool PNMFileTypeJPG::
-matches_magic_number(const string &magic_number) const {
+matches_magic_number(std::string_view magic_number) const {
   nassertr(magic_number.size() >= 2, false);
   return ((char)magic_number[0] == (char)0xff &&
           (char)magic_number[1] == (char)0xd8);
@@ -99,7 +99,7 @@ matches_magic_number(const string &magic_number) const {
  * returns NULL.
  */
 PNMReader *PNMFileTypeJPG::
-make_reader(std::istream *file, bool owns_file, const string &magic_number) {
+make_reader(std::istream *file, bool owns_file, std::string_view magic_number) {
   return new Reader(this, file, owns_file, magic_number);
 }
 

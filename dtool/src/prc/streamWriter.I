@@ -280,7 +280,7 @@ add_be_float64(PN_float64 value) {
  * followed by n bytes.
  */
 INLINE void StreamWriter::
-add_string(const std::string &str) {
+add_string(std::string_view str) {
   // The max sendable length for a string is 2^16.
   nassertv(str.length() <= (uint16_t)0xffff);
 
@@ -295,7 +295,7 @@ add_string(const std::string &str) {
  * Adds a variable-length string to the stream, using a 32-bit length field.
  */
 INLINE void StreamWriter::
-add_string32(const std::string &str) {
+add_string32(std::string_view str) {
   // Strings always are preceded by their length
   add_uint32((uint32_t)str.length());
 
@@ -323,7 +323,7 @@ add_z_string(std::string str) {
  * greater than the requested size, this will silently truncate the string.
  */
 INLINE void StreamWriter::
-add_fixed_string(const std::string &str, size_t size) {
+add_fixed_string(std::string_view str, size_t size) {
   if (str.length() < size) {
     append_data(str);
     pad_bytes(size - str.length());
@@ -345,7 +345,7 @@ append_data(const void *data, size_t size) {
  * Appends some more raw data to the end of the streamWriter.
  */
 INLINE void StreamWriter::
-append_data(const std::string &data) {
+append_data(std::string_view data) {
   append_data(data.data(), data.length());
 }
 
@@ -362,6 +362,6 @@ flush() {
  * to sys.stderr and/or sys.stdout in Python.
  */
 INLINE void StreamWriter::
-write(const std::string &data) {
+write(std::string_view data) {
   append_data(data.data(), data.length());
 }

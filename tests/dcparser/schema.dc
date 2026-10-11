@@ -1,0 +1,21 @@
+typedef uint32 DoId;
+
+dclass Avatar {
+  setName(string name) required broadcast db;
+  setPos(int32 x, int32 y, int32 z) broadcast;
+  setHealth(uint16 health = 100) required broadcast ram;
+};
+
+struct Item {
+  uint16 itemId;
+  string label;
+  uint8 quantity = 1;
+};
+
+dclass Inventory : Avatar {
+  setItems(Item items[]);
+  setItem(Item item);
+  setColor(uint8 r, uint8 g, uint8 b);
+  setBlob(blob data);
+  setRanged(int16(-100 - 100) value);
+};

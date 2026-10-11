@@ -15,8 +15,8 @@
  *
  */
 VirtualFileMountAndroidAsset::
-VirtualFileMountAndroidAsset(AAssetManager *mgr, const std::string &apk_path) :
-  _asset_mgr(mgr), _apk_path(apk_path)
+VirtualFileMountAndroidAsset(AAssetManager *mgr, std::string apk_path) :
+  _asset_mgr(mgr), _apk_path(std::move(apk_path))
 {
 }
 

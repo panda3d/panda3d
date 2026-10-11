@@ -125,7 +125,7 @@ get_surface(int polygon_index) const {
  * standard vertex map, which is associated with the points themselves.
  */
 bool CLwoPolygons::
-get_uv(const string &uv_name, int pi, int vi, LPoint2 &uv) const {
+get_uv(std::string_view uv_name, int pi, int vi, LPoint2 &uv) const {
   VMad::const_iterator ni = _txuv.find(uv_name);
   if (ni == _txuv.end()) {
     return false;

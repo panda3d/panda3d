@@ -33,7 +33,7 @@ class BamWriter;
  */
 class EXPCL_PANDA_RECORDER MouseRecorder : public DataNode, public RecorderBase {
 PUBLISHED:
-  explicit MouseRecorder(const std::string &name);
+  explicit MouseRecorder(std::string name);
   virtual ~MouseRecorder();
 
 public:

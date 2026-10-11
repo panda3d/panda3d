@@ -38,7 +38,7 @@ public:
   virtual bool convert_file(const Filename &filename);
 
 protected:
-  virtual DXFLayer *new_layer(const std::string &name);
+  virtual DXFLayer *new_layer(std::string name);
   virtual void done_entity();
   virtual void error();
 

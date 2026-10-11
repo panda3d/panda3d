@@ -134,7 +134,8 @@ static stbi_io_callbacks io_callbacks = {cb_read, cb_skip, cb_eof};
  */
 class StbImageReader : public PNMReader {
 public:
-  StbImageReader(PNMFileType *type, istream *file, bool owns_file, string magic_number);
+  StbImageReader(PNMFileType *type, istream *file, bool owns_file,
+                 std::string_view magic_number);
 
   virtual bool is_floating_point();
   virtual bool read_pfm(PfmFile &pfm);
@@ -197,7 +198,7 @@ has_magic_number() const {
  * otherwise.
  */
 bool PNMFileTypeStbImage::
-matches_magic_number(const string &magic_number) const {
+matches_magic_number(std::string_view magic_number) const {
   return false;
 }
 
@@ -207,7 +208,7 @@ matches_magic_number(const string &magic_number) const {
  * returns NULL.
  */
 PNMReader *PNMFileTypeStbImage::
-make_reader(istream *file, bool owns_file, const string &magic_number) {
+make_reader(istream *file, bool owns_file, std::string_view magic_number) {
   return new StbImageReader(this, file, owns_file, magic_number);
 }
 
@@ -215,7 +216,7 @@ make_reader(istream *file, bool owns_file, const string &magic_number) {
  *
  */
 StbImageReader::
-StbImageReader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
+StbImageReader(PNMFileType *type, istream *file, bool owns_file, std::string_view magic_number) :
   PNMReader(type, file, owns_file),
   _is_float(false)
 {

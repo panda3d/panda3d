@@ -35,16 +35,16 @@
  */
 class EXPCL_DTOOL_PRC ConfigVariableSearchPath : public ConfigVariableBase {
 PUBLISHED:
-  INLINE explicit ConfigVariableSearchPath(const std::string &name,
-                                           const std::string &description = std::string(),
+  INLINE explicit ConfigVariableSearchPath(std::string_view name,
+                                           std::string_view description = std::string_view(),
                                            int flags = 0);
-  INLINE explicit ConfigVariableSearchPath(const std::string &name,
+  INLINE explicit ConfigVariableSearchPath(std::string_view name,
                                            const DSearchPath &default_value,
-                                           const std::string &description,
+                                           std::string_view description,
                                            int flags = 0);
-  INLINE explicit ConfigVariableSearchPath(const std::string &name,
-                                           const std::string &default_value,
-                                           const std::string &description,
+  INLINE explicit ConfigVariableSearchPath(std::string_view name,
+                                           std::string_view default_value,
+                                           std::string_view description,
                                            int flags = 0);
   INLINE ~ConfigVariableSearchPath();
 
@@ -59,8 +59,8 @@ PUBLISHED:
   INLINE void clear();
   INLINE void append_directory(const Filename &directory);
   INLINE void prepend_directory(const Filename &directory);
-  INLINE void append_path(const std::string &path,
-                          const std::string &separator = std::string());
+  INLINE void append_path(std::string_view path,
+                          std::string_view separator = std::string_view());
   INLINE void append_path(const DSearchPath &path);
   INLINE void prepend_path(const DSearchPath &path);
 
@@ -85,7 +85,7 @@ private:
   DSearchPath _default_value;
   DSearchPath _prefix, _postfix;
 
-  AtomicAdjust::Integer _local_modified;
+  Modified _local_modified;
   DSearchPath _cache;
 };
 

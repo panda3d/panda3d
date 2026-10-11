@@ -64,8 +64,8 @@ fillin(DatagramIterator &scan, BamReader *manager) {
  *
  */
 Spotlight::
-Spotlight(const std::string &name) :
-  LightLensNode(name) {
+Spotlight(std::string name) :
+  LightLensNode(std::move(name)) {
   _lenses[0]._lens->set_interocular_distance(0);
 }
 

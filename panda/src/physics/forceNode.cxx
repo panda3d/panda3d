@@ -20,8 +20,8 @@ TypeHandle ForceNode::_type_handle;
  * default constructor
  */
 ForceNode::
-ForceNode(const std::string &name) :
-  PandaNode(name) {
+ForceNode(std::string name) :
+  PandaNode(std::move(name)) {
 }
 
 /**

@@ -41,9 +41,11 @@ PUBLISHED:
   INLINE void get(LVecBase3f &start, LVecBase3f &dir) const;
   INLINE LVecBase3f get_start() const;
   INLINE LVecBase3f get_direction() const;
-  INLINE void set_params(int first_contact, int backface_cull);
-  INLINE void get_params(int &first_contact, int &backface_cull) const;
+  [[deprecated]] INLINE void set_params(int first_contact, int backface_cull);
+  [[deprecated]] INLINE void get_params(int &first_contact, int &backface_cull) const;
+  INLINE void set_first_contact(int first_contact);
   INLINE int get_first_contact() const;
+  INLINE void set_backface_cull(int backface_cull);
   INLINE int get_backface_cull() const;
   INLINE void set_closest_hit(int closest_hit);
   INLINE int get_closest_hit();

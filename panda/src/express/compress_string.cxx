@@ -29,7 +29,7 @@ using std::string;
  * through 9).  Returns the compressed string.
  */
 string
-compress_string(const string &source, int compression_level) {
+compress_string(std::string_view source, int compression_level) {
   ostringstream dest;
 
   {
@@ -53,7 +53,8 @@ compress_string(const string &source, int compression_level) {
  * value may simply be a garbage or truncated string.
  */
 string
-decompress_string(const string &source) {
+decompress_string(const std::string &source) {
+  //NB: C++17 has no move-from-string yet.  Change in C++20.
   istringstream source_stream(source);
   ostringstream dest_stream;
 

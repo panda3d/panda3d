@@ -17,8 +17,8 @@
  *
  */
 INLINE GeoMipTerrain::
-GeoMipTerrain(const std::string &name) {
-  _root = NodePath(name);
+GeoMipTerrain(std::string name) {
+  _root = NodePath(std::move(name));
   _root_flattened = false;
   _xsize = 0;
   _ysize = 0;
@@ -429,7 +429,7 @@ set_color_map(const Texture *tex) {
 }
 
 INLINE bool GeoMipTerrain::
-set_color_map(const std::string &path) {
+set_color_map(std::string_view path) {
   return set_color_map(Filename(path));
 }
 

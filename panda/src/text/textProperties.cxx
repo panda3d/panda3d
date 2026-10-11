@@ -489,4 +489,8 @@ load_default_font() {
 
 #endif  // HAVE_FREETYPE
 #endif  // COMPILE_IN_DEFAULT_FONT
+
+  if (_default_font != nullptr && !_default_font->has_name()) {
+    _default_font->set_name("default_font");
+  }
 }

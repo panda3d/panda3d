@@ -107,6 +107,8 @@ EXCLUDE_BINARIES = [
     'test_interrogate',
     'parse_file',
     'run_tests',
+    'run_pytest',
+    'run_cxx_tests',
 ]
 
 WHEEL_DATA = """Wheel-Version: 1.0

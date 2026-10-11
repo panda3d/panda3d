@@ -48,6 +48,7 @@ class FactoryParams;
  */
 class EXPCL_PANDA_PGRAPH AuxBitplaneAttrib final : public RenderAttrib {
 private:
+  friend class StaticObject<AuxBitplaneAttrib>;
   INLINE AuxBitplaneAttrib(int outputs);
 
 PUBLISHED:
@@ -103,7 +104,8 @@ public:
     RenderAttrib::init_type();
     register_type(_type_handle, "AuxBitplaneAttrib",
                   RenderAttrib::get_class_type());
-    _attrib_slot = register_slot(_type_handle, 100, new AuxBitplaneAttrib(0));
+    static StaticObject<AuxBitplaneAttrib> default_attrib(0);
+    _attrib_slot = register_slot(_type_handle, 100, default_attrib);
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

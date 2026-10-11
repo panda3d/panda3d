@@ -27,7 +27,7 @@ void gl_transform_to_viewport(GLContext *c,GLVertex *v)
                    + c->viewport.trans.v[2] );
 
   // Add the z-bias, if any.  Be careful not to overflow the int.
-  int z = v->zp.z + (c->zbias << (ZB_POINT_Z_FRAC_BITS + 4));
+  int z = v->zp.z + c->zbias;
   if (z < v->zp.z && c->zbias > 0) {
     v->zp.z = INT_MAX;
   } else if (z > v->zp.z && c->zbias < 0) {

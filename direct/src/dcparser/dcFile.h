@@ -41,15 +41,15 @@ PUBLISHED:
 #endif
 
   bool read(Filename filename);
-  bool read(std::istream &in, const std::string &filename = std::string());
+  bool read(std::istream &in, std::string filename = std::string());
 
   bool write(Filename filename, bool brief) const;
   bool write(std::ostream &out, bool brief) const;
 
   int get_num_classes() const;
   DCClass *get_class(int n) const;
-  DCClass *get_class_by_name(const std::string &name) const;
-  DCSwitch *get_switch_by_name(const std::string &name) const;
+  DCClass *get_class_by_name(std::string_view name) const;
+  DCSwitch *get_switch_by_name(std::string_view name) const;
 
   DCField *get_field_by_index(int index_number) const;
 
@@ -62,11 +62,11 @@ PUBLISHED:
 
   int get_num_typedefs() const;
   DCTypedef *get_typedef(int n) const;
-  DCTypedef *get_typedef_by_name(const std::string &name) const;
+  DCTypedef *get_typedef_by_name(std::string_view name) const;
 
   int get_num_keywords() const;
   const DCKeyword *get_keyword(int n) const;
-  const DCKeyword *get_keyword_by_name(const std::string &name) const;
+  const DCKeyword *get_keyword_by_name(std::string_view name) const;
 
   unsigned long get_hash() const;
 
@@ -74,10 +74,10 @@ public:
   void generate_hash(HashGenerator &hashgen) const;
   bool add_class(DCClass *dclass);
   bool add_switch(DCSwitch *dswitch);
-  void add_import_module(const std::string &import_module);
-  void add_import_symbol(const std::string &import_symbol);
+  void add_import_module(std::string import_module);
+  void add_import_symbol(std::string import_symbol);
   bool add_typedef(DCTypedef *dtypedef);
-  bool add_keyword(const std::string &name);
+  bool add_keyword(std::string name);
   void add_thing_to_delete(DCDeclaration *decl);
 
   void set_new_index_number(DCField *field);
@@ -91,7 +91,7 @@ private:
   typedef pvector<DCClass *> Classes;
   Classes _classes;
 
-  typedef pmap<std::string, DCDeclaration *> ThingsByName;
+  typedef pmap<std::string, DCDeclaration *, std::less<>> ThingsByName;
   ThingsByName _things_by_name;
 
   typedef pvector<std::string> ImportSymbols;
@@ -107,7 +107,7 @@ private:
   typedef pvector<DCTypedef *> Typedefs;
   Typedefs _typedefs;
 
-  typedef pmap<std::string, DCTypedef *> TypedefsByName;
+  typedef pmap<std::string, DCTypedef *, std::less<>> TypedefsByName;
   TypedefsByName _typedefs_by_name;
 
   DCKeywordList _keywords;

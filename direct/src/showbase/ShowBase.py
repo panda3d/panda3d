@@ -711,7 +711,8 @@ class ShowBase(DirectObject.DirectObject):
             allowAccessibilityShortcutKeys(True)
             self.__disabledStickyKeys = False
 
-        self.__directObject.ignoreAll()
+        if hasattr(self, '__directObject'):
+            self.__directObject.ignoreAll()
         self.ignoreAll()
         self.shutdown()
 
@@ -3517,6 +3518,7 @@ class ShowBase(DirectObject.DirectObject):
     remove_camera_frustum = removeCameraFrustum
     save_cube_map = saveCubeMap
     save_sphere_map = saveSphereMap
+    user_exit = userExit
     start_wx = startWx
     start_tk = startTk
     start_direct = startDirect

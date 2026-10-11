@@ -47,7 +47,7 @@ public:
   void report_pi() const;
   void report_statistics() const;
 
-  void read_txa_file(std::istream &txa_file, const std::string &txa_filename);
+  void read_txa_file(std::istream &txa_file, std::string_view txa_filename);
   void all_params_set();
   void process_command_line_eggs(bool force_texture_read, const Filename &state_filename);
   void process_all(bool force_texture_read, const Filename &state_filename);
@@ -57,15 +57,15 @@ public:
   bool read_stale_eggs(bool redo_all);
   bool write_eggs();
 
-  EggFile *get_egg_file(const std::string &name);
-  bool remove_egg_file(const std::string &name);
+  EggFile *get_egg_file(std::string name);
+  bool remove_egg_file(std::string_view name);
 
   void add_command_line_egg(EggFile *egg_file);
 
-  PaletteGroup *get_palette_group(const std::string &name);
-  PaletteGroup *test_palette_group(const std::string &name) const;
+  PaletteGroup *get_palette_group(std::string name);
+  PaletteGroup *test_palette_group(std::string_view name) const;
   PaletteGroup *get_default_group();
-  TextureImage *get_texture(const std::string &name);
+  TextureImage *get_texture(std::string name);
 
 private:
   static const char *yesno(bool flag);
@@ -82,7 +82,7 @@ public:
     RU_invalid
   };
 
-  static RemapUV string_remap(const std::string &str);
+  static RemapUV string_remap(std::string_view str);
 
   bool _is_valid;
 
@@ -124,7 +124,7 @@ private:
   void compute_statistics(std::ostream &out, int indent_level,
                           const Placements &placements) const;
 
-  typedef pmap<std::string, EggFile *> EggFiles;
+  typedef pmap<std::string, EggFile *, std::less<>> EggFiles;
   EggFiles _egg_files;
 
   typedef pvector<EggFile *> CommandLineEggs;
@@ -133,10 +133,10 @@ private:
   typedef pset<TextureImage *> CommandLineTextures;
   CommandLineTextures _command_line_textures;
 
-  typedef pmap<std::string, PaletteGroup *> Groups;
+  typedef pmap<std::string, PaletteGroup *, std::less<>> Groups;
   Groups _groups;
 
-  typedef pmap<std::string, TextureImage *> Textures;
+  typedef pmap<std::string, TextureImage *, std::less<>> Textures;
   Textures _textures;
   typedef pvector<TextureImage *> TextureConflicts;
   TextureConflicts _texture_conflicts;

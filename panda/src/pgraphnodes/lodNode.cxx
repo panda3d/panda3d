@@ -45,18 +45,18 @@ TypeHandle LODNode::_type_handle;
  * variable.
  */
 PT(LODNode) LODNode::
-make_default_lod(const std::string &name) {
+make_default_lod(std::string name) {
   switch (default_lod_type.get_value()) {
   case LNT_pop:
-    return new LODNode(name);
+    return new LODNode(std::move(name));
 
   case LNT_fade:
-    return new FadeLODNode(name);
+    return new FadeLODNode(std::move(name));
 
   default:
     pgraph_cat.error()
       << "Invalid LODNodeType value: " << (int)default_lod_type << "\n";
-    return new LODNode(name);
+    return new LODNode(std::move(name));
   }
 }
 
@@ -488,7 +488,7 @@ compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
       }
     }
 
-    const BoundingVolume **child_begin = &child_volumes[0];
+    const BoundingVolume **child_begin = child_volumes.data();
     const BoundingVolume **child_end = child_begin + child_volumes.size();
 
     bound->around(child_begin, child_end);

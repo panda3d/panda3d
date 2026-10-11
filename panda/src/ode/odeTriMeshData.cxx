@@ -49,7 +49,7 @@ unlink_data(dGeomID id) {
 }
 
 void OdeTriMeshData::
-print_data(const std::string &marker) {
+print_data(std::string_view marker) {
   if (odetrimeshdata_cat.is_debug()) {
     odetrimeshdata_cat.debug() << get_class_type() << "::print_data(" << marker << ")\n";
     const TriMeshDataMap &data_map = get_tri_mesh_data_map();

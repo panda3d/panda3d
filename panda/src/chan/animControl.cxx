@@ -27,10 +27,10 @@ TypeHandle AnimControl::_type_handle;
  * being loaded during an asynchronous load-and-bind operation.
  */
 AnimControl::
-AnimControl(const std::string &name, PartBundle *part,
+AnimControl(std::string name, PartBundle *part,
             double frame_rate, int num_frames) :
-  Namable(name),
-  _pending_lock(name),
+  Namable(std::move(name)),
+  _pending_lock(get_name()),
   _pending_cvar(_pending_lock),
   _part(part),
   _bound_joints(BitArray::all_on())
@@ -131,9 +131,9 @@ wait_pending() {
  * binding, the event will be thrown immediately.
  */
 void AnimControl::
-set_pending_done_event(const std::string &done_event) {
+set_pending_done_event(std::string done_event) {
   MutexHolder holder(_pending_lock);
-  _pending_done_event = done_event;
+  _pending_done_event = std::move(done_event);
   if (!_pending) {
     throw_event(_pending_done_event);
   }

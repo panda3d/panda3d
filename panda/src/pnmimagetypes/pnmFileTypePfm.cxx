@@ -81,7 +81,7 @@ has_magic_number() const {
  * otherwise.
  */
 bool PNMFileTypePfm::
-matches_magic_number(const string &magic_number) const {
+matches_magic_number(std::string_view magic_number) const {
   return (magic_number.size() >= 2) &&
     (magic_number.substr(0, 2) == "PF" ||
      magic_number.substr(0, 2) == "Pf" ||
@@ -94,8 +94,8 @@ matches_magic_number(const string &magic_number) const {
  * returns NULL.
  */
 PNMReader *PNMFileTypePfm::
-make_reader(istream *file, bool owns_file, const string &magic_number) {
-  return new Reader(this, file, owns_file, magic_number);
+make_reader(istream *file, bool owns_file, std::string_view magic_number) {
+  return new Reader(this, file, owns_file, std::string(magic_number));
 }
 
 /**
@@ -156,7 +156,7 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
     return;
   }
 
-  // Skip the last newlinewhitespace character before the raw data begins.
+  // Skip the last newline/whitespace character before the raw data begins.
   (*_file).get();
 }
 

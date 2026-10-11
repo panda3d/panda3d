@@ -27,7 +27,7 @@
 class PythonThread : public Thread {
 PUBLISHED:
   explicit PythonThread(PyObject *function, PyObject *args,
-                        const std::string &name, const std::string &sync_name);
+                        std::string name, std::string sync_name);
   virtual ~PythonThread();
 
   BLOCKING PyObject *join();
@@ -36,7 +36,8 @@ public:
   PyObject *get_args() const;
   void set_args(PyObject *);
 
-  static PyObject *call_python_func(PyObject *function, PyObject *args);
+  static PyObject *call_python_func(PyObject *function, PyObject **args,
+                                    size_t nargsf);
 
 PUBLISHED:
   MAKE_PROPERTY(args, get_args, set_args);

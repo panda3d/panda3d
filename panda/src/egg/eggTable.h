@@ -32,7 +32,7 @@ PUBLISHED:
     TT_bundle,
   };
 
-  INLINE explicit EggTable(const std::string &name = "");
+  INLINE explicit EggTable(std::string name = "");
   INLINE EggTable(const EggTable &copy);
   INLINE EggTable &operator = (const EggTable &copy);
 
@@ -42,7 +42,7 @@ PUBLISHED:
   bool has_transform() const;
   virtual void write(std::ostream &out, int indent_level) const;
 
-  static TableType string_table_type(const std::string &string);
+  static TableType string_table_type(std::string_view string);
 
 protected:
   virtual void r_transform(const LMatrix4d &mat, const LMatrix4d &inv,

@@ -30,14 +30,14 @@ using std::string;
  * algorithm specified by encryption-algorithm.  Returns the encrypted data.
  */
 vector_uchar
-encrypt_string(const string &source, const string &password,
-               const string &algorithm, int key_length, int iteration_count) {
+encrypt_string(std::string_view source, std::string_view password,
+               std::string algorithm, int key_length, int iteration_count) {
   StringStream dest;
 
   {
     OEncryptStream encrypt;
     if (!algorithm.empty()) {
-      encrypt.set_algorithm(algorithm);
+      encrypt.set_algorithm(std::move(algorithm));
     }
     if (key_length > 0) {
       encrypt.set_key_length(key_length);
@@ -67,7 +67,7 @@ encrypt_string(const string &source, const string &password,
  * easily be detected, and the return value may simply be a garbage string.
  */
 string
-decrypt_string(const vector_uchar &source, const string &password) {
+decrypt_string(const vector_uchar &source, std::string_view password) {
   StringStream source_stream(source);
   ostringstream dest_stream;
 
@@ -85,8 +85,8 @@ decrypt_string(const vector_uchar &source, const string &password) {
  * success, or false on failure.
  */
 EXPCL_PANDA_EXPRESS bool
-encrypt_file(const Filename &source, const Filename &dest, const string &password,
-             const string &algorithm, int key_length, int iteration_count) {
+encrypt_file(const Filename &source, const Filename &dest, std::string_view password,
+             std::string algorithm, int key_length, int iteration_count) {
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   Filename source_filename = source;
   if (!source_filename.is_binary_or_text()) {
@@ -108,7 +108,7 @@ encrypt_file(const Filename &source, const Filename &dest, const string &passwor
   }
 
   bool result = encrypt_stream(*source_stream, *dest_stream, password,
-                               algorithm, key_length, iteration_count);
+                               std::move(algorithm), key_length, iteration_count);
   vfs->close_read_file(source_stream);
   vfs->close_write_file(dest_stream);
   return result;
@@ -125,7 +125,7 @@ encrypt_file(const Filename &source, const Filename &dest, const string &passwor
  * easily be detected, and the output may simply be a garbage string.
  */
 EXPCL_PANDA_EXPRESS bool
-decrypt_file(const Filename &source, const Filename &dest, const string &password) {
+decrypt_file(const Filename &source, const Filename &dest, std::string_view password) {
   Filename source_filename = Filename::binary_filename(source);
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   istream *source_stream = vfs->open_read_file(source_filename, false);
@@ -159,11 +159,11 @@ decrypt_file(const Filename &source, const Filename &dest, const string &passwor
  * on success, or false on failure.
  */
 bool
-encrypt_stream(istream &source, ostream &dest, const string &password,
-               const string &algorithm, int key_length, int iteration_count) {
+encrypt_stream(istream &source, ostream &dest, std::string_view password,
+               std::string algorithm, int key_length, int iteration_count) {
   OEncryptStream encrypt;
   if (!algorithm.empty()) {
-    encrypt.set_algorithm(algorithm);
+    encrypt.set_algorithm(std::move(algorithm));
   }
   if (key_length > 0) {
     encrypt.set_key_length(key_length);
@@ -199,7 +199,7 @@ encrypt_stream(istream &source, ostream &dest, const string &password,
  * easily be detected, and the output may simply be a garbage string.
  */
 bool
-decrypt_stream(istream &source, ostream &dest, const string &password) {
+decrypt_stream(istream &source, ostream &dest, std::string_view password) {
   IDecryptStream decrypt(&source, false, password);
 
   static const size_t buffer_size = 4096;

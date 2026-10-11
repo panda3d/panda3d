@@ -23,7 +23,7 @@ IDecryptStream() : std::istream(&_buf) {
  */
 INLINE IDecryptStream::
 IDecryptStream(std::istream *source, bool owns_source,
-               const std::string &password) : std::istream(&_buf) {
+               std::string_view password) : std::istream(&_buf) {
   open(source, owns_source, password);
 }
 
@@ -31,7 +31,7 @@ IDecryptStream(std::istream *source, bool owns_source,
  *
  */
 INLINE IDecryptStream &IDecryptStream::
-open(std::istream *source, bool owns_source, const std::string &password) {
+open(std::istream *source, bool owns_source, std::string_view password) {
   clear((ios_iostate)0);
   _buf.open_read(source, owns_source, password);
   return *this;
@@ -83,7 +83,7 @@ OEncryptStream() : std::ostream(&_buf) {
  *
  */
 INLINE OEncryptStream::
-OEncryptStream(std::ostream *dest, bool owns_dest, const std::string &password) :
+OEncryptStream(std::ostream *dest, bool owns_dest, std::string_view password) :
   std::ostream(&_buf)
 {
   open(dest, owns_dest, password);
@@ -93,7 +93,7 @@ OEncryptStream(std::ostream *dest, bool owns_dest, const std::string &password) 
  *
  */
 INLINE OEncryptStream &OEncryptStream::
-open(std::ostream *dest, bool owns_dest, const std::string &password) {
+open(std::ostream *dest, bool owns_dest, std::string_view password) {
   clear((ios_iostate)0);
   _buf.open_write(dest, owns_dest, password);
   return *this;
@@ -143,8 +143,8 @@ get_iteration_count() const {
  * code, but open() will fail.
  */
 INLINE void OEncryptStream::
-set_algorithm(const std::string &algorithm) {
-  _buf.set_algorithm(algorithm);
+set_algorithm(std::string algorithm) {
+  _buf.set_algorithm(std::move(algorithm));
 }
 
 /**

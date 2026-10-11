@@ -128,7 +128,7 @@ draw_guide_bar(int x, GuideBarStyle style) {
  */
 void WinStatsTimeline::
 draw_bar(int row, int from_x, int to_x, int collector_index,
-         const std::string &collector_name) {
+         std::string_view collector_name) {
 
   int top = row_to_pixel(row);
   int bottom = row_to_pixel(row + 1);

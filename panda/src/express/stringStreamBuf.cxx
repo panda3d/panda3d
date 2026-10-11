@@ -24,23 +24,11 @@ using std::streampos;
  */
 StringStreamBuf::
 StringStreamBuf() {
-#ifdef PHAVE_IOSTREAM
   _buffer = (char *)PANDA_MALLOC_ARRAY(2048);
   char *ebuf = _buffer + 2048;
   char *mbuf = _buffer + 1024;
   setg(_buffer, mbuf, mbuf);
   setp(mbuf, ebuf);
-
-#else
-  allocate();
-  // Chop the buffer in half.  The bottom half goes to the get buffer; the top
-  // half goes to the put buffer.
-  char *b = base();
-  char *t = ebuf();
-  char *m = b + (t - b) / 2;
-  setg(b, m, m);
-  setp(b, m);
-#endif
 
   _gpos = 0;
   _ppos = 0;
@@ -51,9 +39,7 @@ StringStreamBuf() {
  */
 StringStreamBuf::
 ~StringStreamBuf() {
-#ifdef PHAVE_IOSTREAM
   PANDA_FREE_ARRAY(_buffer);
-#endif
 }
 
 /**

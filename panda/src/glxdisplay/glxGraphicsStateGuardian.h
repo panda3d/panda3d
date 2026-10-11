@@ -88,6 +88,8 @@ public:
 
   virtual ~glxGraphicsStateGuardian();
 
+  virtual bool make_current();
+
   bool glx_is_at_least_version(int major_version, int minor_version) const;
 
   GLXContext _share_context;
@@ -128,11 +130,12 @@ protected:
   virtual void query_gl_version();
   virtual void get_extra_extensions();
   virtual void *do_get_extension_func(const char *name);
+  virtual bool may_support_cg_shaders();
 
 private:
   void query_glx_extensions();
-  void show_glx_client_string(const std::string &name, int id);
-  void show_glx_server_string(const std::string &name, int id);
+  void show_glx_client_string(std::string_view name, int id);
+  void show_glx_server_string(std::string_view name, int id);
   void choose_temp_visual(const FrameBufferProperties &properties);
   void init_temp_context();
   void destroy_temp_xwindow();

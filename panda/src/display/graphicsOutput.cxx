@@ -67,7 +67,7 @@ static CubeFaceDef cube_faces[6] = {
  */
 GraphicsOutput::
 GraphicsOutput(GraphicsEngine *engine, GraphicsPipe *pipe,
-               const string &name,
+               std::string name,
                const FrameBufferProperties &fb_prop,
                const WindowProperties &win_prop,
                int flags,
@@ -88,7 +88,7 @@ GraphicsOutput(GraphicsEngine *engine, GraphicsPipe *pipe,
   _gsg = gsg;
   _host = host;
   _fb_properties = fb_prop;
-  _name = name;
+  _name = std::move(name);
   _creation_flags = flags;
   _has_size = win_prop.has_size();
   _is_nonzero_size = false;
@@ -857,7 +857,7 @@ get_active_display_region(int n) const {
  * GraphicsEngine::remove_window().
  */
 GraphicsOutput *GraphicsOutput::
-make_texture_buffer(const string &name, int x_size, int y_size,
+make_texture_buffer(std::string_view name, int x_size, int y_size,
                     Texture *tex, bool to_ram, FrameBufferProperties *fbp) {
 
   FrameBufferProperties props;
@@ -917,7 +917,7 @@ make_texture_buffer(const string &name, int x_size, int y_size,
  * to apply a reflection of everything seen by the camera rig.
  */
 GraphicsOutput *GraphicsOutput::
-make_cube_map(const string &name, int size, NodePath &camera_rig,
+make_cube_map(std::string_view name, int size, NodePath &camera_rig,
               DrawMask camera_mask, bool to_ram, FrameBufferProperties *fbp) {
   if (!to_ram) {
     // Check the limits imposed by the GSG.  (However, if we're rendering the
@@ -942,7 +942,7 @@ make_cube_map(const string &name, int size, NodePath &camera_rig,
   // behavior, he can take this effect off again.
   camera_rig.node()->set_effect(CompassEffect::make(NodePath()));
 
-  PT(Texture) tex = new Texture(name);
+  PT(Texture) tex = new Texture(std::string(name));
   tex->setup_cube_map();
   tex->set_wrap_u(SamplerState::WM_clamp);
   tex->set_wrap_v(SamplerState::WM_clamp);
@@ -986,9 +986,9 @@ make_cube_map(const string &name, int size, NodePath &camera_rig,
  * several frames extra to complete.
  */
 PT(ScreenshotRequest) GraphicsOutput::
-save_async_screenshot(const Filename &filename, const std::string &image_comment) {
+save_async_screenshot(const Filename &filename, std::string image_comment) {
   PT(ScreenshotRequest) request = get_async_screenshot();
-  request->add_output_file(filename, image_comment);
+  request->add_output_file(filename, std::move(image_comment));
   return request;
 }
 
@@ -1675,7 +1675,7 @@ do_determine_display_regions(GraphicsOutput::CData *cdata) {
  * These bitmask values are taken from ColorWriteAttrib.
  */
 unsigned int GraphicsOutput::
-parse_color_mask(const string &word) {
+parse_color_mask(std::string_view word) {
   unsigned int result = 0;
   vector_string components;
   tokenize(word, components, "|");

@@ -57,7 +57,7 @@ public:
   void set_in(const LVecBase3 &in);
   void set_out(const LVecBase3 &out);
   void set_type(int type);
-  void set_name(const std::string &name);
+  void set_name(std::string name);
 
   void format_egg(std::ostream &out, int indent, int num_dimensions,
               bool show_in, bool show_out,
@@ -140,8 +140,8 @@ public:
                    int rtype3, PN_stdfloat t3, const LVecBase4 &v3);
 
 protected:
-  virtual bool format_egg(std::ostream &out, const std::string &name,
-                          const std::string &curve_type, int indent_level) const;
+  virtual bool format_egg(std::ostream &out, std::string_view name,
+                          std::string_view curve_type, int indent_level) const;
 
   void invalidate_cv(int n, bool redo_all);
   int find_cv(PN_stdfloat t);

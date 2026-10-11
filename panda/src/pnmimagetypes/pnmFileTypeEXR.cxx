@@ -79,9 +79,9 @@ private:
 // A wrapper class to map OpenEXR's IStream class onto std::istream.
 class ImfStdIstream : public IMF::IStream {
 public:
-  ImfStdIstream(std::istream &strm, const std::string &magic_number) : IMF::IStream("istream"), _strm(strm) {
+  ImfStdIstream(std::istream &strm, std::string_view magic_number) : IMF::IStream("istream"), _strm(strm) {
     // Start by putting back the magic number.
-    for (std::string::const_reverse_iterator mi = magic_number.rbegin();
+    for (auto mi = magic_number.rbegin();
          mi != magic_number.rend();
          mi++) {
       _strm.putback(*mi);
@@ -183,7 +183,7 @@ has_magic_number() const {
  * otherwise.
  */
 bool PNMFileTypeEXR::
-matches_magic_number(const string &magic_number) const {
+matches_magic_number(std::string_view magic_number) const {
   nassertr(magic_number.size() >= 2, false);
 
   if (magic_number.size() >= 4) {
@@ -203,7 +203,7 @@ matches_magic_number(const string &magic_number) const {
  * returns NULL.
  */
 PNMReader *PNMFileTypeEXR::
-make_reader(istream *file, bool owns_file, const string &magic_number) {
+make_reader(istream *file, bool owns_file, std::string_view magic_number) {
   return new Reader(this, file, owns_file, magic_number);
 }
 
@@ -221,7 +221,7 @@ make_writer(ostream *file, bool owns_file) {
  *
  */
 PNMFileTypeEXR::Reader::
-Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
+Reader(PNMFileType *type, istream *file, bool owns_file, std::string_view magic_number) :
   PNMReader(type, file, owns_file),
   _strm(new ImfStdIstream(*_file, magic_number)),
   _imf_file(*_strm)

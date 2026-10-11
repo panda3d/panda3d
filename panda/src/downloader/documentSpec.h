@@ -31,6 +31,7 @@ class EXPCL_PANDA_DOWNLOADER DocumentSpec {
 PUBLISHED:
   INLINE DocumentSpec();
   INLINE DocumentSpec(const std::string &url);
+  INLINE DocumentSpec(std::string_view url);
   INLINE DocumentSpec(const URLSpec &url);
   INLINE DocumentSpec(const DocumentSpec &copy);
   INLINE void operator = (const DocumentSpec &copy);

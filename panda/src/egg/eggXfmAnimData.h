@@ -28,20 +28,20 @@
  */
 class EXPCL_PANDA_EGG EggXfmAnimData : public EggAnimData {
 PUBLISHED:
-  INLINE explicit EggXfmAnimData(const std::string &name = "",
+  INLINE explicit EggXfmAnimData(std::string name = "",
                                  CoordinateSystem cs = CS_default);
   EggXfmAnimData(const EggXfmSAnim &convert_from);
 
   INLINE EggXfmAnimData(const EggXfmAnimData &copy);
   INLINE EggXfmAnimData &operator = (const EggXfmAnimData &copy);
 
-  INLINE void set_order(const std::string &order);
+  INLINE void set_order(std::string order);
   INLINE void clear_order();
   INLINE bool has_order() const;
   INLINE const std::string &get_order() const;
   INLINE static const std::string &get_standard_order();
 
-  INLINE void set_contents(const std::string &contents);
+  INLINE void set_contents(std::string contents);
   INLINE void clear_contents();
   INLINE bool has_contents() const;
   INLINE const std::string &get_contents() const;

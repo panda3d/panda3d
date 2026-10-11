@@ -16,7 +16,7 @@
  * ConfigVariableFoo derived class.
  */
 INLINE ConfigVariableBase::
-ConfigVariableBase(const std::string &name,
+ConfigVariableBase(std::string_view name,
                    ConfigVariableBase::ValueType value_type) :
   _core(ConfigVariableManager::get_global_ptr()->make_variable(name))
 {

@@ -29,10 +29,10 @@ static MutexImpl this_prc_dir_lock;
  */
 ConfigDeclaration::
 ConfigDeclaration(ConfigPage *page, ConfigVariableCore *variable,
-                  const string &string_value, int decl_seq) :
+                  std::string string_value, int decl_seq) :
   _page(page),
   _variable(variable),
-  _string_value(string_value),
+  _string_value(std::move(string_value)),
   _decl_seq(decl_seq),
   _got_words(false)
 {
@@ -56,7 +56,7 @@ ConfigDeclaration::
  * words.
  */
 void ConfigDeclaration::
-set_string_word(size_t n, const string &value) {
+set_string_word(size_t n, std::string_view value) {
   if (!_got_words) {
     get_words();
   }
@@ -401,7 +401,7 @@ check_double_word(size_t n) {
  * The return value is the number of words extracted.
  */
 size_t ConfigDeclaration::
-extract_words(const string &str, vector_string &words) {
+extract_words(std::string_view str, vector_string &words) {
   size_t num_words = 0;
 
   size_t pos = 0;
@@ -413,7 +413,7 @@ extract_words(const string &str, vector_string &words) {
     while (pos < str.length() && !isspace((unsigned int)str[pos])) {
       pos++;
     }
-    words.push_back(str.substr(word_start, pos - word_start));
+    words.emplace_back(str.substr(word_start, pos - word_start));
     num_words++;
 
     while (pos < str.length() && isspace((unsigned int)str[pos])) {
@@ -428,10 +428,10 @@ extract_words(const string &str, vector_string &words) {
  * Returns the input string with all uppercase letters converted to lowercase.
  */
 string ConfigDeclaration::
-downcase(const string &s) {
+downcase(std::string_view s) {
   string result;
   result.reserve(s.size());
-  string::const_iterator p;
+  std::string_view::const_iterator p;
   for (p = s.begin(); p != s.end(); ++p) {
     result += (char)tolower(*p);
   }

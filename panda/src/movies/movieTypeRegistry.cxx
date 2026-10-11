@@ -80,7 +80,7 @@ make_audio(const Filename &name) {
  * will be loaded as this type.  You may use * as a catch-all extension.
  */
 void MovieTypeRegistry::
-register_audio_type(MakeAudioFunc func, const string &extensions) {
+register_audio_type(MakeAudioFunc func, std::string_view extensions) {
   ReMutexHolder holder(_audio_lock);
   vector_string words;
   extract_words(downcase(extensions), words);
@@ -117,7 +117,7 @@ load_audio_types() {
 
       if (words.size() == 1) {
         // Exactly one word: load the named library immediately.
-        string name = words[0];
+        const string &name = words[0];
         Filename dlname = Filename::dso_filename("lib" + name + ".so");
         movies_cat.info()
           << "loading audio type module: " << name << endl;
@@ -210,7 +210,7 @@ make_video(const Filename &name) {
  * will be loaded as this type.  You may use * as a catch-all extension.
  */
 void MovieTypeRegistry::
-register_video_type(MakeVideoFunc func, const string &extensions) {
+register_video_type(MakeVideoFunc func, std::string_view extensions) {
   ReMutexHolder holder(_video_lock);
   vector_string words;
   extract_words(downcase(extensions), words);
@@ -247,7 +247,7 @@ load_video_types() {
 
       if (words.size() == 1) {
         // Exactly one word: load the named library immediately.
-        string name = words[0];
+        const string &name = words[0];
         Filename dlname = Filename::dso_filename("lib" + name + ".so");
         movies_cat.info()
           << "loading video type module: " << name << endl;
@@ -288,9 +288,12 @@ load_video_types() {
  * Loads the module.
  */
 void MovieTypeRegistry::
-load_movie_library(const string &name) {
+load_movie_library(std::string_view name) {
   ReMutexHolder holder(_video_lock);
-  Filename dlname = Filename::dso_filename("lib" + name + ".so");
+  std::string basename = "lib";
+  basename += name;
+  basename += ".so";
+  Filename dlname = Filename::dso_filename(basename);
   movies_cat.info()
     << "loading video type module: " << name << endl;
   void *tmp = load_dso(get_plugin_path().get_value(), dlname);

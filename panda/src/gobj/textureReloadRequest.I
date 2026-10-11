@@ -16,10 +16,10 @@
  * load_async(), to begin an asynchronous load.
  */
 INLINE TextureReloadRequest::
-TextureReloadRequest(const std::string &name,
+TextureReloadRequest(std::string name,
                      PreparedGraphicsObjects *pgo, Texture *texture,
                      bool allow_compressed) :
-  AsyncTask(name),
+  AsyncTask(std::move(name)),
   _pgo(pgo),
   _texture(texture),
   _allow_compressed(allow_compressed)

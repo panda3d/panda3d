@@ -17,12 +17,26 @@
 
 #include "vorbisAudio.h"
 #include "virtualFileSystem.h"
+#include "vector_string.h"
 
 #ifdef HAVE_VORBIS
 
 using std::istream;
 
 TypeHandle VorbisAudioCursor::_type_handle;
+
+/**
+ *
+ */
+vector_string
+parse_vorbis_comments(vorbis_comment *com) {
+  vector_string comments;
+  for (int cnum = 0; cnum < com->comments; ++cnum) {
+    std::string tag(com->user_comments[cnum], com->comment_lengths[cnum]);
+    comments.push_back(std::move(tag));
+  }
+  return comments;
+}
 
 /**
  * Reads the .wav header from the indicated stream.  This leaves the read
@@ -66,6 +80,9 @@ VorbisAudioCursor(VorbisAudio *src, istream *stream) :
 
   _can_seek = vorbis_enable_seek && (ov_seekable(&_ov) != 0);
   _can_seek_fast = _can_seek;
+
+  vorbis_comment *com = ov_comment(&_ov, -1);
+  _comment = parse_vorbis_comments(com);
 
   _is_valid = true;
 }
@@ -311,6 +328,14 @@ cb_tell_func(void *datasource) {
   nassertr(stream != nullptr, -1);
 
   return stream->tellg();
+}
+
+/**
+ *
+ */
+vector_string VorbisAudioCursor::
+get_raw_comment() const {
+  return _comment;
 }
 
 #endif // HAVE_VORBIS

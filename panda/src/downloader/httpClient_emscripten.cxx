@@ -59,12 +59,14 @@ HTTPClient() {
  * the particular server/realm pair.
  */
 void HTTPClient::
-set_username(const string &server, const string &realm, const string &username) {
-  string key = server + ":" + realm;
+set_username(std::string_view server, std::string_view realm, std::string username) {
+  string key;
+  key.reserve(server.size() + 1 + realm.size());
+  key.append(server).append(1, ':').append(realm);
   if (username.empty()) {
     _usernames.erase(key);
   } else {
-    _usernames[key] = username;
+    _usernames[std::move(key)] = std::move(username);
   }
 }
 
@@ -73,8 +75,10 @@ set_username(const string &server, const string &realm, const string &username) 
  * empty string if nothing has been set.  See set_username().
  */
 string HTTPClient::
-get_username(const string &server, const string &realm) const {
-  string key = server + ":" + realm;
+get_username(std::string_view server, std::string_view realm) const {
+  string key;
+  key.reserve(server.size() + 1 + realm.size());
+  key.append(server).append(1, ':').append(realm);
   Usernames::const_iterator ui;
   ui = _usernames.find(key);
   if (ui != _usernames.end()) {
@@ -202,9 +206,9 @@ make_channel(bool persistent_connection) {
  * document was retrieved.
  */
 PT(HTTPChannel) HTTPClient::
-post_form(const URLSpec &url, const string &body) {
+post_form(const URLSpec &url, std::string body) {
   PT(HTTPChannel) doc = new HTTPChannel(this);
-  doc->post_form(url, body);
+  doc->post_form(url, std::move(body));
   return doc;
 }
 
@@ -250,15 +254,15 @@ get_global_ptr() {
  * may be empty, or just server:username:password or username:password.
  */
 void HTTPClient::
-add_http_username(const string &http_username) {
+add_http_username(std::string_view http_username) {
   size_t c1 = http_username.find(':');
-  if (c1 != string::npos) {
+  if (c1 != std::string_view::npos) {
     size_t c2 = http_username.find(':', c1 + 1);
-    if (c2 != string::npos) {
+    if (c2 != std::string_view::npos) {
       size_t c3 = http_username.find(':', c2 + 1);
-      if (c3 != string::npos) {
+      if (c3 != std::string_view::npos) {
         size_t c4 = http_username.find(':', c3 + 1);
-        if (c4 != string::npos) {
+        if (c4 != std::string_view::npos) {
           // Oops, we have five?  Problem.
           downloader_cat.error()
             << "Invalid http-username " << http_username << "\n";
@@ -267,19 +271,19 @@ add_http_username(const string &http_username) {
           // Ok, we have four.
           set_username(http_username.substr(0, c1),
                        http_username.substr(c1 + 1, c2 - (c1 + 1)),
-                       http_username.substr(c2 + 1));
+                       std::string(http_username.substr(c2 + 1)));
         }
       }
       else {
         // We have only three.
-        set_username(string(),
+        set_username(std::string_view(),
                      http_username.substr(0, c1),
-                     http_username.substr(c1 + 1));
+                     std::string(http_username.substr(c1 + 1)));
       }
     }
     else {
       // We have only two.
-      set_username(string(), string(), http_username);
+      set_username(std::string_view(), std::string_view(), std::string(http_username));
     }
   } else {
     // We have only one?  Problem.
@@ -292,7 +296,7 @@ add_http_username(const string &http_username) {
  * Chooses a suitable username:password string for the given URL and realm.
  */
 string HTTPClient::
-select_username(const URLSpec &url, const string &realm) const {
+select_username(const URLSpec &url, std::string_view realm) const {
   string username;
 
   // Look in several places in order to find the matching username.
@@ -329,7 +333,7 @@ select_username(const URLSpec &url, const string &realm) const {
  * Returns NULL if no authorization matches.
  */
 HTTPAuthorization *HTTPClient::
-select_auth(const URLSpec &url, const string &last_realm) {
+select_auth(const URLSpec &url, std::string_view last_realm) {
   Domains &domains = _www_domains;
   std::string canon = HTTPAuthorization::get_canonical_url(url).get_url();
 
@@ -381,7 +385,7 @@ select_auth(const URLSpec &url, const string &last_realm) {
  * may be a subset of the server, or it may include multiple servers).
  */
 PT(HTTPAuthorization) HTTPClient::
-generate_auth(const URLSpec &url, const string &challenge) {
+generate_auth(const URLSpec &url, std::string_view challenge) {
   HTTPAuthorization::AuthenticationSchemes schemes;
   HTTPAuthorization::parse_authentication_schemes(schemes, challenge);
 

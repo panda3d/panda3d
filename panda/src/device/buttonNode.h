@@ -32,7 +32,7 @@
  */
 class EXPCL_PANDA_DEVICE ButtonNode : public DataNode {
 PUBLISHED:
-  explicit ButtonNode(ClientBase *client, const std::string &device_name);
+  explicit ButtonNode(ClientBase *client, std::string_view device_name);
   explicit ButtonNode(InputDevice *device);
   virtual ~ButtonNode();
 

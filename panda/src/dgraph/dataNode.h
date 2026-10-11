@@ -51,7 +51,7 @@ class DataNodeTransmit;
  */
 class EXPCL_PANDA_DGRAPH DataNode : public PandaNode {
 PUBLISHED:
-  INLINE explicit DataNode(const std::string &name);
+  INLINE explicit DataNode(std::string name);
 
 protected:
   INLINE DataNode(const DataNode &copy);
@@ -71,8 +71,8 @@ PUBLISHED:
   void write_connections(std::ostream &out) const;
 
 protected:
-  int define_input(const std::string &name, TypeHandle data_type);
-  int define_output(const std::string &name, TypeHandle data_type);
+  int define_input(std::string name, TypeHandle data_type);
+  int define_output(std::string name, TypeHandle data_type);
 
 protected:
   // Inherited from PandaNode

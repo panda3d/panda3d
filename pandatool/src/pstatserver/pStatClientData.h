@@ -49,7 +49,7 @@ public:
 
   int get_num_collectors() const;
   bool has_collector(int index) const;
-  int find_collector(const std::string &fullname) const;
+  int find_collector(std::string_view fullname) const;
   const PStatCollectorDef &get_collector_def(int index) const;
   std::string get_collector_name(int index) const;
   std::string get_collector_fullname(int index) const;
@@ -61,7 +61,7 @@ public:
 
   int get_num_threads() const;
   bool has_thread(int index) const;
-  int find_thread(const std::string &name) const;
+  int find_thread(std::string_view name) const;
   std::string get_thread_name(int index) const;
   const PStatThreadData *get_thread_data(int index) const;
   bool is_thread_alive(int index) const;
@@ -70,7 +70,7 @@ public:
 
 
   void add_collector(PStatCollectorDef *def);
-  void define_thread(int thread_index, const std::string &name = std::string(),
+  void define_thread(int thread_index, std::string name = std::string(),
                      bool mark_alive = false);
   void expire_thread(int thread_index);
   void remove_thread(int thread_index);

@@ -105,7 +105,7 @@ remove_region(MouseWatcherRegion *region) {
  * indeterminate.
  */
 MouseWatcherRegion *MouseWatcherBase::
-find_region(const std::string &name) const {
+find_region(std::string_view name) const {
   LightMutexHolder holder(_lock);
 
   for (MouseWatcherRegion *region : _regions) {

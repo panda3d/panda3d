@@ -24,9 +24,9 @@ HTTPEntityTag() {
  * tag string.
  */
 INLINE HTTPEntityTag::
-HTTPEntityTag(bool weak, const std::string &tag) :
+HTTPEntityTag(bool weak, std::string tag) :
   _weak(weak),
-  _tag(tag)
+  _tag(std::move(tag))
 {
 }
 

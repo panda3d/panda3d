@@ -273,7 +273,7 @@ clear_shader_input(const InternalName *id) const {
  *
  */
 CPT(RenderAttrib) ShaderAttrib::
-clear_shader_input(const std::string &id) const {
+clear_shader_input(std::string_view id) const {
   return clear_shader_input(InternalName::make(id));
 }
 
@@ -306,7 +306,7 @@ get_shader_input(const InternalName *id) const {
  * function does not return NULL --- it returns the "blank" ShaderInput.
  */
 const ShaderInput &ShaderAttrib::
-get_shader_input(const std::string &id) const {
+get_shader_input(std::string_view id) const {
   return get_shader_input(InternalName::make(id));
 }
 
@@ -456,7 +456,7 @@ get_shader_input_ptr(const InternalName *id, Shader::ShaderPtrData &data) const 
         else if (param->is_of_type(ParamVecBase4d::get_class_type())) {
           data._ptr = (void *)((const ParamVecBase4d *)param)->get_value().get_data();
           data._size = 4;
-          data._type = Shader::SPT_float;
+          data._type = Shader::SPT_double;
           return true;
         }
       }

@@ -11,6 +11,20 @@ def test_bitarray_constructor():
     assert BitArray().is_zero()
     assert BitArray(0).is_zero()
 
+    one = BitArray(1)
+    assert not one.is_zero()
+    assert one.get_lowest_on_bit() == 0
+    assert one.get_highest_on_bit() == 0
+    assert one.get_lowest_off_bit() == 1
+    assert one.get_highest_off_bit() == -1
+
+    two = BitArray(2)
+    assert not two.is_zero()
+    assert two.get_lowest_on_bit() == 1
+    assert two.get_highest_on_bit() == 1
+    assert two.get_lowest_off_bit() == 0
+    assert two.get_highest_off_bit() == -1
+
     ba = BitArray(0x10000000000000000000000000)
     assert ba.get_lowest_on_bit() == 100
     assert ba.get_highest_on_bit() == 100

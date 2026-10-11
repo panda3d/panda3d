@@ -36,7 +36,7 @@ static const char * const months[num_months] = {
  * string cannot be correctly decoded.
  */
 HTTPDate::
-HTTPDate(const string &format) {
+HTTPDate(std::string_view format) {
   _time = (time_t)(-1);
 
   struct tm t;
@@ -296,7 +296,7 @@ output(std::ostream &out) const {
  * next character following the last digit (unless it is a letter).
  */
 string HTTPDate::
-get_token(const string &str, size_t &pos) {
+get_token(std::string_view str, size_t &pos) {
   // Start by scanning for the first alphanumeric character.
   size_t start = pos;
   while (start < str.length() && !isalnum(str[start])) {

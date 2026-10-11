@@ -75,15 +75,15 @@ PUBLISHED:
     ST_from_node,
   };
 
-  void set_source_info(const std::string &tex) {
+  void set_source_info(std::string tex) {
     _source_type = ST_texture;
-    _source_tex = tex;
+    _source_tex = std::move(tex);
   }
 
-  void set_source_info(const std::string &model, const std::string &node) {
+  void set_source_info(std::string model, std::string node) {
     _source_type = ST_from_node;
-    _source_model = model;
-    _source_node = node;
+    _source_model = std::move(model);
+    _source_node = std::move(node);
   }
 
   SourceType get_source_type() const {
@@ -162,9 +162,9 @@ public:
 
 PUBLISHED:
   void set_from_node(const NodePath &node_path, bool size_from_texels = false);
-  void set_from_node(const NodePath &node_path, const std::string &model, const std::string &node, bool size_from_texels = false);
+  void set_from_node(const NodePath &node_path, std::string model, std::string node, bool size_from_texels = false);
   void add_from_node(const NodePath &node_path, bool size_from_texels = false, bool resize = false);
-  void add_from_node(const NodePath &node_path, const std::string &model, const std::string &node, bool size_from_texels = false, bool resize = false);
+  void add_from_node(const NodePath &node_path, std::string model, std::string node, bool size_from_texels = false, bool resize = false);
 
   INLINE void set_texture(Texture *tex, PN_stdfloat texels_per_unit = 1.0f);
   INLINE void add_texture(Texture *tex, PN_stdfloat texels_per_unit = 1.0f, bool resize = false);

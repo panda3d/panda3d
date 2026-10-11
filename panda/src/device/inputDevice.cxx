@@ -23,8 +23,8 @@ TypeHandle InputDevice::_type_handle;
  * Defines a new InputDevice.
  */
 InputDevice::
-InputDevice(const std::string &name, DeviceClass dev_class) :
-  _name(name),
+InputDevice(std::string name, DeviceClass dev_class) :
+  _name(std::move(name)),
   _device_class(dev_class),
   _is_connected(true)
 {

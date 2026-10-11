@@ -139,7 +139,7 @@ extract_bytes(unsigned char *into, size_t size) {
 vector_uchar StreamReader::
 extract_bytes(size_t size) {
   vector_uchar buffer;
-  if (_in->eof() || _in->fail()) {
+  if (_in->eof() || _in->fail() || size == 0) {
     return buffer;
   }
 

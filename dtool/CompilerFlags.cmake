@@ -38,7 +38,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "(AppleClang|Clang)")
   set(CMAKE_EXE_LINKER_FLAGS_COVERAGE
     "${CMAKE_EXE_LINKER_FLAGS_DEBUG} -fprofile-instr-generate")
 
-elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GCC")
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   set(CMAKE_C_FLAGS_COVERAGE "${CMAKE_C_FLAGS_DEBUG} --coverage")
   set(CMAKE_CXX_FLAGS_COVERAGE "${CMAKE_CXX_FLAGS_DEBUG} --coverage")
 
@@ -51,8 +51,18 @@ elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GCC")
 
 endif()
 
-# Panda3D is now a C++14 project.
-set(CMAKE_CXX_STANDARD 14)
+# AddressSanitizer
+if(ENABLE_ASAN)
+  if(CMAKE_CXX_COMPILER_ID MATCHES "(AppleClang|Clang|GNU)")
+    add_compile_options(-fsanitize=address -fno-omit-frame-pointer)
+    add_link_options(-fsanitize=address)
+  else()
+    message(FATAL_ERROR "ENABLE_ASAN requires GCC or Clang")
+  endif()
+endif()
+
+# Panda3D is now a C++17 project.
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Set certain CMake flags we expect
@@ -118,6 +128,14 @@ endif()
 if(CMAKE_CXX_COMPILER_ID MATCHES "(GNU|Clang)")
   set(global_flags
     "-Wno-unused-function -Wno-unused-parameter -fno-strict-aliasing -Werror=return-type")
+
+  # Silence the spammy harmless psabi note GCC emits on ARM about the GCC 10.1
+  # change to how over-aligned/vector aggregates like the Eigen-backed LVecBase
+  # types are passed by value.
+  if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    set(global_flags "${global_flags} -Wno-psabi")
+  endif()
+
   set(release_flags "-Wno-unused-variable")
 
   if(NOT MSVC)

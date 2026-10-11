@@ -32,7 +32,7 @@ class EXPCL_DTOOL_DTOOLBASE TypeRegistryNode {
 public:
   typedef PyObject *PythonWrapFunc(void *ptr, PyTypeObject *cast_from);
 
-  TypeRegistryNode(TypeHandle handle, const std::string &name, TypeHandle &ref);
+  TypeRegistryNode(TypeHandle handle, std::string name, TypeHandle &ref);
 
   static bool is_derived_from(const TypeRegistryNode *child,
                               const TypeRegistryNode *base);

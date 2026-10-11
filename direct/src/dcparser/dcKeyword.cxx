@@ -19,8 +19,8 @@
  *
  */
 DCKeyword::
-DCKeyword(const std::string &name, int historical_flag) :
-  _name(name),
+DCKeyword(std::string name, int historical_flag) :
+  _name(std::move(name)),
   _historical_flag(historical_flag)
 {
 }

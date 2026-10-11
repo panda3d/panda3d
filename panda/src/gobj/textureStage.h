@@ -34,7 +34,7 @@ class FactoryParams;
  */
 class EXPCL_PANDA_GOBJ TextureStage : public TypedWritableReferenceCount {
 PUBLISHED:
-  explicit TextureStage(const std::string &name);
+  explicit TextureStage(std::string name);
   INLINE TextureStage(const TextureStage &copy);
   void operator = (const TextureStage &copy);
 
@@ -61,10 +61,14 @@ PUBLISHED:
     M_glow,         // Rarely used: modulate_glow  is more efficient.
     M_gloss,        // Rarely used: modulate_gloss is more efficient.
     M_height,       // Rarely used: normal_height  is more efficient.
-    M_selector,
+    M_metallic_roughness, // metalness in B, roughness in G
     M_normal_gloss,
 
     M_emission,
+    M_occlusion, // In red channel
+    M_occlusion_metallic_roughness,
+
+    M_selector = M_metallic_roughness,
   };
 
   enum CombineMode {
@@ -99,7 +103,7 @@ PUBLISHED:
     CO_one_minus_src_alpha,
   };
 
-  INLINE void set_name(const std::string &name);
+  INLINE void set_name(std::string name);
   INLINE const std::string &get_name() const;
 
   INLINE void set_sort(int sort);
@@ -109,7 +113,7 @@ PUBLISHED:
   INLINE int get_priority() const;
 
   INLINE void set_texcoord_name(InternalName *name);
-  INLINE void set_texcoord_name(const std::string &texcoord_name);
+  INLINE void set_texcoord_name(std::string_view texcoord_name);
   INLINE InternalName *get_texcoord_name() const;
   INLINE InternalName *get_tangent_name() const;
   INLINE InternalName *get_binormal_name() const;

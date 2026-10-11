@@ -56,8 +56,8 @@ get_update_interval() const {
  * per second.
  */
 INLINE void FrameRateMeter::
-set_text_pattern(const std::string &text_pattern) {
-  _text_pattern = text_pattern;
+set_text_pattern(std::string text_pattern) {
+  _text_pattern = std::move(text_pattern);
   Thread *current_thread = Thread::get_current_thread();
   do_update(current_thread);
 }

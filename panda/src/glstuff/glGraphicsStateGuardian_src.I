@@ -15,7 +15,7 @@
  * If debug markers are enabled, pushes the beginning of a group marker.
  */
 INLINE void CLP(GraphicsStateGuardian)::
-push_group_marker(const std::string &marker) {
+push_group_marker(std::string_view marker) {
 #if !defined(NDEBUG) && !defined(OPENGLES_1)
   if (_glPushGroupMarker != nullptr) {
     _glPushGroupMarker(marker.size(), marker.data());
@@ -214,7 +214,7 @@ maybe_gl_finish() const {
  * otherwise.  The extension name is case-sensitive.
  */
 INLINE bool CLP(GraphicsStateGuardian)::
-has_extension(const std::string &extension) const {
+has_extension(std::string_view extension) const {
   bool has_ext = (_extensions.find(extension) != _extensions.end());
 #ifndef NDEBUG
   if (GLCAT.is_debug()) {

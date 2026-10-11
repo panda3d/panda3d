@@ -154,8 +154,8 @@ set_type(int type) {
  * Sets the name associated with the CV.
  */
 void HermiteCurveCV::
-set_name(const string &name) {
-  _name = name;
+set_name(std::string name) {
+  _name = std::move(name);
 }
 
 
@@ -294,7 +294,7 @@ insert_cv(PN_stdfloat t) {
     return n;
   }
 
-  t = std::min(std::max(t, (PN_stdfloat)0.0), get_max_t());
+  t = std::clamp(t, (PN_stdfloat)0.0, get_max_t());
 
   int n = find_cv(t);
   nassertr(n+1<get_num_cvs(), 0);
@@ -659,7 +659,7 @@ rebuild_curveseg(int, PN_stdfloat, const LVecBase4 &,
  * Formats the Hermite curve for output to an Egg file.
  */
 bool HermiteCurve::
-format_egg(ostream &out, const string &name, const string &curve_type,
+format_egg(ostream &out, std::string_view name, std::string_view curve_type,
            int indent_level) const {
   indent(out, indent_level)
     << "<VertexPool> " << name << ".pool {\n";

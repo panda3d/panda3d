@@ -22,14 +22,15 @@
  */
 class EXPCL_DTOOL_PRC ConfigVariableString : public ConfigVariable {
 PUBLISHED:
-  INLINE explicit ConfigVariableString(const std::string &name);
-  INLINE explicit ConfigVariableString(const std::string &name,
-                                       const std::string &default_value,
-                                       const std::string &description = std::string(),
+  INLINE explicit ConfigVariableString(std::string_view name);
+  INLINE explicit ConfigVariableString(std::string_view name,
+                                       std::string_view default_value,
+                                       std::string_view description = std::string_view(),
                                        int flags = 0);
 
-  INLINE void operator = (const std::string &value);
+  INLINE void operator = (std::string value);
   INLINE operator const std::string & () const;
+  INLINE operator std::string_view () const;
 
   // These methods help the ConfigVariableString act like a C++ string object.
   INLINE const char *c_str() const;
@@ -42,14 +43,14 @@ PUBLISHED:
   INLINE bool operator != (const std::string &other) const;
   INLINE bool operator < (const std::string &other) const;
 
-  INLINE void set_value(const std::string &value);
+  INLINE void set_value(std::string value);
   INLINE const std::string &get_value() const;
   INLINE std::string get_default_value() const;
   MAKE_PROPERTY(value, get_value, set_value);
   MAKE_PROPERTY(default_value, get_default_value);
 
   INLINE std::string get_word(size_t n) const;
-  INLINE void set_word(size_t n, const std::string &value);
+  INLINE void set_word(size_t n, std::string_view value);
 
   INLINE bool __bool__() const;
 
@@ -57,7 +58,7 @@ private:
   void reload_cache();
 
 private:
-  AtomicAdjust::Integer _local_modified;
+  Modified _local_modified;
   std::string _cache;
 };
 

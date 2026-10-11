@@ -12,10 +12,9 @@
  */
 
 #include "neverFreeMemory.h"
-#include "atomicAdjust.h"
 #include "memoryHook.h"
 
-NeverFreeMemory * TVOLATILE NeverFreeMemory::_global_ptr;
+patomic<NeverFreeMemory *> NeverFreeMemory::_global_ptr { nullptr };
 
 // If a page has fewer than this many bytes remaining, never mind about it.
 static const size_t min_page_remaining_size = 16;
@@ -81,9 +80,10 @@ ns_alloc(size_t size) {
 void NeverFreeMemory::
 make_global_ptr() {
   NeverFreeMemory *ptr = new NeverFreeMemory;
-  void *result = AtomicAdjust::compare_and_exchange_ptr
-    ((void * TVOLATILE &)_global_ptr, nullptr, (void *)ptr);
-  if (result != nullptr) {
+  NeverFreeMemory *expected = nullptr;
+  if (!_global_ptr.compare_exchange_strong(expected, ptr,
+                                           std::memory_order_release,
+                                           std::memory_order_consume)) {
     // Someone else got there first.
     delete ptr;
   }

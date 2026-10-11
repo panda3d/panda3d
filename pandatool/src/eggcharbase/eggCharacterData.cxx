@@ -63,13 +63,13 @@ EggCharacterData::
  * as if they are expected to have the same skeleton hierarchy.
  */
 void EggCharacterData::
-rename_char(const std::string &name) {
+rename_char(std::string name) {
   Models::iterator mi;
   for (mi = _models.begin(); mi != _models.end(); ++mi) {
     (*mi)._model_root->set_name(name);
   }
 
-  set_name(name);
+  set_name(std::move(name));
 }
 
 /**
@@ -338,7 +338,7 @@ choose_optimal_hierarchy() {
  * name.
  */
 EggSliderData *EggCharacterData::
-find_slider(const std::string &name) const {
+find_slider(std::string_view name) const {
   SlidersByName::const_iterator si;
   si = _sliders_by_name.find(name);
   if (si != _sliders_by_name.end()) {
@@ -353,7 +353,7 @@ find_slider(const std::string &name) const {
  * already, creates a new one.
  */
 EggSliderData *EggCharacterData::
-make_slider(const std::string &name) {
+make_slider(std::string name) {
   SlidersByName::const_iterator si;
   si = _sliders_by_name.find(name);
   if (si != _sliders_by_name.end()) {
@@ -362,7 +362,7 @@ make_slider(const std::string &name) {
 
   EggSliderData *slider = _collection->make_slider_data(this);
   slider->set_name(name);
-  _sliders_by_name.insert(SlidersByName::value_type(name, slider));
+  _sliders_by_name.insert(SlidersByName::value_type(std::move(name), slider));
   _sliders.push_back(slider);
   _components.push_back(slider);
   return slider;

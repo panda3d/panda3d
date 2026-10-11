@@ -117,8 +117,8 @@ get_guide_bar_units() const {
  * is set to GBU_named | GBU_show_units.
  */
 INLINE void PStatGraph::
-set_guide_bar_unit_name(const std::string &unit_name) {
-  _unit_name = unit_name;
+set_guide_bar_unit_name(std::string unit_name) {
+  _unit_name = std::move(unit_name);
 }
 
 /**

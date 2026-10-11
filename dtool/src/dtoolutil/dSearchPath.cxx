@@ -120,7 +120,7 @@ write(ostream &out, int indent_level) const {
  *
  */
 DSearchPath::
-DSearchPath(const string &path, const string &separator) {
+DSearchPath(std::string_view path, std::string_view separator) {
   append_path(path, separator);
 }
 
@@ -161,8 +161,8 @@ prepend_directory(const Filename &directory) {
  * search list.
  */
 void DSearchPath::
-append_path(const string &path, const string &separator) {
-  string pathsep = separator;
+append_path(std::string_view path, std::string_view separator) {
+  string pathsep(separator);
   if (pathsep.empty()) {
     pathsep = DEFAULT_PATHSEP;
   }
@@ -324,12 +324,12 @@ find_all_files(const Filename &filename,
  *
  */
 void DSearchPath::
-output(ostream &out, const string &separator) const {
-  string pathsep = separator;
+output(ostream &out, std::string_view separator) const {
+  std::string_view pathsep(separator);
   if (pathsep.empty()) {
     pathsep = DEFAULT_PATHSEP;
     if (!pathsep.empty()) {
-      pathsep = pathsep[0];
+      pathsep = pathsep.substr(0, 1);
     }
   }
 

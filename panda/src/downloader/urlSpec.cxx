@@ -169,7 +169,7 @@ is_default_port() const {
  * no known default.
  */
 int URLSpec::
-get_default_port_for_scheme(const string &scheme) {
+get_default_port_for_scheme(std::string_view scheme) {
   if (scheme == "http" || scheme.empty()) {
     return 80;
 
@@ -239,14 +239,14 @@ get_path_and_query() const {
  * Replaces the scheme part of the URL specification.
  */
 void URLSpec::
-set_scheme(const string &scheme) {
+set_scheme(std::string_view scheme) {
   int length_adjust;
 
   // The scheme is always converted to lowercase.
   string lc_scheme;
   lc_scheme.reserve(scheme.length());
-  for (string::const_iterator si = scheme.begin(); si != scheme.end(); ++si) {
-    lc_scheme += tolower(*si);
+  for (char c : scheme) {
+    lc_scheme += tolower(c);
   }
 
   if (lc_scheme.empty()) {
@@ -307,7 +307,7 @@ set_scheme(const string &scheme) {
  * username, server, and port.
  */
 void URLSpec::
-set_authority(const string &authority) {
+set_authority(std::string_view authority) {
   int length_adjust;
   int extra_slash_adjust = 0;
 
@@ -330,13 +330,22 @@ set_authority(const string &authority) {
     // Insert a new authority specification.
     length_adjust = authority.length() + 2;
 
-    string extra_slash;
+    bool need_extra_slash = false;
     if (has_path() && _url[_path_start] != '/') {
       // If we have a path but it doesn't begin with a slash, it should.
-      extra_slash = '/';
+      need_extra_slash = true;
       extra_slash_adjust = 1;
     }
-    _url = _url.substr(0, _username_start) + "//" + authority + extra_slash + _url.substr(_port_end);
+    string new_url;
+    new_url.reserve(_username_start + 2 + authority.size() + (need_extra_slash ? 1 : 0) + (_url.size() - _port_end));
+    new_url.append(_url, 0, _username_start);
+    new_url += "//";
+    new_url.append(authority);
+    if (need_extra_slash) {
+      new_url += '/';
+    }
+    new_url.append(_url, _port_end);
+    _url = std::move(new_url);
     _flags |= F_has_authority;
     _username_start += 2;
 
@@ -344,7 +353,12 @@ set_authority(const string &authority) {
     // Replace an existing authority specification.
     int old_length = (int)_port_end - (int)_username_start;
     length_adjust = authority.length() - old_length;
-    _url = _url.substr(0, _username_start) + authority + _url.substr(_port_end);
+    string new_url;
+    new_url.reserve(_username_start + authority.size() + (_url.size() - _port_end));
+    new_url.append(_url, 0, _username_start);
+    new_url.append(authority);
+    new_url.append(_url, _port_end);
+    _url = std::move(new_url);
   }
 
   _port_end += length_adjust;
@@ -359,26 +373,29 @@ set_authority(const string &authority) {
  * Replaces the username part of the URL specification.
  */
 void URLSpec::
-set_username(const string &username) {
+set_username(std::string_view username) {
   if (username.empty() && !has_authority()) {
     return;
   }
   string authority;
 
   if (!username.empty()) {
-    authority = username + "@";
+    authority.append(username);
+    authority += '@';
   }
 
   string server = get_server();
   if (server.find(':') != string::npos) {
     // Protect an IPv6 address by enclosing it in square brackets.
-    authority += "[" + server + "]";
+    authority += '[';
+    authority += server;
+    authority += ']';
   } else {
     authority += server;
   }
 
   if (has_port()) {
-    authority += ":";
+    authority += ':';
     authority += get_port_str();
   }
 
@@ -391,25 +408,28 @@ set_username(const string &username) {
  * be enclosed in square brackets.
  */
 void URLSpec::
-set_server(const string &server) {
+set_server(std::string_view server) {
   if (server.empty() && !has_authority()) {
     return;
   }
   string authority;
 
   if (has_username()) {
-    authority = get_username() + "@";
+    authority = get_username();
+    authority += '@';
   }
 
-  if (server.find(':') != string::npos) {
+  if (server.find(':') != std::string_view::npos) {
     // Protect an IPv6 address by enclosing it in square brackets.
-    authority += "[" + server + "]";
+    authority += '[';
+    authority.append(server);
+    authority += ']';
   } else {
-    authority += server;
+    authority.append(server);
   }
 
   if (has_port()) {
-    authority += ":";
+    authority += ':';
     authority += get_port_str();
   }
 
@@ -420,27 +440,30 @@ set_server(const string &server) {
  * Replaces the port part of the URL specification.
  */
 void URLSpec::
-set_port(const string &port) {
+set_port(std::string_view port) {
   if (port.empty() && !has_authority()) {
     return;
   }
   string authority;
 
   if (has_username()) {
-    authority = get_username() + "@";
+    authority = get_username();
+    authority += '@';
   }
 
   string server = get_server();
   if (server.find(':') != string::npos) {
     // Protect an IPv6 address by enclosing it in square brackets.
-    authority += "[" + server + "]";
+    authority += '[';
+    authority += server;
+    authority += ']';
   } else {
     authority += server;
   }
 
   if (!port.empty()) {
-    authority += ":";
-    authority += port;
+    authority += ':';
+    authority.append(port);
   }
 
   set_authority(authority);
@@ -462,16 +485,17 @@ set_port(uint16_t port) {
  * Any IPv6 address must be enclosed in square brackets.
  */
 void URLSpec::
-set_server_and_port(const string &server_and_port) {
+set_server_and_port(std::string_view server_and_port) {
   if (server_and_port.empty() && !has_authority()) {
     return;
   }
   string authority;
 
   if (has_username()) {
-    authority = get_username() + "@";
+    authority = get_username();
+    authority += '@';
   }
-  authority += server_and_port;
+  authority.append(server_and_port);
   set_authority(authority);
 }
 
@@ -479,7 +503,7 @@ set_server_and_port(const string &server_and_port) {
  * Replaces the path part of the URL specification.
  */
 void URLSpec::
-set_path(const string &path) {
+set_path(std::string_view path) {
   int length_adjust;
 
   if (path.empty()) {
@@ -491,28 +515,29 @@ set_path(const string &path) {
     _url = _url.substr(0, _path_start) + _url.substr(_path_end);
     _flags &= ~F_has_path;
 
-  } else if (!has_path()) {
-    // Insert a new path specification.
-    string cpath = path;
-    if (cpath[0] != '/') {
-      // Paths must always begin with a slash.
-      cpath = '/' + cpath;
-    }
-    length_adjust = cpath.length();
-
-    _url = _url.substr(0, _path_start) + cpath + _url.substr(_path_end);
-    _flags |= F_has_path;
-
   } else {
-    // Replace an existing path specification.
-    string cpath = path;
-    if (cpath[0] != '/') {
-      // Paths must always begin with a slash.
-      cpath = '/' + cpath;
+    // Build the new path, ensuring it begins with a slash.
+    string cpath;
+    if (path[0] != '/') {
+      cpath.reserve(path.size() + 1);
+      cpath += '/';
+      cpath.append(path);
+    } else {
+      cpath.assign(path);
     }
-    int old_length = (int)_path_end - (int)_path_start;
-    length_adjust = cpath.length() - old_length;
-    _url = _url.substr(0, _path_start) + cpath + _url.substr(_path_end);
+
+    if (!has_path()) {
+      // Insert a new path specification.
+      length_adjust = cpath.length();
+      _url = _url.substr(0, _path_start) + cpath + _url.substr(_path_end);
+      _flags |= F_has_path;
+
+    } else {
+      // Replace an existing path specification.
+      int old_length = (int)_path_end - (int)_path_start;
+      length_adjust = cpath.length() - old_length;
+      _url = _url.substr(0, _path_start) + cpath + _url.substr(_path_end);
+    }
   }
 
   _path_end += length_adjust;
@@ -523,25 +548,32 @@ set_path(const string &path) {
  * Replaces the query part of the URL specification.
  */
 void URLSpec::
-set_query(const string &query) {
+set_query(std::string_view query) {
   if (query.empty()) {
     // Remove the query specification.
     if (!has_query()) {
       return;
     }
     _query_start--;
-    _url = _url.substr(0, _query_start);
+    _url.resize(_query_start);
     _flags &= ~F_has_query;
 
-  } else if (!has_query()) {
-    // Insert a new query specification.
-    _url = _url.substr(0, _query_start) + "?" + query;
-    _flags |= F_has_query;
-    _query_start++;
-
   } else {
-    // Replace an existing query specification.
-    _url = _url.substr(0, _query_start) + query;
+    // Copy query first in case it aliases _url's own buffer.
+    std::string new_query(query);
+    if (!has_query()) {
+      // Insert a new query specification.
+      _url.resize(_query_start);
+      _url += '?';
+      _url.append(new_query);
+      _flags |= F_has_query;
+      _query_start++;
+
+    } else {
+      // Replace an existing query specification.
+      _url.resize(_query_start);
+      _url.append(new_query);
+    }
   }
 }
 
@@ -551,7 +583,7 @@ set_query(const string &query) {
  * probably a server name, not a local filename.
  */
 void URLSpec::
-set_url(const string &url, bool server_name_expected) {
+set_url(std::string_view url, bool server_name_expected) {
   size_t p, q;
 
   // Omit leading and trailing whitespace.
@@ -716,12 +748,11 @@ output(ostream &out) const {
  * string, are left alone; all others are converted to hex representation.
  */
 string URLSpec::
-quote(const string &source, const string &safe) {
+quote(std::string_view source, std::string_view safe) {
   ostringstream result;
   result << std::hex << setfill('0');
 
-  for (string::const_iterator si = source.begin(); si != source.end(); ++si) {
-    char ch = (*si);
+  for (char ch : source) {
     switch (ch) {
     case '_':
     case ',':
@@ -736,7 +767,7 @@ quote(const string &source, const string &safe) {
         // Letters and digits are safe.
         result << ch;
 
-      } else if (safe.find(ch) != string::npos) {
+      } else if (safe.find(ch) != std::string_view::npos) {
         // If it's listed in "safe", it's safe.
         result << ch;
 
@@ -755,12 +786,11 @@ quote(const string &source, const string &safe) {
  * plus signs.
  */
 string URLSpec::
-quote_plus(const string &source, const string &safe) {
+quote_plus(std::string_view source, std::string_view safe) {
   ostringstream result;
   result << std::hex << setfill('0');
 
-  for (string::const_iterator si = source.begin(); si != source.end(); ++si) {
-    char ch = (*si);
+  for (char ch : source) {
     switch (ch) {
     case '_':
     case ',':
@@ -779,7 +809,7 @@ quote_plus(const string &source, const string &safe) {
         // Letters and digits are safe.
         result << ch;
 
-      } else if (safe.find(ch) != string::npos) {
+      } else if (safe.find(ch) != std::string_view::npos) {
         // If it's listed in "safe", it's safe.
         result << ch;
 
@@ -798,7 +828,7 @@ quote_plus(const string &source, const string &safe) {
  * "%xx" to their ascii equivalent.
  */
 string URLSpec::
-unquote(const string &source) {
+unquote(std::string_view source) {
   string result;
 
   size_t p = 0;
@@ -834,7 +864,7 @@ unquote(const string &source) {
  * spaces.
  */
 string URLSpec::
-unquote_plus(const string &source) {
+unquote_plus(std::string_view source) {
   string result;
 
   size_t p = 0;

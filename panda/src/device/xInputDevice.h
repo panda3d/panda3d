@@ -40,7 +40,7 @@ public:
   ~XInputDevice();
 
   bool check_arrival(const RID_DEVICE_INFO &info, DEVINST inst,
-                     const std::string &name, const std::string &manufacturer);
+                     std::string name, std::string manufacturer);
   void detect(InputDeviceManager *mgr);
   static bool init_xinput();
 

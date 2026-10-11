@@ -31,7 +31,7 @@ protected:
   class EXPCL_PANDA_PUTIL RegistryNode {
   public:
     INLINE RegistryNode(ButtonHandle handle, ButtonHandle alias,
-                        const std::string &name);
+                        std::string name);
 
     ButtonHandle _handle;
     ButtonHandle _alias;
@@ -39,13 +39,13 @@ protected:
   };
 
 public:
-  bool register_button(ButtonHandle &button_handle, const std::string &name,
+  bool register_button(ButtonHandle &button_handle, std::string name,
                        ButtonHandle alias = ButtonHandle::none(),
                        char ascii_equivalent = '\0');
 
 PUBLISHED:
-  ButtonHandle get_button(const std::string &name);
-  ButtonHandle find_button(const std::string &name);
+  ButtonHandle get_button(std::string_view name);
+  ButtonHandle find_button(std::string_view name);
   ButtonHandle find_ascii_button(char ascii_equivalent) const;
 
   void write(std::ostream &out) const;
@@ -69,7 +69,7 @@ private:
   typedef pvector<RegistryNode *> HandleRegistry;
   HandleRegistry _handle_registry;
 
-  typedef pmap<std::string, RegistryNode *> NameRegistry;
+  typedef pmap<std::string, RegistryNode *, std::less<>> NameRegistry;
   NameRegistry _name_registry;
 
   static ButtonRegistry *_global_pointer;

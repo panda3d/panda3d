@@ -15,8 +15,8 @@
  *
  */
 INLINE ModelNode::
-ModelNode(const std::string &name) :
-  PandaNode(name)
+ModelNode(std::string name) :
+  PandaNode(std::move(name))
 {
   _preserve_transform = PT_none;
   _preserve_attributes = 0;

@@ -137,8 +137,8 @@ get_sample_tangent(int n) const {
  */
 void CurveFitter::
 remove_samples(int begin, int end) {
-  begin = std::max(0, std::min((int)_data.size(), begin));
-  end = std::max(0, std::min((int)_data.size(), end));
+  begin = std::clamp(begin, 0, (int)_data.size());
+  end = std::clamp(end, 0, (int)_data.size());
 
   nassertv(begin <= end);
 

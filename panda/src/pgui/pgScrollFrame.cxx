@@ -19,8 +19,8 @@ TypeHandle PGScrollFrame::_type_handle;
  *
  */
 PGScrollFrame::
-PGScrollFrame(const std::string &name) :
-  PGVirtualFrame(name),
+PGScrollFrame(std::string name) :
+  PGVirtualFrame(std::move(name)),
   _needs_remanage(false),
   _needs_recompute_clip(false),
   _has_virtual_frame(false),

@@ -24,7 +24,7 @@
  */
 class EXPCL_PANDA_EGG EggPoint : public EggPrimitive {
 PUBLISHED:
-  INLINE explicit EggPoint(const std::string &name = "");
+  INLINE explicit EggPoint(std::string name = "");
   INLINE EggPoint(const EggPoint &copy);
   INLINE EggPoint &operator = (const EggPoint &copy);
 

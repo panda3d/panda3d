@@ -20,7 +20,7 @@ TypeHandle CLP(SamplerContext)::_type_handle;
 /**
  *
  */
-INLINE CLP(SamplerContext)::
+CLP(SamplerContext)::
 CLP(SamplerContext)(CLP(GraphicsStateGuardian) *glgsg,
   const SamplerState &sampler) :
   SamplerContext(sampler)
@@ -66,6 +66,16 @@ reset_data() {
 
   // We still need a valid index number, though, in case we want to re-load
   // the sampler later.  glGenSamplers(1, &_index);
+}
+
+/**
+ * Returns an implementation-defined handle or pointer that can be used
+ * to interface directly with the underlying API.
+ * Returns 0 if the underlying implementation does not support this.
+ */
+uint64_t CLP(SamplerContext)::
+get_native_id() const {
+  return _index;
 }
 
 #endif  // OPENGLES_1

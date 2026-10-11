@@ -351,7 +351,7 @@ report_statistics() const {
  * files.
  */
 void Palettizer::
-read_txa_file(std::istream &txa_file, const string &txa_filename) {
+read_txa_file(std::istream &txa_file, std::string_view txa_filename) {
   // Clear out the group dependencies, in preparation for reading them again
   // from the .txa file.
   Groups::iterator gi;
@@ -747,7 +747,7 @@ write_eggs() {
  * files, which is typically the basename of the filename.
  */
 EggFile *Palettizer::
-get_egg_file(const string &name) {
+get_egg_file(std::string name) {
   EggFiles::iterator ei = _egg_files.find(name);
   if (ei != _egg_files.end()) {
     return (*ei).second;
@@ -755,7 +755,7 @@ get_egg_file(const string &name) {
 
   EggFile *file = new EggFile;
   file->set_name(name);
-  _egg_files.insert(EggFiles::value_type(name, file));
+  _egg_files.insert(EggFiles::value_type(std::move(name), file));
   return file;
 }
 
@@ -764,7 +764,7 @@ get_egg_file(const string &name) {
  * if the egg file was found, false if it was not.
  */
 bool Palettizer::
-remove_egg_file(const string &name) {
+remove_egg_file(std::string_view name) {
   EggFiles::iterator ei = _egg_files.find(name);
   if (ei != _egg_files.end()) {
     EggFile *file = (*ei).second;
@@ -791,7 +791,7 @@ add_command_line_egg(EggFile *egg_file) {
  * with the indicated name, creates one.
  */
 PaletteGroup *Palettizer::
-get_palette_group(const string &name) {
+get_palette_group(std::string name) {
   Groups::iterator gi = _groups.find(name);
   if (gi != _groups.end()) {
     return (*gi).second;
@@ -799,7 +799,7 @@ get_palette_group(const string &name) {
 
   PaletteGroup *group = new PaletteGroup;
   group->set_name(name);
-  _groups.insert(Groups::value_type(name, group));
+  _groups.insert(Groups::value_type(std::move(name), group));
   return group;
 }
 
@@ -808,7 +808,7 @@ get_palette_group(const string &name) {
  * with the indicated name, returns NULL.
  */
 PaletteGroup *Palettizer::
-test_palette_group(const string &name) const {
+test_palette_group(std::string_view name) const {
   Groups::const_iterator gi = _groups.find(name);
   if (gi != _groups.end()) {
     return (*gi).second;
@@ -836,7 +836,7 @@ get_default_group() {
  * the textures, which is typically the basename of the primary filename.
  */
 TextureImage *Palettizer::
-get_texture(const string &name) {
+get_texture(std::string name) {
   // Look first in the same-case name, just in case it happens to be there
   // (from an older version of egg-palettize that did this).
   Textures::iterator ti = _textures.find(name);
@@ -853,9 +853,9 @@ get_texture(const string &name) {
   }
 
   TextureImage *image = new TextureImage;
-  image->set_name(name);
+  image->set_name(std::move(name));
   // image->set_filename(name);
-  _textures.insert(Textures::value_type(downcase_name, image));
+  _textures.insert(Textures::value_type(std::move(downcase_name), image));
 
   return image;
 }
@@ -874,7 +874,7 @@ yesno(bool flag) {
  * RU_invalid if the string is invalid.
  */
 Palettizer::RemapUV Palettizer::
-string_remap(const string &str) {
+string_remap(std::string_view str) {
   if (str == "never") {
     return RU_never;
 

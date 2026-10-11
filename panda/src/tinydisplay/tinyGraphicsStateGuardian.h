@@ -102,7 +102,7 @@ private:
   void do_issue_render_mode();
   void do_issue_cull_face();
   void do_issue_rescale_normal();
-  void do_issue_depth_offset();
+  void do_issue_depth_bias();
   void do_issue_material();
   void do_issue_texture();
   void do_issue_scissor();
@@ -125,7 +125,13 @@ private:
   void setup_material(GLMaterial *gl_material, const Material *material);
   void do_auto_rescale_normal();
   static void load_matrix(M4 *matrix, const TransformState *transform);
+  static int get_color_blend_mode(ColorBlendAttrib::Mode mode);
   static int get_color_blend_op(ColorBlendAttrib::Operand operand);
+  static bool is_color_blend_op_inverted(ColorBlendAttrib::Operand operand);
+  static void setup_color_blend(ZBlend &blend,
+                                ColorBlendAttrib::Operand op_rgb,
+                                ColorBlendAttrib::Operand op_alpha,
+                                int cr=0, int cg=0, int cb=0, int ca=0);
   static ZB_lookupTextureFunc get_tex_filter_func(SamplerState::FilterType filter);
   static ZB_texWrapFunc get_tex_wrap_func(SamplerState::WrapMode wrap_mode);
 

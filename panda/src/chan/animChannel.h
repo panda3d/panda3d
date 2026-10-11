@@ -30,12 +30,12 @@ protected:
   // The default constructor is protected: don't try to create an AnimChannel
   // without a parent.  To create an AnimChannel hierarchy, you must first
   // create an AnimBundle, and use that to create any subsequent children.
-  INLINE AnimChannel(const std::string &name = "");
+  INLINE AnimChannel(std::string name = "");
   INLINE AnimChannel(AnimGroup *parent, const AnimChannel &copy);
 public:
   typedef typename SwitchType::ValueType ValueType;
 
-  INLINE AnimChannel(AnimGroup *parent, const std::string &name);
+  INLINE AnimChannel(AnimGroup *parent, std::string name);
   INLINE ~AnimChannel();
 
 PUBLISHED:

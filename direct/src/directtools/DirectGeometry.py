@@ -79,8 +79,8 @@ class LineNodePath(NodePath):
     def getVertex(self, index):
         return self.lineSegs.getVertex(index)
 
-    def getVertexColor(self):
-        return self.lineSegs.getVertexColor()
+    def getVertexColor(self, index):
+        return self.lineSegs.getVertexColor(index)
 
     def drawArrow(self, sv, ev, arrowAngle, arrowLength):
         """

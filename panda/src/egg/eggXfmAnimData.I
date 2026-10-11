@@ -15,7 +15,7 @@
  *
  */
 INLINE EggXfmAnimData::
-EggXfmAnimData(const std::string &name, CoordinateSystem cs) : EggAnimData(name) {
+EggXfmAnimData(std::string name, CoordinateSystem cs) : EggAnimData(std::move(name)) {
   _coordsys = cs;
 }
 
@@ -50,8 +50,8 @@ operator = (const EggXfmAnimData &copy) {
  *
  */
 INLINE void EggXfmAnimData::
-set_order(const std::string &order) {
-  _order = order;
+set_order(std::string order) {
+  _order = std::move(order);
 }
 
 /**
@@ -97,8 +97,8 @@ get_standard_order() {
  *
  */
 INLINE void EggXfmAnimData::
-set_contents(const std::string &contents) {
-  _contents = contents;
+set_contents(std::string contents) {
+  _contents = std::move(contents);
 }
 
 /**

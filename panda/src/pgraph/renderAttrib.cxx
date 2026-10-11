@@ -478,7 +478,8 @@ init_attribs() {
   // _attribs_lock without a startup race condition.  For the meantime, this
   // is OK because we guarantee that this method is called at static init
   // time, presumably when there is still only one thread in the world.
-  _attribs_lock = new LightReMutex("RenderAttrib::_attribs_lock");
+  alignas(LightReMutex) static char storage[sizeof(LightReMutex)];
+  _attribs_lock = new (storage) LightReMutex("RenderAttrib::_attribs_lock");
   nassertv(Thread::get_current_thread() == Thread::get_main_thread());
 }
 

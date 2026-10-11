@@ -23,8 +23,8 @@ TypeHandle Transform2SG::_type_handle;
  *
  */
 Transform2SG::
-Transform2SG(const std::string &name) :
-  DataNode(name)
+Transform2SG(std::string name) :
+  DataNode(std::move(name))
 {
   _transform_input = define_input("transform", TransformState::get_class_type());
 

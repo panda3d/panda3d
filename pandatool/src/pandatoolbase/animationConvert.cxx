@@ -63,7 +63,7 @@ operator << (std::ostream &out, AnimationConvert convert) {
  * AnimationConvert types.  Returns AC_invalid if the string is unknown.
  */
 AnimationConvert
-string_animation_convert(const std::string &str) {
+string_animation_convert(std::string_view str) {
   if (cmp_nocase(str, "none") == 0) {
     return AC_none;
 

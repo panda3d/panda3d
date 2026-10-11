@@ -17,8 +17,6 @@
 
 using std::string;
 
-const string HTTPBasicAuthorization::_mechanism = "basic";
-
 /**
  *
  */
@@ -51,8 +49,8 @@ get_mechanism() const {
  * the given username:password.
  */
 string HTTPBasicAuthorization::
-generate(HTTPEnum::Method, const string &,
-         const string &username, const string &) {
+generate(HTTPEnum::Method, std::string_view,
+         std::string_view username, std::string_view) {
   return "Basic " + base64_encode(username);
 }
 
