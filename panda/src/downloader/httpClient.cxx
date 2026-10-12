@@ -27,6 +27,11 @@
 
 #include "openSSLWrapper.h"
 
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+// ASN1_STRING_get0_data() was introduced in OpenSSL 1.1.0.
+#define ASN1_STRING_get0_data(x) ((const unsigned char *)(x)->data)
+#endif
+
 using std::string;
 
 PT(HTTPClient) HTTPClient::_global_ptr;
@@ -1206,7 +1211,7 @@ check_preapproved_server_certificate(const URLSpec &url, X509 *cert,
   }
 
   // OK, look for a match on the cert's name only.
-  X509_NAME *subject = X509_get_subject_name(cert);
+  X509_NAME *subject = const_cast<X509_NAME *>(X509_get_subject_name(cert));
   ServerCertNames::const_iterator scni;
   for (scni = psc._cert_names.begin(); scni != psc._cert_names.end(); ++scni) {
     X509_NAME *cert_name = (*scni);
@@ -1543,7 +1548,8 @@ bool HTTPClient::
 x509_name_subset(X509_NAME *name_a, X509_NAME *name_b) {
   int count_a = X509_NAME_entry_count(name_a);
   for (int ai = 0; ai < count_a; ai++) {
-    X509_NAME_ENTRY *na = X509_NAME_get_entry(name_a, ai);
+    X509_NAME_ENTRY *na =
+      const_cast<X509_NAME_ENTRY *>(X509_NAME_get_entry(name_a, ai));
 
     int bi = X509_NAME_get_index_by_OBJ(name_b, X509_NAME_ENTRY_get_object(na), -1);
     if (bi < 0) {
@@ -1551,11 +1557,15 @@ x509_name_subset(X509_NAME *name_a, X509_NAME *name_b) {
       return false;
     }
 
-    X509_NAME_ENTRY *nb = X509_NAME_get_entry(name_b, bi);
-    ASN1_STRING *na_value = X509_NAME_ENTRY_get_data(na);
-    ASN1_STRING *nb_value = X509_NAME_ENTRY_get_data(nb);
-    if (na_value->length != nb_value->length ||
-        memcmp(na_value->data, nb_value->data, na_value->length) != 0) {
+    X509_NAME_ENTRY *nb =
+      const_cast<X509_NAME_ENTRY *>(X509_NAME_get_entry(name_b, bi));
+    ASN1_STRING *na_value =
+      const_cast<ASN1_STRING *>(X509_NAME_ENTRY_get_data(na));
+    ASN1_STRING *nb_value =
+      const_cast<ASN1_STRING *>(X509_NAME_ENTRY_get_data(nb));
+    if (ASN1_STRING_length(na_value) != ASN1_STRING_length(nb_value) ||
+        memcmp(ASN1_STRING_get0_data(na_value), ASN1_STRING_get0_data(nb_value),
+               ASN1_STRING_length(na_value)) != 0) {
       // This entry in name_a doesn't match that of name_b.
       return false;
     }

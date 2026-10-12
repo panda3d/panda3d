@@ -34,6 +34,11 @@
 
 #include "openSSLWrapper.h"
 
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+// ASN1_STRING_get0_data() was introduced in OpenSSL 1.1.0.
+#define ASN1_STRING_get0_data(x) ((const unsigned char *)(x)->data)
+#endif
+
 #ifdef _WIN32
   #include <winsock2.h>
   #include <windows.h>  // for select()
@@ -1652,7 +1657,7 @@ run_ssl_handshake() {
     return false;
   }
 
-  X509_NAME *subject = X509_get_subject_name(cert);
+  X509_NAME *subject = const_cast<X509_NAME *>(X509_get_subject_name(cert));
   if (downloader_cat.is_debug()) {
     string org_name = get_x509_name_component(subject, NID_organizationName);
     string org_unit_name = get_x509_name_component(subject, NID_organizationalUnitName);
@@ -3393,7 +3398,7 @@ validate_server_name(X509 *cert) {
   if (cert_names.empty()) {
     // If there were no DNS names, use the common name instead.
 
-    X509_NAME *xname = X509_get_subject_name(cert);
+    X509_NAME *xname = const_cast<X509_NAME *>(X509_get_subject_name(cert));
     if (xname != nullptr) {
       string common_name = get_x509_name_component(xname, NID_commonName);
       cert_names.push_back(common_name);
@@ -3483,8 +3488,9 @@ get_x509_name_component(X509_NAME *name, int nid) {
     return string();
   }
 
-  ASN1_STRING *data = X509_NAME_ENTRY_get_data(X509_NAME_get_entry(name, i));
-  return string((char *)data->data, data->length);
+  ASN1_STRING *data = const_cast<ASN1_STRING *>(
+    X509_NAME_ENTRY_get_data(X509_NAME_get_entry(name, i)));
+  return string((char *)ASN1_STRING_get0_data(data), ASN1_STRING_length(data));
 }
 
 /**
