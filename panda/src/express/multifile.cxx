@@ -901,7 +901,7 @@ get_signature_subject_name(int n) const {
   const CertChain &cert_chain = get_signature(n);
   nassertr(!cert_chain.empty(), string());
 
-  X509_NAME *xname = X509_get_subject_name(cert_chain[0]._cert);
+  X509_NAME *xname = const_cast<X509_NAME *>(X509_get_subject_name(cert_chain[0]._cert));
   if (xname != nullptr) {
     // We use "print" to dump the output to a memory BIO.  Is there an easier
     // way to extract the X509_NAME text?  Curse these incomplete docs.
@@ -945,15 +945,17 @@ get_signature_friendly_name(int n) const {
     int nid = nid_choices[ni];
 
     // A complex OpenSSL interface to extract out the name in utf-8.
-    X509_NAME *xname = X509_get_subject_name(cert_chain[0]._cert);
+    X509_NAME *xname = const_cast<X509_NAME *>(X509_get_subject_name(cert_chain[0]._cert));
     if (xname != nullptr) {
       int pos = X509_NAME_get_index_by_NID(xname, nid, -1);
       if (pos != -1) {
         // We just get the first common name.  I guess it's possible to have
         // more than one; not sure what that means in this context.
-        X509_NAME_ENTRY *xentry = X509_NAME_get_entry(xname, pos);
+        X509_NAME_ENTRY *xentry =
+          const_cast<X509_NAME_ENTRY *>(X509_NAME_get_entry(xname, pos));
         if (xentry != nullptr) {
-          ASN1_STRING *data = X509_NAME_ENTRY_get_data(xentry);
+          ASN1_STRING *data =
+            const_cast<ASN1_STRING *>(X509_NAME_ENTRY_get_data(xentry));
           if (data != nullptr) {
             // We use "print" to dump the output to a memory BIO.  Is there an
             // easier way to decode the ASN1_STRING?  Curse these incomplete
