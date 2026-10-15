@@ -36,6 +36,7 @@
 #import <AppKit/NSCursor.h>
 #import <AppKit/NSEvent.h>
 #import <AppKit/NSImage.h>
+#import <AppKit/NSPasteboard.h>
 #import <AppKit/NSScreen.h>
 #import <AppKit/NSText.h>
 #import <Carbon/Carbon.h>
@@ -1684,7 +1685,25 @@ handle_key_event(NSEvent *event) {
   CFDataRef layout_data = (CFDataRef)TISGetInputSourceProperty(input_source, kTISPropertyUnicodeKeyLayoutData);
   const UCKeyboardLayout *layout = (const UCKeyboardLayout *)CFDataGetBytePtr(layout_data);
 
-  if ([event type] == NSKeyDown) {
+  // Check for Command-V, which is the standard paste shortcut on macOS.
+  NSUInteger shortcut_modifiers = modifierFlags &
+    (NSCommandKeyMask | NSControlKeyMask | NSAlternateKeyMask | NSShiftKeyMask);
+  bool paste = shortcut_modifiers == NSCommandKeyMask &&
+    [[[event charactersIgnoringModifiers] lowercaseString] isEqualToString:@"v"];
+
+  if ([event type] == NSKeyDown && paste && paste_emit_keystrokes) {
+    NSString *text = [[NSPasteboard generalPasteboard] stringForType:NSPasteboardTypeString];
+    if (text != nil) {
+      // Paste as keystrokes, decoding UTF-8 so characters such as emoji
+      // aren't split into separate UTF-16 units.
+      std::string utf8([text UTF8String],
+                       [text lengthOfBytesUsingEncoding:NSUTF8StringEncoding]);
+      for (wchar_t c : TextEncoder::decode_text(utf8, TextEncoder::E_utf8)) {
+        _input->keystroke(c);
+      }
+    }
+
+  } else if ([event type] == NSKeyDown) {
     // Translate it to a unicode character for keystrokes.  I would use
     // interpretKeyEvents and insertText, but that doesn't handle dead keys.
     UInt32 modifier_state = (modifierFlags >> 16) & 0xFF;

@@ -22,6 +22,7 @@ NotifyCategoryDecl(cocoadisplay, EXPCL_PANDA_COCOADISPLAY, EXPTP_PANDA_COCOADISP
 
 extern ConfigVariableBool cocoa_invert_wheel_x;
 extern ConfigVariableBool dpi_aware;
+extern ConfigVariableBool paste_emit_keystrokes;
 
 extern EXPCL_PANDA_COCOADISPLAY void init_libcocoadisplay();
 

@@ -38,6 +38,11 @@ ConfigVariableBool dpi_aware
           "high DPI screen. Set this to true to let the application use the"
           "actual pixel density of the screen."));
 
+ConfigVariableBool paste_emit_keystrokes
+("paste-emit-keystrokes", true,
+ PRC_DESC("Handle paste events (Command-V) as separate keystroke events for each "
+          "pasted character."));
+
 /**
  * Initializes the library.  This must be called at least once before any of
  * the functions or classes in this library can be used.  Normally it will be
