@@ -51,6 +51,7 @@
 #include "samplerContext.h"
 #include "samplerState.h"
 #include "shader.h"
+#include "shaderBuffer.h"
 #include "shaderContext.h"
 #include "shaderModule.h"
 #include "shaderType.h"
@@ -589,6 +590,7 @@ ConfigureFn(config_gobj) {
   SamplerContext::init_type();
   SamplerState::init_type();
   Shader::init_type();
+  ShaderBuffer::init_type();
   ShaderContext::init_type();
   ShaderModule::init_type();
   ShaderType::init_type();
@@ -636,6 +638,7 @@ ConfigureFn(config_gobj) {
   ParamTextureSampler::register_with_read_factory();
   PerspectiveLens::register_with_read_factory();
   Shader::register_with_read_factory();
+  ShaderBuffer::register_with_read_factory();
   ShaderType::register_with_read_factory();
   SliderTable::register_with_read_factory();
   Texture::register_with_read_factory();

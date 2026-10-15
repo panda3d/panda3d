@@ -35,6 +35,15 @@ using std::ostringstream;
 TypeHandle ShaderAttrib::_type_handle;
 int ShaderAttrib::_attrib_slot;
 
+namespace {
+  // Retain datagram order until pointers are resolved, without adding
+  // temporary storage to every ShaderAttrib.
+  class ShaderAttribBamData : public BamReader::AuxData {
+  public:
+    pvector<ShaderInput> _inputs;
+  };
+}
+
 /**
  * Constructs a new ShaderAttrib object that disables the use of shaders (it
  * does not clear out all shader data, however.)
@@ -917,7 +926,35 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   dg.add_int32(_flags);
   dg.add_int32(_has_flags);
   dg.add_int32(_instance_count);
-  dg.add_uint32(0);
+  if (manager->get_file_minor_ver() < 47) {
+    dg.add_uint32(0);
+    return;
+  }
+
+  dg.add_uint32(_inputs.size());
+  for (const auto &entry : _inputs) {
+    const ShaderInput &input = entry.second;
+    dg.add_string(input._name->get_name());
+    dg.add_int32(input._priority);
+    dg.add_uint8(input._type);
+    switch (input._type) {
+    case ShaderInput::M_invalid:
+      break;
+
+    case ShaderInput::M_vector:
+      input._stored_vector.write_datagram(dg);
+      input._stored_ptr.write_datagram(dg);
+      break;
+
+    case ShaderInput::M_numeric:
+      input._stored_ptr.write_datagram(dg);
+      break;
+
+    default:
+      manager->write_pointer(dg, input._value);
+      break;
+    }
+  }
 }
 
 /**
@@ -928,6 +965,25 @@ int ShaderAttrib::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = RenderAttrib::complete_pointers(p_list, manager);
   _shader = DCAST(Shader, p_list[pi++]);
+  auto *aux = (ShaderAttribBamData *)manager->get_aux_data(this, "inputs");
+  if (aux == nullptr) {
+    return pi;
+  }
+  for (ShaderInput &input : aux->_inputs) {
+    switch (input._type) {
+    case ShaderInput::M_invalid:
+    case ShaderInput::M_vector:
+    case ShaderInput::M_numeric:
+      break;
+
+    default:
+      input._value = DCAST(TypedWritableReferenceCount, p_list[pi++]);
+      break;
+    }
+    const InternalName *name = input._name;
+    _inputs.emplace(name, std::move(input));
+  }
+  manager->set_aux_data(this, "inputs", nullptr);
   return pi;
 }
 
@@ -963,5 +1019,35 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _flags = scan.get_int32();
   _has_flags = scan.get_int32();
   _instance_count = scan.get_int32();
-  scan.get_uint32();
+  size_t num_inputs = scan.get_uint32();
+  if (manager->get_file_minor_ver() < 47 || num_inputs == 0) {
+    return;
+  }
+
+  auto *aux = new ShaderAttribBamData;
+  manager->set_aux_data(this, "inputs", aux);
+  for (size_t i = 0; i < num_inputs; ++i) {
+    CPT_InternalName name = InternalName::make(scan.get_string());
+    int priority = scan.get_int32();
+    ShaderInput input(std::move(name), priority);
+    input._type = scan.get_uint8();
+    switch (input._type) {
+    case ShaderInput::M_invalid:
+      break;
+
+    case ShaderInput::M_vector:
+      input._stored_vector.read_datagram(scan);
+      input._stored_ptr.read_datagram(scan);
+      break;
+
+    case ShaderInput::M_numeric:
+      input._stored_ptr.read_datagram(scan);
+      break;
+
+    default:
+      manager->read_pointer(scan);
+      break;
+    }
+    aux->_inputs.push_back(std::move(input));
+  }
 }
