@@ -35,7 +35,7 @@ if(HAVE_GL AND NOT WIN32 AND NOT APPLE)
     PKG::EGL PKG::GL)
 
   if(HAVE_X11 AND NOT HAVE_GLX)
-    target_link_librarise(p3egldisplay_gl p3x11display)
+    target_link_libraries(p3egldisplay_gl p3x11display)
     target_compile_definitions(p3egldisplay_gl PUBLIC USE_X11)
   else()
     target_compile_definitions(p3egldisplay_gl PRIVATE EGL_NO_X11)
