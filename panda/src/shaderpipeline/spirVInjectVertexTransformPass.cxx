@@ -93,7 +93,9 @@ preprocess() {
           _vertex_input_ids[id] = new_id;
         }
       }
-      else if (def._builtin == spv::BuiltInInstanceIndex) {
+      else if (def._builtin == spv::BuiltInInstanceIndex ||
+               def._builtin == spv::BuiltInInstanceId) {
+        // gl_InstanceID, which SpirVTransformer turns into InstanceIndex.
         _instance_index_var_id = id;
       }
     }

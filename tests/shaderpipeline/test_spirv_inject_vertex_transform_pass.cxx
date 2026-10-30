@@ -114,3 +114,75 @@ TEST_CASE("SpirVInjectVertexTransformPass injects transforms", "[shaderpipeline]
     CHECK(db.get_definition(id_mv)._storage_class == spv::StorageClassPrivate);
   }
 }
+
+TEST_CASE("SpirVInjectVertexTransformPass reuses gl_InstanceID", "[shaderpipeline]") {
+  enum : uint32_t {
+    id_main = 1, id_void, id_fnvoid, id_float, id_vec4, id_mat4, id_int,
+    id_ptr_in_vec4, id_ptr_out_vec4, id_ptr_uc_mat4, id_ptr_in_int,
+    id_vertex, id_out, id_model, id_instance,
+    id_label, id_load_mat, id_load_vtx, id_load_inst, id_xformed,
+    id_bound,
+  };
+
+  // in vec4 vertex; uniform mat4 p3d_ModelMatrix;
+  // main() { gl_InstanceID; out_pos = p3d_ModelMatrix * vertex; }
+  // glslang emits gl_InstanceID as an input with the InstanceId builtin.
+  ModuleBuilder b;
+  b.op(spv::OpCapability, {spv::CapabilityShader});
+  b.op(spv::OpMemoryModel, {spv::AddressingModelLogical, spv::MemoryModelGLSL450});
+  b.op(spv::OpEntryPoint, {spv::ExecutionModelVertex, id_main}, "main", {id_vertex, id_out, id_instance});
+  b.op(spv::OpName, {id_vertex}, "vertex");
+  b.op(spv::OpName, {id_model}, "p3d_ModelMatrix");
+  b.op(spv::OpName, {id_instance}, "gl_InstanceID");
+  b.op(spv::OpDecorate, {id_vertex, spv::DecorationLocation, 0});
+  b.op(spv::OpDecorate, {id_out, spv::DecorationLocation, 0});
+  b.op(spv::OpDecorate, {id_instance, spv::DecorationBuiltIn, spv::BuiltInInstanceId});
+  b.op(spv::OpTypeVoid, {id_void});
+  b.op(spv::OpTypeFunction, {id_fnvoid, id_void});
+  b.op(spv::OpTypeFloat, {id_float, 32});
+  b.op(spv::OpTypeVector, {id_vec4, id_float, 4});
+  b.op(spv::OpTypeMatrix, {id_mat4, id_vec4, 4});
+  b.op(spv::OpTypeInt, {id_int, 32, 1});
+  b.op(spv::OpTypePointer, {id_ptr_in_vec4, spv::StorageClassInput, id_vec4});
+  b.op(spv::OpTypePointer, {id_ptr_out_vec4, spv::StorageClassOutput, id_vec4});
+  b.op(spv::OpTypePointer, {id_ptr_uc_mat4, spv::StorageClassUniformConstant, id_mat4});
+  b.op(spv::OpTypePointer, {id_ptr_in_int, spv::StorageClassInput, id_int});
+  b.op(spv::OpVariable, {id_ptr_in_vec4, id_vertex, spv::StorageClassInput});
+  b.op(spv::OpVariable, {id_ptr_out_vec4, id_out, spv::StorageClassOutput});
+  b.op(spv::OpVariable, {id_ptr_uc_mat4, id_model, spv::StorageClassUniformConstant});
+  b.op(spv::OpVariable, {id_ptr_in_int, id_instance, spv::StorageClassInput});
+  b.op(spv::OpFunction, {id_void, id_main, spv::FunctionControlMaskNone, id_fnvoid});
+  b.op(spv::OpLabel, {id_label});
+  b.op(spv::OpLoad, {id_int, id_load_inst, id_instance});
+  b.op(spv::OpLoad, {id_mat4, id_load_mat, id_model});
+  b.op(spv::OpLoad, {id_vec4, id_load_vtx, id_vertex});
+  b.op(spv::OpMatrixTimesVector, {id_vec4, id_xformed, id_load_mat, id_load_vtx});
+  b.op(spv::OpStore, {id_out, id_xformed});
+  b.op(spv::OpReturn, {});
+  b.op(spv::OpFunctionEnd, {});
+
+  InstructionStream stream = b.build(id_bound);
+  REQUIRE(stream.validate());
+
+  // Instancing through the transform block indexes it by the instance index,
+  // which should be the shader's own gl_InstanceID, not a second input.
+  SpirVTransformer transformer(stream);
+  SpirVInjectVertexTransformPass pass(false, false, 0, 0);
+  pass.mark_model_matrix(id_model, false, false);
+  transformer.run(pass);
+  CHECK(transformer.validate_db());
+
+  InstructionStream result = transformer.get_result();
+  CHECK(result.validate());
+
+  CHECK(pass._instance_index_var_id == id_instance);
+
+  int num_instance_builtins = 0;
+  for (Instruction op : result) {
+    if (op.opcode == spv::OpDecorate && op.args[1] == spv::DecorationBuiltIn &&
+        (op.args[2] == spv::BuiltInInstanceIndex || op.args[2] == spv::BuiltInInstanceId)) {
+      ++num_instance_builtins;
+    }
+  }
+  CHECK(num_instance_builtins == 1);
+}
