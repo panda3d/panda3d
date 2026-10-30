@@ -552,7 +552,8 @@ make_transform_table(const ShaderType *type, bool transpose) {
     return ShaderInputBinding::make_data(Shader::D_vertex_data,
                                          [=](const State &state, void *into, bool packed) {
 
-      const TransformTable *table = state.gsg->get_data_reader()->get_transform_table();
+      const GeomVertexDataPipelineReader *reader = state.gsg->get_data_reader();
+      const TransformTable *table = (reader != nullptr) ? reader->get_transform_table() : nullptr;
       LMatrix4f *matrices = (LMatrix4f *)into;
       size_t i = 0;
       if (table != nullptr) {
@@ -579,7 +580,8 @@ make_transform_table(const ShaderType *type, bool transpose) {
     return ShaderInputBinding::make_data(Shader::D_vertex_data,
                                          [=](const State &state, void *into, bool packed) {
 
-      const TransformTable *table = state.gsg->get_data_reader()->get_transform_table();
+      const GeomVertexDataPipelineReader *reader = state.gsg->get_data_reader();
+      const TransformTable *table = (reader != nullptr) ? reader->get_transform_table() : nullptr;
       LVecBase4f *vectors = (LVecBase4f *)into;
       size_t i = 0;
       if (table != nullptr) {
@@ -623,7 +625,8 @@ make_slider_table(const ShaderType *type) {
   return ShaderInputBinding::make_data(Shader::D_vertex_data,
                                        [=](const State &state, void *into, bool packed) {
 
-    const SliderTable *table = state.gsg->get_data_reader()->get_slider_table();
+    const GeomVertexDataPipelineReader *reader = state.gsg->get_data_reader();
+    const SliderTable *table = (reader != nullptr) ? reader->get_slider_table() : nullptr;
     float *sliders = (float *)into;
     memset(sliders, 0, num_elements * sizeof(float));
     if (table != nullptr) {
