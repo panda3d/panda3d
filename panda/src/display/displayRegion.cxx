@@ -484,37 +484,38 @@ get_screenshot() {
   GraphicsStateGuardian *gsg = window->get_gsg();
   nassertr(gsg != nullptr, nullptr);
 
+  // The copy itself, which must happen on the draw thread.
+  auto copy = [this, window, gsg] () -> PT(Texture) {
+    Thread *current_thread = Thread::get_current_thread();
+    if (!window->begin_frame(GraphicsOutput::FM_refresh, current_thread)) {
+      return nullptr;
+    }
+
+    {
+      // Make sure that the correct viewport is active.
+      DisplayRegionPipelineReader dr_reader(this, current_thread);
+      gsg->prepare_display_region(&dr_reader);
+    }
+
+    PT(Texture) tex = new Texture;
+
+    RenderBuffer buffer = gsg->get_render_buffer(get_screenshot_buffer_type(),
+                                                 _window->get_fb_properties());
+    bool copied = gsg->framebuffer_copy_to_ram(tex, 0, -1, this, buffer);
+    window->end_frame(GraphicsOutput::FM_refresh, current_thread);
+    return copied ? tex : nullptr;
+  };
+
   // Are we on the draw thread?
   if (gsg->get_threading_model().get_draw_stage() != current_thread->get_pipeline_stage()) {
-    // Ask the engine to do on the draw thread.
+    // Ask the engine to do it on the draw thread.  Not by calling this method
+    // again there: while it runs our job, the draw thread takes on our
+    // pipeline stage, so the check above would fail again and deadlock.
     GraphicsEngine *engine = window->get_engine();
-    return engine->run_on_draw_thread([this] {
-      return get_screenshot();
-    });
+    return engine->run_on_draw_thread(std::move(copy));
   }
 
-  // We are on the draw thread.
-  if (!window->begin_frame(GraphicsOutput::FM_refresh, current_thread)) {
-    return nullptr;
-  }
-
-  {
-    // Make sure that the correct viewport is active.
-    DisplayRegionPipelineReader dr_reader(this, current_thread);
-    gsg->prepare_display_region(&dr_reader);
-  }
-
-  PT(Texture) tex = new Texture;
-
-  RenderBuffer buffer = gsg->get_render_buffer(get_screenshot_buffer_type(),
-                                               _window->get_fb_properties());
-  if (!gsg->framebuffer_copy_to_ram(tex, 0, -1, this, buffer)) {
-    return nullptr;
-  }
-
-  window->end_frame(GraphicsOutput::FM_refresh, current_thread);
-
-  return tex;
+  return copy();
 }
 
 /**
