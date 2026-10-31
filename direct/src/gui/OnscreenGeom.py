@@ -60,13 +60,13 @@ class OnscreenGeom(DirectObject, NodePath):
             isinstance(hpr, list)):
             self.setHpr(*hpr)
         elif isinstance(hpr, VBase3):
-            self.setPos(hpr)
+            self.setHpr(hpr)
         # Scale
         if (isinstance(scale, tuple) or
             isinstance(scale, list)):
             self.setScale(*scale)
         elif isinstance(scale, VBase3):
-            self.setPos(scale)
+            self.setScale(scale)
         elif (isinstance(scale, float) or
               isinstance(scale, int)):
             self.setScale(scale)
