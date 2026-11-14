@@ -749,7 +749,7 @@ if (COMPILER == "MSVC"):
             DefSymbol("OPENAL", "AL_LIBTYPE_STATIC")
             LibName("OPENAL", "avrt.lib")
     if (PkgSkip("STEAMAUDIO")==0):
-        LibName("STEAMAUDIO", GetThirdpartyDir() + "steamaudio/lib/windows-x64/phonon.lib")
+        LibName("STEAMAUDIO", GetThirdpartyDir() + "steamaudio/lib/phonon.lib")
         IncDirectory("STEAMAUDIO", GetThirdpartyDir() + "steamaudio/include")
         #DefSymbol("STEAMAUDIO", "STEAMAUDIO_LIBTYPE_STATIC")
     if (PkgSkip("ODE")==0):
@@ -866,11 +866,11 @@ if (COMPILER=="GCC"):
     SmartPkgEnable("OPUS",      "opusfile",  ("opusfile", "opus", "ogg"), ("ogg/ogg.h", "opus/opusfile.h", "opus"))
     SmartPkgEnable("JPEG",      "",          ("jpeg"), "jpeglib.h")
     SmartPkgEnable("MIMALLOC",  "",          ("mimalloc"), "mimalloc.h")
+    SmartPkgEnable("STEAMAUDIO","",    ("phonon"))
 
     if GetTarget() != 'emscripten':
         # Most of these are provided by emscripten or via emscripten-ports.
         SmartPkgEnable("OPENAL",   "openal",    ("openal"), "AL/al.h", framework = "OpenAL")
-        SmartPkgEnable("STEAMAUDIO",   "steamaudio",    ("steamaudio"), framework = "SteamAudio")
         SmartPkgEnable("EIGEN",    "eigen3",    (), ("Eigen/Dense",), target_pkg = 'ALWAYS')
         SmartPkgEnable("VORBIS",   "vorbisfile",("vorbisfile", "vorbis", "ogg"), ("ogg/ogg.h", "vorbis/vorbisfile.h"))
         SmartPkgEnable("BULLET",   "bullet", ("BulletSoftBody", "BulletDynamics", "BulletCollision", "LinearMath"), ("bullet", "bullet/btBulletDynamicsCommon.h"))
@@ -4447,7 +4447,7 @@ if PkgSkip("STEAMAUDIO") == 0:
     TargetAdd('libp3steam_audio.dll', input='steam_audio_steam_audio_composite1.obj')
     TargetAdd('libp3steam_audio.dll', input=COMMON_PANDA_LIBS)
     #TargetAdd('libp3steam_audio.dll', ipath = GetThirdpartyDir() + "steamaudio/include")
-    TargetAdd('libp3steam_audio.dll', opts=['MODULE', 'ADVAPI', 'WINUSER', 'WINMM', 'WINSHELL', 'WINOLE', 'STEAMAUDIO'])#which of these does Steam Audio actually need?
+    TargetAdd('libp3steam_audio.dll', opts=['DIR:panda/src/steamaudio', 'STEAMAUDIO'])#which of these does Steam Audio actually need?
 
 
 #

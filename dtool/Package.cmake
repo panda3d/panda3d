@@ -696,11 +696,11 @@ endif()
 find_package(SteamAudio QUIET)
 
 package_option(SteamAudio
-  "3D spatialization of sound."
+  "This adds support for applying spatialization and effects on sound via Steam Audio."
   IMPORTED_AS SteamAudio::SteamAudio
   LICENSE "Apache")
 
-package_status(Steam Audio "Steam Audio")
+package_status(SteamAudio "Steam Audio")
 
 #
 # ------------ UI libraries ------------
