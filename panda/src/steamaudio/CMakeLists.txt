@@ -1,14 +1,13 @@
 if(HAVE_STEAMAUDIO)
   set(P3STEAMAUDIO_HEADERS
     config_steamaudio.h
-    steamMovieAudio.h
-    steamMovieAudioCursor.h
+    steamAudioProcessor.h
     steamAudioEffect.h
     steamDirectEffect.h
   )
 
   set(P3STEAMAUDIO_SOURCES
-    config_steamaudio.cxx steamMovieAudio.cxx steamMovieAudioCursor.cxx steamAudioEffect.cxx steamDirectEffect.cxx
+    config_steamaudio.cxx steamAudioProcessor.cxx steamAudioEffect.cxx steamDirectEffect.cxx
   )
 
 

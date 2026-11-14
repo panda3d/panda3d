@@ -13,9 +13,8 @@
 #ifndef STEAMAUDIO_H
 #define STEAMAUDIO_H
 
+#include "steamAudioProcessor.h"
 #include "steamAudioEffect.h"
 #include "steamDirectEffect.h"
-#include "steamMovieAudio.h"
-#include "steamMovieAudioCursor.h"
 
 #endif /* STEAMUDIO_H */

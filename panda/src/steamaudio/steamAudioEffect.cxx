@@ -66,6 +66,6 @@ get_render_flags(steamAudioProcessor::source_properties* source) {
 IPLAudioBuffer* SteamAudioEffect::
 apply_effect(steamAudioProcessor::SteamGlobalHolder *globals, IPLAudioBuffer& inBuffer) {
   IPLAudioBuffer outBuffer;
-  iplAudioBufferAllocate(*globals->_steam_context, globals->_channels, globals->_samples, &outBuffer);//Be sure to deallocate this in SteamMovieAudioCursor
+  iplAudioBufferAllocate(*globals->_steam_context, globals->_channels, globals->_samples, &outBuffer);
   return &outBuffer;
 }

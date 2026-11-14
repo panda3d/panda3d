@@ -101,7 +101,7 @@ get_render_flags(steamAudioProcessor::source_properties* source) {
 *returns a blank outBuffer. This shouldn't be called, though.
 **/
 IPLAudioBuffer* SteamDirectEffect::
-apply_effect(SteamMovieAudioCursor::SteamGlobalHolder *globals, IPLAudioBuffer& inBuffer) {
+apply_effect(steamAudioProcessor::SteamGlobalHolder *globals, IPLAudioBuffer& inBuffer) {
   IPLContext* context = globals->_steam_context;
 
   IPLAudioBuffer outBuffer;

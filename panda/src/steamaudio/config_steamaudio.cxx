@@ -12,8 +12,7 @@
 
 #include "config_steamaudio.h"
 
-#include "steamMovieAudio.h"
-#include "steamMovieAudioCursor.h"
+#include "steamAudioProcessor.h"
 
 #include "steamAudioEffect.h"
 #include "steamDirectEffect.h"
@@ -46,13 +45,11 @@ init_libsteamaudio() {
   }
   initialized = true;
 
-  SteamMovieAudio::init_type();
-  SteamMovieAudioCursor::init_type();
+  SteamAudioProcessor::init_type();
 
   SteamAudioEffect::init_type();
   SteamDirectEffect::init_type();
 
   PandaSystem* ps = PandaSystem::get_global_ptr();
   ps->add_system("SteamAudio");
-  //TODO:: Do we need to set this as a subsystem of Audio?
 }

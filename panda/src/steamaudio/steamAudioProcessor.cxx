@@ -45,8 +45,9 @@ SteamAudioProcessor() {
 
   //create simulator
   _simulation_settings = IPLSimulationSettings{};
-  _simulation_settings.flags = IPL_SIMULATIONFLAGS_DIRECT | IPL_SIMULATIONFLAGS_REFLECTIONS | IPL_SIMULATIONFLAGS_PATHING;//I'm not sure whether these can be changed later. I'll leave like this for now...
-  _simulation_settings.sceneType = IPL_SCENETYPE_DEFAULT;//This actually refers to the raytracer we use.
+  _simulation_settings.flags = IPL_SIMULATIONFLAGS_DIRECT | IPL_SIMULATIONFLAGS_REFLECTIONS | IPL_SIMULATIONFLAGS_PATHING;
+  _simulation_settings.sceneType = IPL_SCENETYPE_DEFAULT;//This actually refers to the raytracer we use. TODO:: If support for hardware ray-tracing is added,
+  //detect the best option, and set it here.
 
   iplSimulatorCreate(*_steamContext, &_simulation_settings, _simulator);
 }
@@ -137,6 +138,9 @@ clear_all_sources() {
 * If source is not provided, then the audio is assumed to be played from the listner's perspective.
 *
 * This function only supports mono or stereo audio. If you have more than two channels, it does nothing and returns.
+*
+* TODO::All buffered audio will immediately begin at the start of any audio frame. Frames are small enough that this is negligible,
+* but I really should add a "offset" parameter that adds silence before actually copying in samples.
 **/
 void SteamAudioProcessor::
 buffer_audio(MovieAudioCursor& cursor, int samples, std::string source) {
@@ -305,9 +309,12 @@ remove_steam_audio_effect(SteamAudioEffect effect) {
 //Rendering/Output
 /**
 * Renders one frame of all buffered audio,
-* and outputs it to this instance's steamMovieAudio.
+* and saves the output.
+* 
 * Note that the duration of one frame is not tied to the application framerate;
-* See set_frame_size for details!
+* it is instead an abstract number of samples. This number of samples / the sample rate determines how often you should
+* render audio.
+* At the time of writing, frame size and sample rate are hard-coded to 512 and 44100. We may add the ability to choose a frame size and sample rate in the future.
 **/
 void SteamAudioProcessor::
 render_effects() {
@@ -366,7 +373,7 @@ render_effects() {
 
       size_t sampleNum = std::size(*b1->buffer.data);
       for (auto i = 0; i < sampleNum; i++) {
-        delete* b1->buffer.data[i];
+        //delete *b1->buffer.data[i];
         *b1->buffer.data[i] = *result.data[i];
       }
       iplAudioBufferFree(_steamContext, result);

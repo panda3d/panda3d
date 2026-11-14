@@ -28,7 +28,7 @@
 #include <string>
 #include <memory>
 
-class NodePath;
+//class NodePath;//Not used yet, but would be useful for automatic setting of source/listener transforms.
 class MovieAudioCursor;
 class UserDataAudio;
 
@@ -39,7 +39,7 @@ class SteamAudioEffect;
 **/
 class EXPCL_STEAM_AUDIO SteamAudioProcessor : public TypedReferenceCount {
 
-  friend class SteamMovieAudioCursor;
+  friend class SteamAudioEffect;
 PUBLISHED:
   SteamAudioProcessor();
   ~SteamAudioProcessor();
