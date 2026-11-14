@@ -15,7 +15,6 @@
 #include "steamDirectEffect.h"
 
 #include "PTA_float.h"
-#include "nodePath.h"
 #include "luse.h"
 
 #include <phonon.h>
@@ -63,10 +62,46 @@ SteamDirectEffect::
 ~SteamDirectEffect() {}
 
 /**
+*
+**/
+void SteamDirectEffect::
+get_render_flags(steamAudioProcessor::source_properties* source) {
+  source->inputs.flags |= IPL_SIMULATIONFLAGS_DIRECT;
+
+  //Set flags for calculations
+  if (_dist_atten == SAD_GENERATE) {
+    source->inputs.directFlags |= IPL_DIRECTSIMULATIONFLAGS_DISTANCEATTENUATION;
+  }
+  if (_air_absorb == SAD_GENERATE) {
+    source->inputs.directFlags |= IPL_DIRECTSIMULATIONFLAGS_AIRABSORPTION;
+  }
+  if (_directivity == SAD_GENERATE) {
+    source->inputs.directFlags |= IPL_DIRECTSIMULATIONFLAGS_DIRECTIVITY;
+  }
+  if (_occlusion == SAD_GENERATE) {
+    source->inputs.directFlags |= IPL_DIRECTSIMULATIONFLAGS_OCCLUSION;
+  }
+  if (_transmission == SAD_GENERATE) {
+    source->inputs.directFlags |= IPL_DIRECTSIMULATIONFLAGS_TRANSMISSION;
+  }
+
+  //other direct vals
+  //TODO:: allow for changing distance attenuation model?
+  //TODO:: allow for changing air absorption model?
+  //TODO:: allow for altering the directivity model?
+  source->inputs.occlusionType = IPL_OCCLUSIONTYPE_RAYCAST;//Probably unnessicary, but it's nice to have a break from the comments
+  //and I really would prefer the cheapest occlusion model to be default.
+  //TODO:: allow for use of volumetric occlusion? This also means allowing the radius + # of samples to be set.
+
+  //Set the inputs on the source for direct values
+  iplSourceSetInputs(source->source, IPL_SIMULATIONFLAGS_DIRECT, source->inputs)
+}
+
+/**
 *returns a blank outBuffer. This shouldn't be called, though.
 **/
-IPLAudioBuffer SteamDirectEffect::
-apply_effect(SteamMovieAudioCursor::SteamGlobalHolder *globals, IPLAudioBuffer inBuffer) {
+IPLAudioBuffer* SteamDirectEffect::
+apply_effect(SteamMovieAudioCursor::SteamGlobalHolder *globals, IPLAudioBuffer& inBuffer) {
   IPLContext* context = globals->_steam_context;
 
   IPLAudioBuffer outBuffer;
@@ -81,10 +116,10 @@ apply_effect(SteamMovieAudioCursor::SteamGlobalHolder *globals, IPLAudioBuffer i
   IPLDirectEffectParams params{};
 
   IPLVector3 sourcePosition;//Steam audio +y = up, and -z = forward
-  globals->source->get_source_position(sourcePosition);
+  globals->source->sourcePos;
 
   IPLVector3 listenerPosition;
-  globals->source->get_listener_position(listenerPosition);
+  globals->listenerPosition;
 
   switch(_dist_atten) {//Distance Attenuation
   case SAD_USER:
@@ -148,7 +183,9 @@ apply_effect(SteamMovieAudioCursor::SteamGlobalHolder *globals, IPLAudioBuffer i
 
   iplDirectEffectApply(effect, &params, &inBuffer, &outBuffer);
 
-  return outBuffer;
+  iplDirectEffectRelease(effect);
+
+  return &outBuffer;
 }
 
 //Distance Attenuation
@@ -298,8 +335,10 @@ get_dipole_pwr() {
 
 /**
 *SAD_DISABLED,//don't use this sub-effect
-*SAD_GENERATE,//automatically generate values
 *SAD_USER//use user-provided values
+*
+* At this time, SAD_GENERATE defaults to SAD_DISABLED as there is no way
+* to supply scene geometry to the simulator.
 **/
 void SteamDirectEffect::
 set_occlusion(unsigned short state) {

@@ -702,10 +702,6 @@ package_option(SteamAudio
 
 package_status(Steam Audio "Steam Audio")
 
-if(SteamAudio_FOUND)
-  set(HAVE_STEAMAUDIO_FRAMEWORK YES)
-endif()
-
 #
 # ------------ UI libraries ------------
 #

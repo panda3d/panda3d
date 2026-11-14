@@ -14,10 +14,10 @@ if(HAVE_STEAMAUDIO)
 
   composite_sources(p3steam_audio P3STEAMAUDIO_SOURCES)
   add_library(p3steam_audio ${MODULE_TYPE} ${P3STEAMAUDIO_HEADERS} ${P3STEAMAUDIO_SOURCES})
-  set_target_properties(p3steam_audio PROPERTIES DEFINE_SYMBOL BUILDING_PANDA_STEAMAUDIO)
+  set_target_properties(p3steam_audio PROPERTIES DEFINE_SYMBOL BUILDING_STEAM_AUDIO)
   target_link_libraries(p3steam_audio panda)
 
-  target_link_libraries(p3steam_audio "-framework SteamAudio")
+  target_link_libraries(p3steam_audio "PKG::SteamAudio")
 
   install(TARGETS p3steam_audio
     EXPORT SteamAudio COMPONENT SteamAudio

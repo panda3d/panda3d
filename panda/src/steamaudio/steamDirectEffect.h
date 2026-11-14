@@ -16,19 +16,15 @@
 #include "pandabase.h"
 #include "typedObject.h"
 
-#include "nodePath.h"
-#include "plist.h"//Don't know if I'll need these, but good idea to keep in hand
-#include "PTA_float.h"
-#include "nodePath.h"
 #include "steamAudioEffect.h"
 
 #include <phonon.h>
 
-class SteamMovieAudioCursor;
+class steamAudioProcessor;
 
 class EXPCL_STEAM_AUDIO SteamDirectEffect : public SteamAudioEffect {
 
-  friend class SteamMovieAudioCursor;
+  friend class steamAudioProcessor;
 
 PUBLISHED:
    SteamDirectEffect();
@@ -68,7 +64,8 @@ PUBLISHED:
   };
 
 protected:
-  virtual IPLAudioBuffer apply_effect(SteamMovieAudioCursor::SteamGlobalHolder* globals, IPLAudioBuffer inBuffer);
+  virtual void get_render_flags(steamAudioProcessor::source_properties* source) override;
+  virtual IPLAudioBuffer* apply_effect(steamAudioProcessor::SteamGlobalHolder* globals, IPLAudioBuffer& inBuffer) override;
 
   unsigned short _dist_atten;//IPL_DIRECTEFFECTFLAGS_APPLYDISTANCEATTENUATION
   float _dist_atten_amnt;

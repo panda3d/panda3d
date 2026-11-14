@@ -82,14 +82,3 @@ read_samples(int n, int16_t* data) {//IN PROGRESS: adding a loop so we can actua
   }
   return n;
 }
-
-SteamMovieAudioCursor::SteamGlobalHolder
-::SteamGlobalHolder(IPLAudioSettings* audio_settings, IPLContext* steam_context, int channels, int samples, SteamMovieAudio* _source) :
-  _audio_settings(audio_settings),
-  _steam_context(steam_context),
-  _channels(channels),
-  _samples(samples),
-  source(_source)
-{
-  
-}

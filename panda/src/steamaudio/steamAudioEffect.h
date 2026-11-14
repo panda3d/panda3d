@@ -16,18 +16,13 @@
 #include "pandabase.h"
 #include "typedObject.h"
 
-#include "nodePath.h"
-#include "movieAudioCursor.h"
-#include "plist.h"//Don't know if I'll need these, but good idea to keep in hand
-#include "pmap.h"
-#include "pset.h"
-#include "steamMovieAudioCursor.h"
-
 #include <phonon.h>
+
+class steamAudioProcessor
 
 class EXPCL_STEAM_AUDIO SteamAudioEffect : public TypedReferenceCount {
 
-  friend class SteamMovieAudioCursor;
+  friend class steamAudioProcessor;
 PUBLISHED:
   SteamAudioEffect();
   ~SteamAudioEffect();
@@ -36,7 +31,8 @@ PUBLISHED:
   bool get_active();
 
 protected:
-  virtual IPLAudioBuffer apply_effect(SteamMovieAudioCursor::SteamGlobalHolder* globals, IPLAudioBuffer inBuffer);
+  virtual void get_render_flags(steamAudioProcessor::source_properties* source);
+  virtual IPLAudioBuffer* apply_effect(steamAudioProcessor::SteamGlobalHolder* globals, IPLAudioBuffer& inBuffer);
   bool _isActive;
 
 

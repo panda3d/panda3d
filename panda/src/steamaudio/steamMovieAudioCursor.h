@@ -36,16 +36,6 @@ PUBLISHED:
 public:
   int read_samples(int n, int16_t* data);
 
-  class SteamGlobalHolder {
-  public:
-    SteamGlobalHolder(IPLAudioSettings* audio_settings, IPLContext* steam_context, int channels, int samples, SteamMovieAudio* _source);
-    IPLAudioSettings* _audio_settings;
-    IPLContext* _steam_context;
-    int _channels;
-    int _samples;
-    PT(SteamMovieAudio) source;
-  };
-
 private:
   IPLAudioSettings* _steamAudioSettings;
 
