@@ -151,7 +151,7 @@ var READABLE
         File /nonfatal /r "${BUILT}\panda3d\skel${EXT_SUFFIX}"
         File /nonfatal /r "${BUILT}\panda3d\vision${EXT_SUFFIX}"
         File /nonfatal /r "${BUILT}\panda3d\vrpn${EXT_SUFFIX}"
-        File /nonfatal /r "${BUILT}\panda3d\steamaudio{EXT_SUFFIX}"
+        File /nonfatal /r "${BUILT}\panda3d\steamaudio${EXT_SUFFIX}"
 
         !ifdef HAVE_BULLET
             SectionGetFlags ${SecBullet} $R0
