@@ -33,13 +33,12 @@ class MovieAudioCursor;
 class UserDataAudio;
 
 class SteamAudioEffect;
+class SteamDirectEffect;
 
 /**
 *This class is what processes audio data and applies steam audio effects.
 **/
 class EXPCL_STEAM_AUDIO SteamAudioProcessor : public TypedReferenceCount {
-
-  friend class SteamAudioEffect;
 PUBLISHED:
   SteamAudioProcessor();
   ~SteamAudioProcessor();
@@ -77,26 +76,15 @@ PUBLISHED:
   bool remove_steam_audio_effect(SteamAudioEffect effect);
   //TODO::add a method to commit effect mask changes
 
-public:
-  void force_simulator_commit();
+protected:
+  friend class SteamAudioEffect;
+  friend class SteamDirectEffect;
 
-  struct SteamGlobalHolder {
-  public:
-    IPLAudioSettings* _audio_settings;
-    IPLContext* _steam_context;
-    //With the exception of listenerPosition, values below this point get set per buffer.
-    int _channels;
-    int _samples;
-    source_properties* source;
-    IPLVECTOR3 listenerPosition;
-  };
-
-private:
   void sa_coordinate_transform(float x1, float y1, float z1, IPLVector3& vals);
 
   IPLVector3* _listenerPos;
 
-  IPLAUDIOSETTINGS* _audio_settings;
+  IPLAudioSettings* _audio_settings;
 
   //buffers
   struct buffer_properties {
@@ -114,6 +102,8 @@ private:
   class source_properties {
   private:
     friend class SteamAudioProcessor;
+    friend class SteamAudioEffect;
+    friend class SteamDirectEffect;
     source_properties();
     ~source_properties();
 
@@ -132,6 +122,7 @@ private:
 
   std::unique_ptr<source_properties> _listener;
 
+private:
   IPLSimulator* _simulator;
   IPLSimulationSettings _simulation_settings;
 
@@ -149,11 +140,25 @@ private:
   pvector<int16_t> output_samples;
 
 public:
+  void force_simulator_commit();
+
+  struct SteamGlobalHolder {
+  public:
+    IPLAudioSettings* _audio_settings;
+    IPLContext* _steam_context;
+    //With the exception of listenerPosition, values below this point get set per buffer.
+    int _channels;
+    int _samples;
+    source_properties* source;
+    IPLVector3 listenerPosition;
+  };
+
+public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
-    TypedObject::init_type();
+    TypedReferenceCount::init_type();
     register_type(_type_handle, "SteamAudioProcessor", TypedReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {

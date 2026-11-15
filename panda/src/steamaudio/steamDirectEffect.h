@@ -15,16 +15,15 @@
 
 #include "pandabase.h"
 #include "typedObject.h"
+#include "pta_float.h"
 
 #include "steamAudioEffect.h"
 
 #include <phonon.h>
 
-class steamAudioProcessor;
-
 class EXPCL_STEAM_AUDIO SteamDirectEffect : public SteamAudioEffect {
 
-  friend class steamAudioProcessor;
+  friend class SteamAudioProcessor;
 
 PUBLISHED:
    SteamDirectEffect();
@@ -64,8 +63,8 @@ PUBLISHED:
   };
 
 protected:
-  virtual void get_render_flags(steamAudioProcessor::source_properties* source) override;
-  virtual IPLAudioBuffer* apply_effect(steamAudioProcessor::SteamGlobalHolder* globals, IPLAudioBuffer& inBuffer) override;
+  virtual void get_render_flags(SteamAudioProcessor::source_properties* source) override;
+  virtual IPLAudioBuffer* apply_effect(SteamAudioProcessor::SteamGlobalHolder* globals, IPLAudioBuffer& inBuffer) override;
 
   unsigned short _dist_atten;//IPL_DIRECTEFFECTFLAGS_APPLYDISTANCEATTENUATION
   float _dist_atten_amnt;

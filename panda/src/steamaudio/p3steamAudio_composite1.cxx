@@ -1,5 +1,5 @@
 
 #include "config_steamaudio.cxx"
-#include "steamAudioProcessor.h"s
+#include "steamAudioProcessor.h"
 #include "steamAudioEffect.cxx"
 #include "steamDirectEffect.cxx"

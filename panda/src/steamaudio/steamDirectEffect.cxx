@@ -65,24 +65,24 @@ SteamDirectEffect::
 *
 **/
 void SteamDirectEffect::
-get_render_flags(steamAudioProcessor::source_properties* source) {
-  source->inputs.flags |= IPL_SIMULATIONFLAGS_DIRECT;
+get_render_flags(SteamAudioProcessor::source_properties* source) {
+  source->inputs.flags = IPLSimulationFlags(source->inputs.flags | IPL_SIMULATIONFLAGS_DIRECT);
 
   //Set flags for calculations
   if (_dist_atten == SAD_GENERATE) {
-    source->inputs.directFlags |= IPL_DIRECTSIMULATIONFLAGS_DISTANCEATTENUATION;
+    source->inputs.directFlags = IPLDirectSimulationFlags(source->inputs.directFlags | IPL_DIRECTSIMULATIONFLAGS_DISTANCEATTENUATION);
   }
   if (_air_absorb == SAD_GENERATE) {
-    source->inputs.directFlags |= IPL_DIRECTSIMULATIONFLAGS_AIRABSORPTION;
+    source->inputs.directFlags = IPLDirectSimulationFlags(source->inputs.directFlags | IPL_DIRECTSIMULATIONFLAGS_AIRABSORPTION);
   }
   if (_directivity == SAD_GENERATE) {
-    source->inputs.directFlags |= IPL_DIRECTSIMULATIONFLAGS_DIRECTIVITY;
+    source->inputs.directFlags = IPLDirectSimulationFlags(source->inputs.directFlags | IPL_DIRECTSIMULATIONFLAGS_DIRECTIVITY);
   }
   if (_occlusion == SAD_GENERATE) {
-    source->inputs.directFlags |= IPL_DIRECTSIMULATIONFLAGS_OCCLUSION;
+    source->inputs.directFlags = IPLDirectSimulationFlags(source->inputs.directFlags | IPL_DIRECTSIMULATIONFLAGS_OCCLUSION);
   }
   if (_transmission == SAD_GENERATE) {
-    source->inputs.directFlags |= IPL_DIRECTSIMULATIONFLAGS_TRANSMISSION;
+    source->inputs.directFlags = IPLDirectSimulationFlags(source->inputs.directFlags | IPL_DIRECTSIMULATIONFLAGS_TRANSMISSION);
   }
 
   //other direct vals
@@ -94,18 +94,18 @@ get_render_flags(steamAudioProcessor::source_properties* source) {
   //TODO:: allow for use of volumetric occlusion? This also means allowing the radius + # of samples to be set.
 
   //Set the inputs on the source for direct values
-  iplSourceSetInputs(source->source, IPL_SIMULATIONFLAGS_DIRECT, source->inputs)
+  iplSourceSetInputs(source->source, IPL_SIMULATIONFLAGS_DIRECT, &(source->inputs));
 }
 
 /**
 *returns a blank outBuffer. This shouldn't be called, though.
 **/
 IPLAudioBuffer* SteamDirectEffect::
-apply_effect(steamAudioProcessor::SteamGlobalHolder *globals, IPLAudioBuffer& inBuffer) {
+apply_effect(SteamAudioProcessor::SteamGlobalHolder *globals, IPLAudioBuffer& inBuffer) {
   IPLContext* context = globals->_steam_context;
 
-  IPLAudioBuffer outBuffer;
-  iplAudioBufferAllocate(*globals->_steam_context, globals->_channels, globals->_samples, &outBuffer);
+  IPLAudioBuffer* outBuffer;
+  iplAudioBufferAllocate(*globals->_steam_context, globals->_channels, globals->_samples, outBuffer);
 
   IPLDirectEffectSettings effectSettings{};
   effectSettings.numChannels = globals->_channels;
@@ -115,11 +115,9 @@ apply_effect(steamAudioProcessor::SteamGlobalHolder *globals, IPLAudioBuffer& in
 
   IPLDirectEffectParams params{};
 
-  IPLVector3 sourcePosition;//Steam audio +y = up, and -z = forward
-  globals->source->sourcePos;
+  IPLVector3 sourcePosition = globals->source->sourcePos;//Steam audio +y = up, and -z = forward
 
-  IPLVector3 listenerPosition;
-  globals->listenerPosition;
+  IPLVector3 listenerPosition = globals->listenerPosition;
 
   switch(_dist_atten) {//Distance Attenuation
   case SAD_USER:
@@ -161,8 +159,7 @@ apply_effect(steamAudioProcessor::SteamGlobalHolder *globals, IPLAudioBuffer& in
     directivity.dipoleWeight = _dipole_amnt;
     directivity.dipolePower = _dipole_pwr;
 
-    IPLCoordinateSpace3 sourceCoordinates;
-    globals->source->get_source_coordinates(sourceCoordinates);
+    IPLCoordinateSpace3 sourceCoordinates = globals->source->sourceCoord;
 
     params.directivity = iplDirectivityCalculate(*globals->_steam_context, sourceCoordinates, listenerPosition, &directivity);
     break;
@@ -181,11 +178,11 @@ apply_effect(steamAudioProcessor::SteamGlobalHolder *globals, IPLAudioBuffer& in
   }
 
 
-  iplDirectEffectApply(effect, &params, &inBuffer, &outBuffer);
+  iplDirectEffectApply(effect, &params, &inBuffer, outBuffer);
 
-  iplDirectEffectRelease(effect);
+  iplDirectEffectRelease(&effect);
 
-  return &outBuffer;
+  return outBuffer;
 }
 
 //Distance Attenuation

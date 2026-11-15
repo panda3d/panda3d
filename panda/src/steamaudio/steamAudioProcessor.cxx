@@ -11,10 +11,15 @@
  */
 
 #include "steamAudioProcessor.h"
+#include "steamAudioEffect.h"
 
 #include <iterator>
 #include <algorithm>
 #include <cmath>
+
+
+TypeHandle SteamAudioProcessor::_type_handle;
+
 
 /**
 *

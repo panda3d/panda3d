@@ -56,7 +56,7 @@ get_active() {
 }
 
 void SteamAudioEffect::
-get_render_flags(steamAudioProcessor::source_properties* source) {
+get_render_flags(SteamAudioProcessor::source_properties* source) {
 
 }
 
@@ -64,8 +64,8 @@ get_render_flags(steamAudioProcessor::source_properties* source) {
 *returns a blank outBuffer. This shouldn't be called, though.
 **/
 IPLAudioBuffer* SteamAudioEffect::
-apply_effect(steamAudioProcessor::SteamGlobalHolder *globals, IPLAudioBuffer& inBuffer) {
-  IPLAudioBuffer outBuffer;
-  iplAudioBufferAllocate(*globals->_steam_context, globals->_channels, globals->_samples, &outBuffer);
-  return &outBuffer;
+apply_effect(SteamAudioProcessor::SteamGlobalHolder *globals, IPLAudioBuffer& inBuffer) {
+  IPLAudioBuffer* outBuffer;
+  iplAudioBufferAllocate(*globals->_steam_context, globals->_channels, globals->_samples, outBuffer);
+  return outBuffer;
 }

@@ -18,11 +18,11 @@
 
 #include <phonon.h>
 
-class steamAudioProcessor
+#include "steamAudioProcessor.h"
 
 class EXPCL_STEAM_AUDIO SteamAudioEffect : public TypedReferenceCount {
 
-  friend class steamAudioProcessor;
+  friend class SteamAudioProcessor;
 PUBLISHED:
   SteamAudioEffect();
   ~SteamAudioEffect();
@@ -31,8 +31,8 @@ PUBLISHED:
   bool get_active();
 
 protected:
-  virtual void get_render_flags(steamAudioProcessor::source_properties* source);
-  virtual IPLAudioBuffer* apply_effect(steamAudioProcessor::SteamGlobalHolder* globals, IPLAudioBuffer& inBuffer);
+  virtual void get_render_flags(SteamAudioProcessor::source_properties* source);
+  virtual IPLAudioBuffer* apply_effect(SteamAudioProcessor::SteamGlobalHolder* globals, IPLAudioBuffer& inBuffer);
   bool _isActive;
 
 
