@@ -2920,6 +2920,8 @@ if not PkgSkip("ODE"):
     panda_modules.append('ode')
 if not PkgSkip("VRPN"):
     panda_modules.append('vrpn')
+if not PkgSkip("STEAMAUDIO"):
+    panda_modules.append("steamaudio")
 
 panda_modules_code = """
 "This module is deprecated.  Import from panda3d.core and other panda3d.* modules instead."
@@ -4444,10 +4446,23 @@ if PkgSkip("OPENAL") == 0:
 if PkgSkip("STEAMAUDIO") == 0:
     OPTS=['DIR:panda/src/steamaudio', 'BUILDING:STEAM_AUDIO', 'STEAMAUDIO']
     TargetAdd('steam_audio_steam_audio_composite1.obj', opts=OPTS, input='p3steamAudio_composite1.cxx')
+
+    IGATEFILES=GetDirectoryContents("panda/src/steamaudio", ["*.h", "*_composite*.cxx"])
+    TargetAdd('libp3steam_audio.in', opts = ["DIR:panda/src/steamaudio", "STEAMAUDIO"], input=IGATEFILES)
+    TargetAdd('libp3steam_audio.in', opts=['IMOD:panda3d.steamaudio', 'ILIB:libp3steam_audio', 'SRCDIR:panda/src/steamaudio'])
+
     TargetAdd('libp3steam_audio.dll', input='steam_audio_steam_audio_composite1.obj')
     TargetAdd('libp3steam_audio.dll', input=COMMON_PANDA_LIBS)
     #TargetAdd('libp3steam_audio.dll', ipath = GetThirdpartyDir() + "steamaudio/include")
-    TargetAdd('libp3steam_audio.dll', opts=['DIR:panda/src/steamaudio', 'STEAMAUDIO'])#which of these does Steam Audio actually need?
+    TargetAdd('libp3steam_audio.dll', opts=['DIR:panda/src/steamaudio', 'STEAMAUDIO'])
+
+    PyTargetAdd("steamaudio_module.obj", input="libp3steam_audio.in")
+    PyTargetAdd("steamaudio_module.obj", opts=['IMOD:panda3d.steamaudio', 'ILIB:steamaudio', 'IMPORT:panda3d.core', "STEAMAUDIO"])
+
+    PyTargetAdd('steamaudio.pyd', input='steamaudio_module.obj')
+    PyTargetAdd('steamaudio.pyd', input='libp3steam_audio_igate.obj')
+    PyTargetAdd('steamaudio.pyd', input='libp3steam_audio.dll')
+    PyTargetAdd('steamaudio.pyd', input=COMMON_PANDA_LIBS)
 
 
 #
