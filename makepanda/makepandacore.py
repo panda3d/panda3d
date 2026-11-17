@@ -3245,10 +3245,9 @@ def CopyTree(dstdir, srcdir, omitVCS=True, exclude=()):
                     shutil.rmtree(path)
     else:
         if GetHost() == 'windows':
-            srcdir = srcdir.replace('/', '\\')
-            dstdir = dstdir.replace('/', '\\')
-            cmd = 'xcopy /I/Y/E/Q "' + srcdir + '" "' + dstdir + '"'
-            oscmd(cmd)
+            # xcopy rejects long paths even when Windows long-path support is
+            # enabled. Python's file APIs also avoid shell quoting limitations.
+            shutil.copytree(srcdir, dstdir)
         else:
             if subprocess.call(['cp', '-R', '-f', srcdir, dstdir]) != 0:
                 exit("Copy failed.")
