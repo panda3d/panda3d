@@ -269,26 +269,42 @@ __init__(CPT_InternalName name, PyObject *value, int priority) {
 
   } else if (PySequence_Check(value) && !PyUnicode_CheckExact(value)) {
     // Iterate over the sequence to make sure all have the same type.
-#ifdef Py_GIL_DISABLED
+    // Own a stable outer sequence while converting user-provided nested
+    // sequences. PySequence_Fast may alias a mutable list in this process.
     PyObject *fast = PySequence_Tuple(value);
-#else
-    PyObject *fast = PySequence_Fast(value, "unknown type passed to ShaderInput");
-#endif
     if (fast == nullptr) {
       return;
     }
-
-#ifdef Py_GIL_DISABLED
     Py_ssize_t num_items = PyTuple_GET_SIZE(fast);
-#else
-    Py_ssize_t num_items = PySequence_Fast_GET_SIZE(fast);
-#endif
     if (num_items <= 0) {
       // We can't determine the type of a list of size 0.
       _this->_type = ShaderInput::M_numeric;
       Py_DECREF(fast);
       return;
     }
+
+    // The two passes below must see the same inner lengths and elements.
+    // Snapshot each nested sequence once, propagating Python exceptions before
+    // any unchecked numeric conversion. This also handles a shared list being
+    // resized concurrently by free-threaded Python.
+    PyObject *snapshot = PyTuple_New(num_items);
+    if (snapshot == nullptr) {
+      Py_DECREF(fast);
+      return;
+    }
+    for (Py_ssize_t i = 0; i < num_items; ++i) {
+      PyObject *item = PyTuple_GET_ITEM(fast, i);
+      PyObject *owned = PySequence_Check(item)
+        ? PySequence_Tuple(item) : Py_NewRef(item);
+      if (owned == nullptr) {
+        Py_DECREF(snapshot);
+        Py_DECREF(fast);
+        return;
+      }
+      PyTuple_SET_ITEM(snapshot, i, owned);
+    }
+    Py_DECREF(fast);
+    fast = snapshot;
 
     bool has_float = false;
     Py_ssize_t known_itemsize = -1;
@@ -297,9 +313,6 @@ __init__(CPT_InternalName name, PyObject *value, int priority) {
     for (Py_ssize_t i = 0; i < num_items; ++i) {
       PyObject *item = items[i];
 
-      //FIXME: if these items are not tuples, this is not thread-safe in the
-      // free-threaded build.  Convert everything to tuples, and push to a
-      // vector?
       if (PySequence_Check(item)) {
         Py_ssize_t itemsize = PySequence_Size(item);
         if (known_itemsize >= 0 && itemsize != known_itemsize) {
