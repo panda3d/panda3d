@@ -101,6 +101,7 @@ if(THIRDPARTY_DIRECTORY)
     ODE
     Ogg
     OpenAL
+    SteamAudio
     OpenEXR
     OpenSSL
     OpusFile
@@ -691,6 +692,15 @@ if(OpenAL_FOUND AND APPLE OR OPENAL_FOUND AND APPLE)
   set(HAVE_OPENAL_FRAMEWORK YES)
 endif()
 
+#Steam Audio
+find_package(SteamAudio QUIET)
+
+package_option(SteamAudio
+  "This adds support for applying spatialization and effects on sound via Steam Audio."
+  IMPORTED_AS SteamAudio::SteamAudio
+  LICENSE "Apache")
+
+package_status(SteamAudio "Steam Audio")
 
 #
 # ------------ UI libraries ------------

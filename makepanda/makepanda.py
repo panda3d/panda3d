@@ -82,6 +82,7 @@ PkgListSet(["PYTHON", "DIRECT",                        # Python support
   "EGL",                                               # OpenGL (ES) integration
   "EIGEN",                                             # Linear algebra acceleration
   "OPENAL", "FMODEX",                                  # Audio playback
+  "STEAMAUDIO",                                        # Audio spatialization/effects
   "VORBIS", "OPUS", "FFMPEG", "SWSCALE", "SWRESAMPLE", # Audio decoding
   "ODE", "BULLET", "PANDAPHYSICS",                     # Physics
   "SPEEDTREE",                                         # SpeedTree
@@ -747,6 +748,10 @@ if (COMPILER == "MSVC"):
             # Link OpenAL Soft statically.
             DefSymbol("OPENAL", "AL_LIBTYPE_STATIC")
             LibName("OPENAL", "avrt.lib")
+    if (PkgSkip("STEAMAUDIO")==0):
+        LibName("STEAMAUDIO", GetThirdpartyDir() + "steamaudio/lib/phonon.lib")
+        IncDirectory("STEAMAUDIO", GetThirdpartyDir() + "steamaudio/include")
+        #DefSymbol("STEAMAUDIO", "STEAMAUDIO_LIBTYPE_STATIC")
     if (PkgSkip("ODE")==0):
         LibName("ODE",      GetThirdpartyDir() + "ode/lib/ode_single.lib")
         DefSymbol("ODE",    "dSINGLE", "")
@@ -861,6 +866,7 @@ if (COMPILER=="GCC"):
     SmartPkgEnable("OPUS",      "opusfile",  ("opusfile", "opus", "ogg"), ("ogg/ogg.h", "opus/opusfile.h", "opus"))
     SmartPkgEnable("JPEG",      "",          ("jpeg"), "jpeglib.h")
     SmartPkgEnable("MIMALLOC",  "",          ("mimalloc"), "mimalloc.h")
+    SmartPkgEnable("STEAMAUDIO","",    ("phonon"))
 
     if GetTarget() != 'emscripten':
         # Most of these are provided by emscripten or via emscripten-ports.
@@ -2479,6 +2485,7 @@ DTOOL_CONFIG=[
     ("HAVE_SQUISH",                    'UNDEF',                  'UNDEF'),
     ("HAVE_COCOA",                     'UNDEF',                  'UNDEF'),
     ("HAVE_OPENAL_FRAMEWORK",          'UNDEF',                  'UNDEF'),
+    ("HAVE_STEAMAUDIO",                'UNDEF',                  'UNDEF'),
     ("USE_TAU",                        'UNDEF',                  'UNDEF'),
     ("PRC_SAVE_DESCRIPTIONS",          '1',                      '1'),
 #    ("_SECURE_SCL",                    '0',                      'UNDEF'),
@@ -2557,6 +2564,8 @@ def WriteConfigSettings():
         dtool_config["PHAVE_SYS_MALLOC_H"] = '1'
         if not os.path.isdir(GetThirdpartyDir() + "openal"):
             dtool_config["HAVE_OPENAL_FRAMEWORK"] = '1'
+        if not os.path.isdir(GetThirdpartyDir() + "steamaudio"):
+            dtool_config["HAVE_STEAMAUDIO"] = '1'
         dtool_config["HAVE_X11"] = 'UNDEF'  # We might have X11, but we don't need it.
         dtool_config["IS_LINUX"] = 'UNDEF'
         dtool_config["HAVE_VIDEO4LINUX"] = 'UNDEF'
@@ -2911,6 +2920,8 @@ if not PkgSkip("ODE"):
     panda_modules.append('ode')
 if not PkgSkip("VRPN"):
     panda_modules.append('vrpn')
+if not PkgSkip("STEAMAUDIO"):
+    panda_modules.append("steamaudio")
 
 panda_modules_code = """
 "This module is deprecated.  Import from panda3d.core and other panda3d.* modules instead."
@@ -4428,6 +4439,31 @@ if PkgSkip("OPENAL") == 0:
     TargetAdd('libp3openal_audio.dll', input='openal_audio_openal_audio_composite1.obj')
     TargetAdd('libp3openal_audio.dll', input=COMMON_PANDA_LIBS)
     TargetAdd('libp3openal_audio.dll', opts=['MODULE', 'ADVAPI', 'WINUSER', 'WINMM', 'WINSHELL', 'WINOLE', 'OPENAL', 'OPENSLES'])
+
+#
+# DIRECTORY: panda/src/steamaudio/
+#
+if PkgSkip("STEAMAUDIO") == 0:
+    OPTS=['DIR:panda/src/steamaudio', 'BUILDING:STEAM_AUDIO', 'STEAMAUDIO']
+    TargetAdd('steam_audio_steam_audio_composite1.obj', opts=OPTS, input='p3steamAudio_composite1.cxx')
+
+    IGATEFILES=GetDirectoryContents("panda/src/steamaudio", ["*.h", "*_composite*.cxx"])
+    TargetAdd('libp3steam_audio.in', opts = ["DIR:panda/src/steamaudio", "STEAMAUDIO"], input=IGATEFILES)
+    TargetAdd('libp3steam_audio.in', opts=['IMOD:panda3d.steamaudio', 'ILIB:libp3steam_audio', 'SRCDIR:panda/src/steamaudio'])
+
+    TargetAdd('libp3steam_audio.dll', input='steam_audio_steam_audio_composite1.obj')
+    TargetAdd('libp3steam_audio.dll', input=COMMON_PANDA_LIBS)
+    #TargetAdd('libp3steam_audio.dll', ipath = GetThirdpartyDir() + "steamaudio/include")
+    TargetAdd('libp3steam_audio.dll', opts=['DIR:panda/src/steamaudio', 'STEAMAUDIO', "ADVAPI"])
+
+    PyTargetAdd("steamaudio_module.obj", input="libp3steam_audio.in")
+    PyTargetAdd("steamaudio_module.obj", opts=['IMOD:panda3d.steamaudio', 'ILIB:steamaudio', 'IMPORT:panda3d.core', "STEAMAUDIO"])
+
+    PyTargetAdd('steamaudio.pyd', input='steamaudio_module.obj')
+    PyTargetAdd('steamaudio.pyd', input='libp3steam_audio_igate.obj')
+    PyTargetAdd('steamaudio.pyd', input='libp3steam_audio.dll')
+    PyTargetAdd('steamaudio.pyd', input=COMMON_PANDA_LIBS)
+
 
 #
 # DIRECTORY: panda/src/downloadertools/
