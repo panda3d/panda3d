@@ -49,7 +49,9 @@ SteamAudioProcessor() {
   //create context
   IPLContextSettings contextSettings{};
   contextSettings.version = STEAMAUDIO_VERSION;
-  iplContextCreate(&contextSettings, _steamContext);
+
+  _steamContext = IPLContext{};
+  iplContextCreate(&contextSettings, &_steamContext);
 
   //create simulator
   _simulation_settings = IPLSimulationSettings{};
@@ -57,9 +59,10 @@ SteamAudioProcessor() {
   _simulation_settings.sceneType = IPL_SCENETYPE_DEFAULT;//This actually refers to the raytracer we use. TODO:: If support for hardware ray-tracing is added,
   //detect the best option, and set it here.
 
-  iplSimulatorCreate(*_steamContext, &_simulation_settings, _simulator);
+  _simulator = IPLSimulator{};
+  iplSimulatorCreate(_steamContext, &_simulation_settings, &_simulator);
 
-  _listener = source_properties(_simulator);
+  _listener.initialize(&_simulator);
 }
 
 SteamAudioProcessor::
@@ -67,13 +70,16 @@ SteamAudioProcessor::
   //TODO::delete anything created with new! (Buffer data, etc)
   //Remember to deallocate anything allocated for steam audio!
 
-  _sources.clear();
+  clear_all_sources();
+  _listener.destroy();
+
   _buffers.clear();
   _steam_effects.clear();
 
   delete _audio_settings;
 
-  iplContextRelease(_steamContext);
+  iplSimulatorRelease(&_simulator);
+  iplContextRelease(&_steamContext);
 }
 
 /**
@@ -95,7 +101,7 @@ bool SteamAudioProcessor::
 make_source(std::string source_name) {
   if ((_sources.count(source_name) < 1) && _sources.max_size() > _sources.size())
   {
-    _sources.emplace(source_name, std::make_unique<source_properties>(_simulator));
+    _sources.emplace(source_name, std::make_unique<source_properties>(&_simulator));
       return true;
   }
   else
@@ -141,6 +147,9 @@ get_num_sources() {
 **/
 void SteamAudioProcessor::
 clear_all_sources() {
+  for (auto s = _sources.begin(); s != _sources.end(); s++) {
+    s->second->destroy();
+  }
   _sources.clear();
 //TODO:: Make sure the absence of sources doesn't break anything
 }
@@ -199,15 +208,15 @@ buffer_audio(MovieAudioCursor& cursor, int samples, std::string source) {
     }
   }
 
-  auto [it, inserted] = _buffers.emplace(std::make_unique<buffer_properties>());
+  auto [it, inserted] = _buffers.insert(std::make_unique<buffer_properties>(buffer_properties{}));
 
   if (!inserted) {
     return;
   }
-  auto newBuffer = (*it).get();
+  buffer_properties* newBuffer = (*it).get();
 
-  
-  iplAudioBufferAllocate(*_steamContext, 2, _frame_size, newBuffer->buffer);
+  //newBuffer->buffer = IPLAudioBuffer{};
+  iplAudioBufferAllocate(_steamContext, 2, _frame_size, &(newBuffer->buffer));
 
   if (numChannels == 1) {//we need to pad the data and put it in without deinterleaving.
     for (unsigned int i = 0; i < _frame_size; i++) {
@@ -215,15 +224,15 @@ buffer_audio(MovieAudioCursor& cursor, int samples, std::string source) {
     }
     for (unsigned int i = 0; i < _frame_size * 2; i++) {
       if (i < _frame_size) {
-        newBuffer->buffer->data[0][i] = compatibleSamples[i];
+        newBuffer->buffer.data[0][i] = compatibleSamples[i];
       }
       else {
-        newBuffer->buffer->data[1][i - _frame_size] = compatibleSamples[i];//fill the second channel
+        newBuffer->buffer.data[1][i - _frame_size] = compatibleSamples[i];//fill the second channel
       }
     }
   }
   else {
-    iplAudioBufferDeinterleave(*_steamContext, compatibleSamples, newBuffer->buffer);
+    iplAudioBufferDeinterleave(_steamContext, compatibleSamples, &(newBuffer->buffer));
   }
   
 
@@ -257,7 +266,7 @@ get_sample_rate() {
 **/
 void SteamAudioProcessor::
 force_simulator_commit() {
-  iplSimulatorCommit(*_simulator);
+  iplSimulatorCommit(_simulator);
 }
 
 //effects
@@ -265,8 +274,7 @@ force_simulator_commit() {
 *Adds a SteamAudioEffect, and then returns it's index.
 */
 int SteamAudioProcessor::
-add_steam_audio_effect(SteamAudioEffect effect) {
-  effect.ref();
+add_steam_audio_effect(SteamAudioEffect& effect) {
   _steam_effects.push_back(&effect);
   SAEffects::iterator i = std::find(_steam_effects.begin(), _steam_effects.end(), &effect);
   return int(i - _steam_effects.begin());
@@ -276,7 +284,7 @@ add_steam_audio_effect(SteamAudioEffect effect) {
 *Returns the index of a SteamAudioEffect, or -1 if not found.
 */
 int SteamAudioProcessor::
-find_steam_audio_effect(SteamAudioEffect effect) {
+find_steam_audio_effect(SteamAudioEffect& effect) {
   auto i = std::find(_steam_effects.begin(), _steam_effects.end(), &effect);
   if (i != _steam_effects.end()) {
     return i - _steam_effects.begin();
@@ -306,7 +314,6 @@ get_steam_audio_effect(int index) {
 bool SteamAudioProcessor::
 remove_steam_audio_effect(int index) {
   if (!_steam_effects.empty() && !(index > _steam_effects.size())) {
-    _steam_effects[index]->unref();
     _steam_effects.erase(_steam_effects.begin() + index);
     return true;
   }
@@ -316,7 +323,7 @@ remove_steam_audio_effect(int index) {
 }
 
 bool SteamAudioProcessor::
-remove_steam_audio_effect(SteamAudioEffect effect) {
+remove_steam_audio_effect(SteamAudioEffect& effect) {
   int i = find_steam_audio_effect(effect);
   if (i == -1) {
     return false;
@@ -337,14 +344,20 @@ remove_steam_audio_effect(SteamAudioEffect effect) {
 **/
 void SteamAudioProcessor::
 render_effects() {
-  IPLAudioBuffer* finalBuffer;
-  iplAudioBufferAllocate(*_steamContext, 2, _frame_size, finalBuffer);
+
+  if (_buffers.size() <= 0) {
+    output_samples.clear();
+    return;
+  }
+
+  IPLAudioBuffer finalBuffer = IPLAudioBuffer{};
+  iplAudioBufferAllocate(_steamContext, 2, _frame_size, &finalBuffer);
 
   //TODO:: delete buffered audio. Use the delete keyword!!
   //TODO:: remember to select if a reflection mixer is used based on the model!
   SteamGlobalHolder globals = SteamGlobalHolder{};
   globals._audio_settings = _audio_settings;
-  globals._steam_context = _steamContext;
+  globals._steam_context = &_steamContext;
   globals._channels = 2;
   globals._samples = _frame_size;
   globals.listenerPosition = _listener.sourcePos;
@@ -365,7 +378,7 @@ render_effects() {
   }
 
   //run simulation
-  iplSimulatorRunDirect(*_simulator);
+  iplSimulatorRunDirect(_simulator);
   //Todo:: add other simulator calls
 
   //Apply the effects
@@ -386,19 +399,19 @@ render_effects() {
     for (unsigned int e2 = 0; e2 < _steam_effects.size(); e2++)
     {
       //TODO::continue if effect mask does not match any bits of source mask
-      IPLAudioBuffer* result = _steam_effects[e2]->apply_effect(&globals, *((*b1)->buffer));
+      IPLAudioBuffer result = _steam_effects[e2]->apply_effect(&globals, (*b1)->buffer);
 
-      int sampleNum = int((*b1)->buffer->numSamples);
+      int sampleNum = int((*b1)->buffer.numSamples);
       for (auto i = 0; i < sampleNum; i++) {
         //delete *b1->buffer.data[i];
-        (*b1)->buffer->data[i] = (*result).data[i];
+        (*b1)->buffer.data[i] = result.data[i];
       }
-      iplAudioBufferFree(*_steamContext, result);
+      iplAudioBufferFree(_steamContext, &result);
 
     }
 
     //mix the result in
-    iplAudioBufferMix(*_steamContext, (*b1)->buffer, finalBuffer);
+    iplAudioBufferMix(_steamContext, &((*b1)->buffer), &finalBuffer);
 
     //Remove used data
     /**
@@ -408,15 +421,17 @@ render_effects() {
       *b1->buffer.data[i] = nullptr;
     }
     **/
-    iplAudioBufferFree(*_steamContext, (*b1)->buffer);
+    iplAudioBufferFree(_steamContext, &((*b1)->buffer));
 
   }
+
+  _buffers.clear();
 
   //TODO:: push out final audio to cursors
   output_samples.clear();
 
   float output32[4096];//Make an array with the arbitrary size we used in buffer_audio
-  iplAudioBufferInterleave(*_steamContext, finalBuffer, output32);
+  iplAudioBufferInterleave(_steamContext, &finalBuffer, output32);
 
   for (unsigned int i = 0; i < _frame_size * 2; ++i) {
     float sample = std::max(-1.0f, std::min(1.0f, output32[i]));
@@ -425,7 +440,13 @@ render_effects() {
     output_samples.push_back(convertedSample);
   }
 
-  iplAudioBufferFree(*_steamContext, finalBuffer);
+  unsigned int outputSize = output_samples.size();
+  while (outputSize < _frame_size) {//Push back silence to meet frame size
+    output_samples.push_back(0);
+    outputSize++;
+  }
+
+  iplAudioBufferFree(_steamContext, &finalBuffer);
   //delete globals;
 }
 
@@ -471,7 +492,7 @@ get_output() {
 * Nessicary for listener to exist.
 **/
 SteamAudioProcessor::source_properties::
-source_properties() {
+source_properties() : source{}, source_invalidated(false), simulatorPointer(nullptr) {
   simulatorPointer = nullptr;
 
   sourcePos = IPLVector3{ 0.0f,0.0f,0.0f };
@@ -488,6 +509,11 @@ source_properties() {
 
 SteamAudioProcessor::source_properties::
 source_properties(IPLSimulator* _simulator) {
+  initialize(_simulator);
+}
+
+void SteamAudioProcessor::source_properties::
+initialize(IPLSimulator* _simulator) {
   simulatorPointer = _simulator;
 
   sourcePos = IPLVector3{0.0f,0.0f,0.0f};
@@ -514,8 +540,8 @@ source_properties(IPLSimulator* _simulator) {
   iplSimulatorCommit(*_simulator);
 }
 
-SteamAudioProcessor::source_properties::
-~source_properties() {
+void SteamAudioProcessor::source_properties::
+destroy() {
   iplSourceRemove(source, *simulatorPointer);
   iplSourceRelease(&source);
 }

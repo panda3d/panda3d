@@ -71,11 +71,11 @@ PUBLISHED:
   int get_sample_rate();
 
   //effects
-  int add_steam_audio_effect(SteamAudioEffect effect);
-  int find_steam_audio_effect(SteamAudioEffect effect);
+  int add_steam_audio_effect(SteamAudioEffect& effect);
+  int find_steam_audio_effect(SteamAudioEffect& effect);
   SteamAudioEffect get_steam_audio_effect(int index);
   bool remove_steam_audio_effect(int index);
-  bool remove_steam_audio_effect(SteamAudioEffect effect);
+  bool remove_steam_audio_effect(SteamAudioEffect& effect);
   //TODO::add a method to commit effect mask changes
 
 protected:
@@ -92,7 +92,7 @@ protected:
     friend class SteamAudioProcessor;
 
     bool isGlobal = true;//true by default as a safeguard to a null sourceName getting accessed
-    IPLAudioBuffer* buffer;
+    IPLAudioBuffer buffer = IPLAudioBuffer{};
     std::string sourceName = "";
   };
   typedef pset<std::unique_ptr<buffer_properties>> SteamBuffers;
@@ -103,8 +103,12 @@ protected:
   public:
     source_properties();
     source_properties(IPLSimulator* _simulator);
-    ~source_properties();
+    void initialize(IPLSimulator* _simulator);
+    void destroy();
   private:
+    source_properties(const SteamAudioProcessor&) = delete;
+    source_properties& operator=(const SteamAudioProcessor&) = delete;
+
     friend class SteamAudioProcessor;
     friend class SteamAudioEffect;
     friend class SteamDirectEffect;
@@ -127,18 +131,18 @@ protected:
   source_properties _listener;
 
 private:
-  IPLSimulator* _simulator;
+  IPLSimulator _simulator;
   IPLSimulationSettings _simulation_settings;
 
   //effects
-  typedef pvector<SteamAudioEffect*> SAEffects;//not ideal to use regular pointers instead of PT, but my hand is forced
+  typedef pvector<PT(SteamAudioEffect)> SAEffects;//not ideal to use regular pointers instead of PT, but my hand is forced
   SAEffects _steam_effects;//these need to be defined here to have access to steamAudioEffect.h
 
   //configuration
   unsigned int _frame_size;
   unsigned int _sample_rate;
 
-  IPLContext* _steamContext;//This risks being inefficient; but we don't have any near-gaurentee that we'll be used at app startup like the audio system
+  IPLContext _steamContext;//This risks being inefficient; but we don't have any near-gaurentee that we'll be used at app startup like the audio system
 
   //output
   pvector<int16_t> output_samples;
@@ -152,13 +156,13 @@ public:
 
   struct SteamGlobalHolder {
   public:
-    IPLAudioSettings* _audio_settings;
-    IPLContext* _steam_context;
+    IPLAudioSettings* _audio_settings = nullptr;
+    IPLContext* _steam_context = nullptr;
     //With the exception of listenerPosition, values below this point get set per buffer.
-    int _channels;
-    int _samples;
-    source_properties* source;
-    IPLVector3 listenerPosition;
+    int _channels = 0;
+    int _samples = 0;
+    source_properties* source = nullptr;
+    IPLVector3 listenerPosition = IPLVector3{};
   };
 
 public:

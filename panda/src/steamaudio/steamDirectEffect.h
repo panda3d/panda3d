@@ -62,9 +62,11 @@ PUBLISHED:
     SAD_USER//use user-provided values
   };
 
+
+
 protected:
   virtual void get_render_flags(SteamAudioProcessor::source_properties* source) override;
-  virtual IPLAudioBuffer* apply_effect(SteamAudioProcessor::SteamGlobalHolder* globals, IPLAudioBuffer& inBuffer) override;
+  virtual IPLAudioBuffer& apply_effect(SteamAudioProcessor::SteamGlobalHolder* globals, IPLAudioBuffer& inBuffer) override;
 
   unsigned short _dist_atten;//IPL_DIRECTEFFECTFLAGS_APPLYDISTANCEATTENUATION
   float _dist_atten_amnt;

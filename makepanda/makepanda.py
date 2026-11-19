@@ -4454,7 +4454,7 @@ if PkgSkip("STEAMAUDIO") == 0:
     TargetAdd('libp3steam_audio.dll', input='steam_audio_steam_audio_composite1.obj')
     TargetAdd('libp3steam_audio.dll', input=COMMON_PANDA_LIBS)
     #TargetAdd('libp3steam_audio.dll', ipath = GetThirdpartyDir() + "steamaudio/include")
-    TargetAdd('libp3steam_audio.dll', opts=['DIR:panda/src/steamaudio', 'STEAMAUDIO'])
+    TargetAdd('libp3steam_audio.dll', opts=['DIR:panda/src/steamaudio', 'STEAMAUDIO', "ADVAPI"])
 
     PyTargetAdd("steamaudio_module.obj", input="libp3steam_audio.in")
     PyTargetAdd("steamaudio_module.obj", opts=['IMOD:panda3d.steamaudio', 'ILIB:steamaudio', 'IMPORT:panda3d.core', "STEAMAUDIO"])

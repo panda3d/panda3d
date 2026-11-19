@@ -32,7 +32,7 @@ PUBLISHED:
 
 protected:
   virtual void get_render_flags(SteamAudioProcessor::source_properties* source);
-  virtual IPLAudioBuffer* apply_effect(SteamAudioProcessor::SteamGlobalHolder* globals, IPLAudioBuffer& inBuffer);
+  virtual IPLAudioBuffer& apply_effect(SteamAudioProcessor::SteamGlobalHolder* globals, IPLAudioBuffer& inBuffer);
   bool _isActive;
 
 

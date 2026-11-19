@@ -100,12 +100,12 @@ get_render_flags(SteamAudioProcessor::source_properties* source) {
 /**
 *returns a blank outBuffer. This shouldn't be called, though.
 **/
-IPLAudioBuffer* SteamDirectEffect::
+IPLAudioBuffer& SteamDirectEffect::
 apply_effect(SteamAudioProcessor::SteamGlobalHolder *globals, IPLAudioBuffer& inBuffer) {
   IPLContext* context = globals->_steam_context;
 
-  IPLAudioBuffer* outBuffer;
-  iplAudioBufferAllocate(*globals->_steam_context, globals->_channels, globals->_samples, outBuffer);
+  IPLAudioBuffer outBuffer = IPLAudioBuffer{};
+  iplAudioBufferAllocate(*globals->_steam_context, globals->_channels, globals->_samples, &outBuffer);
 
   IPLDirectEffectSettings effectSettings{};
   effectSettings.numChannels = globals->_channels;
@@ -178,7 +178,7 @@ apply_effect(SteamAudioProcessor::SteamGlobalHolder *globals, IPLAudioBuffer& in
   }
 
 
-  iplDirectEffectApply(effect, &params, &inBuffer, outBuffer);
+  iplDirectEffectApply(effect, &params, &inBuffer, &outBuffer);
 
   iplDirectEffectRelease(&effect);
 
